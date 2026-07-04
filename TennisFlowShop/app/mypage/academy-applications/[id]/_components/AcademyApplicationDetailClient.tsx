@@ -232,7 +232,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
           </div>
         </div>
 
-        <dl className="grid divide-y divide-border/60 border-y border-border/60 bp-sm:grid-cols-2 bp-sm:divide-x bp-sm:divide-y-0">
+        <dl className="grid gap-3 bp-sm:grid-cols-2">
           <InfoBox label="수업 유형" value={classSnapshot.lessonTypeLabel} />
           <InfoBox label="레벨" value={classSnapshot.levelLabel} />
           <InfoBox label="강사" value={classSnapshot.instructorName} />
@@ -275,7 +275,7 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
         <CardDescription>신청자와 접수 정보를 확인하세요.</CardDescription>
       </CardHeader>
       <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
-        <dl className="grid divide-y divide-border/60 border-y border-border/60 bp-sm:grid-cols-2 bp-sm:divide-x bp-sm:divide-y-0">
+        <dl className="grid gap-3 bp-sm:grid-cols-2">
           <InfoBox label="신청자명" value={item.applicantName} />
           <InfoBox label="연락처" value={item.phone} />
           <InfoBox label="이메일" value={item.email} />
@@ -304,7 +304,7 @@ function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
         </CardTitle>
         <CardDescription>신청 당시 남긴 목표와 요청사항입니다.</CardDescription>
       </CardHeader>
-      <CardContent className="divide-y divide-border/60 border-y border-border/60 p-4 bp-sm:p-5 bp-lg:p-6">
+      <CardContent className="grid gap-3 p-4 bp-sm:p-5 bp-lg:p-6">
         <InfoBox
           label="레슨 목표"
           value={item.lessonGoal || "미입력"}
@@ -567,7 +567,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <CardDescription>도깨비테니스 담당자가 남긴 안내입니다.</CardDescription>
           </CardHeader>
           <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
-            <p className="whitespace-pre-wrap break-words border-l-2 border-primary/40 bg-muted/20 px-3 py-2.5 text-ui-body-sm leading-relaxed text-foreground">
+            <p className="whitespace-pre-wrap break-words rounded-xl bg-muted/15 p-3 text-ui-body-sm leading-relaxed text-foreground">
               {item.customerMessage}
             </p>
           </CardContent>
@@ -606,7 +606,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardHeader>
         <CardContent className="space-y-4 p-4 bp-sm:p-5 bp-lg:p-6">
           {!isCancelled && canEditApplication ? (
-            <div className="space-y-4 border-y border-border/60 py-4">
+            <div className="space-y-4 rounded-xl bg-muted/15 p-4">
               {!isEditing ? (
                 <Button type="button" variant="outline" onClick={openEditForm}>
                   신청 정보 수정

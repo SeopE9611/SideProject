@@ -963,7 +963,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-xl:grid-cols-5">
             <SummaryCard
-              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
+              className="rounded-xl border-0 bg-muted/15 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -976,7 +976,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
+              className="rounded-xl border-0 bg-muted/15 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -989,7 +989,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
+              className="rounded-xl border-0 bg-muted/15 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -1002,7 +1002,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
+              className="rounded-xl border-0 bg-muted/15 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -1016,7 +1016,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
+              className="rounded-xl border-0 bg-muted/15 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -1317,7 +1317,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         </Button>
                       </div>
                     ) : (
-                      <div className="border-l-2 border-border bg-muted/20 px-3 py-3 text-ui-body-sm text-muted-foreground">
+                      <div className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-muted-foreground">
                         연결된 교체서비스 신청 정보를 확인 중입니다.
                       </div>
                     )}
@@ -1342,7 +1342,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="divide-y divide-border/60 border-y border-border/60">
+                <div className="grid gap-3">
                   {orderDetail.items.map((item, idx) => (
                     <div
                       key={idx}
@@ -1575,7 +1575,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="divide-y divide-border/60 border-y border-border/60">
+                <div className="grid gap-3">
                   <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <div>
                       <p className="text-ui-body-sm text-foreground/80">결제 상태</p>
@@ -1649,7 +1649,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardContent>
               ) : (
                 <CardContent className="p-4 bp-lg:p-6">
-                  <div className="divide-y divide-border/60 border-y border-border/60">
+                  <div className="grid gap-3">
                     <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <div>
@@ -1725,7 +1725,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="divide-y divide-border/60 border-y border-border/60">
+                <div className="grid gap-3">
                   <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <Truck className="h-4 w-4 text-muted-foreground" />
                     <div>
@@ -1775,7 +1775,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         </div>
                       </div>
                       {shouldShowTrackingSummarySkeleton && (
-                        <div className="space-y-2 border-l-2 border-border bg-muted/20 px-3 py-3">
+                        <div className="space-y-2 rounded-xl bg-muted/15 p-3">
                           <Skeleton className="h-4 w-40" />
                           <Skeleton className="h-4 w-32" />
                           <Skeleton className="h-4 w-36" />
@@ -1887,7 +1887,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   <CardTitle>패키지 안내</CardTitle>
                   <CardDescription>교체서비스 패키지 이용 현황입니다.</CardDescription>
                 </CardHeader>
-                <CardContent className="divide-y divide-border/60 border-y border-border/60 p-4 text-ui-body-sm bp-lg:p-5">
+                <CardContent className="grid gap-3 p-4 text-ui-body-sm bp-lg:p-5">
                   <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">전체 횟수</span>
                     <span className="font-medium text-foreground">{totalSlots}회</span>
@@ -1906,7 +1906,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
             <div id="reviews-cta" className="mt-4">
               {serviceLinkedOrder ? (
-                <div className="border-l-2 border-border bg-muted/20 px-3 py-3 text-ui-body-sm text-muted-foreground">
+                <div className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-muted-foreground">
                   이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할 수 있습니다.
                 </div>
               ) : allReviewed ? (

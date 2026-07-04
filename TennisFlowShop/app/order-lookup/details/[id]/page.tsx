@@ -696,7 +696,7 @@ export default function OrderDetailPage() {
                 <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <CardTitle className="text-ui-body">교체서비스 접수 요약</CardTitle>
                 </CardHeader>
-                <CardContent className="divide-y divide-border/60 border-y border-border/60 p-4 text-ui-body-sm bp-sm:p-5 [&>p]:py-2">
+                <CardContent className="grid gap-3 p-4 text-ui-body-sm bp-sm:p-5 [&>p]:rounded-xl [&>p]:bg-muted/15 [&>p]:p-3">
                   <p className="text-muted-foreground">
                     신청 상태:{" "}
                     <span className="font-medium text-foreground">
@@ -766,7 +766,7 @@ export default function OrderDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="divide-y divide-border/60 border-y border-border/60">
+                    <div className="grid gap-3">
                       <div className="py-3">
                         <p className="text-ui-body-sm text-muted-foreground mb-1">주문일자</p>
                         <p className="font-semibold">
@@ -778,7 +778,7 @@ export default function OrderDetailPage() {
                         <p className="break-all font-mono text-ui-body-sm">{order._id}</p>
                       </div>
                     </div>
-                    <div className="border-y border-border/60 py-3">
+                    <div className="rounded-xl bg-muted/15 p-3">
                       <p className="text-ui-body-sm text-muted-foreground mb-2">결제수단</p>
                       <p className="mb-3 font-semibold text-foreground">{paymentDisplaySummary.userLabel}</p>
                       {shouldShowBankInfo && order.paymentInfo?.bank && (
@@ -817,7 +817,7 @@ export default function OrderDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="divide-y divide-border/60 border-y border-border/60">
+                    <div className="grid gap-3">
                       <div className="flex items-center gap-3 py-3">
                         <User className="w-5 h-5 text-foreground" />
                         <div>
@@ -836,13 +836,13 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="divide-y divide-border/60 border-y border-border/60">
+                    <div className="grid gap-3">
                       <div className="py-3">
                         <p className="text-ui-body-sm text-muted-foreground mb-1">{shippingAddressLabel}</p>
                         <p className="break-words font-semibold">{shippingAddressValue}</p>
                       </div>
                       {canTrack && (
-                        <div className="flex items-center gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
+                        <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
                             <p className="text-ui-body-sm text-muted-foreground mb-1">운송장 번호</p>
@@ -899,7 +899,7 @@ export default function OrderDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="divide-y divide-border/60 border-y border-border/60">
+                  <div className="grid gap-3">
                     {order.items.map((item, index) => (
                       <div
                         key={item.id || index}
@@ -952,7 +952,7 @@ export default function OrderDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="divide-y divide-border/60 border-y border-border/60">
+                  <div className="grid gap-3">
                     <div className="flex items-center justify-between gap-3 py-2">
                       <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
                       <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
@@ -977,7 +977,7 @@ export default function OrderDetailPage() {
 
                     {/* Benefits */}
                     <div className="mt-6 space-y-3">
-                      <div className="flex items-center gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
+                      <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm font-medium text-foreground">안전한 결제</p>
@@ -985,7 +985,7 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
+                      <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm font-medium text-foreground">배송 보장</p>
