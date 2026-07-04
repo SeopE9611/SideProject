@@ -37,7 +37,6 @@ import {
   Menu,
   MoreHorizontal,
   ShoppingCart,
-  UserIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -990,7 +989,7 @@ const Header = () => {
               willChange: "transform",
             }}
           >
-            <div className="grid w-full grid-cols-[84px_minmax(0,1fr)_84px] items-center bp-sm:grid-cols-[96px_minmax(0,1fr)_96px] bp-lg:hidden">
+            <div className="grid w-full grid-cols-[52px_minmax(0,1fr)_52px] items-center bp-sm:grid-cols-[56px_minmax(0,1fr)_56px] bp-lg:hidden">
               <div className="justify-self-start">
                 <SheetTrigger asChild>
                   <Button
@@ -1034,26 +1033,6 @@ const Header = () => {
               </Link>
 
               <div className="flex items-center gap-0.5 justify-self-end overflow-visible">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring"
-                  aria-label={user ? "마이페이지" : "로그인"}
-                  onClick={() => {
-                    if (user) {
-                      router.push("/mypage");
-                      return;
-                    }
-                    const nextPath =
-                      typeof window !== "undefined"
-                        ? `${window.location.pathname}${window.location.search}`
-                        : pathname || "/";
-                    router.push(`/login?next=${encodeURIComponent(nextPath)}`);
-                  }}
-                >
-                  <UserIcon className="h-5 w-5" />
-                </Button>
-                {user && <NotificationBell enabled={!loading && !!user} mode="mobileHeader" />}
                 <Link href="/cart">
                   <Button
                     variant="ghost"
