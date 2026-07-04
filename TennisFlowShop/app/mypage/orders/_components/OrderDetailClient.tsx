@@ -1007,30 +1007,130 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         )}
         <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] bp-lg:items-start">
           <div className="space-y-5">
-            {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
-              <section id="stringing-service" className="scroll-mt-24 space-y-4">
-                <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                  <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                    <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                      <div>
-                        <CardTitle>교체서비스 정보</CardTitle>
-                        <CardDescription>
-                          이 주문과 연결된 교체서비스 진행 상태와 라켓 정보를 함께 확인할 수
-                          있습니다.
-                        </CardDescription>
+            {/* 주문 항목 */}
+            <MypageDetailCard
+              title="주문/서비스 상품 정보"
+              description="주문 상품과 연결된 서비스 정보를 구분해 확인할 수 있습니다."
+              icon={<ShoppingCart className="h-5 w-5 text-warning" />}
+            >
+                <div className="divide-y divide-border/60">
+                  {orderDetail.items.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col gap-4 py-4 transition-colors first:pt-0 last:pb-0 bp-sm:flex-row bp-sm:items-start"
+                    >
+                      {/* 상품 썸네일 */}
+                      {item.imageUrl && (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="h-12 w-12 shrink-0 object-cover rounded"
+                        />
+                      )}
+
+                      {/* 상품명 + 수량 */}
+                      <div className="w-full min-w-0 flex-1">
+                        <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
+                          {item.name}
+                        </h4>
+                        <p className="break-keep text-ui-body-sm text-foreground/80">
+                          수량: {item.quantity}개
+                        </p>
+                        {item.selectedStringName && (
+                          <p className="text-ui-label text-foreground/70">
+                            선택 스트링: {item.selectedStringName}
+                          </p>
+                        )}
+                        {item.selectedGauge && (
+                          <p className="text-ui-label text-foreground/70">
+                            게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
+                          </p>
+                        )}
+                        {(item.selectedColorLabel || item.selectedColor) && (
+                          <p className="flex items-center gap-2 text-ui-label text-foreground/70">
+                            <span>색상:</span>
+                            {item.selectedColorHex && (
+                              <span
+                                className="h-3 w-3 rounded-full border border-border"
+                                style={{ backgroundColor: item.selectedColorHex }}
+                                aria-hidden="true"
+                              />
+                            )}
+                            <span>{item.selectedColorLabel || item.selectedColor}</span>
+                          </p>
+                        )}
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="secondary">주문</Badge>
-                        {hasLinkedStringingApps ? (
-                          <Badge variant="secondary">교체서비스 연결</Badge>
-                        ) : null}
-                        {shouldShowInboundShippingBlock && !hasSelfShipTracking ? (
-                          <Badge variant="destructive">라켓 발송 운송장 등록 필요</Badge>
-                        ) : null}
+
+                      {/* 가격 및 소계 */}
+                      <div className="w-full shrink-0 border-t border-border/50 pt-3 text-left bp-sm:w-auto bp-sm:border-t-0 bp-sm:pt-0 bp-sm:text-right">
+                        <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
+                          가격: {formatCurrency(item.price)}
+                        </p>
+                        {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
+                          <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                            스트링 가격: {formatCurrency(item.stringPrice)}
+                          </p>
+                        )}
+                        {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
+                          <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                            장착비: {formatCurrency(item.mountingFee)}
+                          </p>
+                        )}
+                        <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                          상품 소계: {formatCurrency(item.price * item.quantity)}
+                        </p>
+
+                        <div className="mt-2">
+                          {canShowProductReviewCTA &&
+                            (reviewedMap[item.id] ? (
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="secondary"
+                                className="w-full bp-sm:w-auto"
+                              >
+                                <Link href={`/products/${item.id}?tab=reviews`}>
+                                  후기 상세 보기
+                                </Link>
+                              </Button>
+                            ) : (
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="w-full bp-sm:w-auto"
+                              >
+                                <Link
+                                  href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
+                                >
+                                  후기 작성하기
+                                </Link>
+                              </Button>
+                            ))}
+                        </div>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4 p-4 bp-sm:p-6">
+                  ))}
+                </div>
+            </MypageDetailCard>
+            {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
+              <section id="stringing-service" className="scroll-mt-24 space-y-4">
+                <MypageDetailCard
+                  title="연결된 교체서비스"
+                  description="이 주문과 연결된 교체서비스 진행 상태와 라켓 정보를 함께 확인할 수 있습니다."
+                  action={
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">주문</Badge>
+                      {hasLinkedStringingApps ? (
+                        <Badge variant="secondary">교체서비스 연결</Badge>
+                      ) : null}
+                      {shouldShowInboundShippingBlock && !hasSelfShipTracking ? (
+                        <Badge variant="destructive">라켓 발송 운송장 등록 필요</Badge>
+                      ) : null}
+                    </div>
+                  }
+                  contentClassName="space-y-4"
+                >
                     {hasLinkedStringingApps ? (
                       linkedStringingApps.map((app, appIndex) => {
                         const appSelfShipInfo = app.shippingInfo?.selfShip ?? null;
@@ -1281,165 +1381,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         userConfirmedAt={reviewableStringingApp?.userConfirmedAt ?? null}
                       />
                     ) : null}
-                  </CardContent>
-                </Card>
+                </MypageDetailCard>
               </section>
-            )}
-
-            {/* 주문 항목 */}
-            <MypageDetailCard
-              title="주문/서비스 상품 정보"
-              description="주문 상품과 연결된 서비스 정보를 구분해 확인할 수 있습니다."
-              icon={<ShoppingCart className="h-5 w-5 text-warning" />}
-            >
-                <div className="divide-y divide-border/60">
-                  {orderDetail.items.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col gap-4 py-4 transition-colors first:pt-0 last:pb-0 bp-sm:flex-row bp-sm:items-start"
-                    >
-                      {/* 상품 썸네일 */}
-                      {item.imageUrl && (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="h-12 w-12 shrink-0 object-cover rounded"
-                        />
-                      )}
-
-                      {/* 상품명 + 수량 */}
-                      <div className="w-full min-w-0 flex-1">
-                        <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
-                          {item.name}
-                        </h4>
-                        <p className="break-keep text-ui-body-sm text-foreground/80">
-                          수량: {item.quantity}개
-                        </p>
-                        {item.selectedStringName && (
-                          <p className="text-ui-label text-foreground/70">
-                            선택 스트링: {item.selectedStringName}
-                          </p>
-                        )}
-                        {item.selectedGauge && (
-                          <p className="text-ui-label text-foreground/70">
-                            게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
-                          </p>
-                        )}
-                        {(item.selectedColorLabel || item.selectedColor) && (
-                          <p className="flex items-center gap-2 text-ui-label text-foreground/70">
-                            <span>색상:</span>
-                            {item.selectedColorHex && (
-                              <span
-                                className="h-3 w-3 rounded-full border border-border"
-                                style={{ backgroundColor: item.selectedColorHex }}
-                                aria-hidden="true"
-                              />
-                            )}
-                            <span>{item.selectedColorLabel || item.selectedColor}</span>
-                          </p>
-                        )}
-                      </div>
-
-                      {/* 가격 및 소계 */}
-                      <div className="w-full shrink-0 border-t border-border/50 pt-3 text-left bp-sm:w-auto bp-sm:border-t-0 bp-sm:pt-0 bp-sm:text-right">
-                        <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                          가격: {formatCurrency(item.price)}
-                        </p>
-                        {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
-                          <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                            스트링 가격: {formatCurrency(item.stringPrice)}
-                          </p>
-                        )}
-                        {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
-                          <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                            장착비: {formatCurrency(item.mountingFee)}
-                          </p>
-                        )}
-                        <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                          상품 소계: {formatCurrency(item.price * item.quantity)}
-                        </p>
-
-                        <div className="mt-2">
-                          {canShowProductReviewCTA &&
-                            (reviewedMap[item.id] ? (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="secondary"
-                                className="w-full bp-sm:w-auto"
-                              >
-                                <Link href={`/products/${item.id}?tab=reviews`}>
-                                  후기 상세 보기
-                                </Link>
-                              </Button>
-                            ) : (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="outline"
-                                className="w-full bp-sm:w-auto"
-                              >
-                                <Link
-                                  href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
-                                >
-                                  후기 작성하기
-                                </Link>
-                              </Button>
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-            </MypageDetailCard>
-            {/* 요청사항 */}
-            {showDeliveryOnlyFields && (
-              <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                  <CardTitle>배송 요청사항</CardTitle>
-                  <CardDescription>결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
-                </CardHeader>
-                {editingRequest ? (
-                  <CardContent className="p-4 bp-lg:p-6">
-                    <RequestEditForm
-                      initialData={orderDetail.shippingInfo.deliveryRequest || ""}
-                      orderId={orderId}
-                      onSuccess={() => {
-                        mutateOrderDetail();
-                        mutateHistory();
-                        setEditingRequest(false);
-                      }}
-                      onCancel={() => setEditingRequest(false)}
-                    />
-                  </CardContent>
-                ) : (
-                  <CardContent className="p-4 bp-lg:p-6">
-                    {orderDetail.shippingInfo.deliveryRequest ? (
-                      <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3">
-                        <p className="text-foreground whitespace-pre-line">
-                          {orderDetail.shippingInfo.deliveryRequest}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground italic">
-                        요청사항이 입력되지 않았습니다.
-                      </p>
-                    )}
-                  </CardContent>
-                )}
-                {isEditMode && canUserEdit && !editingRequest && (
-                  <CardFooter className="flex justify-center bg-muted/50">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingRequest(true)}
-                      className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border"
-                    >
-                      요청사항 수정
-                    </Button>
-                  </CardFooter>
-                )}
-              </Card>
             )}
 
             <details className="group bp-md:block">
@@ -1651,6 +1594,62 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         )}
                       </div>
                     </div>
+
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                      <Truck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <MypageInfoField
+                        className="flex-1"
+                        label={isVisitPickup ? "수령 방식" : "배송 방식"}
+                        value={shippingMethodLabel}
+                      />
+                    </div>
+
+                    {showDeliveryOnlyFields && (
+                      <div className="space-y-3 py-3 first:pt-0 last:pb-0">
+                        <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="text-ui-label font-medium text-muted-foreground">
+                              배송 요청사항
+                            </p>
+                            <p className="mt-1 text-ui-label text-muted-foreground">
+                              결제 시 입력한 배송 관련 요청사항입니다.
+                            </p>
+                          </div>
+                          {isEditMode && canUserEdit && !editingRequest ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingRequest(true)}
+                              className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto"
+                            >
+                              요청사항 수정
+                            </Button>
+                          ) : null}
+                        </div>
+                        {editingRequest ? (
+                          <RequestEditForm
+                            initialData={orderDetail.shippingInfo.deliveryRequest || ""}
+                            orderId={orderId}
+                            onSuccess={() => {
+                              mutateOrderDetail();
+                              mutateHistory();
+                              setEditingRequest(false);
+                            }}
+                            onCancel={() => setEditingRequest(false)}
+                          />
+                        ) : orderDetail.shippingInfo.deliveryRequest ? (
+                          <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3">
+                            <p className="whitespace-pre-wrap break-words text-foreground">
+                              {orderDetail.shippingInfo.deliveryRequest}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-ui-body-sm italic text-muted-foreground">
+                            요청사항이 입력되지 않았습니다.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               )}
