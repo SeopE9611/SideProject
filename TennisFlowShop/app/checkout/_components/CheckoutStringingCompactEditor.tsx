@@ -127,12 +127,12 @@ export default function CheckoutStringingCompactEditor({
     <Accordion
       type="single"
       defaultValue="detail"
-      className="overflow-visible rounded-xl border border-border/90 bg-card px-3 py-2 bp-sm:px-4"
+      className="overflow-visible rounded-none border-0 bg-transparent p-0"
     >
       <AccordionItem value="detail" className="border-none">
         <AccordionTrigger
           value="detail"
-          className="group rounded-xl border border-primary/20 bg-primary/5 px-3 py-3 text-left text-ui-body-sm font-medium transition-[border-color,background-color] hover:bg-primary/5 bp-sm:px-4"
+          className="group border-b border-border/70 px-0 py-3 text-left text-ui-body-sm font-medium transition-colors hover:bg-transparent"
         >
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="inline-flex items-center gap-2 text-foreground">
@@ -145,13 +145,13 @@ export default function CheckoutStringingCompactEditor({
           </span>
           <Badge
             variant="secondary"
-            className="shrink-0 whitespace-nowrap border border-border bg-card text-ui-micro"
+            className="shrink-0 whitespace-nowrap border border-border/70 bg-transparent text-ui-micro"
           >
             필수
           </Badge>
         </AccordionTrigger>
-        <AccordionContent value="detail" className="space-y-4 pb-4 pt-4">
-          <section className="space-y-3 rounded-lg border border-border bg-muted/30 p-3 bp-sm:p-4">
+        <AccordionContent value="detail" className="space-y-4 pb-3 pt-4">
+          <section className="space-y-3 border-b border-border/60 pb-4">
             <p className="text-ui-body-sm font-medium text-foreground">방문 예약</p>
             {isVisit ? (
               <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
@@ -176,7 +176,7 @@ export default function CheckoutStringingCompactEditor({
                     }
                   />
                 </div>
-                <div className="space-y-2 rounded-lg border border-border bg-card p-3">
+                <div className="space-y-2">
                   <div className="space-y-0.5">
                     <Label
                       htmlFor="checkout-preferred-time"
@@ -207,7 +207,7 @@ export default function CheckoutStringingCompactEditor({
                     formData.preferredTime &&
                     visitSlotCountUi > 0 &&
                     visitDurationMinutesUi && (
-                      <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-ui-label text-foreground">
+                      <div className="mt-3 border-l-2 border-primary/40 bg-primary/5 px-3 py-2 text-ui-label text-foreground">
                         <p className="font-medium text-foreground">
                           <Clock3 className="mr-1 inline h-3.5 w-3.5 text-primary" />
                           예상 소요:{" "}
@@ -241,7 +241,7 @@ export default function CheckoutStringingCompactEditor({
             </div>
 
             {lineCount >= 2 && (
-              <div className="rounded-lg border border-border bg-muted/20 p-3">
+              <div className="border-y border-border/60 bg-muted/20 py-3">
                 <div className="mb-3 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                   <div>
                     <p className="inline-flex items-center gap-1.5 text-ui-label font-semibold text-foreground">
@@ -341,9 +341,11 @@ export default function CheckoutStringingCompactEditor({
                   <div
                     key={line.id}
                     className={cn(
-                      "rounded-xl border bg-card p-3 transition-[border-color,box-shadow,background-color] focus-within:border-primary/20 focus-within:bg-primary/5 bp-sm:p-4",
+                      lineCount === 1
+                        ? "border-0 bg-transparent p-0 transition-colors"
+                        : "border-b border-border/60 bg-transparent pb-4 transition-colors last:border-b-0 last:pb-0",
                       isComplete || !hasVisibleLineErrors
-                        ? "border-border"
+                        ? "border-border/60"
                         : "border-destructive/30",
                     )}
                   >
@@ -354,7 +356,7 @@ export default function CheckoutStringingCompactEditor({
                             {displayTitle}
                           </p>
                           {lineCount > 1 && (
-                            <span className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted/30 px-2 py-0.5 text-ui-micro text-muted-foreground">
+                            <span className="shrink-0 whitespace-nowrap rounded-full border border-border/70 px-2 py-0.5 text-ui-micro text-muted-foreground">
                               {index + 1}번째 라켓
                             </span>
                           )}
@@ -369,20 +371,20 @@ export default function CheckoutStringingCompactEditor({
                         </span>
                         <Badge
                           variant={isComplete ? "success" : "secondary"}
-                          className="whitespace-nowrap border border-border bg-muted/30 text-ui-micro"
+                          className="whitespace-nowrap border border-border/70 bg-transparent text-ui-micro"
                         >
                           {isComplete ? "입력 완료" : "필수 정보 미입력"}
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-border bg-muted/30 px-3 py-2 text-ui-label text-muted-foreground [&>span]:break-keep">
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-ui-label text-muted-foreground [&>span]:break-keep">
                       <span>{racketName ? previewText(racketName, "") : "라켓명 입력 필요"}</span>
                       <span>{tensionSummary}</span>
                       {note && <span>요청 {previewText(note, "")}</span>}
                     </div>
 
-                    <div className="mt-3 space-y-3 border-t border-border pt-3">
+                    <div className="mt-3 space-y-3 border-t border-border/60 pt-3">
                       <div className="space-y-1.5">
                         <Label
                           htmlFor={`checkout-racket-name-${line.id}`}

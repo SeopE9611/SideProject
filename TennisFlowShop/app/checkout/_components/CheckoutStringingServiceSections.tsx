@@ -32,7 +32,7 @@ export default function CheckoutStringingServiceSections({
           교체서비스 옵션
         </CardTitle>
       </div>
-      <CardContent className="space-y-4 p-4 bp-sm:p-5">
+      <CardContent className="space-y-3 p-4 bp-sm:p-5">
         <CheckoutStringingCompactEditor
           adapter={adapter}
           showValidationErrors={showValidationErrors}

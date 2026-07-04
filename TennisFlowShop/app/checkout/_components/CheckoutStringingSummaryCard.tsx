@@ -26,7 +26,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
       : "라켓명과 텐션을 입력해 주세요.";
 
   return (
-    <div className="space-y-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-4 bp-sm:px-4">
+    <div className="space-y-3 border-t border-border/70 pt-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-ui-body-sm font-medium text-foreground">
@@ -39,13 +39,13 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         </div>
         <Badge
           variant={completion.isReadyToSubmit ? "success" : "secondary"}
-          className="mt-0.5 shrink-0 border border-border/70 bg-background/85 text-ui-micro"
+          className="mt-0.5 shrink-0 border border-border/70 bg-transparent text-ui-micro"
         >
           {completion.statusLabel}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-5 gap-y-2 rounded-lg border border-border/70 bg-background p-3 text-ui-body-sm bp-sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-5 gap-y-2 text-ui-body-sm bp-sm:grid-cols-2">
         <p>
           <span className="text-muted-foreground">접수 방식:</span>{" "}
           <span className="font-medium">{summary.collectionLabel}</span>
