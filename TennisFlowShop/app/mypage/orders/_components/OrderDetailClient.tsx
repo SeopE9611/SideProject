@@ -1006,7 +1006,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           </div>
         )}
         <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] bp-lg:items-start">
-          <div className="space-y-5">
+          <div className="space-y-5 bp-lg:col-start-1 bp-lg:row-start-1">
             {/* 주문 항목 */}
             <MypageDetailCard
               title="주문/서비스 상품 정보"
@@ -1384,84 +1384,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </MypageDetailCard>
               </section>
             )}
-
-            <details className="group bp-md:block">
-              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">
-                진행 단계
-              </summary>
-              <Card className="hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
-                <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                  <CardTitle>주문 진행 타임라인</CardTitle>
-                  <CardDescription>
-                    주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수
-                    있습니다.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 bp-lg:p-6">
-                  {timelineSteps.map((step, index) => {
-                    const tone = getTimelineStepTone(step.state);
-                    const Icon =
-                      step.state === "active" && !isVisitPickup && step.title.includes("배송")
-                        ? Truck
-                        : tone.Icon;
-                    return (
-                      <div
-                        key={step.title}
-                        className="border-t border-border/60 py-3 first:border-t-0"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={cn(
-                              "mt-0.5 flex h-8 w-8 items-center justify-center rounded-full",
-                              tone.wrapper,
-                            )}
-                          >
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-medium text-foreground">
-                                {index + 1}. {step.title}
-                              </p>
-                              <Badge className={cn("px-2 py-0.5 text-ui-label", tone.badge)}>
-                                {getTimelineStateLabel(step.state)}
-                              </Badge>
-                            </div>
-                            <p className="mt-1 text-ui-body-sm text-muted-foreground">
-                              {step.description}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="mt-3 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
-                    <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
-                    <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
-                    {shouldShowStringingTimelineHint && (
-                      <p>
-                        {primaryStringingAppId
-                          ? "이 주문 상세의 교체서비스 정보 영역에서 작업 진행 상태를 함께 확인할 수 있습니다."
-                          : "교체서비스가 포함된 주문은 이 주문 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </details>
-
-            {/* 처리 이력 */}
-            <details className="group bp-md:block">
-              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">
-                처리 이력
-              </summary>
-              <div className="hidden group-open:block bp-md:block">
-                <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />
-              </div>
-            </details>
           </div>
 
-          <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-md:space-y-5">
+          <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-span-2 bp-lg:row-start-1 bp-md:space-y-5">
             {/* 결제 정보 */}
             <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
               <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
@@ -1918,6 +1843,83 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               )}
             </div>
           </aside>
+
+          <div className="space-y-5 bp-lg:col-start-1 bp-lg:row-start-2">
+            <details className="group bp-md:block">
+              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">
+                진행 단계
+              </summary>
+              <Card className="hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
+                <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+                  <CardTitle>주문 진행 타임라인</CardTitle>
+                  <CardDescription>
+                    주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수
+                    있습니다.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 bp-lg:p-6">
+                  {timelineSteps.map((step, index) => {
+                    const tone = getTimelineStepTone(step.state);
+                    const Icon =
+                      step.state === "active" && !isVisitPickup && step.title.includes("배송")
+                        ? Truck
+                        : tone.Icon;
+                    return (
+                      <div
+                        key={step.title}
+                        className="border-t border-border/60 py-3 first:border-t-0"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={cn(
+                              "mt-0.5 flex h-8 w-8 items-center justify-center rounded-full",
+                              tone.wrapper,
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-medium text-foreground">
+                                {index + 1}. {step.title}
+                              </p>
+                              <Badge className={cn("px-2 py-0.5 text-ui-label", tone.badge)}>
+                                {getTimelineStateLabel(step.state)}
+                              </Badge>
+                            </div>
+                            <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                              {step.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="mt-3 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
+                    <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
+                    <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
+                    {shouldShowStringingTimelineHint && (
+                      <p>
+                        {primaryStringingAppId
+                          ? "이 주문 상세의 교체서비스 정보 영역에서 작업 진행 상태를 함께 확인할 수 있습니다."
+                          : "교체서비스가 포함된 주문은 이 주문 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </details>
+
+            {/* 처리 이력 */}
+            <details className="group bp-md:block">
+              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">
+                처리 이력
+              </summary>
+              <div className="hidden group-open:block bp-md:block">
+                <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />
+              </div>
+            </details>
+          </div>
         </div>
 
         {/* 취소 다이얼로그는 실제 요청 시점에만 mount */}
