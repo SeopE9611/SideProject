@@ -27,14 +27,12 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   AlertCircle,
   ArrowRight,
-  Calendar,
   CheckCircle,
   ChevronDown,
   ChevronUp,
   Package,
   Sparkles,
   Undo2,
-  Wrench,
   XCircle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -1106,8 +1104,6 @@ export default function TransactionFlowList() {
               (displayKind === "rental" && g.rental?.cancelStatus === "requested") ||
               (displayKind === "application" &&
                 (displayApplication ?? g.application)?.cancelStatus === "requested");
-            const FlowIcon =
-              displayKind === "order" ? Package : displayKind === "rental" ? Calendar : Wrench;
             const heroSummary =
               displayKind === "order"
                 ? formatAmount(g.order?.totalPrice)
@@ -1133,31 +1129,21 @@ export default function TransactionFlowList() {
             return (
               <div
                 key={g.key}
-                className="grid gap-3 rounded-2xl border border-border bg-card px-4 py-4 shadow-sm transition-colors hover:bg-muted/30 bp-sm:px-4 md:grid-cols-[112px_minmax(0,1fr)_auto] md:items-start md:gap-4"
+                className="grid gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 md:grid-cols-[minmax(0,1fr)_168px] md:items-start md:gap-4"
               >
-                <div className="flex min-w-0 items-start justify-between gap-3 md:hidden">
+                <div className="flex min-w-0 items-start justify-between gap-3 md:col-span-2">
                   <div className="min-w-0">
                     <p className="text-ui-body-sm font-semibold text-foreground">
-                      {displayUserStatusLabel}
+                      {displayMetaLabel}
                     </p>
                     <p className="mt-0.5 text-ui-label text-muted-foreground">
-                      {formatDate(displayDateValue)} · {displayMetaLabel}
+                      {formatDate(displayDateValue)} · 현재 상태 {displayUserStatusLabel}
                     </p>
                   </div>
                 </div>
-                <div className="hidden min-w-0 md:block">
-                  <span className="text-ui-label tabular-nums text-muted-foreground">
-                    {formatDate(displayDateValue)}
-                  </span>
-                  <span className="mt-1 block text-ui-label font-medium text-muted-foreground/70">
-                    {displayMetaLabel}
-                  </span>
-                </div>
-
                 {/* 중간: 메인 정보 */}
                 <div className="flex min-w-0 flex-col gap-1.5">
-                  <Link href={detailHref} className="inline-flex max-w-full items-start gap-1.5">
-                    <FlowIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <Link href={detailHref} className="inline-flex max-w-full items-start">
                     <span className="line-clamp-2 break-keep text-ui-body-sm font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-ui-body">
                       {displayTitle}
                     </span>
@@ -1204,26 +1190,21 @@ export default function TransactionFlowList() {
                   ) : null}
 
                   {linkedStringSummary || linkedApplicationStatusLabel ? (
-                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
-                      {[
-                        linkedStringSummary,
-                        linkedApplicationStatusLabel
-                          ? `교체서비스 상태: ${linkedApplicationStatusLabel}`
-                          : null,
-                      ]
+                    <p className="line-clamp-1 break-keep text-ui-label leading-relaxed text-muted-foreground">
+                      {[linkedStringSummary, linkedApplicationStatusLabel ? `교체서비스 ${linkedApplicationStatusLabel}` : null]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
                   ) : null}
 
                   {todoPrimaryReason && nextActionText ? (
-                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed bp-sm:line-clamp-none">
-                      <span className="font-semibold text-primary">{todoPrimaryReason}</span>
+                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed">
+                      <span className="font-semibold text-primary">다음 할 일</span>
                       <span className="text-muted-foreground"> · {nextActionText}</span>
                     </p>
                   ) : nextActionText ? (
-                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
-                      {nextActionText}
+                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
+                      <span className="font-semibold text-foreground">다음 할 일</span> · {nextActionText}
                     </p>
                   ) : null}
                 </div>
@@ -1696,7 +1677,7 @@ export default function TransactionFlowList() {
                         </div>
 
                         {inlineActions.length > 0 || secondaryActions.length > 0 ? (
-                          <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap md:[&_button]:h-8 md:[&_button]:px-3">
+                          <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep md:[&_button]:h-8 md:[&_button]:px-3">
                             {inlineActions.map((action) => (
                               <Fragment key={action.key}>{action.node}</Fragment>
                             ))}
@@ -1727,7 +1708,7 @@ export default function TransactionFlowList() {
                           </div>
                         ) : null}
                         {secondaryActions.length > 0 && isSecondaryOpen ? (
-                          <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
+                          <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-3 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-3 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep">
                             {secondaryActions.map((action) => (
                               <Fragment key={action.key}>{action.node}</Fragment>
                             ))}
@@ -1735,7 +1716,7 @@ export default function TransactionFlowList() {
                         ) : null}
                       </div>
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="col-span-full grid w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
+                        <div className="col-span-full grid w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep">
                           {secondaryActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}

@@ -176,6 +176,16 @@ export default function RentalsList() {
 
         const rentalTitle = `${racketBrandLabel(r.brand)} ${r.model ?? ""}`.trim() || "라켓 대여";
         const rentalMetaDate = r.updatedAt || r.createdAt;
+        const returnDueDate = r.returnDueDate || r.endDate || r.dueDate || r.expectedReturnDate;
+        const nextActionLabel = r.cancelStatus === "requested"
+          ? "취소 요청 확인을 기다려주세요."
+          : r.status === "returned" && !r.userConfirmedAt
+            ? "반납 내용을 확인하고 수령 확인을 진행해주세요."
+            : r.withStringService && !r.stringingApplicationId
+              ? "교체서비스 신청을 이어갈 수 있어요."
+              : r.hasReturnShipping
+                ? "상세에서 대여 진행 상황을 확인해보세요."
+                : "필요 시 반납 운송장을 등록해주세요.";
 
         return (
           <Card
@@ -189,15 +199,14 @@ export default function RentalsList() {
               <div className="h-full w-full rounded-lg bg-card" />
             </div>
 
-            <CardContent className="relative space-y-4 p-4 md:p-6">
+            <CardContent className="relative space-y-4 p-4">
               <div className="flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
                   <h3 className="line-clamp-2 break-keep text-ui-body font-semibold text-foreground">
                     {rentalTitle}
                   </h3>
                   <p className="mt-1 text-ui-label tabular-nums text-muted-foreground">
-                    대여 기간 {r.days}일
-                    {rentalMetaDate ? ` · 최근 업데이트 ${formatDate(rentalMetaDate)}` : ""}
+                    대여 기간 {r.days}일{rentalMetaDate ? ` · ${formatDate(rentalMetaDate)}` : ""}
                   </p>
                 </div>
 
@@ -219,89 +228,47 @@ export default function RentalsList() {
                 </div>
               </div>
 
-              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-ui-label">
-                {r.stringingApplicationId ? (
-                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                    교체서비스 신청서 연결됨
-                  </Badge>
-                ) : null}
-                {!r.stringingApplicationId && r.withStringService ? (
-                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                    교체서비스 포함
-                  </Badge>
-                ) : null}
-                <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                  {r.hasReturnShipping ? "반납 운송장 등록됨" : "반납 운송장 미등록"}
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/60 bg-muted/30 p-3 md:grid-cols-2 lg:grid-cols-3">
-                <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+              <div className="grid grid-cols-1 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-sm:grid-cols-3">
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <div>
-                    <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
-                      대여 수수료
+                    <div className="text-ui-label text-muted-foreground">
+                      대여 기간
                     </div>
                     <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
-                      {fee.toLocaleString()}원
+                      {r.days}일
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
-                      보증금
+                    <div className="text-ui-label text-muted-foreground">
+                      반납 예정일
                     </div>
-                    <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
-                      {deposit.toLocaleString()}원
+                    <div className="whitespace-nowrap font-semibold tabular-nums text-foreground">
+                      {returnDueDate ? formatDate(returnDueDate) : "상세 확인"}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
-                      총 결제 예상
+                    <div className="text-ui-label text-muted-foreground">
+                      총 결제 금액
                     </div>
                     <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
                       {total.toLocaleString()}원
                     </div>
                   </div>
                 </div>
-
-                {stringPrice > 0 ? (
-                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
-                        스트링 상품
-                      </div>
-                      <div className="font-medium text-foreground">
-                        {stringPrice.toLocaleString()}원
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                {stringingFee > 0 ? (
-                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
-                        교체서비스 비용
-                      </div>
-                      <div className="font-medium text-foreground">
-                        {stringingFee.toLocaleString()}원
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
+                <p className="break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mr-auto">
+                  <span className="font-semibold text-foreground">다음 할 일</span> · {nextActionLabel}
+                </p>
                 <Button size="sm" variant="outline" asChild className="bg-transparent">
                   <Link
                     href={`/mypage?tab=orders&flowType=rental&flowId=${r.id}&from=orders`}
@@ -337,7 +304,7 @@ export default function RentalsList() {
                 {r.cancelStatus === "requested" ? (
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="outline"
                     onClick={() => handleWithdrawCancelRequest(r.id)}
                     className="gap-2"
                   >
