@@ -130,7 +130,7 @@ const CUSTOMER_EDITABLE_STATUSES = new Set(["submitted", "reviewing"]);
 function DetailSkeleton() {
   return (
     <div className="space-y-4 md:space-y-6">
-      <Card className="border-border bg-card">
+      <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
         <CardContent className="space-y-4 p-4 md:p-6">
           <Skeleton className="h-9 w-32" />
           <Skeleton className="h-8 w-56" />
@@ -138,7 +138,7 @@ function DetailSkeleton() {
         </CardContent>
       </Card>
       {Array.from({ length: 4 }).map((_, index) => (
-        <Card key={`academy-detail-skeleton-${index}`} className="border-border bg-card">
+        <Card key={`academy-detail-skeleton-${index}`} className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
           <CardHeader>
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-4 w-64" />
@@ -167,7 +167,7 @@ function InfoBox({
   className?: string;
 }) {
   return (
-    <div className={`min-w-0 rounded-xl border border-border bg-background p-3 ${className}`}>
+    <div className={`min-w-0 py-3 bp-sm:px-3 ${className}`}>
       <dt className="text-ui-label font-medium text-muted-foreground">{label}</dt>
       <dd
         className={`mt-1 min-w-0 break-words text-ui-body-sm font-medium text-foreground ${
@@ -185,16 +185,16 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
 
   if (!classSnapshot) {
     return (
-      <Card className="rounded-2xl border border-border bg-card shadow-sm">
-        <CardHeader>
+      <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+        <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
           <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
             <GraduationCap className="h-5 w-5 text-primary" />
             클래스 정보
           </CardTitle>
           <CardDescription>선택 클래스 없이 접수된 일반 아카데미 신청입니다.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm leading-relaxed text-muted-foreground">
+        <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+          <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-2.5 text-ui-body-sm leading-relaxed text-muted-foreground">
             담당자가 상담을 통해 적합한 수업을 안내해드립니다.
           </div>
         </CardContent>
@@ -203,16 +203,16 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   }
 
   return (
-    <Card className="rounded-2xl border border-border bg-card shadow-sm">
-      <CardHeader>
+    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+      <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
         <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
           <GraduationCap className="h-5 w-5 text-primary" />
           클래스 정보
         </CardTitle>
         <CardDescription>신청 당시 선택한 클래스 정보입니다.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="rounded-xl border border-border bg-muted/20 p-4">
+      <CardContent className="space-y-4 p-4 bp-sm:p-5 bp-lg:p-6">
+        <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5">
           <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0">
               <p className="break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground">
@@ -232,7 +232,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
           </div>
         </div>
 
-        <dl className="grid gap-3 bp-sm:grid-cols-2">
+        <dl className="grid divide-y divide-border/60 border-y border-border/60 bp-sm:grid-cols-2 bp-sm:divide-x bp-sm:divide-y-0">
           <InfoBox label="수업 유형" value={classSnapshot.lessonTypeLabel} />
           <InfoBox label="레벨" value={classSnapshot.levelLabel} />
           <InfoBox label="강사" value={classSnapshot.instructorName} />
@@ -246,7 +246,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
                 : "상담 후 안내"
             }
           />
-          <div className="rounded-xl border border-border bg-background p-3 bp-sm:col-span-2">
+          <div className="py-3 bp-sm:col-span-2 bp-sm:border-t bp-sm:border-border/60 bp-sm:px-3">
             <dt className="flex items-center gap-1 text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
               <WalletCards className="h-3.5 w-3.5" /> 기준 수강료
             </dt>
@@ -266,16 +266,16 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
 
 function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
-    <Card className="rounded-2xl border border-border bg-card shadow-sm">
-      <CardHeader>
+    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+      <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
         <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
           <UserRound className="h-5 w-5 text-primary" />
           신청자 정보
         </CardTitle>
         <CardDescription>신청자와 접수 정보를 확인하세요.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <dl className="grid gap-3 bp-sm:grid-cols-2">
+      <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+        <dl className="grid divide-y divide-border/60 border-y border-border/60 bp-sm:grid-cols-2 bp-sm:divide-x bp-sm:divide-y-0">
           <InfoBox label="신청자명" value={item.applicantName} />
           <InfoBox label="연락처" value={item.phone} />
           <InfoBox label="이메일" value={item.email} />
@@ -296,26 +296,24 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
 
 function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
-    <Card className="rounded-2xl border border-border bg-card shadow-sm">
-      <CardHeader>
+    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+      <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
         <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
           <MessageSquareText className="h-5 w-5 text-primary" />
           레슨 목표 및 요청사항
         </CardTitle>
         <CardDescription>신청 당시 남긴 목표와 요청사항입니다.</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent className="divide-y divide-border/60 border-y border-border/60 p-4 bp-sm:p-5 bp-lg:p-6">
         <InfoBox
           label="레슨 목표"
           value={item.lessonGoal || "미입력"}
           multiline
-          className="bg-muted/20"
         />
         <InfoBox
           label="요청사항"
           value={item.requestMemo || "미입력"}
           multiline
-          className="bg-muted/20"
         />
       </CardContent>
     </Card>
@@ -543,7 +541,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             {item.statusLabel}
           </Badge>
         </div>
-        <div className="rounded-xl border border-border bg-muted/20 p-4">
+        <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5">
           <div className="flex flex-wrap items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary" />
             <span className="text-ui-body-sm font-medium text-muted-foreground">현재 상태</span>
@@ -560,43 +558,43 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       <RequestInfoCard item={item} />
 
       {item.customerMessage ? (
-        <Card className="rounded-2xl border border-border bg-card shadow-sm">
-          <CardHeader>
+        <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+          <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
             <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
               <MessageSquareText className="h-5 w-5 text-primary" />
               관리자 안내
             </CardTitle>
             <CardDescription>도깨비테니스 담당자가 남긴 안내입니다.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap break-words rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm leading-relaxed text-foreground">
+          <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+            <p className="whitespace-pre-wrap break-words border-l-2 border-primary/40 bg-muted/20 px-3 py-2.5 text-ui-body-sm leading-relaxed text-foreground">
               {item.customerMessage}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <p className="rounded-xl border border-border bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm">
+        <p className="rounded-2xl border-0 bg-card p-4 text-ui-body-sm text-muted-foreground shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
           아직 등록된 관리자 안내가 없습니다.
         </p>
       )}
 
-      <Card className="rounded-2xl border border-border bg-card shadow-sm">
-        <CardHeader>
+      <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+        <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
           <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
             <WalletCards className="h-5 w-5 text-primary" />
             현장결제 안내
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="rounded-xl border border-border bg-muted/20 p-4 break-keep text-ui-body-sm leading-relaxed text-foreground">
+        <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+          <p className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5 break-keep text-ui-body-sm leading-relaxed text-foreground">
             아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이 확정되면 첫 방문 또는
             안내된 일정에 맞춰 현장에서 결제해 주세요.
           </p>
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl border border-border bg-card shadow-sm">
-        <CardHeader>
+      <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+        <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
           <CardTitle className="text-ui-card-title-lg">신청 관리</CardTitle>
           <CardDescription>
             {isCancelled
@@ -606,9 +604,9 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 : "상담이 진행된 신청은 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 bp-sm:p-5 bp-lg:p-6">
           {!isCancelled && canEditApplication ? (
-            <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
+            <div className="space-y-4 border-y border-border/60 py-4">
               {!isEditing ? (
                 <Button type="button" variant="outline" onClick={openEditForm}>
                   신청 정보 수정
@@ -646,13 +644,13 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               )}
             </div>
           ) : !isCancelled ? (
-            <p className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm text-muted-foreground">
+            <p className="border-l-2 border-muted-foreground/30 bg-muted/20 px-3 py-2.5 text-ui-body-sm text-muted-foreground">
               상담이 진행된 신청은 마이페이지에서 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요.
             </p>
           ) : null}
           {isCancelled ? (
             <div className="space-y-3">
-              <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-ui-body-sm text-destructive">
+              <div className="space-y-2 border-l-2 border-destructive/50 bg-destructive/10 px-3 py-2.5 text-ui-body-sm text-destructive">
                 <p className="font-medium">
                   이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서 새로 신청해
                   주세요.
@@ -775,7 +773,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                       </p>
                     </div>
                   ) : null}
-                  <p className="break-keep rounded-xl border border-border/60 bg-muted/30 p-3 text-ui-label leading-5 text-muted-foreground">
+                  <p className="break-keep border-l-2 border-muted-foreground/30 bg-muted/20 px-3 py-2 text-ui-label leading-5 text-muted-foreground">
                     취소 사유는 운영자가 신청 내역을 확인하고 안내를 개선하는 데 사용됩니다.
                   </p>
                 </div>
