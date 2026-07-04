@@ -839,7 +839,7 @@ export default function OperationsClient() {
   const key = `/api/admin/operations?${queryString}`;
   const navigationSummaryKey = "/api/admin/navigation-summary";
   const { cache, mutate: mutateGlobal } = useSWRConfig();
-  const cachedNavigationSummary = cache.get(navigationSummaryKey)?.data as
+  const navigationSummary = cache.get(navigationSummaryKey)?.data as
     | NavigationSummaryResponse
     | undefined;
 
@@ -852,18 +852,6 @@ export default function OperationsClient() {
       shouldRetryOnError: false,
       dedupingInterval: 30_000,
       keepPreviousData: true,
-    },
-  );
-  const { data: navigationSummary } = useSWR<NavigationSummaryResponse>(
-    navigationSummaryKey,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false,
-      dedupingInterval: 60_000,
-      fallbackData: cachedNavigationSummary,
-      revalidateIfStale: !cachedNavigationSummary,
     },
   );
   const { data: dailySummary, error: dailySummaryError } =
