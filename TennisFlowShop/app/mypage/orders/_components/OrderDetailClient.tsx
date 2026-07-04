@@ -44,7 +44,6 @@ import {
 } from "@/lib/fetchers/trackingSWRFetcher";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
-  getOrderDeliveryInfoTitle,
   getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
   orderShippingMethodLabel,
@@ -58,19 +57,14 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
-  Calendar,
   CheckCircle,
   ChevronDown,
   Clock,
   CreditCard,
-  Mail,
-  MapPin,
   Pencil,
-  Phone,
   ShoppingCart,
   Truck,
   Undo2,
-  User,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -793,6 +787,20 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     ["대기중", "결제완료"].includes(orderDetail.status) &&
     (!cancelStatus || cancelStatus === "none" || cancelStatus === "rejected");
 
+  const hasDeliveryRequest = Boolean(orderDetail.shippingInfo.deliveryRequest?.trim());
+  const hasAddress = Boolean(orderDetail.customer.address || orderDetail.customer.addressDetail);
+  const addressSummary = hasAddress ? "배송지 등록됨" : "배송지 미등록";
+  const shippingProgressLabel = shouldShowTrackingStatusNotice
+    ? trackingData?.success && trackingData.supported
+      ? trackingData.displayStatus
+      : displayOrderStatusLabel
+    : displayOrderStatusLabel || "상태 확인 중";
+  const outboundTrackingLabel = orderDetail.shippingInfo.invoice?.trackingNumber
+    ? "운송장 등록됨"
+    : isVisitPickup
+      ? "방문 수령 준비"
+      : "운송장 미등록";
+
   const handleWithdrawCancelRequest = async () => {
     if (!orderDetail?._id || isWithdrawingCancelRequest) return;
 
@@ -1439,14 +1447,14 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               </CardContent>
             </Card>
 
-            {/* 배송/연락처 정보 */}
+            {/* 배송/수령 요약 */}
             <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
               <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5 text-primary" />
-                  <span>배송/연락처 정보</span>
+                  <Truck className="h-5 w-5 text-primary" />
+                  <span>배송/수령 요약</span>
                 </CardTitle>
-                <CardDescription>주문자 연락처와 배송 정보를 확인할 수 있습니다.</CardDescription>
+                <CardDescription>수령 상태와 필요한 배송 정보를 요약했습니다.</CardDescription>
               </CardHeader>
               {editingCustomer ? (
                 <CardContent className="p-4 bp-lg:p-6">
@@ -1470,316 +1478,167 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   />
                 </CardContent>
               ) : (
-                <CardContent className="p-4 bp-lg:p-6">
-                  <div className="divide-y divide-border/60">
-                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                      <User className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-ui-label font-medium text-muted-foreground">이름</p>
-                        <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                          {orderDetail.customer.name ?? "이름 없음"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                      <Mail className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-ui-label font-medium text-muted-foreground">이메일</p>
-                        <p className="mt-1 break-all text-ui-body-sm font-semibold text-foreground">
-                          {orderDetail.customer.email ?? "이메일 없음"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                      <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-ui-label font-medium text-muted-foreground">전화번호</p>
-                        <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                          {formatKoreanPhone(orderDetail.customer.phone) || "전화번호 없음"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-ui-label font-medium text-muted-foreground">주소</p>
-                        <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                          {orderDetail.customer.address ?? "주소 없음"}
-                        </p>
-                        {orderDetail.customer.addressDetail && (
-                          <p className="text-ui-body-sm text-foreground/80 mt-1">
-                            {orderDetail.customer.addressDetail}
-                          </p>
-                        )}
-                        {orderDetail.customer.postalCode && (
-                          <p className="text-ui-label font-medium text-muted-foreground">
-                            우편번호: {orderDetail.customer.postalCode}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                      <Truck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <MypageInfoField
-                        className="flex-1"
-                        label={isVisitPickup ? "수령 방식" : "배송 방식"}
-                        value={shippingMethodLabel}
-                      />
-                    </div>
-
-                    {showDeliveryOnlyFields && (
-                      <div className="space-y-3 py-3 first:pt-0 last:pb-0">
-                        <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                          <div className="min-w-0">
-                            <p className="text-ui-label font-medium text-muted-foreground">
-                              배송 요청사항
-                            </p>
-                            <p className="mt-1 text-ui-label text-muted-foreground">
-                              결제 시 입력한 배송 관련 요청사항입니다.
-                            </p>
-                          </div>
-                          {isEditMode && canUserEdit && !editingRequest ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setEditingRequest(true)}
-                              className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto"
-                            >
-                              요청사항 수정
-                            </Button>
-                          ) : null}
-                        </div>
-                        {editingRequest ? (
-                          <RequestEditForm
-                            initialData={orderDetail.shippingInfo.deliveryRequest || ""}
-                            orderId={orderId}
-                            onSuccess={() => {
-                              mutateOrderDetail();
-                              mutateHistory();
-                              setEditingRequest(false);
-                            }}
-                            onCancel={() => setEditingRequest(false)}
-                          />
-                        ) : orderDetail.shippingInfo.deliveryRequest ? (
-                          <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3">
-                            <p className="whitespace-pre-wrap break-words text-foreground">
-                              {orderDetail.shippingInfo.deliveryRequest}
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-ui-body-sm italic text-muted-foreground">
-                            요청사항이 입력되지 않았습니다.
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              )}
-              {isEditMode && canUserEdit && !editingCustomer && (
-                <CardFooter className="pt-3 flex justify-center bg-muted/50">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditingCustomer(true)}
-                    className="hover:bg-primary/10 dark:hover:bg-primary/20 border-border"
-                  >
-                    고객정보 수정
-                  </Button>
-                </CardFooter>
-              )}
-            </Card>
-
-            {/* 완성 라켓 배송/수령 정보 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                <CardTitle className="flex items-center space-x-2">
-                  <Truck className="h-5 w-5 text-success" />
-                  <span>{getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 bp-lg:p-6">
-                <div className="divide-y divide-border/60">
-                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                    <Truck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">
-                        {isVisitPickup ? "수령 방법" : "배송 방법"}
-                      </p>
-                      <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                        {shippingMethodLabel}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">예상 수령일</p>
-                      <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                        {orderDetail.shippingInfo?.estimatedDate
+                <CardContent className="space-y-4 p-4 bp-lg:p-6">
+                  <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
+                    <MypageInfoField label="수령 방법" value={shippingMethodLabel} />
+                    <MypageInfoField label={isVisitPickup ? "수령 상태" : "배송/수령 상태"} value={shippingProgressLabel} />
+                    <MypageInfoField label="배송지" value={addressSummary} />
+                    <MypageInfoField label="요청사항" value={hasDeliveryRequest ? "있음" : "없음"} />
+                    <MypageInfoField label={isVisitPickup ? "출고 상태" : "운송장"} value={outboundTrackingLabel} />
+                    <MypageInfoField
+                      label="예상 수령일"
+                      value={
+                        orderDetail.shippingInfo?.estimatedDate
                           ? formatDate(orderDetail.shippingInfo.estimatedDate)
-                          : "미등록"}
-                      </p>
-                    </div>
+                          : "미등록"
+                      }
+                    />
                   </div>
 
-                  {!showDeliveryOnlyFields && (
-                    <p className="py-3 text-ui-label font-medium text-muted-foreground first:pt-0 last:pb-0">
-                      방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.
-                    </p>
-                  )}
+                  {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber ? (
+                    <details className="group rounded-xl border border-border/60 bg-muted/10">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                        <span>운송장·배송조회 상세</span>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                      </summary>
+                      <div className="space-y-3 border-t border-border/50 p-3">
+                        <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
+                          <MypageInfoField label="택배사" value={getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)} />
+                          <MypageInfoField label="완성 라켓 운송장 번호" value={orderDetail.shippingInfo.invoice.trackingNumber} valueClassName="break-all" />
+                        </div>
+                        {shouldShowTrackingSummarySkeleton && (
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-36" />
+                            <Skeleton className="h-8 w-24" />
+                          </div>
+                        )}
+                        {!isTrackingLoading && !trackingError && trackingData && (
+                          <div className="space-y-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
+                            {trackingData.success && trackingData.supported ? (
+                              <>
+                                <p className="text-foreground"><span className="text-muted-foreground">실시간 배송 상태:</span> {trackingData.displayStatus}</p>
+                                {trackingData.lastEvent?.locationName && <p className="text-foreground"><span className="text-muted-foreground">최근 위치:</span> {trackingData.lastEvent.locationName}</p>}
+                                {trackingData.lastEvent?.time && <p className="text-foreground"><span className="text-muted-foreground">최근 갱신:</span> {formatDateTime(trackingData.lastEvent.time)}</p>}
+                                {shouldShowTrackingStatusNotice && (
+                                  <div className="space-y-0.5 border-l-2 border-border bg-background/60 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
+                                    <p>실시간 배송 상태는 택배사 기준이며,</p>
+                                    <p>주문 상태와 다를 수 있습니다.</p>
+                                  </div>
+                                )}
+                                <Button size="sm" variant="outline" onClick={() => window.open(trackingData.linkUrl, "_blank", "noopener,noreferrer")}>배송조회</Button>
+                              </>
+                            ) : trackingData.success && !trackingData.supported ? (
+                              <p className="text-muted-foreground">{trackingData.message}</p>
+                            ) : (
+                              <p className="text-destructive">{getTrackingFailureMessage(trackingData)}</p>
+                            )}
+                          </div>
+                        )}
+                        {trackingError && <p className="text-ui-body-sm text-destructive">{getTrackingErrorMessage(trackingData, trackingError)}</p>}
+                      </div>
+                    </details>
+                  ) : null}
 
-                  {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
-                    <>
-                      <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-ui-label font-medium text-muted-foreground">택배사</p>
-                          <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                            {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
-                          </p>
-                        </div>
+                  <details className="group rounded-xl border border-border/60 bg-muted/10">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                      <span>배송/연락처 상세</span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="space-y-3 border-t border-border/50 p-3">
+                      <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
+                        <MypageInfoField label="이름" value={orderDetail.customer.name} fallback="이름 없음" />
+                        <MypageInfoField label="전화번호" value={formatKoreanPhone(orderDetail.customer.phone)} fallback="전화번호 없음" />
+                        <MypageInfoField label="이메일" value={orderDetail.customer.email} fallback="이메일 없음" valueClassName="break-all" />
+                        <MypageInfoField label="우편번호" value={orderDetail.customer.postalCode} />
+                        <MypageInfoField label="주소" value={orderDetail.customer.address} fallback="주소 없음" />
+                        <MypageInfoField label="상세 주소" value={orderDetail.customer.addressDetail} />
                       </div>
-                      <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-ui-label font-medium text-muted-foreground">
-                            완성 라켓 운송장 번호
-                          </p>
-                          <p className="mt-1 break-all text-ui-body-sm font-semibold text-foreground">
-                            {orderDetail.shippingInfo.invoice.trackingNumber}
-                          </p>
-                        </div>
-                      </div>
-                      {shouldShowTrackingSummarySkeleton && (
-                        <div className="space-y-2 py-3 first:pt-0 last:pb-0">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-4 w-36" />
-                          <Skeleton className="h-8 w-24" />
-                        </div>
-                      )}
-                      {!isTrackingLoading && !trackingError && trackingData && (
-                        <div className="space-y-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
-                          {trackingData.success && trackingData.supported ? (
-                            <>
-                              <p className="text-foreground">
-                                <span className="text-muted-foreground">실시간 배송 상태:</span>{" "}
-                                {trackingData.displayStatus}
-                              </p>
-                              {trackingData.lastEvent?.locationName && (
-                                <p className="text-foreground">
-                                  <span className="text-muted-foreground">최근 위치:</span>{" "}
-                                  {trackingData.lastEvent.locationName}
-                                </p>
-                              )}
-                              {trackingData.lastEvent?.time && (
-                                <p className="text-foreground">
-                                  <span className="text-muted-foreground">최근 갱신:</span>{" "}
-                                  {formatDateTime(trackingData.lastEvent.time)}
-                                </p>
-                              )}
-                              {shouldShowTrackingStatusNotice && (
-                                <div className="space-y-0.5 border-l-2 border-border bg-background/60 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
-                                  <p>실시간 배송 상태는 택배사 기준이며,</p>
-                                  <p>주문 상태와 다를 수 있습니다.</p>
-                                </div>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  window.open(trackingData.linkUrl, "_blank", "noopener,noreferrer")
-                                }
-                              >
-                                배송조회
-                              </Button>
-                            </>
-                          ) : trackingData.success && !trackingData.supported ? (
-                            <p className="text-muted-foreground">{trackingData.message}</p>
+
+                      {showDeliveryOnlyFields ? (
+                        <div className="space-y-3 border-t border-border/50 pt-3">
+                          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                            <div className="min-w-0">
+                              <p className="text-ui-label font-medium text-muted-foreground">배송 요청사항</p>
+                              <p className="mt-1 text-ui-label text-muted-foreground">결제 시 입력한 배송 관련 요청사항입니다.</p>
+                            </div>
+                            {isEditMode && canUserEdit && !editingRequest ? (
+                              <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto">요청사항 수정</Button>
+                            ) : null}
+                          </div>
+                          {editingRequest ? (
+                            <RequestEditForm initialData={orderDetail.shippingInfo.deliveryRequest || ""} orderId={orderId} onSuccess={() => { mutateOrderDetail(); mutateHistory(); setEditingRequest(false); }} onCancel={() => setEditingRequest(false)} />
+                          ) : orderDetail.shippingInfo.deliveryRequest ? (
+                            <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3"><p className="whitespace-pre-wrap break-words text-foreground">{orderDetail.shippingInfo.deliveryRequest}</p></div>
                           ) : (
-                            <p className="text-destructive">
-                              {getTrackingFailureMessage(trackingData)}
-                            </p>
+                            <p className="text-ui-body-sm italic text-muted-foreground">요청사항이 입력되지 않았습니다.</p>
                           )}
                         </div>
+                      ) : (
+                        <p className="text-ui-label font-medium text-muted-foreground">방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.</p>
                       )}
-                      {trackingError && (
-                        <p className="text-ui-body-sm text-destructive">
-                          {getTrackingErrorMessage(trackingData, trackingError)}
-                        </p>
-                      )}
-                    </>
-                  )}
+                    </div>
+                  </details>
 
                   {shouldShowInboundShippingBlock && !hasLinkedStringingApps && (
                     <div className="border-l-2 border-primary/50 bg-primary/5 px-3 py-3 dark:bg-primary/10">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="space-y-1">
-                          <p className="text-ui-body-sm font-semibold text-foreground">
-                            라켓 발송 정보
-                          </p>
-                          <p className="text-ui-label text-foreground/75">
-                            매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.
-                          </p>
+                          <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송 정보</p>
+                          <p className="text-ui-label text-foreground/75">매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.</p>
                         </div>
                         {hasSelfShipTracking ? (
-                          <Button
-                            asChild
-                            size="sm"
-                            variant="outline"
-                            className="h-8 w-full bp-sm:w-auto"
-                          >
-                            <Link href={inboundShippingHref ?? "#"}>라켓 발송 운송장 수정</Link>
-                          </Button>
+                          <Button asChild size="sm" variant="outline" className="h-8 w-full bp-sm:w-auto"><Link href={inboundShippingHref ?? "#"}>라켓 발송 운송장 수정</Link></Button>
                         ) : null}
                       </div>
-
                       <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">
-                        <p>
-                          <span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">택배사:</span>{" "}
-                          {selfShipCourierLabel}
-                        </p>
-                        <p className="min-w-0 break-all">
-                          <span className="text-muted-foreground">운송장 번호:</span>{" "}
-                          {selfShipTrackingNoLabel}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">발송일:</span>{" "}
-                          {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : "미등록"}
-                        </p>
+                        <p><span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}</p>
+                        <p><span className="text-muted-foreground">택배사:</span> {selfShipCourierLabel}</p>
+                        <p className="min-w-0 break-all"><span className="text-muted-foreground">운송장 번호:</span> {selfShipTrackingNoLabel}</p>
+                        <p><span className="text-muted-foreground">발송일:</span> {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : "미등록"}</p>
                       </div>
                     </div>
                   )}
-                </div>
-              </CardContent>
+                </CardContent>
+              )}
+              {isEditMode && canUserEdit && !editingCustomer && (
+                <CardFooter className="flex justify-center bg-muted/50 pt-3">
+                  <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20">고객정보 수정</Button>
+                </CardFooter>
+              )}
             </Card>
 
             {orderDetail.stringService ? (
               <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
                 <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                  <CardTitle>패키지 안내</CardTitle>
-                  <CardDescription>교체서비스 패키지 이용 현황입니다.</CardDescription>
+                  <CardTitle>패키지 사용 요약</CardTitle>
                 </CardHeader>
-                <CardContent className="divide-y divide-border/60 p-4 text-ui-body-sm bp-lg:p-5">
-                  <div className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                    <span className="text-muted-foreground">전체 횟수</span>
-                    <span className="font-medium text-foreground">{totalSlots}회</span>
+                <CardContent className="space-y-4 p-4 text-ui-body-sm bp-lg:p-5">
+                  <div className="grid grid-cols-3 gap-2 rounded-xl bg-muted/15 p-3 text-center">
+                    <div>
+                      <p className="text-ui-label text-muted-foreground">전체</p>
+                      <p className="font-semibold text-foreground">{totalSlots}회</p>
+                    </div>
+                    <div>
+                      <p className="text-ui-label text-muted-foreground">사용</p>
+                      <p className="font-semibold text-foreground">{usedSlots}회</p>
+                    </div>
+                    <div>
+                      <p className="text-ui-label text-muted-foreground">남은</p>
+                      <p className="font-semibold text-foreground">{remainingSlots}회</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                    <span className="text-muted-foreground">사용 횟수</span>
-                    <span className="font-medium text-foreground">{usedSlots}회</span>
-                  </div>
-                  <div className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                    <span className="text-muted-foreground">남은 횟수</span>
-                    <span className="font-medium text-foreground">{remainingSlots}회</span>
-                  </div>
+                  <details className="group rounded-xl border border-border/60 bg-muted/10">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                      <span>패키지 상세</span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="space-y-2 border-t border-border/50 p-3 text-muted-foreground">
+                      <p>교체서비스 패키지 사용 횟수와 남은 횟수입니다.</p>
+                      <p>추가 신청 가능 여부는 연결된 교체서비스 안내에서 확인해주세요.</p>
+                    </div>
+                  </details>
                 </CardContent>
               </Card>
             ) : null}
