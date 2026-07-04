@@ -19,11 +19,14 @@ const CUSTOMER_ORDER_STATUS_LABELS: Record<string, string> = {
   구매확정: "이용 완료",
   completed: "이용 완료",
   완료: "이용 완료",
+  cancel_requested: "취소 요청 확인 중",
   canceled: "취소 완료",
   cancelled: "취소 완료",
   취소: "취소 완료",
+  refunding: "환불 처리 중",
   refunded: "환불 완료",
   환불: "환불 완료",
+  returned: "반납 완료",
 };
 
 const CUSTOMER_APPLICATION_STATUS_LABELS: Record<string, string> = {
