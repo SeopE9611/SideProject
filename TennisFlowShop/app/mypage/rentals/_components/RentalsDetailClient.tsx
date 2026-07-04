@@ -669,7 +669,7 @@ export default function RentalsDetailClient({
         <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 xl:grid-cols-4">
           <div className="p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-ui-body-sm font-medium text-muted-foreground">라켓 정보</span>
             </div>
             <p className="line-clamp-2 min-w-0 break-keep text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
@@ -679,7 +679,7 @@ export default function RentalsDetailClient({
 
           <div className="p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-ui-body-sm font-medium text-muted-foreground">대여 기간</span>
             </div>
             <p className="break-words text-ui-card-title-lg font-semibold text-foreground">{data.days}일</p>
@@ -687,7 +687,7 @@ export default function RentalsDetailClient({
 
           <div className="p-3 bp-sm:p-4">
             <div className="mb-2 flex items-center space-x-2">
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-ui-body-sm font-medium text-muted-foreground">결제 금액</span>
             </div>
             <p className="break-keep text-ui-card-title-lg font-semibold tabular-nums text-foreground">
@@ -987,14 +987,14 @@ export default function RentalsDetailClient({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 bp-sm:p-5">
-            <div className="grid gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {/* 스트링 상품 금액: 있을 때만 표시(대여만 한 경우 UI가 지저분해지지 않도록) */}
               {stringPrice > 0 && (
-                <div className="flex items-center space-x-3 py-3">
-                  <Package className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                  <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="flex-1">
-                    <p className="text-ui-body-sm text-foreground/80">스트링 상품</p>
-                    <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
+                    <p className="text-ui-label font-medium text-muted-foreground">스트링 상품</p>
+                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
                       {stringPrice.toLocaleString()}원
                     </p>
                   </div>
@@ -1003,58 +1003,58 @@ export default function RentalsDetailClient({
 
               {/* 교체 서비스비(장착비): 있을 때만 표시 */}
               {stringingFee > 0 && (
-                <div className="flex items-center space-x-3 py-3">
-                  <Wrench className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                  <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="flex-1">
-                    <p className="text-ui-body-sm text-foreground/80">교체서비스 비용</p>
-                    <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
+                    <p className="text-ui-label font-medium text-muted-foreground">교체서비스 비용</p>
+                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
                       {stringingFee.toLocaleString()}원
                     </p>
                   </div>
                 </div>
               )}
-              <div className="flex items-center space-x-3 py-3">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                <Briefcase className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-ui-body-sm text-foreground/80">라켓</p>
-                  <p className="font-semibold text-foreground">
+                  <p className="text-ui-label font-medium text-muted-foreground">라켓</p>
+                  <p className="mt-1 break-words font-semibold text-foreground">
                     {racketBrandLabel(data.brand)} {data.model}
                   </p>
                 </div>
               </div>
 
               {withStringService && (
-                <div className="flex items-center space-x-3 py-3">
-                  <Wrench className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                  <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div>
-                    <p className="text-ui-body-sm text-foreground/80">장착 스트링</p>
-                    <p className="font-semibold text-foreground">{installedStringLabel}</p>
+                    <p className="text-ui-label font-medium text-muted-foreground">장착 스트링</p>
+                    <p className="mt-1 break-words font-semibold text-foreground">{installedStringLabel}</p>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center space-x-3 py-3">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-ui-body-sm text-foreground/80">대여 기간</p>
-                  <p className="font-semibold text-foreground">{data.days}일</p>
+                  <p className="text-ui-label font-medium text-muted-foreground">대여 기간</p>
+                  <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 py-3">
+              <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
                 <div className="flex-1">
-                  <p className="text-ui-body-sm text-foreground/80">상태</p>
+                  <p className="text-ui-label font-medium text-muted-foreground">상태</p>
                   <Badge variant={getStatusBadgeVariant(data.status)} className="mt-1">
                     {displayStatusLabel}
                   </Badge>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 py-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-ui-body-sm text-foreground/80">반납 예정일</p>
-                  <p className="font-semibold text-foreground">
+                  <p className="text-ui-label font-medium text-muted-foreground">반납 예정일</p>
+                  <p className="mt-1 break-words font-semibold text-foreground">
                     {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
                   </p>
                 </div>
@@ -1071,32 +1071,32 @@ export default function RentalsDetailClient({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 bp-sm:p-5">
-            <div className="grid gap-3">
-              <div className="flex items-center space-x-3 py-3">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="flex-1">
-                  <p className="text-ui-body-sm text-foreground/80">대여 수수료</p>
-                  <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
+                  <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
+                  <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
                     {fee.toLocaleString()}원
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 py-3">
-                <Package className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="flex-1">
-                  <p className="text-ui-body-sm text-foreground/80">보증금</p>
-                  <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
+                  <p className="text-ui-label font-medium text-muted-foreground">보증금</p>
+                  <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
                     {deposit.toLocaleString()}원
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 bg-primary/5 px-3 py-4">
-                <TrendingUp className="h-4 w-4 text-primary" />
+              <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
+                <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <div className="flex-1">
-                  <p className="text-ui-body-sm text-foreground/80">총 결제 금액</p>
-                  <p className="whitespace-nowrap text-ui-section-title font-semibold text-primary tabular-nums">
+                  <p className="text-ui-label font-medium text-muted-foreground">총 결제 금액</p>
+                  <p className="mt-1 break-words text-ui-section-title font-semibold text-primary tabular-nums">
                     {total.toLocaleString()}원
                   </p>
                 </div>
@@ -1114,7 +1114,7 @@ export default function RentalsDetailClient({
           </CardHeader>
           <CardContent className="space-y-0 p-4 bp-sm:p-5">
             <div className="rounded-xl bg-muted/15 p-3">
-              <p className="text-ui-body-sm text-foreground/80">수령 정보</p>
+              <p className="text-ui-label font-medium text-muted-foreground">수령 정보</p>
               <p className="text-ui-body-sm font-semibold text-foreground mt-1">
                 {isVisitPickup
                   ? outboundTrackingNo
@@ -1126,7 +1126,7 @@ export default function RentalsDetailClient({
               </p>
             </div>
             <div className="rounded-xl bg-muted/15 p-3">
-              <p className="text-ui-body-sm text-foreground/80">반납 정보</p>
+              <p className="text-ui-label font-medium text-muted-foreground">반납 정보</p>
               <p className="text-ui-body-sm font-semibold text-foreground mt-1">
                 {isVisitPickup
                   ? returnTrackingNo

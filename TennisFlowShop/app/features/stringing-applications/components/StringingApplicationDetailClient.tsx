@@ -3074,14 +3074,16 @@ export default function StringingApplicationDetailClient({
                     />
                   ) : (
                     <div className="space-y-3">
-                      <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <AdminCompactField
                           label="총 결제 금액"
+                          className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
                           value={`${data.totalPrice.toLocaleString()}원`}
                           valueClassName="font-semibold text-primary"
                         />
                         <AdminCompactField
                           label="결제 상태"
+                          className="rounded-xl bg-muted/15 p-4"
                           value={(() => {
                             const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
                             return (
@@ -3091,9 +3093,9 @@ export default function StringingApplicationDetailClient({
                             );
                           })()}
                         />
-                        <AdminCompactField label="결제 방식" value={paymentMethodRaw} />
+                        <AdminCompactField label="결제 방식" value={paymentMethodRaw} className="rounded-xl bg-muted/15 p-4" />
                       </div>
-                      <details className="group border-y border-border/60 bg-background/60 py-1">
+                      <details className="group rounded-xl bg-muted/15 py-1">
                         <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                           입금/PG 상세 정보
                           <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
@@ -3329,20 +3331,23 @@ export default function StringingApplicationDetailClient({
                       onCancel={() => setEditingCustomer(false)}
                     />
                   ) : (
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <AdminCompactField
                         label="이름"
+                        className="rounded-xl bg-muted/15 p-4"
                         value={data.customer.name}
                         emptyValue="이름 미등록"
                       />
                       <AdminCompactField
                         label="이메일"
+                        className="rounded-xl bg-muted/15 p-4"
                         value={data.customer.email}
                         emptyValue="이메일 미등록"
                         valueClassName="break-all"
                       />
                       <AdminCompactField
                         label="전화번호"
+                        className="rounded-xl bg-muted/15 p-4"
                         value={data.customer?.phone}
                         emptyValue="전화번호 미등록"
                       />
@@ -3366,7 +3371,7 @@ export default function StringingApplicationDetailClient({
                           ) : null
                         }
                         emptyValue="주소 미등록"
-                        className="sm:col-span-2"
+                        className="rounded-xl bg-muted/15 p-4 sm:col-span-2"
                       />
                     </div>
                   )}
