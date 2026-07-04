@@ -1,6 +1,8 @@
 "use client";
 
 import ApplicationStatusBadge from "@/app/features/stringing-applications/components/ApplicationStatusBadge";
+import { getCustomerApplicationStatusLabel } from "@/app/mypage/_lib/flow-display";
+import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
 import { ApplicationStatusSelect } from "@/app/features/stringing-applications/components/ApplicationStatusSelect";
 import CustomerEditForm from "@/app/features/stringing-applications/components/CustomerEditForm";
 import PaymentEditForm from "@/app/features/stringing-applications/components/PaymentEditForm";
@@ -1276,6 +1278,18 @@ export default function StringingApplicationDetailClient({
       : hasTracking
         ? "운송장 등록 완료"
         : "운송장 등록 필요";
+  const customerStatusLabel = getCustomerApplicationStatusLabel(data.status);
+  const userNextActionLabel =
+    userNextTodo?.label ??
+    (isCancelled
+      ? "취소 완료"
+      : isCancelRequested
+        ? "취소 요청 확인 대기"
+        : customerStatusLabel.includes("작업")
+          ? "스트링 작업 진행 상황 확인"
+          : customerStatusLabel.includes("완료")
+            ? "완성 라켓 배송/수령 확인"
+            : "매장 확인 대기");
   const userStatusDescription =
     userNextTodo?.description ??
     (isCancelled
@@ -1362,15 +1376,23 @@ export default function StringingApplicationDetailClient({
                     <ApplicationStatusBadge status={data.status} />
                     <span className="text-ui-label text-muted-foreground">현재 상태</span>
                   </div>
-                  <p className="break-keep text-ui-body font-semibold text-foreground">
-                    {userNextTodo?.label ??
-                      (isUserConfirmed
-                        ? "교체서비스 확정이 완료되었습니다."
-                        : "신청 진행 상태를 확인하고 있습니다.")}
-                  </p>
-                  <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground">
-                    {userStatusDescription}
-                  </p>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-ui-label font-medium text-muted-foreground">현재 상태</p>
+                      <p className="break-keep text-ui-body font-semibold text-foreground">
+                        {customerStatusLabel}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-ui-label font-medium text-muted-foreground">다음 할 일</p>
+                      <p className="break-keep text-ui-body font-semibold text-foreground">
+                        {isUserConfirmed ? "이용 완료" : userNextActionLabel}
+                      </p>
+                      <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground">
+                        {userStatusDescription}
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 {userNextTodo?.ctaLabel ? (
                   <Button
@@ -1402,24 +1424,12 @@ export default function StringingApplicationDetailClient({
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-ui-body-sm font-medium text-foreground">신청 요약</span>
                 </div>
-                <dl className="space-y-2 text-ui-body-sm">
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">신청일</dt>
-                    <dd className="font-medium text-foreground">
-                      {new Date(data.requestedAt).toLocaleDateString()}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">신청 유형</dt>
-                    <dd className="text-right font-medium text-foreground">
-                      {applicationContext.label}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">총 작업 수</dt>
-                    <dd className="font-medium text-foreground">라켓 {racketCount}자루</dd>
-                  </div>
-                </dl>
+                <div className="grid gap-3 text-ui-body-sm bp-sm:grid-cols-2 bp-md:grid-cols-1">
+                  <MypageInfoField label="신청번호" value={`#${toShortApplicationId(data.id)}`} />
+                  <MypageInfoField label="신청일" value={new Date(data.requestedAt).toLocaleDateString()} />
+                  <MypageInfoField label="신청 유형" value={applicationContext.label} />
+                  <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
+                </div>
               </SummaryCard>
               <SummaryCard className="border-0 bg-muted/20 shadow-none ring-1 ring-border/40" contentClassName="p-4">
                 <div className="mb-3 flex items-center gap-2">
@@ -2308,7 +2318,7 @@ export default function StringingApplicationDetailClient({
                   <CardTitle
                     className={cn("text-ui-card-title-lg font-semibold", !isAdmin && "mt-2")}
                   >
-                    {isAdmin ? "신청 스트링 정보" : "라켓·스트링별 작업 정보"}
+                    {isAdmin ? "신청 스트링 정보" : "라켓/스트링 정보"}
                   </CardTitle>
                 </CardHeader>
 
@@ -2680,11 +2690,10 @@ export default function StringingApplicationDetailClient({
                   <CardHeader className={detailCardHeaderClass}>
                     <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
                       <Truck className="h-5 w-5 text-primary" />
-                      라켓 발송·완성 라켓 배송 정보
+                      라켓 발송 정보
                     </CardTitle>
                     <CardDescription>
-                      매장으로 보내는 라켓 발송과 작업 완료 후 완성 라켓 배송 정보를 구분해
-                      확인하세요.
+                      매장으로 보내는 라켓 발송 정보와 운송장 등록 상태를 확인하세요.
                     </CardDescription>
                   </CardHeader>
                   <details className="group bp-md:block">
@@ -2866,7 +2875,7 @@ export default function StringingApplicationDetailClient({
                     <div className="flex flex-col gap-3 border-l-2 border-primary/30 bg-primary/5 px-3 py-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4">
                       <div className="min-w-0">
                         <p className="text-ui-body-sm font-medium text-foreground">
-                          현재 {data?.status ? data.status : "상태 확인 중"}
+                          현재 {customerStatusLabel}
                         </p>
                         <p className="mt-1 text-ui-label text-foreground/75">
                           자세한 접수·배송 흐름은 필요할 때 펼쳐 확인하세요.
@@ -2972,7 +2981,7 @@ export default function StringingApplicationDetailClient({
                         <div className="flex-1">
                           <p className="text-ui-body-sm font-medium text-foreground">현재 상태</p>
                           <p className="text-ui-body-sm text-foreground/80">
-                            {data?.status ? `현재 상태: ${data.status}` : "상태 정보가 없습니다."}
+                            {`현재 상태: ${customerStatusLabel}`}
                           </p>
                           {data?.updatedAt && (
                             <p className="mt-1 text-ui-label text-foreground/75">
@@ -3304,7 +3313,7 @@ export default function StringingApplicationDetailClient({
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <User className="h-5 w-5 text-primary" />
-                      <span>{isAdmin ? "고객 정보" : "신청자 정보"}</span>
+                      <span>{isAdmin ? "고객 정보" : "신청자/연락처 정보"}</span>
                     </div>
                     {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                   </CardTitle>
