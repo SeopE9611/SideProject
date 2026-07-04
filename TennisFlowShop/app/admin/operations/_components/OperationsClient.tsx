@@ -64,6 +64,7 @@ import {
   getPaymentStatusBadgeSpec,
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -838,7 +839,7 @@ export default function OperationsClient() {
   });
   const key = `/api/admin/operations?${queryString}`;
   const navigationSummaryKey = "/api/admin/navigation-summary";
-  const { cache, mutate: mutateGlobal } = useSWRConfig();
+  const { cache } = useSWRConfig();
   const navigationSummary = cache.get(navigationSummaryKey)?.data as
     | NavigationSummaryResponse
     | undefined;
@@ -949,16 +950,17 @@ export default function OperationsClient() {
     if (syncingNiceOrderId) return;
     setSyncingNiceOrderId(orderId);
     try {
-      const res = await fetch(`/api/payments/nice/sync/${orderId}`, { method: "POST" });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json?.success === false) {
+      const json = await adminMutator<{ success?: boolean; error?: string }>(
+        `/api/admin/payments/nice/sync/${orderId}`,
+        { method: "POST" },
+      );
+      if (json?.success === false) {
         throw new Error(json?.error || "PG 상태 확인에 실패했습니다.");
       }
       await mutate();
-      await mutateGlobal((cacheKey) => typeof cacheKey === "string" && cacheKey.startsWith("/api/orders"));
       showSuccessToast("PG 결제 상태를 확인했습니다.");
     } catch (error: any) {
-      showErrorToast(`PG 상태 확인 실패: ${error?.message || "알 수 없는 오류"}`);
+      showErrorToast(`PG 상태 확인 실패: ${getAdminErrorMessage(error)}`);
     } finally {
       setSyncingNiceOrderId(null);
     }
