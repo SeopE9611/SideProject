@@ -1303,7 +1303,7 @@ export default function StringingApplicationDetailClient({
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
     : "grid gap-5 bp-lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)] bp-lg:items-start";
-  const detailColumnClass = isAdmin ? "contents" : "space-y-5";
+  const detailColumnClass = isAdmin ? "contents" : "contents bp-lg:block bp-lg:space-y-5";
   const detailCardClass = isAdmin
     ? "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
     : "overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50";
@@ -2302,6 +2302,7 @@ export default function StringingApplicationDetailClient({
                 className={cn(
                   detailCardClass,
                   isAdmin && "xl:col-span-12",
+                  !isAdmin && "order-1",
                 )}
               >
                 <CardHeader
@@ -2686,7 +2687,7 @@ export default function StringingApplicationDetailClient({
               </Card>
 
               {!isAdmin && (
-                <Card className={detailCardClass}>
+                <Card className={cn(detailCardClass, "order-2")}>
                   <CardHeader className={detailCardHeaderClass}>
                     <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
                       <Truck className="h-5 w-5 text-primary" />
@@ -2811,6 +2812,7 @@ export default function StringingApplicationDetailClient({
                 className={cn(
                   detailCardClass,
                   isAdmin && "xl:col-span-12",
+                  !isAdmin && "order-5",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
@@ -2861,7 +2863,7 @@ export default function StringingApplicationDetailClient({
 
               {/* 신청 타임라인: 마이페이지 전용 */}
               {!isAdmin && (
-                <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+                <Card className="order-6 rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
                   <CardHeader className="rounded-t-2xl border-b border-border bg-muted/20 pb-3">
                     <CardTitle className="flex items-center space-x-2">
                       <Clock className="h-5 w-5 text-primary" />
@@ -2996,7 +2998,7 @@ export default function StringingApplicationDetailClient({
                 </Card>
               )}
               {applicationId && !isAdmin && (
-                <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+                <Card className="order-7 rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
                   <CardHeader className="rounded-t-2xl border-b border-border bg-muted/20 pb-3">
                     <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                       <div>
@@ -3041,6 +3043,7 @@ export default function StringingApplicationDetailClient({
                 className={cn(
                   detailCardClass,
                   isAdmin && "xl:col-span-6",
+                  !isAdmin && "order-3",
                 )}
               >
                 <CardHeader
@@ -3307,6 +3310,7 @@ export default function StringingApplicationDetailClient({
                 className={cn(
                   detailCardClass,
                   isAdmin && "xl:col-span-6",
+                  !isAdmin && "order-4",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
