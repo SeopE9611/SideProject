@@ -28,7 +28,7 @@ import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero, SummaryCard } from "@/components/public";
+import { PublicPageHero } from "@/components/public";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -1353,35 +1353,29 @@ export default function StringingApplicationDetailClient({
             </>
           }
         >
-          <div className="flex w-full flex-col gap-5 border-t border-border/70 bg-background/60 pt-4 bp-sm:pt-5">
+          <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
             <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] bp-lg:items-stretch">
-              <div className="flex min-w-0 items-start gap-4">
-                <div className="shrink-0 rounded-xl bg-primary/10 p-3 ring-1 ring-primary/10">
-                  <Target className="h-8 w-8 text-primary" />
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10">
+                  <Target className="h-6 w-6 text-primary" />
                 </div>
-                <div className="min-w-0 space-y-1">
-                  <p className="break-keep text-ui-body-sm font-medium text-foreground">
-                    {applicationContext.label}
-                  </p>
-                  <p className="break-all text-ui-body-sm text-muted-foreground" title={data.id}>
-                    신청번호: #{toShortApplicationId(data.id)}
-                  </p>
-                  <p className="text-ui-label text-muted-foreground">
-                    신청일 {new Date(data.requestedAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 border-l-2 border-primary/30 bg-primary/5 px-3 py-3 bp-sm:px-4">
-                <div className="min-w-0">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                <div className="min-w-0 space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
                     <ApplicationStatusBadge status={data.status} />
                     <p className="break-keep text-ui-body font-semibold text-foreground">
                       {customerStatusLabel}
                     </p>
                   </div>
+                  <p className="break-all text-ui-body-sm text-muted-foreground" title={data.id}>
+                    신청번호: #{toShortApplicationId(data.id)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4">
+                <div className="min-w-0">
                   <div className="space-y-2">
                     <div>
-                      <p className="text-ui-label font-medium text-muted-foreground">다음 할 일</p>
+                      <p className="text-ui-label font-medium text-primary">다음 할 일</p>
                       <p className="break-keep text-ui-body font-semibold text-foreground">
                         {isUserConfirmed ? "이용 완료" : userNextActionLabel}
                       </p>
@@ -1396,7 +1390,7 @@ export default function StringingApplicationDetailClient({
                     asChild={Boolean(userNextTodo.ctaHref)}
                     onClick={userNextTodo.onCtaClick}
                     disabled={isConfirmSubmitting}
-                    className="w-full shrink-0"
+                    className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
                   >
                     {userNextTodo.ctaHref ? (
                       <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
@@ -1415,50 +1409,14 @@ export default function StringingApplicationDetailClient({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-3">
-              <SummaryCard className="border-0 bg-muted/20 shadow-none ring-1 ring-border/40" contentClassName="p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-foreground">작업 요약</span>
-                </div>
-                <div className="grid gap-3 text-ui-body-sm bp-sm:grid-cols-2 bp-md:grid-cols-1">
-                  <MypageInfoField label="신청 유형" value={applicationContext.label} />
-                  <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
-                </div>
-              </SummaryCard>
-              <SummaryCard className="border-0 bg-muted/20 shadow-none ring-1 ring-border/40" contentClassName="p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-foreground">비용 요약</span>
-                </div>
-                <p className="text-ui-card-title-lg font-semibold tabular-nums text-foreground">
-                  {data.totalPrice.toLocaleString()}원
-                </p>
-                <p className="mt-2 text-ui-body-sm text-muted-foreground">
-                  결제 상태: {paymentHeaderBadgeLabel}
-                </p>
-              </SummaryCard>
-              <SummaryCard
-                className="border-0 bg-primary/5 shadow-none ring-1 ring-primary/15"
-                contentClassName="p-4"
-              >
-                <div className="mb-3 flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-primary" />
-                  <span className="text-ui-body-sm font-medium text-foreground">
-                    라켓 발송 상태
-                  </span>
-                </div>
-                <p className="break-keep text-ui-card-title-lg font-semibold text-foreground">
-                  {inboundStatusLabel}
-                </p>
-                <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
-                  {hasTracking
-                    ? "등록한 라켓 발송 운송장 기준으로 매장 입고를 확인합니다."
-                    : isVisit
-                      ? "예약한 일정에 맞춰 매장에 방문해 주세요."
-                      : "필요 시 상단 CTA에서 운송장을 등록해 주세요."}
-                </p>
-              </SummaryCard>
+            <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-2 bp-sm:p-4 bp-lg:grid-cols-4">
+              <MypageInfoField label="신청 유형" value={applicationContext.label} />
+              <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
+              <MypageInfoField
+                label={isVisit ? "희망 방문일" : "라켓 발송"}
+                value={isVisit ? visitTimeLabel : inboundStatusLabel}
+              />
+              <MypageInfoField label="연결 정보" value={applicationContext.payment} />
             </div>
           </div>
         </PublicPageHero>
