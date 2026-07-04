@@ -1212,45 +1212,58 @@ export async function handleAdminOperationsGet(
   const dbMatchedRentalIds = new Set(rawRentals.map((r) => String(r?._id)));
 
   // 패키지 구매는 주문/신청서/대여 linked-flow와 분리된 단독 운영 항목으로 조회한다.
-  const packagePurchaseFilter = createPackagePaymentCheckFilter();
-  const packageObjectIdCandidates = idCandidates.filter(
-    (id): id is ObjectId => id instanceof ObjectId,
-  );
-  const packageSearchOr: Filter<Document>[] = [
-    { "userSnapshot.name": qRegex },
-    { "userSnapshot.email": qRegex },
-    { "serviceInfo.name": qRegex },
-    { "serviceInfo.email": qRegex },
-    { "shippingInfo.name": qRegex },
-    { "packageInfo.title": qRegex },
-  ];
-  if (packageObjectIdCandidates.length > 0) {
-    packageSearchOr.push({ _id: { $in: packageObjectIdCandidates } });
-  }
-  const packagePurchaseQuery: Filter<Document> = qRegex
-    ? {
-        $and: [packagePurchaseFilter, { $or: packageSearchOr }],
+  const { packagePurchaseQuery, packagePurchaseProjection } = await measure(
+    "operations.fetchPackagePurchases.buildFilter",
+    () => {
+      const packagePurchaseFilter = createPackagePaymentCheckFilter();
+      const packageObjectIdCandidates = idCandidates.filter(
+        (id): id is ObjectId => id instanceof ObjectId,
+      );
+      const packageSearchOr: Filter<Document>[] = [
+        { "userSnapshot.name": qRegex },
+        { "userSnapshot.email": qRegex },
+        { "serviceInfo.name": qRegex },
+        { "serviceInfo.email": qRegex },
+        { "shippingInfo.name": qRegex },
+        { "packageInfo.title": qRegex },
+      ];
+      if (packageObjectIdCandidates.length > 0) {
+        packageSearchOr.push({ _id: { $in: packageObjectIdCandidates } });
       }
-    : packagePurchaseFilter;
-  const rawPackagePurchases = await measure("operations.fetchPackagePurchases", () =>
-    db
-      .collection("packageOrders")
-      .find(packagePurchaseQuery)
-      .project({
-        _id: 1,
-        createdAt: 1,
-        status: 1,
-        paymentStatus: 1,
-        totalPrice: 1,
-        userSnapshot: 1,
-        serviceInfo: 1,
-        shippingInfo: 1,
-        packageInfo: 1,
-      })
-      .sort({ createdAt: -1 })
-      .limit(fetchLimit)
-      .toArray(),
+      const packagePurchaseQuery: Filter<Document> = qRegex
+        ? {
+            $and: [packagePurchaseFilter, { $or: packageSearchOr }],
+          }
+        : packagePurchaseFilter;
+      return {
+        packagePurchaseQuery,
+        packagePurchaseProjection: {
+          _id: 1,
+          createdAt: 1,
+          status: 1,
+          paymentStatus: 1,
+          totalPrice: 1,
+          userSnapshot: 1,
+          serviceInfo: 1,
+          shippingInfo: 1,
+          packageInfo: 1,
+        },
+      };
+    },
   );
+  const rawPackagePurchases = await measure("operations.fetchPackagePurchases", async () => {
+    const packagePurchaseCursor = await measure("operations.fetchPackagePurchases.find", () =>
+      db
+        .collection("packageOrders")
+        .find(packagePurchaseQuery)
+        .project(packagePurchaseProjection)
+        .sort({ createdAt: -1 })
+        .limit(fetchLimit),
+    );
+    return measure("operations.fetchPackagePurchases.toArray", () =>
+      packagePurchaseCursor.toArray(),
+    );
+  });
   const dbMatchedPackagePurchaseIds = new Set(
     rawPackagePurchases.map((purchase) => String(purchase?._id)),
   );
@@ -1970,44 +1983,48 @@ export async function handleAdminOperationsGet(
     };
   });
 
-  const packagePurchaseItems: OpItem[] = rawPackagePurchases.map((purchase) => {
-    const id = String(purchase._id);
-    const packageInfo = asDoc(purchase.packageInfo);
-    const sessions = Number(packageInfo?.sessions ?? 0);
-    const packageTitle =
-      getString(packageInfo?.title) ?? (sessions > 0 ? `${sessions}회권` : "패키지");
-    const statusLabel = getString(purchase.status) ?? "주문접수";
-    const paymentLabel = getString(purchase.paymentStatus) ?? "결제대기";
-    const serviceInfo = asDoc(purchase.serviceInfo);
-    const snapshotCustomer = pickCustomerFromDoc(purchase);
-    const customer =
-      snapshotCustomer.name || snapshotCustomer.email
-        ? snapshotCustomer
-        : {
-            name: getString(serviceInfo?.name) ?? "",
-            email: getString(serviceInfo?.email) ?? "",
-          };
+  const packagePurchaseItems: OpItem[] = await measure(
+    "operations.fetchPackagePurchases.mapItems",
+    () =>
+      rawPackagePurchases.map((purchase) => {
+        const id = String(purchase._id);
+        const packageInfo = asDoc(purchase.packageInfo);
+        const sessions = Number(packageInfo?.sessions ?? 0);
+        const packageTitle =
+          getString(packageInfo?.title) ?? (sessions > 0 ? `${sessions}회권` : "패키지");
+        const statusLabel = getString(purchase.status) ?? "주문접수";
+        const paymentLabel = getString(purchase.paymentStatus) ?? "결제대기";
+        const serviceInfo = asDoc(purchase.serviceInfo);
+        const snapshotCustomer = pickCustomerFromDoc(purchase);
+        const customer =
+          snapshotCustomer.name || snapshotCustomer.email
+            ? snapshotCustomer
+            : {
+                name: getString(serviceInfo?.name) ?? "",
+                email: getString(serviceInfo?.email) ?? "",
+              };
 
-    return {
-      id,
-      kind: "package_purchase",
-      createdAt: toISO(purchase.createdAt),
-      customer,
-      title: sessions > 0 ? `${packageTitle} · ${sessions}회` : packageTitle,
-      statusLabel,
-      paymentLabel,
-      amount: Number(purchase.totalPrice ?? 0),
-      flow: 8,
-      flowLabel: "패키지 구매",
-      settlementAnchor: "package_purchase",
-      settlementLabel: "패키지 구매",
-      href: `/admin/packages/${id}`,
-      related: null,
-      isIntegrated: false,
-      pendingReasons: ["새 패키지 구매가 접수되었습니다."],
-      nextAction: "패키지 구매를 확인하고 결제 상태와 이용권 활성화 상태를 확인하세요.",
-    };
-  });
+        return {
+          id,
+          kind: "package_purchase",
+          createdAt: toISO(purchase.createdAt),
+          customer,
+          title: sessions > 0 ? `${packageTitle} · ${sessions}회` : packageTitle,
+          statusLabel,
+          paymentLabel,
+          amount: Number(purchase.totalPrice ?? 0),
+          flow: 8,
+          flowLabel: "패키지 구매",
+          settlementAnchor: "package_purchase",
+          settlementLabel: "패키지 구매",
+          href: `/admin/packages/${id}`,
+          related: null,
+          isIntegrated: false,
+          pendingReasons: ["새 패키지 구매가 접수되었습니다."],
+          nextAction: "패키지 구매를 확인하고 결제 상태와 이용권 활성화 상태를 확인하세요.",
+        };
+      }),
+  );
 
   // 5) 병합 → 최신순 정렬 → kind/q 필터
   let merged: OpItem[] = [...orderItems, ...appItems, ...rentalItems, ...packagePurchaseItems].sort(
