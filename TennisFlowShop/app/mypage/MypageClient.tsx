@@ -240,6 +240,13 @@ export default function MypageClient({ user }: Props) {
     sectionHeader: "border-b border-border/60 bg-secondary/30 px-4 py-3 bp-sm:px-5 bp-sm:py-4 bp-lg:px-6",
     iconSurface: "rounded-xl bg-primary/10 p-2 ring-1 ring-primary/10",
   };
+  const ordersPanelClass = isOrdersDetailView
+    ? "border-0 bg-transparent shadow-none ring-0"
+    : pageTone.shellCard;
+  const ordersHeaderClass = isOrdersDetailView
+    ? "mb-3 rounded-2xl border-0 bg-card px-4 py-3 shadow-sm ring-1 ring-border/50 bp-sm:mb-4 bp-sm:px-5 bp-sm:py-4"
+    : pageTone.sectionHeader;
+  const ordersContentClass = isOrdersDetailView ? "p-0" : "p-3 bp-sm:p-5";
   const todoCount = summary?.todoCount ?? 0;
   const hasTodoItems = !summaryLoading && todoCount > 0;
   const activitySummaryItems = [
@@ -451,8 +458,8 @@ export default function MypageClient({ user }: Props) {
 
               {/* 거래 내역 탭 */}
               <TabsContent value="orders" className="mt-0">
-                <Card className={pageTone.shellCard}>
-                  <CardHeader className={pageTone.sectionHeader}>
+                <Card className={ordersPanelClass}>
+                  <CardHeader className={ordersHeaderClass}>
                     <div className="flex min-w-0 items-center justify-between gap-3">
                       <div className="min-w-0">
                         <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
@@ -464,7 +471,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5">
+                  <CardContent className={ordersContentClass}>
                     {isOrdersDetailView ? (
                       <OrdersScopeTabs
                         activeScope={activeOrdersScope}
