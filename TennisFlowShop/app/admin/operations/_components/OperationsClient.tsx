@@ -849,6 +849,8 @@ export default function OperationsClient() {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      dedupingInterval: 30_000,
       keepPreviousData: true,
     },
   );
@@ -857,8 +859,9 @@ export default function OperationsClient() {
     authenticatedSWRFetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
       shouldRetryOnError: false,
-      dedupingInterval: 30_000,
+      dedupingInterval: 60_000,
       fallbackData: cachedNavigationSummary,
       revalidateIfStale: !cachedNavigationSummary,
     },
@@ -869,8 +872,9 @@ export default function OperationsClient() {
       authenticatedSWRFetcher,
       {
         revalidateOnFocus: false,
+        revalidateOnReconnect: false,
         shouldRetryOnError: false,
-        dedupingInterval: 30_000,
+        dedupingInterval: 60_000,
       },
     );
   const totalGroups = data?.pagination?.totalGroups;
