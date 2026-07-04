@@ -2,10 +2,18 @@
 
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
+import MypageDetailCard from "@/app/mypage/_components/MypageDetailCard";
+import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
+import {
+  getCustomerApplicationStatusLabel,
+  getCustomerNextActionCopy,
+  getCustomerOrderStatusLabel,
+  getCustomerPaymentStatusLabel,
+} from "@/app/mypage/_lib/flow-display";
 import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero, SummaryCard } from "@/components/public";
+import { PublicPageHero } from "@/components/public";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
@@ -767,6 +775,14 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               ctaHref: `/reviews/write?productId=${firstUnreviewed?.id}&orderId=${orderDetail?._id}`,
             }
           : null;
+  const customerStatusLabel = getCustomerOrderStatusLabel(displayOrderStatusLabel);
+  const nextActionCopy = getCustomerNextActionCopy({
+    hasTodo: Boolean(nextTodo),
+    todoLabel: nextTodo?.label,
+    todoDescription: nextTodo?.description,
+    isCompleted,
+    isCanceled: isOrderCanceled,
+  });
 
   // 상세 헤더에서 "주문 취소 요청" 버튼을 보여줄 수 있는 상태인지 판단
   // - 대기중 / 결제완료 상태에서만 가능
@@ -904,43 +920,37 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         }
       >
         <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_auto] bp-lg:items-center">
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)] bp-lg:items-stretch">
             <div className="flex min-w-0 items-start gap-4">
               <div className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/10">
                 <ShoppingCart className="h-8 w-8 text-primary" />
               </div>
               <div className="min-w-0 space-y-1">
-                <p className="break-keep text-ui-body-sm font-medium text-foreground">
-                  {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
-                    ? "스트링 구매 + 교체서비스"
-                    : "상품 주문"}
-                </p>
-                <p className="break-all text-ui-body-sm text-muted-foreground" title={orderId}>
-                  주문번호: #{orderId.slice(-6).toUpperCase()}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-2 bp-sm:flex-row bp-sm:items-center bp-lg:min-w-[360px] bp-lg:flex-col bp-lg:items-stretch">
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex flex-wrap items-center gap-2">
+                <p className="text-ui-label font-medium text-muted-foreground">현재 상태</p>
+                <div className="flex flex-wrap items-center gap-2">
                   <OrderStatusBadge
                     orderId={orderId}
                     initialStatus={orderDetail.status}
                     shippingMethod={orderDetail.shippingInfo}
                   />
-                  <span className="text-ui-label text-muted-foreground">현재 상태</span>
-                </div>
-                <p className="break-keep text-ui-body-sm font-medium text-foreground">
-                  {nextTodo?.label ??
-                    (isCompleted
-                      ? "이용이 완료된 주문입니다."
-                      : "주문 진행 상태를 확인하고 있습니다.")}
-                </p>
-                {nextTodo?.description ? (
-                  <p className="mt-1 break-keep text-ui-label text-muted-foreground">
-                    {nextTodo.description}
+                  <p className="break-keep text-ui-card-title-lg font-semibold text-foreground">
+                    {customerStatusLabel}
                   </p>
-                ) : null}
+                </div>
+                <p className="break-all text-ui-body-sm text-muted-foreground" title={orderId}>
+                  주문번호: #{orderId.slice(-6).toUpperCase()}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:flex-row bp-sm:items-center bp-lg:flex-col bp-lg:items-stretch">
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-primary">다음 할 일</p>
+                <p className="mt-1 break-keep text-ui-body-sm font-semibold text-foreground">
+                  {nextActionCopy.title}
+                </p>
+                <p className="mt-1 break-keep text-ui-label text-muted-foreground">
+                  {nextActionCopy.description}
+                </p>
               </div>
               {nextTodo ? (
                 <Button
@@ -961,72 +971,13 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <Separator />
 
-          <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-xl:grid-cols-5">
-            <SummaryCard
-              className="rounded-xl border-0 bg-muted/15 shadow-none"
-              contentClassName="p-3 bp-sm:p-4"
-            >
-              <div className="mb-2 flex items-center space-x-2">
-                <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="text-ui-body-sm font-medium text-foreground">신청일</span>
-              </div>
-              <p className="break-keep text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg">
-                {formatDate(orderDetail.date)}
-              </p>
-            </SummaryCard>
-
-            <SummaryCard
-              className="rounded-xl border-0 bg-muted/15 shadow-none"
-              contentClassName="p-3 bp-sm:p-4"
-            >
-              <div className="mb-2 flex items-center space-x-2">
-                <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="text-ui-body-sm font-medium text-foreground">총 비용</span>
-              </div>
-              <p className="break-keep text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg">
-                {formatCurrency(orderDetail.total)}
-              </p>
-            </SummaryCard>
-
-            <SummaryCard
-              className="rounded-xl border-0 bg-muted/15 shadow-none"
-              contentClassName="p-3 bp-sm:p-4"
-            >
-              <div className="mb-2 flex items-center space-x-2">
-                <ShoppingCart className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="text-ui-body-sm font-medium text-foreground">신청 유형</span>
-              </div>
-              <p className="line-clamp-2 min-w-0 break-keep text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                {serviceLinkedOrder ? "스트링 교체서비스" : "상품 주문"}
-              </p>
-            </SummaryCard>
-
-            <SummaryCard
-              className="rounded-xl border-0 bg-muted/15 shadow-none"
-              contentClassName="p-3 bp-sm:p-4"
-            >
-              <div className="mb-2 flex items-center space-x-2">
-                <Truck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="text-ui-body-sm font-medium text-foreground">품목/수량</span>
-              </div>
-              <p className="break-keep text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg">
-                {orderDetail.items.length}개 품목 /{" "}
-                {orderDetail.items.reduce((sum, item) => sum + item.quantity, 0)}개
-              </p>
-            </SummaryCard>
-
-            <SummaryCard
-              className="rounded-xl border-0 bg-muted/15 shadow-none"
-              contentClassName="p-3 bp-sm:p-4"
-            >
-              <div className="mb-2 flex items-center space-x-2">
-                <Truck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="text-ui-body-sm font-medium text-foreground">라켓 발송 상태</span>
-              </div>
-              <p className="break-keep text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                {shouldShowInboundShippingBlock ? selfShipStatusLabel : "해당 없음"}
-              </p>
-            </SummaryCard>
+          <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-3">
+            <MypageInfoField label="신청일" value={formatDate(orderDetail.date)} />
+            <MypageInfoField label="총 결제금액" value={formatCurrency(orderDetail.total)} />
+            <MypageInfoField
+              label="주문 유형"
+              value={serviceLinkedOrder ? "스트링 교체서비스 포함" : "상품 주문"}
+            />
           </div>
         </div>
       </PublicPageHero>
@@ -1121,7 +1072,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                     variant={badgeToneVariant(getApplicationStatusTone(app.status))}
                                     className="px-2 py-0.5 text-ui-label font-medium"
                                   >
-                                    {app.status ?? "상태 미정"}
+                                    {getCustomerApplicationStatusLabel(app.status)}
                                   </Badge>
                                   <span className="text-ui-body-sm font-semibold text-foreground">
                                     {app.receptionLabel ?? "접수 방식 확인 중"}
@@ -1336,14 +1287,11 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
 
             {/* 주문 항목 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                <CardTitle className="flex items-center space-x-2">
-                  <ShoppingCart className="h-5 w-5 text-warning" />
-                  <span>주문 항목</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 bp-lg:p-6">
+            <MypageDetailCard
+              title="주문/서비스 상품 정보"
+              description="주문 상품과 연결된 서비스 정보를 구분해 확인할 수 있습니다."
+              icon={<ShoppingCart className="h-5 w-5 text-warning" />}
+            >
                 <div className="divide-y divide-border/60">
                   {orderDetail.items.map((item, idx) => (
                     <div
@@ -1443,8 +1391,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+            </MypageDetailCard>
             {/* 요청사항 */}
             {showDeliveryOnlyFields && (
               <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
@@ -1589,7 +1536,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                         return (
                           <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                            {orderDetail.paymentStatus}
+                            {getCustomerPaymentStatusLabel(orderDetail.paymentStatus)}
                           </Badge>
                         );
                       })()}
@@ -1612,25 +1559,24 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     />
                   </div>
 
-                  <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">결제 금액</p>
-                      <p className="text-ui-section-title font-semibold text-primary">
-                        {formatCurrency(orderDetail.total)}
-                      </p>
-                    </div>
-                  </div>
+                  <MypageInfoField
+                    className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
+                    label="결제 금액"
+                    value={formatCurrency(orderDetail.total)}
+                    valueClassName="text-ui-section-title text-primary"
+                  />
                 </div>
               </CardContent>
             </Card>
 
-            {/* 고객 정보 */}
+            {/* 배송/연락처 정보 */}
             <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
               <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <User className="h-5 w-5 text-primary" />
-                  <span>주문자 정보</span>
+                  <span>배송/연락처 정보</span>
                 </CardTitle>
+                <CardDescription>주문자 연락처와 배송 정보를 확인할 수 있습니다.</CardDescription>
               </CardHeader>
               {editingCustomer ? (
                 <CardContent className="p-4 bp-lg:p-6">
