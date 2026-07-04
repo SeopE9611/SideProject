@@ -22,6 +22,7 @@ import {
   Briefcase,
   Calendar,
   CheckCircle,
+  ChevronDown,
   Clock,
   CreditCard,
   Package,
@@ -707,7 +708,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 xl:grid-cols-4">
           <div className="p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-ui-body-sm font-medium text-muted-foreground">대여 상품명</span>
             </div>
             <p className="line-clamp-2 min-w-0 break-keep text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
@@ -717,7 +717,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
           <div className="p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-ui-body-sm font-medium text-muted-foreground">대여 기간</span>
             </div>
             <p className="break-words text-ui-card-title-lg font-semibold text-foreground">
@@ -727,7 +726,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
           <div className="p-3 bp-sm:p-4">
             <div className="mb-2 flex items-center space-x-2">
-              <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-ui-body-sm font-medium text-muted-foreground">결제 금액</span>
             </div>
             <p className="break-keep text-ui-card-title-lg font-semibold tabular-nums text-foreground">
@@ -793,12 +791,11 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
       <>
         <MypageDetailCard
-          title="대여 상품 정보"
+          title="대여 요약"
           icon={<Package className="h-5 w-5 text-primary" />}
         >
           <div className="divide-y divide-border/60">
             <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-              <Briefcase className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-muted-foreground">라켓</p>
                 <p className="mt-1 break-words font-semibold text-foreground">
@@ -809,7 +806,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
             {withStringService && (
               <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <p className="text-ui-label font-medium text-muted-foreground">장착 스트링</p>
                   <p className="mt-1 break-words font-semibold text-foreground">
@@ -829,16 +825,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
             <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
               <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">상태</p>
-                <Badge variant={getStatusBadgeVariant(data.status)} className="mt-1">
-                  {displayStatusLabel}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-              <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-muted-foreground">반납 예정일</p>
                 <p className="mt-1 break-words font-semibold text-foreground">
                   {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
@@ -848,23 +834,14 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </MypageDetailCard>
 
-        <MypageDetailCard title="결제 정보" icon={<CreditCard className="h-5 w-5 text-primary" />}>
+        <MypageDetailCard title="결제 요약" icon={<CreditCard className="h-5 w-5 text-primary" />}>
           <div className="space-y-3">
             <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
                 <p className="mt-1 break-words font-semibold text-foreground">
                   {displayStatusLabel}
                 </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">결제 방식</p>
-                <p className="mt-1 break-words font-semibold text-foreground">결제 정보 확인 중</p>
               </div>
             </div>
 
@@ -879,7 +856,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </div>
 
             <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-muted-foreground">보증금</p>
                 <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
@@ -904,7 +880,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
             {stringingFee > 0 && (
               <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <p className="text-ui-label font-medium text-muted-foreground">교체서비스 비용</p>
                   <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
@@ -926,7 +901,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </MypageDetailCard>
 
-        <MypageDetailCard title="배송/수령 정보" icon={<Truck className="h-5 w-5 text-primary" />}>
+        <details className="group rounded-2xl bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2"><Truck className="h-5 w-5 text-primary" />상세 정보</span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="space-y-5 border-t border-border/60 p-4 bp-lg:p-6">
+            <MypageDetailCard title="배송/수령 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="shadow-none ring-border/40">
           <div className="grid gap-4 bp-sm:grid-cols-2">
             <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
             <div className="border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
@@ -970,7 +951,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </MypageDetailCard>
 
-        <MypageDetailCard title="반납 정보" icon={<Truck className="h-5 w-5 text-primary" />}>
+        <MypageDetailCard title="반납 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="shadow-none ring-border/40">
           <div className="grid gap-4 bp-sm:grid-cols-2">
             <MypageInfoField
               label="반납 예정일"
@@ -990,7 +971,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </MypageDetailCard>
 
-        <MypageDetailCard title="신청 정보" icon={<Briefcase className="h-5 w-5 text-primary" />}>
+        <MypageDetailCard title="신청 정보" icon={<Briefcase className="h-5 w-5 text-primary" />} className="shadow-none ring-border/40">
           <div className="grid gap-4">
             <MypageInfoField label="신청번호" value={data.id} valueClassName="break-all" />
             <MypageInfoField
@@ -1004,6 +985,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </p>
           </div>
         </MypageDetailCard>
+          </div>
+        </details>
       </>
 
       {withStringService ? (
@@ -1076,10 +1059,12 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-ui-body-sm font-semibold text-foreground">
-                      라켓·스트링 정보
-                    </p>
-                    <div className="grid gap-3 bp-md:grid-cols-2">
+                    <details className="group rounded-xl bg-muted/15 p-3">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                        <span>라켓·스트링 상세</span>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                      </summary>
+                    <div className="mt-3 grid gap-3 bp-md:grid-cols-2">
                       {linkedApplicationDisplayLines.map((line, index) => {
                         const racketLabel =
                           line.racketLabel ||
@@ -1137,9 +1122,15 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         );
                       })}
                     </div>
+                    </details>
                   </div>
 
-                  <div className="space-y-3 rounded-xl bg-muted/15 p-3 text-ui-body-sm text-foreground">
+                  <details className="group rounded-xl bg-muted/15 p-3 text-ui-body-sm text-foreground">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                      <span>장착·출고 상세</span>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="mt-3 space-y-3">
                     <div>
                       <p className="font-semibold text-foreground">장착·출고 안내</p>
                       <p className="mt-1 text-muted-foreground">
@@ -1196,7 +1187,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         </div>
                       ) : null}
                     </dl>
-                  </div>
+                    </div>
+                  </details>
 
                   <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
                     {data.stringingApplicationId ? (
@@ -1233,8 +1225,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         </section>
       ) : null}
 
-      <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-        <CardHeader className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
+      <details className="group overflow-hidden rounded-2xl bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" />진행 단계</span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+        </summary>
+        <Card className="border-0 shadow-none">
+        <CardHeader className="hidden border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5 text-primary" />
             <span>진행 단계</span>
@@ -1361,7 +1358,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </details>
 
       {/* 다이얼로그는 클릭 시점에만 마운트해 초기 번들을 경량화 */}
       {cancelDialogOpen && data?.id ? (
