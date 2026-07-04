@@ -96,7 +96,7 @@ export default function RentalsList() {
   });
 
   const handleWithdrawCancelRequest = async (rentalId: string) => {
-    if (!confirm("대여 취소 요청을 철회하시겠습니까?")) return;
+    if (!confirm("이 대여의 취소 요청을 철회하시겠습니까?")) return;
     try {
       const res = await fetch(`/api/rentals/${rentalId}/cancel-withdraw`, {
         method: "POST",
@@ -110,7 +110,7 @@ export default function RentalsList() {
         return;
       }
 
-      showSuccessToast("대여 취소 요청을 철회했습니다.");
+      showSuccessToast("취소 요청을 철회했습니다.");
 
       // 목록 전체를 다시 불러와서 해당 카드의 cancelStatus를 최신으로 맞춤
       await mutate();

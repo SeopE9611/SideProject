@@ -322,7 +322,7 @@ export default function ApplicationsClient() {
         return;
       }
 
-      showSuccessToast("취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.");
+      showSuccessToast("취소 요청을 접수했습니다.");
 
       // Dialog 닫기 + 선택된 ID 초기화
       setCancelDialogOpen(false);
@@ -354,7 +354,7 @@ export default function ApplicationsClient() {
         return;
       }
 
-      showSuccessToast("신청 취소 요청을 철회했습니다.");
+      showSuccessToast("취소 요청을 철회했습니다.");
 
       // 신청 목록 전체 재검증 → 취소 요청 뱃지/버튼 상태 갱신
       await mutate();
@@ -797,8 +797,8 @@ export default function ApplicationsClient() {
                 {isStringService && isLinkedApplication ? (
                   <p className="text-ui-body-sm text-muted-foreground">
                     {hasOrderLink
-                      ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
-                      : "이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다."}
+                      ? "이 교체서비스는 연결된 주문의 구매 확정과 함께 처리됩니다."
+                      : "이 교체서비스는 연결된 대여의 수령 확인과 함께 처리됩니다."}
                   </p>
                 ) : null}
 

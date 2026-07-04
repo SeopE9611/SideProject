@@ -365,7 +365,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     if (isTerminalCanceledStatus(group.order?.status)) return null;
 
     if (getMypageNormalizedStatus(group.order?.status) === "배송완료") {
-      return "구매확정 필요";
+      return "구매 확정 필요";
     }
 
     const actionableApplication = group.order?.applicationSummaries?.find((app) =>
@@ -402,7 +402,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
       getMypageNormalizedStatus(group.rental?.status) === "반납완료" &&
       !group.rental?.userConfirmedAt
     ) {
-      return "수령확인 필요";
+      return "수령 확인 필요";
     }
 
     if (group.application?.serviceReviewPending) {
@@ -436,14 +436,14 @@ const getFlowNextActionText = (
 ): string | null => {
   if (opts?.todoPrimaryReason) {
     const todoMessageMap: Record<string, string> = {
-      "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
-      "수령확인 필요": "반납 내용을 확인하고 수령확인을 진행해주세요.",
+      "구매 확정 필요": "상품을 받으셨다면 구매 확정을 진행해주세요.",
+      "수령 확인 필요": "반납 내용을 확인하고 수령 확인을 진행해주세요.",
       "라켓 발송 운송장 등록 필요": "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
       "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
-      "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
-      "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
+      "후기를 남길 수 있어요": "구매 확정된 상품은 후기를 작성할 수 있어요.",
+      "상품 후기 작성 가능": "구매 확정된 상품은 후기를 작성할 수 있어요.",
       "상품·교체서비스 후기 작성 가능":
-        "수령확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
+        "수령 확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
@@ -476,7 +476,7 @@ const getFlowNextActionText = (
         ? "수령 준비 상태를 확인해주세요."
         : "완성 라켓 배송 중입니다. 배송정보를 확인해주세요.";
     }
-    if (normalized === "배송완료") return "상품을 받으셨다면 구매확정을 진행해주세요.";
+    if (normalized === "배송완료") return "상품을 받으셨다면 구매 확정을 진행해주세요.";
     if (normalized === "구매확정") {
       const hasPendingOrderReview =
         Boolean(group.order?.hasPendingReview) || (group.order?.reviewPendingCount ?? 0) > 0;
@@ -486,11 +486,11 @@ const getFlowNextActionText = (
         (group.order?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
 
       if (hasPendingServiceReview) {
-        return "수령확인된 교체서비스 후기를 작성할 수 있어요.";
+        return "수령 확인된 교체서비스 후기를 작성할 수 있어요.";
       }
 
       if (hasPendingOrderReview) {
-        return "구매확정된 상품은 후기를 작성할 수 있어요.";
+        return "구매 확정된 상품은 후기를 작성할 수 있어요.";
       }
 
       return null;
@@ -525,11 +525,11 @@ const getFlowNextActionText = (
         (group.rental?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
 
       if (!group.rental?.userConfirmedAt) {
-        return "반납 내용을 확인하고 수령확인을 진행해주세요.";
+        return "반납 내용을 확인하고 수령 확인을 진행해주세요.";
       }
 
       if (hasPendingServiceReview) {
-        return "수령확인된 교체서비스 후기를 작성할 수 있어요.";
+        return "수령 확인된 교체서비스 후기를 작성할 수 있어요.";
       }
 
       return null;
@@ -549,7 +549,7 @@ const getFlowNextActionText = (
     return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
   if (normalized === "교체완료")
     return app?.serviceReviewPending
-      ? "수령확인된 교체서비스 후기를 작성할 수 있어요."
+      ? "수령 확인된 교체서비스 후기를 작성할 수 있어요."
       : "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
   if (app?.inboundRequired === false)
     return app?.rentalId
@@ -718,7 +718,7 @@ export default function TransactionFlowList() {
 
   const handleConfirmPurchase = async (orderId: string) => {
     if (confirmingOrderId) return;
-    if (!window.confirm("구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
+    if (!window.confirm("구매 확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
 
     try {
       setConfirmingOrderId(orderId);
@@ -729,7 +729,7 @@ export default function TransactionFlowList() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
-        showErrorToast(data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.");
+        showErrorToast(data?.error || data?.message || "구매 확정 처리 중 오류가 발생했습니다.");
         return;
       }
 
@@ -773,11 +773,11 @@ export default function TransactionFlowList() {
         { revalidate: false },
       );
 
-      showSuccessToast("구매확정이 완료되었습니다.");
+      showSuccessToast("구매 확정이 완료되었습니다.");
       await refreshRelatedQueries();
     } catch (e) {
       console.error(e);
-      showErrorToast("구매확정 처리 중 오류가 발생했습니다.");
+      showErrorToast("구매 확정 처리 중 오류가 발생했습니다.");
     } finally {
       setConfirmingOrderId(null);
     }
@@ -816,7 +816,7 @@ export default function TransactionFlowList() {
 
   const handleConfirmRental = async (rentalId: string) => {
     if (confirmingRentalId) return;
-    if (!window.confirm("수령확인 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
+    if (!window.confirm("수령 확인 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
 
     try {
       setConfirmingRentalId(rentalId);
@@ -827,22 +827,22 @@ export default function TransactionFlowList() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
-        showErrorToast(data?.message || "수령확인 처리 중 오류가 발생했습니다.");
+        showErrorToast(data?.message || "수령 확인 처리 중 오류가 발생했습니다.");
         return;
       }
 
       const earnedPoints = Number(data?.earnedPoints ?? 0);
       showSuccessToast(
         data?.pointsGranted && earnedPoints > 0
-          ? `수령확인이 완료되었습니다. ${earnedPoints.toLocaleString()}P가 적립되었습니다.`
+          ? `수령 확인이 완료되었습니다. ${earnedPoints.toLocaleString()}P가 적립되었습니다.`
           : data?.already
-            ? data?.message || "이미 수령확인된 대여입니다."
-            : "수령확인이 완료되었습니다.",
+            ? data?.message || "이미 수령 확인된 대여입니다."
+            : "수령 확인이 완료되었습니다.",
       );
       await refreshRelatedQueries();
     } catch (e) {
       console.error(e);
-      showErrorToast("수령확인 처리 중 오류가 발생했습니다.");
+      showErrorToast("수령 확인 처리 중 오류가 발생했습니다.");
     } finally {
       setConfirmingRentalId(null);
     }
@@ -867,16 +867,16 @@ export default function TransactionFlowList() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        showErrorToast(body?.message || "신청 취소 요청 처리 중 오류가 발생했습니다.");
+        showErrorToast(body?.message || "취소 요청 처리 중 오류가 발생했습니다.");
         return;
       }
 
-      showSuccessToast("신청 취소 요청이 접수되었습니다.");
+      showSuccessToast("취소 요청을 접수했습니다.");
       setCancelApplicationDialogId(null);
       await refreshRelatedQueries();
     } catch (e) {
       console.error(e);
-      showErrorToast("신청 취소 요청 처리 중 오류가 발생했습니다.");
+      showErrorToast("취소 요청 처리 중 오류가 발생했습니다.");
     } finally {
       setIsCancelApplicationSubmitting(false);
     }
@@ -899,7 +899,7 @@ export default function TransactionFlowList() {
         return;
       }
 
-      showSuccessToast("주문 취소 요청을 철회했습니다.");
+      showSuccessToast("취소 요청을 철회했습니다.");
       await patchOrderCancelStatus(orderId, null);
       await syncOrderRelatedCaches(orderId);
     } catch (e) {
@@ -1467,7 +1467,7 @@ export default function TransactionFlowList() {
                             onClick={() => handleConfirmRental(rentalId)}
                           >
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingRentalId === rentalId ? "처리 중..." : "수령확인"}
+                            {confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}
                           </Button>
                         ),
                       });
@@ -1583,7 +1583,7 @@ export default function TransactionFlowList() {
                             onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}
                           >
                             <XCircle className="mr-1 h-3.5 w-3.5" />
-                            신청 취소 요청
+                            취소 요청
                           </Button>
                         ),
                       });

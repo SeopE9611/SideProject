@@ -201,7 +201,7 @@ export default function OrderList() {
     if (confirmingOrderId) return; // 이미 처리 중이면 무시
 
     const ok = window.confirm(
-      "구매확정을 진행하시겠습니까?\n\n- 구매확정 시 반품/교환/환불이 어려울 수 있습니다.",
+      "구매 확정을 진행하시겠습니까?\n\n- 구매 확정 시 반품/교환/환불이 어려울 수 있습니다.",
     );
     if (!ok) return;
 
@@ -217,14 +217,14 @@ export default function OrderList() {
 
       // 서버가 실패를 내려주면 그 메시지를 그대로 토스트로 노출
       if (!res.ok) {
-        const msg = data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.";
+        const msg = data?.error || data?.message || "구매 확정 처리 중 오류가 발생했습니다.";
         showErrorToast(msg);
         return;
       }
 
       // alreadyConfirmed 케이스도 서버 응답에 따라 처리
-      if (data?.alreadyConfirmed) showSuccessToast("이미 구매확정된 주문입니다.");
-      else showSuccessToast("구매확정이 완료되었습니다.");
+      if (data?.alreadyConfirmed) showSuccessToast("이미 구매 확정된 주문입니다.");
+      else showSuccessToast("구매 확정이 완료되었습니다.");
 
       // 주문 목록 재조회 (상태 뱃지/버튼 상태 즉시 반영)
       await mutate();
@@ -237,7 +237,7 @@ export default function OrderList() {
       );
     } catch (e) {
       console.error(e);
-      showErrorToast("구매확정 처리 중 오류가 발생했습니다.");
+      showErrorToast("구매 확정 처리 중 오류가 발생했습니다.");
     } finally {
       setConfirmingOrderId(null);
     }
@@ -259,7 +259,7 @@ export default function OrderList() {
         return;
       }
 
-      showSuccessToast("주문 취소 요청을 철회했습니다.");
+      showSuccessToast("취소 요청을 철회했습니다.");
 
       // 무한스크롤 주문 목록 전체 다시 조회
       await mutate();
@@ -616,11 +616,11 @@ export default function OrderList() {
                         </TooltipTrigger>
                         {isConfirmed ? (
                           <TooltipContent side="top" className="text-ui-body-sm">
-                            이미 구매확정된 주문입니다.
+                            이미 구매 확정된 주문입니다.
                           </TooltipContent>
                         ) : !isDelivered ? (
                           <TooltipContent side="top" className="text-ui-body-sm">
-                            배송완료 후 구매확정이 가능합니다.
+                            배송 완료 후 구매 확정이 가능합니다.
                           </TooltipContent>
                         ) : null}
                       </Tooltip>
