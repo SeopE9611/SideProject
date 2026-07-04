@@ -165,12 +165,12 @@ const CancelRentalDialog = ({
       if (!res.ok) {
         const parsed = await readCancelRequestError(
           res,
-          "대여 취소 요청 처리 중 오류가 발생했습니다.",
+          "취소 요청 처리 중 오류가 발생했습니다.",
         );
-        throw new Error(parsed.message || "대여 취소 요청 처리 중 오류가 발생했습니다.");
+        throw new Error(parsed.message || "취소 요청 처리 중 오류가 발생했습니다.");
       }
 
-      showSuccessToast("대여 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.");
+      showSuccessToast("취소 요청을 접수했습니다.");
 
       // 상세 데이터 갱신 (혹시 다른 곳에서 SWR로 쓰고 있을 수도 있으니 유지)
       await mutate(`/api/rentals/${rentalId}`, undefined, { revalidate: true });
@@ -196,7 +196,7 @@ const CancelRentalDialog = ({
       }
     } catch (e) {
       console.error(e);
-      showErrorToast(e instanceof Error ? e.message : "대여 취소 요청 중 오류가 발생했습니다.");
+      showErrorToast(e instanceof Error ? e.message : "취소 요청 처리 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -213,7 +213,7 @@ const CancelRentalDialog = ({
             className={`gap-2 ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
           >
             <XCircle className="mr-2 h-4 w-4" />
-            대여 취소 요청
+            취소 요청
           </Button>
         </DialogTrigger>
       ) : null}

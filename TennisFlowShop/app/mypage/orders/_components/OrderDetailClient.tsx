@@ -406,7 +406,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     });
   }, [searchParams, orderDetail?._id]);
 
-  // 상품 리뷰 작성 여부 맵: { [productId]: boolean }
+  // 상품 후기 작성 여부 맵: { [productId]: boolean }
   const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
 
   // 완료 상태
@@ -684,7 +684,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       state: isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
     },
     {
-      title: "완료/구매확정",
+      title: "완료/구매 확정",
       description: "주문 이용이 마무리된 단계입니다.",
       state: isCompleted ? "done" : isDelivered ? "active" : "waiting",
     },
@@ -698,7 +698,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const canWithdrawCancelRequest = cancelStatus === "requested";
   const handleConfirmPurchase = async () => {
     if (!orderDetail?._id || isConfirmingPurchase) return;
-    if (!window.confirm("구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) {
+    if (!window.confirm("구매 확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) {
       return;
     }
 
@@ -710,11 +710,11 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || data?.ok === false) {
-        showErrorToast(data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.");
+        showErrorToast(data?.error || data?.message || "구매 확정 처리 중 오류가 발생했습니다.");
         return;
       }
 
-      showSuccessToast("구매확정이 완료되었습니다.");
+      showSuccessToast("구매 확정이 완료되었습니다.");
       await Promise.all([
         mutateOrderDetail(),
         mutateHistory(),
@@ -722,7 +722,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       ]);
     } catch (e) {
       console.error(e);
-      showErrorToast("구매확정 처리 중 오류가 발생했습니다.");
+      showErrorToast("구매 확정 처리 중 오류가 발생했습니다.");
     } finally {
       setIsConfirmingPurchase(false);
     }
@@ -753,25 +753,25 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     : canConfirmPurchase
       ? {
           label: serviceLinkedOrder
-            ? "상품을 받으셨다면 구매확정을 진행해주세요."
-            : "구매확정이 필요합니다.",
+            ? "상품을 받으셨다면 구매 확정을 진행해주세요."
+            : "구매 확정이 필요합니다.",
           description: serviceLinkedOrder
-            ? "완성 라켓 배송이 완료되었습니다. 상품을 받으셨다면 구매확정을 진행해주세요."
-            : "상품을 받으셨다면 구매확정을 진행해주세요.",
-          ctaLabel: isConfirmingPurchase ? "처리 중..." : "구매확정",
+            ? "완성 라켓 배송이 완료되었습니다. 상품을 받으셨다면 구매 확정을 진행해주세요."
+            : "상품을 받으셨다면 구매 확정을 진행해주세요.",
+          ctaLabel: isConfirmingPurchase ? "확정 중…" : "구매 확정",
           onCtaClick: handleConfirmPurchase,
         }
       : canShowServiceReviewCTA && serviceReviewHref
         ? {
             label: "상품·교체서비스 후기 작성 가능",
-            description: "수령확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
-            ctaLabel: "후기 작성하기",
+            description: "수령 확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
+            ctaLabel: "후기 작성",
             ctaHref: serviceReviewHref,
           }
         : canShowProductReviewCTA && Boolean(firstUnreviewed)
           ? {
               label: "후기 작성 가능",
-              ctaLabel: "후기 작성하기",
+              ctaLabel: "후기 작성",
               ctaHref: `/reviews/write?productId=${firstUnreviewed?.id}&orderId=${orderDetail?._id}`,
             }
           : null;
@@ -838,7 +838,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       }
 
       if (!res.ok) {
-        throw new Error(await parseApiMessage(res, "취소 요청 철회 중 오류가 발생했습니다."));
+        throw new Error(await parseApiMessage(res, "취소 요청 처리 중 오류가 발생했습니다."));
       }
 
       // SWR 캐시 갱신: 상태, 이력, 마이페이지 목록, 상세 모두 재검증
@@ -858,13 +858,13 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         ),
       ]);
 
-      showSuccessToast("취소 요청이 정상적으로 철회되었습니다.");
+      showSuccessToast("취소 요청을 철회했습니다.");
     } catch (err) {
       console.error(err);
       if (err instanceof DOMException && err.name === "AbortError") {
         showErrorToast("요청 시간이 초과되었습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.");
       } else {
-        showErrorToast((err as Error).message || "취소 요청 철회 중 오류가 발생했습니다.");
+        showErrorToast((err as Error).message || "취소 요청 처리 중 오류가 발생했습니다.");
       }
     } finally {
       setIsWithdrawingCancelRequest(false);
@@ -913,7 +913,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 onClick={() => setCancelDialogOpen(true)}
                 className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:w-auto"
               >
-                주문 취소 요청
+                취소 요청
               </Button>
             )}
           </>
@@ -1000,7 +1000,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 className="h-9 w-full gap-1.5 overflow-hidden whitespace-nowrap bp-sm:ml-4 bp-sm:w-auto"
               >
                 <Undo2 className="h-4 w-4" />
-                {isWithdrawingCancelRequest ? "취소 철회 중..." : "취소 요청 철회"}
+                {isWithdrawingCancelRequest ? "철회 중..." : "취소 요청 철회"}
               </Button>
             )}
           </div>
@@ -1103,7 +1103,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                 <Link
                                   href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
                                 >
-                                  후기 작성하기
+                                  후기 작성
                                 </Link>
                               </Button>
                             ))}
@@ -1817,14 +1817,14 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         이 주문은 리뷰를 작성하지 않았습니다.
                       </p>
                       <p className="text-ui-body-sm text-warning">
-                        아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.
+                        아래 ‘후기 작성’ 버튼을 눌러 상품별로 후기를 남겨주세요.
                       </p>
                       {/* 방문 수령 주문은 배송완료 대신 수령 완료 문구로 안내 */}
                       <p className="text-ui-body-sm text-destructive">
                         ※
                         {isVisitPickup
-                          ? "상품을 구매확정하면 [리뷰 작성] 버튼이 나타납니다."
-                          : "구매확정 후 [리뷰 작성] 버튼이 나타납니다."}
+                          ? "상품을 구매 확정하면 [후기 작성] 버튼이 나타납니다."
+                          : "구매 확정 후 [후기 작성] 버튼이 나타납니다."}
                       </p>
                     </div>
                   </div>

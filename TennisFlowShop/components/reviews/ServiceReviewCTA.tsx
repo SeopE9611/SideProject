@@ -62,7 +62,7 @@ export default function ServiceReviewCTA({
     <Button size="sm" variant="default" className={className} asChild>
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
-        후기 작성하기
+        후기 작성
       </Link>
     </Button>
   );
