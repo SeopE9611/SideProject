@@ -275,7 +275,7 @@ export default function MypageClient({ user }: Props) {
           <UserSection user={user} />
 
           <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
-            <SummaryCard className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20" contentClassName="p-0">
+            <SummaryCard className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20" contentClassName="p-4 bp-sm:p-5">
               <button
                 type="button"
                 onClick={() =>
@@ -283,7 +283,7 @@ export default function MypageClient({ user }: Props) {
                     scroll: false,
                   })
                 }
-                className="group w-full rounded-2xl border-l-2 border-primary/30 bg-primary/5 px-4 py-3 text-left transition-colors hover:bg-primary/10 bp-sm:px-5 bp-sm:py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="group w-full rounded-xl bg-muted/20 px-4 py-3 text-left transition-colors hover:bg-muted/30 bp-sm:px-5 bp-sm:py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -326,13 +326,13 @@ export default function MypageClient({ user }: Props) {
                 ) : null}
               </div>
 
-              <div className="grid grid-cols-2 divide-x divide-y divide-border/60 overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40 bp-sm:grid-cols-4 bp-sm:divide-y-0">
+              <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
                 {activitySummaryItems.map((item) => (
                   <button
                     key={item.label}
                     type="button"
                     onClick={() => router.push(item.href, { scroll: false })}
-                    className="min-w-0 px-2 py-3 text-center transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:py-2.5"
+                    className="min-w-0 rounded-xl bg-muted/15 px-2 py-3 text-center transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:py-2.5"
                   >
                     <span className="block text-ui-body font-semibold tabular-nums text-foreground">
                       {summaryLoading ? "-" : (item.value ?? 0)}
@@ -464,11 +464,11 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-0">
+                  <CardContent className="p-3 bp-sm:p-5">
                     {isOrdersDetailView ? (
                       <OrdersScopeTabs
                         activeScope={activeOrdersScope}
-                        className="mx-3 mb-4 mt-3 bp-sm:mx-5 bp-sm:mb-5 bp-sm:mt-5"
+                        className="mb-4 bp-sm:mb-5"
                       />
                     ) : null}
                     {isOrdersTab && flowType === "order" && flowId ? (

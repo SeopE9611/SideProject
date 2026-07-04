@@ -666,7 +666,7 @@ export default function RentalsDetailClient({
           />
         )}
 
-        <div className="grid grid-cols-1 overflow-hidden border-y border-border/70 bg-muted/10 bp-sm:grid-cols-2 xl:grid-cols-4 bp-sm:divide-x bp-sm:divide-border/60">
+        <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 xl:grid-cols-4">
           <div className="p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
               <Package className="h-4 w-4 text-muted-foreground" />
@@ -778,7 +778,7 @@ export default function RentalsDetailClient({
             <CardContent className="space-y-4 p-4 bp-sm:p-6">
               {linkedApplication || data.applicationSummary ? (
                 <>
-                  <div className="grid grid-cols-1 overflow-hidden border-y border-border/70 bg-muted/10 text-ui-body-sm text-foreground bp-sm:grid-cols-2 xl:grid-cols-4 bp-sm:divide-x bp-sm:divide-border/60">
+                  <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-2 xl:grid-cols-4">
                     <div className="p-3 bp-sm:p-4">
                       <p className="text-muted-foreground">진행 상태</p>
                       <Badge
@@ -882,14 +882,14 @@ export default function RentalsDetailClient({
                     </div>
                   </div>
 
-                  <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-3 text-ui-body-sm text-foreground">
+                  <div className="space-y-3 rounded-xl bg-muted/15 p-3 text-ui-body-sm text-foreground">
                     <div>
                       <p className="font-semibold text-foreground">장착·출고 안내</p>
                       <p className="mt-1 text-muted-foreground">
                         매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다.
                       </p>
                     </div>
-                    <dl className="grid gap-x-4 divide-y divide-border/60 border-y border-border/70 bp-sm:grid-cols-2 bp-sm:divide-y-0">
+                    <dl className="grid gap-3 bp-sm:grid-cols-2">
                       <div>
                         <dt className="text-muted-foreground">장착 방식</dt>
                         <dd className="mt-1 font-medium">매장 장착</dd>
@@ -987,7 +987,7 @@ export default function RentalsDetailClient({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 bp-sm:p-5">
-            <div className="divide-y divide-border/70 border-y border-border/70">
+            <div className="grid gap-3">
               {/* 스트링 상품 금액: 있을 때만 표시(대여만 한 경우 UI가 지저분해지지 않도록) */}
               {stringPrice > 0 && (
                 <div className="flex items-center space-x-3 py-3">
@@ -1071,7 +1071,7 @@ export default function RentalsDetailClient({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 bp-sm:p-5">
-            <div className="divide-y divide-border/70 border-y border-border/70">
+            <div className="grid gap-3">
               <div className="flex items-center space-x-3 py-3">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
@@ -1113,7 +1113,7 @@ export default function RentalsDetailClient({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-0 p-4 bp-sm:p-5">
-            <div className="border-y border-border/70 py-3">
+            <div className="rounded-xl bg-muted/15 p-3">
               <p className="text-ui-body-sm text-foreground/80">수령 정보</p>
               <p className="text-ui-body-sm font-semibold text-foreground mt-1">
                 {isVisitPickup
@@ -1125,7 +1125,7 @@ export default function RentalsDetailClient({
                     : "출고 운송장 등록 전입니다."}
               </p>
             </div>
-            <div className="border-y border-border/70 py-3">
+            <div className="rounded-xl bg-muted/15 p-3">
               <p className="text-ui-body-sm text-foreground/80">반납 정보</p>
               <p className="text-ui-body-sm font-semibold text-foreground mt-1">
                 {isVisitPickup
@@ -1152,7 +1152,7 @@ export default function RentalsDetailClient({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 bp-sm:p-5">
-          <div className="divide-y divide-border/70 border-y border-border/70">
+          <div className="grid gap-3">
             <div className="flex items-start gap-4 py-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                 <Calendar className="h-5 w-5 text-primary" />

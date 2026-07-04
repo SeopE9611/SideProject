@@ -1267,7 +1267,7 @@ export default function StringingApplicationDetailClient({
           : null;
 
   const summaryCardClass =
-    "flex min-h-[108px] flex-col items-start justify-between gap-2 border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4";
+    "flex min-h-[108px] flex-col items-start justify-between gap-2 rounded-xl bg-muted/15 p-3 bp-sm:p-4";
   const summaryBadgeClass = cn(badgeBase, badgeSizeSm, "inline-flex w-fit self-start");
   const inboundStatusLabel = !inboundRequired
     ? "별도 발송 불필요"
@@ -1660,7 +1660,7 @@ export default function StringingApplicationDetailClient({
                   className={
                     isAdmin
                       ? summaryCardClass
-                      : "border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4"
+                      : "rounded-xl bg-muted/15 p-3 bp-sm:p-4"
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
@@ -1683,7 +1683,7 @@ export default function StringingApplicationDetailClient({
                   className={
                     isAdmin
                       ? summaryCardClass
-                      : "border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4"
+                      : "rounded-xl bg-muted/15 p-3 bp-sm:p-4"
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
@@ -1706,7 +1706,7 @@ export default function StringingApplicationDetailClient({
                   className={
                     isAdmin
                       ? summaryCardClass
-                      : "border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4"
+                      : "rounded-xl bg-muted/15 p-3 bp-sm:p-4"
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
@@ -1733,7 +1733,7 @@ export default function StringingApplicationDetailClient({
                   className={
                     isAdmin
                       ? summaryCardClass
-                      : "border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4"
+                      : "rounded-xl bg-muted/15 p-3 bp-sm:p-4"
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
@@ -1764,7 +1764,7 @@ export default function StringingApplicationDetailClient({
                 </div>
 
                 {!isAdmin && (
-                  <div className="border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4">
+                  <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
                     <div className="mb-2 flex items-center space-x-2">
                       <Truck className="h-4 w-4 text-muted-foreground" />
                       <span className="text-ui-body-sm font-medium text-foreground">
@@ -2063,7 +2063,7 @@ export default function StringingApplicationDetailClient({
               <CardContent className={cn(isAdmin ? "p-4 lg:p-5" : "pt-4")}>
                 {isAdmin ? (
                   <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
-                    <div className="border-y border-border/60 bg-background/40 px-3 py-4 bp-sm:px-4">
+                    <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
                       <div className="space-y-3">
                         <div>
                           <p className="text-ui-body-sm font-semibold text-foreground">
@@ -2127,7 +2127,7 @@ export default function StringingApplicationDetailClient({
                       </div>
                     </div>
 
-                    <div className="border-y border-border/60 bg-background/40 px-3 py-4 bp-sm:px-4">
+                    <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
                       <div className="space-y-3">
                         <div>
                           <p className="text-ui-body-sm font-semibold text-foreground">운영 액션</p>
@@ -2139,7 +2139,7 @@ export default function StringingApplicationDetailClient({
 
                         <div className="flex min-h-[40px] flex-wrap items-center gap-2">
                           {isCancelled ? (
-                            <div className="border-l-2 border-border bg-muted/30 px-3 py-2 text-ui-body-sm text-foreground/80">
+                            <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
                               취소된 신청서입니다. 추가 액션이 불가능합니다.
                             </div>
                           ) : isCancelRequested &&
@@ -2175,7 +2175,7 @@ export default function StringingApplicationDetailClient({
                               신청 직접 취소
                             </Button>
                           ) : (
-                            <div className="border-l-2 border-border bg-muted/30 px-3 py-2 text-ui-body-sm text-foreground/80">
+                            <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
                               {isLinkedApplication
                                 ? "연결 신청서의 취소/환불은 연결된 주문/대여 상세에서 처리해야 합니다."
                                 : hasOrderCancelRequested
@@ -2826,7 +2826,7 @@ export default function StringingApplicationDetailClient({
                       onCancel={() => setEditingRequirements(false)}
                     />
                   ) : data.stringDetails.requirements?.trim() ? (
-                    <div className="border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4">
+                    <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
                       <p className="whitespace-pre-wrap break-words leading-relaxed text-foreground">
                         {data.stringDetails.requirements}
                       </p>
