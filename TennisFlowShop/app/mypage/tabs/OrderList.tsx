@@ -386,14 +386,20 @@ export default function OrderList() {
 
         // 모바일 보조 CTA: "교체 신청" 또는 "교체서비스 보기" 중 하나라도 있으면 2버튼 레이아웃
         const showMobileSecondCTA = Boolean(stringServiceCTAHref);
+        const isReviewStatusConfirmed = Boolean(order.userConfirmedAt) || order.status === "구매확정";
+        const confirmedOrderReviewLabel = order.unreviewedCount && order.unreviewedCount > 0
+          ? "후기를 남길 수 있어요."
+          : order.reviewAllDone === true
+            ? "이용이 완료되었습니다."
+            : "상세에서 후기 작성 가능 여부를 확인해보세요.";
         const nextActionLabel = isDelivered && !isConfirmed
           ? "상품을 받으셨다면 구매 확정을 진행해주세요."
           : order.cancelStatus === "requested"
             ? "취소 요청 확인을 기다려주세요."
             : stringServiceCTAHref
               ? "교체서비스 신청을 이어갈 수 있어요."
-              : (Boolean(order.userConfirmedAt) || order.status === "구매확정")
-                ? "후기를 남길 수 있어요."
+              : isReviewStatusConfirmed
+                ? confirmedOrderReviewLabel
                 : ["결제완료", "처리중", "배송중"].includes(order.status)
                   ? "주문 진행 상황이 변경되면 이곳에서 안내됩니다."
                   : "상세에서 주문 진행 내용을 확인할 수 있어요.";
@@ -665,7 +671,7 @@ export default function OrderList() {
                         <DropdownMenuItem asChild>
                           <Link href={detailHref} className="flex items-center gap-2">
                             <MessageSquarePlus className="h-4 w-4" />
-                            후기 작성
+                            후기 확인/작성
                           </Link>
                         </DropdownMenuItem>
                       )}
