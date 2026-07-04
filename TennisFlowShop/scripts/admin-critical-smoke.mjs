@@ -11,8 +11,8 @@ if (!baseUrl) {
 
 const cases = [
   {
-    name: "admin orders list requires auth",
-    path: "/api/admin/orders",
+    name: "admin operations list requires auth",
+    path: "/api/admin/operations",
     method: "GET",
     expect: [401],
   },
