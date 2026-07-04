@@ -4,9 +4,12 @@ import { getDepositBanner } from "@/app/features/rentals/utils/ui";
 import MypageDetailCard from "@/app/mypage/_components/MypageDetailCard";
 import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
 import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
-import { getCustomerApplicationStatusLabel, getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
-import AsyncState from "@/components/system/AsyncState";
+import {
+  getCustomerApplicationStatusLabel,
+  getCustomerRentalStatusLabel,
+} from "@/app/mypage/_lib/flow-display";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -277,10 +280,7 @@ type Props = {
   backUrl?: string;
 };
 
-export default function RentalsDetailClient({
-  id,
-  backUrl = "/mypage?tab=orders",
-}: Props) {
+export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders" }: Props) {
   const searchParams = useSearchParams();
   const focusTarget = searchParams.get("focus");
   const [data, setData] = useState<Rental | null>(null);
@@ -602,7 +602,9 @@ export default function RentalsDetailClient({
               <Briefcase className="h-8 w-8 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="break-keep text-ui-page-title font-semibold text-foreground">대여 상세</h1>
+              <h1 className="break-keep text-ui-page-title font-semibold text-foreground">
+                대여 상세
+              </h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <p className="min-w-0 break-all text-muted-foreground">대여번호: {data.id}</p>
 
@@ -686,14 +688,19 @@ export default function RentalsDetailClient({
             <p className="text-ui-label font-medium text-muted-foreground">현재 상태</p>
             <div className="mt-2 flex items-center gap-2">
               {getStatusIcon(data.status)}
-              <Badge variant={getStatusBadgeVariant(data.status)} className="px-3 py-1 text-ui-body-sm font-medium">
+              <Badge
+                variant={getStatusBadgeVariant(data.status)}
+                className="px-3 py-1 text-ui-body-sm font-medium"
+              >
                 {displayStatusLabel}
               </Badge>
             </div>
           </div>
           <div className="rounded-xl bg-muted/20 p-4 ring-1 ring-border/60">
             <p className="text-ui-label font-medium text-muted-foreground">다음 할 일</p>
-            <p className="mt-2 break-keep text-ui-body-sm font-semibold text-foreground">{rentalNextActionMessage}</p>
+            <p className="mt-2 break-keep text-ui-body-sm font-semibold text-foreground">
+              {rentalNextActionMessage}
+            </p>
           </div>
         </div>
 
@@ -713,7 +720,9 @@ export default function RentalsDetailClient({
               <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="text-ui-body-sm font-medium text-muted-foreground">대여 기간</span>
             </div>
-            <p className="break-words text-ui-card-title-lg font-semibold text-foreground">{data.days}일</p>
+            <p className="break-words text-ui-card-title-lg font-semibold text-foreground">
+              {data.days}일
+            </p>
           </div>
 
           <div className="p-3 bp-sm:p-4">
@@ -783,130 +792,139 @@ export default function RentalsDetailClient({
       )}
 
       <>
-        <MypageDetailCard title="대여 상품 정보" icon={<Package className="h-5 w-5 text-primary" />}>
-            <div className="divide-y divide-border/60">
-              <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <Briefcase className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">라켓</p>
-                  <p className="mt-1 break-words font-semibold text-foreground">
-                    {racketBrandLabel(data.brand)} {data.model}
-                  </p>
-                </div>
-              </div>
-
-              {withStringService && (
-                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">장착 스트링</p>
-                    <p className="mt-1 break-words font-semibold text-foreground">{installedStringLabel}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">대여 기간</p>
-                  <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">상태</p>
-                  <Badge variant={getStatusBadgeVariant(data.status)} className="mt-1">
-                    {displayStatusLabel}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">반납 예정일</p>
-                  <p className="mt-1 break-words font-semibold text-foreground">
-                    {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                  </p>
-                </div>
+        <MypageDetailCard
+          title="대여 상품 정보"
+          icon={<Package className="h-5 w-5 text-primary" />}
+        >
+          <div className="divide-y divide-border/60">
+            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+              <Briefcase className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">라켓</p>
+                <p className="mt-1 break-words font-semibold text-foreground">
+                  {racketBrandLabel(data.brand)} {data.model}
+                </p>
               </div>
             </div>
-          </MypageDetailCard>
 
-        <MypageDetailCard title="결제 정보" icon={<CreditCard className="h-5 w-5 text-primary" />}>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            {withStringService && (
+              <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
-                  <p className="mt-1 break-words font-semibold text-foreground">{displayStatusLabel}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">결제 방식</p>
-                  <p className="mt-1 break-words font-semibold text-foreground">결제 정보 확인 중</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
-                  <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                    {fee.toLocaleString()}원
+                  <p className="text-ui-label font-medium text-muted-foreground">장착 스트링</p>
+                  <p className="mt-1 break-words font-semibold text-foreground">
+                    {installedStringLabel}
                   </p>
                 </div>
               </div>
+            )}
 
+            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">대여 기간</p>
+                <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">상태</p>
+                <Badge variant={getStatusBadgeVariant(data.status)} className="mt-1">
+                  {displayStatusLabel}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+              <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">반납 예정일</p>
+                <p className="mt-1 break-words font-semibold text-foreground">
+                  {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </MypageDetailCard>
+
+        <MypageDetailCard title="결제 정보" icon={<CreditCard className="h-5 w-5 text-primary" />}>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
+                <p className="mt-1 break-words font-semibold text-foreground">
+                  {displayStatusLabel}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+              <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">결제 방식</p>
+                <p className="mt-1 break-words font-semibold text-foreground">결제 정보 확인 중</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+              <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
+                <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                  {fee.toLocaleString()}원
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+              <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">보증금</p>
+                <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                  {deposit.toLocaleString()}원
+                </p>
+              </div>
+            </div>
+
+            {stringPrice > 0 && (
               <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
                 <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">보증금</p>
+                  <p className="text-ui-label font-medium text-muted-foreground">
+                    스트링 상품 금액
+                  </p>
                   <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                    {deposit.toLocaleString()}원
+                    {stringPrice.toLocaleString()}원
                   </p>
                 </div>
               </div>
+            )}
 
-              {stringPrice > 0 && (
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">스트링 상품 금액</p>
-                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                      {stringPrice.toLocaleString()}원
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {stringingFee > 0 && (
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">교체서비스 비용</p>
-                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                      {stringingFee.toLocaleString()}원
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
-                <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <div className="flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">총 결제 금액</p>
-                  <p className="mt-1 break-words text-ui-section-title font-semibold text-primary tabular-nums">
-                    {total.toLocaleString()}원
+            {stringingFee > 0 && (
+              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-ui-label font-medium text-muted-foreground">교체서비스 비용</p>
+                  <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                    {stringingFee.toLocaleString()}원
                   </p>
                 </div>
+              </div>
+            )}
+
+            <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
+              <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div className="flex-1">
+                <p className="text-ui-label font-medium text-muted-foreground">총 결제 금액</p>
+                <p className="mt-1 break-words text-ui-section-title font-semibold text-primary tabular-nums">
+                  {total.toLocaleString()}원
+                </p>
               </div>
             </div>
-          </MypageDetailCard>
+          </div>
+        </MypageDetailCard>
 
         <MypageDetailCard title="배송/수령 정보" icon={<Truck className="h-5 w-5 text-primary" />}>
           <div className="grid gap-4 bp-sm:grid-cols-2">
@@ -923,26 +941,67 @@ export default function RentalsDetailClient({
                     : "출고 운송장 등록 전입니다."}
               </p>
             </div>
-            <MypageInfoField label="출고 택배사" value={outboundCourier ? getCourierLabel(outboundCourier) : null} fallback={isVisitPickup ? "방문 수령" : "출고 택배사 확인 중"} />
-            <MypageInfoField label="출고 운송장" value={outboundTrackingNo} fallback={isVisitPickup ? "방문 수령 준비 상태로 안내됩니다." : "출고 운송장 등록 전입니다."} valueClassName="break-all" />
-            <MypageInfoField label="출고일" value={outboundShippedAt ? formatDateTime(outboundShippedAt) : null} fallback="출고일 확인 중" />
+            <MypageInfoField
+              label="출고 택배사"
+              value={outboundCourier ? getCourierLabel(outboundCourier) : null}
+              fallback={isVisitPickup ? "방문 수령" : "출고 택배사 확인 중"}
+            />
+            <MypageInfoField
+              label="출고 운송장"
+              value={outboundTrackingNo}
+              fallback={
+                isVisitPickup ? "방문 수령 준비 상태로 안내됩니다." : "출고 운송장 등록 전입니다."
+              }
+              valueClassName="break-all"
+            />
+            <MypageInfoField
+              label="출고일"
+              value={
+                outboundShippedAt
+                  ? formatDateTime(
+                      outboundShippedAt instanceof Date
+                        ? outboundShippedAt.toISOString()
+                        : outboundShippedAt,
+                    )
+                  : null
+              }
+              fallback="출고일 확인 중"
+            />
           </div>
-          </MypageDetailCard>
+        </MypageDetailCard>
 
         <MypageDetailCard title="반납 정보" icon={<Truck className="h-5 w-5 text-primary" />}>
           <div className="grid gap-4 bp-sm:grid-cols-2">
-            <MypageInfoField label="반납 예정일" value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"} />
+            <MypageInfoField
+              label="반납 예정일"
+              value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+            />
             <MypageInfoField label="반납 방식" value={returnMethodLabel} />
-            <MypageInfoField label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"} value={returnTrackingNo} fallback="반납 운송장이 아직 등록되지 않았습니다." valueClassName="break-all" />
-            <MypageInfoField label="반납 확인" value={data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 전"} />
+            <MypageInfoField
+              label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"}
+              value={returnTrackingNo}
+              fallback="반납 운송장이 아직 등록되지 않았습니다."
+              valueClassName="break-all"
+            />
+            <MypageInfoField
+              label="반납 확인"
+              value={data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 전"}
+            />
           </div>
         </MypageDetailCard>
 
         <MypageDetailCard title="신청 정보" icon={<Briefcase className="h-5 w-5 text-primary" />}>
           <div className="grid gap-4">
             <MypageInfoField label="신청번호" value={data.id} valueClassName="break-all" />
-            <MypageInfoField label="신청일" value={data.createdAt ? formatDateTime(data.createdAt) : null} fallback="신청일 확인 중" />
-            <p className="text-ui-body-sm text-muted-foreground">신청자 연락처는 계정 정보 기준으로 관리됩니다. 연락처 변경이 필요하면 고객센터로 문의해주세요.</p>
+            <MypageInfoField
+              label="신청일"
+              value={data.createdAt ? formatDateTime(data.createdAt) : null}
+              fallback="신청일 확인 중"
+            />
+            <p className="text-ui-body-sm text-muted-foreground">
+              신청자 연락처는 계정 정보 기준으로 관리됩니다. 연락처 변경이 필요하면 고객센터로
+              문의해주세요.
+            </p>
           </div>
         </MypageDetailCard>
       </>
@@ -981,7 +1040,9 @@ export default function RentalsDetailClient({
                         variant="info"
                         className="mt-2 max-w-full whitespace-normal break-keep text-left"
                       >
-                        {getCustomerApplicationStatusLabel(linkedApplication?.status ?? data.applicationSummary?.status)}
+                        {getCustomerApplicationStatusLabel(
+                          linkedApplication?.status ?? data.applicationSummary?.status,
+                        )}
                       </Badge>
                     </div>
                     <div className="p-3 bp-sm:p-4">
@@ -1015,7 +1076,9 @@ export default function RentalsDetailClient({
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-ui-body-sm font-semibold text-foreground">라켓·스트링 정보</p>
+                    <p className="text-ui-body-sm font-semibold text-foreground">
+                      라켓·스트링 정보
+                    </p>
                     <div className="grid gap-3 bp-md:grid-cols-2">
                       {linkedApplicationDisplayLines.map((line, index) => {
                         const racketLabel =
@@ -1200,7 +1263,9 @@ export default function RentalsDetailClient({
                   <p className="text-ui-body-sm font-medium text-foreground">
                     {isVisitPickup ? "매장 수령 준비 완료" : "출고 운송장 등록"}
                   </p>
-                  <p className="text-ui-label text-foreground/75">{fmtDateOnly(outboundShippedAt)}</p>
+                  <p className="text-ui-label text-foreground/75">
+                    {fmtDateOnly(outboundShippedAt)}
+                  </p>
                   <p className="text-ui-body-sm mt-1">
                     {isVisitPickup ? (
                       <>준비 확인 번호 · {outboundTrackingNo ?? "-"}</>
