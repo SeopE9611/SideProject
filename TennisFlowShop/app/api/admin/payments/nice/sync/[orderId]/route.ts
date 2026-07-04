@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { syncNicePaymentByOrderId } from "@/lib/payments/nice/syncOrder";
+import { syncNicePaymentByOrderId as handleNicePaymentSyncByOrderId } from "@/lib/payments/nice/syncOrder";
 
 export async function POST(req: Request, { params }: { params: Promise<{ orderId: string }> }) {
   const guard = await requireAdmin(req);
@@ -9,5 +9,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ orderId
   if (!csrf.ok) return csrf.res;
 
   const { orderId } = await params;
-  return syncNicePaymentByOrderId(orderId);
+  return handleNicePaymentSyncByOrderId(orderId);
 }
