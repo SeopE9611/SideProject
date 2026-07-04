@@ -6,7 +6,7 @@ import {
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { hasCompletedStringingApplication } from "@/app/order-lookup/_lib/stringing-status";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { EmptyState, PublicPageHero, PublicSurface, ResultState } from "@/components/public";
+import { EmptyState, PublicPageHero, ResultState } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -308,12 +308,12 @@ export default function OrderDetailPage() {
             <Skeleton className="h-5 w-40" />
 
             {Array.from({ length: 3 }).map((_, index) => (
-              <Card key={index} className="rounded-2xl border-border/50 bg-card/80 shadow-sm">
-                <CardHeader className="space-y-2">
+              <Card key={index} className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="space-y-2 rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <Skeleton className="h-6 w-40" />
                   <Skeleton className="h-4 w-64 max-w-full" />
                 </CardHeader>
-                <CardContent className="space-y-3 pb-6">
+                <CardContent className="space-y-3 p-4 bp-sm:p-5">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-[88%]" />
                   <Skeleton className="h-4 w-[72%]" />
@@ -551,7 +551,7 @@ export default function OrderDetailPage() {
         description={`주문번호 ${order._id.slice(-8)}의 현재 상태와 다음 해야 할 일을 확인하세요.`}
       >
         <div className="flex flex-col items-center gap-3">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-sm">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
             <Package className="h-7 w-7" />
           </div>
           <Badge
@@ -579,22 +579,22 @@ export default function OrderDetailPage() {
           </div>
 
           {nextActionText && (
-            <PublicSurface variant="muted" className="mb-6 md:mb-8">
+            <div className="mb-6 border-l-2 border-primary/40 bg-primary/5 px-3 py-2 md:mb-8">
               <p className="text-ui-body-sm font-medium text-foreground bp-md:text-ui-body">현재 진행 안내</p>
               <p className="mt-1 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">{nextActionText}</p>
-            </PublicSurface>
+            </div>
           )}
 
           <details className="group mb-6 md:mb-8 bp-md:block">
-            <summary className="cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
-          <Card className="mt-3 hidden rounded-xl border border-border bg-card shadow-sm group-open:block bp-md:block">
-            <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
+            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
+          <Card className="mt-3 hidden rounded-xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
+            <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
               <CardTitle className="text-ui-body">주문 진행 타임라인</CardTitle>
               <p className="text-ui-body-sm text-muted-foreground">
                 주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수 있습니다.
               </p>
             </CardHeader>
-            <CardContent className="space-y-3 pt-5">
+            <CardContent className="pt-0">
               {timelineSteps.map((step, index) => {
                 const tone = getTimelineStepTone(step.state);
                 const Icon =
@@ -604,7 +604,7 @@ export default function OrderDetailPage() {
                 return (
                   <div
                     key={step.title}
-                    className="rounded-xl border border-border/70 bg-muted/30 p-3"
+                    className="border-t border-border/60 py-4 first:border-t-0"
                   >
                     <div className="flex items-start gap-3">
                       <div
@@ -627,7 +627,7 @@ export default function OrderDetailPage() {
                   </div>
                 );
               })}
-              <div className="space-y-1 text-ui-label text-muted-foreground">
+              <div className="mt-2 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
                 <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
                 <p>주문 정보와 배송/수령 정보에서 세부 상태를 함께 확인할 수 있습니다.</p>
                 {shouldShowStringingTimelineHint && (
@@ -644,16 +644,16 @@ export default function OrderDetailPage() {
 
           {/* String Service Alert */}
           {order.shippingInfo?.withStringService && (
-            <Card className="mb-6 border-2 border-border bg-card md:mb-8">
+            <Card className="mb-6 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 md:mb-8">
               <CardContent className="p-4 md:p-6">
                 {!hasStringingApplication ? (
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center">
                       <ShoppingBag className="w-6 h-6 text-foreground" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground mb-2">교체서비스 신청 가능</h3>
-                      <p className="text-muted-foreground mb-4">
+                      <p className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2 text-muted-foreground mb-4">
                         {isVisitPickup
                           ? "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."
                           : "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 택배 수령 주문은 라켓 발송과 완성 라켓 배송으로 장착 서비스가 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."}
@@ -669,7 +669,7 @@ export default function OrderDetailPage() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
                       <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
@@ -692,11 +692,11 @@ export default function OrderDetailPage() {
           {order.shippingInfo?.withStringService &&
             hasStringingApplication &&
             latestStringingApplication && (
-              <Card className="mb-6 border border-border bg-card md:mb-8">
-                <CardHeader className="pb-3">
+              <Card className="mb-6 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 md:mb-8">
+                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <CardTitle className="text-ui-body">교체서비스 접수 요약</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-2 text-ui-body-sm">
+                <CardContent className="divide-y divide-border/60 border-y border-border/60 p-4 text-ui-body-sm bp-sm:p-5 [&>p]:py-2">
                   <p className="text-muted-foreground">
                     신청 상태:{" "}
                     <span className="font-medium text-foreground">
@@ -750,13 +750,13 @@ export default function OrderDetailPage() {
             )}
 
           <details className="group bp-md:block" open>
-            <summary className="cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">주문 상품</summary>
+            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">주문 상품</summary>
           <div className="mt-3 grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
             {/* Main Content */}
             <div className="space-y-6 md:space-y-8 lg:col-span-2">
               {/* 주문 정보 */}
-              <Card className="border border-border bg-card shadow-sm">
-                <CardHeader className="pb-6">
+              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <Calendar className="w-5 h-5 text-foreground" />
@@ -765,26 +765,26 @@ export default function OrderDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div className="divide-y divide-border/60 border-y border-border/60">
+                      <div className="py-3">
                         <p className="text-ui-body-sm text-muted-foreground mb-1">주문일자</p>
                         <p className="font-semibold">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <div>
+                      <div className="py-3">
                         <p className="text-ui-body-sm text-muted-foreground mb-1">주문번호</p>
-                        <p className="break-all rounded bg-muted px-3 py-1 font-mono text-ui-body-sm">{order._id}</p>
+                        <p className="break-all font-mono text-ui-body-sm">{order._id}</p>
                       </div>
                     </div>
-                    <div>
+                    <div className="border-y border-border/60 py-3">
                       <p className="text-ui-body-sm text-muted-foreground mb-2">결제수단</p>
                       <p className="mb-3 font-semibold text-foreground">{paymentDisplaySummary.userLabel}</p>
                       {shouldShowBankInfo && order.paymentInfo?.bank && (
                         <>
                           <p className="text-ui-body-sm text-muted-foreground mb-2">입금 계좌</p>
-                          <div className="rounded-lg border border-border bg-secondary/40 p-4">
+                          <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2">
                             <div className="space-y-2">
                               <p className="font-semibold text-foreground">무통장입금</p>
                               <p className="font-semibold text-foreground">
@@ -806,8 +806,8 @@ export default function OrderDetailPage() {
               </Card>
 
               {/* 배송 정보 */}
-              <Card className="border border-border bg-card shadow-sm">
-                <CardHeader className="pb-6">
+              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <MapPin className="w-5 h-5 text-foreground" />
@@ -816,16 +816,16 @@ export default function OrderDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div className="divide-y divide-border/60 border-y border-border/60">
+                      <div className="flex items-center gap-3 py-3">
                         <User className="w-5 h-5 text-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-muted-foreground">수령인</p>
                           <p className="font-semibold">{order.shippingInfo.name}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                      <div className="flex items-center gap-3 py-3">
                         <Phone className="w-5 h-5 text-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-muted-foreground">연락처</p>
@@ -836,13 +836,13 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <div className="p-3 bg-background rounded-lg">
+                    <div className="divide-y divide-border/60 border-y border-border/60">
+                      <div className="py-3">
                         <p className="text-ui-body-sm text-muted-foreground mb-1">{shippingAddressLabel}</p>
                         <p className="break-words font-semibold">{shippingAddressValue}</p>
                       </div>
                       {canTrack && (
-                        <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
+                        <div className="flex items-center gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
                             <p className="text-ui-body-sm text-muted-foreground mb-1">운송장 번호</p>
@@ -889,8 +889,8 @@ export default function OrderDetailPage() {
               </Card>
 
               {/* 주문 상품 */}
-              <Card className="border border-border bg-card shadow-sm">
-                <CardHeader className="pb-6">
+              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <ShoppingBag className="w-5 h-5 text-foreground" />
@@ -899,13 +899,13 @@ export default function OrderDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="divide-y divide-border/60 border-y border-border/60">
                     {order.items.map((item, index) => (
                       <div
                         key={item.id || index}
-                        className="flex flex-col md:flex-row gap-4 p-4 border-2 border-border rounded-lg hover:border-border transition-colors"
+                        className="flex flex-col gap-4 py-4 first:pt-0 last:pb-0 md:flex-row"
                       >
-                        <div className="flex-shrink-0 w-full md:w-24 h-24 bg-muted rounded-lg overflow-hidden">
+                        <div className="h-24 w-full flex-shrink-0 overflow-hidden rounded-lg bg-muted ring-1 ring-border/60 md:w-24">
                           <Image
                             src={item.image || "/placeholder.svg"}
                             alt={item.name}
@@ -942,8 +942,8 @@ export default function OrderDetailPage() {
 
             {/* Sidebar - 결제 정보 */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-8 border border-border bg-card shadow-sm">
-                <CardHeader className="pb-6">
+              <Card className="sticky top-8 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <CreditCard className="w-5 h-5 text-foreground" />
@@ -952,7 +952,7 @@ export default function OrderDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="divide-y divide-border/60 border-y border-border/60">
                     <div className="flex items-center justify-between gap-3 py-2">
                       <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
                       <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
@@ -977,7 +977,7 @@ export default function OrderDetailPage() {
 
                     {/* Benefits */}
                     <div className="mt-6 space-y-3">
-                      <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
+                      <div className="flex items-center gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm font-medium text-foreground">안전한 결제</p>
@@ -985,7 +985,7 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
+                      <div className="flex items-center gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm font-medium text-foreground">배송 보장</p>
