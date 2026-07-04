@@ -893,7 +893,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               variant="outline"
               size="sm"
               onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-              className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
             >
               <span className="bp-sm:hidden">목록</span>
               <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
@@ -920,7 +920,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
-                className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:w-auto"
+                className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
               >
                 취소 요청
               </Button>
@@ -1006,7 +1006,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 variant="destructive"
                 onClick={handleWithdrawCancelRequest}
                 disabled={isWithdrawingCancelRequest}
-                className="h-9 w-full gap-1.5 overflow-hidden whitespace-nowrap bp-sm:ml-4 bp-sm:w-auto"
+                className="h-9 w-full gap-1.5 whitespace-normal break-keep bp-sm:ml-4 bp-sm:w-auto"
               >
                 <Undo2 className="h-4 w-4" />
                 {isWithdrawingCancelRequest ? "철회 중..." : "취소 요청 철회"}
@@ -1496,12 +1496,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   </div>
 
                   {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber ? (
-                    <details className="group rounded-xl border border-border/60 bg-muted/10">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                    <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                         <span>운송장·배송조회 상세</span>
                         <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                       </summary>
-                      <div className="space-y-3 border-t border-border/50 p-3">
+                      <div className="space-y-3 border-t border-border/60 p-3 bp-sm:p-4">
                         <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
                           <MypageInfoField label="택배사" value={getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)} />
                           <MypageInfoField label="완성 라켓 운송장 번호" value={orderDetail.shippingInfo.invoice.trackingNumber} valueClassName="break-all" />
@@ -1541,12 +1541,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </details>
                   ) : null}
 
-                  <details className="group rounded-xl border border-border/60 bg-muted/10">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                  <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                       <span>배송/연락처 상세</span>
                       <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                     </summary>
-                    <div className="space-y-3 border-t border-border/50 p-3">
+                    <div className="space-y-3 border-t border-border/60 p-3 bp-sm:p-4">
                       <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
                         <MypageInfoField label="이름" value={orderDetail.customer.name} fallback="이름 없음" />
                         <MypageInfoField label="전화번호" value={formatKoreanPhone(orderDetail.customer.phone)} fallback="전화번호 없음" />
@@ -1629,8 +1629,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       <p className="font-semibold text-foreground">{remainingSlots}회</p>
                     </div>
                   </div>
-                  <details className="group rounded-xl border border-border/60 bg-muted/10">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                  <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                       <span>패키지 상세</span>
                       <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                     </summary>
@@ -1707,10 +1707,11 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <div className="space-y-5 bp-lg:col-start-1 bp-lg:row-start-2">
             <details className="group bp-md:block">
-              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">
-                진행 단계
+              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
+                <span>진행 단계</span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
-              <Card className="hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
+              <Card className="hidden rounded-2xl border-0 bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50 group-open:block bp-md:block">
                 <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                   <CardTitle>주문 진행 타임라인</CardTitle>
                   <CardDescription>
@@ -1773,8 +1774,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
             {/* 처리 이력 */}
             <details className="group bp-md:block">
-              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">
-                처리 이력
+              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
+                <span>처리 이력</span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
               <div className="hidden group-open:block bp-md:block">
                 <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />

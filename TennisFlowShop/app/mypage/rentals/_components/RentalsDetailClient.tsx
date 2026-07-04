@@ -624,7 +624,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 variant="outline"
                 size="sm"
                 asChild
-                className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
+                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 lg:w-auto"
               >
                 <Link href={returnShippingHref}>
                   <Truck className="mr-2 h-4 w-4" />
@@ -639,7 +639,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
-                className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap lg:w-auto"
+                className="h-9 w-full gap-2 whitespace-normal break-keep lg:w-auto"
               >
                 <XCircle className="h-4 w-4" />
                 대여 취소
@@ -655,7 +655,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               variant="outline"
               size="sm"
               asChild
-              className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
+              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 lg:w-auto"
             >
               <Link href={backUrl}>
                 목록으로 돌아가기
@@ -763,7 +763,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               size="sm"
               onClick={handleWithdrawCancelRequest}
               disabled={withdrawing}
-              className="mt-3 h-9 w-full overflow-hidden whitespace-nowrap sm:ml-4 sm:mt-0 sm:w-auto"
+              className="mt-3 h-9 w-full whitespace-normal break-keep sm:ml-4 sm:mt-0 sm:w-auto"
             >
               {withdrawing ? "철회 중…" : "취소 요청 철회"}
             </Button>
@@ -901,13 +901,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </MypageDetailCard>
 
-        <details className="group rounded-2xl bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+        <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2"><Truck className="h-5 w-5 text-primary" />상세 정보</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
-          <div className="space-y-5 border-t border-border/60 p-4 bp-lg:p-6">
-            <MypageDetailCard title="배송/수령 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="shadow-none ring-border/40">
+          <div className="space-y-4 border-t border-border/60 p-4 bp-lg:p-5">
+            <MypageDetailCard title="배송/수령 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="rounded-xl bg-muted/10 shadow-none ring-border/40">
           <div className="grid gap-4 bp-sm:grid-cols-2">
             <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
             <div className="border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
@@ -951,7 +951,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </MypageDetailCard>
 
-        <MypageDetailCard title="반납 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="shadow-none ring-border/40">
+        <MypageDetailCard title="반납 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="rounded-xl bg-muted/10 shadow-none ring-border/40">
           <div className="grid gap-4 bp-sm:grid-cols-2">
             <MypageInfoField
               label="반납 예정일"
@@ -971,7 +971,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </MypageDetailCard>
 
-        <MypageDetailCard title="신청 정보" icon={<Briefcase className="h-5 w-5 text-primary" />} className="shadow-none ring-border/40">
+        <MypageDetailCard title="신청 정보" icon={<Briefcase className="h-5 w-5 text-primary" />} className="rounded-xl bg-muted/10 shadow-none ring-border/40">
           <div className="grid gap-4">
             <MypageInfoField label="신청번호" value={data.id} valueClassName="break-all" />
             <MypageInfoField
@@ -1059,12 +1059,12 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </div>
 
                   <div className="space-y-3">
-                    <details className="group rounded-xl bg-muted/15 p-3">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                    <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                         <span>라켓·스트링 상세</span>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                       </summary>
-                    <div className="mt-3 grid gap-3 bp-md:grid-cols-2">
+                    <div className="grid gap-3 border-t border-border/50 p-3 bp-md:grid-cols-2">
                       {linkedApplicationDisplayLines.map((line, index) => {
                         const racketLabel =
                           line.racketLabel ||
@@ -1125,12 +1125,12 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     </details>
                   </div>
 
-                  <details className="group rounded-xl bg-muted/15 p-3 text-ui-body-sm text-foreground">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                  <details className="group overflow-hidden rounded-xl bg-muted/10 text-ui-body-sm text-foreground ring-1 ring-border/40">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                       <span>장착·출고 상세</span>
-                      <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                     </summary>
-                    <div className="mt-3 space-y-3">
+                    <div className="space-y-3 border-t border-border/50 p-3">
                     <div>
                       <p className="font-semibold text-foreground">장착·출고 안내</p>
                       <p className="mt-1 text-muted-foreground">
@@ -1195,7 +1195,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                       <ServiceReviewCTA
                         applicationId={data.stringingApplicationId}
                         userConfirmedAt={linkedApplication?.userConfirmedAt ?? null}
-                        className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:w-auto"
+                        className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
                       />
                     ) : null}
                   </div>
@@ -1207,7 +1207,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </p>
                   <Button
                     asChild
-                    className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto"
+                    className="h-9 w-full gap-2 whitespace-normal break-keep bp-sm:w-auto"
                   >
                     <Link href={applyHref}>
                       <Wrench className="h-4 w-4" />
@@ -1225,12 +1225,12 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         </section>
       ) : null}
 
-      <details className="group overflow-hidden rounded-2xl bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+      <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
           <span className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" />진행 단계</span>
-          <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
-        <Card className="border-0 shadow-none">
+        <Card className="border-0 bg-transparent shadow-none">
         <CardHeader className="hidden border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5 text-primary" />

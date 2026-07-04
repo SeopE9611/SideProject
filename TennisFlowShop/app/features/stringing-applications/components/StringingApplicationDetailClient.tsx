@@ -73,6 +73,7 @@ import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   Calendar,
+  ChevronDown,
   CheckCircle2,
   Clock,
   Copy,
@@ -1302,11 +1303,11 @@ export default function StringingApplicationDetailClient({
 
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
-    : "grid gap-5 bp-lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)] bp-lg:items-start";
+    : "grid gap-4 bp-lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)] bp-lg:items-start bp-lg:gap-5";
   const detailColumnClass = isAdmin ? "contents" : "contents bp-lg:block bp-lg:space-y-5";
   const detailCardClass = isAdmin
     ? "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
-    : "overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50";
+    : "overflow-hidden rounded-2xl border-0 bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50";
   const detailCardHeaderClass = isAdmin
     ? "border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5 lg:p-6"
     : "border-b border-border/70 bg-secondary/30 px-4 py-4 bp-sm:px-5 bp-lg:px-6";
@@ -1324,7 +1325,7 @@ export default function StringingApplicationDetailClient({
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
               >
                 <Link href={backUrl}>
                   <span className="bp-sm:hidden">목록</span>
@@ -1408,7 +1409,7 @@ export default function StringingApplicationDetailClient({
                     applicationId={data.id}
                     status={data.status}
                     userConfirmedAt={data.userConfirmedAt ?? null}
-                    className="h-10 w-full overflow-hidden whitespace-nowrap"
+                    className="h-10 w-full whitespace-normal break-keep"
                   />
                 )}
               </div>
@@ -2692,7 +2693,10 @@ export default function StringingApplicationDetailClient({
                     </CardDescription>
                   </CardHeader>
                   <details className="group bp-md:block">
-                    <summary className="mx-3 my-2 min-h-11 cursor-pointer rounded-lg px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden">배송/발송 정보</summary>
+                    <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden [&::-webkit-details-marker]:hidden">
+                      <span>배송/발송 정보</span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                    </summary>
                   <CardContent className="hidden gap-5 p-4 group-open:grid bp-md:grid bp-sm:p-6 bp-xl:grid-cols-2">
                     <div className="min-w-0 border-l-2 border-primary/25 bg-primary/5 px-3 py-3 leading-relaxed bp-sm:px-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
@@ -2816,7 +2820,10 @@ export default function StringingApplicationDetailClient({
                   </CardTitle>
                 </CardHeader>
                 <details className="group bp-md:block">
-                  <summary className="mx-3 my-2 min-h-11 cursor-pointer rounded-lg px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden">요청사항</summary>
+                  <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden [&::-webkit-details-marker]:hidden">
+                    <span>요청사항</span>
+                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                  </summary>
                 <CardContent className="hidden p-4 group-open:block bp-md:block bp-lg:p-6">
                   {editingRequirements ? (
                     <RequirementsEditForm
@@ -2864,7 +2871,7 @@ export default function StringingApplicationDetailClient({
                       <span>신청 타임라인</span>
                     </CardTitle>
                     <CardDescription>
-                      접수, 라켓 발송, 작업, 완성 라켓 배송/수령, 확정까지의 진행 흐름을 확인할 수 있습니다.
+                      접수부터 확정까지의 진행 흐름입니다.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-4 bp-lg:p-6">
@@ -3001,7 +3008,7 @@ export default function StringingApplicationDetailClient({
                           처리 이력
                         </CardTitle>
                         <CardDescription className="mt-1">
-                          상태 변경과 처리 기록은 필요할 때만 펼쳐 확인하세요.
+                          상태 변경과 처리 기록을 확인하세요.
                         </CardDescription>
                       </div>
                       <Button
