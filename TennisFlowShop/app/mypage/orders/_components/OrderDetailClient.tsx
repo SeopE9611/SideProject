@@ -1575,9 +1575,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
-                    <div>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
                       {(() => {
                         const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
@@ -1590,7 +1590,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </div>
                   </div>
 
-                  <div className="py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
                     <PaymentMethodDetail
                       method={orderDetail.paymentMethod || "무통장입금"}
                       bankKey={orderDetail.paymentBank ?? undefined}
@@ -1606,8 +1606,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     />
                   </div>
 
-                  <div className="mt-3 flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
-                    <div>
+                  <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
+                    <div className="min-w-0 flex-1">
                       <p className="text-ui-label font-medium text-muted-foreground">결제 금액</p>
                       <p className="text-ui-section-title font-semibold text-primary">
                         {formatCurrency(orderDetail.total)}
@@ -1649,42 +1649,42 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardContent>
               ) : (
                 <CardContent className="p-4 bp-lg:p-6">
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                  <div className="divide-y divide-border/60">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <User className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-ui-label font-medium text-muted-foreground">이름</p>
-                        <p className="mt-1 break-words font-semibold text-foreground">
+                        <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
                           {orderDetail.customer.name ?? "이름 없음"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <Mail className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-ui-label font-medium text-muted-foreground">이메일</p>
-                        <p className="break-words font-semibold text-foreground">
+                        <p className="mt-1 break-all text-ui-body-sm font-semibold text-foreground">
                           {orderDetail.customer.email ?? "이메일 없음"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-ui-label font-medium text-muted-foreground">전화번호</p>
-                        <p className="mt-1 break-words font-semibold text-foreground">
+                        <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
                           {formatKoreanPhone(orderDetail.customer.phone) || "전화번호 없음"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-ui-label font-medium text-muted-foreground">주소</p>
-                        <p className="break-words font-semibold text-foreground">
+                        <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
                           {orderDetail.customer.address ?? "주소 없음"}
                         </p>
                         {orderDetail.customer.addressDetail && (
@@ -1725,22 +1725,22 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                <div className="divide-y divide-border/60">
+                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <Truck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-ui-label font-medium text-muted-foreground">
                         {isVisitPickup ? "수령 방법" : "배송 방법"}
                       </p>
-                      <p className="mt-1 break-words font-semibold text-foreground">{shippingMethodLabel}</p>
+                      <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">{shippingMethodLabel}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
+                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-ui-label font-medium text-muted-foreground">예상 수령일</p>
-                      <p className="mt-1 break-words font-semibold text-foreground">
+                      <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
                         {orderDetail.shippingInfo?.estimatedDate
                           ? formatDate(orderDetail.shippingInfo.estimatedDate)
                           : "미등록"}
@@ -1749,33 +1749,33 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   </div>
 
                   {!showDeliveryOnlyFields && (
-                    <p className="text-ui-label font-medium text-muted-foreground">
+                    <p className="py-3 text-ui-label font-medium text-muted-foreground first:pt-0 last:pb-0">
                       방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.
                     </p>
                   )}
 
                   {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
                     <>
-                      <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
-                        <div>
+                      <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                        <div className="min-w-0 flex-1">
                           <p className="text-ui-label font-medium text-muted-foreground">택배사</p>
-                          <p className="mt-1 break-words font-semibold text-foreground">
+                          <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
                             {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-4">
-                        <div className="min-w-0">
+                      <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                        <div className="min-w-0 flex-1">
                           <p className="text-ui-label font-medium text-muted-foreground">
                             완성 라켓 운송장 번호
                           </p>
-                          <p className="break-all font-semibold text-foreground">
+                          <p className="mt-1 break-all text-ui-body-sm font-semibold text-foreground">
                             {orderDetail.shippingInfo.invoice.trackingNumber}
                           </p>
                         </div>
                       </div>
                       {shouldShowTrackingSummarySkeleton && (
-                        <div className="space-y-2 rounded-xl bg-muted/15 p-3">
+                        <div className="space-y-2 py-3 first:pt-0 last:pb-0">
                           <Skeleton className="h-4 w-40" />
                           <Skeleton className="h-4 w-32" />
                           <Skeleton className="h-4 w-36" />
@@ -1887,16 +1887,16 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   <CardTitle>패키지 안내</CardTitle>
                   <CardDescription>교체서비스 패키지 이용 현황입니다.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-3 p-4 text-ui-body-sm bp-lg:p-5">
-                  <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                <CardContent className="divide-y divide-border/60 p-4 text-ui-body-sm bp-lg:p-5">
+                  <div className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">전체 횟수</span>
                     <span className="font-medium text-foreground">{totalSlots}회</span>
                   </div>
-                  <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                  <div className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">사용 횟수</span>
                     <span className="font-medium text-foreground">{usedSlots}회</span>
                   </div>
-                  <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                  <div className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">남은 횟수</span>
                     <span className="font-medium text-foreground">{remainingSlots}회</span>
                   </div>
