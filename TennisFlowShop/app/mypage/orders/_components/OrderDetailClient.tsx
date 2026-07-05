@@ -1118,7 +1118,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
               <section id="stringing-service" className="scroll-mt-24 space-y-4">
                 <MypageDetailCard
-                  title="주문에 연결된 교체서비스 요약"
+                  title="연결된 교체서비스"
                   description="진행 상태와 핵심 일정을 요약했습니다."
                   action={
                     <div className="flex flex-wrap gap-2">
