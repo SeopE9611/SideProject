@@ -121,7 +121,9 @@ export default function TermsPage() {
           </Link>
 
           <div className="space-y-3">
-            <h1 className="break-keep text-ui-page-title font-semibold tracking-tight bp-sm:text-ui-page-title-lg">이용약관</h1>
+            <h1 className="break-keep text-ui-page-title font-semibold tracking-tight bp-sm:text-ui-page-title-lg">
+              이용약관
+            </h1>
             <p className="max-w-3xl break-keep text-muted-foreground leading-relaxed">
               도깨비테니스 웹사이트 이용에 관한 약관입니다. 서비스 이용 전 반드시 읽어주시기
               바랍니다.

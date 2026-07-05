@@ -7,11 +7,7 @@ type UseProductDetailQnaParams = {
   fetcher: (url: string) => Promise<any>;
 };
 
-export function useProductDetailQna({
-  activeTab,
-  productId,
-  fetcher,
-}: UseProductDetailQnaParams) {
+export function useProductDetailQna({ activeTab, productId, fetcher }: UseProductDetailQnaParams) {
   const {
     data: qnaData,
     error: qnaError,

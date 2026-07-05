@@ -21,7 +21,9 @@ function creds() {
 }
 
 function apiBase() {
-  return String(process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments").trim().replace(/\/+$/, "");
+  return String(process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments")
+    .trim()
+    .replace(/\/+$/, "");
 }
 
 function stringField(value: unknown) {
@@ -47,7 +49,8 @@ export async function POST(req: Request, ctx: Ctx) {
   if (!csrf.ok) return csrf.res;
 
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, message: "잘못된 ID입니다." }, { status: 400 });
+  if (!ObjectId.isValid(id))
+    return NextResponse.json({ ok: false, message: "잘못된 ID입니다." }, { status: 400 });
 
   const body = await req.json().catch(() => ({}));
   const reason = stringField((body as { reason?: unknown }).reason) || DEFAULT_REASON;
@@ -55,22 +58,51 @@ export async function POST(req: Request, ctx: Ctx) {
   const _id = new ObjectId(id);
   const item = await col.findOne({ _id });
 
-  if (!item) return NextResponse.json({ ok: false, message: "개인결제를 찾을 수 없습니다." }, { status: 404 });
-  if (item.paymentStatus === "결제취소") return NextResponse.json({ ok: false, message: "이미 취소된 개인결제입니다." }, { status: 400 });
-  if (item.cancellationInfo?.status === "processing") return NextResponse.json({ ok: false, message: "이미 취소 처리가 진행 중입니다." }, { status: 409 });
+  if (!item)
+    return NextResponse.json(
+      { ok: false, message: "개인결제를 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  if (item.paymentStatus === "결제취소")
+    return NextResponse.json(
+      { ok: false, message: "이미 취소된 개인결제입니다." },
+      { status: 400 },
+    );
+  if (item.cancellationInfo?.status === "processing")
+    return NextResponse.json(
+      { ok: false, message: "이미 취소 처리가 진행 중입니다." },
+      { status: 409 },
+    );
 
   const paymentInfo = item.paymentInfo ?? {};
   const provider = stringField(paymentInfo.provider);
   const tid = stringField(paymentInfo.tid);
   const orderId = stringField(paymentInfo.niceOrderId);
 
-  if (item.paymentStatus !== "결제완료" || provider !== "nicepay" || !tid || !Number.isFinite(item.amount) || item.amount <= 0) {
-    return NextResponse.json({ ok: false, message: "NICEPAY 승인취소 가능한 개인결제가 아닙니다." }, { status: 400 });
+  if (
+    item.paymentStatus !== "결제완료" ||
+    provider !== "nicepay" ||
+    !tid ||
+    !Number.isFinite(item.amount) ||
+    item.amount <= 0
+  ) {
+    return NextResponse.json(
+      { ok: false, message: "NICEPAY 승인취소 가능한 개인결제가 아닙니다." },
+      { status: 400 },
+    );
   }
-  if (!orderId) return NextResponse.json({ ok: false, message: "NICEPAY 주문번호가 없어 승인취소할 수 없습니다." }, { status: 400 });
+  if (!orderId)
+    return NextResponse.json(
+      { ok: false, message: "NICEPAY 주문번호가 없어 승인취소할 수 없습니다." },
+      { status: 400 },
+    );
 
   const { clientKey, secretKey } = creds();
-  if (!clientKey || !secretKey) return NextResponse.json({ ok: false, message: "NICEPAY 취소 설정이 올바르지 않습니다." }, { status: 500 });
+  if (!clientKey || !secretKey)
+    return NextResponse.json(
+      { ok: false, message: "NICEPAY 취소 설정이 올바르지 않습니다." },
+      { status: 500 },
+    );
 
   const now = new Date();
   const claimed = await col.findOneAndUpdate(
@@ -89,14 +121,26 @@ export async function POST(req: Request, ctx: Ctx) {
     { returnDocument: "after" },
   );
 
-  if (!claimed) return NextResponse.json({ ok: false, message: "이미 취소 처리 중이거나 취소할 수 없는 상태입니다." }, { status: 409 });
+  if (!claimed)
+    return NextResponse.json(
+      { ok: false, message: "이미 취소 처리 중이거나 취소할 수 없는 상태입니다." },
+      { status: 409 },
+    );
 
   try {
-    const canceled = await cancelNicePaymentByTid({ tid, orderId, reason, clientKey, secretKey, apiBaseUrl: apiBase() });
+    const canceled = await cancelNicePaymentByTid({
+      tid,
+      orderId,
+      reason,
+      clientKey,
+      secretKey,
+      apiBaseUrl: apiBase(),
+    });
     const resultCode = pick(canceled, "resultCode", "ResultCode");
 
     if (resultCode !== "0000") {
-      const message = pick(canceled, "resultMsg", "ResultMsg", "message") || "NICEPAY 승인취소에 실패했습니다.";
+      const message =
+        pick(canceled, "resultMsg", "ResultMsg", "message") || "NICEPAY 승인취소에 실패했습니다.";
       const failedAt = new Date();
 
       await col.updateOne(
@@ -186,7 +230,17 @@ export async function POST(req: Request, ctx: Ctx) {
       }
     }
 
-    await appendAdminAudit(guard.db, { type: "private_payment.cancel", actorId: guard.admin._id, targetId: _id, message: "개인결제 승인취소", diff: { reason, tid, orderId } }, req);
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "private_payment.cancel",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "개인결제 승인취소",
+        diff: { reason, tid, orderId },
+      },
+      req,
+    );
     try {
       await sendAdminOperationalAlert({
         kind: "private_payment_canceled",
@@ -223,7 +277,17 @@ export async function POST(req: Request, ctx: Ctx) {
         },
       },
     );
-    await appendAdminAudit(guard.db, { type: "private_payment.cancel", actorId: guard.admin._id, targetId: _id, message: "개인결제 승인취소 실패", diff: { reason, tid, orderId, failureMessage: message } }, req);
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "private_payment.cancel",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "개인결제 승인취소 실패",
+        diff: { reason, tid, orderId, failureMessage: message },
+      },
+      req,
+    );
     return NextResponse.json({ ok: false, message }, { status: 502 });
   }
 }

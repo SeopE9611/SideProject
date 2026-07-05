@@ -473,12 +473,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const body = await req.json().catch(() => ({}));
 
     if (!isAdminCancelableOrderStatus(existing.status)) {
-      return new NextResponse(getAdminCancelPolicyMessage(existing.status, Boolean(hasTrackingNumber)), {
-        status: 400,
-      });
+      return new NextResponse(
+        getAdminCancelPolicyMessage(existing.status, Boolean(hasTrackingNumber)),
+        {
+          status: 400,
+        },
+      );
     }
 
-    if (isAdminForceCancelRequired(existing.status, Boolean(hasTrackingNumber)) && body.force !== true) {
+    if (
+      isAdminForceCancelRequired(existing.status, Boolean(hasTrackingNumber)) &&
+      body.force !== true
+    ) {
       return new NextResponse("관리자 강제 취소 확인이 필요합니다.", {
         status: 409,
       });

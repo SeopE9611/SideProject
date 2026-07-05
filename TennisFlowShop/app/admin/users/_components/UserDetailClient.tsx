@@ -741,7 +741,10 @@ export default function UserDetailClient({ id }: { id: string }) {
                       <AlertDialogAction
                         disabled={deleteConfirmText !== deleteConfirmPhrase || pending}
                         onClick={async () => {
-                          await patchUser({ isDeleted: true, confirmText: deleteConfirmText }, "탈퇴(삭제)");
+                          await patchUser(
+                            { isDeleted: true, confirmText: deleteConfirmText },
+                            "탈퇴(삭제)",
+                          );
                           setDeleteConfirmText("");
                           await mutate();
                         }}
@@ -834,11 +837,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   </h1>
                   {(() => {
                     const roleSpec = getUserRoleBadgeSpec(user.role);
-                    return (
-                      <Badge variant={roleSpec.variant}>
-                        {getUserRoleLabel(user.role)}
-                      </Badge>
-                    );
+                    return <Badge variant={roleSpec.variant}>{getUserRoleLabel(user.role)}</Badge>;
                   })()}
                   <StatusBadge status={statusKey(user)} />
                 </div>
@@ -890,54 +889,54 @@ export default function UserDetailClient({ id }: { id: string }) {
             {/* 계정 요약 */}
             <div id="admin-user-account">
               <Section>
-              <SectionHeader
-                title="계정 요약"
-                aside={<UserCog className="h-4 w-4 text-muted-foreground" />}
-              />
-              <SectionBody className="space-y-3">
-                <InfoItem
-                  icon={<Phone className="h-3.5 w-3.5" />}
-                  label="전화"
-                  value={
-                    user.phone ? (
-                      <a
-                        className="underline decoration-dotted"
-                        data-no-unsaved-guard
-                        href={`tel:${user.phone}`}
-                      >
-                        {formatKoreanPhone(user.phone) || user.phone}
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground">미등록</span>
-                    )
-                  }
-                  onCopy={user.phone ? () => copy(user.phone!) : undefined}
-                  mono
+                <SectionHeader
+                  title="계정 요약"
+                  aside={<UserCog className="h-4 w-4 text-muted-foreground" />}
                 />
-                <InfoItem
-                  icon={<MapPin className="h-3.5 w-3.5" />}
-                  label="주소"
-                  value={
-                    user.address ? (
-                      <span className="break-words">
-                        {user.address} {user.addressDetail ? ` ${user.addressDetail}` : ""}{" "}
-                        {user.postalCode ? ` [${user.postalCode}]` : ""}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">미등록</span>
-                    )
-                  }
-                  onCopy={
-                    user.address || user.postalCode
-                      ? () =>
-                          copy(
-                            `${user.address ?? ""} ${user.addressDetail ?? ""} ${user.postalCode ? `[${user.postalCode}]` : ""}`.trim(),
-                          )
-                      : undefined
-                  }
-                />
-              </SectionBody>
-            </Section>
+                <SectionBody className="space-y-3">
+                  <InfoItem
+                    icon={<Phone className="h-3.5 w-3.5" />}
+                    label="전화"
+                    value={
+                      user.phone ? (
+                        <a
+                          className="underline decoration-dotted"
+                          data-no-unsaved-guard
+                          href={`tel:${user.phone}`}
+                        >
+                          {formatKoreanPhone(user.phone) || user.phone}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">미등록</span>
+                      )
+                    }
+                    onCopy={user.phone ? () => copy(user.phone!) : undefined}
+                    mono
+                  />
+                  <InfoItem
+                    icon={<MapPin className="h-3.5 w-3.5" />}
+                    label="주소"
+                    value={
+                      user.address ? (
+                        <span className="break-words">
+                          {user.address} {user.addressDetail ? ` ${user.addressDetail}` : ""}{" "}
+                          {user.postalCode ? ` [${user.postalCode}]` : ""}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">미등록</span>
+                      )
+                    }
+                    onCopy={
+                      user.address || user.postalCode
+                        ? () =>
+                            copy(
+                              `${user.address ?? ""} ${user.addressDetail ?? ""} ${user.postalCode ? `[${user.postalCode}]` : ""}`.trim(),
+                            )
+                        : undefined
+                    }
+                  />
+                </SectionBody>
+              </Section>
             </div>
 
             <div id="admin-user-notes">
@@ -947,57 +946,57 @@ export default function UserDetailClient({ id }: { id: string }) {
             {/* 보안 & 최근 활동 */}
             <div id="admin-user-security">
               <Section>
-              <SectionHeader
-                title="보안 & 최근 활동"
-                aside={<ShieldAlert className="h-4 w-4 text-muted-foreground" />}
-              />
-              <SectionBody className="space-y-3">
-                <InfoItem
-                  icon={<CalendarDays className="h-3.5 w-3.5" />}
-                  label="가입일"
-                  value={fmt(user.createdAt)}
+                <SectionHeader
+                  title="보안 & 최근 활동"
+                  aside={<ShieldAlert className="h-4 w-4 text-muted-foreground" />}
                 />
-                <InfoItem
-                  icon={<LogIn className="h-3.5 w-3.5" />}
-                  label="마지막 로그인"
-                  value={
-                    <>
-                      <span className="block">
-                        {fmt(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}
-                      </span>
-                      <span className="block text-xs text-muted-foreground">
-                        {fromNowK(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}
-                      </span>
-                    </>
-                  }
-                />
+                <SectionBody className="space-y-3">
+                  <InfoItem
+                    icon={<CalendarDays className="h-3.5 w-3.5" />}
+                    label="가입일"
+                    value={fmt(user.createdAt)}
+                  />
+                  <InfoItem
+                    icon={<LogIn className="h-3.5 w-3.5" />}
+                    label="마지막 로그인"
+                    value={
+                      <>
+                        <span className="block">
+                          {fmt(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          {fromNowK(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}
+                        </span>
+                      </>
+                    }
+                  />
 
-                {/* 최근 로그인 장치 */}
-                <div className="mt-2 rounded-xl border bg-card border-border p-2">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="text-sm font-medium text-foreground">최근 로그인 장치</div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCleanupOpen(true)}
-                      className="whitespace-nowrap"
-                    >
-                      세션 로그 정리
-                    </Button>
-                  </div>
-
-                  {sessionsResp?.items?.length ? (
-                    <div className="space-y-2">
-                      {sessionsResp.items.map((s, i) => (
-                        <SessionRow key={i} s={s} highlight={i === 0} />
-                      ))}
+                  {/* 최근 로그인 장치 */}
+                  <div className="mt-2 rounded-xl border bg-card border-border p-2">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="text-sm font-medium text-foreground">최근 로그인 장치</div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCleanupOpen(true)}
+                        className="whitespace-nowrap"
+                      >
+                        세션 로그 정리
+                      </Button>
                     </div>
-                  ) : (
-                    <AdminInlineEmpty>최근 로그인 기록이 없습니다.</AdminInlineEmpty>
-                  )}
-                </div>
-              </SectionBody>
-            </Section>
+
+                    {sessionsResp?.items?.length ? (
+                      <div className="space-y-2">
+                        {sessionsResp.items.map((s, i) => (
+                          <SessionRow key={i} s={s} highlight={i === 0} />
+                        ))}
+                      </div>
+                    ) : (
+                      <AdminInlineEmpty>최근 로그인 기록이 없습니다.</AdminInlineEmpty>
+                    )}
+                  </div>
+                </SectionBody>
+              </Section>
             </div>
 
             <AlertDialog open={cleanupOpen} onOpenChange={setCleanupOpen}>
@@ -1054,36 +1053,36 @@ export default function UserDetailClient({ id }: { id: string }) {
             {/* 액티비티 KPI */}
             <div id="admin-user-activity">
               <Section>
-              <SectionHeader
-                title="액티비티"
-                aside={<ActivityIcon className="h-4 w-4 text-muted-foreground" />}
-              />
-              <SectionBody>
-                <div className="grid grid-cols-3 gap-3">
-                  <StatCard
-                    tone="emerald"
-                    icon={<ShoppingBag className="h-4 w-4" />}
-                    label="주문"
-                    value={kpiSafe.orders}
-                    href="/admin/orders"
-                  />
-                  <StatCard
-                    tone="sky"
-                    icon={<Wrench className="h-4 w-4" />}
-                    label="신청(스트링)"
-                    value={kpiSafe.applications}
-                    href="/admin/applications/stringing"
-                  />
-                  <StatCard
-                    tone="violet"
-                    icon={<Star className="h-4 w-4" />}
-                    label="리뷰"
-                    value={kpiSafe.reviews}
-                    href="/admin/reviews"
-                  />
-                </div>
-              </SectionBody>
-            </Section>
+                <SectionHeader
+                  title="액티비티"
+                  aside={<ActivityIcon className="h-4 w-4 text-muted-foreground" />}
+                />
+                <SectionBody>
+                  <div className="grid grid-cols-3 gap-3">
+                    <StatCard
+                      tone="emerald"
+                      icon={<ShoppingBag className="h-4 w-4" />}
+                      label="주문"
+                      value={kpiSafe.orders}
+                      href="/admin/orders"
+                    />
+                    <StatCard
+                      tone="sky"
+                      icon={<Wrench className="h-4 w-4" />}
+                      label="신청(스트링)"
+                      value={kpiSafe.applications}
+                      href="/admin/applications/stringing"
+                    />
+                    <StatCard
+                      tone="violet"
+                      icon={<Star className="h-4 w-4" />}
+                      label="리뷰"
+                      value={kpiSafe.reviews}
+                      href="/admin/reviews"
+                    />
+                  </div>
+                </SectionBody>
+              </Section>
             </div>
 
             {/* 최근 항목 탭 (주문/신청/리뷰) */}
@@ -1113,39 +1112,39 @@ export default function UserDetailClient({ id }: { id: string }) {
             {/* 감사 로그 (Audit) */}
             <div id="admin-user-audit">
               <Section>
-              <SectionHeader
-                title={
-                  <div>
-                    <div>변경 이력</div>
-                    <div className="mt-1 text-xs text-muted-foreground font-normal">
-                      * 최근 5개만 표시됩니다.
+                <SectionHeader
+                  title={
+                    <div>
+                      <div>변경 이력</div>
+                      <div className="mt-1 text-xs text-muted-foreground font-normal">
+                        * 최근 5개만 표시됩니다.
+                      </div>
                     </div>
-                  </div>
-                }
-                aside={<Pencil className="h-4 w-4 text-muted-foreground" />}
-              />
-              <SectionBody>
-                <MiniList
-                  empty="변경 이력이 없습니다."
-                  items={auditMerged}
-                  render={(log: AuditLog) => (
-                    <Row
-                      title={log.action}
-                      subtitle={[
-                        getAuditActorDisplay(log).label,
-                        humanizeAuditDetail(log.action, log.detail),
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                      right={new Date(log.at).toLocaleString("ko-KR", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    />
-                  )}
+                  }
+                  aside={<Pencil className="h-4 w-4 text-muted-foreground" />}
                 />
-              </SectionBody>
-            </Section>
+                <SectionBody>
+                  <MiniList
+                    empty="변경 이력이 없습니다."
+                    items={auditMerged}
+                    render={(log: AuditLog) => (
+                      <Row
+                        title={log.action}
+                        subtitle={[
+                          getAuditActorDisplay(log).label,
+                          humanizeAuditDetail(log.action, log.detail),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                        right={new Date(log.at).toLocaleString("ko-KR", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })}
+                      />
+                    )}
+                  />
+                </SectionBody>
+              </Section>
             </div>
           </div>
 
@@ -1184,7 +1183,9 @@ export default function UserDetailClient({ id }: { id: string }) {
                       <option value="superadmin">최고 관리자</option>
                     </select>
                     {dangerousActionDisabledReason ? (
-                      <p className="mt-1 text-xs text-muted-foreground">{dangerousActionDisabledReason}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {dangerousActionDisabledReason}
+                      </p>
                     ) : null}
                     {roleChanged ? (
                       <p className="mt-1 text-xs text-muted-foreground">

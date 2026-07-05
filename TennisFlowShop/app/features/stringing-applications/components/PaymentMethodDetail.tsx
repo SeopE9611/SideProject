@@ -86,27 +86,37 @@ export default function PaymentMethodDetail({
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">패키지 사용</div>
             {paymentStatus && (
-              <div className="text-ui-body-sm text-muted-foreground">결제 상태: {paymentStatus}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                결제 상태: {paymentStatus}
+              </div>
             )}
           </div>
         ) : isTossPayment ? (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">{paymentSummary.userLabel}</div>
             {paymentSummary.easyPayProviderLabel && (
-              <div className="text-ui-body-sm text-muted-foreground">간편결제: {paymentSummary.easyPayProviderLabel}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                간편결제: {paymentSummary.easyPayProviderLabel}
+              </div>
             )}
             {paymentStatus && (
-              <div className="text-ui-body-sm text-muted-foreground">결제 상태: {paymentStatus}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                결제 상태: {paymentStatus}
+              </div>
             )}
             {approvedAtLabel && (
-              <div className="text-ui-body-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                승인 시각: {approvedAtLabel}
+              </div>
             )}
           </div>
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">{paymentSummary.userLabel}</div>
             {paymentSummary.cardDisplayName && (
-              <div className="text-ui-body-sm text-muted-foreground">카드사: {paymentSummary.cardDisplayName}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                카드사: {paymentSummary.cardDisplayName}
+              </div>
             )}
             {showAdminPgDetails && paymentSummary.providerLabel && (
               <div className="text-ui-body-sm text-muted-foreground">
@@ -114,7 +124,9 @@ export default function PaymentMethodDetail({
               </div>
             )}
             {paymentStatus && (
-              <div className="text-ui-body-sm text-muted-foreground">결제 상태: {paymentStatus}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                결제 상태: {paymentStatus}
+              </div>
             )}
             {showAdminPgDetails && paymentTid && (
               <div className="text-ui-body-sm text-muted-foreground">거래 TID: {paymentTid}</div>
@@ -125,21 +137,23 @@ export default function PaymentMethodDetail({
               </div>
             )}
             {approvedAtLabel && (
-              <div className="text-ui-body-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                승인 시각: {approvedAtLabel}
+              </div>
             )}
             {showAdminPgDetails && paymentNiceSync?.pgStatus && (
               <div className="text-ui-body-sm text-muted-foreground">
                 PG 상태: {paymentNiceSync.pgStatus}
               </div>
             )}
-            {showAdminPgDetails &&
-              (paymentNiceSync?.resultCode || paymentNiceSync?.resultMsg) && (
-                <div className="text-ui-body-sm text-muted-foreground">
-                  PG 결과: {[paymentNiceSync.resultCode, paymentNiceSync.resultMsg]
-                    .filter(Boolean)
-                    .join(" / ")}
-                </div>
-              )}
+            {showAdminPgDetails && (paymentNiceSync?.resultCode || paymentNiceSync?.resultMsg) && (
+              <div className="text-ui-body-sm text-muted-foreground">
+                PG 결과:{" "}
+                {[paymentNiceSync.resultCode, paymentNiceSync.resultMsg]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </div>
+            )}
             {showAdminPgDetails && canceledAtLabel && (
               <div className="text-ui-body-sm text-muted-foreground">
                 PG 취소일시: {canceledAtLabel}
@@ -154,9 +168,7 @@ export default function PaymentMethodDetail({
         ) : null}
         {shouldShowBankBox && (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
-            <div className="font-semibold text-foreground">
-              무통장입금
-            </div>
+            <div className="font-semibold text-foreground">무통장입금</div>
             <div className="font-medium text-foreground">{bankInfo.label}</div>
             <div className="font-mono tracking-wide text-foreground">{bankInfo.account}</div>
             <div className="text-ui-body-sm text-muted-foreground">예금주: {bankInfo.holder}</div>

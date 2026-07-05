@@ -146,7 +146,9 @@ function SectionCard({
             )}
             <div className="min-w-0">
               {title && <h2 className="text-ui-body-lg font-semibold text-foreground">{title}</h2>}
-              {description && <p className="mt-0.5 text-ui-body-sm text-muted-foreground">{description}</p>}
+              {description && (
+                <p className="mt-0.5 text-ui-body-sm text-muted-foreground">{description}</p>
+              )}
             </div>
           </div>
         </div>
@@ -176,7 +178,9 @@ function FormField({
         {required && <span className="ml-1 text-destructive">*</span>}
       </Label>
       {children}
-      {hint && !error && <p className="text-ui-label leading-relaxed text-muted-foreground">{hint}</p>}
+      {hint && !error && (
+        <p className="text-ui-label leading-relaxed text-muted-foreground">{hint}</p>
+      )}
       {error && (
         <p className="flex items-center gap-1.5 text-ui-body-sm font-medium leading-relaxed text-destructive">
           <AlertCircle className="h-3.5 w-3.5" />

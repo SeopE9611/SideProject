@@ -235,22 +235,19 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     // 낙관적 업데이트: 변경된 필드만 반영
     await mutate((pages?: ApiMineResponse[]) => {
       if (!pages) return pages;
-      return pages.map(
-        (p): ApiMineResponse => ({
-          ...p,
-          items: p.items.map(
-            (a): ApiMineItem =>
-              a._id !== editing._id
-                ? a
-                : {
-                    ...a,
-                    ...(payload.content !== undefined ? { content: payload.content } : {}),
-                    ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
-                    ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
-                  },
-          ),
-        }),
-      );
+      return pages.map((p): ApiMineResponse => ({
+        ...p,
+        items: p.items.map((a): ApiMineItem =>
+          a._id !== editing._id
+            ? a
+            : {
+                ...a,
+                ...(payload.content !== undefined ? { content: payload.content } : {}),
+                ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
+                ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
+              },
+        ),
+      }));
     }, false);
 
     try {

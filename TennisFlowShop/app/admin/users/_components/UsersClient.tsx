@@ -1073,13 +1073,21 @@ export default function UsersClient() {
                       />
                     </TableHead>
                     <TableHead className={cn(adminDataTable.head, "w-[240px]")}>회원</TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[72px]")}>권한</TableHead>
+                    <TableHead className={cn(adminDataTable.headCenter, "w-[72px]")}>
+                      권한
+                    </TableHead>
                     <TableHead className={cn(adminDataTable.head, "w-[110px]")}>전화</TableHead>
                     <TableHead className={cn(adminDataTable.head, "w-[280px]")}>주소</TableHead>
                     {/* 가입일 + 마지막 로그인 병합 */}
-                    <TableHead className={cn(adminDataTable.headRight, "w-[150px]")}>활동(가입/로그인)</TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[64px] px-0")}>상태</TableHead>
-                    <TableHead className={cn(adminDataTable.actionHead, "w-[44px] px-0")}>작업</TableHead>
+                    <TableHead className={cn(adminDataTable.headRight, "w-[150px]")}>
+                      활동(가입/로그인)
+                    </TableHead>
+                    <TableHead className={cn(adminDataTable.headCenter, "w-[64px] px-0")}>
+                      상태
+                    </TableHead>
+                    <TableHead className={cn(adminDataTable.actionHead, "w-[44px] px-0")}>
+                      작업
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
 

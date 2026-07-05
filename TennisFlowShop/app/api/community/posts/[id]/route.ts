@@ -14,7 +14,10 @@ import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
 import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
 import { normalizeMarketMeta } from "@/lib/market";
 import { resolveCommunityDisplayName } from "@/lib/community-display-name";
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+import {
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세

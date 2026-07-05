@@ -48,9 +48,7 @@ export default function AdminBoardComments({ postId }: Props) {
     <Card className={adminSurface.card}>
       <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
         <CardTitle className={adminTypography.sectionTitle}>댓글 관리</CardTitle>
-        <p className={adminTypography.caption}>
-          댓글 삭제는 즉시 반영되며 복구할 수 없습니다.
-        </p>
+        <p className={adminTypography.caption}>댓글 삭제는 즉시 반영되며 복구할 수 없습니다.</p>
       </CardHeader>
       <CardContent className="space-y-3 p-5 sm:p-6">
         {comments.map((comment) => (

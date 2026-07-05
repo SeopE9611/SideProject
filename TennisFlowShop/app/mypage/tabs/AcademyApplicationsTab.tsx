@@ -138,8 +138,12 @@ function getStatusVariant(status: string) {
 function InfoItem({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="rounded-xl border border-border/50 bg-background p-3">
-      <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 break-words text-ui-body-sm font-medium text-foreground">{value?.trim() || "-"}</p>
+      <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-ui-body-sm font-medium text-foreground">
+        {value?.trim() || "-"}
+      </p>
     </div>
   );
 }

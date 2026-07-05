@@ -115,7 +115,9 @@ export default function LocationsPage() {
                   </div>
 
                   <PublicSurface variant="muted" padding="sm" className="rounded-lg">
-                    <p className="text-ui-body-sm font-medium text-primary">{location.specialNote}</p>
+                    <p className="text-ui-body-sm font-medium text-primary">
+                      {location.specialNote}
+                    </p>
                   </PublicSurface>
 
                   <div className="flex flex-wrap gap-1">

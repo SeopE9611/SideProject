@@ -1,16 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { useWishlist } from "@/app/features/wishlist/useWishlist";
 import { useCartStore } from "@/app/store/cartStore";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Heart, ShoppingCart, Trash2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 const LIMIT = 12;
 
@@ -32,7 +32,9 @@ export default function Wishlist() {
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast("색상과 게이지(굵기)를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.");
+      showErrorToast(
+        "색상과 게이지(굵기)를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.",
+      );
       router.push(`/products/${it.id}`);
       return;
     }
@@ -82,7 +84,9 @@ export default function Wishlist() {
     return (
       <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-8 md:p-12 text-center">
-          <h3 className="mb-2 text-ui-section-title font-semibold">위시리스트를 불러오지 못했습니다</h3>
+          <h3 className="mb-2 text-ui-section-title font-semibold">
+            위시리스트를 불러오지 못했습니다
+          </h3>
           <p className="text-muted-foreground">잠시 후 다시 시도해주세요.</p>
         </CardContent>
       </Card>
@@ -132,8 +136,18 @@ export default function Wishlist() {
                   <div className="line-clamp-2 min-h-10 break-keep font-semibold text-foreground hover:underline">
                     {it.name}
                   </div>
-                  <div className="mt-1 text-ui-body-sm tabular-nums text-muted-foreground">
-                    {it.price.toLocaleString()}원
+                  <div className="mt-1 text-ui-body-sm tabular-nums">
+                    <span className="font-semibold text-foreground">
+                      {it.price.toLocaleString()}원
+                    </span>
+
+                    {typeof it.regularPrice === "number" && it.regularPrice > it.price && (
+                      <div className="mt-0.5 text-ui-label text-muted-foreground">
+                        정가{" "}
+                        <span className="line-through">{it.regularPrice.toLocaleString()}원</span>
+                        {typeof it.discountRate === "number" ? ` · ${it.discountRate}% 할인` : ""}
+                      </div>
+                    )}
                   </div>
                   <div className="mt-2 space-y-0.5 text-ui-label text-muted-foreground">
                     {it.hasSelectedOption ? (

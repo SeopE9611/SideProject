@@ -515,7 +515,9 @@ export default function QnaWritePage() {
                 <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
                   문의하기
                 </h1>
-                <p className="text-ui-card-title-lg text-muted-foreground">궁금한 점을 자세히 작성해주세요</p>
+                <p className="text-ui-card-title-lg text-muted-foreground">
+                  궁금한 점을 자세히 작성해주세요
+                </p>
               </div>
             </div>
           </div>
@@ -605,7 +607,9 @@ export default function QnaWritePage() {
                       )}
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {me && myProducts.length === 0 && (
-                          <div className="text-ui-body-sm text-muted-foreground">구매 이력이 없습니다.</div>
+                          <div className="text-ui-body-sm text-muted-foreground">
+                            구매 이력이 없습니다.
+                          </div>
                         )}
                         {myProducts.map((p) => (
                           <button
@@ -638,10 +642,14 @@ export default function QnaWritePage() {
                       </div>
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {!q.trim() && (
-                          <div className="text-ui-body-sm text-muted-foreground">검색어를 입력하세요.</div>
+                          <div className="text-ui-body-sm text-muted-foreground">
+                            검색어를 입력하세요.
+                          </div>
                         )}
                         {q.trim() && searchProducts.length === 0 && (
-                          <div className="text-ui-body-sm text-muted-foreground">검색 결과가 없습니다.</div>
+                          <div className="text-ui-body-sm text-muted-foreground">
+                            검색 결과가 없습니다.
+                          </div>
                         )}
                         {searchProducts.map((p) => (
                           <button

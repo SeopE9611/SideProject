@@ -308,10 +308,7 @@ export default function AdminRentalDetailClient() {
     v ? new Date(v).toLocaleDateString("ko-KR") : "-";
 
   const servicePickupMethod = (data?.servicePickupMethod ?? null) as
-    | "SELF_SEND"
-    | "COURIER_VISIT"
-    | "SHOP_VISIT"
-    | null;
+    "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null;
   const pickupMethodLabel =
     data?.pickupMethodLabel ??
     (isVisitPickup
@@ -888,7 +885,9 @@ export default function AdminRentalDetailClient() {
           items={[
             { href: "#admin-rental-return", label: "처리 작업" },
             ...(cancelInfo ? [{ href: "#admin-rental-cancel", label: "취소 요청" }] : []),
-            ...(linkedApplication ? [{ href: "#admin-rental-linked-docs", label: "교체 작업" }] : []),
+            ...(linkedApplication
+              ? [{ href: "#admin-rental-linked-docs", label: "교체 작업" }]
+              : []),
             { href: "#admin-rental-customer", label: "고객정보" },
             { href: "#admin-rental-payment", label: "결제정보" },
             { href: "#admin-rental-shipping", label: "배송/반납" },

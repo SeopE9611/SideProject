@@ -3,10 +3,10 @@ import type { User } from "@/app/store/authStore";
 export function isAdminUser(user: User | null | undefined): boolean {
   return Boolean(
     user &&
-      ((user as any).role === "admin" ||
-        (user as any).role === "ADMIN" ||
-        (user as any).isAdmin === true ||
-        (Array.isArray((user as any).roles) && (user as any).roles.includes("admin"))),
+    ((user as any).role === "admin" ||
+      (user as any).role === "ADMIN" ||
+      (user as any).isAdmin === true ||
+      (Array.isArray((user as any).roles) && (user as any).roles.includes("admin"))),
   );
 }
 

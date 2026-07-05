@@ -188,7 +188,9 @@ function QuickActionCard({
         <h3 className="break-keep font-semibold text-foreground group-hover:text-foreground/90">
           {title}
         </h3>
-        <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">{description}</p>
+        <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
       </div>
       <ChevronRight className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
     </Link>
@@ -217,7 +219,9 @@ function InfoLinkItem({ icon: Icon, title, href }: InfoLinkProps) {
       className="group flex min-h-14 min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50"
     >
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 break-keep text-ui-body-sm font-medium text-foreground">{title}</span>
+      <span className="min-w-0 break-keep text-ui-body-sm font-medium text-foreground">
+        {title}
+      </span>
       <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
     </Link>
   );

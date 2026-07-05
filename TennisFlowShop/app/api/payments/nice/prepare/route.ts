@@ -16,9 +16,7 @@ function resolveClientId() {
 }
 
 function resolveAppUrl() {
-  return String(getBaseUrl())
-    .trim()
-    .replace(/\/+$/, "");
+  return String(getBaseUrl()).trim().replace(/\/+$/, "");
 }
 
 export async function POST(req: Request) {

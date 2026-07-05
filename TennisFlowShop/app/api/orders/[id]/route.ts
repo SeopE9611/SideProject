@@ -11,6 +11,7 @@ import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/orde
 import { isMountableStringByFee, isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { issuePassesForPaidOrder } from "@/lib/passes.service";
 import { deductPoints, grantPoints } from "@/lib/points.service";
+import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import jwt from "jsonwebtoken";
@@ -106,6 +107,48 @@ function toNullableIsoString(value: unknown): string | null {
   if (value instanceof Date) return value.toISOString();
   const date = new Date(String(value));
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function toFiniteNonNegativeNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function buildOrderLinePriceDisplay(item: any, product: any) {
+  const snapshotPrice = toFiniteNonNegativeNumber(item?.price);
+  const effectiveProductPrice = getEffectiveProductPrice(product);
+  const productPriceMeta = getProductPriceDisplayMeta(product);
+
+  const snapshotRegularPrice = toFiniteNonNegativeNumber(item?.regularPrice);
+  const productRegularPrice = toFiniteNonNegativeNumber(productPriceMeta.regularPrice);
+  const productSalePrice = toFiniteNonNegativeNumber(productPriceMeta.salePrice);
+
+  const displayPrice =
+    snapshotPrice !== null &&
+    productRegularPrice !== null &&
+    productSalePrice !== null &&
+    snapshotPrice === productRegularPrice
+      ? productSalePrice
+      : (snapshotPrice ?? effectiveProductPrice ?? 0);
+
+  const regularPrice =
+    snapshotRegularPrice !== null && snapshotRegularPrice > displayPrice
+      ? snapshotRegularPrice
+      : productRegularPrice !== null && productRegularPrice > displayPrice
+        ? productRegularPrice
+        : null;
+
+  const hasDiscount = regularPrice !== null && regularPrice > displayPrice;
+
+  return {
+    displayPrice,
+    regularPrice: hasDiscount ? regularPrice : null,
+    salePrice: hasDiscount ? displayPrice : null,
+    discountAmount: hasDiscount ? regularPrice - displayPrice : null,
+    discountRate: hasDiscount
+      ? Math.round(((regularPrice - displayPrice) / regularPrice) * 100)
+      : null,
+  };
 }
 
 // 주문-스트링 신청서 동기화 정책:
@@ -208,7 +251,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
               {
                 _id: { $in: uniqueProductIds.map((pid) => new ObjectId(pid)) },
               },
-              { projection: { _id: 1, name: 1, price: 1, mountingFee: 1 } },
+              { projection: { _id: 1, name: 1, price: 1, inventory: 1, mountingFee: 1 } },
             )
             .toArray()
         : [],
@@ -279,10 +322,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         const rawMountingFee = prod.mountingFee;
         const isMountableString = isMountableStringByFee(rawMountingFee);
 
+        const priceDisplay = buildOrderLinePriceDisplay(item, prod);
+
         return {
           id: normalizedId,
           name: prod.name,
-          price: prod.price,
+
+          // 화면과 후속 UI에서 쓰는 단가. 정가가 아니라 실제 주문/판매가 기준.
+          price: priceDisplay.displayPrice,
+
+          // 할인 표시용 메타
+          regularPrice: priceDisplay.regularPrice,
+          salePrice: priceDisplay.salePrice,
+          discountAmount: priceDisplay.discountAmount,
+          discountRate: priceDisplay.discountRate,
+
           mountingFee: isMountableString ? rawMountingFee : 0,
           isMountableString,
           quantity: item.quantity,

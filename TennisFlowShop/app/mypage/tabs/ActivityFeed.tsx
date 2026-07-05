@@ -733,9 +733,13 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-border p-2">
               <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-muted-foreground" />
             </div>
-            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-muted-foreground">전체</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-muted-foreground">
+              전체
+            </span>
           </div>
-          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-foreground">{counts.all}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-foreground">
+            {counts.all}
+          </div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -743,9 +747,13 @@ export default function ActivityFeed() {
             <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
               <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-primary">진행중</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-primary">
+              진행중
+            </span>
           </div>
-          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-primary">{counts.active}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-primary">
+            {counts.active}
+          </div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -753,9 +761,13 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-success/10 dark:bg-success/15 p-2">
               <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" />
             </div>
-            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-success">완료</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-success">
+              완료
+            </span>
           </div>
-          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-success">{counts.done}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-success">
+            {counts.done}
+          </div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -763,9 +775,13 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-muted p-2">
               <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-primary">액션 필요</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-primary">
+              액션 필요
+            </span>
           </div>
-          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-primary">{counts.action}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-primary">
+            {counts.action}
+          </div>
         </div>
       </div>
 
@@ -1068,7 +1084,9 @@ export default function ActivityFeed() {
                     <h3 className="text-ui-body bp-sm:text-ui-card-title-lg font-semibold text-primary truncate">
                       진행중
                     </h3>
-                    <p className="text-ui-label text-primary truncate">{activeTop.length}건의 활동</p>
+                    <p className="text-ui-label text-primary truncate">
+                      {activeTop.length}건의 활동
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -1213,7 +1231,9 @@ export default function ActivityFeed() {
                       <span className="text-ui-body-sm font-semibold text-foreground">
                         {formatDayHeader(dayKey)}
                       </span>
-                      <span className="text-ui-label text-foreground/75 ml-2">{dayItems.length}건</span>
+                      <span className="text-ui-label text-foreground/75 ml-2">
+                        {dayItems.length}건
+                      </span>
                     </div>
                     <div className="h-px flex-1 bg-muted/30" />
                   </div>

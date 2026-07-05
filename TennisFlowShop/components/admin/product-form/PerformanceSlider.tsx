@@ -159,7 +159,11 @@ export function PerformanceSummary({ features, className }: PerformanceSummaryPr
                 />
               </div>
               <span
-                className={cn("w-8 text-right", adminTypography.caption, "font-medium text-foreground")}
+                className={cn(
+                  "w-8 text-right",
+                  adminTypography.caption,
+                  "font-medium text-foreground",
+                )}
               >
                 {item.value}
               </span>

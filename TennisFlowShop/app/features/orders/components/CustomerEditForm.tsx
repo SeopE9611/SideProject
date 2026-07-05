@@ -120,7 +120,9 @@ export default function CustomerEditForm({
       <div>
         <label className="block text-ui-body-sm font-medium">기본 주소</label>
         <Textarea readOnly {...register("address", { required: "필수 입력입니다." })} rows={2} />
-        {errors.address && <p className="text-destructive text-ui-label">{errors.address.message}</p>}
+        {errors.address && (
+          <p className="text-destructive text-ui-label">{errors.address.message}</p>
+        )}
       </div>
       <div>
         <label className="block text-ui-body-sm font-medium">상세 주소</label>

@@ -83,7 +83,10 @@ export default function AsyncState({
           {resolvedIcon}
         </div>
         <p
-          className={cn("font-semibold", variant === "inline" ? "text-ui-body-sm" : "text-ui-body-sm sm:text-ui-body")}
+          className={cn(
+            "font-semibold",
+            variant === "inline" ? "text-ui-body-sm" : "text-ui-body-sm sm:text-ui-body",
+          )}
         >
           {resolvedTitle}
         </p>

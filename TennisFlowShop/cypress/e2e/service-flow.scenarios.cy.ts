@@ -6,10 +6,7 @@ import type {
 import { assertCommonFlowTrace } from "../support/serviceFlowAssertions";
 
 type ServiceScenarioKey =
-  | "string-only"
-  | "string-replace"
-  | "racket-buy-string-replace"
-  | "racket-rental-string-replace";
+  "string-only" | "string-replace" | "racket-buy-string-replace" | "racket-rental-string-replace";
 
 function buildIds(prefix: string) {
   return {

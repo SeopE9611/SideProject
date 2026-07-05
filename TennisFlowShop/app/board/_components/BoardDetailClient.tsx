@@ -738,8 +738,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   const isAuthor = !!user && !!item?.userId && user.id === item.userId;
   const userLike = user as
-    | ({ role?: string; isAdmin?: boolean; roles?: string[] } & typeof user)
-    | null;
+    ({ role?: string; isAdmin?: boolean; roles?: string[] } & typeof user) | null;
   const isAdmin = !!(
     userLike &&
     (userLike.role === "admin" ||
@@ -1184,9 +1183,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       });
 
       const json = (await res.json().catch(() => null)) as
-        | { ok: true; liked: boolean; likes: number }
-        | { ok: false; error?: string }
-        | null;
+        { ok: true; liked: boolean; likes: number } | { ok: false; error?: string } | null;
 
       if (!res.ok || !json || !("ok" in json) || !json.ok) {
         const msg = (json as any)?.error ?? "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.";
@@ -1673,7 +1670,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                     {/* 가격 헤더 영역 */}
                     <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
-                      <p className="mb-1 text-ui-label font-medium text-muted-foreground">판매 가격</p>
+                      <p className="mb-1 text-ui-label font-medium text-muted-foreground">
+                        판매 가격
+                      </p>
                       <p className="text-ui-page-title-lg font-semibold tracking-normal text-foreground">
                         {item.marketMeta.price?.toLocaleString?.() ?? "-"}
                         <span className="ml-0.5 text-ui-card-title-lg font-semibold">원</span>
@@ -1754,7 +1753,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   {item.marketMeta.conditionNote ? (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
                       <div className="mb-2 flex items-center gap-2">
-                        <span className="text-ui-body-sm font-semibold text-foreground">상태 설명</span>
+                        <span className="text-ui-body-sm font-semibold text-foreground">
+                          상태 설명
+                        </span>
                         <span className="text-ui-body-sm text-foreground/75">
                           판매자가 작성한 실물 컨디션 메모입니다.
                         </span>
@@ -1768,7 +1769,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   {/* ── 3. 세부 스펙 (타일 그리드) ── */}
                   {(item.category === "racket" || item.category === "string") && (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
-                      <p className="mb-4 text-ui-body-sm font-semibold text-foreground">세부 스펙</p>
+                      <p className="mb-4 text-ui-body-sm font-semibold text-foreground">
+                        세부 스펙
+                      </p>
 
                       {item.category === "racket" ? (
                         <div className="space-y-4">
@@ -1945,7 +1948,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               <div className="truncate font-medium text-foreground" title={name}>
                                 {name}
                               </div>
-                              {size && <div className="text-ui-body-sm text-foreground/75">{size}</div>}
+                              {size && (
+                                <div className="text-ui-body-sm text-foreground/75">{size}</div>
+                              )}
                             </div>
                           </div>
 
@@ -2207,7 +2212,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       onChange={(e) => setCommentContent(e.target.value)}
                       disabled={isCommentSubmitting}
                     />
-                    {commentError && <p className="text-ui-label text-destructive">{commentError}</p>}
+                    {commentError && (
+                      <p className="text-ui-label text-destructive">{commentError}</p>
+                    )}
                     <div className="flex justify-end">
                       <Button
                         type="button"

@@ -122,11 +122,11 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     return (
       <AdminPageShell variant="wide">
         <div className={cn(adminSurface.card, "border-destructive p-8 text-center")}>
-            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <p className="text-destructive">데이터를 불러오지 못했습니다.</p>
-            <Link href="/admin/rackets" className="mt-4 inline-block">
-              <Button variant="outline">목록으로 돌아가기</Button>
-            </Link>
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <p className="text-destructive">데이터를 불러오지 못했습니다.</p>
+          <Link href="/admin/rackets" className="mt-4 inline-block">
+            <Button variant="outline">목록으로 돌아가기</Button>
+          </Link>
         </div>
       </AdminPageShell>
     );
@@ -136,58 +136,52 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     <AdminPageShell variant="wide">
       <div className="space-y-6">
         <div>
-            {isLoading ? (
-              <div
-                className={cn(
-                  adminSurface.fieldPanelMuted,
-                  "mb-4",
-                  adminTypography.caption,
-                )}
-              >
-                최신 정보를 확인하고 있습니다...
-              </div>
-            ) : null}
-            <AdminPageHeader
-              title="라켓 수정"
-              description={`${racketBrandLabel(data.brand)} ${data.model}`}
-              icon={Edit}
-              actions={(
-                <>
-                  <StockChip id={data.id} total={data.quantity ?? 1} />
-                  <Button variant="outline" type="button" asChild className="border-border">
-                    <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      목록으로
-                    </Link>
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" type="button">
-                        <Trash2 className="h-4 w-4 mr-2" />
+          {isLoading ? (
+            <div className={cn(adminSurface.fieldPanelMuted, "mb-4", adminTypography.caption)}>
+              최신 정보를 확인하고 있습니다...
+            </div>
+          ) : null}
+          <AdminPageHeader
+            title="라켓 수정"
+            description={`${racketBrandLabel(data.brand)} ${data.model}`}
+            icon={Edit}
+            actions={
+              <>
+                <StockChip id={data.id} total={data.quantity ?? 1} />
+                <Button variant="outline" type="button" asChild className="border-border">
+                  <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    목록으로
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" type="button">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      삭제
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>라켓을 삭제하시겠습니까?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        이 작업은 되돌릴 수 없습니다. 라켓 정보가 영구적으로 삭제됩니다.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={onDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
                         삭제
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>라켓을 삭제하시겠습니까?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          이 작업은 되돌릴 수 없습니다. 라켓 정보가 영구적으로 삭제됩니다.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>취소</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={onDelete}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          삭제
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </>
-              )}
-            />
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            }
+          />
         </div>
 
         <AdminRacketForm initial={data} submitLabel="저장" onSubmit={onSubmit} />

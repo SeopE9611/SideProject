@@ -35,7 +35,11 @@ export function EmailSettingsTab({
     <TabsContent value="email">
       <AdminPageSection title="이메일 설정" description="SMTP 설정을 관리합니다.">
         {error.message && (
-          <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}>{error.message}</div>
+          <div
+            className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}
+          >
+            {error.message}
+          </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-3">

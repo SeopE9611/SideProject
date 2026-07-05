@@ -248,7 +248,9 @@ export default function MyPointsTab() {
                     <Calendar className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">포인트 내역</CardTitle>
+                    <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">
+                      포인트 내역
+                    </CardTitle>
                     <p className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground mt-0.5">
                       전체 {hasResolvedTotal ? data.total : "-"}건
                     </p>
@@ -269,7 +271,9 @@ export default function MyPointsTab() {
                   <div className="bg-muted/50 rounded-full p-4 mb-4">
                     <Coins className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
                   </div>
-                  <p className="text-ui-body font-medium text-center mb-1">포인트 내역이 없습니다</p>
+                  <p className="text-ui-body font-medium text-center mb-1">
+                    포인트 내역이 없습니다
+                  </p>
                   <p className="text-ui-body-sm text-muted-foreground text-center">
                     포인트를 적립하거나 사용하면 여기에 표시됩니다
                   </p>
@@ -314,7 +318,9 @@ export default function MyPointsTab() {
                             </div>
 
                             {it.reason && it.reason.trim().length >= 2 ? (
-                              <p className="text-ui-body-sm text-foreground line-clamp-1">{it.reason}</p>
+                              <p className="text-ui-body-sm text-foreground line-clamp-1">
+                                {it.reason}
+                              </p>
                             ) : fallbackReason(it.type) ? (
                               <p className="text-ui-body-sm text-muted-foreground line-clamp-1">
                                 {fallbackReason(it.type)}

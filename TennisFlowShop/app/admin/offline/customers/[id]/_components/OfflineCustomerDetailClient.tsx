@@ -239,10 +239,7 @@ function SectionCard({
   id?: string;
 }) {
   return (
-    <div
-      id={id}
-      className={`${adminSurface.card} transition-shadow hover:shadow-md ${className}`}
-    >
+    <div id={id} className={`${adminSurface.card} transition-shadow hover:shadow-md ${className}`}>
       {children}
     </div>
   );
@@ -296,9 +293,7 @@ function InfoItem({
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <p className={`${adminTypography.caption} font-medium uppercase tracking-wider`}>
-          {label}
-        </p>
+        <p className={`${adminTypography.caption} font-medium uppercase tracking-wider`}>{label}</p>
         <div className={`mt-1 ${adminTypography.bodyStrong}`}>{value || "-"}</div>
       </div>
     </div>
@@ -326,9 +321,7 @@ function StatCard({
       className={`rounded-lg border p-4 transition-colors hover:bg-muted/50 ${variantStyles[variant]}`}
     >
       <div className="flex items-center justify-between">
-        <p className={`${adminTypography.caption} font-medium uppercase tracking-wider`}>
-          {label}
-        </p>
+        <p className={`${adminTypography.caption} font-medium uppercase tracking-wider`}>{label}</p>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       </div>
       <p className={`mt-2 ${adminTypography.kpiValueCompact}`}>{value}</p>
@@ -369,7 +362,9 @@ function Message({ type, children }: { type: "success" | "error" | "info"; child
   };
   const Icon = icons[type];
   return (
-    <div className={`flex items-start gap-2 rounded-lg border p-3 ${adminTypography.body} ${styles[type]}`}>
+    <div
+      className={`flex items-start gap-2 rounded-lg border p-3 ${adminTypography.body} ${styles[type]}`}
+    >
       <Icon className="mt-0.5 h-4 w-4 shrink-0" />
       <span>{children}</span>
     </div>
@@ -1191,9 +1186,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
-          <h2 className={adminTypography.sectionTitle}>
-            오프라인 고객 상세를 불러오지 못했습니다
-          </h2>
+          <h2 className={adminTypography.sectionTitle}>오프라인 고객 상세를 불러오지 못했습니다</h2>
           <p className={`mt-2 ${adminTypography.metaMuted}`}>
             고객 ID가 잘못되었거나 고객이 삭제되었을 수 있습니다.
           </p>
@@ -1252,7 +1245,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       </section>
 
       {deleteMessage && (
-        <div className={`rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 ${adminTypography.body} text-destructive`}>
+        <div
+          className={`rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 ${adminTypography.body} text-destructive`}
+        >
           {deleteMessage}
         </div>
       )}
@@ -1271,7 +1266,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               >
                 {item.name || "이름 없음"}
               </h2>
-              <div className={`mt-1 flex flex-wrap items-center gap-3 ${adminTypography.metaMuted}`}>
+              <div
+                className={`mt-1 flex flex-wrap items-center gap-3 ${adminTypography.metaMuted}`}
+              >
                 <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap tabular-nums">
                   <Phone className="h-3.5 w-3.5" />
                   {item.phoneMasked || item.phone || "-"}
@@ -1352,7 +1349,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         {item.phoneMasked || "-"}
                       </span>
                       {item.phone && (
-                        <p className={`mt-1 whitespace-nowrap tabular-nums ${adminTypography.caption}`}>
+                        <p
+                          className={`mt-1 whitespace-nowrap tabular-nums ${adminTypography.caption}`}
+                        >
                           원번호: {item.phone}
                         </p>
                       )}
@@ -1379,7 +1378,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
               {/* Memo */}
               <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                <div className={`flex items-center gap-2 font-medium uppercase tracking-wider ${adminTypography.caption}`}>
+                <div
+                  className={`flex items-center gap-2 font-medium uppercase tracking-wider ${adminTypography.caption}`}
+                >
                   <FileText className="h-3.5 w-3.5" />
                   메모
                 </div>
@@ -1428,9 +1429,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         <p className={adminTypography.bodyStrong}>
                           {item.linkedUser?.name || "회원 정보 없음"}
                         </p>
-                        <p className={adminTypography.metaMuted}>
-                          {item.linkedUser?.email || "-"}
-                        </p>
+                        <p className={adminTypography.metaMuted}>{item.linkedUser?.email || "-"}</p>
                         <p className={adminTypography.metaMuted}>
                           {item.linkedUser?.phoneMasked || item.linkedUser?.phone || "-"}
                         </p>
@@ -1690,7 +1689,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 canUseLinkedFeatures && pointBalance !== null ? (
                   <div className="rounded-lg bg-primary/10 px-4 py-2 text-right">
                     <p className={adminTypography.caption}>현재 잔액</p>
-                    <p className={`${adminTypography.kpiValueCompact} text-primary`}>{formatPoints(pointBalance)}</p>
+                    <p className={`${adminTypography.kpiValueCompact} text-primary`}>
+                      {formatPoints(pointBalance)}
+                    </p>
                   </div>
                 ) : null
               }
@@ -1941,13 +1942,27 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                       <thead className={`bg-muted/50 ${adminTypography.caption}`}>
                         <tr>
                           <th className="whitespace-nowrap px-4 py-3 font-medium">패키지</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">횟수</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">금액</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">결제수단</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">결제상태</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">결제일</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">출처</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">환불 처리</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                            횟수
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                            금액
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">
+                            결제수단
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">
+                            결제상태
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                            결제일
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">
+                            출처
+                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                            환불 처리
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1979,7 +1994,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                                 <div>{formatCurrency(sale.price)}</div>
                                 {sale.isRefunded && (
-                                  <div className={`mt-1 ${adminTypography.caption} text-destructive`}>
+                                  <div
+                                    className={`mt-1 ${adminTypography.caption} text-destructive`}
+                                  >
                                     환불 {formatCurrency(sale.refundAmount ?? sale.price)}
                                   </div>
                                 )}
@@ -2157,7 +2174,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             </Badge>
                             <StatusBadge status={record.status} labels={RECORD_STATUS_LABELS} />
                           </div>
-                          <p className={`mt-1 line-clamp-2 break-keep ${adminTypography.metaMuted}`}>
+                          <p
+                            className={`mt-1 line-clamp-2 break-keep ${adminTypography.metaMuted}`}
+                          >
                             {record.lineSummary || formatLineSummary(record.lines)}
                           </p>
                         </div>
@@ -2296,9 +2315,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               </Badge>
                             </div>
                             {!canProcessPoints ? (
-                              <p className={adminTypography.caption}>
-                                {pointUnavailableMessage}
-                              </p>
+                              <p className={adminTypography.caption}>{pointUnavailableMessage}</p>
                             ) : (
                               <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
@@ -2564,7 +2581,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                     </p>
                                   )}
                                   {!packageUsage?.consumptionId && (
-                                    <p className={`mt-1 ${adminTypography.caption} text-destructive`}>
+                                    <p
+                                      className={`mt-1 ${adminTypography.caption} text-destructive`}
+                                    >
                                       패키지 사용 상태를 복구해야 합니다.
                                     </p>
                                   )}

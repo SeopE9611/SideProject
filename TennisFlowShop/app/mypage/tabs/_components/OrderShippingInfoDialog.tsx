@@ -30,16 +30,7 @@ import {
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 type CourierCode =
-  | "cj"
-  | "hanjin"
-  | "logen"
-  | "lotte"
-  | "post"
-  | "daesin"
-  | "ilogen"
-  | "kr"
-  | "etc"
-  | string;
+  "cj" | "hanjin" | "logen" | "lotte" | "post" | "daesin" | "ilogen" | "kr" | "etc" | string;
 
 type OrderDetail = {
   status?: string;
@@ -83,12 +74,7 @@ type OrderTrackingResponse =
   | {
       success: false;
       errorCode?:
-        | "NOT_FOUND"
-        | "BAD_REQUEST"
-        | "UNAUTHENTICATED"
-        | "FORBIDDEN"
-        | "INTERNAL"
-        | "UNKNOWN";
+        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
       message: string;
     };
 

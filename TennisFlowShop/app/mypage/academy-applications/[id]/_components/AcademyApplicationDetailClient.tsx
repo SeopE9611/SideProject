@@ -138,7 +138,10 @@ function DetailSkeleton() {
         </CardContent>
       </Card>
       {Array.from({ length: 4 }).map((_, index) => (
-        <Card key={`academy-detail-skeleton-${index}`} className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+        <Card
+          key={`academy-detail-skeleton-${index}`}
+          className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
+        >
           <CardHeader>
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-4 w-64" />
@@ -305,16 +308,8 @@ function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
         <CardDescription>신청 당시 남긴 목표와 요청사항입니다.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3 p-4 bp-sm:p-5 bp-lg:p-6">
-        <InfoBox
-          label="레슨 목표"
-          value={item.lessonGoal || "미입력"}
-          multiline
-        />
-        <InfoBox
-          label="요청사항"
-          value={item.requestMemo || "미입력"}
-          multiline
-        />
+        <InfoBox label="레슨 목표" value={item.lessonGoal || "미입력"} multiline />
+        <InfoBox label="요청사항" value={item.requestMemo || "미입력"} multiline />
       </CardContent>
     </Card>
   );
@@ -416,7 +411,9 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       setIsEditing(false);
       showSuccessToast("신청 정보가 수정되었습니다.");
     } catch (error) {
-      showErrorToast(error instanceof Error ? error.message : "신청 정보 수정 중 문제가 발생했습니다.");
+      showErrorToast(
+        error instanceof Error ? error.message : "신청 정보 수정 중 문제가 발생했습니다.",
+      );
     } finally {
       setIsSavingEdit(false);
     }
@@ -616,36 +613,120 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   <div className="grid gap-3 bp-sm:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-ui-body-sm font-medium">희망 레슨 유형</label>
-                      <Select value={editForm.desiredLessonType} onValueChange={(value) => setEditForm((current) => ({ ...current, desiredLessonType: value }))} disabled={isSavingEdit}>
-                        <SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger>
-                        <SelectContent>{ACADEMY_LESSON_TYPES.map((value) => <SelectItem key={value} value={value}>{getAcademyLessonTypeLabel(value)}</SelectItem>)}</SelectContent>
+                      <Select
+                        value={editForm.desiredLessonType}
+                        onValueChange={(value) =>
+                          setEditForm((current) => ({ ...current, desiredLessonType: value }))
+                        }
+                        disabled={isSavingEdit}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ACADEMY_LESSON_TYPES.map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {getAcademyLessonTypeLabel(value)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <label className="text-ui-body-sm font-medium">현재 실력</label>
-                      <Select value={editForm.currentLevel} onValueChange={(value) => setEditForm((current) => ({ ...current, currentLevel: value }))} disabled={isSavingEdit}>
-                        <SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger>
-                        <SelectContent>{ACADEMY_CURRENT_LEVELS.map((value) => <SelectItem key={value} value={value}>{getAcademyCurrentLevelLabel(value)}</SelectItem>)}</SelectContent>
+                      <Select
+                        value={editForm.currentLevel}
+                        onValueChange={(value) =>
+                          setEditForm((current) => ({ ...current, currentLevel: value }))
+                        }
+                        disabled={isSavingEdit}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ACADEMY_CURRENT_LEVELS.map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {getAcademyCurrentLevelLabel(value)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-ui-body-sm font-medium">희망 요일</label>
-                    <div className="flex flex-wrap gap-2">{ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => <label key={day} className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-ui-body-sm"><input type="checkbox" checked={editForm.preferredDays.includes(day)} onChange={() => toggleEditDay(day)} disabled={isSavingEdit} />{day}</label>)}</div>
+                    <div className="flex flex-wrap gap-2">
+                      {ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => (
+                        <label
+                          key={day}
+                          className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-ui-body-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={editForm.preferredDays.includes(day)}
+                            onChange={() => toggleEditDay(day)}
+                            disabled={isSavingEdit}
+                          />
+                          {day}
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <Input value={editForm.preferredTimeText} maxLength={100} onChange={(event) => setEditForm((current) => ({ ...current, preferredTimeText: event.target.value }))} placeholder="희망 시간대" disabled={isSavingEdit} />
-                  <Textarea value={editForm.lessonGoal} maxLength={500} onChange={(event) => setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))} placeholder="레슨 목표" disabled={isSavingEdit} />
-                  <Textarea value={editForm.requestMemo} maxLength={1000} onChange={(event) => setEditForm((current) => ({ ...current, requestMemo: event.target.value }))} placeholder="요청사항" disabled={isSavingEdit} />
+                  <Input
+                    value={editForm.preferredTimeText}
+                    maxLength={100}
+                    onChange={(event) =>
+                      setEditForm((current) => ({
+                        ...current,
+                        preferredTimeText: event.target.value,
+                      }))
+                    }
+                    placeholder="희망 시간대"
+                    disabled={isSavingEdit}
+                  />
+                  <Textarea
+                    value={editForm.lessonGoal}
+                    maxLength={500}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))
+                    }
+                    placeholder="레슨 목표"
+                    disabled={isSavingEdit}
+                  />
+                  <Textarea
+                    value={editForm.requestMemo}
+                    maxLength={1000}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, requestMemo: event.target.value }))
+                    }
+                    placeholder="요청사항"
+                    disabled={isSavingEdit}
+                  />
                   <div className="flex flex-col gap-2 bp-sm:flex-row">
-                    <Button type="button" onClick={handleSaveEdit} disabled={isSavingEdit || editForm.preferredDays.length === 0}>{isSavingEdit ? "저장 중..." : "저장"}</Button>
-                    <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isSavingEdit}>취소</Button>
+                    <Button
+                      type="button"
+                      onClick={handleSaveEdit}
+                      disabled={isSavingEdit || editForm.preferredDays.length === 0}
+                    >
+                      {isSavingEdit ? "저장 중..." : "저장"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                      disabled={isSavingEdit}
+                    >
+                      취소
+                    </Button>
                   </div>
                 </div>
               )}
             </div>
           ) : !isCancelled ? (
             <p className="border-l-2 border-muted-foreground/30 bg-muted/20 px-3 py-2.5 text-ui-body-sm text-muted-foreground">
-              상담이 진행된 신청은 마이페이지에서 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요.
+              상담이 진행된 신청은 마이페이지에서 직접 수정할 수 없습니다. 변경이 필요하면 문의해
+              주세요.
             </p>
           ) : null}
           {isCancelled ? (

@@ -112,13 +112,7 @@ export type ProductListStatus = "all" | "active" | "low_stock" | "out_of_stock";
 export type ProductExposureFilter = "all" | "featured" | "new" | "sale";
 
 export type ProductListSortKey =
-  | "name"
-  | "brand"
-  | "gauge"
-  | "material"
-  | "price"
-  | "stock"
-  | "createdAt";
+  "name" | "brand" | "gauge" | "material" | "price" | "stock" | "createdAt";
 
 export interface AdminProductsListRequestDto {
   page: number;

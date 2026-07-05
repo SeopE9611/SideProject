@@ -6,7 +6,10 @@ import { cookies } from "next/headers";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+import {
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
 import {
   COMMUNITY_RATE_LIMIT_POLICIES,
   enforceCommunityRateLimit,

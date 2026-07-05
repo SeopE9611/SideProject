@@ -228,7 +228,15 @@ export async function buildOfflineRevenueSummary(
   const recordDocs = await db
     .collection("offline_service_records")
     .find(revenueRecordFilter, {
-      projection: { occurredAt: 1, createdAt: 1, kind: 1, payment: 1, source: 1, revenueExcluded: 1, privatePaymentId: 1 },
+      projection: {
+        occurredAt: 1,
+        createdAt: 1,
+        kind: 1,
+        payment: 1,
+        source: 1,
+        revenueExcluded: 1,
+        privatePaymentId: 1,
+      },
     })
     .toArray();
   for (const doc of recordDocs) {

@@ -148,7 +148,9 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                     (summary?.activityFlowCount ?? "-")
                   )}
                 </div>
-                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">전체 이용 내역</div>
+                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">
+                  전체 이용 내역
+                </div>
               </div>
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
@@ -159,7 +161,9 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                     (summary?.applicationsCount ?? "-")
                   )}
                 </div>
-                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">교체서비스 신청</div>
+                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">
+                  교체서비스 신청
+                </div>
               </div>
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <ClipboardList className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
@@ -170,7 +174,9 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                     (summary?.ordersCount ?? "-")
                   )}
                 </div>
-                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">상품 주문</div>
+                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">
+                  상품 주문
+                </div>
               </div>
               <button
                 type="button"
@@ -229,7 +235,9 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-ui-card-title-lg truncate">{user.name}</CardTitle>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <span className="text-ui-body-sm text-foreground truncate">{user.email}</span>
+                        <span className="text-ui-body-sm text-foreground truncate">
+                          {user.email}
+                        </span>
                         {user.oauthProviders?.length ? (
                           <>
                             {user.oauthProviders.includes("kakao") && (
@@ -294,7 +302,9 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                       <GraduationCap className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">클래스 신청</CardTitle>
+                      <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">
+                        클래스 신청
+                      </CardTitle>
                       <CardDescription className="text-ui-body-sm text-foreground/80">
                         도깨비테니스 아카데미 클래스 신청 상세와 진행 상태를 확인하세요.
                       </CardDescription>

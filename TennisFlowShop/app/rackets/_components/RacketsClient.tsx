@@ -122,7 +122,9 @@ export default function RacketsClient() {
                 )}
               </div>
               <div className="p-3 space-y-1">
-                <div className="text-ui-body-sm text-muted-foreground">{racketBrandLabel(it.brand)}</div>
+                <div className="text-ui-body-sm text-muted-foreground">
+                  {racketBrandLabel(it.brand)}
+                </div>
                 <div className="font-medium group-hover:underline">{it.model}</div>
                 <div className="text-ui-body-sm">
                   상태: <span className="font-semibold">{it.condition}</span>

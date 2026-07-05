@@ -596,7 +596,9 @@ export default function FilterableRacketList({
                   </span>
                 )}
                 {isBackgroundRefreshing ? (
-                  <span className="ml-2 text-ui-label font-medium text-muted-foreground">조회 중...</span>
+                  <span className="ml-2 text-ui-label font-medium text-muted-foreground">
+                    조회 중...
+                  </span>
                 ) : null}
               </div>
 

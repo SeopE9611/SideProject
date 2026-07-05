@@ -137,7 +137,13 @@ export default function AdminCancelOrderDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{needsCancelFinalization ? "주문 취소 후처리" : forceRequired ? "관리자 강제 취소" : "주문 취소"}</DialogTitle>
+          <DialogTitle>
+            {needsCancelFinalization
+              ? "주문 취소 후처리"
+              : forceRequired
+                ? "관리자 강제 취소"
+                : "주문 취소"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-2 py-4">
@@ -145,7 +151,8 @@ export default function AdminCancelOrderDialog({
             <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive">
               <p className="font-semibold">PG 결제취소 후처리 확인</p>
               <p className="mt-1">
-                PG 결제는 이미 취소된 상태입니다. 이 작업은 주문 상태를 취소로 정리하고, 재고 복구, 포인트 복원/회수, 연결 교체서비스 취소 등 내부 후처리를 진행합니다.
+                PG 결제는 이미 취소된 상태입니다. 이 작업은 주문 상태를 취소로 정리하고, 재고 복구,
+                포인트 복원/회수, 연결 교체서비스 취소 등 내부 후처리를 진행합니다.
               </p>
               <p className="mt-1">{policyMessage}</p>
             </div>
@@ -153,10 +160,9 @@ export default function AdminCancelOrderDialog({
             <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive">
               <p className="font-semibold">관리자 강제 취소 확인</p>
               <p className="mt-1">
-                이 주문은 일반 사용자 취소가 불가능한 상태입니다. 관리자는 운영상 강제
-                취소할 수 있지만, 결제취소, 포인트 회수/복구, 재고 복구, 연결된
-                교체서비스 취소가 함께 처리될 수 있습니다. 실제 상품 회수 여부와 CS
-                상황을 확인한 뒤 진행하세요.
+                이 주문은 일반 사용자 취소가 불가능한 상태입니다. 관리자는 운영상 강제 취소할 수
+                있지만, 결제취소, 포인트 회수/복구, 재고 복구, 연결된 교체서비스 취소가 함께 처리될
+                수 있습니다. 실제 상품 회수 여부와 CS 상황을 확인한 뒤 진행하세요.
               </p>
               <p className="mt-1">{policyMessage}</p>
             </div>

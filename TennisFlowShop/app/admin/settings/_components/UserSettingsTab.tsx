@@ -32,7 +32,11 @@ export function UserSettingsTab({
     <TabsContent value="user">
       <AdminPageSection title="사용자 설정" description="회원 가입/인증 정책을 관리합니다.">
         {error.message && (
-          <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}>{error.message}</div>
+          <div
+            className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}
+          >
+            {error.message}
+          </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-4">

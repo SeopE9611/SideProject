@@ -23,7 +23,16 @@ type ShippingInfo = {
 export interface OrderItemSnapshot {
   productId: ObjectId | string;
   name: string;
+
+  // 실제 주문/판매 단가
   price: number;
+
+  // 할인 표시용 메타
+  regularPrice?: number | null;
+  salePrice?: number | null;
+  discountAmount?: number | null;
+  discountRate?: number | null;
+
   imageUrl: string | null;
   quantity: number;
   kind?: "product" | "racket";

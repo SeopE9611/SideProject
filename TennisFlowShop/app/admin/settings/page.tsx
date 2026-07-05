@@ -21,70 +21,70 @@ export default function SettingsPage() {
   return (
     <>
       <AdminPageShell variant="narrow" className="space-y-6">
-          <AdminPageHeader
-            title="시스템 설정"
-            description="사이트, 사용자, 이메일, 결제 설정을 관리합니다."
-            icon={Shield}
-            scope="범위: 전역 운영 설정"
-            helperText="변경 내용은 저장 전까지 적용되지 않으며, 탭 이동 시 확인 절차가 유지됩니다."
+        <AdminPageHeader
+          title="시스템 설정"
+          description="사이트, 사용자, 이메일, 결제 설정을 관리합니다."
+          icon={Shield}
+          scope="범위: 전역 운영 설정"
+          helperText="변경 내용은 저장 전까지 적용되지 않으며, 탭 이동 시 확인 절차가 유지됩니다."
+        />
+
+        <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
+          {vm.isBootstrapping && (
+            <div
+              className={`${adminSurface.cardMuted} px-4 py-3 bg-primary/10 dark:bg-primary/20`}
+              aria-label="설정값 로딩 중"
+            >
+              <Skeleton className="h-4 w-52 bg-primary/20" />
+            </div>
+          )}
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto">
+            <TabsTrigger value="site">
+              <Globe className="h-4 w-4 mr-2" />
+              사이트
+            </TabsTrigger>
+            <TabsTrigger value="user">
+              <User className="h-4 w-4 mr-2" />
+              사용자
+            </TabsTrigger>
+            <TabsTrigger value="email">
+              <Mail className="h-4 w-4 mr-2" />
+              이메일
+            </TabsTrigger>
+            <TabsTrigger value="payment">
+              <CreditCard className="h-4 w-4 mr-2" />
+              결제
+            </TabsTrigger>
+          </TabsList>
+
+          <SiteSettingsTab
+            form={vm.siteForm}
+            isBootstrapping={vm.isBootstrapping}
+            onSubmit={vm.onSubmitSiteSettings}
+            error={vm.tabErrors.site}
           />
-
-          <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
-            {vm.isBootstrapping && (
-              <div
-                className={`${adminSurface.cardMuted} px-4 py-3 bg-primary/10 dark:bg-primary/20`}
-                aria-label="설정값 로딩 중"
-              >
-                <Skeleton className="h-4 w-52 bg-primary/20" />
-              </div>
-            )}
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto">
-              <TabsTrigger value="site">
-                <Globe className="h-4 w-4 mr-2" />
-                사이트
-              </TabsTrigger>
-              <TabsTrigger value="user">
-                <User className="h-4 w-4 mr-2" />
-                사용자
-              </TabsTrigger>
-              <TabsTrigger value="email">
-                <Mail className="h-4 w-4 mr-2" />
-                이메일
-              </TabsTrigger>
-              <TabsTrigger value="payment">
-                <CreditCard className="h-4 w-4 mr-2" />
-                결제
-              </TabsTrigger>
-            </TabsList>
-
-            <SiteSettingsTab
-              form={vm.siteForm}
-              isBootstrapping={vm.isBootstrapping}
-              onSubmit={vm.onSubmitSiteSettings}
-              error={vm.tabErrors.site}
-            />
-            <UserSettingsTab
-              form={vm.userForm}
-              isBootstrapping={vm.isBootstrapping}
-              onSubmit={vm.onSubmitUserSettings}
-              error={vm.tabErrors.user}
-            />
-            <EmailSettingsTab
-              form={vm.emailForm}
-              isBootstrapping={vm.isBootstrapping}
-              onSubmit={vm.onSubmitEmailSettings}
-              error={vm.tabErrors.email}
-              hasSmtpPassword={vm.emailMeta.hasSmtpPassword}
-              onSendTest={vm.sendTestEmail}
-            />
-            <PaymentSettingsTab
-              form={vm.paymentForm}
-              isBootstrapping={vm.isBootstrapping}
-              onSubmit={vm.onSubmitPaymentSettings}
-              error={vm.tabErrors.payment}
-              paymentMeta={vm.paymentMeta}
-            />
-          </Tabs>
+          <UserSettingsTab
+            form={vm.userForm}
+            isBootstrapping={vm.isBootstrapping}
+            onSubmit={vm.onSubmitUserSettings}
+            error={vm.tabErrors.user}
+          />
+          <EmailSettingsTab
+            form={vm.emailForm}
+            isBootstrapping={vm.isBootstrapping}
+            onSubmit={vm.onSubmitEmailSettings}
+            error={vm.tabErrors.email}
+            hasSmtpPassword={vm.emailMeta.hasSmtpPassword}
+            onSendTest={vm.sendTestEmail}
+          />
+          <PaymentSettingsTab
+            form={vm.paymentForm}
+            isBootstrapping={vm.isBootstrapping}
+            onSubmit={vm.onSubmitPaymentSettings}
+            error={vm.tabErrors.payment}
+            paymentMeta={vm.paymentMeta}
+          />
+        </Tabs>
       </AdminPageShell>
       <AdminConfirmDialog
         open={vm.pendingTab !== null}

@@ -120,12 +120,7 @@ type TrackingResponse =
   | {
       success: false;
       errorCode?:
-        | "NOT_FOUND"
-        | "BAD_REQUEST"
-        | "UNAUTHENTICATED"
-        | "FORBIDDEN"
-        | "INTERNAL"
-        | "UNKNOWN";
+        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
       message: string;
     };
 
@@ -308,7 +303,10 @@ export default function OrderDetailPage() {
             <Skeleton className="h-5 w-40" />
 
             {Array.from({ length: 3 }).map((_, index) => (
-              <Card key={index} className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <Card
+                key={index}
+                className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
+              >
                 <CardHeader className="space-y-2 rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <Skeleton className="h-6 w-40" />
                   <Skeleton className="h-4 w-64 max-w-full" />
@@ -580,66 +578,74 @@ export default function OrderDetailPage() {
 
           {nextActionText && (
             <div className="mb-6 border-l-2 border-primary/40 bg-primary/5 px-3 py-2 md:mb-8">
-              <p className="text-ui-body-sm font-medium text-foreground bp-md:text-ui-body">현재 진행 안내</p>
-              <p className="mt-1 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">{nextActionText}</p>
+              <p className="text-ui-body-sm font-medium text-foreground bp-md:text-ui-body">
+                현재 진행 안내
+              </p>
+              <p className="mt-1 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">
+                {nextActionText}
+              </p>
             </div>
           )}
 
           <details className="group mb-6 md:mb-8 bp-md:block">
-            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
-          <Card className="mt-3 hidden rounded-xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
-            <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-              <CardTitle className="text-ui-body">주문 진행 타임라인</CardTitle>
-              <p className="text-ui-body-sm text-muted-foreground">
-                주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수 있습니다.
-              </p>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {timelineSteps.map((step, index) => {
-                const tone = getTimelineStepTone(step.state);
-                const Icon =
-                  step.state === "active" && !isVisitPickup && step.title.includes("배송")
-                    ? Truck
-                    : tone.Icon;
-                return (
-                  <div
-                    key={step.title}
-                    className="border-t border-border/60 py-4 first:border-t-0"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${tone.wrapper}`}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-foreground">
-                            {index + 1}. {step.title}
-                          </p>
-                          <Badge className={`px-2 py-0.5 text-ui-caption ${tone.badge}`}>
-                            {getTimelineStateLabel(step.state)}
-                          </Badge>
+            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">
+              진행 단계
+            </summary>
+            <Card className="mt-3 hidden rounded-xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
+              <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
+                <CardTitle className="text-ui-body">주문 진행 타임라인</CardTitle>
+                <p className="text-ui-body-sm text-muted-foreground">
+                  주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수 있습니다.
+                </p>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {timelineSteps.map((step, index) => {
+                  const tone = getTimelineStepTone(step.state);
+                  const Icon =
+                    step.state === "active" && !isVisitPickup && step.title.includes("배송")
+                      ? Truck
+                      : tone.Icon;
+                  return (
+                    <div
+                      key={step.title}
+                      className="border-t border-border/60 py-4 first:border-t-0"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${tone.wrapper}`}
+                        >
+                          <Icon className="h-4 w-4" />
                         </div>
-                        <p className="mt-1 text-ui-body-sm text-muted-foreground">{step.description}</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium text-foreground">
+                              {index + 1}. {step.title}
+                            </p>
+                            <Badge className={`px-2 py-0.5 text-ui-caption ${tone.badge}`}>
+                              {getTimelineStateLabel(step.state)}
+                            </Badge>
+                          </div>
+                          <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                            {step.description}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-              <div className="mt-2 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
-                <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
-                <p>주문 정보와 배송/수령 정보에서 세부 상태를 함께 확인할 수 있습니다.</p>
-                {shouldShowStringingTimelineHint && (
-                  <p>
-                    {hasStringingApplication
-                      ? "아래 교체서비스 접수 요약에서 진행 상태를 확인해주세요."
-                      : "교체서비스가 포함된 주문은 접수 후 이 화면의 요약에서 작업 진행 상태를 확인할 수 있습니다."}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  );
+                })}
+                <div className="mt-2 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
+                  <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
+                  <p>주문 정보와 배송/수령 정보에서 세부 상태를 함께 확인할 수 있습니다.</p>
+                  {shouldShowStringingTimelineHint && (
+                    <p>
+                      {hasStringingApplication
+                        ? "아래 교체서비스 접수 요약에서 진행 상태를 확인해주세요."
+                        : "교체서비스가 포함된 주문은 접수 후 이 화면의 요약에서 작업 진행 상태를 확인할 수 있습니다."}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </details>
 
           {/* String Service Alert */}
@@ -750,267 +756,291 @@ export default function OrderDetailPage() {
             )}
 
           <details className="group bp-md:block" open>
-            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">주문 상품</summary>
-          <div className="mt-3 grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
-            {/* Main Content */}
-            <div className="space-y-6 md:space-y-8 lg:col-span-2">
-              {/* 주문 정보 */}
-              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                      <Calendar className="w-5 h-5 text-foreground" />
-                    </div>
-                    <CardTitle className="text-ui-card-title-lg font-semibold">주문 정보</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="grid gap-3">
-                      <div className="py-3">
-                        <p className="text-ui-body-sm text-muted-foreground mb-1">주문일자</p>
-                        <p className="font-semibold">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
+            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">
+              주문 상품
+            </summary>
+            <div className="mt-3 grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
+              {/* Main Content */}
+              <div className="space-y-6 md:space-y-8 lg:col-span-2">
+                {/* 주문 정보 */}
+                <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                  <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
+                        <Calendar className="w-5 h-5 text-foreground" />
                       </div>
-                      <div className="py-3">
-                        <p className="text-ui-body-sm text-muted-foreground mb-1">주문번호</p>
-                        <p className="break-all font-mono text-ui-body-sm">{order._id}</p>
-                      </div>
+                      <CardTitle className="text-ui-card-title-lg font-semibold">
+                        주문 정보
+                      </CardTitle>
                     </div>
-                    <div className="rounded-xl bg-muted/15 p-3">
-                      <p className="text-ui-body-sm text-muted-foreground mb-2">결제수단</p>
-                      <p className="mb-3 font-semibold text-foreground">{paymentDisplaySummary.userLabel}</p>
-                      {shouldShowBankInfo && order.paymentInfo?.bank && (
-                        <>
-                          <p className="text-ui-body-sm text-muted-foreground mb-2">입금 계좌</p>
-                          <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2">
-                            <div className="space-y-2">
-                              <p className="font-semibold text-foreground">무통장입금</p>
-                              <p className="font-semibold text-foreground">
-                                {bankLabelMap[order.paymentInfo.bank].label}
-                              </p>
-                              <p className="font-mono text-foreground">
-                                {bankLabelMap[order.paymentInfo.bank].account}
-                              </p>
-                              <p className="text-ui-body-sm text-muted-foreground">
-                                예금주: {bankLabelMap[order.paymentInfo.bank].holder}
-                              </p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 배송 정보 */}
-              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                      <MapPin className="w-5 h-5 text-foreground" />
-                    </div>
-                    <CardTitle className="text-ui-card-title-lg font-semibold">{shippingCardTitle}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="grid gap-3">
-                      <div className="flex items-center gap-3 py-3">
-                        <User className="w-5 h-5 text-foreground" />
-                        <div>
-                          <p className="text-ui-body-sm text-muted-foreground">수령인</p>
-                          <p className="font-semibold">{order.shippingInfo.name}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 py-3">
-                        <Phone className="w-5 h-5 text-foreground" />
-                        <div>
-                          <p className="text-ui-body-sm text-muted-foreground">연락처</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div className="grid gap-3">
+                        <div className="py-3">
+                          <p className="text-ui-body-sm text-muted-foreground mb-1">주문일자</p>
                           <p className="font-semibold">
-                            {formatKoreanPhone(order.shippingInfo.phone) ||
-                              order.shippingInfo.phone}
+                            {new Date(order.createdAt).toLocaleDateString()}
                           </p>
                         </div>
+                        <div className="py-3">
+                          <p className="text-ui-body-sm text-muted-foreground mb-1">주문번호</p>
+                          <p className="break-all font-mono text-ui-body-sm">{order._id}</p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-muted/15 p-3">
+                        <p className="text-ui-body-sm text-muted-foreground mb-2">결제수단</p>
+                        <p className="mb-3 font-semibold text-foreground">
+                          {paymentDisplaySummary.userLabel}
+                        </p>
+                        {shouldShowBankInfo && order.paymentInfo?.bank && (
+                          <>
+                            <p className="text-ui-body-sm text-muted-foreground mb-2">입금 계좌</p>
+                            <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2">
+                              <div className="space-y-2">
+                                <p className="font-semibold text-foreground">무통장입금</p>
+                                <p className="font-semibold text-foreground">
+                                  {bankLabelMap[order.paymentInfo.bank].label}
+                                </p>
+                                <p className="font-mono text-foreground">
+                                  {bankLabelMap[order.paymentInfo.bank].account}
+                                </p>
+                                <p className="text-ui-body-sm text-muted-foreground">
+                                  예금주: {bankLabelMap[order.paymentInfo.bank].holder}
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="grid gap-3">
-                      <div className="py-3">
-                        <p className="text-ui-body-sm text-muted-foreground mb-1">{shippingAddressLabel}</p>
-                        <p className="break-words font-semibold">{shippingAddressValue}</p>
+                  </CardContent>
+                </Card>
+
+                {/* 배송 정보 */}
+                <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                  <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
+                        <MapPin className="w-5 h-5 text-foreground" />
                       </div>
-                      {canTrack && (
+                      <CardTitle className="text-ui-card-title-lg font-semibold">
+                        {shippingCardTitle}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div className="grid gap-3">
+                        <div className="flex items-center gap-3 py-3">
+                          <User className="w-5 h-5 text-foreground" />
+                          <div>
+                            <p className="text-ui-body-sm text-muted-foreground">수령인</p>
+                            <p className="font-semibold">{order.shippingInfo.name}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 py-3">
+                          <Phone className="w-5 h-5 text-foreground" />
+                          <div>
+                            <p className="text-ui-body-sm text-muted-foreground">연락처</p>
+                            <p className="font-semibold">
+                              {formatKoreanPhone(order.shippingInfo.phone) ||
+                                order.shippingInfo.phone}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid gap-3">
+                        <div className="py-3">
+                          <p className="text-ui-body-sm text-muted-foreground mb-1">
+                            {shippingAddressLabel}
+                          </p>
+                          <p className="break-words font-semibold">{shippingAddressValue}</p>
+                        </div>
+                        {canTrack && (
+                          <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
+                            <Truck className="w-5 h-5 text-primary" />
+                            <div className="flex-1">
+                              <p className="text-ui-body-sm text-muted-foreground mb-1">
+                                운송장 번호
+                              </p>
+                              <p className="font-mono font-semibold text-foreground">
+                                {trackingNumber}
+                              </p>
+                              {trackingInfo?.success && trackingInfo.supported && (
+                                <p className="mt-1 text-ui-body-sm text-foreground">
+                                  실시간 배송 상태: {trackingInfo.displayStatus}
+                                  {trackingInfo.lastEvent?.locationName
+                                    ? ` · ${trackingInfo.lastEvent.locationName}`
+                                    : ""}
+                                  {trackingInfo.lastEvent?.time
+                                    ? ` · ${formatDateTime(trackingInfo.lastEvent.time)}`
+                                    : ""}
+                                </p>
+                              )}
+                              {trackingError && (
+                                <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                                  {trackingError}
+                                </p>
+                              )}
+                              {!trackingError && isUnsupportedCourier && (
+                                <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                                  {unsupportedCourierMessage}
+                                </p>
+                              )}
+                            </div>
+                            <Button
+                              variant="link"
+                              className="p-0"
+                              onClick={handleTrackingClick}
+                              disabled={trackingLoading || isUnsupportedCourier}
+                            >
+                              {isUnsupportedCourier
+                                ? "조회 불가"
+                                : trackingLoading
+                                  ? "조회 중..."
+                                  : "배송 조회"}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 주문 상품 */}
+                <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                  <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
+                        <ShoppingBag className="w-5 h-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-ui-card-title-lg font-semibold">
+                        주문 상품
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3">
+                      {order.items.map((item, index) => (
+                        <div
+                          key={item.id || index}
+                          className="flex flex-col gap-4 py-4 first:pt-0 last:pb-0 md:flex-row"
+                        >
+                          <div className="h-24 w-full flex-shrink-0 overflow-hidden rounded-lg bg-muted ring-1 ring-border/60 md:w-24">
+                            <Image
+                              src={item.image || "/placeholder.svg"}
+                              alt={item.name}
+                              width={96}
+                              height={96}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="mb-1 break-words font-semibold text-foreground">
+                              {item.name}
+                            </h4>
+                            {item.option && (
+                              <p className="text-ui-body-sm text-muted-foreground mb-2">
+                                {item.option}
+                              </p>
+                            )}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div className="flex items-center gap-4 text-ui-body-sm text-muted-foreground">
+                                <span>단가: {formatCurrency(item.price)}</span>
+                                <span>수량: {item.quantity}개</span>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-semibold text-ui-price-lg text-primary">
+                                  {formatCurrency(item.price * item.quantity)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sidebar - 결제 정보 */}
+              <div className="lg:col-span-1">
+                <Card className="sticky top-8 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                  <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
+                        <CreditCard className="w-5 h-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-ui-card-title-lg font-semibold">
+                        결제 정보
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3">
+                      <div className="flex items-center justify-between gap-3 py-2">
+                        <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
+                        <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                          {formatCurrency(order.totalPrice - order.shippingFee)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 py-2">
+                        <span className="min-w-0 break-words text-muted-foreground">배송비</span>
+                        <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                          {order.shippingFee > 0 ? formatCurrency(order.shippingFee) : "무료"}
+                        </span>
+                      </div>
+                      <Separator className="my-4" />
+                      <div className="flex items-center justify-between gap-3 py-2">
+                        <span className="min-w-0 break-words text-ui-price-lg font-semibold text-foreground">
+                          총 결제금액
+                        </span>
+                        <span className="shrink-0 whitespace-nowrap text-right text-ui-price-lg font-semibold tabular-nums text-primary">
+                          {formatCurrency(order.totalPrice)}
+                        </span>
+                      </div>
+
+                      {/* Benefits */}
+                      <div className="mt-6 space-y-3">
+                        <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
+                          <Shield className="w-5 h-5 text-primary" />
+                          <div>
+                            <p className="text-ui-body-sm font-medium text-foreground">
+                              안전한 결제
+                            </p>
+                            <p className="text-ui-label text-muted-foreground">
+                              SSL 보안 결제 시스템
+                            </p>
+                          </div>
+                        </div>
+
                         <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
                           <Truck className="w-5 h-5 text-primary" />
-                          <div className="flex-1">
-                            <p className="text-ui-body-sm text-muted-foreground mb-1">운송장 번호</p>
-                            <p className="font-mono font-semibold text-foreground">
-                              {trackingNumber}
+                          <div>
+                            <p className="text-ui-body-sm font-medium text-foreground">배송 보장</p>
+                            <p className="text-ui-label text-muted-foreground">
+                              상품에 따라 배송비가 다를 수 있습니다.
                             </p>
-                            {trackingInfo?.success && trackingInfo.supported && (
-                              <p className="mt-1 text-ui-body-sm text-foreground">
-                                실시간 배송 상태: {trackingInfo.displayStatus}
-                                {trackingInfo.lastEvent?.locationName
-                                  ? ` · ${trackingInfo.lastEvent.locationName}`
-                                  : ""}
-                                {trackingInfo.lastEvent?.time
-                                  ? ` · ${formatDateTime(trackingInfo.lastEvent.time)}`
-                                  : ""}
-                              </p>
-                            )}
-                            {trackingError && (
-                              <p className="mt-1 text-ui-body-sm text-muted-foreground">{trackingError}</p>
-                            )}
-                            {!trackingError && isUnsupportedCourier && (
-                              <p className="mt-1 text-ui-body-sm text-muted-foreground">
-                                {unsupportedCourierMessage}
-                              </p>
-                            )}
-                          </div>
-                          <Button
-                            variant="link"
-                            className="p-0"
-                            onClick={handleTrackingClick}
-                            disabled={trackingLoading || isUnsupportedCourier}
-                          >
-                            {isUnsupportedCourier
-                              ? "조회 불가"
-                              : trackingLoading
-                                ? "조회 중..."
-                                : "배송 조회"}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 주문 상품 */}
-              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                      <ShoppingBag className="w-5 h-5 text-foreground" />
-                    </div>
-                    <CardTitle className="text-ui-card-title-lg font-semibold">주문 상품</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3">
-                    {order.items.map((item, index) => (
-                      <div
-                        key={item.id || index}
-                        className="flex flex-col gap-4 py-4 first:pt-0 last:pb-0 md:flex-row"
-                      >
-                        <div className="h-24 w-full flex-shrink-0 overflow-hidden rounded-lg bg-muted ring-1 ring-border/60 md:w-24">
-                          <Image
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
-                            width={96}
-                            height={96}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="mb-1 break-words font-semibold text-foreground">
-                            {item.name}
-                          </h4>
-                          {item.option && (
-                            <p className="text-ui-body-sm text-muted-foreground mb-2">{item.option}</p>
-                          )}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div className="flex items-center gap-4 text-ui-body-sm text-muted-foreground">
-                              <span>단가: {formatCurrency(item.price)}</span>
-                              <span>수량: {item.quantity}개</span>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-ui-price-lg text-primary">
-                                {formatCurrency(item.price * item.quantity)}
-                              </p>
-                            </div>
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="pt-6">
+                    <Button
+                      variant="outline"
+                      onClick={handleGoBack}
+                      className="w-full bg-transparent"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      주문 목록으로 돌아가기
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
             </div>
-
-            {/* Sidebar - 결제 정보 */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-8 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                      <CreditCard className="w-5 h-5 text-foreground" />
-                    </div>
-                    <CardTitle className="text-ui-card-title-lg font-semibold">결제 정보</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3">
-                    <div className="flex items-center justify-between gap-3 py-2">
-                      <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
-                      <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                        {formatCurrency(order.totalPrice - order.shippingFee)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 py-2">
-                      <span className="min-w-0 break-words text-muted-foreground">배송비</span>
-                      <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                        {order.shippingFee > 0 ? formatCurrency(order.shippingFee) : "무료"}
-                      </span>
-                    </div>
-                    <Separator className="my-4" />
-                    <div className="flex items-center justify-between gap-3 py-2">
-                      <span className="min-w-0 break-words text-ui-price-lg font-semibold text-foreground">
-                        총 결제금액
-                      </span>
-                      <span className="shrink-0 whitespace-nowrap text-right text-ui-price-lg font-semibold tabular-nums text-primary">
-                        {formatCurrency(order.totalPrice)}
-                      </span>
-                    </div>
-
-                    {/* Benefits */}
-                    <div className="mt-6 space-y-3">
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
-                        <Shield className="w-5 h-5 text-primary" />
-                        <div>
-                          <p className="text-ui-body-sm font-medium text-foreground">안전한 결제</p>
-                          <p className="text-ui-label text-muted-foreground">SSL 보안 결제 시스템</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
-                        <Truck className="w-5 h-5 text-primary" />
-                        <div>
-                          <p className="text-ui-body-sm font-medium text-foreground">배송 보장</p>
-                          <p className="text-ui-label text-muted-foreground">
-                            상품에 따라 배송비가 다를 수 있습니다.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="pt-6">
-                  <Button
-                    variant="outline"
-                    onClick={handleGoBack}
-                    className="w-full bg-transparent"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    주문 목록으로 돌아가기
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
           </details>
         </div>
       </SiteContainer>

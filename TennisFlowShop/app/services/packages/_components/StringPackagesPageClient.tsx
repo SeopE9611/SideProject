@@ -191,7 +191,9 @@ export default function StringPackagesPageClient({
               variant="muted"
               className="mx-auto mb-6 max-w-3xl text-left sm:text-center"
             >
-              <p className="text-ui-body-sm font-semibold text-foreground">추가 구매가 제한되어 있습니다</p>
+              <p className="text-ui-body-sm font-semibold text-foreground">
+                추가 구매가 제한되어 있습니다
+              </p>
               <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                 {ownershipBlockedMessage}
               </p>

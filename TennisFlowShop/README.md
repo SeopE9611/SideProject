@@ -34,13 +34,13 @@
 
 ## Key Features
 
-| 영역 | 주요 기능 | 사용자 가치 |
-| --- | --- | --- |
-| 쇼핑 | 상품 목록/상세, 스트링 추천, 장바구니/주문 흐름 | 필요한 테니스 용품을 빠르게 비교하고 구매 |
-| 예약/신청 | 아카데미 레슨 신청, 스트링 교체 접수 | 상담 전 필요한 정보를 구조화해 전달 |
-| 중고 라켓 | 도깨비 인증 중고 라켓 탐색 | 신뢰 기반 중고 장비 구매 경험 |
-| 리뷰/커뮤니티 | 후기 작성, 이미지 업로드, 게시판 흐름 | 구매/이용 경험 공유 |
-| 관리자 | 상품, 주문, 신청, 리뷰, 정산, 운영 알림 | 운영자가 서비스 상태를 통합 관리 |
+| 영역          | 주요 기능                                       | 사용자 가치                               |
+| ------------- | ----------------------------------------------- | ----------------------------------------- |
+| 쇼핑          | 상품 목록/상세, 스트링 추천, 장바구니/주문 흐름 | 필요한 테니스 용품을 빠르게 비교하고 구매 |
+| 예약/신청     | 아카데미 레슨 신청, 스트링 교체 접수            | 상담 전 필요한 정보를 구조화해 전달       |
+| 중고 라켓     | 도깨비 인증 중고 라켓 탐색                      | 신뢰 기반 중고 장비 구매 경험             |
+| 리뷰/커뮤니티 | 후기 작성, 이미지 업로드, 게시판 흐름           | 구매/이용 경험 공유                       |
+| 관리자        | 상품, 주문, 신청, 리뷰, 정산, 운영 알림         | 운영자가 서비스 상태를 통합 관리          |
 
 <details>
 <summary><strong>기능 상세 보기</strong></summary>
@@ -92,15 +92,15 @@ flowchart TD
 
 ## Tech Stack
 
-| 분류 | 기술 |
-| --- | --- |
-| Framework | Next.js App Router |
-| Language | TypeScript |
-| Styling | Tailwind CSS |
-| Data | MongoDB, Supabase Storage |
-| Payment | Toss Payments, NICE Payments 연동 코드 |
-| E2E/Smoke | Cypress, 운영 스모크 스크립트 |
-| Deployment | Vercel 기준 운영 문서 |
+| 분류       | 기술                                   |
+| ---------- | -------------------------------------- |
+| Framework  | Next.js App Router                     |
+| Language   | TypeScript                             |
+| Styling    | Tailwind CSS                           |
+| Data       | MongoDB, Supabase Storage              |
+| Payment    | Toss Payments, NICE Payments 연동 코드 |
+| E2E/Smoke  | Cypress, 운영 스모크 스크립트          |
+| Deployment | Vercel 기준 운영 문서                  |
 
 <details>
 <summary><strong>기술 선택 이유</strong></summary>

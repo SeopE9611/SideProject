@@ -41,7 +41,9 @@ export default function AcademyClassEditClient({ id }: { id: string }) {
             목록으로
           </Link>
         </Button>
-        <div className={`${adminSurface.cardMuted} border-destructive/30 bg-destructive/10 p-8 ${adminTypography.body} text-destructive`}>
+        <div
+          className={`${adminSurface.cardMuted} border-destructive/30 bg-destructive/10 p-8 ${adminTypography.body} text-destructive`}
+        >
           클래스 정보를 불러오지 못했습니다.
         </div>
       </div>

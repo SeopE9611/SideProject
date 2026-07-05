@@ -8,7 +8,10 @@ import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
 import { verifyCommunityCsrf } from "@/lib/community/security";
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+import {
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
 
 // 공통: 인증 페이로드
 async function getAuthPayload() {

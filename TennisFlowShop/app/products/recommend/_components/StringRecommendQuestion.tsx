@@ -21,9 +21,13 @@ export default function StringRecommendQuestion({
         <Badge variant="outline" className="w-fit shrink-0">
           질문 {index + 1}
         </Badge>
-        <h2 className="text-ui-card-title-lg font-semibold leading-snug text-foreground">{question.title}</h2>
+        <h2 className="text-ui-card-title-lg font-semibold leading-snug text-foreground">
+          {question.title}
+        </h2>
         {question.description ? (
-          <p className="text-ui-body-sm leading-relaxed text-muted-foreground">{question.description}</p>
+          <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
+            {question.description}
+          </p>
         ) : null}
       </div>
       <div className="mt-4 grid gap-3 sm:gap-4 md:grid-cols-2">

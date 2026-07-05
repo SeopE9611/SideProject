@@ -38,8 +38,7 @@ function getOrderScopedTokenSecret(): Secret {
 }
 
 type OrderScopedAccessTokenPayload =
-  | { orderId: string; emailHash?: string }
-  | { rentalId: string; emailHash?: string };
+  { orderId: string; emailHash?: string } | { rentalId: string; emailHash?: string };
 
 //  주문 접근 전용 토큰 발급 (게스트용)
 export function signOrderAccessToken(

@@ -165,7 +165,9 @@ export const FilterPanel = React.memo(function FilterPanel({
           >
             <div className="mb-2 flex items-center justify-between gap-3">
               <div className="flex gap-2 items-center">
-                <h2 className="break-keep text-ui-card-title-lg font-semibold leading-tight text-foreground">필터</h2>
+                <h2 className="break-keep text-ui-card-title-lg font-semibold leading-tight text-foreground">
+                  필터
+                </h2>
               </div>
               <div className="flex gap-2">
                 {activeFiltersCount > 0 && (

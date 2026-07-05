@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
-import type {
-  GaugeInventoryRow,
-  VariantInventoryRow,
-} from "./ProductDetailClient.types";
-import {
-  getColorLabel,
-  isColorSoldOut,
-  normalizeColorRows,
-} from "./ProductDetailClient.utils";
+import type { GaugeInventoryRow, VariantInventoryRow } from "./ProductDetailClient.types";
+import { getColorLabel, isColorSoldOut, normalizeColorRows } from "./ProductDetailClient.utils";
 
 type UseProductDetailOptionsParams = {
   product: any;

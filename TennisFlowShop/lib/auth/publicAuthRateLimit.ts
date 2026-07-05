@@ -9,11 +9,7 @@ const AUTH_RATE_LIMIT_COLLECTION = "auth_rate_limit_windows";
 const TOO_MANY_REQUESTS_MESSAGE = "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
 
 export type PublicAuthRouteId =
-  | "login"
-  | "register"
-  | "oauth_complete"
-  | "forgot_password_request"
-  | "forgot_password_reset";
+  "login" | "register" | "oauth_complete" | "forgot_password_request" | "forgot_password_reset";
 
 type PublicAuthRateLimitPolicy = {
   limit: number;

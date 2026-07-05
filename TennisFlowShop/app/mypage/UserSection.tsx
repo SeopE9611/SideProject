@@ -64,7 +64,10 @@ export default function UserSection({ user }: Props) {
             )}
 
             {!hasKakao && !hasNaver && (
-              <Badge variant="secondary" className="h-6 whitespace-nowrap px-2 text-ui-label font-medium">
+              <Badge
+                variant="secondary"
+                className="h-6 whitespace-nowrap px-2 text-ui-label font-medium"
+              >
                 이메일 계정
               </Badge>
             )}

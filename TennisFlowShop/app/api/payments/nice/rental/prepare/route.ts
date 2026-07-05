@@ -23,9 +23,7 @@ function resolveClientId() {
 }
 
 function resolveAppUrl() {
-  return String(getBaseUrl())
-    .trim()
-    .replace(/\/+$/, "");
+  return String(getBaseUrl()).trim().replace(/\/+$/, "");
 }
 
 const BodySchema = z.object({

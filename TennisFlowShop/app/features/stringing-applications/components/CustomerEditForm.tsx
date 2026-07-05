@@ -136,7 +136,9 @@ export default function CustomerEditForm({
           {...register("address", { required: "필수 입력입니다." })}
           rows={2}
         />
-        {errors.address && <p className="text-destructive text-ui-label">{errors.address.message}</p>}
+        {errors.address && (
+          <p className="text-destructive text-ui-label">{errors.address.message}</p>
+        )}
       </div>
       <div>
         <Label htmlFor="addressDetail">상세주소</Label>

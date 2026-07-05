@@ -230,7 +230,9 @@ export default function PriceSummaryCard({
         <div className="space-y-2 rounded-xl border border-border bg-card p-3">
           <div className="flex flex-wrap items-center justify-between gap-1.5 text-ui-body-sm">
             <span className="font-semibold text-foreground">작업 {workLines?.length ?? 0}자루</span>
-            <span className="text-ui-label leading-tight text-muted-foreground">1자루 = 교체 1회</span>
+            <span className="text-ui-label leading-tight text-muted-foreground">
+              1자루 = 교체 1회
+            </span>
           </div>
           <div className="space-y-2">
             {visibleWorkLines.map((line, index) => {

@@ -258,7 +258,9 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
               <span className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                 {racket.model}
               </span>
-              <span className="text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">{brandText}</span>
+              <span className="text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
+                {brandText}
+              </span>
               <div className="flex items-center gap-1.5">
                 {racket.year ? (
                   <Badge

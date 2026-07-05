@@ -55,14 +55,7 @@ import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import {
-  CheckCircle,
-  ChevronDown,
-  Clock,
-  CreditCard,
-  ShoppingCart,
-  Truck,
-} from "lucide-react";
+import { CheckCircle, ChevronDown, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -104,6 +97,10 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  regularPrice?: number | null;
+  salePrice?: number | null;
+  discountAmount?: number | null;
+  discountRate?: number | null;
   imageUrl?: string | null;
   selectedStringName?: string | null;
   stringPrice?: number | null;
@@ -111,7 +108,7 @@ interface OrderItem {
   selectedColor?: string;
   selectedColorLabel?: string;
   selectedColorHex?: string;
-  mountingFee?: number; // 장착 서비스 대상 스트링이면 서버에서 내려오는 필드 (없으면 undefined)
+  mountingFee?: number;
   isMountableString?: boolean;
 }
 
@@ -243,12 +240,7 @@ type OrderTrackingResponse =
   | {
       success: false;
       errorCode?:
-        | "NOT_FOUND"
-        | "BAD_REQUEST"
-        | "UNAUTHENTICATED"
-        | "FORBIDDEN"
-        | "INTERNAL"
-        | "UNKNOWN";
+        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
       message: string;
     };
 
@@ -479,6 +471,30 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       currency: "KRW",
     }).format(amount);
   };
+
+  const toFinitePriceOrNull = (value: unknown): number | null => {
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  };
+
+  const resolveOrderItemPriceDisplay = (item: OrderItem) => {
+    const displayUnitPrice =
+      toFinitePriceOrNull(item.salePrice) ?? toFinitePriceOrNull(item.price) ?? 0;
+
+    const regularPrice = toFinitePriceOrNull(item.regularPrice);
+    const hasDiscount = regularPrice !== null && regularPrice > displayUnitPrice;
+
+    return {
+      displayUnitPrice,
+      regularPrice: hasDiscount ? regularPrice : null,
+      hasDiscount,
+      discountRate:
+        hasDiscount && regularPrice
+          ? Math.round(((regularPrice - displayUnitPrice) / regularPrice) * 100)
+          : null,
+    };
+  };
+
   const formatDateTime = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
@@ -1015,105 +1031,127 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               description="상품과 연결 서비스를 요약했습니다."
               icon={<ShoppingCart className="h-5 w-5 text-warning" />}
             >
-                <div className="divide-y divide-border/60">
-                  {orderDetail.items.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col gap-4 py-4 transition-colors first:pt-0 last:pb-0 bp-sm:flex-row bp-sm:items-start"
-                    >
-                      {/* 상품 썸네일 */}
-                      {item.imageUrl && (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="h-12 w-12 shrink-0 object-cover rounded"
-                        />
+              <div className="divide-y divide-border/60">
+                {orderDetail.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col gap-4 py-4 transition-colors first:pt-0 last:pb-0 bp-sm:flex-row bp-sm:items-start"
+                  >
+                    {/* 상품 썸네일 */}
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="h-12 w-12 shrink-0 object-cover rounded"
+                      />
+                    )}
+
+                    {/* 상품명 + 수량 */}
+                    <div className="w-full min-w-0 flex-1">
+                      <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
+                        {item.name}
+                      </h4>
+                      <p className="break-keep text-ui-body-sm text-foreground/80">
+                        수량: {item.quantity}개
+                      </p>
+                      {item.selectedStringName && (
+                        <p className="text-ui-label text-foreground/70">
+                          선택 스트링: {item.selectedStringName}
+                        </p>
                       )}
-
-                      {/* 상품명 + 수량 */}
-                      <div className="w-full min-w-0 flex-1">
-                        <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
-                          {item.name}
-                        </h4>
-                        <p className="break-keep text-ui-body-sm text-foreground/80">
-                          수량: {item.quantity}개
+                      {item.selectedGauge && (
+                        <p className="text-ui-label text-foreground/70">
+                          게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
                         </p>
-                        {item.selectedStringName && (
-                          <p className="text-ui-label text-foreground/70">
-                            선택 스트링: {item.selectedStringName}
-                          </p>
-                        )}
-                        {item.selectedGauge && (
-                          <p className="text-ui-label text-foreground/70">
-                            게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
-                          </p>
-                        )}
-                        {(item.selectedColorLabel || item.selectedColor) && (
-                          <p className="flex items-center gap-2 text-ui-label text-foreground/70">
-                            <span>색상:</span>
-                            {item.selectedColorHex && (
-                              <span
-                                className="h-3 w-3 rounded-full border border-border"
-                                style={{ backgroundColor: item.selectedColorHex }}
-                                aria-hidden="true"
-                              />
+                      )}
+                      {(item.selectedColorLabel || item.selectedColor) && (
+                        <p className="flex items-center gap-2 text-ui-label text-foreground/70">
+                          <span>색상:</span>
+                          {item.selectedColorHex && (
+                            <span
+                              className="h-3 w-3 rounded-full border border-border"
+                              style={{ backgroundColor: item.selectedColorHex }}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{item.selectedColorLabel || item.selectedColor}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 가격 및 소계 */}
+                    <div className="w-full shrink-0 border-t border-border/50 pt-3 text-left bp-sm:w-auto bp-sm:border-t-0 bp-sm:pt-0 bp-sm:text-right">
+                      {(() => {
+                        const priceDisplay = resolveOrderItemPriceDisplay(item);
+                        const lineSubtotal = priceDisplay.displayUnitPrice * item.quantity;
+
+                        return (
+                          <>
+                            <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
+                              판매가: {formatCurrency(priceDisplay.displayUnitPrice)}
+                            </p>
+
+                            {priceDisplay.hasDiscount && priceDisplay.regularPrice !== null && (
+                              <p className="whitespace-nowrap text-ui-label tabular-nums text-muted-foreground">
+                                정가:{" "}
+                                <span className="line-through">
+                                  {formatCurrency(priceDisplay.regularPrice)}
+                                </span>
+                                {priceDisplay.discountRate !== null
+                                  ? ` · ${priceDisplay.discountRate}% 할인`
+                                  : ""}
+                              </p>
                             )}
-                            <span>{item.selectedColorLabel || item.selectedColor}</span>
-                          </p>
-                        )}
-                      </div>
 
-                      {/* 가격 및 소계 */}
-                      <div className="w-full shrink-0 border-t border-border/50 pt-3 text-left bp-sm:w-auto bp-sm:border-t-0 bp-sm:pt-0 bp-sm:text-right">
-                        <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                          가격: {formatCurrency(item.price)}
-                        </p>
-                        {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
-                          <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                            스트링 가격: {formatCurrency(item.stringPrice)}
-                          </p>
-                        )}
-                        {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
-                          <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                            장착비: {formatCurrency(item.mountingFee)}
-                          </p>
-                        )}
-                        <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                          상품 소계: {formatCurrency(item.price * item.quantity)}
-                        </p>
+                            {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
+                              <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                                스트링 가격: {formatCurrency(item.stringPrice)}
+                              </p>
+                            )}
 
-                        <div className="mt-2">
-                          {canShowProductReviewCTA &&
-                            (reviewedMap[item.id] ? (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="secondary"
-                                className="w-full bp-sm:w-auto"
+                            {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
+                              <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                                장착비: {formatCurrency(item.mountingFee)}
+                              </p>
+                            )}
+
+                            <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                              상품 소계: {formatCurrency(lineSubtotal)}
+                            </p>
+                          </>
+                        );
+                      })()}
+
+                      <div className="mt-2">
+                        {canShowProductReviewCTA &&
+                          (reviewedMap[item.id] ? (
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="secondary"
+                              className="w-full bp-sm:w-auto"
+                            >
+                              <Link href={`/products/${item.id}?tab=reviews`}>후기 상세 보기</Link>
+                            </Button>
+                          ) : (
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="outline"
+                              className="w-full bp-sm:w-auto"
+                            >
+                              <Link
+                                href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
                               >
-                                <Link href={`/products/${item.id}?tab=reviews`}>
-                                  후기 상세 보기
-                                </Link>
-                              </Button>
-                            ) : (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="outline"
-                                className="w-full bp-sm:w-auto"
-                              >
-                                <Link
-                                  href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
-                                >
-                                  후기 작성
-                                </Link>
-                              </Button>
-                            ))}
-                        </div>
+                                후기 작성
+                              </Link>
+                            </Button>
+                          ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
             </MypageDetailCard>
             {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
               <section id="stringing-service" className="scroll-mt-24 space-y-4">
@@ -1133,257 +1171,256 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   }
                   contentClassName="space-y-4"
                 >
-                    {hasLinkedStringingApps ? (
-                      linkedStringingApps.map((app, appIndex) => {
-                        const appSelfShipInfo = app.shippingInfo?.selfShip ?? null;
-                        const appHasTracking = Boolean(appSelfShipInfo?.trackingNo);
-                        const isApplicationCanceled = app.status === "취소";
-                        const appNeedsTracking =
-                          !isApplicationCanceled && app.needsInboundTracking === true;
-                        const appShippingHref = `/services/applications/${app.id}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}&focus=stringing` }).toString()}`;
-                        const lines = app.lines ?? [];
-                        const fallbackLine = {
-                          id: `${app.id}-summary`,
-                          racketLabel: null,
-                          racketType: null,
-                          stringName: app.stringNames?.join(", ") || null,
-                          tensionMain: app.tensionSummary ?? null,
-                          tensionCross: null,
-                          gauge: null,
-                          color: null,
-                          colorLabel: null,
-                          note: app.requirements ?? null,
-                        };
-                        const displayLines = lines.length > 0 ? lines : [fallbackLine];
-                        const isMultipleLines = displayLines.length > 1;
-                        const reservationLabel =
-                          app.reservationLabel ??
-                          (app.preferredDate && app.preferredTime
-                            ? `${app.preferredDate} ${app.preferredTime}`
-                            : "예약 불필요");
+                  {hasLinkedStringingApps ? (
+                    linkedStringingApps.map((app, appIndex) => {
+                      const appSelfShipInfo = app.shippingInfo?.selfShip ?? null;
+                      const appHasTracking = Boolean(appSelfShipInfo?.trackingNo);
+                      const isApplicationCanceled = app.status === "취소";
+                      const appNeedsTracking =
+                        !isApplicationCanceled && app.needsInboundTracking === true;
+                      const appShippingHref = `/services/applications/${app.id}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}&focus=stringing` }).toString()}`;
+                      const lines = app.lines ?? [];
+                      const fallbackLine = {
+                        id: `${app.id}-summary`,
+                        racketLabel: null,
+                        racketType: null,
+                        stringName: app.stringNames?.join(", ") || null,
+                        tensionMain: app.tensionSummary ?? null,
+                        tensionCross: null,
+                        gauge: null,
+                        color: null,
+                        colorLabel: null,
+                        note: app.requirements ?? null,
+                      };
+                      const displayLines = lines.length > 0 ? lines : [fallbackLine];
+                      const isMultipleLines = displayLines.length > 1;
+                      const reservationLabel =
+                        app.reservationLabel ??
+                        (app.preferredDate && app.preferredTime
+                          ? `${app.preferredDate} ${app.preferredTime}`
+                          : "예약 불필요");
 
-                        return (
-                          <div
-                            key={app.id}
-                            className="border-b border-border/70 pb-4 last:border-b-0 last:pb-0"
-                          >
-                            <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                              <div className="min-w-0 space-y-2">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <Badge
-                                    variant={badgeToneVariant(getApplicationStatusTone(app.status))}
-                                    className="px-2 py-0.5 text-ui-label font-medium"
-                                  >
-                                    {getCustomerApplicationStatusLabel(app.status)}
-                                  </Badge>
-                                  <span className="text-ui-body-sm font-semibold text-foreground">
-                                    {app.receptionLabel ?? "접수 방식 확인 중"}
+                      return (
+                        <div
+                          key={app.id}
+                          className="border-b border-border/70 pb-4 last:border-b-0 last:pb-0"
+                        >
+                          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                            <div className="min-w-0 space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge
+                                  variant={badgeToneVariant(getApplicationStatusTone(app.status))}
+                                  className="px-2 py-0.5 text-ui-label font-medium"
+                                >
+                                  {getCustomerApplicationStatusLabel(app.status)}
+                                </Badge>
+                                <span className="text-ui-body-sm font-semibold text-foreground">
+                                  {app.receptionLabel ?? "접수 방식 확인 중"}
+                                </span>
+                                {linkedStringingApps.length > 1 ? (
+                                  <span className="text-ui-label text-muted-foreground">
+                                    신청 {appIndex + 1}
                                   </span>
-                                  {linkedStringingApps.length > 1 ? (
-                                    <span className="text-ui-label text-muted-foreground">
-                                      신청 {appIndex + 1}
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <div className="grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">
-                                  <p>
-                                    <span className="text-muted-foreground">희망 일시:</span>{" "}
-                                    {reservationLabel}
-                                  </p>
-                                  <p>
-                                    <span className="text-muted-foreground">라켓 수:</span>{" "}
-                                    {app.racketCount ?? displayLines.length}자루
-                                  </p>
-                                  <p>
-                                    <span className="text-muted-foreground">신청 금액:</span>{" "}
-                                    {typeof app.totalPrice === "number"
-                                      ? formatCurrency(app.totalPrice)
-                                      : "확인 중"}
-                                  </p>
-                                  <p>
-                                    <span className="text-muted-foreground">최근 업데이트:</span>{" "}
-                                    {app.updatedAt ? formatDate(app.updatedAt) : "-"}
-                                  </p>
-                                </div>
+                                ) : null}
+                              </div>
+                              <div className="grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">
+                                <p>
+                                  <span className="text-muted-foreground">희망 일시:</span>{" "}
+                                  {reservationLabel}
+                                </p>
+                                <p>
+                                  <span className="text-muted-foreground">라켓 수:</span>{" "}
+                                  {app.racketCount ?? displayLines.length}자루
+                                </p>
+                                <p>
+                                  <span className="text-muted-foreground">신청 금액:</span>{" "}
+                                  {typeof app.totalPrice === "number"
+                                    ? formatCurrency(app.totalPrice)
+                                    : "확인 중"}
+                                </p>
+                                <p>
+                                  <span className="text-muted-foreground">최근 업데이트:</span>{" "}
+                                  {app.updatedAt ? formatDate(app.updatedAt) : "-"}
+                                </p>
                               </div>
                             </div>
+                          </div>
 
-                            <details className="group mt-4 rounded-xl bg-muted/15 p-3">
-                              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-                                <span>라켓·스트링 상세</span>
-                                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
-                              </summary>
-                              <div className="mt-3 space-y-2">
-                                {displayLines.map((line, lineIndex) => {
-                                  const racketLabel =
-                                    line.racketLabel || line.racketType || "라켓명 미입력";
-                                  const normalizedRacketLabel =
-                                    racketLabel && racketLabel !== "라켓명 미입력"
-                                      ? racketLabel
-                                      : null;
-                                  const racketCardTitle = normalizedRacketLabel ?? "라켓 정보";
-                                  const stringName =
-                                    line.stringName ||
-                                    app.stringNames?.join(", ") ||
-                                    "스트링명 확인 중";
-                                  const tensionMain = line.tensionMain || app.tensionSummary || "-";
-                                  const tensionCross =
-                                    line.tensionCross || line.tensionMain || null;
-                                  const requestNote = line.note || app.requirements || null;
-                                  return (
-                                    <div
-                                      key={line.id ?? `${app.id}-${lineIndex}`}
-                                      className="border-t border-border/60 py-3 text-ui-body-sm first:border-t-0"
-                                    >
-                                      <div className="flex items-center justify-between gap-2">
-                                        <div className="min-w-0">
-                                          <p className="line-clamp-1 break-keep font-medium text-foreground">
-                                            {racketCardTitle}
+                          <details className="group mt-4 rounded-xl bg-muted/15 p-3">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                              <span>라켓·스트링 상세</span>
+                              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="mt-3 space-y-2">
+                              {displayLines.map((line, lineIndex) => {
+                                const racketLabel =
+                                  line.racketLabel || line.racketType || "라켓명 미입력";
+                                const normalizedRacketLabel =
+                                  racketLabel && racketLabel !== "라켓명 미입력"
+                                    ? racketLabel
+                                    : null;
+                                const racketCardTitle = normalizedRacketLabel ?? "라켓 정보";
+                                const stringName =
+                                  line.stringName ||
+                                  app.stringNames?.join(", ") ||
+                                  "스트링명 확인 중";
+                                const tensionMain = line.tensionMain || app.tensionSummary || "-";
+                                const tensionCross = line.tensionCross || line.tensionMain || null;
+                                const requestNote = line.note || app.requirements || null;
+                                return (
+                                  <div
+                                    key={line.id ?? `${app.id}-${lineIndex}`}
+                                    className="border-t border-border/60 py-3 text-ui-body-sm first:border-t-0"
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="min-w-0">
+                                        <p className="line-clamp-1 break-keep font-medium text-foreground">
+                                          {racketCardTitle}
+                                        </p>
+                                        {isMultipleLines ? (
+                                          <p className="text-ui-label text-muted-foreground">
+                                            {lineIndex + 1}번째 라켓
                                           </p>
-                                          {isMultipleLines ? (
-                                            <p className="text-ui-label text-muted-foreground">
-                                              {lineIndex + 1}번째 라켓
-                                            </p>
-                                          ) : null}
-                                        </div>
-                                        <Badge
-                                          variant="outline"
-                                          className="max-w-[14rem] shrink-0 whitespace-normal break-keep text-left text-ui-micro leading-snug"
-                                        >
-                                          {stringName}
-                                        </Badge>
-                                      </div>
-                                      <dl className="mt-3 space-y-2 text-foreground">
-                                        <div className="flex gap-2">
-                                          <dt className="w-20 shrink-0 text-muted-foreground">
-                                            라켓명
-                                          </dt>
-                                          <dd className="min-w-0 break-words">{racketLabel}</dd>
-                                        </div>
-                                        <div className="flex gap-2">
-                                          <dt className="w-20 shrink-0 text-muted-foreground">
-                                            스트링
-                                          </dt>
-                                          <dd className="min-w-0 break-words">{stringName}</dd>
-                                        </div>
-                                        {line.gauge || line.colorLabel || line.color ? (
-                                          <div className="flex gap-2">
-                                            <dt className="w-20 shrink-0 text-muted-foreground">
-                                              옵션
-                                            </dt>
-                                            <dd className="min-w-0 break-words">
-                                              {line.gauge
-                                                ? `게이지(굵기) ${formatGaugeLabel(line.gauge)}`
-                                                : "게이지(굵기) -"}
-                                              {" / 색상 "}
-                                              {line.colorLabel || line.color || "-"}
-                                            </dd>
-                                          </div>
                                         ) : null}
+                                      </div>
+                                      <Badge
+                                        variant="outline"
+                                        className="max-w-[14rem] shrink-0 whitespace-normal break-keep text-left text-ui-micro leading-snug"
+                                      >
+                                        {stringName}
+                                      </Badge>
+                                    </div>
+                                    <dl className="mt-3 space-y-2 text-foreground">
+                                      <div className="flex gap-2">
+                                        <dt className="w-20 shrink-0 text-muted-foreground">
+                                          라켓명
+                                        </dt>
+                                        <dd className="min-w-0 break-words">{racketLabel}</dd>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <dt className="w-20 shrink-0 text-muted-foreground">
+                                          스트링
+                                        </dt>
+                                        <dd className="min-w-0 break-words">{stringName}</dd>
+                                      </div>
+                                      {line.gauge || line.colorLabel || line.color ? (
                                         <div className="flex gap-2">
                                           <dt className="w-20 shrink-0 text-muted-foreground">
-                                            텐션
+                                            옵션
                                           </dt>
-                                          <dd>
-                                            메인 {tensionMain}
-                                            {tensionCross ? ` / 크로스 ${tensionCross}` : ""}
+                                          <dd className="min-w-0 break-words">
+                                            {line.gauge
+                                              ? `게이지(굵기) ${formatGaugeLabel(line.gauge)}`
+                                              : "게이지(굵기) -"}
+                                            {" / 색상 "}
+                                            {line.colorLabel || line.color || "-"}
                                           </dd>
                                         </div>
-                                        {requestNote ? (
-                                          <div className="flex gap-2">
-                                            <dt className="w-20 shrink-0 text-muted-foreground">
-                                              요청사항
-                                            </dt>
-                                            <dd className="min-w-0 whitespace-pre-wrap break-words">
-                                              {requestNote}
-                                            </dd>
-                                          </div>
-                                        ) : null}
-                                      </dl>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </details>
-
-                            {appNeedsTracking ? (
-                              <div className="mt-4 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                  <div>
-                                    <p className="mt-1 break-words font-semibold text-foreground">
-                                      라켓 발송 정보
-                                    </p>
-                                    <p className="mt-1 text-muted-foreground">
-                                      상태: {appHasTracking ? "등록 완료" : "미등록"}
-                                    </p>
+                                      ) : null}
+                                      <div className="flex gap-2">
+                                        <dt className="w-20 shrink-0 text-muted-foreground">
+                                          텐션
+                                        </dt>
+                                        <dd>
+                                          메인 {tensionMain}
+                                          {tensionCross ? ` / 크로스 ${tensionCross}` : ""}
+                                        </dd>
+                                      </div>
+                                      {requestNote ? (
+                                        <div className="flex gap-2">
+                                          <dt className="w-20 shrink-0 text-muted-foreground">
+                                            요청사항
+                                          </dt>
+                                          <dd className="min-w-0 whitespace-pre-wrap break-words">
+                                            {requestNote}
+                                          </dd>
+                                        </div>
+                                      ) : null}
+                                    </dl>
                                   </div>
-                                  {appHasTracking ? (
-                                    <Button
-                                      asChild
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-8 w-full bg-transparent bp-sm:w-auto"
-                                    >
-                                      <Link href={appShippingHref}>라켓 발송 운송장 수정</Link>
-                                    </Button>
-                                  ) : null}
-                                </div>
-                                <div className="mt-3 grid gap-2 bp-sm:grid-cols-2">
-                                  <p>
-                                    <span className="text-muted-foreground">택배사:</span>{" "}
-                                    {appSelfShipInfo?.courier?.trim()
-                                      ? getCourierDisplayName(appSelfShipInfo.courier)
-                                      : "미등록"}
-                                  </p>
-                                  <p>
-                                    <span className="text-muted-foreground">운송장 번호:</span>{" "}
-                                    {appSelfShipInfo?.trackingNo?.trim() || "미등록"}
-                                  </p>
-                                  <p>
-                                    <span className="text-muted-foreground">발송일:</span>{" "}
-                                    {appSelfShipInfo?.shippedAt
-                                      ? formatDate(appSelfShipInfo.shippedAt)
-                                      : "미등록"}
-                                  </p>
-                                  {appSelfShipInfo?.note ? (
-                                    <p>
-                                      <span className="text-muted-foreground">메모:</span>{" "}
-                                      {appSelfShipInfo.note}
-                                    </p>
-                                  ) : null}
-                                </div>
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })
-                    ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
-                      <div className="border-l-2 border-warning/60 bg-warning/10 px-3 py-3 text-warning dark:bg-warning/15">
-                        <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
-                        <p className="mt-1 text-ui-body-sm">
-                          총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은
-                          교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
-                        </p>
-                        <Button asChild className="mt-4 w-full bp-sm:w-auto">
-                          <Link href={`/services/apply?orderId=${orderDetail._id}`}>
-                            {hasSubmittedStringingApplication
-                              ? "교체서비스 추가 신청하기"
-                              : "교체서비스 신청하기"}
-                          </Link>
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-muted-foreground">
-                        연결된 교체서비스 신청 정보를 확인 중입니다.
-                      </div>
-                    )}
+                                );
+                              })}
+                            </div>
+                          </details>
 
-                    {reviewableStringingAppId ? (
-                      <ServiceReviewCTA
-                        applicationId={reviewableStringingAppId}
-                        userConfirmedAt={reviewableStringingApp?.userConfirmedAt ?? null}
-                      />
-                    ) : null}
+                          {appNeedsTracking ? (
+                            <div className="mt-4 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="mt-1 break-words font-semibold text-foreground">
+                                    라켓 발송 정보
+                                  </p>
+                                  <p className="mt-1 text-muted-foreground">
+                                    상태: {appHasTracking ? "등록 완료" : "미등록"}
+                                  </p>
+                                </div>
+                                {appHasTracking ? (
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 w-full bg-transparent bp-sm:w-auto"
+                                  >
+                                    <Link href={appShippingHref}>라켓 발송 운송장 수정</Link>
+                                  </Button>
+                                ) : null}
+                              </div>
+                              <div className="mt-3 grid gap-2 bp-sm:grid-cols-2">
+                                <p>
+                                  <span className="text-muted-foreground">택배사:</span>{" "}
+                                  {appSelfShipInfo?.courier?.trim()
+                                    ? getCourierDisplayName(appSelfShipInfo.courier)
+                                    : "미등록"}
+                                </p>
+                                <p>
+                                  <span className="text-muted-foreground">운송장 번호:</span>{" "}
+                                  {appSelfShipInfo?.trackingNo?.trim() || "미등록"}
+                                </p>
+                                <p>
+                                  <span className="text-muted-foreground">발송일:</span>{" "}
+                                  {appSelfShipInfo?.shippedAt
+                                    ? formatDate(appSelfShipInfo.shippedAt)
+                                    : "미등록"}
+                                </p>
+                                {appSelfShipInfo?.note ? (
+                                  <p>
+                                    <span className="text-muted-foreground">메모:</span>{" "}
+                                    {appSelfShipInfo.note}
+                                  </p>
+                                ) : null}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })
+                  ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
+                    <div className="border-l-2 border-warning/60 bg-warning/10 px-3 py-3 text-warning dark:bg-warning/15">
+                      <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
+                      <p className="mt-1 text-ui-body-sm">
+                        총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체
+                        가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
+                      </p>
+                      <Button asChild className="mt-4 w-full bp-sm:w-auto">
+                        <Link href={`/services/apply?orderId=${orderDetail._id}`}>
+                          {hasSubmittedStringingApplication
+                            ? "교체서비스 추가 신청하기"
+                            : "교체서비스 신청하기"}
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-muted-foreground">
+                      연결된 교체서비스 신청 정보를 확인 중입니다.
+                    </div>
+                  )}
+
+                  {reviewableStringingAppId ? (
+                    <ServiceReviewCTA
+                      applicationId={reviewableStringingAppId}
+                      userConfirmedAt={reviewableStringingApp?.userConfirmedAt ?? null}
+                    />
+                  ) : null}
                 </MypageDetailCard>
               </section>
             )}
@@ -1474,10 +1511,19 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 <CardContent className="space-y-4 p-4 bp-lg:p-6">
                   <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
                     <MypageInfoField label="수령 방법" value={shippingMethodLabel} />
-                    <MypageInfoField label={isVisitPickup ? "수령 상태" : "배송/수령 상태"} value={shippingProgressLabel} />
+                    <MypageInfoField
+                      label={isVisitPickup ? "수령 상태" : "배송/수령 상태"}
+                      value={shippingProgressLabel}
+                    />
                     <MypageInfoField label="배송지" value={addressSummary} />
-                    <MypageInfoField label="요청사항" value={hasDeliveryRequest ? "있음" : "없음"} />
-                    <MypageInfoField label={isVisitPickup ? "출고 상태" : "운송장"} value={outboundTrackingLabel} />
+                    <MypageInfoField
+                      label="요청사항"
+                      value={hasDeliveryRequest ? "있음" : "없음"}
+                    />
+                    <MypageInfoField
+                      label={isVisitPickup ? "출고 상태" : "운송장"}
+                      value={outboundTrackingLabel}
+                    />
                     <MypageInfoField
                       label="예상 수령일"
                       value={
@@ -1496,8 +1542,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       </summary>
                       <div className="space-y-3 border-t border-border/60 p-3 bp-sm:p-4">
                         <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
-                          <MypageInfoField label="택배사" value={getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)} />
-                          <MypageInfoField label="완성 라켓 운송장 번호" value={orderDetail.shippingInfo.invoice.trackingNumber} valueClassName="break-all" />
+                          <MypageInfoField
+                            label="택배사"
+                            value={getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
+                          />
+                          <MypageInfoField
+                            label="완성 라켓 운송장 번호"
+                            value={orderDetail.shippingInfo.invoice.trackingNumber}
+                            valueClassName="break-all"
+                          />
                         </div>
                         {shouldShowTrackingSummarySkeleton && (
                           <div className="space-y-2">
@@ -1511,25 +1564,56 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           <div className="space-y-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
                             {trackingData.success && trackingData.supported ? (
                               <>
-                                <p className="text-foreground"><span className="text-muted-foreground">실시간 배송 상태:</span> {trackingData.displayStatus}</p>
-                                {trackingData.lastEvent?.locationName && <p className="text-foreground"><span className="text-muted-foreground">최근 위치:</span> {trackingData.lastEvent.locationName}</p>}
-                                {trackingData.lastEvent?.time && <p className="text-foreground"><span className="text-muted-foreground">최근 갱신:</span> {formatDateTime(trackingData.lastEvent.time)}</p>}
+                                <p className="text-foreground">
+                                  <span className="text-muted-foreground">실시간 배송 상태:</span>{" "}
+                                  {trackingData.displayStatus}
+                                </p>
+                                {trackingData.lastEvent?.locationName && (
+                                  <p className="text-foreground">
+                                    <span className="text-muted-foreground">최근 위치:</span>{" "}
+                                    {trackingData.lastEvent.locationName}
+                                  </p>
+                                )}
+                                {trackingData.lastEvent?.time && (
+                                  <p className="text-foreground">
+                                    <span className="text-muted-foreground">최근 갱신:</span>{" "}
+                                    {formatDateTime(trackingData.lastEvent.time)}
+                                  </p>
+                                )}
                                 {shouldShowTrackingStatusNotice && (
                                   <div className="space-y-0.5 border-l-2 border-border bg-background/60 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
                                     <p>실시간 배송 상태는 택배사 기준이며,</p>
                                     <p>주문 상태와 다를 수 있습니다.</p>
                                   </div>
                                 )}
-                                <Button size="sm" variant="outline" onClick={() => window.open(trackingData.linkUrl, "_blank", "noopener,noreferrer")}>배송조회</Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    window.open(
+                                      trackingData.linkUrl,
+                                      "_blank",
+                                      "noopener,noreferrer",
+                                    )
+                                  }
+                                >
+                                  배송조회
+                                </Button>
                               </>
                             ) : trackingData.success && !trackingData.supported ? (
                               <p className="text-muted-foreground">{trackingData.message}</p>
                             ) : (
-                              <p className="text-destructive">{getTrackingFailureMessage(trackingData)}</p>
+                              <p className="text-destructive">
+                                {getTrackingFailureMessage(trackingData)}
+                              </p>
                             )}
                           </div>
                         )}
-                        {trackingError && <p className="text-ui-body-sm text-destructive">{getTrackingErrorMessage(trackingData, trackingError)}</p>}
+                        {trackingError && (
+                          <p className="text-ui-body-sm text-destructive">
+                            {getTrackingErrorMessage(trackingData, trackingError)}
+                          </p>
+                        )}
                       </div>
                     </details>
                   ) : null}
@@ -1541,35 +1625,83 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </summary>
                     <div className="space-y-3 border-t border-border/60 p-3 bp-sm:p-4">
                       <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
-                        <MypageInfoField label="이름" value={orderDetail.customer.name} fallback="이름 없음" />
-                        <MypageInfoField label="전화번호" value={formatKoreanPhone(orderDetail.customer.phone)} fallback="전화번호 없음" />
-                        <MypageInfoField label="이메일" value={orderDetail.customer.email} fallback="이메일 없음" valueClassName="break-all" />
+                        <MypageInfoField
+                          label="이름"
+                          value={orderDetail.customer.name}
+                          fallback="이름 없음"
+                        />
+                        <MypageInfoField
+                          label="전화번호"
+                          value={formatKoreanPhone(orderDetail.customer.phone)}
+                          fallback="전화번호 없음"
+                        />
+                        <MypageInfoField
+                          label="이메일"
+                          value={orderDetail.customer.email}
+                          fallback="이메일 없음"
+                          valueClassName="break-all"
+                        />
                         <MypageInfoField label="우편번호" value={orderDetail.customer.postalCode} />
-                        <MypageInfoField label="주소" value={orderDetail.customer.address} fallback="주소 없음" />
-                        <MypageInfoField label="상세 주소" value={orderDetail.customer.addressDetail} />
+                        <MypageInfoField
+                          label="주소"
+                          value={orderDetail.customer.address}
+                          fallback="주소 없음"
+                        />
+                        <MypageInfoField
+                          label="상세 주소"
+                          value={orderDetail.customer.addressDetail}
+                        />
                       </div>
 
                       {showDeliveryOnlyFields ? (
                         <div className="space-y-3 border-t border-border/50 pt-3">
                           <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                             <div className="min-w-0">
-                              <p className="text-ui-label font-medium text-muted-foreground">배송 요청사항</p>
-                              <p className="mt-1 text-ui-label text-muted-foreground">결제 시 입력한 배송 관련 요청사항입니다.</p>
+                              <p className="text-ui-label font-medium text-muted-foreground">
+                                배송 요청사항
+                              </p>
+                              <p className="mt-1 text-ui-label text-muted-foreground">
+                                결제 시 입력한 배송 관련 요청사항입니다.
+                              </p>
                             </div>
                             {isEditMode && canUserEdit && !editingRequest ? (
-                              <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto">요청사항 수정</Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setEditingRequest(true)}
+                                className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto"
+                              >
+                                요청사항 수정
+                              </Button>
                             ) : null}
                           </div>
                           {editingRequest ? (
-                            <RequestEditForm initialData={orderDetail.shippingInfo.deliveryRequest || ""} orderId={orderId} onSuccess={() => { mutateOrderDetail(); mutateHistory(); setEditingRequest(false); }} onCancel={() => setEditingRequest(false)} />
+                            <RequestEditForm
+                              initialData={orderDetail.shippingInfo.deliveryRequest || ""}
+                              orderId={orderId}
+                              onSuccess={() => {
+                                mutateOrderDetail();
+                                mutateHistory();
+                                setEditingRequest(false);
+                              }}
+                              onCancel={() => setEditingRequest(false)}
+                            />
                           ) : orderDetail.shippingInfo.deliveryRequest ? (
-                            <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3"><p className="whitespace-pre-wrap break-words text-foreground">{orderDetail.shippingInfo.deliveryRequest}</p></div>
+                            <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3">
+                              <p className="whitespace-pre-wrap break-words text-foreground">
+                                {orderDetail.shippingInfo.deliveryRequest}
+                              </p>
+                            </div>
                           ) : (
-                            <p className="text-ui-body-sm italic text-muted-foreground">요청사항이 입력되지 않았습니다.</p>
+                            <p className="text-ui-body-sm italic text-muted-foreground">
+                              요청사항이 입력되지 않았습니다.
+                            </p>
                           )}
                         </div>
                       ) : (
-                        <p className="text-ui-label font-medium text-muted-foreground">방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.</p>
+                        <p className="text-ui-label font-medium text-muted-foreground">
+                          방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.
+                        </p>
                       )}
                     </div>
                   </details>
@@ -1578,18 +1710,40 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     <div className="border-l-2 border-primary/50 bg-primary/5 px-3 py-3 dark:bg-primary/10">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="space-y-1">
-                          <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송 정보</p>
-                          <p className="text-ui-label text-foreground/75">매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.</p>
+                          <p className="text-ui-body-sm font-semibold text-foreground">
+                            라켓 발송 정보
+                          </p>
+                          <p className="text-ui-label text-foreground/75">
+                            매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.
+                          </p>
                         </div>
                         {hasSelfShipTracking ? (
-                          <Button asChild size="sm" variant="outline" className="h-8 w-full bp-sm:w-auto"><Link href={inboundShippingHref ?? "#"}>라켓 발송 운송장 수정</Link></Button>
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="h-8 w-full bp-sm:w-auto"
+                          >
+                            <Link href={inboundShippingHref ?? "#"}>라켓 발송 운송장 수정</Link>
+                          </Button>
                         ) : null}
                       </div>
                       <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">
-                        <p><span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}</p>
-                        <p><span className="text-muted-foreground">택배사:</span> {selfShipCourierLabel}</p>
-                        <p className="min-w-0 break-all"><span className="text-muted-foreground">운송장 번호:</span> {selfShipTrackingNoLabel}</p>
-                        <p><span className="text-muted-foreground">발송일:</span> {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : "미등록"}</p>
+                        <p>
+                          <span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">택배사:</span>{" "}
+                          {selfShipCourierLabel}
+                        </p>
+                        <p className="min-w-0 break-all">
+                          <span className="text-muted-foreground">운송장 번호:</span>{" "}
+                          {selfShipTrackingNoLabel}
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">발송일:</span>{" "}
+                          {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : "미등록"}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -1597,7 +1751,14 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               )}
               {isEditMode && canUserEdit && !editingCustomer && (
                 <CardFooter className="flex justify-center bg-muted/50 pt-3">
-                  <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20">고객정보 수정</Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingCustomer(true)}
+                    className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                  >
+                    고객정보 수정
+                  </Button>
                 </CardFooter>
               )}
             </Card>

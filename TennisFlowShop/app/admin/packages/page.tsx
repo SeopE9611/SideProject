@@ -737,839 +737,840 @@ export default function PackageOrdersClient() {
 
   return (
     <AdminPageShell variant="wide" className="py-6">
-        {/* 제목 및 설명 */}
-        <AdminPageHeader
-          title="패키지 관리"
-          description="고객이 구매한 스트링 패키지 이용권의 결제 상태, 잔여 횟수, 만료일을 관리합니다."
-          icon={Package}
-          scope="범위: 구매된 패키지 이용권"
-          helperText="패키지 상품 구성은 패키지 설정에서 관리합니다."
-        />
+      {/* 제목 및 설명 */}
+      <AdminPageHeader
+        title="패키지 관리"
+        description="고객이 구매한 스트링 패키지 이용권의 결제 상태, 잔여 횟수, 만료일을 관리합니다."
+        icon={Package}
+        scope="범위: 구매된 패키지 이용권"
+        helperText="패키지 상품 구성은 패키지 설정에서 관리합니다."
+      />
 
-        {/* 통계 카드 */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex min-w-0 items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
-                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
-                    {kpiTotal === null ? "-" : kpiTotal}
-                  </div>
-                </div>
-                <div className="shrink-0 bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
-                  <Package className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex min-w-0 items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
-                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-success">
-                    {kpiActive === null ? "-" : kpiActive}
-                  </div>
-                </div>
-                <div className="shrink-0 bg-success/10 dark:bg-success/15 rounded-xl p-3">
-                  <Calendar className="h-6 w-6 text-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex min-w-0 items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">총 매출</p>
-                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
-                    {kpiRevenue === null ? "집계 중" : formatCurrency(kpiRevenue)}
-                  </div>
-                </div>
-                <div className="shrink-0 bg-muted rounded-xl p-3">
-                  <CreditCard className="h-6 w-6 text-foreground" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex min-w-0 items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
-                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
-                    {kpiExpSoon === null ? "-" : kpiExpSoon}
-                  </div>
-                </div>
-                <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
-                  <Calendar className="h-6 w-6 text-warning" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 빠른 보기 */}
-        <Card className={cn("mb-4", adminSurface.cardMuted)}>
-          <CardContent className="flex flex-wrap items-center gap-2 p-4">
-            <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={!hasAnyFilter ? "default" : "outline"}
-              onClick={resetFilters}
-            >
-              전체
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentViewLabel === "결제/활성화 대기" ? "default" : "outline"}
-              onClick={() =>
-                applyQuickView({
-                  presetFilter: PAYMENT_CHECK_PRESET,
-                })
-              }
-            >
-              결제/활성화 대기
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentViewLabel === "활성 패키지" ? "default" : "outline"}
-              onClick={() =>
-                applyQuickView({
-                  statusFilter: "활성",
-                })
-              }
-            >
-              활성
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentViewLabel === "결제대기" ? "default" : "outline"}
-              onClick={() =>
-                applyQuickView({
-                  paymentFilter: "결제대기",
-                })
-              }
-            >
-              결제대기
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentViewLabel === "만료 패키지" ? "default" : "outline"}
-              onClick={() =>
-                applyQuickView({
-                  statusFilter: "만료",
-                })
-              }
-            >
-              만료
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentViewLabel === "취소 패키지" ? "default" : "outline"}
-              onClick={() =>
-                applyQuickView({
-                  statusFilter: "취소",
-                })
-              }
-            >
-              취소
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* 현재 보기 요약 */}
-        <div
-          className={cn(
-            "mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border px-4 py-3 text-sm",
-            adminSurface.cardMuted,
-          )}
-        >
-          <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
-
-          {activeFilterLabels.length > 0 && (
-            <p className="text-muted-foreground">필터: {activeFilterLabels.join(" / ")}</p>
-          )}
-
-          {totalCount !== null && (
-            <p className="text-muted-foreground">총 {totalCount.toLocaleString("ko-KR")}건</p>
-          )}
-
-          {hasAnyFilter && (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="ml-auto"
-              onClick={resetFilters}
-            >
-              필터 초기화
-            </Button>
-          )}
-        </div>
-
-        {/* 필터 및 검색 카드 */}
-        <Card className={cn("mb-6", adminSurface.filterCard)}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              패키지 찾기
-            </CardTitle>
-            <CardDescription>
-              빠른 보기로 주요 상태를 좁히거나 패키지 상태, 유형, 결제 상태, 고객 정보를 조합해
-              검색하세요.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              {/* 검색 input */}
-              <div className="w-full max-w-md">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="패키지 ID, 고객명, 이메일 검색..."
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => patchState({ searchTerm: e.target.value })}
-                  />
-                  {searchTerm && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
-                      onClick={() => patchState({ searchTerm: "" })}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* 필터 컴포넌트들 */}
-              <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                <Select
-                  value={statusFilter}
-                  onValueChange={(v) => {
-                    if (isPassStatusFilter(v)) patchState({ statusFilter: v });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="패키지 상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 상태</SelectItem>
-                    <SelectItem value="비활성">비활성</SelectItem>
-                    <SelectItem value="활성">활성</SelectItem>
-                    <SelectItem value="종료">종료</SelectItem>
-                    <SelectItem value="만료">만료</SelectItem>
-                    <SelectItem value="취소">취소</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={packageTypeFilter}
-                  onValueChange={(v) => {
-                    if (isPackageTypeFilter(v)) patchState({ packageTypeFilter: v });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="패키지 유형" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 유형</SelectItem>
-                    <SelectItem value="10회권">10회권</SelectItem>
-                    <SelectItem value="30회권">30회권</SelectItem>
-                    <SelectItem value="50회권">50회권</SelectItem>
-                    <SelectItem value="100회권">100회권</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={paymentFilter}
-                  onValueChange={(v) => {
-                    if (isPaymentStatusFilter(v)) patchState({ paymentFilter: v });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="결제 상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 결제</SelectItem>
-                    <SelectItem value="결제완료">결제완료</SelectItem>
-                    <SelectItem value="결제대기">결제대기</SelectItem>
-                    <SelectItem value="결제취소">결제취소</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={serviceTypeFilter}
-                  onValueChange={(v) => {
-                    if (isServiceTypeFilter(v)) patchState({ serviceTypeFilter: v });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="서비스 유형" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 서비스</SelectItem>
-                    <SelectItem value="방문">방문</SelectItem>
-                    <SelectItem value="출장">출장</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button variant="outline" onClick={resetFilters} className="w-full bg-transparent">
-                  필터 초기화
-                </Button>
-              </div>
-
-              {presetFilter === PAYMENT_CHECK_PRESET && (
-                <div className="flex flex-wrap items-center gap-2 border-t pt-3">
-                  <Badge variant="secondary" className="w-fit">
-                    패키지 결제/활성화 대기
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한 건만 표시합니다.
-                  </span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 패키지 목록 테이블 */}
-        <Card className={adminSurface.tableCard}>
-          <CardHeader>
+      {/* 통계 카드 */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <Card className={adminSurface.kpiCard}>
+          <CardContent className="p-6">
             <div className="flex min-w-0 items-center justify-between gap-3">
-              <CardTitle>패키지 목록</CardTitle>
-              <p className="text-sm text-muted-foreground" aria-live="polite">
-                총 {hasResolvedTotal && totalCount !== null ? totalCount : "-"}
-                개의 패키지
-              </p>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
+                  {kpiTotal === null ? "-" : kpiTotal}
+                </div>
+              </div>
+              <div className="shrink-0 bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
+                <Package className="h-6 w-6" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent className="relative overflow-x-auto px-3 sm:px-4">
-            <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
-              <Table
-                className="min-w-[1120px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
-                aria-busy={isValidating && !shouldShowRows}
+          </CardContent>
+        </Card>
+
+        <Card className={adminSurface.kpiCard}>
+          <CardContent className="p-6">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-success">
+                  {kpiActive === null ? "-" : kpiActive}
+                </div>
+              </div>
+              <div className="shrink-0 bg-success/10 dark:bg-success/15 rounded-xl p-3">
+                <Calendar className="h-6 w-6 text-success" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={adminSurface.kpiCard}>
+          <CardContent className="p-6">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-muted-foreground">총 매출</p>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
+                  {kpiRevenue === null ? "집계 중" : formatCurrency(kpiRevenue)}
+                </div>
+              </div>
+              <div className="shrink-0 bg-muted rounded-xl p-3">
+                <CreditCard className="h-6 w-6 text-foreground" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={adminSurface.kpiCard}>
+          <CardContent className="p-6">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
+                  {kpiExpSoon === null ? "-" : kpiExpSoon}
+                </div>
+              </div>
+              <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
+                <Calendar className="h-6 w-6 text-warning" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 빠른 보기 */}
+      <Card className={cn("mb-4", adminSurface.cardMuted)}>
+        <CardContent className="flex flex-wrap items-center gap-2 p-4">
+          <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+
+          <Button
+            type="button"
+            size="sm"
+            variant={!hasAnyFilter ? "default" : "outline"}
+            onClick={resetFilters}
+          >
+            전체
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant={currentViewLabel === "결제/활성화 대기" ? "default" : "outline"}
+            onClick={() =>
+              applyQuickView({
+                presetFilter: PAYMENT_CHECK_PRESET,
+              })
+            }
+          >
+            결제/활성화 대기
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant={currentViewLabel === "활성 패키지" ? "default" : "outline"}
+            onClick={() =>
+              applyQuickView({
+                statusFilter: "활성",
+              })
+            }
+          >
+            활성
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant={currentViewLabel === "결제대기" ? "default" : "outline"}
+            onClick={() =>
+              applyQuickView({
+                paymentFilter: "결제대기",
+              })
+            }
+          >
+            결제대기
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant={currentViewLabel === "만료 패키지" ? "default" : "outline"}
+            onClick={() =>
+              applyQuickView({
+                statusFilter: "만료",
+              })
+            }
+          >
+            만료
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant={currentViewLabel === "취소 패키지" ? "default" : "outline"}
+            onClick={() =>
+              applyQuickView({
+                statusFilter: "취소",
+              })
+            }
+          >
+            취소
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* 현재 보기 요약 */}
+      <div
+        className={cn(
+          "mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border px-4 py-3 text-sm",
+          adminSurface.cardMuted,
+        )}
+      >
+        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
+
+        {activeFilterLabels.length > 0 && (
+          <p className="text-muted-foreground">필터: {activeFilterLabels.join(" / ")}</p>
+        )}
+
+        {totalCount !== null && (
+          <p className="text-muted-foreground">총 {totalCount.toLocaleString("ko-KR")}건</p>
+        )}
+
+        {hasAnyFilter && (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="ml-auto"
+            onClick={resetFilters}
+          >
+            필터 초기화
+          </Button>
+        )}
+      </div>
+
+      {/* 필터 및 검색 카드 */}
+      <Card className={cn("mb-6", adminSurface.filterCard)}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            패키지 찾기
+          </CardTitle>
+          <CardDescription>
+            빠른 보기로 주요 상태를 좁히거나 패키지 상태, 유형, 결제 상태, 고객 정보를 조합해
+            검색하세요.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-4">
+            {/* 검색 input */}
+            <div className="w-full max-w-md">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="패키지 ID, 고객명, 이메일 검색..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => patchState({ searchTerm: e.target.value })}
+                />
+                {searchTerm && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
+                    onClick={() => patchState({ searchTerm: "" })}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* 필터 컴포넌트들 */}
+            <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => {
+                  if (isPassStatusFilter(v)) patchState({ statusFilter: v });
+                }}
               >
-                <TableHeader className="sticky top-0 bg-card shadow-sm">
+                <SelectTrigger>
+                  <SelectValue placeholder="패키지 상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">모든 상태</SelectItem>
+                  <SelectItem value="비활성">비활성</SelectItem>
+                  <SelectItem value="활성">활성</SelectItem>
+                  <SelectItem value="종료">종료</SelectItem>
+                  <SelectItem value="만료">만료</SelectItem>
+                  <SelectItem value="취소">취소</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={packageTypeFilter}
+                onValueChange={(v) => {
+                  if (isPackageTypeFilter(v)) patchState({ packageTypeFilter: v });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="패키지 유형" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">모든 유형</SelectItem>
+                  <SelectItem value="10회권">10회권</SelectItem>
+                  <SelectItem value="30회권">30회권</SelectItem>
+                  <SelectItem value="50회권">50회권</SelectItem>
+                  <SelectItem value="100회권">100회권</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={paymentFilter}
+                onValueChange={(v) => {
+                  if (isPaymentStatusFilter(v)) patchState({ paymentFilter: v });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="결제 상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">모든 결제</SelectItem>
+                  <SelectItem value="결제완료">결제완료</SelectItem>
+                  <SelectItem value="결제대기">결제대기</SelectItem>
+                  <SelectItem value="결제취소">결제취소</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={serviceTypeFilter}
+                onValueChange={(v) => {
+                  if (isServiceTypeFilter(v)) patchState({ serviceTypeFilter: v });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="서비스 유형" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">모든 서비스</SelectItem>
+                  <SelectItem value="방문">방문</SelectItem>
+                  <SelectItem value="출장">출장</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button variant="outline" onClick={resetFilters} className="w-full bg-transparent">
+                필터 초기화
+              </Button>
+            </div>
+
+            {presetFilter === PAYMENT_CHECK_PRESET && (
+              <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+                <Badge variant="secondary" className="w-fit">
+                  패키지 결제/활성화 대기
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한 건만 표시합니다.
+                </span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 패키지 목록 테이블 */}
+      <Card className={adminSurface.tableCard}>
+        <CardHeader>
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <CardTitle>패키지 목록</CardTitle>
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              총 {hasResolvedTotal && totalCount !== null ? totalCount : "-"}
+              개의 패키지
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent className="relative overflow-x-auto px-3 sm:px-4">
+          <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
+            <Table
+              className="min-w-[1120px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
+              aria-busy={isValidating && !shouldShowRows}
+            >
+              <TableHeader className="sticky top-0 bg-card shadow-sm">
+                <TableRow>
+                  <TableHead
+                    className={cn(adminDataTable.head, "sticky top-0 z-10 box-border w-[120px]")}
+                  >
+                    패키지 ID
+                  </TableHead>
+
+                  <SortableTH
+                    k="customer"
+                    label="고객"
+                    className="text-left"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("customer")}
+                    onSort={handleSort}
+                    active={sortBy === "customer"}
+                    icon={SortIcon("customer")}
+                  />
+
+                  <SortableTH
+                    k="package"
+                    label="패키지"
+                    className="w-[96px]"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("package")}
+                    onSort={handleSort}
+                    active={sortBy === "package"}
+                    icon={SortIcon("package")}
+                  />
+
+                  <SortableTH
+                    k="remainingSessions"
+                    label="남은 횟수"
+                    className="w-[92px] hidden lg:table-cell text-center tabular-nums"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("remainingSessions")}
+                    onSort={handleSort}
+                    active={sortBy === "remainingSessions"}
+                    icon={SortIcon("remainingSessions")}
+                  />
+
+                  <SortableTH
+                    k="progress"
+                    label="진행률"
+                    className="w-[96px]"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("progress")}
+                    onSort={handleSort}
+                    active={sortBy === "progress"}
+                    icon={SortIcon("progress")}
+                  />
+
+                  <SortableTH
+                    k="purchaseDate"
+                    label="구매일"
+                    className="w-36 text-right tabular-nums"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("purchaseDate")}
+                    onSort={handleSort}
+                    active={sortBy === "purchaseDate"}
+                    icon={SortIcon("purchaseDate")}
+                  />
+
+                  <SortableTH
+                    k="expiryDate"
+                    label="만료일"
+                    className="w-36 text-right tabular-nums"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("expiryDate")}
+                    onSort={handleSort}
+                    active={sortBy === "expiryDate"}
+                    icon={SortIcon("expiryDate")}
+                  />
+
+                  <SortableTH
+                    k="status"
+                    label="상태"
+                    className="w-[72px]"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("status")}
+                    onSort={handleSort}
+                    active={sortBy === "status"}
+                    icon={SortIcon("status")}
+                  />
+
+                  <SortableTH
+                    k="payment"
+                    label="결제"
+                    className="w-[84px] hidden xl:table-cell"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("payment")}
+                    onSort={handleSort}
+                    active={sortBy === "payment"}
+                    icon={SortIcon("payment")}
+                  />
+
+                  <SortableTH
+                    k="price"
+                    label="금액"
+                    className="w-[96px] text-right tabular-nums"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("price")}
+                    onSort={handleSort}
+                    active={sortBy === "price"}
+                    icon={SortIcon("price")}
+                  />
+
+                  <TableHead
+                    className={cn(
+                      adminDataTable.actionHead,
+                      "sticky top-0 z-10 box-border w-[44px]",
+                    )}
+                  >
+                    작업
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {!hasDataError && isValidating && !shouldShowRows && (
                   <TableRow>
-                    <TableHead className={cn(adminDataTable.head, "sticky top-0 z-10 box-border w-[120px]")}>
-                      패키지 ID
-                    </TableHead>
-
-                    <SortableTH
-                      k="customer"
-                      label="고객"
-                      className="text-left"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("customer")}
-                      onSort={handleSort}
-                      active={sortBy === "customer"}
-                      icon={SortIcon("customer")}
-                    />
-
-                    <SortableTH
-                      k="package"
-                      label="패키지"
-                      className="w-[96px]"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("package")}
-                      onSort={handleSort}
-                      active={sortBy === "package"}
-                      icon={SortIcon("package")}
-                    />
-
-                    <SortableTH
-                      k="remainingSessions"
-                      label="남은 횟수"
-                      className="w-[92px] hidden lg:table-cell text-center tabular-nums"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("remainingSessions")}
-                      onSort={handleSort}
-                      active={sortBy === "remainingSessions"}
-                      icon={SortIcon("remainingSessions")}
-                    />
-
-                    <SortableTH
-                      k="progress"
-                      label="진행률"
-                      className="w-[96px]"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("progress")}
-                      onSort={handleSort}
-                      active={sortBy === "progress"}
-                      icon={SortIcon("progress")}
-                    />
-
-                    <SortableTH
-                      k="purchaseDate"
-                      label="구매일"
-                      className="w-36 text-right tabular-nums"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("purchaseDate")}
-                      onSort={handleSort}
-                      active={sortBy === "purchaseDate"}
-                      icon={SortIcon("purchaseDate")}
-                    />
-
-                    <SortableTH
-                      k="expiryDate"
-                      label="만료일"
-                      className="w-36 text-right tabular-nums"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("expiryDate")}
-                      onSort={handleSort}
-                      active={sortBy === "expiryDate"}
-                      icon={SortIcon("expiryDate")}
-                    />
-
-                    <SortableTH
-                      k="status"
-                      label="상태"
-                      className="w-[72px]"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("status")}
-                      onSort={handleSort}
-                      active={sortBy === "status"}
-                      icon={SortIcon("status")}
-                    />
-
-                    <SortableTH
-                      k="payment"
-                      label="결제"
-                      className="w-[84px] hidden xl:table-cell"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("payment")}
-                      onSort={handleSort}
-                      active={sortBy === "payment"}
-                      icon={SortIcon("payment")}
-                    />
-
-                    <SortableTH
-                      k="price"
-                      label="금액"
-                      className="w-[96px] text-right tabular-nums"
-                      thClasses={thClasses}
-                      ariaSort={ariaSort("price")}
-                      onSort={handleSort}
-                      active={sortBy === "price"}
-                      icon={SortIcon("price")}
-                    />
-
-                    <TableHead
-                      className={cn(adminDataTable.actionHead, "sticky top-0 z-10 box-border w-[44px]")}
-                    >
-                      작업
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {!hasDataError && isValidating && !shouldShowRows && (
-                    <TableRow>
-                      <TableCell colSpan={11} className="py-4">
-                        <div className="space-y-2">
-                          {Array.from({ length: 6 }).map((_, rowIdx) => (
-                            <div
-                              key={`admin-packages-loading-row-${rowIdx}`}
-                              className="grid grid-cols-11 gap-2"
-                            >
-                              {Array.from({ length: 11 }).map((__, colIdx) => (
-                                <Skeleton
-                                  key={`admin-packages-loading-cell-${rowIdx}-${colIdx}`}
-                                  className="h-7 w-full"
-                                />
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  {/** 빈 상태 */}
-                  {shouldShowEmptyState && (
-                    <TableRow>
-                      <TableCell colSpan={11} className="py-12">
-                        <div className="flex flex-col items-center gap-3 text-center">
-                          <div className="flex flex-col items-center gap-2">
-                            <Search className="h-8 w-8 text-muted-foreground/50" />
-                            <p className="text-sm text-muted-foreground">
-                              불러올 패키지 목록이 없습니다.
-                            </p>
-                          </div>
-
-                          <div className="mt-2 flex items-center gap-2">
-                            {/* 필터 초기화 (URL 쿼리도 정리) */}
-                            {hasAnyFilter && (
-                              <Button
-                                variant="outline"
-                                onClick={() => {
-                                  resetFilters(); // state 초기화
-                                  router.replace(pathname); // URL 쿼리 제거
-                                }}
-                              >
-                                필터 초기화
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  {/** 정상 렌더 */}
-                  {shouldShowRows && (
-                    <>
-                      {packages!.map((pkg) => {
-                        // 진행률 계산(used / (used + remaining))
-                        const { percent: progressPercentage, total: currentTotal } =
-                          calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
-
-                        // 만료일 소스(연장 반영)
-                        const expirySource = pkg.expiryDate ?? null;
-
-                        // 상태/남은일수 계산
-                        const listState = computeListStatus(
-                          pkg.passStatus,
-                          pkg.paymentStatus,
-                          expirySource,
-                        );
-                        const daysUntilExpiry = getDaysUntilExpiry(expirySource);
-
-                        return (
-                          // 라이트/다크 줄 배경 토큰 통일
-                          <TableRow
-                            key={pkg.id}
-                            className="hover:bg-primary/5 transition-colors even:bg-muted/40 border-b last:border-0"
+                    <TableCell colSpan={11} className="py-4">
+                      <div className="space-y-2">
+                        {Array.from({ length: 6 }).map((_, rowIdx) => (
+                          <div
+                            key={`admin-packages-loading-row-${rowIdx}`}
+                            className="grid grid-cols-11 gap-2"
                           >
-                            {/* 패키지 ID (복사 토스트 포함) */}
-                            <TableCell className={cn(tdClasses, col.id)}>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span
-                                      className="font-mono text-sm cursor-pointer block truncate"
-                                      title={pkg.id}
-                                    >
-                                      {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <div className="flex items-center gap-2">
-                                      <span className="whitespace-nowrap">{pkg.id}</span>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-4 w-4"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(pkg.id);
-                                          showSuccessToast(
-                                            "패키지 ID가 클립보드에 복사되었습니다.",
-                                          );
-                                        }}
-                                      >
-                                        <Copy className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </TableCell>
+                            {Array.from({ length: 11 }).map((__, colIdx) => (
+                              <Skeleton
+                                key={`admin-packages-loading-cell-${rowIdx}-${colIdx}`}
+                                className="h-7 w-full"
+                              />
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
 
-                            {/* 고객 (이름/이메일 두 줄) */}
-                            <TableCell className={cn(tdClasses, col.customer)}>
-                              {(() => {
-                                const cName = pkg.customer?.name ?? "이름없음";
-                                const cEmail = pkg.customer?.email ?? "";
-                                const baseName = cName.replace(/$$비회원$$\s*$/, "");
-                                const isGuest = cName.includes("(비회원)");
-                                return (
-                                  <div className="flex min-w-0 flex-col items-start overflow-hidden text-left">
-                                    <span
-                                      className="line-clamp-2 max-w-[200px] break-words font-medium"
-                                      title={baseName}
-                                    >
-                                      {baseName}
-                                      {isGuest && (
-                                        <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                                          (비회원)
-                                        </span>
-                                      )}
-                                    </span>
-                                    <span
-                                      className="block max-w-[200px] truncate text-xs text-muted-foreground"
-                                      title={cEmail}
-                                    >
-                                      {cEmail}
-                                    </span>
-                                  </div>
-                                );
-                              })()}
-                            </TableCell>
+                {/** 빈 상태 */}
+                {shouldShowEmptyState && (
+                  <TableRow>
+                    <TableCell colSpan={11} className="py-12">
+                      <div className="flex flex-col items-center gap-3 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <Search className="h-8 w-8 text-muted-foreground/50" />
+                          <p className="text-sm text-muted-foreground">
+                            불러올 패키지 목록이 없습니다.
+                          </p>
+                        </div>
 
-                            {/* 패키지 유형 배지 */}
-                            <TableCell className={cn(tdClasses, col.type, "whitespace-nowrap")}>
-                              <Badge
-                                className={cn(
-                                  "border",
-                                  packageTypeColors[pkg.packageType],
-                                  "font-medium",
-                                  badgeSizeCls,
-                                )}
-                              >
-                                {pkg.packageType}
-                              </Badge>
-                            </TableCell>
-
-                            {/* 남은 횟수 (lg 이상 노출) */}
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                col.remain,
-                                "whitespace-nowrap hidden lg:table-cell",
-                              )}
+                        <div className="mt-2 flex items-center gap-2">
+                          {/* 필터 초기화 (URL 쿼리도 정리) */}
+                          {hasAnyFilter && (
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                resetFilters(); // state 초기화
+                                router.replace(pathname); // URL 쿼리 제거
+                              }}
                             >
-                              <div className="flex flex-col items-center leading-tight">
-                                <span className="font-bold text-lg">{pkg.remainingSessions}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {pkg.totalSessions ?? currentTotal}회
-                                </span>
-                              </div>
-                            </TableCell>
+                              필터 초기화
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
 
-                            {/* 진행률 (바 + %) */}
-                            <TableCell className={cn(tdClasses, col.progress, "whitespace-nowrap")}>
-                              <div className="flex flex-col items-center gap-1">
-                                <div
-                                  className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card"
-                                  role="progressbar"
-                                  aria-label="진행률"
-                                  aria-valuemin={0}
-                                  aria-valuemax={100}
-                                  aria-valuenow={progressPercentage}
-                                >
-                                  <div
-                                    className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                                    style={{ width: `${progressPercentage}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs font-medium">{progressPercentage}%</span>
-                              </div>
-                            </TableCell>
+                {/** 정상 렌더 */}
+                {shouldShowRows && (
+                  <>
+                    {packages!.map((pkg) => {
+                      // 진행률 계산(used / (used + remaining))
+                      const { percent: progressPercentage, total: currentTotal } =
+                        calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
 
-                            {/* 구매일(날짜/시간 두 줄) */}
-                            {(() => {
-                              const { date, time } = formatDateSplit(pkg.purchaseDate);
-                              return (
-                                <TableCell className={cn(tdClasses, col.buy)}>
-                                  <div className="flex flex-col items-end leading-tight">
-                                    <span className="whitespace-nowrap text-sm tabular-nums">
-                                      {date}
-                                    </span>
-                                    <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-                                      {time}
-                                    </span>
+                      // 만료일 소스(연장 반영)
+                      const expirySource = pkg.expiryDate ?? null;
+
+                      // 상태/남은일수 계산
+                      const listState = computeListStatus(
+                        pkg.passStatus,
+                        pkg.paymentStatus,
+                        expirySource,
+                      );
+                      const daysUntilExpiry = getDaysUntilExpiry(expirySource);
+
+                      return (
+                        // 라이트/다크 줄 배경 토큰 통일
+                        <TableRow
+                          key={pkg.id}
+                          className="hover:bg-primary/5 transition-colors even:bg-muted/40 border-b last:border-0"
+                        >
+                          {/* 패키지 ID (복사 토스트 포함) */}
+                          <TableCell className={cn(tdClasses, col.id)}>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span
+                                    className="font-mono text-sm cursor-pointer block truncate"
+                                    title={pkg.id}
+                                  >
+                                    {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="flex items-center gap-2">
+                                    <span className="whitespace-nowrap">{pkg.id}</span>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-4 w-4"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(pkg.id);
+                                        showSuccessToast("패키지 ID가 클립보드에 복사되었습니다.");
+                                      }}
+                                    >
+                                      <Copy className="w-3 h-3" />
+                                    </Button>
                                   </div>
-                                </TableCell>
-                              );
-                            })()}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
 
-                            {/* 만료일(날짜/시간 + 보조 라벨) */}
+                          {/* 고객 (이름/이메일 두 줄) */}
+                          <TableCell className={cn(tdClasses, col.customer)}>
                             {(() => {
-                              const { date, time } = formatDateSplit(expirySource);
+                              const cName = pkg.customer?.name ?? "이름없음";
+                              const cEmail = pkg.customer?.email ?? "";
+                              const baseName = cName.replace(/$$비회원$$\s*$/, "");
+                              const isGuest = cName.includes("(비회원)");
                               return (
-                                <TableCell className={cn(tdClasses, col.expire)}>
-                                  <div className="flex flex-col items-end leading-tight">
-                                    <span className="whitespace-nowrap text-sm tabular-nums">
-                                      {date}
-                                    </span>
-                                    <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-                                      {time}
-                                    </span>
-                                    {listState.label !== "취소" &&
-                                      daysUntilExpiry <= 30 &&
-                                      daysUntilExpiry > 0 && (
-                                        <span className="text-xs text-warning font-medium">
-                                          {daysUntilExpiry}일 남음
-                                        </span>
-                                      )}
-                                    {listState.label === "만료" && (
-                                      <span className="text-xs text-destructive font-medium">
-                                        만료됨
+                                <div className="flex min-w-0 flex-col items-start overflow-hidden text-left">
+                                  <span
+                                    className="line-clamp-2 max-w-[200px] break-words font-medium"
+                                    title={baseName}
+                                  >
+                                    {baseName}
+                                    {isGuest && (
+                                      <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                                        (비회원)
                                       </span>
                                     )}
-                                  </div>
-                                </TableCell>
+                                  </span>
+                                  <span
+                                    className="block max-w-[200px] truncate text-xs text-muted-foreground"
+                                    title={cEmail}
+                                  >
+                                    {cEmail}
+                                  </span>
+                                </div>
                               );
                             })()}
+                          </TableCell>
 
-                            {/* 상태 배지 */}
-                            <TableCell className={cn(tdClasses, col.status, "whitespace-nowrap")}>
-                              {(() => {
-                                const badgeCls = statusBadgeClass(listState.tone);
-                                return (
-                                  <Badge
-                                    className={cn(
-                                      badgeCls,
-                                      "shrink-0 whitespace-nowrap font-medium",
-                                      badgeSizeCls,
-                                    )}
-                                    title={`만료기준: ${formatDate(expirySource)}`}
-                                    aria-label={`표시상태 ${listState.label}`}
-                                  >
-                                    {listState.label}
-                                  </Badge>
-                                );
-                              })()}
-                            </TableCell>
-
-                            {/* 결제 배지 (xl 이상) */}
-                            <TableCell
+                          {/* 패키지 유형 배지 */}
+                          <TableCell className={cn(tdClasses, col.type, "whitespace-nowrap")}>
+                            <Badge
                               className={cn(
-                                tdClasses,
-                                col.payment,
-                                "whitespace-nowrap hidden xl:table-cell",
+                                "border",
+                                packageTypeColors[pkg.packageType],
+                                "font-medium",
+                                badgeSizeCls,
                               )}
                             >
-                              {(() => {
-                                const paymentLabel = normalizePackagePaymentStatus(
-                                  pkg.paymentStatus,
-                                );
-                                const pay = getPaymentStatusBadgeSpec(paymentLabel);
-                                return (
-                                  <Badge
-                                    variant={pay.variant}
-                                    className={cn(
-                                      "shrink-0 whitespace-nowrap font-medium",
-                                      badgeSizeCls,
-                                    )}
-                                    aria-label={`결제상태 ${String(pkg.paymentStatus)}`}
-                                  >
-                                    {pkg.paymentStatus}
-                                  </Badge>
-                                );
-                              })()}
-                            </TableCell>
+                              {pkg.packageType}
+                            </Badge>
+                          </TableCell>
 
-                            {/* 금액 */}
-                            <TableCell className={cn(tdClasses, col.price, "whitespace-nowrap")}>
-                              <span className="whitespace-nowrap font-medium tabular-nums">
-                                {formatCurrency(pkg.price)}
+                          {/* 남은 횟수 (lg 이상 노출) */}
+                          <TableCell
+                            className={cn(
+                              tdClasses,
+                              col.remain,
+                              "whitespace-nowrap hidden lg:table-cell",
+                            )}
+                          >
+                            <div className="flex flex-col items-center leading-tight">
+                              <span className="font-bold text-lg">{pkg.remainingSessions}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {pkg.totalSessions ?? currentTotal}회
                               </span>
-                            </TableCell>
+                            </div>
+                          </TableCell>
 
-                            {/* 작업 드롭다운 */}
-                            <TableCell className={cn(tdClasses, col.actions, "p-0 pr-2")}>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                  <DropdownMenuItem asChild>
-                                    <Link href={`/admin/packages/${pkg.id}`}>
-                                      <Eye className="mr-2 h-4 w-4" />
-                                      상세 보기
-                                    </Link>
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </>
+                          {/* 진행률 (바 + %) */}
+                          <TableCell className={cn(tdClasses, col.progress, "whitespace-nowrap")}>
+                            <div className="flex flex-col items-center gap-1">
+                              <div
+                                className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card"
+                                role="progressbar"
+                                aria-label="진행률"
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-valuenow={progressPercentage}
+                              >
+                                <div
+                                  className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                                  style={{ width: `${progressPercentage}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium">{progressPercentage}%</span>
+                            </div>
+                          </TableCell>
+
+                          {/* 구매일(날짜/시간 두 줄) */}
+                          {(() => {
+                            const { date, time } = formatDateSplit(pkg.purchaseDate);
+                            return (
+                              <TableCell className={cn(tdClasses, col.buy)}>
+                                <div className="flex flex-col items-end leading-tight">
+                                  <span className="whitespace-nowrap text-sm tabular-nums">
+                                    {date}
+                                  </span>
+                                  <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                                    {time}
+                                  </span>
+                                </div>
+                              </TableCell>
+                            );
+                          })()}
+
+                          {/* 만료일(날짜/시간 + 보조 라벨) */}
+                          {(() => {
+                            const { date, time } = formatDateSplit(expirySource);
+                            return (
+                              <TableCell className={cn(tdClasses, col.expire)}>
+                                <div className="flex flex-col items-end leading-tight">
+                                  <span className="whitespace-nowrap text-sm tabular-nums">
+                                    {date}
+                                  </span>
+                                  <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                                    {time}
+                                  </span>
+                                  {listState.label !== "취소" &&
+                                    daysUntilExpiry <= 30 &&
+                                    daysUntilExpiry > 0 && (
+                                      <span className="text-xs text-warning font-medium">
+                                        {daysUntilExpiry}일 남음
+                                      </span>
+                                    )}
+                                  {listState.label === "만료" && (
+                                    <span className="text-xs text-destructive font-medium">
+                                      만료됨
+                                    </span>
+                                  )}
+                                </div>
+                              </TableCell>
+                            );
+                          })()}
+
+                          {/* 상태 배지 */}
+                          <TableCell className={cn(tdClasses, col.status, "whitespace-nowrap")}>
+                            {(() => {
+                              const badgeCls = statusBadgeClass(listState.tone);
+                              return (
+                                <Badge
+                                  className={cn(
+                                    badgeCls,
+                                    "shrink-0 whitespace-nowrap font-medium",
+                                    badgeSizeCls,
+                                  )}
+                                  title={`만료기준: ${formatDate(expirySource)}`}
+                                  aria-label={`표시상태 ${listState.label}`}
+                                >
+                                  {listState.label}
+                                </Badge>
+                              );
+                            })()}
+                          </TableCell>
+
+                          {/* 결제 배지 (xl 이상) */}
+                          <TableCell
+                            className={cn(
+                              tdClasses,
+                              col.payment,
+                              "whitespace-nowrap hidden xl:table-cell",
+                            )}
+                          >
+                            {(() => {
+                              const paymentLabel = normalizePackagePaymentStatus(pkg.paymentStatus);
+                              const pay = getPaymentStatusBadgeSpec(paymentLabel);
+                              return (
+                                <Badge
+                                  variant={pay.variant}
+                                  className={cn(
+                                    "shrink-0 whitespace-nowrap font-medium",
+                                    badgeSizeCls,
+                                  )}
+                                  aria-label={`결제상태 ${String(pkg.paymentStatus)}`}
+                                >
+                                  {pkg.paymentStatus}
+                                </Badge>
+                              );
+                            })()}
+                          </TableCell>
+
+                          {/* 금액 */}
+                          <TableCell className={cn(tdClasses, col.price, "whitespace-nowrap")}>
+                            <span className="whitespace-nowrap font-medium tabular-nums">
+                              {formatCurrency(pkg.price)}
+                            </span>
+                          </TableCell>
+
+                          {/* 작업 드롭다운 */}
+                          <TableCell className={cn(tdClasses, col.actions, "p-0 pr-2")}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/admin/packages/${pkg.id}`}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    상세 보기
+                                  </Link>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </>
+                )}
+              </TableBody>
+            </Table>
+            {/* pagination */}
+            <div className="relative mt-4 h-12">
+              <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 flex items-center justify-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 bg-transparent"
+                  onClick={() => goToPage(1)}
+                  disabled={!totalPages || page <= 1}
+                  aria-label="첫 페이지"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 bg-transparent"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={!totalPages || page <= 1}
+                  aria-label="이전"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {shouldRenderPaginationNumbers &&
+                  pageItems.map((it, idx) =>
+                    typeof it === "number" ? (
+                      <Button
+                        key={idx}
+                        variant={it === page ? "default" : "outline"}
+                        className="h-9 min-w-9 px-3"
+                        aria-current={it === page ? "page" : undefined}
+                        onClick={() => goToPage(it)}
+                      >
+                        {it}
+                      </Button>
+                    ) : (
+                      <span key={idx} className="px-2 text-muted-foreground select-none">
+                        …
+                      </span>
+                    ),
                   )}
-                </TableBody>
-              </Table>
-              {/* pagination */}
-              <div className="relative mt-4 h-12">
-                <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 flex items-center justify-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 bg-transparent"
-                    onClick={() => goToPage(1)}
-                    disabled={!totalPages || page <= 1}
-                    aria-label="첫 페이지"
-                  >
-                    <ChevronsLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 bg-transparent"
-                    onClick={() => goToPage(page - 1)}
-                    disabled={!totalPages || page <= 1}
-                    aria-label="이전"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  {shouldRenderPaginationNumbers &&
-                    pageItems.map((it, idx) =>
-                      typeof it === "number" ? (
-                        <Button
-                          key={idx}
-                          variant={it === page ? "default" : "outline"}
-                          className="h-9 min-w-9 px-3"
-                          aria-current={it === page ? "page" : undefined}
-                          onClick={() => goToPage(it)}
-                        >
-                          {it}
-                        </Button>
-                      ) : (
-                        <span key={idx} className="px-2 text-muted-foreground select-none">
-                          …
-                        </span>
-                      ),
-                    )}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 bg-transparent"
-                    onClick={() => goToPage(page + 1)}
-                    disabled={!totalPages || page >= totalPages}
-                    aria-label="다음"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 bg-transparent"
-                    onClick={() => goToPage(totalPages ?? page)}
-                    disabled={!totalPages || page >= totalPages}
-                    aria-label="끝 페이지"
-                  >
-                    <ChevronsRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 bg-transparent"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={!totalPages || page >= totalPages}
+                  aria-label="다음"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 bg-transparent"
+                  onClick={() => goToPage(totalPages ?? page)}
+                  disabled={!totalPages || page >= totalPages}
+                  aria-label="끝 페이지"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
     </AdminPageShell>
   );
 }

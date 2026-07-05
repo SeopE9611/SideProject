@@ -1074,7 +1074,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
 
                   <div className="space-y-1.5 md:col-span-3">
-                    <Label className="text-ui-label font-medium text-foreground">공통 메모 (선택)</Label>
+                    <Label className="text-ui-label font-medium text-foreground">
+                      공통 메모 (선택)
+                    </Label>
                     <Textarea
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
@@ -1099,7 +1101,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 <div className="flex min-w-0 items-center justify-between gap-2 border-b border-border bg-muted/30 px-4 py-3">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary shadow-sm">
-                      <span className="text-ui-body-sm font-semibold text-primary">{index + 1}</span>
+                      <span className="text-ui-body-sm font-semibold text-primary">
+                        {index + 1}
+                      </span>
                     </div>
                     <span className="min-w-0 truncate text-ui-body-sm font-medium text-foreground">
                       {line.racketType?.trim() || `라켓 ${index + 1}`}
@@ -1112,7 +1116,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         className="flex max-w-[120px] items-center gap-1.5 px-2.5 py-1 sm:max-w-[200px]"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                        <span className="truncate text-ui-label font-medium">{line.stringName}</span>
+                        <span className="truncate text-ui-label font-medium">
+                          {line.stringName}
+                        </span>
                       </Badge>
                     )}
                     {canEditStandaloneWorkLines && lineCount > 1 && (
@@ -1134,7 +1140,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 <div className="p-4 space-y-4">
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-ui-label font-medium text-foreground">라켓 이름/별칭</Label>
+                      <Label className="text-ui-label font-medium text-foreground">
+                        라켓 이름/별칭
+                      </Label>
                       <Input
                         value={line.racketType ?? ""}
                         onChange={(e) => handleLineFieldChange(index, "racketType", e.target.value)}
@@ -1149,7 +1157,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
                     {canEditStandaloneWorkLines && (
                       <div className="space-y-1.5">
-                        <Label className="text-ui-label font-medium text-foreground">스트링명</Label>
+                        <Label className="text-ui-label font-medium text-foreground">
+                          스트링명
+                        </Label>
                         <Input
                           value={line.stringName ?? ""}
                           onChange={(e) =>
@@ -1161,7 +1171,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       </div>
                     )}
                     <div className="space-y-1.5">
-                      <Label className="text-ui-label font-medium text-foreground">메인 텐션(LB)</Label>
+                      <Label className="text-ui-label font-medium text-foreground">
+                        메인 텐션(LB)
+                      </Label>
                       <Input
                         value={line.tensionMain ?? ""}
                         onChange={(e) =>
@@ -1172,7 +1184,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-ui-label font-medium text-foreground">크로스 텐션(LB)</Label>
+                      <Label className="text-ui-label font-medium text-foreground">
+                        크로스 텐션(LB)
+                      </Label>
                       <Input
                         value={line.tensionCross ?? ""}
                         onChange={(e) =>
@@ -1186,7 +1200,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
                   {/* 라켓별 메모 */}
                   <div className="space-y-1.5">
-                    <Label className="text-ui-label font-medium text-foreground">작업 메모 (선택)</Label>
+                    <Label className="text-ui-label font-medium text-foreground">
+                      작업 메모 (선택)
+                    </Label>
                     <Textarea
                       value={line.note ?? ""}
                       onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}

@@ -4,10 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  merchandisingImageBadgeClass,
-  merchandisingImageBadgeVariant,
-} from "@/lib/badge-style";
+import { merchandisingImageBadgeClass, merchandisingImageBadgeVariant } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import type { ProductBadge } from "./ProductDetailClient.types";
 

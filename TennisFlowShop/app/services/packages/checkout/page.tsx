@@ -95,7 +95,9 @@ export default async function Page({
             </div>
             <div className="space-y-2">
               <p className="text-ui-body-sm font-semibold text-primary">패키지권 확인 필요</p>
-              <h2 className="text-ui-page-title font-semibold">현재 패키지 추가 구매가 제한됩니다</h2>
+              <h2 className="text-ui-page-title font-semibold">
+                현재 패키지 추가 구매가 제한됩니다
+              </h2>
               <p className="break-keep text-ui-body text-muted-foreground">
                 {isPendingOrder
                   ? "입금 확인 대기 중인 패키지 주문이 있어 새 패키지를 바로 구매할 수 없습니다."

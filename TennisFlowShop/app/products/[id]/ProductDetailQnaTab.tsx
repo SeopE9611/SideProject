@@ -45,7 +45,11 @@ export default function ProductDetailQnaTab({
             {title}
           </h3>
         </div>
-        <Button asChild variant="secondary" className="text-ui-label sm:text-ui-body-sm h-9 sm:h-10">
+        <Button
+          asChild
+          variant="secondary"
+          className="text-ui-label sm:text-ui-body-sm h-9 sm:h-10"
+        >
           <Link href={qnaWriteHref}>문의하기</Link>
         </Button>
       </div>

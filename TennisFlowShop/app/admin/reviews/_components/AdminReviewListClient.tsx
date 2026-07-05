@@ -549,7 +549,10 @@ export default function AdminReviewListClient() {
         <div className="max-h-[70vh] overflow-x-auto overflow-y-auto">
           {/* 헤더 라벨 */}
           <div
-            className={cn("sticky top-0 z-[1] hidden items-center gap-x-3 border-b border-border bg-muted/40 lg:grid", GRID)}
+            className={cn(
+              "sticky top-0 z-[1] hidden items-center gap-x-3 border-b border-border bg-muted/40 lg:grid",
+              GRID,
+            )}
           >
             <div className={cn(adminDataTable.headCenter, "px-0 opacity-70")}>선택</div>
             <div className={adminDataTable.head}>작성자</div>
@@ -594,7 +597,11 @@ export default function AdminReviewListClient() {
             </div>
           ) : rows.length === 0 ? (
             <div
-              className={cn("m-4 p-6 text-center", adminSurface.cardMuted, adminTypography.metaMuted)}
+              className={cn(
+                "m-4 p-6 text-center",
+                adminSurface.cardMuted,
+                adminTypography.metaMuted,
+              )}
             >
               불러올 리뷰가 없습니다.
             </div>
@@ -713,7 +720,9 @@ export default function AdminReviewListClient() {
                   </div>
 
                   {/* 타입 */}
-                  <div className={`min-w-0 ${dim} flex items-center justify-center gap-3 whitespace-nowrap`}>
+                  <div
+                    className={`min-w-0 ${dim} flex items-center justify-center gap-3 whitespace-nowrap`}
+                  >
                     <Badge
                       variant="outline"
                       className={typeBadgeClass(r.type) + " ring-1 ring-inset ring-ring shrink-0"}

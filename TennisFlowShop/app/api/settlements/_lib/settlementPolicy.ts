@@ -233,7 +233,6 @@ export function rentalDepositAmount(rental: any) {
   return toNumber(deposit);
 }
 
-
 export type PrivatePaymentSettlementSummary = {
   paidAmount: number;
   refundAmount: number;

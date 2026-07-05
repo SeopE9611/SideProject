@@ -43,13 +43,21 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     if (!user) return NextResponse.json({ message: "not found" }, { status: 404 });
     if (String(admin._id) === String(_id)) {
       return NextResponse.json(
-        { ok: false, code: "SELF_PASSWORD_RESET_FORBIDDEN", message: "자기 자신의 비밀번호는 초기화할 수 없습니다." },
+        {
+          ok: false,
+          code: "SELF_PASSWORD_RESET_FORBIDDEN",
+          message: "자기 자신의 비밀번호는 초기화할 수 없습니다.",
+        },
         { status: 409 },
       );
     }
     if (isAdminRole((user as any).role) && !isSuperAdminRole(admin.role)) {
       return NextResponse.json(
-        { ok: false, code: "SUPERADMIN_REQUIRED", message: "관리자 계정 비밀번호 초기화는 최고 관리자만 가능합니다." },
+        {
+          ok: false,
+          code: "SUPERADMIN_REQUIRED",
+          message: "관리자 계정 비밀번호 초기화는 최고 관리자만 가능합니다.",
+        },
         { status: 403 },
       );
     }

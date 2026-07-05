@@ -148,15 +148,22 @@ export default async function PricingPage() {
                     <h3 className="text-ui-card-title-lg font-semibold leading-tight text-foreground">
                       {service.name}
                     </h3>
-                    <div className="text-ui-page-title font-semibold text-foreground">{service.price}</div>
+                    <div className="text-ui-page-title font-semibold text-foreground">
+                      {service.price}
+                    </div>
                     <div className="text-ui-body-sm text-muted-foreground flex items-center justify-center gap-1">
                       <Clock className="h-4 w-4" /> 소요시간: {service.time}
                     </div>
                   </div>
-                  <p className="text-ui-body-sm text-muted-foreground break-keep">{service.description}</p>
+                  <p className="text-ui-body-sm text-muted-foreground break-keep">
+                    {service.description}
+                  </p>
                   <ul className="space-y-1">
                     {service.features.map((feature) => (
-                      <li key={feature} className="text-ui-body-sm flex items-center gap-2 break-keep">
+                      <li
+                        key={feature}
+                        className="text-ui-body-sm flex items-center gap-2 break-keep"
+                      >
                         <Check className="h-4 w-4 text-success" />
                         <span>{feature}</span>
                       </li>
@@ -232,7 +239,9 @@ export default async function PricingPage() {
                         </PublicSurface>
                       </div>
                       <div className="space-y-2">
-                        <p className="text-ui-label font-medium text-muted-foreground">대표 브랜드</p>
+                        <p className="text-ui-label font-medium text-muted-foreground">
+                          대표 브랜드
+                        </p>
                         <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                           {category.brands.length ? (
                             category.brands.map((brand) => (

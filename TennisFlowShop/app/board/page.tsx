@@ -2,16 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ArrowRight,
-  Bell,
-  Eye,
-  MessageSquare,
-  Plus,
-  Star,
-  Pin,
-  Megaphone,
-} from "lucide-react";
+import { ArrowRight, Bell, Eye, MessageSquare, Plus, Star, Pin, Megaphone } from "lucide-react";
 import useSWR from "swr";
 
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -541,7 +532,6 @@ function CommunityIntroCard() {
             </Link>
           </Button>
         </div>
-
       </CardContent>
     </Card>
   );

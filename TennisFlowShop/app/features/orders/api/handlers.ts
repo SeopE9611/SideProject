@@ -8,8 +8,6 @@ import {
   resolvePackageUsage,
   resolveRequiredPassCountFromInput,
 } from "@/app/features/stringing-applications/lib/package-pricing";
-import { verifyAccessToken } from "@/lib/auth.utils";
-import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import {
   buildItemSummary,
   compactId,
@@ -20,14 +18,20 @@ import {
   previewText,
   truthyField,
 } from "@/lib/admin-alerts/formatters";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import { verifyAccessToken } from "@/lib/auth.utils";
 import { getShippingBadge } from "@/lib/badge-style";
+import {
+  hasStringingServiceInCheckout,
+  validateStringingApplicationInputForOrder,
+} from "@/lib/checkout-stringing-guard";
 import clientPromise from "@/lib/mongodb";
 import { ENABLE_RACKET_STANDALONE_ORDER } from "@/lib/orders/racket-standalone-policy";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import { deductPoints } from "@/lib/points.service";
-import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import {
   getVisibilityViewerFromCookies,
@@ -35,10 +39,6 @@ import {
 } from "@/lib/public-visibility-viewer";
 import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
 import { normalizeEmailForSearch } from "@/lib/search-email";
-import {
-  hasStringingServiceInCheckout,
-  validateStringingApplicationInputForOrder,
-} from "@/lib/checkout-stringing-guard";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import type { DBOrder } from "@/lib/types/order-db";
 import { ObjectId, type Db } from "mongodb";
@@ -343,8 +343,7 @@ export async function createOrder(
     // 클라 금액은 절대 신뢰하지 않음(참고 로그용만)
     const { items: rawItems, shippingInfo, guestInfo } = body;
     const stringingApplicationInput = body?.stringingApplicationInput as
-      | StringingApplicationInput
-      | undefined;
+      StringingApplicationInput | undefined;
     const clientTotalPrice = body?.totalPrice;
     const clientShippingFee = body?.shippingFee;
     const clientServiceFee = body?.serviceFee;
@@ -1023,12 +1022,19 @@ export async function createOrder(
                 { session },
               );
 
+              const effectivePrice = getEffectiveProductPrice(prod);
+              const priceMeta = getProductPriceDisplayMeta(prod);
+
               return {
                 productId: oid,
                 name: prod?.name ?? "알 수 없는 상품",
                 brand: prod?.brand,
                 category: prod?.category,
-                price: getEffectiveProductPrice(prod),
+                price: effectivePrice,
+                regularPrice: priceMeta.regularPrice ?? null,
+                salePrice: priceMeta.salePrice ?? null,
+                discountAmount: priceMeta.discountAmount ?? null,
+                discountRate: priceMeta.discountRate ?? null,
 
                 // 서비스비 근거 데이터(DB 기준)
                 mountingFee: Number.isFinite(Number((prod as any)?.mountingFee))
@@ -1413,24 +1419,67 @@ export async function createOrder(
     const paymentForAlert: any = orderForAlert.paymentInfo ?? {};
     const alertFields = [
       { name: "주문번호", value: compactId(createdOrderId) },
-      truthyField("고객명", orderForAlert.userSnapshot?.name || orderForAlert.guestInfo?.name || shippingForAlert.name),
+      truthyField(
+        "고객명",
+        orderForAlert.userSnapshot?.name || orderForAlert.guestInfo?.name || shippingForAlert.name,
+      ),
       truthyField("연락처", maskPhone(shippingForAlert.phone || orderForAlert.guestInfo?.phone)),
       truthyField("상품 요약", buildItemSummary(orderForAlert.items)),
-      { name: "금액 상세", value: `상품/원금 ${formatWon(orderForAlert.originalTotalPrice)} · 배송비 ${formatWon(orderForAlert.shippingFee)} · 장착/서비스 ${formatWon(orderForAlert.serviceFee)} · 포인트 ${formatWon(orderForAlert.pointsUsed)}` },
+      {
+        name: "금액 상세",
+        value: `상품/원금 ${formatWon(orderForAlert.originalTotalPrice)} · 배송비 ${formatWon(orderForAlert.shippingFee)} · 장착/서비스 ${formatWon(orderForAlert.serviceFee)} · 포인트 ${formatWon(orderForAlert.pointsUsed)}`,
+      },
       { name: "최종 결제금액", value: formatWon(orderForAlert.totalPrice) },
       { name: "결제상태", value: String(orderForAlert.paymentStatus ?? "확인 필요") },
-      truthyField("결제/입금", [paymentForAlert.method, paymentForAlert.bank, shippingForAlert.depositor ? `입금자 ${shippingForAlert.depositor}` : ""].filter(Boolean).join(" · ")),
-      { name: "주문 유형", value: shippingForAlert.withStringService ? "교체서비스 포함" : "일반 주문" },
-      truthyField("수령/배송 방식", formatOrderPickupLabel(shippingForAlert.deliveryMethod || shippingForAlert.shippingMethod)),
+      truthyField(
+        "결제/입금",
+        [
+          paymentForAlert.method,
+          paymentForAlert.bank,
+          shippingForAlert.depositor ? `입금자 ${shippingForAlert.depositor}` : "",
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      ),
+      {
+        name: "주문 유형",
+        value: shippingForAlert.withStringService ? "교체서비스 포함" : "일반 주문",
+      },
+      truthyField(
+        "수령/배송 방식",
+        formatOrderPickupLabel(shippingForAlert.deliveryMethod || shippingForAlert.shippingMethod),
+      ),
       truthyField("배송/방문 메모", previewText(shippingForAlert.deliveryRequest, 80)),
       ...(shippingForAlert.withStringService
-        ? [{ name: "교체서비스", value: createdStringingApplicationId ? `신청서 ${compactId(createdStringingApplicationId)}` : "포함" }]
+        ? [
+            {
+              name: "교체서비스",
+              value: createdStringingApplicationId
+                ? `신청서 ${compactId(createdStringingApplicationId)}`
+                : "포함",
+            },
+          ]
         : []),
       ...(createdStringingApplicationSnapshot
-        ? [{ name: "방문 예약", value: formatVisitReservation(createdStringingApplicationSnapshot?.stringDetails?.preferredDate, createdStringingApplicationSnapshot?.stringDetails?.preferredTime, createdStringingApplicationSnapshot?.visitDurationMinutes, createdStringingApplicationSnapshot?.visitSlotCount) }]
+        ? [
+            {
+              name: "방문 예약",
+              value: formatVisitReservation(
+                createdStringingApplicationSnapshot?.stringDetails?.preferredDate,
+                createdStringingApplicationSnapshot?.stringDetails?.preferredTime,
+                createdStringingApplicationSnapshot?.visitDurationMinutes,
+                createdStringingApplicationSnapshot?.visitSlotCount,
+              ),
+            },
+          ]
         : []),
       ...(shippingForAlert.zipCode || shippingForAlert.postalCode
-        ? [{ name: "주소", value: `주소 입력됨 / 우편번호 ${shippingForAlert.zipCode || shippingForAlert.postalCode}` }]
+        ? [
+            {
+              name: "주소",
+              value: `주소 입력됨 / 우편번호 ${shippingForAlert.zipCode || shippingForAlert.postalCode}`,
+            },
+          ]
         : []),
     ].filter(Boolean) as Array<{ name: string; value: string }>;
 

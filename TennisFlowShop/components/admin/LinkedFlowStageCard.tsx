@@ -169,8 +169,8 @@ export default function LinkedFlowStageCard({
       <CardHeader className="pb-3">
         <CardTitle className={adminTypography.panelTitle}>연결 진행 단계 변경</CardTitle>
         <CardDescription className={adminTypography.meta}>
-          통합 주문의 교체 작업 진행 단계를 다음 운영 단계로 처리합니다. 결제/작업 기록과 맞지
-          않는 보정은 아래 직접 보정 영역에서만 사용하세요.
+          통합 주문의 교체 작업 진행 단계를 다음 운영 단계로 처리합니다. 결제/작업 기록과 맞지 않는
+          보정은 아래 직접 보정 영역에서만 사용하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -298,8 +298,8 @@ export default function LinkedFlowStageCard({
 
         {disabledReason && <p className="text-xs text-destructive break-keep">{disabledReason}</p>}
         <p className={cn("break-keep leading-relaxed", adminTypography.meta)}>
-          이 카드는 교체 작업 단계 변경 전용입니다. 반송/배송 정보 등록과 교체 작업 세부 확인은
-          아래 정보 영역에서 처리하고, 취소/환불은 주문 상세의 취소/환불 액션을 사용하세요.
+          이 카드는 교체 작업 단계 변경 전용입니다. 반송/배송 정보 등록과 교체 작업 세부 확인은 아래
+          정보 영역에서 처리하고, 취소/환불은 주문 상세의 취소/환불 액션을 사용하세요.
         </p>
       </CardContent>
     </Card>

@@ -451,7 +451,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   {p.name}
                 </h3>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-ui-body-sm">
-                  <span className="text-ui-label font-medium text-muted-foreground">스트링 금액</span>
+                  <span className="text-ui-label font-medium text-muted-foreground">
+                    스트링 금액
+                  </span>
                   <span className="font-semibold tabular-nums text-foreground">
                     {typeof p.price === "number"
                       ? `${p.price.toLocaleString()}원`
@@ -607,7 +609,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 disabled={disableSelectButton}
                 onClick={() => handleSelectString(p, selectedGauge, selectedColor)}
               >
-                <span className="min-w-0 truncate">{addingProductId === p._id ? "이동 중…" : "선택 후 신청"}</span>
+                <span className="min-w-0 truncate">
+                  {addingProductId === p._id ? "이동 중…" : "선택 후 신청"}
+                </span>
               </Button>
             </div>
           );

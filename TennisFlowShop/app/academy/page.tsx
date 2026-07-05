@@ -323,7 +323,9 @@ export default async function AcademyPage() {
       .filter((application) => application.classId)
       .map((application) => [application.classId, application]),
   );
-  const hasVisibleClasses = academyClasses.some((academyClass) => academyClass.status === "visible");
+  const hasVisibleClasses = academyClasses.some(
+    (academyClass) => academyClass.status === "visible",
+  );
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -372,8 +374,7 @@ export default async function AcademyPage() {
             </Button>
           </>
         }
-      >
-      </PublicPageHero>
+      ></PublicPageHero>
 
       <SiteContainer variant="default" className="space-y-12 py-10 md:space-y-16 md:py-14">
         {/* Lesson Programs Section */}
@@ -442,7 +443,9 @@ export default async function AcademyPage() {
         {/* Contact Section */}
         <section className="space-y-6" aria-labelledby="academy-contact-heading">
           <div className="space-y-3">
-            <p className="text-ui-body-sm font-semibold uppercase tracking-wider text-primary">Contact</p>
+            <p className="text-ui-body-sm font-semibold uppercase tracking-wider text-primary">
+              Contact
+            </p>
             <h2
               id="academy-contact-heading"
               className="text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg"
@@ -659,7 +662,9 @@ export default async function AcademyPage() {
         {/* FAQ Section */}
         <section className="space-y-8">
           <div className="space-y-3">
-            <p className="text-ui-body-sm font-semibold uppercase tracking-wider text-primary">FAQ</p>
+            <p className="text-ui-body-sm font-semibold uppercase tracking-wider text-primary">
+              FAQ
+            </p>
             <h2 className="text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg">
               자주 묻는 질문
             </h2>

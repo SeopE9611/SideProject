@@ -92,7 +92,10 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
         {isVisit ? (
           <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="rental-preferred-date" className="text-ui-label text-muted-foreground">
+              <Label
+                htmlFor="rental-preferred-date"
+                className="text-ui-label text-muted-foreground"
+              >
                 희망 날짜
               </Label>
               <Input
@@ -224,7 +227,11 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
           {linesForSubmit.map((line, index) => (
             <div
               key={line.id}
-              className={lineCount === 1 ? "space-y-3.5" : "space-y-3.5 border-b border-border/60 pb-4 last:border-b-0 last:pb-0"}
+              className={
+                lineCount === 1
+                  ? "space-y-3.5"
+                  : "space-y-3.5 border-b border-border/60 pb-4 last:border-b-0 last:pb-0"
+              }
             >
               <div className="space-y-1">
                 <p className="text-ui-label font-medium text-foreground">장착 대상 라켓</p>

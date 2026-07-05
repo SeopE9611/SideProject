@@ -8,14 +8,7 @@ import type { BoardAttachment, BoardPostBase } from "@/lib/types/board-domain";
 
 export type BoardType = "notice" | "qna";
 export type QnaCategory =
-  | "일반문의"
-  | "상품문의"
-  | "주문/결제"
-  | "배송"
-  | "환불/교환"
-  | "서비스"
-  | "아카데미"
-  | "회원";
+  "일반문의" | "상품문의" | "주문/결제" | "배송" | "환불/교환" | "서비스" | "아카데미" | "회원";
 export type BoardStatus = "published" | "hidden" | "deleted";
 
 export interface ProductRef {

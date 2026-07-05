@@ -138,7 +138,10 @@ export default function MessageComposeDialog({
 
         <div className="grid gap-5 py-4">
           <div className="grid gap-2.5">
-            <label htmlFor="message-title" className="text-ui-body-sm font-semibold text-foreground">
+            <label
+              htmlFor="message-title"
+              className="text-ui-body-sm font-semibold text-foreground"
+            >
               제목
             </label>
             <Input

@@ -650,10 +650,13 @@ export async function submitStringingApplicationCore({
       existingSelectedGauge &&
       existingSelectedGauge !== effectiveSelectedGauge
     ) {
-      throw Object.assign(new Error("이미 재고가 차감된 신청서의 게이지(굵기)는 변경할 수 없습니다."), {
-        status: 409,
-        code: "GAUGE_ALREADY_DEDUCTED",
-      });
+      throw Object.assign(
+        new Error("이미 재고가 차감된 신청서의 게이지(굵기)는 변경할 수 없습니다."),
+        {
+          status: 409,
+          code: "GAUGE_ALREADY_DEDUCTED",
+        },
+      );
     }
 
     const existingSelectedColor = (existingApplication as any)?.meta?.selectedColor;

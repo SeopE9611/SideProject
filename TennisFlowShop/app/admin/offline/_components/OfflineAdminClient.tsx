@@ -1892,7 +1892,9 @@ export default function OfflineAdminClient() {
             </Button>
           </div>
           {/* 현재 보기 요약: 실제 조회에 적용된 submittedRecordFilters 기준입니다. */}
-          <div className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm`}>
+          <div
+            className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm`}
+          >
             {/* 좌측: 현재 뷰 및 필터 상태 */}
             <p className="font-semibold text-foreground">현재 보기: {currentRecordViewLabel}</p>
             {submittedRecordFilterLabels.length > 0 && (
@@ -2120,36 +2122,20 @@ export default function OfflineAdminClient() {
                         />
                       </th>
 
-                      <th className={adminDataTable.headRight}>
-                        날짜
-                      </th>
-                      <th className={adminDataTable.head}>
-                        고객
-                      </th>
+                      <th className={adminDataTable.headRight}>날짜</th>
+                      <th className={adminDataTable.head}>고객</th>
 
-                      <th className={adminDataTable.headCenter}>
-                        유형
-                      </th>
+                      <th className={adminDataTable.headCenter}>유형</th>
 
-                      <th className={adminDataTable.head}>
-                        작업 내용
-                      </th>
+                      <th className={adminDataTable.head}>작업 내용</th>
 
-                      <th className={adminDataTable.headRight}>
-                        금액
-                      </th>
+                      <th className={adminDataTable.headRight}>금액</th>
 
-                      <th className={adminDataTable.headCenter}>
-                        결제
-                      </th>
+                      <th className={adminDataTable.headCenter}>결제</th>
 
-                      <th className={adminDataTable.headCenter}>
-                        상태
-                      </th>
+                      <th className={adminDataTable.headCenter}>상태</th>
 
-                      <th className={adminDataTable.actionHead}>
-                        관리
-                      </th>
+                      <th className={adminDataTable.actionHead}>관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -2198,9 +2184,15 @@ export default function OfflineAdminClient() {
                               {KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}
                             </span>
                             <div className="flex max-w-[130px] flex-wrap justify-center gap-1">
-                              {r.source === "private_payment" && <Badge variant="secondary" className="text-[11px]">개인결제 연결</Badge>}
+                              {r.source === "private_payment" && (
+                                <Badge variant="secondary" className="text-[11px]">
+                                  개인결제 연결
+                                </Badge>
+                              )}
                               {r.privatePaymentSync?.paymentStatus === "결제취소" && (
-                                <Badge variant="destructive" className="text-[11px]">개인결제 취소됨</Badge>
+                                <Badge variant="destructive" className="text-[11px]">
+                                  개인결제 취소됨
+                                </Badge>
                               )}
                             </div>
                           </div>
@@ -2215,8 +2207,14 @@ export default function OfflineAdminClient() {
                         </td>
                         <td className={adminDataTable.moneyCell}>
                           <div className="flex flex-col items-end gap-1.5">
-                            <span className="whitespace-nowrap tabular-nums">{formatCurrency(r.payment?.amount)}</span>
-                            {r.revenueExcluded && <Badge variant="outline" className="whitespace-nowrap text-[11px]">오프라인 매출 제외</Badge>}
+                            <span className="whitespace-nowrap tabular-nums">
+                              {formatCurrency(r.payment?.amount)}
+                            </span>
+                            {r.revenueExcluded && (
+                              <Badge variant="outline" className="whitespace-nowrap text-[11px]">
+                                오프라인 매출 제외
+                              </Badge>
+                            )}
                           </div>
                         </td>
                         <td className={adminDataTable.cellCenter}>

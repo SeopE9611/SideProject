@@ -108,10 +108,7 @@ export function getMerchandisingBadgeSpec(kind: MerchandisingBadgeKind) {
 }
 
 export type WorkflowMetaBadgeKind =
-  | "action_required"
-  | "cancel_requested"
-  | "application_linked"
-  | "replacement_service_included";
+  "action_required" | "cancel_requested" | "application_linked" | "replacement_service_included";
 
 export function getWorkflowMetaBadgeSpec(kind: WorkflowMetaBadgeKind) {
   if (kind === "action_required" || kind === "cancel_requested") return badgeStyleSpec("warning");
@@ -310,11 +307,7 @@ export function getShippingBadge(order: Order) {
  */
 export function getShippingMethodBadge(order: Order) {
   const servicePickupMethod = (order as any)?.servicePickupMethod as
-    | "SELF_SEND"
-    | "COURIER_VISIT"
-    | "SHOP_VISIT"
-    | null
-    | undefined;
+    "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null | undefined;
 
   const codeFromPickup =
     servicePickupMethod === "SHOP_VISIT"

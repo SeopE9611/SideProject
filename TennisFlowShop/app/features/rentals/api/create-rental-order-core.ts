@@ -58,8 +58,16 @@ async function applyRentalVariantInventoryDeduction(params: {
   product: any;
   visibilityViewer: VisibilityViewer;
 }) {
-  const { db, session, productId, selectedColor, selectedGauge, quantity, product, visibilityViewer } =
-    params;
+  const {
+    db,
+    session,
+    productId,
+    selectedColor,
+    selectedGauge,
+    quantity,
+    product,
+    visibilityViewer,
+  } = params;
   const variantInventories = Array.isArray(product?.variantInventories)
     ? product.variantInventories
     : [];
@@ -695,8 +703,7 @@ export async function createRentalOrderCore(params: {
           }
 
           const normalizedInput = stringingApplicationInput as
-            | StringingApplicationInput
-            | undefined;
+            StringingApplicationInput | undefined;
 
           if (!hasEnoughStringingApplicationInputForOrder(normalizedInput)) {
             throw Object.assign(new Error(STRINGING_APPLICATION_REQUIRED_MESSAGE), { status: 400 });
@@ -810,16 +817,22 @@ export async function createRentalOrderCore(params: {
           "금액 상세",
           buildRentalAmountSummary(alertDoc?.amount, alertDoc?.originalTotal, alertDoc?.pointsUsed),
         ),
-        { name: "결제상태", value: String(alertDoc?.paymentStatus ?? alertDoc?.status ?? "확인 필요") },
+        {
+          name: "결제상태",
+          value: String(alertDoc?.paymentStatus ?? alertDoc?.status ?? "확인 필요"),
+        },
         truthyField("결제수단", alertDoc?.payment?.method),
         truthyField(
           "수령/배송 방식",
-          formatRentalPickupLabel(alertDoc?.shipping?.shippingMethod || alertDoc?.servicePickupMethod),
+          formatRentalPickupLabel(
+            alertDoc?.shipping?.shippingMethod || alertDoc?.servicePickupMethod,
+          ),
         ),
         truthyField("배송/방문 메모", previewText(alertDoc?.shipping?.deliveryRequest, 80)),
         {
           name: "교체서비스",
-          value: alertDoc?.stringing?.requested || alertDoc?.isStringServiceApplied ? "포함" : "미포함",
+          value:
+            alertDoc?.stringing?.requested || alertDoc?.isStringServiceApplied ? "포함" : "미포함",
         },
         truthyField("교체서비스 신청서", compactId(alertDoc?.stringingApplicationId)),
       ].filter(Boolean) as Array<{ name: string; value: string }>,

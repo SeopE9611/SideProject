@@ -27,7 +27,9 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
       <div className="min-h-screen bg-muted/30">
         <SiteContainer variant="wide" className="py-12">
           <div className="text-center">
-            <h1 className="text-ui-page-title font-semibold text-foreground">존재하지 않는 라켓입니다.</h1>
+            <h1 className="text-ui-page-title font-semibold text-foreground">
+              존재하지 않는 라켓입니다.
+            </h1>
           </div>
         </SiteContainer>
       </div>

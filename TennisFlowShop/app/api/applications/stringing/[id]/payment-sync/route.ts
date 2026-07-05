@@ -222,7 +222,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
     const pgStatus = pick(pgRaw, "status", "Status");
     const previousPaymentStatus = String((application as any)?.paymentStatus ?? "").trim();
-    const previousPaymentInfoStatus = String((application as any)?.paymentInfo?.status ?? "").trim();
+    const previousPaymentInfoStatus = String(
+      (application as any)?.paymentInfo?.status ?? "",
+    ).trim();
     const cancelAmount = Math.floor(
       Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0,
     );

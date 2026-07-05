@@ -440,9 +440,7 @@ export default function BoardsClient() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
             <div>
               <CardTitle className={adminTypography.sectionTitle}>게시글·신고 목록</CardTitle>
-              <p className={cn("mt-1", adminTypography.metaMuted)}>
-                커뮤니티 게시글 및 신고 관리
-              </p>
+              <p className={cn("mt-1", adminTypography.metaMuted)}>커뮤니티 게시글 및 신고 관리</p>
             </div>
 
             <Tabs value={tab} onValueChange={(v) => switchTab(v as any)}>
@@ -508,12 +506,8 @@ export default function BoardsClient() {
 
                   <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
                     <div className="min-w-[150px] space-y-1 text-right">
-                      <p className={adminTypography.bodyStrong}>
-                        선택 {selectedPostIds.length}개
-                      </p>
-                      <p className={adminTypography.caption}>
-                        선택 삭제는 복구할 수 없습니다.
-                      </p>
+                      <p className={adminTypography.bodyStrong}>선택 {selectedPostIds.length}개</p>
+                      <p className={adminTypography.caption}>선택 삭제는 복구할 수 없습니다.</p>
                     </div>
                     <Button
                       variant="destructive"
@@ -661,12 +655,22 @@ export default function BoardsClient() {
                                       </Tooltip>
                                     )}
 
-                                    <div className={cn("flex items-center gap-4", adminTypography.metaMuted)}>
+                                    <div
+                                      className={cn(
+                                        "flex items-center gap-4",
+                                        adminTypography.metaMuted,
+                                      )}
+                                    >
                                       <span className="font-medium">{p.nickname || "-"}</span>
                                       <span>{fmt(p.createdAt)}</span>
                                     </div>
 
-                                    <div className={cn("flex items-center gap-4", adminTypography.meta)}>
+                                    <div
+                                      className={cn(
+                                        "flex items-center gap-4",
+                                        adminTypography.meta,
+                                      )}
+                                    >
                                       <div className="flex items-center gap-1.5">
                                         <BarChart3 className="h-4 w-4 text-primary" />
                                         <span className="font-medium">{p.views}</span>
@@ -961,7 +965,12 @@ export default function BoardsClient() {
                                       )}
                                     </div>
 
-                                    <div className={cn("flex items-center gap-4 pt-2", adminTypography.metaMuted)}>
+                                    <div
+                                      className={cn(
+                                        "flex items-center gap-4 pt-2",
+                                        adminTypography.metaMuted,
+                                      )}
+                                    >
                                       <span>
                                         신고자:{" "}
                                         <span className="font-medium">
@@ -982,7 +991,8 @@ export default function BoardsClient() {
                                   <div className="space-y-1">
                                     <p className={adminTypography.bodyStrong}>신고 처리 액션</p>
                                     <p className={adminTypography.caption}>
-                                      완료/반려는 신고 상태만 정리하고, 대상 숨김은 게시글 노출에 영향을 줍니다.
+                                      완료/반려는 신고 상태만 정리하고, 대상 숨김은 게시글 노출에
+                                      영향을 줍니다.
                                     </p>
                                   </div>
                                   <div className="flex flex-wrap gap-2 sm:justify-end">
@@ -1027,7 +1037,9 @@ export default function BoardsClient() {
                       })}
 
                       {shouldShowReportsEmptyState && (
-                        <Card className={cn(adminSurface.cardMuted, "border-dashed border-border/60")}>
+                        <Card
+                          className={cn(adminSurface.cardMuted, "border-dashed border-border/60")}
+                        >
                           <CardContent className="flex flex-col items-center justify-center py-16">
                             <ShieldAlert className="mb-3 h-12 w-12 text-muted-foreground/50" />
                             <p className={adminTypography.metaMuted}>

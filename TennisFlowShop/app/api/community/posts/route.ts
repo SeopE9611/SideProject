@@ -22,7 +22,10 @@ import {
   getValidCommunityUserObjectIds,
   resolveCommunityDisplayName,
 } from "@/lib/community-display-name";
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+import {
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
 import type {
   AccessTokenPayload,
   CommunityListResponseDto,

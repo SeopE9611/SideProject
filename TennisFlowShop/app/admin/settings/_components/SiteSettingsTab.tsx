@@ -25,7 +25,11 @@ export function SiteSettingsTab({
     <TabsContent value="site">
       <AdminPageSection title="사이트 설정" description="사이트 기본 정보를 관리합니다.">
         {error.message && (
-          <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}>{error.message}</div>
+          <div
+            className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}
+          >
+            {error.message}
+          </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-3">

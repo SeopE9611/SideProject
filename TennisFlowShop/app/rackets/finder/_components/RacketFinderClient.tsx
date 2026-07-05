@@ -754,7 +754,9 @@ export default function RacketFinderClient() {
             <Search className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-ui-page-title font-semibold tracking-normal text-foreground">라켓 검색</h1>
+            <h1 className="text-ui-page-title font-semibold tracking-normal text-foreground">
+              라켓 검색
+            </h1>
             <p className="text-ui-body-sm text-muted-foreground">
               스펙 범위로 원하는 중고 라켓을 빠르게 찾아보세요
             </p>
@@ -1030,7 +1032,9 @@ export default function RacketFinderClient() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
                 <Search className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">검색을 시작해보세요</h3>
+              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">
+                검색을 시작해보세요
+              </h3>
               <p className="text-ui-body-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
                 왼쪽 필터에서 원하는 스펙 범위를 설정하고{" "}
                 <span className="font-medium text-foreground">검색하기</span> 버튼을 눌러주세요.
@@ -1072,7 +1076,9 @@ export default function RacketFinderClient() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">검색 결과 없음</h3>
+              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">
+                검색 결과 없음
+              </h3>
               <p className="text-ui-body-sm text-muted-foreground">
                 조건에 맞는 라켓이 없습니다. 필터 범위를 완화하거나 정확도 모드를 끄고 다시
                 시도해보세요.

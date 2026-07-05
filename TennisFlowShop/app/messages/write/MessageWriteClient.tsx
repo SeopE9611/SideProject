@@ -82,53 +82,57 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
         className="mx-auto max-w-4xl"
         contentClassName="space-y-5"
       >
-          <div className="text-ui-body-sm text-muted-foreground" data-cy="message-recipient">
-            받는 사람:{" "}
-            <span className="font-medium text-foreground">{toUser?.name ?? "알 수 없음"}</span>
-          </div>
+        <div className="text-ui-body-sm text-muted-foreground" data-cy="message-recipient">
+          받는 사람:{" "}
+          <span className="font-medium text-foreground">{toUser?.name ?? "알 수 없음"}</span>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="message-title">제목</Label>
-            <Input
-              id="message-title"
-              className="bg-background"
-              data-cy="message-title"
-              placeholder="제목"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="message-body">내용</Label>
-            <Textarea
-              id="message-body"
-              className="min-h-[240px] bg-background leading-relaxed"
-              data-cy="message-body"
-              placeholder="내용"
-              rows={10}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="message-title">제목</Label>
+          <Input
+            id="message-title"
+            className="bg-background"
+            data-cy="message-title"
+            placeholder="제목"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="message-body">내용</Label>
+          <Textarea
+            id="message-body"
+            className="min-h-[240px] bg-background leading-relaxed"
+            data-cy="message-body"
+            placeholder="내용"
+            rows={10}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+        </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
-            <Button
-              data-cy="message-cancel"
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={() => confirmLeaveIfDirty(() => router.push("/messages"))}
-            >
-              취소
-            </Button>
-            <Button data-cy="message-submit" className="w-full sm:w-auto" disabled={!canSubmit || loading} onClick={submit}>
-              {loading ? "전송 중…" : "전송"}
-            </Button>
-          </div>
+        <div className="flex flex-col-reverse gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
+          <Button
+            data-cy="message-cancel"
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => confirmLeaveIfDirty(() => router.push("/messages"))}
+          >
+            취소
+          </Button>
+          <Button
+            data-cy="message-submit"
+            className="w-full sm:w-auto"
+            disabled={!canSubmit || loading}
+            onClick={submit}
+          >
+            {loading ? "전송 중…" : "전송"}
+          </Button>
+        </div>
 
-          <div className="text-ui-label text-muted-foreground">
-            스팸 방지를 위해 “게시글 5개 + 댓글 5개” 조건 및 레이트리밋이 적용됩니다. (관리자는
-            예외)
-          </div>
+        <div className="text-ui-label text-muted-foreground">
+          스팸 방지를 위해 “게시글 5개 + 댓글 5개” 조건 및 레이트리밋이 적용됩니다. (관리자는 예외)
+        </div>
       </SummaryCard>
     </SiteContainer>
   );

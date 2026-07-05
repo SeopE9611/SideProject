@@ -256,7 +256,9 @@ export default function OrderLookupPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
                   <Package className="w-6 h-6 text-foreground" />
                 </div>
-                <CardTitle className="text-ui-card-title-lg font-semibold text-foreground">주문 정보 입력</CardTitle>
+                <CardTitle className="text-ui-card-title-lg font-semibold text-foreground">
+                  주문 정보 입력
+                </CardTitle>
                 <CardDescription className="text-ui-body text-muted-foreground">
                   주문 시 입력하신 정보를 통해 주문 내역을 확인하실 수 있습니다
                 </CardDescription>
@@ -268,7 +270,10 @@ export default function OrderLookupPage() {
                 <CardContent className="space-y-4 md:space-y-6 pt-6 md:pt-8">
                   {/* Name Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-ui-label font-medium flex items-center gap-2">
+                    <Label
+                      htmlFor="name"
+                      className="text-ui-label font-medium flex items-center gap-2"
+                    >
                       <User className="w-4 h-4 text-primary" />
                       이름 <span className="text-destructive">*</span>
                     </Label>
@@ -294,7 +299,10 @@ export default function OrderLookupPage() {
 
                   {/* Email Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-ui-label font-medium flex items-center gap-2">
+                    <Label
+                      htmlFor="email"
+                      className="text-ui-label font-medium flex items-center gap-2"
+                    >
                       <Mail className="w-4 h-4 text-primary" />
                       이메일 <span className="text-destructive">*</span>
                     </Label>
@@ -321,7 +329,10 @@ export default function OrderLookupPage() {
 
                   {/* Phone Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-ui-label font-medium flex items-center gap-2">
+                    <Label
+                      htmlFor="phone"
+                      className="text-ui-label font-medium flex items-center gap-2"
+                    >
                       <Phone className="w-4 h-4 text-primary" />
                       전화번호 (선택)
                     </Label>
@@ -485,7 +496,9 @@ export default function OrderLookupPage() {
                   <Package className="w-6 h-6 text-foreground" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">상세 정보</h3>
-                <p className="text-ui-body-sm text-muted-foreground">배송 추적부터 결제 정보까지 한눈에</p>
+                <p className="text-ui-body-sm text-muted-foreground">
+                  배송 추적부터 결제 정보까지 한눈에
+                </p>
               </div>
             </div>
           </div>

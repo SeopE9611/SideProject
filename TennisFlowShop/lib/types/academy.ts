@@ -1,17 +1,8 @@
 export type AcademyLessonApplicationStatus =
-  | "submitted"
-  | "reviewing"
-  | "contacted"
-  | "confirmed"
-  | "cancelled";
+  "submitted" | "reviewing" | "contacted" | "confirmed" | "cancelled";
 
 export type AcademyLessonType =
-  | "group"
-  | "private"
-  | "junior"
-  | "adult"
-  | "onePoint"
-  | "consultation";
+  "group" | "private" | "junior" | "adult" | "onePoint" | "consultation";
 
 export const ACADEMY_LESSON_TYPES = [
   "group",
@@ -33,7 +24,6 @@ export const ACADEMY_CURRENT_LEVELS = [
 ] as const satisfies readonly AcademyCurrentLevel[];
 
 export const ACADEMY_PREFERRED_DAY_OPTIONS = ["월", "화", "수", "목", "금", "토", "일"] as const;
-
 
 export type AcademyApplicantProfile = {
   name: string;

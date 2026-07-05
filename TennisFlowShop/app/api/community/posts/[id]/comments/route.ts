@@ -13,7 +13,10 @@ import {
 } from "@/lib/community-display-name";
 import type { CommunityComment } from "@/lib/types/community";
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+import {
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 

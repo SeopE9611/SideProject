@@ -1,8 +1,5 @@
 type UrlValidationFailureReason =
-  | "invalid_url"
-  | "invalid_scheme"
-  | "invalid_host"
-  | "invalid_path";
+  "invalid_url" | "invalid_scheme" | "invalid_host" | "invalid_path";
 
 export const BOARD_ASSET_ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
 export const BOARD_ASSET_ALLOWED_PATH_PREFIXES = [

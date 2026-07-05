@@ -407,7 +407,9 @@ export default function CheckoutStringingCompactEditor({
                           onBlur={() => touchLineField(lineKey, "racketType")}
                         />
                         {visibleLineErrors.racketType && (
-                          <p className="text-ui-label text-destructive">{visibleLineErrors.racketType}</p>
+                          <p className="text-ui-label text-destructive">
+                            {visibleLineErrors.racketType}
+                          </p>
                         )}
                       </div>
 

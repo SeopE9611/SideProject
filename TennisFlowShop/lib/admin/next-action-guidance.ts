@@ -155,14 +155,21 @@ function isTerminalOpsItem(item: OpsLikeItem) {
   if (item.needsCancelFinalization) return false;
   const cancelStatus = getEffectiveCancelStatus(item);
   if (cancelStatus === "approved") return true;
-  if (item.kind === "order") return isOrderClosed(item.statusLabel) || isOrderConfirmed(item.statusLabel);
-  if (item.kind === "stringing_application") return isApplicationClosed(item.statusLabel) || isAppDone(item.statusLabel);
+  if (item.kind === "order")
+    return isOrderClosed(item.statusLabel) || isOrderConfirmed(item.statusLabel);
+  if (item.kind === "stringing_application")
+    return isApplicationClosed(item.statusLabel) || isAppDone(item.statusLabel);
   if (item.kind === "rental") {
     if (isRentalClosed(item.statusLabel)) return true;
     if (isRentalReturned(item.statusLabel)) return !item.nextAction?.includes("보증금");
     return false;
   }
-  if (item.kind === "package_purchase") return doneLike(item.paymentLabel) || doneLike(item.statusLabel) || String(item.statusLabel ?? "").includes("활성");
+  if (item.kind === "package_purchase")
+    return (
+      doneLike(item.paymentLabel) ||
+      doneLike(item.statusLabel) ||
+      String(item.statusLabel ?? "").includes("활성")
+    );
   return false;
 }
 

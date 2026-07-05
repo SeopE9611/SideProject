@@ -920,7 +920,11 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[220px] border-l border-border/20 text-left")}>상태/다음 작업</TableHead>
+                <TableHead
+                  className={cn(thClasses, "w-[220px] border-l border-border/20 text-left")}
+                >
+                  상태/다음 작업
+                </TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
@@ -937,7 +941,11 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}>액션</TableHead>
+                <TableHead
+                  className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}
+                >
+                  액션
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -945,7 +953,10 @@ export default function AdminRentalsClient() {
                 Array.from({ length: pageSize }).map((_, rowIdx) => (
                   <TableRow key={rowIdx}>
                     {Array.from({ length: 5 }).map((_, cellIdx) => (
-                      <TableCell key={cellIdx} className={cellIdx > 0 ? "border-l border-border/20" : undefined}>
+                      <TableCell
+                        key={cellIdx}
+                        className={cellIdx > 0 ? "border-l border-border/20" : undefined}
+                      >
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
                     ))}
@@ -1046,11 +1057,17 @@ export default function AdminRentalsClient() {
                                   return <AdminBadgeRow maxVisible={2} items={items} />;
                                 })()}
                                 <div className="mt-0.5 min-w-0 text-left">
-                                  <p className="line-clamp-1 text-sm font-medium text-foreground" title={r.customer?.name || "-"}>
+                                  <p
+                                    className="line-clamp-1 text-sm font-medium text-foreground"
+                                    title={r.customer?.name || "-"}
+                                  >
                                     {r.customer?.name || "고객명 없음"}
                                   </p>
                                   <div className="flex min-w-0 items-center gap-1.5">
-                                    <span className="truncate text-xs text-foreground/70" title={r.customer?.email || "-"}>
+                                    <span
+                                      className="truncate text-xs text-foreground/70"
+                                      title={r.customer?.email || "-"}
+                                    >
                                       {r.customer?.email || "이메일 없음"}
                                     </span>
                                     {r.customer?.email && (
@@ -1219,7 +1236,11 @@ export default function AdminRentalsClient() {
                               return (
                                 <Badge
                                   variant={spec.variant}
-                                  className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
+                                  className={cn(
+                                    badgeBase,
+                                    badgeSizeSm,
+                                    "whitespace-nowrap shrink-0",
+                                  )}
                                 >
                                   {rentalStatusLabels[r.status] || r.status}
                                 </Badge>
@@ -1227,7 +1248,9 @@ export default function AdminRentalsClient() {
                             })()}
                             <ShippingBadge item={r} />
                           </div>
-                          <p className="line-clamp-2 text-xs font-medium leading-snug text-primary">다음: {nextActionLabel}</p>
+                          <p className="line-clamp-2 text-xs font-medium leading-snug text-primary">
+                            다음: {nextActionLabel}
+                          </p>
                           {r.depositRefundedAt ? (
                             <p className="text-xs text-foreground/70">보증금 환불 완료</p>
                           ) : r.status === "returned" ? (
@@ -1235,9 +1258,16 @@ export default function AdminRentalsClient() {
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className={cn(tdClasses, "border-l border-border/20 py-2 text-right tabular-nums")}>
+                      <TableCell
+                        className={cn(
+                          tdClasses,
+                          "border-l border-border/20 py-2 text-right tabular-nums",
+                        )}
+                      >
                         <div className="flex flex-col items-end gap-0.5">
-                          <span className="font-semibold tabular-nums text-foreground">{won(r.amount.total)}</span>
+                          <span className="font-semibold tabular-nums text-foreground">
+                            {won(r.amount.total)}
+                          </span>
                           <span className="max-w-[200px] text-right text-xs text-foreground/75">
                             수수료 {won(r.amount.fee)} · 보증금 {won(r.amount.deposit)}
                           </span>
@@ -1260,77 +1290,86 @@ export default function AdminRentalsClient() {
                       </TableCell>
                       <TableCell className={cn(tdClasses, "border-l border-border/40 py-2")}>
                         <div className="flex items-center justify-end gap-1">
-                          <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-xs font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2">
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-xs font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                          >
                             <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
                           </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2">
-                              <MoreHorizontal className="h-3.5 w-3.5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-max">
-                            <DropdownMenuLabel>작업</DropdownMenuLabel>
-                            <DropdownMenuItem asChild className="whitespace-nowrap">
-                              <Link href={`/admin/rentals/${rid}`}>
-                                <Eye className="mr-2 h-4 w-4" /> 상세 보기
-                              </Link>
-                            </DropdownMenuItem>
-                            {r.stringingApplicationId && (
-                              <DropdownMenuItem asChild>
-                                <Link
-                                  href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
-                                >
-                                  <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                              >
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-max">
+                              <DropdownMenuLabel>작업</DropdownMenuLabel>
+                              <DropdownMenuItem asChild className="whitespace-nowrap">
+                                <Link href={`/admin/rentals/${rid}`}>
+                                  <Eye className="mr-2 h-4 w-4" /> 상세 보기
                                 </Link>
                               </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            {(r.status === "paid" || r.status === "out") && (
-                              <DropdownMenuItem
-                                className="whitespace-nowrap"
-                                onClick={() =>
-                                  setPendingAction({
-                                    type: "return",
-                                    rentalId: rid,
-                                  })
-                                }
-                                disabled={busyId === rid}
-                              >
-                                <Package className="mr-2 h-4 w-4" /> 반납 처리
-                              </DropdownMenuItem>
-                            )}
-                            {r.status === "returned" && (
-                              <>
-                                {r.depositRefundedAt ? (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      setPendingAction({
-                                        type: "refundClear",
-                                        rentalId: rid,
-                                      })
-                                    }
-                                    disabled={busyId === rid}
+                              {r.stringingApplicationId && (
+                                <DropdownMenuItem asChild>
+                                  <Link
+                                    href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
                                   >
-                                    <Truck className="mr-2 h-4 w-4" /> 환불 해제
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      setPendingAction({
-                                        type: "refundMark",
-                                        rentalId: rid,
-                                      })
-                                    }
-                                    disabled={busyId === rid}
-                                  >
-                                    <Truck className="mr-2 h-4 w-4" /> 환불 처리
-                                  </DropdownMenuItem>
-                                )}
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                                    <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              {(r.status === "paid" || r.status === "out") && (
+                                <DropdownMenuItem
+                                  className="whitespace-nowrap"
+                                  onClick={() =>
+                                    setPendingAction({
+                                      type: "return",
+                                      rentalId: rid,
+                                    })
+                                  }
+                                  disabled={busyId === rid}
+                                >
+                                  <Package className="mr-2 h-4 w-4" /> 반납 처리
+                                </DropdownMenuItem>
+                              )}
+                              {r.status === "returned" && (
+                                <>
+                                  {r.depositRefundedAt ? (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        setPendingAction({
+                                          type: "refundClear",
+                                          rentalId: rid,
+                                        })
+                                      }
+                                      disabled={busyId === rid}
+                                    >
+                                      <Truck className="mr-2 h-4 w-4" /> 환불 해제
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        setPendingAction({
+                                          type: "refundMark",
+                                          rentalId: rid,
+                                        })
+                                      }
+                                      disabled={busyId === rid}
+                                    >
+                                      <Truck className="mr-2 h-4 w-4" /> 환불 처리
+                                    </DropdownMenuItem>
+                                  )}
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>

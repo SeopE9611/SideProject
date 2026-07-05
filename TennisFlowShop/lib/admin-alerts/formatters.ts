@@ -10,7 +10,9 @@ export function maskPhone(value: unknown) {
 }
 
 export function previewText(value: unknown, max = 80) {
-  const text = String(value ?? "").replace(/\s+/g, " ").trim();
+  const text = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!text) return "";
   return text.length > max ? `${text.slice(0, max)}…` : text;
 }

@@ -163,10 +163,7 @@ const CancelRentalDialog = ({
       });
 
       if (!res.ok) {
-        const parsed = await readCancelRequestError(
-          res,
-          "취소 요청 처리 중 오류가 발생했습니다.",
-        );
+        const parsed = await readCancelRequestError(res, "취소 요청 처리 중 오류가 발생했습니다.");
         throw new Error(parsed.message || "취소 요청 처리 중 오류가 발생했습니다.");
       }
 

@@ -219,7 +219,12 @@ export async function GET(req: NextRequest) {
             },
             {
               $and: [
-                { $or: [{ variantInventories: { $exists: false } }, { variantInventories: { $size: 0 } }] },
+                {
+                  $or: [
+                    { variantInventories: { $exists: false } },
+                    { variantInventories: { $size: 0 } },
+                  ],
+                },
                 {
                   gaugeInventories: {
                     $elemMatch: {
@@ -232,8 +237,18 @@ export async function GET(req: NextRequest) {
             },
             {
               $and: [
-                { $or: [{ variantInventories: { $exists: false } }, { variantInventories: { $size: 0 } }] },
-                { $or: [{ gaugeInventories: { $exists: false } }, { gaugeInventories: { $size: 0 } }] },
+                {
+                  $or: [
+                    { variantInventories: { $exists: false } },
+                    { variantInventories: { $size: 0 } },
+                  ],
+                },
+                {
+                  $or: [
+                    { gaugeInventories: { $exists: false } },
+                    { gaugeInventories: { $size: 0 } },
+                  ],
+                },
                 {
                   colorInventories: {
                     $elemMatch: {
@@ -246,9 +261,24 @@ export async function GET(req: NextRequest) {
             },
             {
               $and: [
-                { $or: [{ variantInventories: { $exists: false } }, { variantInventories: { $size: 0 } }] },
-                { $or: [{ gaugeInventories: { $exists: false } }, { gaugeInventories: { $size: 0 } }] },
-                { $or: [{ colorInventories: { $exists: false } }, { colorInventories: { $size: 0 } }] },
+                {
+                  $or: [
+                    { variantInventories: { $exists: false } },
+                    { variantInventories: { $size: 0 } },
+                  ],
+                },
+                {
+                  $or: [
+                    { gaugeInventories: { $exists: false } },
+                    { gaugeInventories: { $size: 0 } },
+                  ],
+                },
+                {
+                  $or: [
+                    { colorInventories: { $exists: false } },
+                    { colorInventories: { $size: 0 } },
+                  ],
+                },
                 {
                   $or: [
                     { "inventory.manageStock": { $ne: true } },

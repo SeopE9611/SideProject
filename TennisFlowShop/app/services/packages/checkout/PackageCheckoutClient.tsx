@@ -459,7 +459,9 @@ export default function PackageCheckoutClient({
           <div className="max-w-3xl space-y-4">
             <div>
               <p className="mb-2 text-ui-body-sm font-semibold text-primary">주문 정보 확인</p>
-              <h1 className="text-ui-page-title-lg font-semibold tracking-tight sm:text-ui-page-title-lg">패키지 주문/결제</h1>
+              <h1 className="text-ui-page-title-lg font-semibold tracking-tight sm:text-ui-page-title-lg">
+                패키지 주문/결제
+              </h1>
               <p className="mt-3 break-keep text-ui-body leading-7 text-muted-foreground sm:text-ui-body-lg">
                 결제 전 패키지 횟수, 유효기간, 총 결제 금액을 먼저 확인해 주세요.
               </p>
@@ -676,7 +678,9 @@ export default function PackageCheckoutClient({
             <CardContent className="p-4 md:p-5">
               <div className="mb-5 rounded-xl border border-primary/15 bg-primary/5 p-4">
                 <div className="flex items-end justify-between gap-4">
-                  <span className="text-ui-body-sm font-medium text-muted-foreground">총 결제 금액</span>
+                  <span className="text-ui-body-sm font-medium text-muted-foreground">
+                    총 결제 금액
+                  </span>
                   <span className="text-ui-section-title font-bold text-primary">
                     {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
                   </span>
@@ -792,7 +796,9 @@ export default function PackageCheckoutClient({
                         )}
                       />
                       {hasInteracted && fieldErrors.depositor && (
-                        <p className="mt-1 text-ui-label text-destructive">{fieldErrors.depositor}</p>
+                        <p className="mt-1 text-ui-label text-destructive">
+                          {fieldErrors.depositor}
+                        </p>
                       )}
                     </div>
 

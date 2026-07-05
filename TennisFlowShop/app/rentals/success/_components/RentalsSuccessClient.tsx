@@ -187,7 +187,8 @@ export default function RentalsSuccessClient({ data }: Props) {
   const paymentSummary = getPaymentDisplaySummary({
     method: data.paymentInfo?.method ?? data.payment?.method,
     provider: data.paymentInfo?.provider ?? data.payment?.method,
-    easyPayProvider: data.paymentInfo?.easyPayProvider ?? data.paymentInfo?.rawSummary?.easyPay?.provider,
+    easyPayProvider:
+      data.paymentInfo?.easyPayProvider ?? data.paymentInfo?.rawSummary?.easyPay?.provider,
     cardDisplayName: data.paymentInfo?.cardDisplayName,
     cardCompany: data.paymentInfo?.cardCompany,
     cardLabel: data.paymentInfo?.cardLabel,
@@ -205,8 +206,7 @@ export default function RentalsSuccessClient({ data }: Props) {
     .toLowerCase();
   const isOnlinePayment =
     normalizedPaymentProvider === "nicepay" || normalizedPaymentProvider === "tosspayments";
-  const isOnlinePaid =
-    isOnlinePayment && ["paid", "결제완료"].includes(normalizedPaymentStatus);
+  const isOnlinePaid = isOnlinePayment && ["paid", "결제완료"].includes(normalizedPaymentStatus);
   const isBankTransfer = data.payment?.method === "bank_transfer";
   const rentalDetailHref = `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(data.id)}&from=orders`;
   const rentalProgressGuide = (() => {
@@ -247,8 +247,8 @@ export default function RentalsSuccessClient({ data }: Props) {
               <CardHeader className="border-b border-warning/20 bg-warning/10 p-4 sm:p-5">
                 <CardTitle className="text-ui-body text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">
-                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지의 주문/대여 내역에서 최종 상태를
-                  확인해 주세요.
+                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지의 주문/대여 내역에서
+                  최종 상태를 확인해 주세요.
                 </CardDescription>
               </CardHeader>
             </Card>

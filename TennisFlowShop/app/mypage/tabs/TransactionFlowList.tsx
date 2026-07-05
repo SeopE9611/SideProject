@@ -552,8 +552,7 @@ const getFlowNextActionText = (
     return app?.rentalId
       ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
       : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
-  if (app?.needsInboundTracking && !app?.hasTracking)
-    return "라켓 발송 운송장을 등록해주세요.";
+  if (app?.needsInboundTracking && !app?.hasTracking) return "라켓 발송 운송장을 등록해주세요.";
   if (app?.needsInboundTracking && app?.hasTracking && isApplicationBeforeWork(app.status))
     return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
   if (normalized === "접수완료") return "신청이 접수되었습니다. 검토를 기다려주세요.";
@@ -1190,7 +1189,12 @@ export default function TransactionFlowList() {
 
                   {linkedStringSummary || linkedApplicationStatusLabel ? (
                     <p className="line-clamp-1 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                      {[linkedStringSummary, linkedApplicationStatusLabel ? `교체서비스 ${linkedApplicationStatusLabel}` : null]
+                      {[
+                        linkedStringSummary,
+                        linkedApplicationStatusLabel
+                          ? `교체서비스 ${linkedApplicationStatusLabel}`
+                          : null,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
@@ -1203,7 +1207,8 @@ export default function TransactionFlowList() {
                     </p>
                   ) : nextActionText ? (
                     <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                      <span className="font-semibold text-foreground">다음 할 일</span> · {nextActionText}
+                      <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
+                      {nextActionText}
                     </p>
                   ) : null}
                 </div>

@@ -1092,9 +1092,7 @@ export default function AdminRacketForm({
 
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-center">
                   <p className={adminTypography.caption}>이미지</p>
-                  <p className={cn("mt-0.5", adminTypography.bodyStrong)}>
-                    {form.images.length}
-                  </p>
+                  <p className={cn("mt-0.5", adminTypography.bodyStrong)}>{form.images.length}</p>
                 </div>
               </div>
 

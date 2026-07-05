@@ -61,22 +61,14 @@ export function ProductPreviewCard({
   );
 
   return (
-    <div
-      className={cn(
-        adminSurface.card,
-        "sticky top-6 p-5",
-        className,
-      )}
-    >
+    <div className={cn(adminSurface.card, "sticky top-6 p-5", className)}>
       {/* Header */}
       <div className="mb-4">
         <p className={cn("mb-1 uppercase tracking-wider", adminTypography.caption)}>미리보기</p>
         <h3 className={cn("line-clamp-2", adminTypography.panelTitle)}>
           {hasName ? basicInfo.name : "상품명을 입력하세요"}
         </h3>
-        {hasBrand && (
-          <p className={cn("mt-0.5", adminTypography.metaMuted)}>{basicInfo.brand}</p>
-        )}
+        {hasBrand && <p className={cn("mt-0.5", adminTypography.metaMuted)}>{basicInfo.brand}</p>}
       </div>
 
       {/* Badges */}

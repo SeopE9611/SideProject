@@ -24,9 +24,7 @@ export function buildProductDetailDisplaySpec({
   const color = stringColorLabel(product?.color) || stringColorLabel(spec.color) || spec.색상;
   const lengthRaw = product?.length ?? spec.length ?? spec.길이;
   const length =
-    typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw)
-      ? `${lengthRaw}m`
-      : lengthRaw;
+    typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
 
   const display: Record<string, any> = {
     브랜드: brand,

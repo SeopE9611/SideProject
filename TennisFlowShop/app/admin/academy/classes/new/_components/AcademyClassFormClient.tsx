@@ -209,33 +209,34 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           contentClassName="pt-4"
         >
           <div className="grid gap-5 lg:grid-cols-2">
-              <div className="space-y-2 lg:col-span-2">
-                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-name">
-                  클래스명 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="academy-class-name"
-                  value={form.name}
-                  onChange={(event) => updateField("name", event.target.value)}
-                  placeholder="예: 성인 입문반"
-                  maxLength={80}
-                  required
-                />
-              </div>
+            <div className="space-y-2 lg:col-span-2">
+              <Label className={adminTypography.bodyStrong} htmlFor="academy-class-name">
+                클래스명 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="academy-class-name"
+                value={form.name}
+                onChange={(event) => updateField("name", event.target.value)}
+                placeholder="예: 성인 입문반"
+                maxLength={80}
+                required
+              />
+            </div>
 
-              <div className="space-y-2 lg:col-span-2">
-                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-description">설명</Label>
-                <Textarea
-                  id="academy-class-description"
-                  value={form.description}
-                  onChange={(event) => updateField("description", event.target.value)}
-                  placeholder="레슨 프로그램 소개를 입력해 주세요."
-                  maxLength={1000}
-                  rows={5}
-                />
-                <p className={adminTypography.caption}>{form.description.length}/1000자</p>
-              </div>
-
+            <div className="space-y-2 lg:col-span-2">
+              <Label className={adminTypography.bodyStrong} htmlFor="academy-class-description">
+                설명
+              </Label>
+              <Textarea
+                id="academy-class-description"
+                value={form.description}
+                onChange={(event) => updateField("description", event.target.value)}
+                placeholder="레슨 프로그램 소개를 입력해 주세요."
+                maxLength={1000}
+                rows={5}
+              />
+              <p className={adminTypography.caption}>{form.description.length}/1000자</p>
+            </div>
           </div>
         </AdminPageSection>
 
@@ -245,68 +246,71 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           contentClassName="pt-4"
         >
           <div className="grid gap-5 lg:grid-cols-2">
-              <div className="space-y-2">
-                <Label className={adminTypography.bodyStrong}>수업 유형</Label>
-                <Select
-                  value={form.lessonType}
-                  onValueChange={(value) =>
-                    updateField("lessonType", value as AcademyClassLessonType)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="수업 유형 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACADEMY_CLASS_LESSON_TYPES.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {getAcademyClassLessonTypeLabel(item)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label className={adminTypography.bodyStrong}>수업 유형</Label>
+              <Select
+                value={form.lessonType}
+                onValueChange={(value) =>
+                  updateField("lessonType", value as AcademyClassLessonType)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="수업 유형 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACADEMY_CLASS_LESSON_TYPES.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {getAcademyClassLessonTypeLabel(item)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="space-y-2">
-                <Label className={adminTypography.bodyStrong}>레벨</Label>
-                <Select
-                  value={form.level}
-                  onValueChange={(value) => updateField("level", value as AcademyClassLevel)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="레벨 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACADEMY_CLASS_LEVELS.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {getAcademyClassLevelLabel(item)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label className={adminTypography.bodyStrong}>레벨</Label>
+              <Select
+                value={form.level}
+                onValueChange={(value) => updateField("level", value as AcademyClassLevel)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="레벨 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACADEMY_CLASS_LEVELS.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {getAcademyClassLevelLabel(item)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="space-y-2">
-                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-instructor">강사명</Label>
-                <Input
-                  id="academy-class-instructor"
-                  value={form.instructorName}
-                  onChange={(event) => updateField("instructorName", event.target.value)}
-                  placeholder="예: 도깨비 코치"
-                  maxLength={50}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label className={adminTypography.bodyStrong} htmlFor="academy-class-instructor">
+                강사명
+              </Label>
+              <Input
+                id="academy-class-instructor"
+                value={form.instructorName}
+                onChange={(event) => updateField("instructorName", event.target.value)}
+                placeholder="예: 도깨비 코치"
+                maxLength={50}
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-location">장소</Label>
-                <Input
-                  id="academy-class-location"
-                  value={form.location}
-                  onChange={(event) => updateField("location", event.target.value)}
-                  placeholder="예: 도깨비테니스 실내 코트"
-                  maxLength={100}
-                />
-              </div>
-
+            <div className="space-y-2">
+              <Label className={adminTypography.bodyStrong} htmlFor="academy-class-location">
+                장소
+              </Label>
+              <Input
+                id="academy-class-location"
+                value={form.location}
+                onChange={(event) => updateField("location", event.target.value)}
+                placeholder="예: 도깨비테니스 실내 코트"
+                maxLength={100}
+              />
+            </div>
           </div>
         </AdminPageSection>
 
@@ -316,42 +320,47 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           contentClassName="pt-4"
         >
           <div className="grid gap-5 lg:grid-cols-2">
-              <div className="space-y-2 lg:col-span-2">
-                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-schedule">일정 안내</Label>
-                <Input
-                  id="academy-class-schedule"
-                  value={form.scheduleText}
-                  onChange={(event) => updateField("scheduleText", event.target.value)}
-                  placeholder="예: 화/목 저녁 7시"
-                  maxLength={200}
-                />
-              </div>
+            <div className="space-y-2 lg:col-span-2">
+              <Label className={adminTypography.bodyStrong} htmlFor="academy-class-schedule">
+                일정 안내
+              </Label>
+              <Input
+                id="academy-class-schedule"
+                value={form.scheduleText}
+                onChange={(event) => updateField("scheduleText", event.target.value)}
+                placeholder="예: 화/목 저녁 7시"
+                maxLength={200}
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-capacity">정원</Label>
-                <Input
-                  id="academy-class-capacity"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={form.capacity}
-                  onChange={(event) => updateField("capacity", event.target.value)}
-                  placeholder="예: 6"
-                />
-                <p className={adminTypography.caption}>미입력 시 제한 없음으로 표시됩니다.</p>
-              </div>
+            <div className="space-y-2">
+              <Label className={adminTypography.bodyStrong} htmlFor="academy-class-capacity">
+                정원
+              </Label>
+              <Input
+                id="academy-class-capacity"
+                type="number"
+                min="0"
+                step="1"
+                value={form.capacity}
+                onChange={(event) => updateField("capacity", event.target.value)}
+                placeholder="예: 6"
+              />
+              <p className={adminTypography.caption}>미입력 시 제한 없음으로 표시됩니다.</p>
+            </div>
 
-              <div className="space-y-2">
-                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-price">가격</Label>
-                <FormattedNumberInput
-                  id="academy-class-price"
-                  min={0}
-                  value={form.price ? Number(form.price) : null}
-                  onValueChange={(price) => updateField("price", String(price))}
-                  placeholder="예: 180,000"
-                />
-              </div>
-
+            <div className="space-y-2">
+              <Label className={adminTypography.bodyStrong} htmlFor="academy-class-price">
+                가격
+              </Label>
+              <FormattedNumberInput
+                id="academy-class-price"
+                min={0}
+                value={form.price ? Number(form.price) : null}
+                onValueChange={(price) => updateField("price", String(price))}
+                placeholder="예: 180,000"
+              />
+            </div>
           </div>
         </AdminPageSection>
 
@@ -361,36 +370,36 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           contentClassName="pt-4"
         >
           <div className="grid gap-5 lg:grid-cols-2">
-              <div className="space-y-2">
-                <Label className={adminTypography.bodyStrong}>상태</Label>
-                <Select
-                  value={form.status}
-                  onValueChange={(value) => updateField("status", value as AcademyClassStatus)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="상태 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACADEMY_CLASS_STATUSES.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {getAcademyClassStatusLabel(item)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label className={adminTypography.bodyStrong}>상태</Label>
+              <Select
+                value={form.status}
+                onValueChange={(value) => updateField("status", value as AcademyClassStatus)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="상태 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACADEMY_CLASS_STATUSES.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {getAcademyClassStatusLabel(item)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </AdminPageSection>
 
-            <div className="flex flex-col-reverse gap-2 border-t border-border/70 pt-5 sm:flex-row sm:justify-end">
-              <Button asChild variant="outline">
-                <Link href={LIST_PATH}>취소</Link>
-              </Button>
-              <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                <Save className="mr-2 h-4 w-4" />
-                {isSubmitting ? "저장 중" : isEdit ? "수정하기" : "등록하기"}
-              </Button>
-            </div>
+        <div className="flex flex-col-reverse gap-2 border-t border-border/70 pt-5 sm:flex-row sm:justify-end">
+          <Button asChild variant="outline">
+            <Link href={LIST_PATH}>취소</Link>
+          </Button>
+          <Button type="submit" disabled={!canSubmit || isSubmitting}>
+            <Save className="mr-2 h-4 w-4" />
+            {isSubmitting ? "저장 중" : isEdit ? "수정하기" : "등록하기"}
+          </Button>
+        </div>
       </form>
     </div>
   );

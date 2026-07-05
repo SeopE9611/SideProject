@@ -708,11 +708,7 @@ export async function GET(req: Request) {
                 ],
               },
               serviceContextLabel: {
-                $cond: [
-                  { $eq: ["$service", "stringing"] },
-                  "상품·교체서비스 후기",
-                  "서비스 후기",
-                ],
+                $cond: [{ $eq: ["$service", "stringing"] }, "상품·교체서비스 후기", "서비스 후기"],
               },
             },
           },

@@ -475,9 +475,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       });
       router.refresh();
 
-      showSuccessToast(
-        next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
-      );
+      showSuccessToast(next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
     } catch (err: any) {
       // 실패 시 되돌리기(재검증)
       if (isMine(review)) await mutateMyReview();
@@ -1412,18 +1410,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <ProductDetailRelatedProductsSection
           HorizontalProducts={HorizontalProducts}
           relatedSectionRef={relatedSectionRef}
-          relatedProducts={relatedFiltered.map(
-            (rp: any): HItem => ({
-              _id: String(rp._id),
-              name: rp.name,
-              price: Number(rp.price ?? 0),
-              images: rp.images ?? [],
-              brand: displayBrandLabel(rp.brand) || rp.brand,
-              href: `/products/${rp._id}`,
-              merchandisingBadges: getProductDetailBadges(rp),
-              inventory: rp.inventory,
-            }),
-          )}
+          relatedProducts={relatedFiltered.map((rp: any): HItem => ({
+            _id: String(rp._id),
+            name: rp.name,
+            price: Number(rp.price ?? 0),
+            images: rp.images ?? [],
+            brand: displayBrandLabel(rp.brand) || rp.brand,
+            href: `/products/${rp._id}`,
+            merchandisingBadges: getProductDetailBadges(rp),
+            inventory: rp.inventory,
+          }))}
           loadingRelated={loadingRelated}
         >
           <RecentViewedItems currentType="product" currentId={productId} />

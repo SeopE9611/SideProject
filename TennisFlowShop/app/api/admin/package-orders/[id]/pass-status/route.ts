@@ -80,9 +80,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const now = new Date();
     const prev = ((pass.status === "suspended" ? "paused" : pass.status) ?? "active") as
-      | "active"
-      | "paused"
-      | "cancelled";
+      "active" | "paused" | "cancelled";
     const currentRemainingMs = toRemainingValidityMs(pass, now);
 
     const setPatch: Partial<ServicePass> & {

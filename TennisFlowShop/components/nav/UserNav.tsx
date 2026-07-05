@@ -119,7 +119,9 @@ export function UserNav() {
           쪽지함
         </DropdownMenuItem>
         {isAdmin && (
-          <DropdownMenuItem onClick={() => window.open("/admin/operations", "_blank", "noopener,noreferrer")}>
+          <DropdownMenuItem
+            onClick={() => window.open("/admin/operations", "_blank", "noopener,noreferrer")}
+          >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             관리자 페이지
           </DropdownMenuItem>

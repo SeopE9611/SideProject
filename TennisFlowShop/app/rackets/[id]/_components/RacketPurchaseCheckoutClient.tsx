@@ -499,7 +499,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
             <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
               <div className="space-y-1">
-                <h2 className="text-ui-card-title-lg font-semibold text-foreground">결제수단 및 동의</h2>
+                <h2 className="text-ui-card-title-lg font-semibold text-foreground">
+                  결제수단 및 동의
+                </h2>
                 <p className="text-ui-body-sm text-muted-foreground">
                   결제수단을 선택하고 주문/결제에 필요한 동의 항목을 확인해주세요.
                 </p>
@@ -605,7 +607,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
               <div className="mt-5 space-y-4">
                 <div className="rounded-xl border border-border bg-muted/30 p-4">
-                  <p className="break-keep text-ui-body-sm font-semibold text-foreground">{racket.model}</p>
+                  <p className="break-keep text-ui-body-sm font-semibold text-foreground">
+                    {racket.model}
+                  </p>
                   <p className="mt-1 break-words text-ui-label text-muted-foreground">
                     {racketBrandLabel(racket.brand)}
                   </p>

@@ -60,9 +60,13 @@ export default function PaymentMethodDetail({
         {isTossPayment ? (
           <div className="mt-1 rounded-md border border-border bg-muted/20 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-medium text-foreground">{paymentSummary.userLabel}</div>
-            <div className="text-ui-body-sm text-muted-foreground">결제 제공사: {paymentSummary.providerLabel}</div>
+            <div className="text-ui-body-sm text-muted-foreground">
+              결제 제공사: {paymentSummary.providerLabel}
+            </div>
             {paymentSummary.easyPayProviderLabel && (
-              <div className="text-ui-body-sm text-muted-foreground">간편결제: {paymentSummary.easyPayProviderLabel}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                간편결제: {paymentSummary.easyPayProviderLabel}
+              </div>
             )}
             {statusLabel && (
               <div className="text-ui-body-sm text-muted-foreground">결제 상태: {statusLabel}</div>
@@ -72,7 +76,9 @@ export default function PaymentMethodDetail({
           <div className="mt-1 rounded-md border border-border bg-muted/20 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-medium text-foreground">{paymentSummary.userLabel}</div>
             {paymentSummary.cardDisplayName && (
-              <div className="text-ui-body-sm text-muted-foreground">카드사: {paymentSummary.cardDisplayName}</div>
+              <div className="text-ui-body-sm text-muted-foreground">
+                카드사: {paymentSummary.cardDisplayName}
+              </div>
             )}
             {statusLabel && (
               <div className="text-ui-body-sm text-muted-foreground">결제 상태: {statusLabel}</div>

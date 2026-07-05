@@ -446,7 +446,9 @@ export default function TensionGuidePage() {
                 >
                   {/* 성별 선택 */}
                   <div>
-                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">성별</label>
+                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
+                      성별
+                    </label>
                     <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
                       {[
                         {
@@ -470,7 +472,9 @@ export default function TensionGuidePage() {
                           >
                             {option.label}
                           </div>
-                          <div className="text-ui-label text-muted-foreground mt-1">{option.desc}</div>
+                          <div className="text-ui-label text-muted-foreground mt-1">
+                            {option.desc}
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -857,7 +861,9 @@ export default function TensionGuidePage() {
                     </div>
                   </div>
                   <div className="space-y-3 bp-md:space-y-4 p-5 pt-0 sm:p-6 sm:pt-0">
-                    <p className="text-ui-body-sm text-muted-foreground">{string.characteristics}</p>
+                    <p className="text-ui-body-sm text-muted-foreground">
+                      {string.characteristics}
+                    </p>
 
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       <Badge

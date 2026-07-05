@@ -113,7 +113,9 @@ export default function ResetPasswordPage() {
               <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
                 <ShieldAlert className="h-8 w-8 text-foreground" />
               </div>
-              <CardTitle className="text-ui-card-title-lg font-semibold">유효하지 않은 링크</CardTitle>
+              <CardTitle className="text-ui-card-title-lg font-semibold">
+                유효하지 않은 링크
+              </CardTitle>
               <CardDescription className="mt-2 text-ui-body-sm text-muted-foreground">
                 비밀번호 재설정 토큰이 없거나 잘못된 접근입니다.
               </CardDescription>
@@ -157,7 +159,9 @@ export default function ResetPasswordPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3 text-ui-body-sm text-muted-foreground">
             <p className="text-ui-label font-semibold text-primary">ACCOUNT RECOVERY</p>
-            <p className="text-ui-body-sm font-semibold text-foreground">계정 복구를 안전하게 완료하세요</p>
+            <p className="text-ui-body-sm font-semibold text-foreground">
+              계정 복구를 안전하게 완료하세요
+            </p>
             <p className="break-keep leading-relaxed">
               새 비밀번호는 기존 비밀번호와 구분되도록 설정하고, 저장 후에는 로그인 화면에서 다시
               인증해주세요.

@@ -37,13 +37,13 @@ export default function AdminPageHeader({
         ) : null}
 
         <div className="min-w-0">
-          <h1 className={adminTypography.pageTitle}>
-            {title}
-          </h1>
+          <h1 className={adminTypography.pageTitle}>{title}</h1>
           <p className={cn("mt-1 text-foreground/75", adminTypography.body)}>{description}</p>
 
           {(scope || helperText) && (
-            <div className={cn("mt-2 flex flex-wrap items-center gap-1.5", adminTypography.caption)}>
+            <div
+              className={cn("mt-2 flex flex-wrap items-center gap-1.5", adminTypography.caption)}
+            >
               {scope ? (
                 <span className="rounded-md border border-border/70 bg-muted/40 px-2 py-1">
                   {scope}

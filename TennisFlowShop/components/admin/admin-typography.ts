@@ -2,7 +2,8 @@
 // text-ui-* 토큰을 우선 연결하고, 관리자 화면 전용 크기/대비는 이 파일에서만 보정합니다.
 
 export const adminTypography = {
-  pageTitle: "break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:text-ui-page-title-lg",
+  pageTitle:
+    "break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:text-ui-page-title-lg",
   sectionTitle: "break-keep text-ui-section-title font-semibold tracking-tight text-foreground",
   panelTitle: "text-ui-body-sm font-semibold tracking-normal text-foreground",
   panelTitleCompact: "text-ui-label font-semibold tracking-normal text-foreground/85",

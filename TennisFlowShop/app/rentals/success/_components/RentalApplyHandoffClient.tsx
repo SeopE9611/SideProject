@@ -59,7 +59,9 @@ export default function RentalApplyHandoffClient({
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-success/30 bg-success/10 text-success dark:bg-success/15">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <CardTitle className="text-ui-page-title bp-sm:text-ui-page-title-lg">대여 신청 접수 완료</CardTitle>
+          <CardTitle className="text-ui-page-title bp-sm:text-ui-page-title-lg">
+            대여 신청 접수 완료
+          </CardTitle>
           <CardDescription className="text-ui-body">
             대여 신청이 정상적으로 접수되었습니다.
             <br />
@@ -123,8 +125,8 @@ export default function RentalApplyHandoffClient({
           )}
 
           <p className="text-ui-label text-muted-foreground text-center">
-            대여 내역은 마이페이지의 주문/대여 내역에서 언제든지 확인할 수 있으며, 최종 결제/입금 계좌/요금 요약 등은
-            신청서 제출 후 성공 페이지에서 안내됩니다.
+            대여 내역은 마이페이지의 주문/대여 내역에서 언제든지 확인할 수 있으며, 최종 결제/입금
+            계좌/요금 요약 등은 신청서 제출 후 성공 페이지에서 안내됩니다.
           </p>
         </CardFooter>
       </Card>

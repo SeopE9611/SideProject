@@ -159,13 +159,26 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         status: normalizeOrderStatus((order as any)?.status),
         paymentStatus: normalizePaymentStatus(paymentStatusRaw),
         paymentProvider:
-          typeof (order as any)?.paymentInfo?.provider === "string" ? (order as any).paymentInfo.provider : null,
-        paymentTid: typeof (order as any)?.paymentInfo?.tid === "string" ? (order as any).paymentInfo.tid : null,
+          typeof (order as any)?.paymentInfo?.provider === "string"
+            ? (order as any).paymentInfo.provider
+            : null,
+        paymentTid:
+          typeof (order as any)?.paymentInfo?.tid === "string"
+            ? (order as any).paymentInfo.tid
+            : null,
         paymentInfo: {
           provider:
-            typeof (order as any)?.paymentInfo?.provider === "string" ? (order as any).paymentInfo.provider : null,
-          tid: typeof (order as any)?.paymentInfo?.tid === "string" ? (order as any).paymentInfo.tid : null,
-          status: typeof (order as any)?.paymentInfo?.status === "string" ? (order as any).paymentInfo.status : null,
+            typeof (order as any)?.paymentInfo?.provider === "string"
+              ? (order as any).paymentInfo.provider
+              : null,
+          tid:
+            typeof (order as any)?.paymentInfo?.tid === "string"
+              ? (order as any).paymentInfo.tid
+              : null,
+          status:
+            typeof (order as any)?.paymentInfo?.status === "string"
+              ? (order as any).paymentInfo.status
+              : null,
           niceSync: {
             pgStatus:
               typeof (order as any)?.paymentInfo?.niceSync?.pgStatus === "string"

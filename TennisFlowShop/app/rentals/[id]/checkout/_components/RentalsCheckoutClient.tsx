@@ -751,15 +751,23 @@ export default function RentalsCheckoutClient({
             <nav aria-label="대여 신청 진행 단계">
               <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-xl bg-card/75 p-1.5 ring-1 ring-border/50 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2.5 [&::-webkit-scrollbar]:hidden">
                 <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                  <Badge variant="secondary" className="rounded-full px-3 py-1.5 text-ui-label font-medium">
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full px-3 py-1.5 text-ui-label font-medium"
+                  >
                     1 대여 정보
                   </Badge>
                   <div className="h-[2px] w-4 shrink-0 rounded-full bg-primary/30 bp-sm:w-8" />
-                  <Badge variant="secondary" className="rounded-full px-3 py-1.5 text-ui-label font-medium">
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full px-3 py-1.5 text-ui-label font-medium"
+                  >
                     2 스트링 선택
                   </Badge>
                   <div className="h-[2px] w-4 shrink-0 rounded-full bg-primary/30 bp-sm:w-8" />
-                  <Badge className="rounded-full px-3 py-1.5 text-ui-label font-medium shadow-sm">3 신청 확인</Badge>
+                  <Badge className="rounded-full px-3 py-1.5 text-ui-label font-medium shadow-sm">
+                    3 신청 확인
+                  </Badge>
                 </div>
               </div>
             </nav>
@@ -1355,7 +1363,14 @@ export default function RentalsCheckoutClient({
               </div>
               <CardContent className="p-4 bp-sm:p-6">
                 <div className="space-y-4">
-                  <div className={cn("flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5", agreeAll ? "border-primary/80 bg-primary/5" : "border-border/60 hover:border-border hover:bg-muted/20")}>
+                  <div
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
+                      agreeAll
+                        ? "border-primary/80 bg-primary/5"
+                        : "border-border/60 hover:border-border hover:bg-muted/20",
+                    )}
+                  >
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="agree-all"
@@ -1403,7 +1418,10 @@ export default function RentalsCheckoutClient({
                     ].map((item) => (
                       <div
                         key={item.id}
-                        className={cn("flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5", item.state ? "bg-primary/5" : "hover:bg-muted/20")}
+                        className={cn(
+                          "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
+                          item.state ? "bg-primary/5" : "hover:bg-muted/20",
+                        )}
                       >
                         <div className="flex items-center space-x-2">
                           <Checkbox
@@ -1529,7 +1547,10 @@ export default function RentalsCheckoutClient({
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter id={RENTAL_PAYMENT_ACTION_ID} className="flex flex-col gap-4 border-t border-border/60 p-4 bp-sm:p-6">
+                <CardFooter
+                  id={RENTAL_PAYMENT_ACTION_ID}
+                  className="flex flex-col gap-4 border-t border-border/60 p-4 bp-sm:p-6"
+                >
                   {paymentMethod === "bank_transfer" ? (
                     <Button
                       id={RENTAL_PRIMARY_PAY_BUTTON_ID}

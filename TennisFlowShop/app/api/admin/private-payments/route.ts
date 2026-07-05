@@ -46,25 +46,62 @@ export async function GET(req: Request) {
     if (from) filter.createdAt.$gte = new Date(`${from}T00:00:00.000+09:00`);
     if (to) filter.createdAt.$lte = new Date(`${to}T23:59:59.999+09:00`);
   }
-  if (paymentStatus === "결제대기" || paymentStatus === "결제완료" || paymentStatus === "결제취소") {
+  if (
+    paymentStatus === "결제대기" ||
+    paymentStatus === "결제완료" ||
+    paymentStatus === "결제취소"
+  ) {
     filter.paymentStatus = paymentStatus;
   }
   const col = privatePayments(guard.db);
-  const sortKey = ["title", "amount", "paymentStatus", "status", "expiresAt", "createdAt", "paidAt", "canceledAt"].includes(sort) ? sort : "createdAt";
+  const sortKey = [
+    "title",
+    "amount",
+    "paymentStatus",
+    "status",
+    "expiresAt",
+    "createdAt",
+    "paidAt",
+    "canceledAt",
+  ].includes(sort)
+    ? sort
+    : "createdAt";
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const [items, total, allCount, pendingCount, paidCount, canceledCount, monthPaid] = await Promise.all([
-    col.find(filter).sort({ [sortKey]: dir, _id: -1 }).skip((page - 1) * limit).limit(limit).toArray(),
-    col.countDocuments(filter),
-    col.countDocuments({ archivedAt: null }),
-    col.countDocuments({ archivedAt: null, paymentStatus: "결제대기" }),
-    col.countDocuments({ archivedAt: null, paymentStatus: "결제완료" }),
-    col.countDocuments({ archivedAt: null, paymentStatus: "결제취소" }),
-    col.aggregate<{ total: number }>([
-      { $match: { paymentStatus: "결제완료", paidAt: { $gte: monthStart } } },
-      { $group: { _id: null, total: { $sum: "$amount" } } },
-    ]).next(),
-  ]);
-  return NextResponse.json({ ok: true, items: items.map(serializePrivatePayment), total, page, limit, totalPages: Math.ceil(total / limit), summary: { total: allCount, pending: pendingCount, paid: paidCount, canceled: canceledCount, monthPaidAmount: monthPaid?.total ?? 0 } });
+  const [items, total, allCount, pendingCount, paidCount, canceledCount, monthPaid] =
+    await Promise.all([
+      col
+        .find(filter)
+        .sort({ [sortKey]: dir, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .toArray(),
+      col.countDocuments(filter),
+      col.countDocuments({ archivedAt: null }),
+      col.countDocuments({ archivedAt: null, paymentStatus: "결제대기" }),
+      col.countDocuments({ archivedAt: null, paymentStatus: "결제완료" }),
+      col.countDocuments({ archivedAt: null, paymentStatus: "결제취소" }),
+      col
+        .aggregate<{ total: number }>([
+          { $match: { paymentStatus: "결제완료", paidAt: { $gte: monthStart } } },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ])
+        .next(),
+    ]);
+  return NextResponse.json({
+    ok: true,
+    items: items.map(serializePrivatePayment),
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    summary: {
+      total: allCount,
+      pending: pendingCount,
+      paid: paidCount,
+      canceled: canceledCount,
+      monthPaidAmount: monthPaid?.total ?? 0,
+    },
+  });
 }
 
 export async function POST(req: Request) {
@@ -100,7 +137,22 @@ export async function POST(req: Request) {
     history: [{ status: "created", date: now, description: "개인결제 링크 생성" }],
   };
   const result = await privatePayments(guard.db).insertOne(doc);
-  await appendAdminAudit(guard.db, { type: "private_payment.create", actorId: guard.admin._id, targetId: result.insertedId, message: "개인결제 링크 생성", diff: { title: doc.title, amount: doc.amount } }, req);
+  await appendAdminAudit(
+    guard.db,
+    {
+      type: "private_payment.create",
+      actorId: guard.admin._id,
+      targetId: result.insertedId,
+      message: "개인결제 링크 생성",
+      diff: { title: doc.title, amount: doc.amount },
+    },
+    req,
+  );
   const publicPath = `/private-payments/${result.insertedId.toString()}`;
-  return NextResponse.json({ ok: true, item: serializePrivatePayment({ ...doc, _id: result.insertedId }), publicPath, publicUrl: publicPath });
+  return NextResponse.json({
+    ok: true,
+    item: serializePrivatePayment({ ...doc, _id: result.insertedId }),
+    publicPath,
+    publicUrl: publicPath,
+  });
 }

@@ -121,7 +121,11 @@ export default function ReviewEditDialog({
         </div>
 
         <DialogFooter className="gap-2">
-          <button type="button" className="px-4 py-2 rounded-md border text-ui-body-sm" onClick={onClose}>
+          <button
+            type="button"
+            className="px-4 py-2 rounded-md border text-ui-body-sm"
+            onClick={onClose}
+          >
             취소
           </button>
           <button

@@ -37,14 +37,14 @@ export default function AdminRacketNewClient() {
           title="라켓 등록"
           description="새로운 중고 라켓 정보를 입력하고 등록하세요."
           icon={Package}
-          actions={(
+          actions={
             <Button variant="outline" type="button" asChild className="border-border">
               <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 취소
               </Link>
             </Button>
-          )}
+          }
         />
 
         <AdminRacketForm submitLabel="저장" onSubmit={onSubmit} />

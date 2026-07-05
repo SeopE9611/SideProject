@@ -49,9 +49,7 @@ export function AdminInfoItem({
       <dd className={cn("mt-1 break-words", adminTypography.body, "font-medium", valueClassName)}>
         {value ?? "-"}
       </dd>
-      {description ? (
-        <p className={cn("mt-1", adminTypography.caption)}>{description}</p>
-      ) : null}
+      {description ? <p className={cn("mt-1", adminTypography.caption)}>{description}</p> : null}
     </div>
   );
 }

@@ -50,7 +50,9 @@ export default function StringRecommendResultCard({
             <div className="space-y-1 tabular-nums">
               <div className="flex flex-wrap items-baseline gap-1.5">
                 <span className="text-ui-caption text-muted-foreground">할인가</span>
-                <span className="text-ui-body-sm font-semibold">{displayPrice.toLocaleString()}원</span>
+                <span className="text-ui-body-sm font-semibold">
+                  {displayPrice.toLocaleString()}원
+                </span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-ui-caption text-muted-foreground">정가</span>
@@ -119,7 +121,11 @@ export default function StringRecommendResultCard({
               <span className="min-w-0 truncate">교체서비스 신청하기</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="min-h-10 w-full overflow-hidden whitespace-nowrap">
+          <Button
+            asChild
+            variant="outline"
+            className="min-h-10 w-full overflow-hidden whitespace-nowrap"
+          >
             <Link href={productHref}>
               <span className="min-w-0 truncate">상세 보기</span>
             </Link>

@@ -8,7 +8,9 @@
  * 5) http://localhost:3000 (비프로덕션에서만)
  */
 function normalizePublicUrl(value: string | undefined) {
-  const normalized = String(value || "").trim().replace(/\/+$/, "");
+  const normalized = String(value || "")
+    .trim()
+    .replace(/\/+$/, "");
   if (!/^https?:\/\//i.test(normalized)) return "";
 
   if (process.env.NODE_ENV === "production") {

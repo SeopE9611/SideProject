@@ -582,9 +582,20 @@ async function handleNiceRacketReturn(req: Request) {
             status: "paid",
             tid,
             approvedAt: new Date(),
-            cardDisplayName: extractNiceCardInfo(approvedRaw)?.displayName ?? extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
-            cardCompany: extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
-            cardLabel: extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.displayName ?? undefined,
+            cardDisplayName:
+              extractNiceCardInfo(approvedRaw)?.displayName ??
+              extractNiceCardInfo(approvedRaw)?.cardName ??
+              extractNiceCardInfo(approvedRaw)?.issuerName ??
+              extractNiceCardInfo(approvedRaw)?.acquirerName ??
+              undefined,
+            cardCompany:
+              extractNiceCardInfo(approvedRaw)?.issuerName ??
+              extractNiceCardInfo(approvedRaw)?.acquirerName ??
+              undefined,
+            cardLabel:
+              extractNiceCardInfo(approvedRaw)?.cardName ??
+              extractNiceCardInfo(approvedRaw)?.displayName ??
+              undefined,
             niceCard: extractNiceCardInfo(approvedRaw) ?? undefined,
             easyPayProvider: extractNiceEasyPayProvider(approvedRaw) ?? undefined,
             rawSummary: {

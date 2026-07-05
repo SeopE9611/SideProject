@@ -308,7 +308,10 @@ async function handleNicePackageReturn(req: Request) {
         code: "AUTH_FAILED",
         message: authResultMsg || "인증 결제에 실패했습니다.",
       });
-      return redirect303(req, toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다."));
+      return redirect303(
+        req,
+        toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다."),
+      );
     }
 
     const prepared = session.nicePrepared || { clientId: "", orderId: "" };
@@ -368,7 +371,10 @@ async function handleNicePackageReturn(req: Request) {
         code: "APPROVE_FAILED",
         message: error?.message || "승인 처리에 실패했습니다.",
       });
-      return redirect303(req, toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다."));
+      return redirect303(
+        req,
+        toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다."),
+      );
     }
 
     const approveResultCode = pick(approvedRaw, "resultCode", "ResultCode");

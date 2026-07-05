@@ -121,8 +121,6 @@ export default function MypageClient({ user }: Props) {
     return `/mypage?${params.toString()}`;
   };
 
-
-
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams.toString());
     let changed = false;
@@ -236,8 +234,10 @@ export default function MypageClient({ user }: Props) {
   // 페이지 톤 클래스 분류(대시보드 카드, 탭 헤더, 아이콘 배경)
   const pageTone = {
     dashboardPanel: "border-b border-border/60 bg-background",
-    shellCard: "overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
-    sectionHeader: "border-b border-border/60 bg-secondary/30 px-4 py-3 bp-sm:px-5 bp-sm:py-4 bp-lg:px-6",
+    shellCard:
+      "overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
+    sectionHeader:
+      "border-b border-border/60 bg-secondary/30 px-4 py-3 bp-sm:px-5 bp-sm:py-4 bp-lg:px-6",
     iconSurface: "rounded-xl bg-primary/10 p-2 ring-1 ring-primary/10",
   };
   const ordersPanelClass = isOrdersDetailView
@@ -282,7 +282,10 @@ export default function MypageClient({ user }: Props) {
           <UserSection user={user} />
 
           <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
-            <SummaryCard className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20" contentClassName="p-4 bp-sm:p-5">
+            <SummaryCard
+              className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20"
+              contentClassName="p-4 bp-sm:p-5"
+            >
               <button
                 type="button"
                 onClick={() =>
@@ -325,7 +328,10 @@ export default function MypageClient({ user }: Props) {
               </button>
             </SummaryCard>
 
-            <SummaryCard className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50" contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4">
+            <SummaryCard
+              className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
+              contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4"
+            >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-ui-body-sm font-semibold text-foreground">내 활동</p>
                 {hasSummaryError ? (

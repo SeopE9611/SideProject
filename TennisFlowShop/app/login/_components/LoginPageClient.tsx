@@ -321,7 +321,9 @@ export default function LoginPageClient() {
               </div>
 
               <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
-                <p className="text-ui-body-sm font-semibold text-foreground text-center">간편 로그인</p>
+                <p className="text-ui-body-sm font-semibold text-foreground text-center">
+                  간편 로그인
+                </p>
                 <SocialAuthButtons
                   onKakaoClick={handleKakaoOAuth}
                   onNaverClick={handleNaverOAuth}

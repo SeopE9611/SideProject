@@ -138,11 +138,15 @@ export default function UnifiedPackageCard({
           className={`grid gap-3 ${showTotalPrice ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"}`}
         >
           <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-            <div className="text-ui-section-title font-semibold text-foreground">{pkg.sessions}회</div>
+            <div className="text-ui-section-title font-semibold text-foreground">
+              {pkg.sessions}회
+            </div>
             <div className="text-ui-body-sm text-muted-foreground">이용 회차</div>
           </div>
           <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-            <div className="text-ui-section-title font-semibold text-foreground">{pkg.validityPeriod}</div>
+            <div className="text-ui-section-title font-semibold text-foreground">
+              {pkg.validityPeriod}
+            </div>
             <div className="text-ui-body-sm text-muted-foreground">유효기간</div>
           </div>
           {showTotalPrice && (

@@ -216,7 +216,9 @@ export default function RacketCompareClient() {
               <Scale className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-ui-section-title bp-sm:text-ui-page-title font-semibold">라켓 비교</h1>
+              <h1 className="text-ui-section-title bp-sm:text-ui-page-title font-semibold">
+                라켓 비교
+              </h1>
               <p className="text-ui-body-sm text-muted-foreground mt-0.5">
                 최소 2개 ~ 최대 4개까지 스펙을 표로 비교합니다.
               </p>
@@ -262,7 +264,9 @@ export default function RacketCompareClient() {
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="border-b border-border bg-secondary/60 px-4 py-3 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-primary" />
-              <span className="text-ui-body-sm font-medium text-primary">비교할 라켓이 부족합니다</span>
+              <span className="text-ui-body-sm font-medium text-primary">
+                비교할 라켓이 부족합니다
+              </span>
             </div>
             <div className="p-4 space-y-4">
               <p className="text-ui-body-sm text-muted-foreground">
@@ -555,7 +559,9 @@ export default function RacketCompareClient() {
                                 <div className="font-semibold">{valueText}</div>
 
                                 {!isBaseCol && delta !== null && (
-                                  <div className={cn("mt-0.5 text-ui-caption font-medium", deltaClass)}>
+                                  <div
+                                    className={cn("mt-0.5 text-ui-caption font-medium", deltaClass)}
+                                  >
                                     {sign}
                                     {deltaAbsText}
                                     {pctText ? ` (${pctText})` : ""}

@@ -265,14 +265,14 @@ export default function StringingSettingsPage() {
     return (
       <AdminPageShell variant="wide">
         <AsyncState
-            kind="error"
-            tone="admin"
-            variant="page-center"
-            resourceName="스케줄링 설정"
-            onAction={() => {
-              void mutate();
-            }}
-          />
+          kind="error"
+          tone="admin"
+          variant="page-center"
+          resourceName="스케줄링 설정"
+          onAction={() => {
+            void mutate();
+          }}
+        />
       </AdminPageShell>
     );
   }
@@ -280,493 +280,487 @@ export default function StringingSettingsPage() {
   return (
     <TooltipProvider delayDuration={120}>
       <AdminPageShell variant="wide" className="space-y-6">
-          <AdminPageHeader
-            title="예약 · 영업일 설정"
-            description="교체서비스 예약 가능 시간, 영업 요일, 휴무일, 예외일을 관리합니다."
-            icon={CalendarDays}
-            scope="범위: 교체서비스 예약 슬롯"
-            helperText="운영 정책 변경은 실제 예약 가능 시간에 즉시 영향을 줄 수 있습니다."
-          />
+        <AdminPageHeader
+          title="예약 · 영업일 설정"
+          description="교체서비스 예약 가능 시간, 영업 요일, 휴무일, 예외일을 관리합니다."
+          icon={CalendarDays}
+          scope="범위: 교체서비스 예약 슬롯"
+          helperText="운영 정책 변경은 실제 예약 가능 시간에 즉시 영향을 줄 수 있습니다."
+        />
 
-          <div className={cn(adminSurface.fieldPanelMuted, "overflow-hidden p-0")}>
-            <div className="flex items-start gap-4 p-6">
-              <div className="rounded-xl bg-muted p-2.5 shadow-sm">
-                <Info className="h-5 w-5" />
-              </div>
-              <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
-                <p className="font-semibold text-foreground mb-2">
-                  운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전 개발자/운영팀과 상의하세요.
-                </p>
-                <ul className="space-y-1.5">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                    <span>
-                      <strong className="font-medium text-foreground">동시 수용량:</strong> 같은
-                      시간대 동시 접수 가능한 신청 수
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                    <span>
-                      <strong className="font-medium text-foreground">영업 시간/간격:</strong>{" "}
-                      슬롯의 시작·종료 시각과 간격
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                    <span>
-                      <strong className="font-medium text-foreground">영업 요일:</strong> 기본 영업
-                      요일
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                    <span>
-                      <strong className="font-medium text-foreground">휴무일:</strong> 특정 날짜를
-                      휴무로 지정
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                    <span>
-                      <strong className="font-medium text-foreground">예외일:</strong> 특정 날짜만
-                      영업/시간·간격·수용량을 오버라이드
-                    </span>
-                  </li>
-                </ul>
-              </div>
+        <div className={cn(adminSurface.fieldPanelMuted, "overflow-hidden p-0")}>
+          <div className="flex items-start gap-4 p-6">
+            <div className="rounded-xl bg-muted p-2.5 shadow-sm">
+              <Info className="h-5 w-5" />
+            </div>
+            <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
+              <p className="font-semibold text-foreground mb-2">
+                운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전 개발자/운영팀과 상의하세요.
+              </p>
+              <ul className="space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
+                  <span>
+                    <strong className="font-medium text-foreground">동시 수용량:</strong> 같은
+                    시간대 동시 접수 가능한 신청 수
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
+                  <span>
+                    <strong className="font-medium text-foreground">영업 시간/간격:</strong> 슬롯의
+                    시작·종료 시각과 간격
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
+                  <span>
+                    <strong className="font-medium text-foreground">영업 요일:</strong> 기본 영업
+                    요일
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
+                  <span>
+                    <strong className="font-medium text-foreground">휴무일:</strong> 특정 날짜를
+                    휴무로 지정
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
+                  <span>
+                    <strong className="font-medium text-foreground">예외일:</strong> 특정 날짜만
+                    영업/시간·간격·수용량을 오버라이드
+                  </span>
+                </li>
+              </ul>
             </div>
           </div>
+        </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card className={cn("overflow-hidden", adminSurface.card)}>
-              <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
-                <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                  <div className="rounded-xl bg-primary/10 p-2 text-primary dark:bg-primary/20">
-                    <Clock className="h-5 w-5" />
-                  </div>
-                  기본 슬롯 설정
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8 p-6">
-                <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <Label className="text-sm font-medium text-foreground">
-                      {/* was: text-foreground */}동시 수용량
-                    </Label>
-                    <Badge variant="brand" className="shadow-sm px-3 py-1">
-                      {capacity}명
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[capacity]}
-                    onValueChange={(v) => setCapacity(Math.max(1, Math.min(10, v?.[0] ?? 1)))}
-                    min={1}
-                    max={10}
-                    step={1}
-                    className="mt-3"
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className={cn("overflow-hidden", adminSurface.card)}>
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
+                <div className="rounded-xl bg-primary/10 p-2 text-primary dark:bg-primary/20">
+                  <Clock className="h-5 w-5" />
+                </div>
+                기본 슬롯 설정
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8 p-6">
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <Label className="text-sm font-medium text-foreground">
+                    {/* was: text-foreground */}동시 수용량
+                  </Label>
+                  <Badge variant="brand" className="shadow-sm px-3 py-1">
+                    {capacity}명
+                  </Badge>
+                </div>
+                <Slider
+                  value={[capacity]}
+                  onValueChange={(v) => setCapacity(Math.max(1, Math.min(10, v?.[0] ?? 1)))}
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="mt-3"
+                />
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  {/* was: text-muted-foreground */}예) 2로 저장하면 동일 시간대 최대 2건까지
+                  접수됩니다.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="start" className="text-sm font-medium text-foreground">
+                    영업 시작
+                  </Label>
+                  <Input
+                    id="start"
+                    type="time"
+                    value={start}
+                    onChange={(e) => setStart(e.target.value)}
+                    className="border-border focus:border-border focus:ring-ring"
                   />
-                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                    {/* was: text-muted-foreground */}예) 2로 저장하면 동일 시간대 최대 2건까지
-                    접수됩니다.
-                  </p>
                 </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="start" className="text-sm font-medium text-foreground">
-                      영업 시작
-                    </Label>
-                    <Input
-                      id="start"
-                      type="time"
-                      value={start}
-                      onChange={(e) => setStart(e.target.value)}
-                      className="border-border focus:border-border focus:ring-ring"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="end" className="text-sm font-medium text-foreground">
-                      영업 종료
-                    </Label>
-                    <Input
-                      id="end"
-                      type="time"
-                      value={end}
-                      onChange={(e) => setEnd(e.target.value)}
-                      className="border-border focus:border-border focus:ring-ring"
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="interval" className="text-sm font-medium text-foreground">
-                    간격 (5~240분)
+                  <Label htmlFor="end" className="text-sm font-medium text-foreground">
+                    영업 종료
                   </Label>
-                  <div className="mt-2 flex items-center gap-3">
-                    <Input
-                      id="interval"
-                      type="number"
-                      min={5}
-                      max={240}
-                      value={interval}
-                      onChange={(e) => {
-                        const v = Number(e.target.value || 30);
-                        if (Number.isFinite(v)) setInterval(Math.max(5, Math.min(240, v)));
-                      }}
-                      className="w-32 border-border focus:border-border focus:ring-ring"
-                    />
-                    <Badge
-                      variant="outline"
-                      className="border-dashed border-border text-muted-foreground"
-                    >
-                      예: 30분 → 10:00, 10:30…
-                    </Badge>
-                  </div>
+                  <Input
+                    id="end"
+                    type="time"
+                    value={end}
+                    onChange={(e) => setEnd(e.target.value)}
+                    className="border-border focus:border-border focus:ring-ring"
+                  />
                 </div>
+              </div>
 
-                {/* 예약 가능 기간(일) */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="bookingWindowDays"
-                    className="text-sm font-medium text-foreground"
+              <div className="space-y-2">
+                <Label htmlFor="interval" className="text-sm font-medium text-foreground">
+                  간격 (5~240분)
+                </Label>
+                <div className="mt-2 flex items-center gap-3">
+                  <Input
+                    id="interval"
+                    type="number"
+                    min={5}
+                    max={240}
+                    value={interval}
+                    onChange={(e) => {
+                      const v = Number(e.target.value || 30);
+                      if (Number.isFinite(v)) setInterval(Math.max(5, Math.min(240, v)));
+                    }}
+                    className="w-32 border-border focus:border-border focus:ring-ring"
+                  />
+                  <Badge
+                    variant="outline"
+                    className="border-dashed border-border text-muted-foreground"
                   >
-                    예약 가능 기간(일)
-                  </Label>
-                  <div className="mt-2 flex items-center gap-3">
-                    <Input
-                      id="bookingWindowDays"
-                      type="number"
-                      min={1}
-                      max={180}
-                      value={bookingWindowDays}
-                      onChange={(e) => {
-                        const v = Number(e.target.value || 30);
-                        if (Number.isFinite(v)) setBookingWindowDays(Math.max(1, Math.min(180, v)));
-                      }}
-                      className="w-32 border-border focus:border-border focus:ring-ring"
-                    />
-                    <Badge
-                      variant="outline"
-                      className="border-dashed border-border text-muted-foreground"
-                    >
-                      예: 30 → 오늘부터 30일 이내만 신청 가능 (최대 180)
-                    </Badge>
-                  </div>
+                    예: 30분 → 10:00, 10:30…
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card className={cn("overflow-hidden", adminSurface.card)}>
-              <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
-                <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                  <div className="rounded-xl bg-muted p-2">
-                    <CalendarDays className="h-5 w-5" />
-                  </div>
-                  영업 요일 · 휴무일
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8 p-6">
-                <div>
-                  <Label className="mb-3 block text-sm font-medium text-foreground">
-                    영업 요일
-                  </Label>
-                  <div className="grid grid-cols-7 gap-2">
-                    {DAY_LABELS.map((label, i) => {
-                      const on = businessDays.includes(i);
-                      return (
-                        <Button
-                          key={i}
-                          type="button"
-                          variant={on ? "default" : "outline"}
-                          className={
-                            on
-                              ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 border-0 font-medium"
-                              : "bg-card text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground border-border"
-                          }
-                          onClick={() =>
-                            setBusinessDays((prev) =>
-                              prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort(),
-                            )
-                          }
-                        >
-                          {label}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                    예외일로 별도 지정한 날짜는 이 요일 설정과 무관하게 동작합니다.
-                  </p>
+              {/* 예약 가능 기간(일) */}
+              <div className="space-y-2">
+                <Label htmlFor="bookingWindowDays" className="text-sm font-medium text-foreground">
+                  예약 가능 기간(일)
+                </Label>
+                <div className="mt-2 flex items-center gap-3">
+                  <Input
+                    id="bookingWindowDays"
+                    type="number"
+                    min={1}
+                    max={180}
+                    value={bookingWindowDays}
+                    onChange={(e) => {
+                      const v = Number(e.target.value || 30);
+                      if (Number.isFinite(v)) setBookingWindowDays(Math.max(1, Math.min(180, v)));
+                    }}
+                    className="w-32 border-border focus:border-border focus:ring-ring"
+                  />
+                  <Badge
+                    variant="outline"
+                    className="border-dashed border-border text-muted-foreground"
+                  >
+                    예: 30 → 오늘부터 30일 이내만 신청 가능 (최대 180)
+                  </Badge>
                 </div>
-
-                <Separator className="bg-border" />
-
-                <div>
-                  <Label className="mb-3 block text-sm font-medium text-foreground">휴무일</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="date"
-                      value={holidayInput}
-                      onChange={(e) => setHolidayInput(e.target.value)}
-                      className="max-w-[200px] border-border focus:border-border focus:ring-ring"
-                    />
-                    <Button
-                      type="button"
-                      className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                      onClick={() => {
-                        if (!holidayInput) return;
-                        if (!holidays.includes(holidayInput))
-                          setHolidays([...holidays, holidayInput]);
-                        setHolidayInput("");
-                      }}
-                    >
-                      <Plus className="mr-2 h-4 w-4" /> 추가
-                    </Button>
-                  </div>
-
-                  {sortedHolidays.length > 0 ? (
-                    <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                      {sortedHolidays.map((h) => (
-                        <li
-                          key={h}
-                          className="flex items-center justify-between px-4 py-3 text-sm hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
-                        >
-                          <span className="font-medium text-foreground">{h}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive hover:text-destructive"
-                            onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="mt-3 text-xs text-muted-foreground">등록된 휴무일이 없습니다.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className={cn("overflow-hidden", adminSurface.card)}>
             <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                 <div className="rounded-xl bg-muted p-2">
-                  <Users className="h-5 w-5" />
+                  <CalendarDays className="h-5 w-5" />
                 </div>
-                예외일 (특별 운영/휴무)
+                영업 요일 · 휴무일
               </CardTitle>
             </CardHeader>
-
-            <CardContent className="space-y-6 p-6">
-              <div className={adminSurface.fieldPanelMuted}>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-                  <div className="lg:col-span-2 space-y-2">
-                    <Label className="text-xs font-medium text-foreground">날짜</Label>
-                    <Input
-                      type="date"
-                      value={exInput.date || ""}
-                      onChange={(e) => setExInput({ ...exInput, date: e.target.value })}
-                      className="border-border bg-card focus:border-border focus:ring-ring"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-7">
-                    <Switch
-                      checked={!!exInput.closed}
-                      onCheckedChange={(v) => setExInput({ ...exInput, closed: v })}
-                      id="ex-closed"
-                    />
-                    <Label htmlFor="ex-closed" className="text-sm font-medium text-foreground">
-                      해당 날짜 휴무
-                    </Label>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">시작</Label>
-                    <Input
-                      type="time"
-                      value={exInput.start || ""}
-                      onChange={(e) => setExInput({ ...exInput, start: e.target.value })}
-                      className="border-border bg-card focus:border-border focus:ring-ring"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">종료</Label>
-                    <Input
-                      type="time"
-                      value={exInput.end || ""}
-                      onChange={(e) => setExInput({ ...exInput, end: e.target.value })}
-                      className="border-border bg-card focus:border-border focus:ring-ring"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">간격(분)</Label>
-                    <Input
-                      type="number"
-                      min={5}
-                      max={240}
-                      value={exInput.interval ?? ""}
-                      onChange={(e) =>
-                        setExInput({
-                          ...exInput,
-                          interval: Number(e.target.value) || undefined,
-                        })
-                      }
-                      className="border-border bg-card focus:border-border focus:ring-ring"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">수용량</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={10}
-                      value={exInput.capacity ?? ""}
-                      onChange={(e) =>
-                        setExInput({
-                          ...exInput,
-                          capacity: Number(e.target.value) || undefined,
-                        })
-                      }
-                      className="border-border bg-card focus:border-border focus:ring-ring"
-                    />
-                  </div>
+            <CardContent className="space-y-8 p-6">
+              <div>
+                <Label className="mb-3 block text-sm font-medium text-foreground">영업 요일</Label>
+                <div className="grid grid-cols-7 gap-2">
+                  {DAY_LABELS.map((label, i) => {
+                    const on = businessDays.includes(i);
+                    return (
+                      <Button
+                        key={i}
+                        type="button"
+                        variant={on ? "default" : "outline"}
+                        className={
+                          on
+                            ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 border-0 font-medium"
+                            : "bg-card text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground border-border"
+                        }
+                        onClick={() =>
+                          setBusinessDays((prev) =>
+                            prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort(),
+                          )
+                        }
+                      >
+                        {label}
+                      </Button>
+                    );
+                  })}
                 </div>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  예외일로 별도 지정한 날짜는 이 요일 설정과 무관하게 동작합니다.
+                </p>
+              </div>
 
-                <div className="mt-4 flex items-center gap-2">
+              <Separator className="bg-border" />
+
+              <div>
+                <Label className="mb-3 block text-sm font-medium text-foreground">휴무일</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="date"
+                    value={holidayInput}
+                    onChange={(e) => setHolidayInput(e.target.value)}
+                    className="max-w-[200px] border-border focus:border-border focus:ring-ring"
+                  />
                   <Button
                     type="button"
                     className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
                     onClick={() => {
-                      if (!exInput.date) {
-                        showErrorToast("날짜는 필수입니다.");
-                        return;
-                      }
-
-                      const sanitized = sanitizeExceptionInput(exInput);
-                      const validationError = validateExceptionItem(sanitized);
-                      if (validationError) {
-                        showErrorToast(validationError);
-                        return;
-                      }
-
-                      setExceptions((prev) => {
-                        const rest = prev.filter((x) => x.date !== sanitized.date);
-                        return [...rest, sanitized];
-                      });
-                      setExInput({ date: "" });
-                      showSuccessToast("예외일이 추가/수정되었습니다.");
+                      if (!holidayInput) return;
+                      if (!holidays.includes(holidayInput))
+                        setHolidays([...holidays, holidayInput]);
+                      setHolidayInput("");
                     }}
                   >
-                    <Pencil className="mr-2 h-4 w-4" /> 예외일 추가/수정
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent"
-                    onClick={() => setExInput({ date: "" })}
-                  >
-                    입력 초기화
+                    <Plus className="mr-2 h-4 w-4" /> 추가
                   </Button>
                 </div>
-              </div>
 
-              {sortedExceptions.length > 0 ? (
-                <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                  {sortedExceptions.map((ex) => (
-                    <li
-                      key={ex.date}
-                      className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="font-semibold text-foreground mb-1">{ex.date}</div>
-                        {ex.closed ? (
-                          <Badge variant="destructive">휴무</Badge>
-                        ) : (
-                          <div className="text-sm text-muted-foreground space-y-0.5">
-                            <div>
-                              {ex.start && ex.end
-                                ? `${ex.start} ~ ${ex.end}`
-                                : "시간 미지정(기본값 사용)"}
-                            </div>
-                            {(typeof ex.interval === "number" ||
-                              typeof ex.capacity === "number") && (
-                              <div className="flex items-center gap-2">
-                                {typeof ex.interval === "number" && (
-                                  <Badge
-                                    variant="outline"
-                                    className="border-border text-muted-foreground"
-                                  >
-                                    간격 {ex.interval}분
-                                  </Badge>
-                                )}
-                                {typeof ex.capacity === "number" && (
-                                  <Badge
-                                    variant="outline"
-                                    className="border-border text-muted-foreground"
-                                  >
-                                    수용 {ex.capacity}명
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
+                {sortedHolidays.length > 0 ? (
+                  <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                    {sortedHolidays.map((h) => (
+                      <li
+                        key={h}
+                        className="flex items-center justify-between px-4 py-3 text-sm hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
+                      >
+                        <span className="font-medium text-foreground">{h}</span>
                         <Button
-                          size="icon"
+                          type="button"
                           variant="ghost"
-                          className="hover:bg-primary/10 dark:hover:bg-primary/20 text-primary"
-                          onClick={() => setExInput(ex)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive"
-                          onClick={() =>
-                            setExceptions((prev) => prev.filter((x) => x.date !== ex.date))
-                          }
+                          size="sm"
+                          className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive hover:text-destructive"
+                          onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className={cn(adminSurface.fieldPanelMuted, "border-dashed p-8 text-center")}>
-                  <p className="text-sm text-muted-foreground">등록된 예외일이 없습니다.</p>
-                </div>
-              )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-xs text-muted-foreground">등록된 휴무일이 없습니다.</p>
+                )}
+              </div>
             </CardContent>
-
-            <CardFooter className="flex justify-end gap-3 border-t border-border/60 bg-muted/20 p-6">
-              <Button
-                onClick={save}
-                disabled={saving}
-                className="bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 disabled:opacity-50"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {saving ? "저장 중…" : "저장"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={resetToDefaults}
-                className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent"
-              >
-                기본값으로
-              </Button>
-            </CardFooter>
           </Card>
+        </div>
+
+        <Card className={cn("overflow-hidden", adminSurface.card)}>
+          <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
+              <div className="rounded-xl bg-muted p-2">
+                <Users className="h-5 w-5" />
+              </div>
+              예외일 (특별 운영/휴무)
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-6 p-6">
+            <div className={adminSurface.fieldPanelMuted}>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+                <div className="lg:col-span-2 space-y-2">
+                  <Label className="text-xs font-medium text-foreground">날짜</Label>
+                  <Input
+                    type="date"
+                    value={exInput.date || ""}
+                    onChange={(e) => setExInput({ ...exInput, date: e.target.value })}
+                    className="border-border bg-card focus:border-border focus:ring-ring"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-7">
+                  <Switch
+                    checked={!!exInput.closed}
+                    onCheckedChange={(v) => setExInput({ ...exInput, closed: v })}
+                    id="ex-closed"
+                  />
+                  <Label htmlFor="ex-closed" className="text-sm font-medium text-foreground">
+                    해당 날짜 휴무
+                  </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-foreground">시작</Label>
+                  <Input
+                    type="time"
+                    value={exInput.start || ""}
+                    onChange={(e) => setExInput({ ...exInput, start: e.target.value })}
+                    className="border-border bg-card focus:border-border focus:ring-ring"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-foreground">종료</Label>
+                  <Input
+                    type="time"
+                    value={exInput.end || ""}
+                    onChange={(e) => setExInput({ ...exInput, end: e.target.value })}
+                    className="border-border bg-card focus:border-border focus:ring-ring"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-foreground">간격(분)</Label>
+                  <Input
+                    type="number"
+                    min={5}
+                    max={240}
+                    value={exInput.interval ?? ""}
+                    onChange={(e) =>
+                      setExInput({
+                        ...exInput,
+                        interval: Number(e.target.value) || undefined,
+                      })
+                    }
+                    className="border-border bg-card focus:border-border focus:ring-ring"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-foreground">수용량</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={exInput.capacity ?? ""}
+                    onChange={(e) =>
+                      setExInput({
+                        ...exInput,
+                        capacity: Number(e.target.value) || undefined,
+                      })
+                    }
+                    className="border-border bg-card focus:border-border focus:ring-ring"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-2">
+                <Button
+                  type="button"
+                  className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                  onClick={() => {
+                    if (!exInput.date) {
+                      showErrorToast("날짜는 필수입니다.");
+                      return;
+                    }
+
+                    const sanitized = sanitizeExceptionInput(exInput);
+                    const validationError = validateExceptionItem(sanitized);
+                    if (validationError) {
+                      showErrorToast(validationError);
+                      return;
+                    }
+
+                    setExceptions((prev) => {
+                      const rest = prev.filter((x) => x.date !== sanitized.date);
+                      return [...rest, sanitized];
+                    });
+                    setExInput({ date: "" });
+                    showSuccessToast("예외일이 추가/수정되었습니다.");
+                  }}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> 예외일 추가/수정
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent"
+                  onClick={() => setExInput({ date: "" })}
+                >
+                  입력 초기화
+                </Button>
+              </div>
+            </div>
+
+            {sortedExceptions.length > 0 ? (
+              <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                {sortedExceptions.map((ex) => (
+                  <li
+                    key={ex.date}
+                    className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="font-semibold text-foreground mb-1">{ex.date}</div>
+                      {ex.closed ? (
+                        <Badge variant="destructive">휴무</Badge>
+                      ) : (
+                        <div className="text-sm text-muted-foreground space-y-0.5">
+                          <div>
+                            {ex.start && ex.end
+                              ? `${ex.start} ~ ${ex.end}`
+                              : "시간 미지정(기본값 사용)"}
+                          </div>
+                          {(typeof ex.interval === "number" || typeof ex.capacity === "number") && (
+                            <div className="flex items-center gap-2">
+                              {typeof ex.interval === "number" && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-border text-muted-foreground"
+                                >
+                                  간격 {ex.interval}분
+                                </Badge>
+                              )}
+                              {typeof ex.capacity === "number" && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-border text-muted-foreground"
+                                >
+                                  수용 {ex.capacity}명
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="hover:bg-primary/10 dark:hover:bg-primary/20 text-primary"
+                        onClick={() => setExInput(ex)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive"
+                        onClick={() =>
+                          setExceptions((prev) => prev.filter((x) => x.date !== ex.date))
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className={cn(adminSurface.fieldPanelMuted, "border-dashed p-8 text-center")}>
+                <p className="text-sm text-muted-foreground">등록된 예외일이 없습니다.</p>
+              </div>
+            )}
+          </CardContent>
+
+          <CardFooter className="flex justify-end gap-3 border-t border-border/60 bg-muted/20 p-6">
+            <Button
+              onClick={save}
+              disabled={saving}
+              className="bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 disabled:opacity-50"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? "저장 중…" : "저장"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={resetToDefaults}
+              className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent"
+            >
+              기본값으로
+            </Button>
+          </CardFooter>
+        </Card>
       </AdminPageShell>
     </TooltipProvider>
   );

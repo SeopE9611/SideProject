@@ -1,8 +1,6 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { ObjectId } from "mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import {
   getColorLabel,
   getGaugeLabel,
@@ -15,6 +13,9 @@ import {
 } from "@/lib/products/string-stock";
 import { productVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 // 내 위시리스트 목록 + 상품 요약
 
@@ -207,10 +208,17 @@ export async function GET() {
       items: rows.map((r) => {
         const optionState = getWishlistOptionState(r);
         const inventoryState = compactInventoryRows(r.product);
+        const effectivePrice = getEffectiveProductPrice(r.product);
+        const priceMeta = getProductPriceDisplayMeta(r.product);
+
         return {
           id: r.productId.toString(),
           name: r.product.name,
-          price: r.product.price,
+          price: effectivePrice,
+          regularPrice: priceMeta.regularPrice ?? null,
+          salePrice: priceMeta.salePrice ?? null,
+          discountAmount: priceMeta.discountAmount ?? null,
+          discountRate: priceMeta.discountRate ?? null,
           image: r.selectedColorImage || r.product.images?.[0] || "/placeholder.svg",
           stock: optionState.optionStock ?? r.product?.inventory?.stock ?? 0,
           createdAt: r.createdAt,

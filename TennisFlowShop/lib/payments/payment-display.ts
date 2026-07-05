@@ -113,9 +113,16 @@ function getMethodBaseLabel(method?: unknown, easyPayProvider?: unknown): string
 
   if (normalized.includes("VBANK")) return "가상계좌";
   if (normalized.includes("BANK") || normalized.includes("TRANSFER")) return "계좌이체";
-  if (normalized.includes("CELLPHONE") || normalized.includes("MOBILE") || normalized.includes("PHONE")) return "휴대폰 결제";
-  if (normalized.includes("EASY") || hasEasyPay) return normalized.includes("CARD") ? "카드/간편결제" : "간편결제";
-  if (normalized.includes("CARD") || normalized === "NICEPAY" || normalized === "TOSSPAYMENTS") return "카드결제";
+  if (
+    normalized.includes("CELLPHONE") ||
+    normalized.includes("MOBILE") ||
+    normalized.includes("PHONE")
+  )
+    return "휴대폰 결제";
+  if (normalized.includes("EASY") || hasEasyPay)
+    return normalized.includes("CARD") ? "카드/간편결제" : "간편결제";
+  if (normalized.includes("CARD") || normalized === "NICEPAY" || normalized === "TOSSPAYMENTS")
+    return "카드결제";
   if (normalized.includes("PACKAGE")) return "패키지 사용";
   if (normalized.includes("무통장") || normalized.includes("BANK_TRANSFER")) return "무통장입금";
   return cleanText(method) ?? "결제 정보 확인 필요";
@@ -127,7 +134,14 @@ export function getPaymentMethodDisplayLabel(params: PaymentDisplayInput): strin
 
 export function getPaymentDisplaySummary(params: PaymentDisplayInput): PaymentDisplaySummary {
   if (params.isPackageApplied) {
-    return { primaryLabel: "패키지 사용", providerLabel: null, cardDisplayName: null, easyPayProviderLabel: null, userLabel: "패키지 사용", adminLabel: "패키지 사용" };
+    return {
+      primaryLabel: "패키지 사용",
+      providerLabel: null,
+      cardDisplayName: null,
+      easyPayProviderLabel: null,
+      userLabel: "패키지 사용",
+      adminLabel: "패키지 사용",
+    };
   }
 
   const provider = normalize(params.provider);
@@ -136,13 +150,23 @@ export function getPaymentDisplaySummary(params: PaymentDisplayInput): PaymentDi
   const cardDisplayName = getPaymentCardDisplayName(params);
   const hasBankInfo = Boolean(cleanText(params.bank) || cleanText(params.depositor));
   const isProviderOnly = ["nicepay", "tosspayments", "toss"].includes(provider);
-  const primaryLabel = hasBankInfo && !isProviderOnly ? "무통장입금" : getMethodBaseLabel(params.method, params.easyPayProvider);
-  const safePrimaryLabel = isProviderOnly && primaryLabel === "결제 정보 확인 필요" ? "카드/간편결제" : primaryLabel;
-  const userLabel = [safePrimaryLabel, cardDisplayName || easyPayProviderLabel].filter(Boolean).join(" · ");
-  const adminBase = providerLabel && isProviderOnly
-    ? `${safePrimaryLabel.replace("카드결제", "카드")} / ${providerLabel}`
-    : safePrimaryLabel;
-  const adminDetail = cardDisplayName || easyPayProviderLabel || (provider === "nicepay" ? "카드정보 확인 필요" : null);
+  const primaryLabel =
+    hasBankInfo && !isProviderOnly
+      ? "무통장입금"
+      : getMethodBaseLabel(params.method, params.easyPayProvider);
+  const safePrimaryLabel =
+    isProviderOnly && primaryLabel === "결제 정보 확인 필요" ? "카드/간편결제" : primaryLabel;
+  const userLabel = [safePrimaryLabel, cardDisplayName || easyPayProviderLabel]
+    .filter(Boolean)
+    .join(" · ");
+  const adminBase =
+    providerLabel && isProviderOnly
+      ? `${safePrimaryLabel.replace("카드결제", "카드")} / ${providerLabel}`
+      : safePrimaryLabel;
+  const adminDetail =
+    cardDisplayName ||
+    easyPayProviderLabel ||
+    (provider === "nicepay" ? "카드정보 확인 필요" : null);
 
   return {
     primaryLabel: safePrimaryLabel,

@@ -5,7 +5,6 @@ import {
   loadStringingSettings,
   validateBookingWindow,
 } from "@/app/features/stringing-applications/lib/slotEngine";
-import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import {
   buildItemSummary,
   compactId,
@@ -15,6 +14,7 @@ import {
   previewText,
   truthyField,
 } from "@/lib/admin-alerts/formatters";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { appendAudit } from "@/lib/audit";
@@ -26,13 +26,14 @@ import {
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise, { getDb } from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
-import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 import { revertConsumption } from "@/lib/passes.service";
+import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
+import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
+import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import {
   buildCancelRefundSubject,
   recordCancelRefundSignal,
 } from "@/lib/risk/recordCancelRefundSignal";
-import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import {
   findCourierCatalogItem,
@@ -104,36 +105,96 @@ type LinkedPaymentPayload = {
   } | null;
 };
 
-
 function buildStringingAlertSummary(app: any) {
   const details = app?.stringDetails ?? {};
   const lineSummary = Array.isArray(details.lines)
     ? details.lines
         .slice(0, 3)
-        .map((line: any) => [line?.racketType, line?.stringName, [line?.tensionMain, line?.tensionCross].filter(Boolean).join("/")].filter(Boolean).join(" · "))
+        .map((line: any) =>
+          [
+            line?.racketType,
+            line?.stringName,
+            [line?.tensionMain, line?.tensionCross].filter(Boolean).join("/"),
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        )
         .filter(Boolean)
         .join("\n")
     : "";
   return lineSummary || buildItemSummary(app?.stringItems) || details.racketType || "";
 }
 
-function buildStringingAlertFields(app: any, fallback: any, guestOrderId?: string | null, guestRentalId?: string | null) {
+function buildStringingAlertFields(
+  app: any,
+  fallback: any,
+  guestOrderId?: string | null,
+  guestRentalId?: string | null,
+) {
   const details = app?.stringDetails ?? {};
   const paymentInfo = app?.paymentInfo ?? {};
   const orderId = app?.orderId || fallback?.orderId || guestOrderId;
   const rentalId = app?.rentalId || fallback?.rentalId || guestRentalId;
   const isBankTransfer = /무통장|계좌|bank|transfer/i.test(String(paymentInfo.method ?? ""));
   return [
-    truthyField("신청자명", app?.name || app?.guestName || app?.userSnapshot?.name || fallback?.name || fallback?.customerName),
-    truthyField("연락처", maskPhone(app?.phone || app?.contactPhone || app?.shippingInfo?.phone || fallback?.phone)),
-    { name: "접수 방식", value: formatCollectionMethod(app?.collectionMethod || app?.shippingInfo?.collectionMethod || fallback?.serviceType || fallback?.pickupMethod) || "확인 필요" },
-    { name: "방문 예약", value: formatVisitReservation(details.preferredDate ?? fallback?.preferredDate ?? fallback?.date, details.preferredTime ?? fallback?.preferredTime ?? fallback?.time, app?.visitDurationMinutes, app?.visitSlotCount) },
+    truthyField(
+      "신청자명",
+      app?.name ||
+        app?.guestName ||
+        app?.userSnapshot?.name ||
+        fallback?.name ||
+        fallback?.customerName,
+    ),
+    truthyField(
+      "연락처",
+      maskPhone(app?.phone || app?.contactPhone || app?.shippingInfo?.phone || fallback?.phone),
+    ),
+    {
+      name: "접수 방식",
+      value:
+        formatCollectionMethod(
+          app?.collectionMethod ||
+            app?.shippingInfo?.collectionMethod ||
+            fallback?.serviceType ||
+            fallback?.pickupMethod,
+        ) || "확인 필요",
+    },
+    {
+      name: "방문 예약",
+      value: formatVisitReservation(
+        details.preferredDate ?? fallback?.preferredDate ?? fallback?.date,
+        details.preferredTime ?? fallback?.preferredTime ?? fallback?.time,
+        app?.visitDurationMinutes,
+        app?.visitSlotCount,
+      ),
+    },
     truthyField("라켓/스트링", buildStringingAlertSummary(app)),
-    truthyField("패키지", app?.packageApplied ? `패키지 사용${app?.packageRedeemedAt ? ` · ${String(app.packageRedeemedAt)}` : ""}` : ""),
+    truthyField(
+      "패키지",
+      app?.packageApplied
+        ? `패키지 사용${app?.packageRedeemedAt ? ` · ${String(app.packageRedeemedAt)}` : ""}`
+        : "",
+    ),
     truthyField("결제상태", app?.paymentStatus),
-    truthyField("결제수단", [paymentInfo.method, isBankTransfer ? paymentInfo.bank : "", isBankTransfer ? paymentInfo.depositor : ""].filter(Boolean).join(" · ")),
+    truthyField(
+      "결제수단",
+      [
+        paymentInfo.method,
+        isBankTransfer ? paymentInfo.bank : "",
+        isBankTransfer ? paymentInfo.depositor : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ),
     truthyField("요청사항", previewText(details.requirements, 100)),
-    { name: "연결 여부", value: orderId ? `주문 연결 ${compactId(orderId)}` : rentalId ? `대여 연결 ${compactId(rentalId)}` : "단독 신청" },
+    {
+      name: "연결 여부",
+      value: orderId
+        ? `주문 연결 ${compactId(orderId)}`
+        : rentalId
+          ? `대여 연결 ${compactId(rentalId)}`
+          : "단독 신청",
+    },
   ].filter(Boolean) as Array<{ name: string; value: string }>;
 }
 
@@ -462,7 +523,8 @@ async function prepareStandaloneStringingCancellation(params: {
           {
             ok: false,
             errorCode: "NICE_CANCEL_CONFIG_MISSING",
-            message: "NICE 취소 설정이 누락되어 취소를 진행할 수 없습니다. 환경설정을 확인해 주세요.",
+            message:
+              "NICE 취소 설정이 누락되어 취소를 진행할 수 없습니다. 환경설정을 확인해 주세요.",
           },
           { status: 502 },
         ),
@@ -504,7 +566,8 @@ async function prepareStandaloneStringingCancellation(params: {
             {
               ok: false,
               errorCode: "NICE_CANCEL_FAILED",
-              message: resultMsg || "NICE 결제 취소가 완료되지 않아 신청 취소를 반영할 수 없습니다.",
+              message:
+                resultMsg || "NICE 결제 취소가 완료되지 않아 신청 취소를 반영할 수 없습니다.",
               data: { resultCode: resultCode || null, resultMsg: resultMsg || null },
             },
             { status: 400 },
@@ -522,7 +585,10 @@ async function prepareStandaloneStringingCancellation(params: {
         niceSync: {
           ...(paymentInfo?.niceSync ?? {}),
           lastSyncedAt: now.toISOString(),
-          source: mode === "request_approve" ? "stringing_cancel_approve" : "stringing_admin_direct_cancel",
+          source:
+            mode === "request_approve"
+              ? "stringing_cancel_approve"
+              : "stringing_admin_direct_cancel",
           pgStatus,
           resultCode: resultCode || "0000",
           resultMsg: resultMsg || null,
@@ -1132,34 +1198,87 @@ export async function handleGetStringingApplication(req: Request, id: string) {
               .collection("products")
               .findOne(
                 { _id: new ObjectId(productId) },
-                { projection: { name: 1, mountingFee: 1 } },
+                { projection: { name: 1, price: 1, inventory: 1, mountingFee: 1 } },
               )
           : null;
+        const effectivePrice = prod ? getEffectiveProductPrice(prod) : null;
+        const priceMeta = prod ? getProductPriceDisplayMeta(prod) : {};
+
         return {
           id: productId,
           name: oi.name ?? prod?.name ?? "알 수 없는 상품",
           mountingFee: prod?.mountingFee ?? 0,
+          effectivePrice,
+          regularPrice: priceMeta.regularPrice ?? null,
+          salePrice: priceMeta.salePrice ?? null,
+          discountAmount: priceMeta.discountAmount ?? null,
+          discountRate: priceMeta.discountRate ?? null,
         };
       }),
     );
-    const linkedOrderItems = rawOrderItems.map((oi) => ({
-      id: String(oi.productId ?? oi.id ?? ""),
-      productName: String(oi.name ?? oi.productName ?? "주문 상품"),
-      quantity: typeof oi.quantity === "number" ? oi.quantity : 1,
-      price: typeof oi.price === "number" ? oi.price : null,
-      stringPrice: typeof oi.stringPrice === "number" ? oi.stringPrice : null,
-      stringingFee:
-        typeof oi.stringingFee === "number"
-          ? oi.stringingFee
-          : typeof oi.mountingFee === "number"
-            ? oi.mountingFee
-            : null,
-      selectedGauge: oi.selectedGauge ?? null,
-      selectedColor: oi.selectedColor ?? null,
-      selectedColorLabel: oi.selectedColorLabel ?? oi.selectedColor ?? null,
-      stringName: oi.stringName ?? oi.selectedStringName ?? null,
-      racketName: oi.racketName ?? oi.name ?? oi.productName ?? null,
-    }));
+    const orderStringMetaById = new Map(orderStrings.map((item) => [String(item.id), item]));
+    const linkedOrderItems = rawOrderItems.map((oi) => {
+      const productId = String(oi.productId ?? oi.id ?? "").trim();
+      const meta = orderStringMetaById.get(productId);
+
+      const snapshotPrice =
+        typeof oi.price === "number" && Number.isFinite(oi.price) ? oi.price : null;
+
+      const metaRegularPrice =
+        typeof meta?.regularPrice === "number" && Number.isFinite(meta.regularPrice)
+          ? meta.regularPrice
+          : null;
+
+      const metaSalePrice =
+        typeof meta?.salePrice === "number" && Number.isFinite(meta.salePrice)
+          ? meta.salePrice
+          : null;
+
+      const metaEffectivePrice =
+        typeof meta?.effectivePrice === "number" && Number.isFinite(meta.effectivePrice)
+          ? meta.effectivePrice
+          : null;
+
+      const displayPrice =
+        metaSalePrice !== null &&
+        metaRegularPrice !== null &&
+        snapshotPrice !== null &&
+        snapshotPrice === metaRegularPrice
+          ? metaSalePrice
+          : (snapshotPrice ?? metaEffectivePrice);
+
+      const hasDiscount =
+        displayPrice !== null && metaRegularPrice !== null && metaRegularPrice > displayPrice;
+
+      return {
+        id: productId,
+        productName: String(oi.name ?? oi.productName ?? "주문 상품"),
+        quantity: typeof oi.quantity === "number" ? oi.quantity : 1,
+
+        // 기존 호환용. 화면에서는 이 값을 판매가로 사용.
+        price: displayPrice,
+
+        regularPrice: hasDiscount ? metaRegularPrice : null,
+        salePrice: hasDiscount ? displayPrice : null,
+        discountAmount: hasDiscount ? metaRegularPrice - displayPrice : null,
+        discountRate: hasDiscount
+          ? Math.round(((metaRegularPrice - displayPrice) / metaRegularPrice) * 100)
+          : null,
+
+        stringPrice: typeof oi.stringPrice === "number" ? oi.stringPrice : null,
+        stringingFee:
+          typeof oi.stringingFee === "number"
+            ? oi.stringingFee
+            : typeof oi.mountingFee === "number"
+              ? oi.mountingFee
+              : null,
+        selectedGauge: oi.selectedGauge ?? null,
+        selectedColor: oi.selectedColor ?? null,
+        selectedColorLabel: oi.selectedColorLabel ?? oi.selectedColor ?? null,
+        stringName: oi.stringName ?? oi.selectedStringName ?? null,
+        racketName: oi.racketName ?? oi.name ?? oi.productName ?? null,
+      };
+    });
 
     const linkedOrderPickupMethod = (() => {
       if (!order) return null;
@@ -2300,7 +2419,10 @@ export async function handleStringingAdminCancel(
     }
 
     if (appDoc.status === "교체완료") {
-      return NextResponse.json({ error: "교체완료 상태의 신청은 직접 취소할 수 없습니다." }, { status: 400 });
+      return NextResponse.json(
+        { error: "교체완료 상태의 신청은 직접 취소할 수 없습니다." },
+        { status: 400 },
+      );
     }
 
     if (appDoc.status === "작업 중") {
@@ -2371,31 +2493,30 @@ export async function handleStringingAdminCancel(
       description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason} ${adminCancelRefundNote}`,
     };
 
-    await col.updateOne(
-      { _id },
-      {
-        $set: {
-          status: "취소",
-          cancelRequest: cancellation.updatedCancelRequest,
-          ...cancellation.paymentUpdateFields,
-          adminCancel: {
-            reason,
-            canceledAt: now,
-            canceledBy: adminAuth.userId,
-            paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
-            paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
-            paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
-            refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
-            refundMethod: cancellation.niceCancelSucceeded ? "nicepay_cancelled" : refundContext.refundMethod,
-            refundNote: adminCancelRefundNote,
-          },
-          ...variantRestore.setFields,
-          ...gaugeRestore.setFields,
-          ...colorRestore.setFields,
+    await col.updateOne({ _id }, {
+      $set: {
+        status: "취소",
+        cancelRequest: cancellation.updatedCancelRequest,
+        ...cancellation.paymentUpdateFields,
+        adminCancel: {
+          reason,
+          canceledAt: now,
+          canceledBy: adminAuth.userId,
+          paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
+          paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
+          paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
+          refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
+          refundMethod: cancellation.niceCancelSucceeded
+            ? "nicepay_cancelled"
+            : refundContext.refundMethod,
+          refundNote: adminCancelRefundNote,
         },
-        $push: { history: historyEntry as any },
-      } as any,
-    );
+        ...variantRestore.setFields,
+        ...gaugeRestore.setFields,
+        ...colorRestore.setFields,
+      },
+      $push: { history: historyEntry as any },
+    } as any);
 
     await appendAdminAudit(
       db,
@@ -2415,7 +2536,9 @@ export async function handleStringingAdminCancel(
           paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
           paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
           refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
-          refundMethod: cancellation.niceCancelSucceeded ? "nicepay_cancelled" : refundContext.refundMethod,
+          refundMethod: cancellation.niceCancelSucceeded
+            ? "nicepay_cancelled"
+            : refundContext.refundMethod,
           metadata: {
             actor: {
               id: String(adminAuth.userId),
@@ -2445,7 +2568,9 @@ export async function handleStringingAdminCancel(
       status: "approved",
       metadata: {
         refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
-        refundMethod: cancellation.niceCancelSucceeded ? "nicepay_cancelled" : refundContext.refundMethod,
+        refundMethod: cancellation.niceCancelSucceeded
+          ? "nicepay_cancelled"
+          : refundContext.refundMethod,
         paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
         paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
         paymentProviderAtCancel: refundContext.paymentProviderAtCancel,

@@ -50,9 +50,16 @@ export function PaymentSettingsTab({
 
   return (
     <TabsContent value="payment">
-      <AdminPageSection title="결제 설정" description="현재 운영 결제 연동은 NICEPay 기준으로 관리됩니다.">
+      <AdminPageSection
+        title="결제 설정"
+        description="현재 운영 결제 연동은 NICEPay 기준으로 관리됩니다."
+      >
         {error.message && (
-          <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}>{error.message}</div>
+          <div
+            className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}
+          >
+            {error.message}
+          </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-4">

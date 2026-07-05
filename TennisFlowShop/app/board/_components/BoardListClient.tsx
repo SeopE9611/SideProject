@@ -810,7 +810,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             <h1 className="font-semibold text-ui-page-title tracking-normal text-foreground md:text-ui-page-title-lg">
               {config.boardTitle}
             </h1>
-            <p className="mt-1 text-ui-body-sm text-foreground md:text-ui-body-lg">{config.boardDescription}</p>
+            <p className="mt-1 text-ui-body-sm text-foreground md:text-ui-body-lg">
+              {config.boardDescription}
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -986,7 +988,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     >
                       <div className="flex items-center gap-2">
                         <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-ui-body-sm font-medium text-foreground">상세 필터</span>
+                        <span className="text-ui-body-sm font-medium text-foreground">
+                          상세 필터
+                        </span>
                         {activeMarketFilterCount > 0 && (
                           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-ui-caption font-semibold tabular-nums text-primary-foreground">
                             {activeMarketFilterCount}
@@ -1057,8 +1061,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       <div className="px-4 py-3">
                         <div className="mb-3 flex items-center gap-2">
                           <div className="h-1 w-1 rounded-full bg-primary" />
-                          <span className="text-ui-label font-semibold text-foreground">기본 필터</span>
-                          <span className="text-ui-label text-foreground/75">판매상태, 등급, 가격</span>
+                          <span className="text-ui-label font-semibold text-foreground">
+                            기본 필터
+                          </span>
+                          <span className="text-ui-label text-foreground/75">
+                            판매상태, 등급, 가격
+                          </span>
                         </div>
                         <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
                           <FilterSelectGroup
@@ -1122,7 +1130,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                               <span className="text-ui-label font-semibold text-foreground">
                                 라켓 상세 조건
                               </span>
-                              <span className="text-ui-label text-foreground/75">모델, 스펙, 사이즈</span>
+                              <span className="text-ui-label text-foreground/75">
+                                모델, 스펙, 사이즈
+                              </span>
                               {hasRacketDetailApplied && (
                                 <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-ui-micro font-medium text-info">
                                   적용됨
@@ -1684,7 +1694,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                 {post.title}
                               </span>
                               {post.commentsCount ? (
-                                <span className="text-ui-label text-primary">[{post.commentsCount}]</span>
+                                <span className="text-ui-label text-primary">
+                                  [{post.commentsCount}]
+                                </span>
                               ) : null}
                               {post.images && post.images.length > 0 && (
                                 <ImageIcon

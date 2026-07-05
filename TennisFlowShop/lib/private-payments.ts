@@ -42,14 +42,24 @@ export type PrivatePayment = {
   history: Array<{ status: string; date: Date; description: string }>;
 };
 
-
 export type PrivatePaymentDocument = PrivatePayment & {
   _id: ObjectId;
 };
 
 export type SerializedPrivatePayment = Omit<
   PrivatePayment,
-  "_id" | "createdBy" | "archivedBy" | "createdAt" | "updatedAt" | "expiresAt" | "archivedAt" | "paidAt" | "canceledAt" | "offlineLink" | "cancellationInfo" | "history"
+  | "_id"
+  | "createdBy"
+  | "archivedBy"
+  | "createdAt"
+  | "updatedAt"
+  | "expiresAt"
+  | "archivedAt"
+  | "paidAt"
+  | "canceledAt"
+  | "offlineLink"
+  | "cancellationInfo"
+  | "history"
 > & {
   _id: string;
   id: string;
@@ -68,7 +78,10 @@ export type SerializedPrivatePayment = Omit<
     linkedAt: string;
     linkedBy: string;
   };
-  cancellationInfo?: Omit<NonNullable<PrivatePayment["cancellationInfo"]>, "requestedAt" | "canceledAt" | "failedAt" | "requestedBy"> & {
+  cancellationInfo?: Omit<
+    NonNullable<PrivatePayment["cancellationInfo"]>,
+    "requestedAt" | "canceledAt" | "failedAt" | "requestedBy"
+  > & {
     requestedAt?: string;
     canceledAt?: string;
     failedAt?: string;
@@ -79,7 +92,13 @@ export type SerializedPrivatePayment = Omit<
 
 type PrivatePaymentInputBody = Partial<
   Record<
-    "title" | "amount" | "description" | "customerName" | "customerPhone" | "customerEmail" | "expiresAt",
+    | "title"
+    | "amount"
+    | "description"
+    | "customerName"
+    | "customerPhone"
+    | "customerEmail"
+    | "expiresAt",
     unknown
   >
 >;
@@ -98,9 +117,7 @@ export function privatePayments(db: Db) {
   return db.collection<PrivatePayment>("privatePayments");
 }
 
-export function serializePrivatePayment(
-  doc: PrivatePaymentDocument,
-): SerializedPrivatePayment {
+export function serializePrivatePayment(doc: PrivatePaymentDocument): SerializedPrivatePayment {
   const id = doc._id.toString();
 
   return {
@@ -149,7 +166,8 @@ export function validatePrivatePaymentInput(body: unknown, options: { partial?: 
   const errors: string[] = [];
   const input: Record<string, string | number> = {};
   const source = asPrivatePaymentInputBody(body);
-  const has = (key: keyof PrivatePaymentInputBody) => Object.prototype.hasOwnProperty.call(source, key);
+  const has = (key: keyof PrivatePaymentInputBody) =>
+    Object.prototype.hasOwnProperty.call(source, key);
 
   if (!options.partial || has("title")) {
     const title = String(source.title ?? "").trim();
@@ -159,7 +177,8 @@ export function validatePrivatePaymentInput(body: unknown, options: { partial?: 
 
   if (!options.partial || has("amount")) {
     const amount = normalizeAmount(source.amount);
-    if (!Number.isInteger(amount) || amount < 1000) errors.push("금액은 1,000원 이상의 정수로 입력해 주세요.");
+    if (!Number.isInteger(amount) || amount < 1000)
+      errors.push("금액은 1,000원 이상의 정수로 입력해 주세요.");
     else input.amount = amount;
   }
 

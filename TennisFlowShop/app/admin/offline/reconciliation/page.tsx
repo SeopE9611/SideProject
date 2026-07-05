@@ -11,22 +11,22 @@ export const metadata: Metadata = { title: "오프라인 보정 필요 항목" }
 export default function OfflineReconciliationPage() {
   return (
     <AdminPageShell>
-        <AdminPageHeader
-          title="오프라인 보정 필요 항목"
-          description="오프라인 패키지 발급 실패, 패키지 사용 연결 누락 등 운영 확인이 필요한 항목을 관리합니다."
-          icon={AlertTriangle}
-          scope="범위: 조회/확인 상태/메모 관리"
-          helperText="확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다."
-          actions={
-            <Button asChild variant="outline">
-              <Link href="/admin/offline">
-                <ArrowLeft className="h-4 w-4" />
-                오프라인 관리로 돌아가기
-              </Link>
-            </Button>
-          }
-        />
-        <OfflineReconciliationClient />
+      <AdminPageHeader
+        title="오프라인 보정 필요 항목"
+        description="오프라인 패키지 발급 실패, 패키지 사용 연결 누락 등 운영 확인이 필요한 항목을 관리합니다."
+        icon={AlertTriangle}
+        scope="범위: 조회/확인 상태/메모 관리"
+        helperText="확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다."
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/admin/offline">
+              <ArrowLeft className="h-4 w-4" />
+              오프라인 관리로 돌아가기
+            </Link>
+          </Button>
+        }
+      />
+      <OfflineReconciliationClient />
     </AdminPageShell>
   );
 }

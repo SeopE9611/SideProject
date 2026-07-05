@@ -275,7 +275,19 @@ export default async function CheckoutSuccessPage({
                   { status: { $nin: submittedStatusExclusions } },
                 ],
               },
-              { projection: { _id: 1, inboundRequired: 1, needsInboundTracking: 1, shippingInfo: 1, collectionMethod: 1, status: 1, orderId: 1, rentalId: 1 }, sort: { createdAt: -1, _id: -1 } },
+              {
+                projection: {
+                  _id: 1,
+                  inboundRequired: 1,
+                  needsInboundTracking: 1,
+                  shippingInfo: 1,
+                  collectionMethod: 1,
+                  status: 1,
+                  orderId: 1,
+                  rentalId: 1,
+                },
+                sort: { createdAt: -1, _id: -1 },
+              },
             ),
         })
       : null;
@@ -295,7 +307,18 @@ export default async function CheckoutSuccessPage({
                   _id: new ObjectId(orderStringingApplicationId),
                   status: { $nin: submittedStatusExclusions },
                 },
-                { projection: { _id: 1, inboundRequired: 1, needsInboundTracking: 1, shippingInfo: 1, collectionMethod: 1, status: 1, orderId: 1, rentalId: 1 } },
+                {
+                  projection: {
+                    _id: 1,
+                    inboundRequired: 1,
+                    needsInboundTracking: 1,
+                    shippingInfo: 1,
+                    collectionMethod: 1,
+                    status: 1,
+                    orderId: 1,
+                    rentalId: 1,
+                  },
+                },
               ),
           })
         : null;
@@ -331,10 +354,10 @@ export default async function CheckoutSuccessPage({
         : inboundRequired && representativeApp?.collectionMethod !== "visit";
     const hasTracking = Boolean(
       representativeApp?.shippingInfo?.selfShip?.trackingNo ||
-        representativeApp?.shippingInfo?.selfShip?.trackingNumber ||
-        representativeApp?.shippingInfo?.selfShip?.invoiceNumber ||
-        representativeApp?.shippingInfo?.trackingNo ||
-        representativeApp?.shippingInfo?.trackingNumber,
+      representativeApp?.shippingInfo?.selfShip?.trackingNumber ||
+      representativeApp?.shippingInfo?.selfShip?.invoiceNumber ||
+      representativeApp?.shippingInfo?.trackingNo ||
+      representativeApp?.shippingInfo?.trackingNumber,
     );
     const applicationShippingHref = representativeStringingApplicationId
       ? `/services/applications/${representativeStringingApplicationId}/shipping?return=${encodeURIComponent(orderDetailHref)}`
@@ -603,7 +626,11 @@ export default async function CheckoutSuccessPage({
               status="success"
               icon={<CheckCircle className="h-6 w-6" />}
               title="주문이 완료되었습니다"
-              description={withStringService ? "주문과 연결된 교체서비스 진행 상태를 함께 확인해주세요." : "주문 번호와 결제 상태, 다음 단계를 확인해주세요."}
+              description={
+                withStringService
+                  ? "주문과 연결된 교체서비스 진행 상태를 함께 확인해주세요."
+                  : "주문 번호와 결제 상태, 다음 단계를 확인해주세요."
+              }
               className="py-8 sm:py-10"
             />
           </SiteContainer>
@@ -685,7 +712,9 @@ export default async function CheckoutSuccessPage({
                   </div>
 
                   <div className="mb-6 rounded-xl bg-primary/5 p-4 md:p-5">
-                    <h3 className="text-ui-card-title font-semibold text-foreground">현재 상태와 다음 단계</h3>
+                    <h3 className="text-ui-card-title font-semibold text-foreground">
+                      현재 상태와 다음 단계
+                    </h3>
                     <div className="mt-3 grid gap-3 text-ui-body-sm leading-relaxed md:grid-cols-3">
                       <div className="rounded-xl bg-card/60 p-3">
                         <p className="font-semibold text-foreground">현재 상태</p>
@@ -704,7 +733,12 @@ export default async function CheckoutSuccessPage({
                       <Button asChild className="min-h-11 flex-1" wrap="responsive">
                         <Link href={progressGuide.primaryHref}>{progressGuide.primaryLabel}</Link>
                       </Button>
-                      <Button asChild variant="outline" className="min-h-11 flex-1" wrap="responsive">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="min-h-11 flex-1"
+                        wrap="responsive"
+                      >
                         <Link href="/support">고객센터 문의하기</Link>
                       </Button>
                     </div>
@@ -826,7 +860,9 @@ export default async function CheckoutSuccessPage({
                           {cardDisplayName && (
                             <p>
                               <span className="text-muted-foreground">카드사:</span>{" "}
-                              <span className="font-semibold text-foreground">{cardDisplayName}</span>
+                              <span className="font-semibold text-foreground">
+                                {cardDisplayName}
+                              </span>
                             </p>
                           )}
                           {easyPayProviderLabel && (
@@ -916,8 +952,12 @@ export default async function CheckoutSuccessPage({
                               )}
                             </div>
                             <div className="shrink-0 text-left bp-sm:text-right">
-                              <p className="text-ui-price font-semibold text-primary">{totalItemPrice}원</p>
-                              <p className="text-ui-body-sm text-muted-foreground">단가: {itemPrice}원</p>
+                              <p className="text-ui-price font-semibold text-primary">
+                                {totalItemPrice}원
+                              </p>
+                              <p className="text-ui-body-sm text-muted-foreground">
+                                단가: {itemPrice}원
+                              </p>
                             </div>
                           </div>
                         );
@@ -1102,7 +1142,9 @@ export default async function CheckoutSuccessPage({
                       )}
                       {showDeliveryOnlyFields && order.shippingInfo?.deliveryRequest && (
                         <div className="py-3">
-                          <span className="text-ui-body-sm text-muted-foreground">배송 요청사항:</span>
+                          <span className="text-ui-body-sm text-muted-foreground">
+                            배송 요청사항:
+                          </span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo.deliveryRequest}
                           </span>
@@ -1177,7 +1219,9 @@ export default async function CheckoutSuccessPage({
                       wrap="responsive"
                     >
                       <Link
-                        href={isLoggedIn ? "/mypage?tab=orders" : `/order-lookup/details/${order._id}`}
+                        href={
+                          isLoggedIn ? "/mypage?tab=orders" : `/order-lookup/details/${order._id}`
+                        }
                         className="flex items-center gap-2"
                       >
                         <Package className="h-5 w-5" />
@@ -1291,7 +1335,9 @@ export default async function CheckoutSuccessPage({
                 <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
                   <CheckCircle className="h-12 w-12 text-foreground" />
                 </div>
-                <h1 className="text-ui-page-title md:text-ui-page-title-lg font-semibold mb-4">주문이 접수되었습니다</h1>
+                <h1 className="text-ui-page-title md:text-ui-page-title-lg font-semibold mb-4">
+                  주문이 접수되었습니다
+                </h1>
                 <p className="mb-4 md:mb-6 text-ui-section-title text-muted-foreground">
                   결제가 정상 처리되었습니다.
                 </p>

@@ -165,13 +165,17 @@ export default function AdminAuditClient() {
       )}
 
       {!error && !data && (
-        <div className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}>
+        <div
+          className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}
+        >
           불러오는 중...
         </div>
       )}
 
       {!!data && data.items.length === 0 && (
-        <div className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}>
+        <div
+          className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}
+        >
           조회 결과가 없습니다.
         </div>
       )}

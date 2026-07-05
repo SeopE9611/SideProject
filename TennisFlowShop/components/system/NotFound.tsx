@@ -13,7 +13,9 @@ export default function NotFound() {
 
         {/* 제목 */}
         <div>
-          <h2 className="text-ui-page-title sm:text-ui-page-title-lg font-semibold">페이지를 찾을 수 없습니다.</h2>
+          <h2 className="text-ui-page-title sm:text-ui-page-title-lg font-semibold">
+            페이지를 찾을 수 없습니다.
+          </h2>
         </div>
 
         {/* 설명 문구 */}

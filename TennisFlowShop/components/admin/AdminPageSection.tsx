@@ -57,7 +57,9 @@ export default function AdminPageSection({
       <CardHeader className={adminSurface.detailHeader}>
         <AdminSectionHeader title={title} description={description} icon={icon} actions={actions} />
       </CardHeader>
-      <CardContent className={cn(adminSurface.detailContent, contentClassName)}>{children}</CardContent>
+      <CardContent className={cn(adminSurface.detailContent, contentClassName)}>
+        {children}
+      </CardContent>
     </Card>
   );
 }

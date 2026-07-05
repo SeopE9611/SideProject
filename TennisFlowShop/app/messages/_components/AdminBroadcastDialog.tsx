@@ -131,7 +131,10 @@ export default function AdminBroadcastDialog({
 
         <div className="grid gap-5 py-4">
           <div className="grid gap-2.5">
-            <label htmlFor="broadcast-title" className="text-ui-body-sm font-semibold text-foreground">
+            <label
+              htmlFor="broadcast-title"
+              className="text-ui-body-sm font-semibold text-foreground"
+            >
               제목
             </label>
             <Input
@@ -144,7 +147,10 @@ export default function AdminBroadcastDialog({
           </div>
 
           <div className="grid gap-2.5">
-            <label htmlFor="broadcast-body" className="text-ui-body-sm font-semibold text-foreground">
+            <label
+              htmlFor="broadcast-body"
+              className="text-ui-body-sm font-semibold text-foreground"
+            >
               내용
             </label>
             <Textarea

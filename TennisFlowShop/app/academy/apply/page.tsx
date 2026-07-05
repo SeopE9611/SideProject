@@ -1,12 +1,4 @@
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Users,
-  Wallet,
-} from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2, Clock, MapPin, Users, Wallet } from "lucide-react";
 import { ObjectId, type Db, type Document } from "mongodb";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -334,17 +326,17 @@ export default async function AcademyApplyPage({
             description="신청 전 아래 내용을 확인해 주세요."
             contentClassName="pt-0"
           >
-                <ul className="space-y-2">
-                  {notices.map((notice, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start gap-2 text-ui-body-sm leading-relaxed text-muted-foreground"
-                    >
-                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
-                      <span>{notice}</span>
-                    </li>
-                  ))}
-                </ul>
+            <ul className="space-y-2">
+              {notices.map((notice, index) => (
+                <li
+                  key={index}
+                  className="flex items-start gap-2 text-ui-body-sm leading-relaxed text-muted-foreground"
+                >
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
+                  <span>{notice}</span>
+                </li>
+              ))}
+            </ul>
           </SummaryCard>
 
           {/* Duplicate Application Warning */}

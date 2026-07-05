@@ -361,16 +361,16 @@ export default function OfflineReconciliationClient() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2 rounded-2xl border border-warning/40 bg-warning/5 p-4 text-foreground/80 md:flex-row md:items-center">
-          <ShieldAlert className="h-5 w-5 shrink-0 text-warning" />
-          <div>
-            <p className="font-semibold text-foreground">
-              보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한 항목입니다.
-            </p>
-            <p className={adminTypography.caption}>
-              확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동 재발급/자동 환불은 이번
-              화면에서 수행하지 않습니다.
-            </p>
-          </div>
+        <ShieldAlert className="h-5 w-5 shrink-0 text-warning" />
+        <div>
+          <p className="font-semibold text-foreground">
+            보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한 항목입니다.
+          </p>
+          <p className={adminTypography.caption}>
+            확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동 재발급/자동 환불은 이번
+            화면에서 수행하지 않습니다.
+          </p>
+        </div>
       </div>
 
       <div className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-2 p-3`}>
@@ -421,7 +421,9 @@ export default function OfflineReconciliationClient() {
           무시
         </Button>
       </div>
-      <div className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 ${adminTypography.body}`}>
+      <div
+        className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 ${adminTypography.body}`}
+      >
         <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
 
         {submitted.from || submitted.to ? (
@@ -442,83 +444,87 @@ export default function OfflineReconciliationClient() {
           </span>
         </div>
       </div>
-      <AdminPageSection title="필터" description="유형, 상태, 기간으로 보정 대상 목록을 조정합니다." icon={Search}>
-          <div className="grid gap-3 md:grid-cols-5">
-            <div className="space-y-1.5">
-              <Label htmlFor="type">유형</Label>
-              <Select
-                id="type"
-                value={filters.type}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    type: e.target.value as TypeFilter,
-                  }))
-                }
-              >
-                {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="status">상태</Label>
-              <Select
-                id="status"
-                value={filters.status}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    status: e.target.value as StatusFilter,
-                  }))
-                }
-              >
-                {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="from">시작일</Label>
-              <Input
-                id="from"
-                type="date"
-                value={filters.from}
-                onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="to">종료일</Label>
-              <Input
-                id="to"
-                type="date"
-                value={filters.to}
-                onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
-              />
-            </div>
-            <div className="flex items-end gap-2">
-              <Button
-                type="button"
-                className="flex-1"
-                onClick={() => {
-                  setSubmitted(filters);
-                  setPage(1);
-                  setMessage(null);
-                }}
-              >
-                <Search className="h-4 w-4" />
-                검색
-              </Button>
-              <Button type="button" variant="outline" onClick={resetFilters}>
-                <RefreshCcw className="h-4 w-4" />
-                초기화
-              </Button>
-            </div>
+      <AdminPageSection
+        title="필터"
+        description="유형, 상태, 기간으로 보정 대상 목록을 조정합니다."
+        icon={Search}
+      >
+        <div className="grid gap-3 md:grid-cols-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="type">유형</Label>
+            <Select
+              id="type"
+              value={filters.type}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  type: e.target.value as TypeFilter,
+                }))
+              }
+            >
+              {Object.entries(TYPE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="status">상태</Label>
+            <Select
+              id="status"
+              value={filters.status}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  status: e.target.value as StatusFilter,
+                }))
+              }
+            >
+              {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="from">시작일</Label>
+            <Input
+              id="from"
+              type="date"
+              value={filters.from}
+              onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="to">종료일</Label>
+            <Input
+              id="to"
+              type="date"
+              value={filters.to}
+              onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
+            />
+          </div>
+          <div className="flex items-end gap-2">
+            <Button
+              type="button"
+              className="flex-1"
+              onClick={() => {
+                setSubmitted(filters);
+                setPage(1);
+                setMessage(null);
+              }}
+            >
+              <Search className="h-4 w-4" />
+              검색
+            </Button>
+            <Button type="button" variant="outline" onClick={resetFilters}>
+              <RefreshCcw className="h-4 w-4" />
+              초기화
+            </Button>
+          </div>
+        </div>
       </AdminPageSection>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -564,149 +570,153 @@ export default function OfflineReconciliationClient() {
       </div>
 
       {message && (
-        <div className={`${adminSurface.cardMuted} p-3 ${adminTypography.metaMuted}`} >
+        <div className={`${adminSurface.cardMuted} p-3 ${adminTypography.metaMuted}`}>
           {message}
         </div>
       )}
 
-      <AdminPageSection title="보정 필요 목록" description="확인 상태, 메모, 관련 상세 이동을 한 곳에서 관리합니다." icon={AlertTriangle}>
-          {isLoading && (
-            <div className="rounded-xl border border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
-              보정 항목을 불러오는 중...
-            </div>
-          )}
-          {error && !isLoading && (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">
-              보정 항목을 불러오지 못했습니다.
-            </div>
-          )}
-          {!isLoading && !error && (data?.items.length ?? 0) === 0 && (
-            <div className="rounded-xl border border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
-              조회 조건에 해당하는 보정 필요 항목이 없습니다.
-            </div>
-          )}
-          {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
-            <div className={`${adminSurface.tableCard} overflow-x-auto`}>
-              <table className={`w-full min-w-[1180px] table-fixed ${adminTypography.body}`}>
-                <thead className={adminSurface.tableHeader}>
-                  <tr>
-                    <th className={adminDataTable.headCenter}>유형</th>
-                    <th className={adminDataTable.headCenter}>상태</th>
-                    <th className={adminDataTable.headCenter}>심각도</th>
-                    <th className={adminDataTable.headRight}>발생일</th>
-                    <th className={adminDataTable.head}>고객</th>
-                    <th className={adminDataTable.head}>내용</th>
-                    <th className={adminDataTable.headRight}>금액/패키지명</th>
-                    <th className={adminDataTable.head}>에러/사유</th>
-                    <th className={adminDataTable.actionHead}>관리</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {data!.items.map((item) => {
-                    const note = notes[item.id] ?? item.note ?? "";
-                    return (
-                      <tr
-                        key={`${item.type}-${item.id}`}
-                        className={cn(adminDataTable.row, updatingId === item.id && "opacity-60")}
-                      >
-                        <td className={adminDataTable.cellCenter}>
-                          <Badge variant="info">{TYPE_LABELS[item.type]}</Badge>
-                        </td>
-                        <td className={adminDataTable.cellCenter}>
-                          <Badge variant={statusVariant(item.status)}>
-                            {STATUS_LABELS[item.status]}
-                          </Badge>
-                        </td>
-                        <td className={adminDataTable.cellCenter}>
-                          <Badge variant={severityVariant(item.severity)}>
-                            {SEVERITY_LABELS[item.severity]}
-                          </Badge>
-                        </td>
-                        <td className={adminDataTable.dateCell}>
-                          {formatDate(
-                            stringValue(
-                              item.metadata.failedAt ?? item.metadata.occurredAt ?? item.updatedAt,
-                              "",
-                            ),
-                          )}
-                        </td>
-                        <td className={adminDataTable.cellTopLeft}>
-                          <p className="font-medium">{item.customer.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.customer.phoneMasked ?? "연락처 없음"}
-                          </p>
-                        </td>
-                        <td className={adminDataTable.cellTopLeft}>
-                          <p className="font-medium">{item.title}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {item.type === "package_usage"
-                              ? stringValue(item.metadata.lineSummary)
-                              : item.description}
-                          </p>
-                        </td>
-                        <td className={adminDataTable.cellRight}>
-                          <p>
-                            {item.type === "package_issue"
-                              ? stringValue(item.metadata.packageName)
-                              : `passId: ${stringValue(item.metadata.passId)}`}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.type === "package_issue"
-                              ? formatCurrency(item.metadata.amount)
-                              : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}
-                          </p>
-                        </td>
-                        <td className={adminDataTable.cellTopLeft}>
-                          {stringValue(
-                            item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
-                          )}
-                        </td>
-                        <td className={adminDataTable.actionCell}>
-                          <ItemActions
-                            item={item}
-                            note={note}
-                            setNote={(value) =>
-                              setNotes((prev) => ({
-                                ...prev,
-                                [item.id]: value,
-                              }))
-                            }
-                            onUpdate={updateItem}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div className={`mt-4 flex items-center justify-between ${adminTypography.metaMuted}`}>
-            <span>
-              총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
-              {Math.max(data?.totalPages ?? 0, 1)}페이지
-            </span>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              >
-                이전
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page >= (data?.totalPages ?? 0)}
-                onClick={() => setPage((prev) => prev + 1)}
-              >
-                다음
-              </Button>
-            </div>
+      <AdminPageSection
+        title="보정 필요 목록"
+        description="확인 상태, 메모, 관련 상세 이동을 한 곳에서 관리합니다."
+        icon={AlertTriangle}
+      >
+        {isLoading && (
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+            보정 항목을 불러오는 중...
           </div>
+        )}
+        {error && !isLoading && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">
+            보정 항목을 불러오지 못했습니다.
+          </div>
+        )}
+        {!isLoading && !error && (data?.items.length ?? 0) === 0 && (
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
+            조회 조건에 해당하는 보정 필요 항목이 없습니다.
+          </div>
+        )}
+        {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
+          <div className={`${adminSurface.tableCard} overflow-x-auto`}>
+            <table className={`w-full min-w-[1180px] table-fixed ${adminTypography.body}`}>
+              <thead className={adminSurface.tableHeader}>
+                <tr>
+                  <th className={adminDataTable.headCenter}>유형</th>
+                  <th className={adminDataTable.headCenter}>상태</th>
+                  <th className={adminDataTable.headCenter}>심각도</th>
+                  <th className={adminDataTable.headRight}>발생일</th>
+                  <th className={adminDataTable.head}>고객</th>
+                  <th className={adminDataTable.head}>내용</th>
+                  <th className={adminDataTable.headRight}>금액/패키지명</th>
+                  <th className={adminDataTable.head}>에러/사유</th>
+                  <th className={adminDataTable.actionHead}>관리</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {data!.items.map((item) => {
+                  const note = notes[item.id] ?? item.note ?? "";
+                  return (
+                    <tr
+                      key={`${item.type}-${item.id}`}
+                      className={cn(adminDataTable.row, updatingId === item.id && "opacity-60")}
+                    >
+                      <td className={adminDataTable.cellCenter}>
+                        <Badge variant="info">{TYPE_LABELS[item.type]}</Badge>
+                      </td>
+                      <td className={adminDataTable.cellCenter}>
+                        <Badge variant={statusVariant(item.status)}>
+                          {STATUS_LABELS[item.status]}
+                        </Badge>
+                      </td>
+                      <td className={adminDataTable.cellCenter}>
+                        <Badge variant={severityVariant(item.severity)}>
+                          {SEVERITY_LABELS[item.severity]}
+                        </Badge>
+                      </td>
+                      <td className={adminDataTable.dateCell}>
+                        {formatDate(
+                          stringValue(
+                            item.metadata.failedAt ?? item.metadata.occurredAt ?? item.updatedAt,
+                            "",
+                          ),
+                        )}
+                      </td>
+                      <td className={adminDataTable.cellTopLeft}>
+                        <p className="font-medium">{item.customer.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.customer.phoneMasked ?? "연락처 없음"}
+                        </p>
+                      </td>
+                      <td className={adminDataTable.cellTopLeft}>
+                        <p className="font-medium">{item.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {item.type === "package_usage"
+                            ? stringValue(item.metadata.lineSummary)
+                            : item.description}
+                        </p>
+                      </td>
+                      <td className={adminDataTable.cellRight}>
+                        <p>
+                          {item.type === "package_issue"
+                            ? stringValue(item.metadata.packageName)
+                            : `passId: ${stringValue(item.metadata.passId)}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.type === "package_issue"
+                            ? formatCurrency(item.metadata.amount)
+                            : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}
+                        </p>
+                      </td>
+                      <td className={adminDataTable.cellTopLeft}>
+                        {stringValue(
+                          item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
+                        )}
+                      </td>
+                      <td className={adminDataTable.actionCell}>
+                        <ItemActions
+                          item={item}
+                          note={note}
+                          setNote={(value) =>
+                            setNotes((prev) => ({
+                              ...prev,
+                              [item.id]: value,
+                            }))
+                          }
+                          onUpdate={updateItem}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className={`mt-4 flex items-center justify-between ${adminTypography.metaMuted}`}>
+          <span>
+            총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
+            {Math.max(data?.totalPages ?? 0, 1)}페이지
+          </span>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            >
+              이전
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page >= (data?.totalPages ?? 0)}
+              onClick={() => setPage((prev) => prev + 1)}
+            >
+              다음
+            </Button>
+          </div>
+        </div>
       </AdminPageSection>
     </div>
   );

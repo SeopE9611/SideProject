@@ -869,7 +869,9 @@ export default function CartPageClient() {
         <SiteContainer className="max-w-[1240px] py-4 bp-sm:py-5">
           <div className="space-y-4">
             <div className="min-w-0">
-              <h1 className="mb-2 text-ui-page-title font-semibold bp-sm:text-ui-page-title-lg">장바구니</h1>
+              <h1 className="mb-2 text-ui-page-title font-semibold bp-sm:text-ui-page-title-lg">
+                장바구니
+              </h1>
               <p className="max-w-2xl break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
                 담은 상품과 옵션, 수량을 확인한 뒤 주문을 진행하세요.
               </p>
@@ -891,7 +893,9 @@ export default function CartPageClient() {
             <div className="min-w-0 space-y-5">
               <Card className="rounded-2xl border border-border bg-card shadow-sm">
                 <CardHeader variant="section" className="rounded-t-2xl px-4 py-4 bp-sm:px-5">
-                  <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">장바구니 상품</CardTitle>
+                  <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">
+                    장바구니 상품
+                  </CardTitle>
                 </CardHeader>
 
                 <div className="flex h-12 items-center justify-between border-b border-border px-4 bp-sm:px-5">

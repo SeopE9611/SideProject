@@ -23,7 +23,12 @@ export default function MypageDetailCard({
   contentClassName,
 }: MypageDetailCardProps) {
   return (
-    <Card className={cn("rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50", className)}>
+    <Card
+      className={cn(
+        "rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
+        className,
+      )}
+    >
       <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
           <div className="min-w-0 space-y-1">

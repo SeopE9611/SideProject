@@ -65,7 +65,11 @@ export function NotificationItem({
           <span className="shrink-0 text-ui-label text-muted-foreground">
             {relativeTime(item.createdAt)}
           </span>
-          {unread && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-ui-label font-semibold text-primary">읽지 않음</span>}
+          {unread && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-ui-label font-semibold text-primary">
+              읽지 않음
+            </span>
+          )}
         </span>
         <span className="block line-clamp-2 break-keep text-ui-body-sm font-semibold leading-6 sm:text-ui-body text-foreground">
           {item.title}

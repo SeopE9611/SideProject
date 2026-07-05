@@ -13,7 +13,10 @@ import {
   verifyCommunityCsrf,
 } from "@/lib/community/security";
 import type { CommunityReportDocument } from "@/lib/types/community-report";
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+import {
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
 
 // 1) 인증 페이로드 유틸
 async function getAuthPayload() {

@@ -304,7 +304,12 @@ async function buildOnlineRevenueReport(
       paidAmount,
       refundedAmount,
       netAmount: paidAmount - refundedAmount,
-      count: orders.length + standaloneApps.length + packageOrders.length + rentals.length + privatePayments.paidCount,
+      count:
+        orders.length +
+        standaloneApps.length +
+        packageOrders.length +
+        rentals.length +
+        privatePayments.paidCount,
       bySource: {
         orders: ordersPaid,
         stringingApplications: appsPaid,
@@ -345,7 +350,11 @@ export async function buildRevenueReport(
   const seriesMap = new Map<string, RevenueReportSeriesPoint>();
   for (const [date, item] of onlineReport.series.entries()) {
     const onlinePaidAmount =
-      item.orders + item.stringingApplications + item.packageOrders + item.rentals + item.privatePayments;
+      item.orders +
+      item.stringingApplications +
+      item.packageOrders +
+      item.rentals +
+      item.privatePayments;
     seriesMap.set(date, {
       date,
       onlinePaidAmount,

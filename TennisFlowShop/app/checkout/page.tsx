@@ -15,11 +15,7 @@ import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import SiteContainer from "@/components/layout/SiteContainer";
-import {
-  PriceSummary,
-  SummaryCard,
-  type PriceSummaryRow,
-} from "@/components/public";
+import { PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -128,12 +124,7 @@ type CheckoutField =
   | "composition";
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 type CheckoutTouchedField =
-  | "name"
-  | "phone"
-  | "email"
-  | "postalCode"
-  | "addressDetail"
-  | "depositor";
+  "name" | "phone" | "email" | "postalCode" | "addressDetail" | "depositor";
 type CheckoutTouchedFields = Partial<Record<CheckoutTouchedField, boolean>>;
 type CheckoutPrefillUser = User & {
   phone?: string | null;
@@ -2012,7 +2003,9 @@ export default function CheckoutPage() {
                             {/* 에러 메시지 영역 */}
                             <div className="min-h-[16px]">
                               {showPostalCodeError && (
-                                <p className="text-ui-label text-destructive">{fieldErrors.postalCode}</p>
+                                <p className="text-ui-label text-destructive">
+                                  {fieldErrors.postalCode}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -2117,7 +2110,9 @@ export default function CheckoutPage() {
                         <CreditCard className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-ui-card-title-lg font-semibold">결제 정보</CardTitle>
+                        <CardTitle className="text-ui-card-title-lg font-semibold">
+                          결제 정보
+                        </CardTitle>
                         <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
                           포인트와 패키지 적용 후 결제수단을 선택하세요.
                         </CardDescription>
@@ -2237,7 +2232,9 @@ export default function CheckoutPage() {
                                   setPointsToUse(clamped);
                                 }}
                               />
-                              <span className="break-keep text-ui-body-sm text-foreground/80">P</span>
+                              <span className="break-keep text-ui-body-sm text-foreground/80">
+                                P
+                              </span>
                             </div>
                           </div>
                           <p className="break-keep text-ui-body-sm text-foreground/80">
@@ -2354,7 +2351,9 @@ export default function CheckoutPage() {
                             />
                             <div className="min-h-[16px]">
                               {showDepositorError && (
-                                <p className="text-ui-label text-destructive">{fieldErrors.depositor}</p>
+                                <p className="text-ui-label text-destructive">
+                                  {fieldErrors.depositor}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -2463,9 +2462,7 @@ export default function CheckoutPage() {
                             key={item.id}
                             className={cn(
                               "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
-                              item.state
-                                ? "bg-primary/5"
-                                : "hover:bg-muted/20",
+                              item.state ? "bg-primary/5" : "hover:bg-muted/20",
                             )}
                           >
                             <label
@@ -2598,102 +2595,102 @@ export default function CheckoutPage() {
                     )}
                     <div className="mx-auto w-full max-w-md">
                       {paymentMethod === "bank-transfer" ? (
-                          <div
-                            onPointerDownCapture={requestStringingValidationMessages}
-                            className="w-full"
-                          >
-                            <CheckoutButton
-                              buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
-                              disabled={!resolvedCanSubmit}
-                              name={name}
-                              phone={phone}
-                              email={email}
-                              postalCode={postalCode}
-                              address={address}
-                              addressDetail={addressDetail}
-                              depositor={depositor}
-                              totalPrice={totalPrice}
-                              shippingFee={shippingFee}
-                              payableAmount={payableTotalPrice}
-                              selectedBank={selectedBank}
-                              deliveryRequest={deliveryRequest}
-                              saveAddress={saveAddress}
-                              deliveryMethod={deliveryMethod}
-                              serviceTargetIds={serviceTargetIds}
-                              withStringService={withStringService}
-                              servicePickupMethod={servicePickupMethod}
-                              items={orderItems}
-                              serviceFee={finalServiceFee}
-                              pointsToUse={appliedPoints}
-                              stringingApplicationInput={stringingApplicationInput}
-                              onSubmittingChange={setIsCheckoutSubmitting}
-                              onBeforeSuccessNavigation={() =>
-                                setIsIntentionalSuccessNavigation(true)
-                              }
-                              onSuccessNavigationAbort={() =>
-                                setIsIntentionalSuccessNavigation(false)
-                              }
-                            />
-                          </div>
-                        ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                          <div
-                            onPointerDownCapture={requestStringingValidationMessages}
-                            className="w-full"
-                          >
-                            <NiceCheckoutButton
-                              buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
-                              disabled={!resolvedCanSubmit}
-                              onBeforeSuccessNavigation={() =>
-                                setIsIntentionalSuccessNavigation(true)
-                              }
-                              onSuccessNavigationAbort={() =>
-                                setIsIntentionalSuccessNavigation(false)
-                              }
-                              payableAmount={payableTotalPrice}
-                              payload={{
-                                items: orderItems.map((item) => ({
-                                  productId: item.id,
-                                  quantity: item.quantity,
-                                  kind: item.kind ?? "product",
-                                  selectedGauge: item.selectedGauge,
-                                  selectedColor: item.selectedColor,
-                                  selectedColorLabel: item.selectedColorLabel,
-                                  selectedColorHex: item.selectedColorHex,
-                                  selectedColorImage: item.selectedColorImage,
-                                })),
-                                shippingInfo: {
-                                  name: name.trim(),
-                                  phone: phone.replace(/\D/g, ""),
-                                  address: address.trim(),
-                                  addressDetail: addressDetail.trim(),
-                                  postalCode: postalCode.replace(/\D/g, ""),
-                                  depositor: "나이스결제",
-                                  deliveryRequest: deliveryRequest.trim(),
-                                  deliveryMethod,
-                                  withStringService,
-                                },
-                                paymentInfo: { method: "나이스페이" },
-                                totalPrice,
-                                shippingFee,
-                                serviceFee: finalServiceFee,
-                                pointsToUse: appliedPoints,
-                                guestInfo: !user
-                                  ? {
-                                      name: name.trim(),
-                                      phone: phone.replace(/\D/g, ""),
-                                      email: email.trim().toLowerCase(),
-                                    }
+                        <div
+                          onPointerDownCapture={requestStringingValidationMessages}
+                          className="w-full"
+                        >
+                          <CheckoutButton
+                            buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                            disabled={!resolvedCanSubmit}
+                            name={name}
+                            phone={phone}
+                            email={email}
+                            postalCode={postalCode}
+                            address={address}
+                            addressDetail={addressDetail}
+                            depositor={depositor}
+                            totalPrice={totalPrice}
+                            shippingFee={shippingFee}
+                            payableAmount={payableTotalPrice}
+                            selectedBank={selectedBank}
+                            deliveryRequest={deliveryRequest}
+                            saveAddress={saveAddress}
+                            deliveryMethod={deliveryMethod}
+                            serviceTargetIds={serviceTargetIds}
+                            withStringService={withStringService}
+                            servicePickupMethod={servicePickupMethod}
+                            items={orderItems}
+                            serviceFee={finalServiceFee}
+                            pointsToUse={appliedPoints}
+                            stringingApplicationInput={stringingApplicationInput}
+                            onSubmittingChange={setIsCheckoutSubmitting}
+                            onBeforeSuccessNavigation={() =>
+                              setIsIntentionalSuccessNavigation(true)
+                            }
+                            onSuccessNavigationAbort={() =>
+                              setIsIntentionalSuccessNavigation(false)
+                            }
+                          />
+                        </div>
+                      ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
+                        <div
+                          onPointerDownCapture={requestStringingValidationMessages}
+                          className="w-full"
+                        >
+                          <NiceCheckoutButton
+                            buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                            disabled={!resolvedCanSubmit}
+                            onBeforeSuccessNavigation={() =>
+                              setIsIntentionalSuccessNavigation(true)
+                            }
+                            onSuccessNavigationAbort={() =>
+                              setIsIntentionalSuccessNavigation(false)
+                            }
+                            payableAmount={payableTotalPrice}
+                            payload={{
+                              items: orderItems.map((item) => ({
+                                productId: item.id,
+                                quantity: item.quantity,
+                                kind: item.kind ?? "product",
+                                selectedGauge: item.selectedGauge,
+                                selectedColor: item.selectedColor,
+                                selectedColorLabel: item.selectedColorLabel,
+                                selectedColorHex: item.selectedColorHex,
+                                selectedColorImage: item.selectedColorImage,
+                              })),
+                              shippingInfo: {
+                                name: name.trim(),
+                                phone: phone.replace(/\D/g, ""),
+                                address: address.trim(),
+                                addressDetail: addressDetail.trim(),
+                                postalCode: postalCode.replace(/\D/g, ""),
+                                depositor: "나이스결제",
+                                deliveryRequest: deliveryRequest.trim(),
+                                deliveryMethod,
+                                withStringService,
+                              },
+                              paymentInfo: { method: "나이스페이" },
+                              totalPrice,
+                              shippingFee,
+                              serviceFee: finalServiceFee,
+                              pointsToUse: appliedPoints,
+                              guestInfo: !user
+                                ? {
+                                    name: name.trim(),
+                                    phone: phone.replace(/\D/g, ""),
+                                    email: email.trim().toLowerCase(),
+                                  }
+                                : undefined,
+                              isStringServiceApplied: withStringService,
+                              servicePickupMethod,
+                              stringingApplicationInput:
+                                withStringService && stringingApplicationInput
+                                  ? stringingApplicationInput
                                   : undefined,
-                                isStringServiceApplied: withStringService,
-                                servicePickupMethod,
-                                stringingApplicationInput:
-                                  withStringService && stringingApplicationInput
-                                    ? stringingApplicationInput
-                                    : undefined,
-                              }}
-                            />
-                          </div>
-                        ) : null}
+                            }}
+                          />
+                        </div>
+                      ) : null}
                     </div>
                     {/* <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                       <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>

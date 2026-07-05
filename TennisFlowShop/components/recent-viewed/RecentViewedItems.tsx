@@ -50,7 +50,9 @@ export default function RecentViewedItems({
       <Card className="rounded-3xl border border-border/60 bg-card shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-ui-card-title-lg sm:text-ui-section-title">{title}</CardTitle>
+            <CardTitle className="text-ui-card-title-lg sm:text-ui-section-title">
+              {title}
+            </CardTitle>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
               최근 확인한 스트링과 라켓을 다시 확인해보세요.
             </p>
@@ -71,19 +73,17 @@ export default function RecentViewedItems({
         <CardContent>
           <HorizontalProducts
             title={title}
-            items={filteredItems.map(
-              (item): HItem => ({
-                _id: `${item.type}-${item.id}`,
-                name: item.name,
-                price: item.price ?? 0,
-                images: item.image ? [item.image] : [],
-                brand:
-                  item.type === "racket"
-                    ? typeLabelMap[item.type]
-                    : item.subtitle || typeLabelMap[item.type],
-                href: item.href,
-              }),
-            )}
+            items={filteredItems.map((item): HItem => ({
+              _id: `${item.type}-${item.id}`,
+              name: item.name,
+              price: item.price ?? 0,
+              images: item.image ? [item.image] : [],
+              brand:
+                item.type === "racket"
+                  ? typeLabelMap[item.type]
+                  : item.subtitle || typeLabelMap[item.type],
+              href: item.href,
+            }))}
             moreHref="/products"
             showHeader={false}
             showMoreCard={false}

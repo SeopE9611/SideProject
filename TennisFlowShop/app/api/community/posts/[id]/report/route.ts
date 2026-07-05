@@ -13,7 +13,10 @@ import {
   verifyCommunityCsrf,
 } from "@/lib/community/security";
 import type { CommunityReportDocument } from "@/lib/types/community-report";
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+import {
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
 
 // 로그인된 사용자 정보 가져오기 (없으면 null)
 async function getAuthPayload() {

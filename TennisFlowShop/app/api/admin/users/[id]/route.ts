@@ -162,8 +162,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const { _id } = parsedParams;
 
-  const current = await usersCollection(db)
-    .findOne({ _id }, { projection: { _id: 1, role: 1, email: 1, name: 1, isDeleted: 1, isSuspended: 1 } });
+  const current = await usersCollection(db).findOne(
+    { _id },
+    { projection: { _id: 1, role: 1, email: 1, name: 1, isDeleted: 1, isSuspended: 1 } },
+  );
   if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const currentRole = normalizeUserRole((current as any).role);
@@ -189,7 +191,11 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         isDeleted: { $ne: true },
       });
       if (superAdminCount <= 1) {
-        return errorJson(409, "LAST_SUPERADMIN_REQUIRED", "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.");
+        return errorJson(
+          409,
+          "LAST_SUPERADMIN_REQUIRED",
+          "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.",
+        );
       }
     }
   }
@@ -210,22 +216,41 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         isDeleted: { $ne: true },
       });
       if (superAdminCount <= 1) {
-        return errorJson(409, "LAST_SUPERADMIN_REQUIRED", "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.");
+        return errorJson(
+          409,
+          "LAST_SUPERADMIN_REQUIRED",
+          "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.",
+        );
       }
     }
   }
 
-  if ((payload.isSuspended === true && !(current as any).isSuspended && targetIsAdminRole) && !isSuperAdminRole(admin.role)) {
-    return errorJson(403, "SUPERADMIN_REQUIRED", "관리자 계정 비활성화는 최고 관리자만 가능합니다.");
+  if (
+    payload.isSuspended === true &&
+    !(current as any).isSuspended &&
+    targetIsAdminRole &&
+    !isSuperAdminRole(admin.role)
+  ) {
+    return errorJson(
+      403,
+      "SUPERADMIN_REQUIRED",
+      "관리자 계정 비활성화는 최고 관리자만 가능합니다.",
+    );
   }
-  if (payload.isSuspended === true && !(current as any).isSuspended && String(admin._id) === String(_id)) {
+  if (
+    payload.isSuspended === true &&
+    !(current as any).isSuspended &&
+    String(admin._id) === String(_id)
+  ) {
     return errorJson(409, "SELF_SUSPEND_FORBIDDEN", "자기 자신은 비활성화할 수 없습니다.");
   }
 
   delete $set.confirmText;
 
-  const r = await usersCollection(db)
-    .updateOne({ _id }, { $set, $currentDate: { updatedAt: true } });
+  const r = await usersCollection(db).updateOne(
+    { _id },
+    { $set, $currentDate: { updatedAt: true } },
+  );
 
   if (!r.matchedCount) return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -292,7 +317,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     );
   }
 
-  if (typeof payload.isSuspended === "boolean" && payload.isSuspended !== Boolean((current as any).isSuspended)) {
+  if (
+    typeof payload.isSuspended === "boolean" &&
+    payload.isSuspended !== Boolean((current as any).isSuspended)
+  ) {
     await appendAdminAudit(
       db,
       {
@@ -332,9 +360,12 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
 
   const { _id } = parsedParams;
   const body = await req.json().catch(() => ({}));
-  const confirmText = typeof (body as any)?.confirmText === "string" ? (body as any).confirmText.trim() : "";
-  const current = await usersCollection(db)
-    .findOne({ _id }, { projection: { _id: 1, role: 1, email: 1, name: 1 } });
+  const confirmText =
+    typeof (body as any)?.confirmText === "string" ? (body as any).confirmText.trim() : "";
+  const current = await usersCollection(db).findOne(
+    { _id },
+    { projection: { _id: 1, role: 1, email: 1, name: 1 } },
+  );
   if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
   const currentRole = normalizeUserRole((current as any).role);
 
@@ -353,7 +384,11 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
       isDeleted: { $ne: true },
     });
     if (superAdminCount <= 1) {
-      return errorJson(409, "LAST_SUPERADMIN_REQUIRED", "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.");
+      return errorJson(
+        409,
+        "LAST_SUPERADMIN_REQUIRED",
+        "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.",
+      );
     }
   }
 

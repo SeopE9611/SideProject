@@ -71,7 +71,9 @@ export default function TimeSlotSelector({
       className="space-y-3.5 rounded-lg border border-border/70 bg-muted/10 p-3.5"
       aria-busy={isLoading ? true : undefined}
     >
-      <p className="text-ui-micro font-medium tracking-wide text-muted-foreground">예약 가능 시간</p>
+      <p className="text-ui-micro font-medium tracking-wide text-muted-foreground">
+        예약 가능 시간
+      </p>
       <div className="relative">
         <div
           className={[

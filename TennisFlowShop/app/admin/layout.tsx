@@ -90,7 +90,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </Link>
           <div className="flex items-center gap-3 text-ui-label text-muted-foreground">
             <span className="hidden sm:inline">관리자 콘솔</span>
-            <Link href="/" target="_blank" rel="noreferrer" className="font-semibold text-foreground hover:text-primary">
+            <Link
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-foreground hover:text-primary"
+            >
               쇼핑몰 홈
             </Link>
           </div>

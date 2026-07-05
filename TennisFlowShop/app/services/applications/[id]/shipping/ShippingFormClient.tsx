@@ -374,7 +374,11 @@ function SelfShipForm({
       <div className="mx-auto max-w-3xl px-4">
         <header className="mb-6 text-center md:mb-8">
           <h1 className="text-ui-page-title font-semibold tracking-tight text-foreground sm:text-ui-page-title-lg">
-            {isLoading ? "라켓 발송 운송장 등록" : isEdit ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
+            {isLoading
+              ? "라켓 발송 운송장 등록"
+              : isEdit
+                ? "라켓 발송 운송장 수정"
+                : "라켓 발송 운송장 등록"}
           </h1>
           <p className="mt-3 text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
             {isLoading
@@ -503,7 +507,9 @@ function SelfShipForm({
                   >
                     <Calendar className="w-4 h-4 text-primary dark:text-foreground" />
                     발송일
-                    <span className="text-ui-label text-muted-foreground font-normal">(선택사항)</span>
+                    <span className="text-ui-label text-muted-foreground font-normal">
+                      (선택사항)
+                    </span>
                   </Label>
                   <Input
                     id="shippedAt"
@@ -522,7 +528,9 @@ function SelfShipForm({
                   >
                     <FileText className="w-4 h-4 text-muted-foreground" />
                     메모
-                    <span className="text-ui-label text-muted-foreground font-normal">(선택사항)</span>
+                    <span className="text-ui-label text-muted-foreground font-normal">
+                      (선택사항)
+                    </span>
                   </Label>
                   <Textarea
                     id="note"
@@ -558,7 +566,9 @@ function SelfShipForm({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => confirmLeaveIfDirty(() => router.push(returnTo ?? defaultReturnTo))}
+                    onClick={() =>
+                      confirmLeaveIfDirty(() => router.push(returnTo ?? defaultReturnTo))
+                    }
                     disabled={submitting}
                     className="flex-1 h-12 text-ui-body border-border hover:bg-background dark:hover:bg-card"
                   >

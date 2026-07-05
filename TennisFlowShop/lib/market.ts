@@ -255,14 +255,12 @@ export function normalizeMarketMeta(
   const conditionGrade = meta.conditionGrade;
   if (!(saleStatus === "selling" || saleStatus === "reserved" || saleStatus === "sold"))
     return null;
-  if (
-    !(
-      conditionGrade === "S" ||
-      conditionGrade === "A" ||
-      conditionGrade === "B" ||
-      conditionGrade === "C"
-    )
-  )
+  if (!(
+    conditionGrade === "S" ||
+    conditionGrade === "A" ||
+    conditionGrade === "B" ||
+    conditionGrade === "C"
+  ))
     return null;
 
   const base: MarketMeta = {

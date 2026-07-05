@@ -353,7 +353,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                   <div className="flex items-center gap-2 mt-1 text-ui-label text-muted-foreground">
                                     <div className="flex items-center gap-1">
                                       <User className="h-3 w-3" />
-                                      <span className="max-w-[120px] truncate sm:max-w-[160px]">{counterpart}</span>
+                                      <span className="max-w-[120px] truncate sm:max-w-[160px]">
+                                        {counterpart}
+                                      </span>
                                     </div>
                                     <span>·</span>
                                     <div className="flex items-center gap-1">
@@ -408,7 +410,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                     {selectedId && !detailLoading && !detail && (
                       <div className="flex items-center justify-center h-[400px] text-center p-6 md:p-8">
-                        <p className="break-keep text-ui-body-sm text-muted-foreground">쪽지를 불러오지 못했습니다. 목록에서 다시 선택해 주세요.</p>
+                        <p className="break-keep text-ui-body-sm text-muted-foreground">
+                          쪽지를 불러오지 못했습니다. 목록에서 다시 선택해 주세요.
+                        </p>
                       </div>
                     )}
 

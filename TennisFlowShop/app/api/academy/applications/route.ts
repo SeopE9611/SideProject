@@ -196,9 +196,13 @@ export async function POST(req: Request) {
   }
 
   if (!ObjectId.isValid(requestedClassId)) {
-    return toErrorResponse("신청할 수 없는 클래스입니다. 모집 중인 클래스를 다시 선택해 주세요.", 400, {
-      code: "ACADEMY_CLASS_INVALID",
-    });
+    return toErrorResponse(
+      "신청할 수 없는 클래스입니다. 모집 중인 클래스를 다시 선택해 주세요.",
+      400,
+      {
+        code: "ACADEMY_CLASS_INVALID",
+      },
+    );
   }
 
   const selectedClass = await db.collection(CLASS_COLLECTION_NAME).findOne(
@@ -221,9 +225,13 @@ export async function POST(req: Request) {
   );
 
   if (!selectedClass) {
-    return toErrorResponse("신청할 수 없는 클래스입니다. 모집 중인 클래스를 다시 선택해 주세요.", 409, {
-      code: "ACADEMY_CLASS_UNAVAILABLE",
-    });
+    return toErrorResponse(
+      "신청할 수 없는 클래스입니다. 모집 중인 클래스를 다시 선택해 주세요.",
+      409,
+      {
+        code: "ACADEMY_CLASS_UNAVAILABLE",
+      },
+    );
   }
 
   classId = requestedClassId;
@@ -333,15 +341,38 @@ export async function POST(req: Request) {
         { name: "신청자명", value: applicantName },
         {
           name: "희망 수업/클래스",
-          value: classSnapshot?.name || getAcademyLessonTypeLabel(desiredLessonType as AcademyLessonType),
+          value:
+            classSnapshot?.name ||
+            getAcademyLessonTypeLabel(desiredLessonType as AcademyLessonType),
         },
-        { name: "희망 레슨 유형", value: getAcademyLessonTypeLabel(desiredLessonType as AcademyLessonType) },
-        { name: "현재 실력", value: getAcademyCurrentLevelLabel(currentLevel as AcademyCurrentLevel) },
+        {
+          name: "희망 레슨 유형",
+          value: getAcademyLessonTypeLabel(desiredLessonType as AcademyLessonType),
+        },
+        {
+          name: "현재 실력",
+          value: getAcademyCurrentLevelLabel(currentLevel as AcademyCurrentLevel),
+        },
         { name: "희망 요일", value: preferredDays.join(", ") },
         { name: "희망 시간", value: preferredTimeText || "미입력" },
         { name: "연락처", value: maskPhone(phone) },
-        truthyField("클래스 정보", classSnapshot ? [classSnapshot.instructorName, classSnapshot.location, classSnapshot.scheduleText].filter(Boolean).join(" · ") : ""),
-        truthyField("정원/가격", classSnapshot ? [`정원 ${classSnapshot.capacity ?? "미정"}`, classSnapshot.price != null ? formatWon(classSnapshot.price) : "가격 미정"].join(" · ") : ""),
+        truthyField(
+          "클래스 정보",
+          classSnapshot
+            ? [classSnapshot.instructorName, classSnapshot.location, classSnapshot.scheduleText]
+                .filter(Boolean)
+                .join(" · ")
+            : "",
+        ),
+        truthyField(
+          "정원/가격",
+          classSnapshot
+            ? [
+                `정원 ${classSnapshot.capacity ?? "미정"}`,
+                classSnapshot.price != null ? formatWon(classSnapshot.price) : "가격 미정",
+              ].join(" · ")
+            : "",
+        ),
         truthyField("레슨 목표", previewText(lessonGoal, 100)),
         truthyField("요청사항", previewText(requestMemo, 100)),
       ].filter(Boolean) as Array<{ name: string; value: string }>,

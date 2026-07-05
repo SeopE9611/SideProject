@@ -298,7 +298,9 @@ export default function KakaoInquiryWidget() {
               <div ref={guidePanelRef} className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] border-border shadow-xl bp-sm:w-[340px]">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-ui-body-sm font-semibold">무엇을 하러 오셨나요?</CardTitle>
+                    <CardTitle className="text-ui-body-sm font-semibold">
+                      무엇을 하러 오셨나요?
+                    </CardTitle>
                     <button
                       type="button"
                       aria-label="닫기"

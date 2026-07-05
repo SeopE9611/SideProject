@@ -62,7 +62,9 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast("색상과 게이지(굵기)를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.");
+      showErrorToast(
+        "색상과 게이지(굵기)를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.",
+      );
       router.push(`/products/${it.id}`);
       return;
     }
@@ -147,7 +149,9 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                 >
                   {it.name}
                 </Link>
-                <div className="text-ui-body-sm text-muted-foreground">{it.price.toLocaleString()}원</div>
+                <div className="text-ui-body-sm text-muted-foreground">
+                  {it.price.toLocaleString()}원
+                </div>
                 <div className="mt-1 space-y-0.5 text-ui-label text-muted-foreground">
                   {it.hasSelectedOption ? (
                     <>

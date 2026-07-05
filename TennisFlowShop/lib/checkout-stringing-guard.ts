@@ -23,9 +23,9 @@ export function hasStringingServiceInCheckout(input: {
 
   return Boolean(
     input.withStringService === true ||
-      input.isStringServiceApplied === true ||
-      shippingInfo?.withStringService === true ||
-      input.stringing?.requested === true,
+    input.isStringServiceApplied === true ||
+    shippingInfo?.withStringService === true ||
+    input.stringing?.requested === true,
   );
 }
 

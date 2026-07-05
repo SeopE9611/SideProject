@@ -360,7 +360,6 @@ export default function OrdersClient() {
     };
   }
 
-
   function getProductServiceSummary(order: OrderWithType, linkedApplication: any) {
     const itemNames = Array.isArray((order as any).items)
       ? (order as any).items
@@ -386,7 +385,8 @@ export default function OrdersClient() {
     if (order.paymentStatus === "결제대기") return "결제 확인하기";
     if (isLinkedProductOrder) return "작업 확인하기";
     const tracking = getTrackingBadge(order);
-    if (tracking.label.includes("미등록") || tracking.label.includes("없음")) return "배송 등록하기";
+    if (tracking.label.includes("미등록") || tracking.label.includes("없음"))
+      return "배송 등록하기";
     return "상세 보기";
   }
 
@@ -617,10 +617,11 @@ export default function OrdersClient() {
     }
   };
 
-
   function canSyncNicePayment(order: OrderWithType) {
     if (order.__type !== "order") return false;
-    const provider = String(order.paymentInfo?.provider ?? order.paymentProvider ?? "").toLowerCase();
+    const provider = String(
+      order.paymentInfo?.provider ?? order.paymentProvider ?? "",
+    ).toLowerCase();
     const tid = String(order.paymentInfo?.tid ?? order.paymentTid ?? "").trim();
     const status = String(order.status ?? "").toLowerCase();
     return (
@@ -644,7 +645,9 @@ export default function OrdersClient() {
         throw new Error(json?.error || "PG 상태 확인에 실패했습니다.");
       }
       await mutate();
-      await mutateGlobal((key) => typeof key === "string" && key.startsWith("/api/admin/operations"));
+      await mutateGlobal(
+        (key) => typeof key === "string" && key.startsWith("/api/admin/operations"),
+      );
       showSuccessToast("PG 결제 상태를 확인했습니다.");
     } catch (error: any) {
       showErrorToast(`PG 상태 확인 실패: ${error?.message || "알 수 없는 오류"}`);
@@ -934,8 +937,16 @@ export default function OrdersClient() {
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[230px] text-left")}>주문/고객</TableHead>
-                <TableHead className={cn(thClasses, "w-[215px] border-l border-border/20 text-left")}>상품/서비스</TableHead>
-                <TableHead className={cn(thClasses, "w-[240px] border-l border-border/20 text-left")}>상태/다음 작업</TableHead>
+                <TableHead
+                  className={cn(thClasses, "w-[215px] border-l border-border/20 text-left")}
+                >
+                  상품/서비스
+                </TableHead>
+                <TableHead
+                  className={cn(thClasses, "w-[240px] border-l border-border/20 text-left")}
+                >
+                  상태/다음 작업
+                </TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
@@ -952,7 +963,11 @@ export default function OrdersClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}>액션</TableHead>
+                <TableHead
+                  className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}
+                >
+                  액션
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1069,7 +1084,13 @@ export default function OrdersClient() {
                         : `/admin/orders/${order.id}`;
 
                     return (
-                      <TableRow key={order.id} className={cn(adminSurface.tableRow, "align-top transition-colors hover:bg-muted/35")}>
+                      <TableRow
+                        key={order.id}
+                        className={cn(
+                          adminSurface.tableRow,
+                          "align-top transition-colors hover:bg-muted/35",
+                        )}
+                      >
                         <TableCell
                           className={cn(
                             tdClasses,
@@ -1161,7 +1182,10 @@ export default function OrdersClient() {
                                         .replace(/\s*\(비회원\)\s*$/, "")
                                         .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
                                     </p>
-                                    <p className="truncate text-ui-label text-foreground/70" title={order.customer.email}>
+                                    <p
+                                      className="truncate text-ui-label text-foreground/70"
+                                      title={order.customer.email}
+                                    >
                                       {order.customer.email || "이메일 없음"}
                                     </p>
                                   </div>
@@ -1340,14 +1364,30 @@ export default function OrdersClient() {
                                 <div className="flex flex-col items-start gap-0.5">
                                   {needsCancelFinalization ? (
                                     <>
-                                      <Badge className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30")}>
+                                      <Badge
+                                        className={cn(
+                                          badgeBase,
+                                          badgeSizeSm,
+                                          "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
+                                        )}
+                                      >
                                         PG 결제취소 감지
                                       </Badge>
-                                      <Badge className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0 bg-warning/10 text-warning border border-warning/30")}>
+                                      <Badge
+                                        className={cn(
+                                          badgeBase,
+                                          badgeSizeSm,
+                                          "whitespace-nowrap shrink-0 bg-warning/10 text-warning border border-warning/30",
+                                        )}
+                                      >
                                         주문 취소 후처리 필요
                                       </Badge>
                                       <span className="text-ui-label text-foreground/70">
-                                        주문 상태: {getOrderStatusLabelForDisplay(order.status, (order as any).shippingInfo)}
+                                        주문 상태:{" "}
+                                        {getOrderStatusLabelForDisplay(
+                                          order.status,
+                                          (order as any).shippingInfo,
+                                        )}
                                       </span>
                                     </>
                                   ) : (
@@ -1385,11 +1425,17 @@ export default function OrdersClient() {
                               );
                             })()
                           )}
-                          <p className="mt-1 line-clamp-2 text-ui-label font-medium leading-snug text-primary">다음: {nextActionLabel}</p>
-                          <p className="mt-0.5 text-ui-label text-foreground/75 tabular-nums">접수 {formatDate(order.date)}</p>
+                          <p className="mt-1 line-clamp-2 text-ui-label font-medium leading-snug text-primary">
+                            다음: {nextActionLabel}
+                          </p>
+                          <p className="mt-0.5 text-ui-label text-foreground/75 tabular-nums">
+                            접수 {formatDate(order.date)}
+                          </p>
                         </TableCell>
                         {/* 배송/결제 셀 */}
-                        <TableCell className={cn(tdClasses, "border-l border-border/20 py-2 text-right")}>
+                        <TableCell
+                          className={cn(tdClasses, "border-l border-border/20 py-2 text-right")}
+                        >
                           <div className="flex flex-col items-end gap-1 text-right">
                             <div className="flex flex-wrap justify-end gap-1">
                               {(() => {
@@ -1403,7 +1449,11 @@ export default function OrdersClient() {
                                 return (
                                   <Badge
                                     variant={m.variant}
-                                    className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
+                                    className={cn(
+                                      badgeBase,
+                                      badgeSizeSm,
+                                      "whitespace-nowrap shrink-0",
+                                    )}
                                     title={`수령방식 코드: ${String(m.code ?? "null")}`}
                                   >
                                     {m.label}
@@ -1429,7 +1479,11 @@ export default function OrdersClient() {
                                 return (
                                   <Badge
                                     variant={t.variant}
-                                    className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
+                                    className={cn(
+                                      badgeBase,
+                                      badgeSizeSm,
+                                      "whitespace-nowrap shrink-0",
+                                    )}
                                     title="택배인 경우만 운송장 등록/미등록 의미가 있습니다."
                                   >
                                     {t.label}
@@ -1438,7 +1492,9 @@ export default function OrdersClient() {
                               })()}
                             </div>
                             <div className="mt-1.5 flex w-full items-baseline justify-end gap-3 tabular-nums">
-                              <span className="text-ui-label text-foreground/70">{order.paymentStatus}</span>
+                              <span className="text-ui-label text-foreground/70">
+                                {order.paymentStatus}
+                              </span>
                               <span className="whitespace-nowrap text-ui-body-sm font-medium text-foreground">
                                 {formatCurrency(order.total)}
                               </span>
@@ -1448,7 +1504,12 @@ export default function OrdersClient() {
                         {/* 작업 메뉴 셀 */}
                         <TableCell className={cn(tdClasses, "border-l border-border/40 py-2")}>
                           <div className="flex items-center justify-end gap-1">
-                            <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-ui-label font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2">
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-ui-label font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                            >
                               <Link
                                 href={detailHref}
                                 onClick={() => {
@@ -1462,76 +1523,78 @@ export default function OrdersClient() {
                                 {nextActionLabel}
                               </Link>
                             </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
-                              >
-                                <MoreHorizontal className="h-3.5 w-3.5" />
-                                <span className="sr-only">주문 작업 메뉴 열기</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="min-w-max">
-                              <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem asChild className="whitespace-nowrap">
-                                <Link
-                                  href={
-                                    order.__type === "stringing_application"
-                                      ? `/admin/applications/stringing/${order.id}`
-                                      : `/admin/orders/${order.id}`
-                                  }
-                                  onClick={() => {
-                                    if (order.__type === "stringing_application") {
-                                      useStringingStore
-                                        .getState()
-                                        .setSelectedApplicationId(order.id);
-                                    } else {
-                                      useOrderStore.getState().setSelectedOrderId(order.id);
-                                    }
-                                  }}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
                                 >
-                                  <Eye className="mr-2 h-4 w-4" /> 상세 보기
-                                </Link>
-                              </DropdownMenuItem>
-
-                              {canSyncNicePayment(order) && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="whitespace-nowrap"
-                                    title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
-                                    disabled={syncingNiceOrderId === order.id}
+                                  <MoreHorizontal className="h-3.5 w-3.5" />
+                                  <span className="sr-only">주문 작업 메뉴 열기</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="min-w-max">
+                                <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                <DropdownMenuItem asChild className="whitespace-nowrap">
+                                  <Link
+                                    href={
+                                      order.__type === "stringing_application"
+                                        ? `/admin/applications/stringing/${order.id}`
+                                        : `/admin/orders/${order.id}`
+                                    }
                                     onClick={() => {
-                                      void handleNicePaymentSync(order.id);
+                                      if (order.__type === "stringing_application") {
+                                        useStringingStore
+                                          .getState()
+                                          .setSelectedApplicationId(order.id);
+                                      } else {
+                                        useOrderStore.getState().setSelectedOrderId(order.id);
+                                      }
                                     }}
                                   >
-                                    <CreditCard className="mr-2 h-4 w-4" />
-                                    {syncingNiceOrderId === order.id ? "확인 중..." : "PG 상태 확인"}
-                                  </DropdownMenuItem>
-                                </>
-                              )}
+                                    <Eye className="mr-2 h-4 w-4" /> 상세 보기
+                                  </Link>
+                                </DropdownMenuItem>
 
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="whitespace-nowrap"
-                                onClick={() => {
-                                  // 신청서 행이면 신청서 배송등록으로 바로 이동
-                                  if (order.__type === "stringing_application") {
-                                    router.push(
-                                      `/admin/applications/stringing/${order.id}/shipping-update`,
-                                    );
-                                    return;
-                                  }
-                                  // 주문 행이면: 연결된 신청서가 있으면 신청서로 리다이렉트(위 handleShippingUpdate 로직)
-                                  handleShippingUpdate(order.id);
-                                }}
-                              >
-                                <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                {canSyncNicePayment(order) && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className="whitespace-nowrap"
+                                      title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                                      disabled={syncingNiceOrderId === order.id}
+                                      onClick={() => {
+                                        void handleNicePaymentSync(order.id);
+                                      }}
+                                    >
+                                      <CreditCard className="mr-2 h-4 w-4" />
+                                      {syncingNiceOrderId === order.id
+                                        ? "확인 중..."
+                                        : "PG 상태 확인"}
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="whitespace-nowrap"
+                                  onClick={() => {
+                                    // 신청서 행이면 신청서 배송등록으로 바로 이동
+                                    if (order.__type === "stringing_application") {
+                                      router.push(
+                                        `/admin/applications/stringing/${order.id}/shipping-update`,
+                                      );
+                                      return;
+                                    }
+                                    // 주문 행이면: 연결된 신청서가 있으면 신청서로 리다이렉트(위 handleShippingUpdate 로직)
+                                    handleShippingUpdate(order.id);
+                                  }}
+                                >
+                                  <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </TableCell>
                       </TableRow>

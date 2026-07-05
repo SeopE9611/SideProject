@@ -298,7 +298,9 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
               )}
               {error && (
                 <div className="text-center py-8 space-y-3">
-                  <div className="text-destructive text-ui-card-title-lg font-semibold">{errorTitle}</div>
+                  <div className="text-destructive text-ui-card-title-lg font-semibold">
+                    {errorTitle}
+                  </div>
                   <p className="text-ui-body-sm text-muted-foreground">{errorBody}</p>
                   <div className="grid grid-cols-1 gap-2 sm:inline-flex sm:grid-cols-none sm:items-center sm:justify-center">
                     {(error as FetchError | undefined)?.status === 401 && (
@@ -427,7 +429,9 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     <section className="space-y-4">
                       <div className="flex items-center gap-2">
                         <ImageIcon className="h-5 w-5" />
-                        <h2 className="text-ui-section-title font-semibold text-foreground">이미지</h2>
+                        <h2 className="text-ui-section-title font-semibold text-foreground">
+                          이미지
+                        </h2>
                       </div>
 
                       {imageAtts.length === 1 ? (
@@ -508,7 +512,9 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     <section className="space-y-4">
                       <div className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        <h2 className="text-ui-section-title font-semibold text-foreground">첨부파일</h2>
+                        <h2 className="text-ui-section-title font-semibold text-foreground">
+                          첨부파일
+                        </h2>
                       </div>
 
                       <div className="grid gap-3">
@@ -653,7 +659,9 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                         <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                         <span className="min-w-0">
                           <span className="block text-ui-label">{label}</span>
-                          <span className="block line-clamp-1 text-ui-body-sm">이동할 글이 없습니다.</span>
+                          <span className="block line-clamp-1 text-ui-body-sm">
+                            이동할 글이 없습니다.
+                          </span>
                         </span>
                       </span>
                     )}

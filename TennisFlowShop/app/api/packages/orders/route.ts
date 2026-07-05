@@ -225,16 +225,18 @@ export async function POST(req: Request) {
         { name: "금액", value: formatWon(packageInfo.price) },
         { name: "결제상태", value: doc.paymentStatus },
         truthyField("이용 방식", serviceInfo.serviceMethod),
-        truthyField("입금 정보", [paymentInfo.bank, serviceInfo.depositor || paymentInfo.depositor].filter(Boolean).join(" · ")),
+        truthyField(
+          "입금 정보",
+          [paymentInfo.bank, serviceInfo.depositor || paymentInfo.depositor]
+            .filter(Boolean)
+            .join(" · "),
+        ),
         truthyField("유효기간", packageInfo.validityPeriod),
         truthyField("요청사항", previewText(serviceInfo.serviceRequest, 100)),
       ].filter(Boolean) as Array<{ name: string; value: string }>,
     });
 
-    return NextResponse.json(
-      { ok: true, packageOrderId },
-      { status: 201 },
-    );
+    return NextResponse.json({ ok: true, packageOrderId }, { status: 201 });
   } catch (e) {
     console.error("[POST /api/packages/orders] error", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });

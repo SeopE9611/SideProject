@@ -73,7 +73,8 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
         {displayName}{" "}
         {isAdminRole(user.role) && (
           <span className="text-muted-foreground">({getUserRoleLabel(user.role)})</span>
-        )} 님
+        )}{" "}
+        님
       </p>
       {(hasKakao || hasNaver) && (
         <div className="flex flex-col items-center gap-1">

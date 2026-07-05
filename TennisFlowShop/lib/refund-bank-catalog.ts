@@ -6,12 +6,7 @@ export type RefundBankPgMappings = {
 };
 
 export type RefundBankCatalogCategory =
-  | "major"
-  | "internet"
-  | "regional"
-  | "mutual"
-  | "postal"
-  | "policy";
+  "major" | "internet" | "regional" | "mutual" | "postal" | "policy";
 
 export type RefundBankCatalogItem = {
   /**

@@ -638,9 +638,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               asChild
               className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 lg:w-auto"
             >
-              <Link href={backUrl}>
-                목록으로 돌아가기
-              </Link>
+              <Link href={backUrl}>목록으로 돌아가기</Link>
             </Button>
           </>
         }
@@ -725,424 +723,432 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
       </PublicPageHero>
 
       <SiteContainer variant="wide" className="space-y-5 py-5 bp-sm:space-y-6 bp-sm:py-6">
-      {/* 대여 취소 상태 안내 배너 */}
-      {cancelBanner && (
-        <div
-          className={`mb-4 flex items-center justify-between border-l-2 px-3 py-3 text-ui-body-sm ${cancelBanner.status === "requested" ? "border-primary bg-primary/5 text-muted-foreground dark:bg-primary/10 dark:text-foreground" : "border-destructive/60 bg-destructive/5 text-foreground dark:bg-destructive/10 dark:text-foreground"}`}
-        >
-          <div>
-            <p className="font-medium">{cancelBanner.title}</p>
-            {/* {cancelBanner.reason && <p className="mt-1 text-ui-label opacity-80">사유: {cancelBanner.reason}</p>} */}
-          </div>
-
-          {cancelBanner.status === "requested" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleWithdrawCancelRequest}
-              disabled={withdrawing}
-              className="mt-3 h-9 w-full whitespace-normal break-keep sm:ml-4 sm:mt-0 sm:w-auto"
-            >
-              {withdrawing ? "철회 중…" : "취소 요청 철회"}
-            </Button>
-          )}
-        </div>
-      )}
-
-      {banner && (
-        <div
-          className={`border-l-2 px-3 py-3 ${banner.tone === "success" ? "border-success bg-success/10 text-success dark:bg-success/20 dark:text-success" : "border-primary bg-muted/20 text-foreground dark:bg-muted/20 dark:text-foreground"}`}
-        >
-          <div className="flex items-center gap-3">
-            {banner.tone === "success" ? (
-              <CheckCircle className="h-6 w-6 text-success" />
-            ) : (
-              <AlertCircle className="h-6 w-6 text-primary" />
-            )}
-            <div>
-              <p className="font-semibold text-ui-card-title-lg">{banner.title}</p>
-              {banner.desc && <p className="text-ui-body-sm mt-1 opacity-80">{banner.desc}</p>}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] bp-lg:items-start">
-        <div className="space-y-5 bp-sm:space-y-6">
-        <MypageDetailCard
-          title="대여 요약"
-          icon={<Package className="h-5 w-5 text-primary" />}
-        >
-          <div className="divide-y divide-border/60">
-            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">라켓</p>
-                <p className="mt-1 break-words font-semibold text-foreground">
-                  {racketBrandLabel(data.brand)} {data.model}
-                </p>
-              </div>
-            </div>
-
-            {withStringService && (
-              <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">장착 스트링</p>
-                  <p className="mt-1 break-words font-semibold text-foreground">
-                    {installedStringLabel}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">대여 기간</p>
-                <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">반납 예정일</p>
-                <p className="mt-1 break-words font-semibold text-foreground">
-                  {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </MypageDetailCard>
-
-      {withStringService ? (
-        <section id="stringing-service" className="scroll-mt-24">
-          <MypageDetailCard
-            title="연결된 교체서비스"
-            description="진행 상태와 핵심 일정을 요약했습니다."
-            icon={<Wrench className="h-5 w-5 text-primary" />}
-            action={
-              <div className="flex flex-wrap gap-2">
-                  {data.stringingApplicationId ? (
-                    <Badge variant="secondary">교체서비스 연결</Badge>
-                  ) : (
-                    <Badge variant="secondary">신청 필요</Badge>
-                  )}
-                  {linkedApplicationIsComplete ? <Badge variant="success">교체완료</Badge> : null}
-                </div>
-            }
-            contentClassName="space-y-4"
+        {/* 대여 취소 상태 안내 배너 */}
+        {cancelBanner && (
+          <div
+            className={`mb-4 flex items-center justify-between border-l-2 px-3 py-3 text-ui-body-sm ${cancelBanner.status === "requested" ? "border-primary bg-primary/5 text-muted-foreground dark:bg-primary/10 dark:text-foreground" : "border-destructive/60 bg-destructive/5 text-foreground dark:bg-destructive/10 dark:text-foreground"}`}
           >
-              {linkedApplication || data.applicationSummary ? (
-                <>
-                  <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="p-3 bp-sm:p-4">
-                      <p className="text-muted-foreground">진행 상태</p>
-                      <Badge
-                        variant="info"
-                        className="mt-2 max-w-full whitespace-normal break-keep text-left"
-                      >
-                        {getCustomerApplicationStatusLabel(
-                          linkedApplication?.status ?? data.applicationSummary?.status,
-                        )}
-                      </Badge>
-                    </div>
-                    <div className="p-3 bp-sm:p-4">
-                      <p className="text-muted-foreground">신청일</p>
-                      <p className="mt-2 font-semibold tabular-nums text-foreground">
-                        {linkedApplication?.createdAt
-                          ? formatDate(linkedApplication.createdAt)
-                          : data.createdAt
-                            ? formatDate(data.createdAt)
-                            : "-"}
-                      </p>
-                    </div>
-                    <div className="p-3 bp-sm:p-4">
-                      <p className="text-muted-foreground">희망 작업일</p>
-                      <p className="mt-2 break-words font-semibold text-foreground">
-                        {linkedApplication?.reservationLabel ??
-                          data.applicationSummary?.reservationLabel ??
-                          "예약 정보 없음"}
-                      </p>
-                    </div>
-                    <div className="p-3 bp-sm:p-4">
-                      <p className="text-muted-foreground">서비스 금액</p>
-                      <p className="mt-2 font-semibold tabular-nums text-foreground">
-                        {typeof linkedApplication?.totalPrice === "number"
-                          ? formatCurrency(linkedApplication.totalPrice)
-                          : stringingFee > 0
-                            ? formatCurrency(stringingFee)
-                            : "결제 정보 확인"}
+            <div>
+              <p className="font-medium">{cancelBanner.title}</p>
+              {/* {cancelBanner.reason && <p className="mt-1 text-ui-label opacity-80">사유: {cancelBanner.reason}</p>} */}
+            </div>
+
+            {cancelBanner.status === "requested" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleWithdrawCancelRequest}
+                disabled={withdrawing}
+                className="mt-3 h-9 w-full whitespace-normal break-keep sm:ml-4 sm:mt-0 sm:w-auto"
+              >
+                {withdrawing ? "철회 중…" : "취소 요청 철회"}
+              </Button>
+            )}
+          </div>
+        )}
+
+        {banner && (
+          <div
+            className={`border-l-2 px-3 py-3 ${banner.tone === "success" ? "border-success bg-success/10 text-success dark:bg-success/20 dark:text-success" : "border-primary bg-muted/20 text-foreground dark:bg-muted/20 dark:text-foreground"}`}
+          >
+            <div className="flex items-center gap-3">
+              {banner.tone === "success" ? (
+                <CheckCircle className="h-6 w-6 text-success" />
+              ) : (
+                <AlertCircle className="h-6 w-6 text-primary" />
+              )}
+              <div>
+                <p className="font-semibold text-ui-card-title-lg">{banner.title}</p>
+                {banner.desc && <p className="text-ui-body-sm mt-1 opacity-80">{banner.desc}</p>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] bp-lg:items-start">
+          <div className="space-y-5 bp-sm:space-y-6">
+            <MypageDetailCard title="대여 요약" icon={<Package className="h-5 w-5 text-primary" />}>
+              <div className="divide-y divide-border/60">
+                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">라켓</p>
+                    <p className="mt-1 break-words font-semibold text-foreground">
+                      {racketBrandLabel(data.brand)} {data.model}
+                    </p>
+                  </div>
+                </div>
+
+                {withStringService && (
+                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-ui-label font-medium text-muted-foreground">장착 스트링</p>
+                      <p className="mt-1 break-words font-semibold text-foreground">
+                        {installedStringLabel}
                       </p>
                     </div>
                   </div>
+                )}
 
-                  <div className="space-y-3">
-                    <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
-                        <span>라켓·스트링 상세</span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                      </summary>
-                    <div className="grid gap-3 border-t border-border/50 p-3 bp-md:grid-cols-2">
-                      {linkedApplicationDisplayLines.map((line, index) => {
-                        const racketLabel =
-                          line.racketLabel ||
-                          line.racketType ||
-                          `${racketBrandLabel(data.brand)} ${data.model}`;
-                        const stringName =
-                          line.stringName ||
-                          linkedApplication?.stringNames?.join(", ") ||
-                          data.applicationSummary?.stringNames.join(", ") ||
-                          (hasStringingCost ? "관리자 확인 중" : "선택된 스트링 정보 없음");
-                        const tensionMain =
-                          line.tensionMain ||
-                          linkedApplication?.tensionSummary ||
-                          data.applicationSummary?.tensionSummary ||
-                          "-";
-                        const tensionCross =
-                          line.tensionCross && line.tensionCross !== tensionMain
-                            ? line.tensionCross
-                            : null;
+                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">대여 기간</p>
+                    <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
+                  </div>
+                </div>
 
-                        return (
-                          <div
-                            key={line.id ?? `${data.id}-line-${index}`}
-                            className="border-t border-border/70 py-3 text-ui-body-sm first:border-t-0"
+                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">반납 예정일</p>
+                    <p className="mt-1 break-words font-semibold text-foreground">
+                      {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </MypageDetailCard>
+
+            {withStringService ? (
+              <section id="stringing-service" className="scroll-mt-24">
+                <MypageDetailCard
+                  title="연결된 교체서비스"
+                  description="진행 상태와 핵심 일정을 요약했습니다."
+                  icon={<Wrench className="h-5 w-5 text-primary" />}
+                  action={
+                    <div className="flex flex-wrap gap-2">
+                      {data.stringingApplicationId ? (
+                        <Badge variant="secondary">교체서비스 연결</Badge>
+                      ) : (
+                        <Badge variant="secondary">신청 필요</Badge>
+                      )}
+                      {linkedApplicationIsComplete ? (
+                        <Badge variant="success">교체완료</Badge>
+                      ) : null}
+                    </div>
+                  }
+                  contentClassName="space-y-4"
+                >
+                  {linkedApplication || data.applicationSummary ? (
+                    <>
+                      <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="p-3 bp-sm:p-4">
+                          <p className="text-muted-foreground">진행 상태</p>
+                          <Badge
+                            variant="info"
+                            className="mt-2 max-w-full whitespace-normal break-keep text-left"
                           >
-                            <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                              <p className="min-w-0 break-words font-semibold text-foreground">
-                                {racketLabel}
-                              </p>
-                              <Badge
-                                variant="outline"
-                                className="w-fit max-w-full whitespace-normal break-words text-left"
-                              >
-                                {stringName}
-                              </Badge>
+                            {getCustomerApplicationStatusLabel(
+                              linkedApplication?.status ?? data.applicationSummary?.status,
+                            )}
+                          </Badge>
+                        </div>
+                        <div className="p-3 bp-sm:p-4">
+                          <p className="text-muted-foreground">신청일</p>
+                          <p className="mt-2 font-semibold tabular-nums text-foreground">
+                            {linkedApplication?.createdAt
+                              ? formatDate(linkedApplication.createdAt)
+                              : data.createdAt
+                                ? formatDate(data.createdAt)
+                                : "-"}
+                          </p>
+                        </div>
+                        <div className="p-3 bp-sm:p-4">
+                          <p className="text-muted-foreground">희망 작업일</p>
+                          <p className="mt-2 break-words font-semibold text-foreground">
+                            {linkedApplication?.reservationLabel ??
+                              data.applicationSummary?.reservationLabel ??
+                              "예약 정보 없음"}
+                          </p>
+                        </div>
+                        <div className="p-3 bp-sm:p-4">
+                          <p className="text-muted-foreground">서비스 금액</p>
+                          <p className="mt-2 font-semibold tabular-nums text-foreground">
+                            {typeof linkedApplication?.totalPrice === "number"
+                              ? formatCurrency(linkedApplication.totalPrice)
+                              : stringingFee > 0
+                                ? formatCurrency(stringingFee)
+                                : "결제 정보 확인"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+                            <span>라켓·스트링 상세</span>
+                            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                          </summary>
+                          <div className="grid gap-3 border-t border-border/50 p-3 bp-md:grid-cols-2">
+                            {linkedApplicationDisplayLines.map((line, index) => {
+                              const racketLabel =
+                                line.racketLabel ||
+                                line.racketType ||
+                                `${racketBrandLabel(data.brand)} ${data.model}`;
+                              const stringName =
+                                line.stringName ||
+                                linkedApplication?.stringNames?.join(", ") ||
+                                data.applicationSummary?.stringNames.join(", ") ||
+                                (hasStringingCost ? "관리자 확인 중" : "선택된 스트링 정보 없음");
+                              const tensionMain =
+                                line.tensionMain ||
+                                linkedApplication?.tensionSummary ||
+                                data.applicationSummary?.tensionSummary ||
+                                "-";
+                              const tensionCross =
+                                line.tensionCross && line.tensionCross !== tensionMain
+                                  ? line.tensionCross
+                                  : null;
+
+                              return (
+                                <div
+                                  key={line.id ?? `${data.id}-line-${index}`}
+                                  className="border-t border-border/70 py-3 text-ui-body-sm first:border-t-0"
+                                >
+                                  <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                                    <p className="min-w-0 break-words font-semibold text-foreground">
+                                      {racketLabel}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className="w-fit max-w-full whitespace-normal break-words text-left"
+                                    >
+                                      {stringName}
+                                    </Badge>
+                                  </div>
+                                  <dl className="mt-3 space-y-2 text-foreground">
+                                    <div className="flex gap-2">
+                                      <dt className="w-20 shrink-0 text-muted-foreground">텐션</dt>
+                                      <dd className="min-w-0 break-words">
+                                        메인 {tensionMain}
+                                        {tensionCross ? ` / 크로스 ${tensionCross}` : ""}
+                                      </dd>
+                                    </div>
+                                    {line.note || linkedApplication?.requirements ? (
+                                      <div className="flex gap-2">
+                                        <dt className="w-20 shrink-0 text-muted-foreground">
+                                          요청사항
+                                        </dt>
+                                        <dd className="min-w-0 whitespace-pre-wrap break-words">
+                                          {line.note ?? linkedApplication?.requirements}
+                                        </dd>
+                                      </div>
+                                    ) : null}
+                                  </dl>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </details>
+                      </div>
+
+                      <details className="group overflow-hidden rounded-xl bg-muted/10 text-ui-body-sm text-foreground ring-1 ring-border/40">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+                          <span>장착·출고 상세</span>
+                          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                        </summary>
+                        <div className="space-y-3 border-t border-border/50 p-3">
+                          <div>
+                            <p className="font-semibold text-foreground">장착·출고 안내</p>
+                            <p className="mt-1 text-muted-foreground">
+                              매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다.
+                            </p>
+                          </div>
+                          <dl className="grid gap-3 bp-sm:grid-cols-2">
+                            <div>
+                              <dt className="text-muted-foreground">장착 방식</dt>
+                              <dd className="mt-1 font-medium">매장 장착</dd>
                             </div>
-                            <dl className="mt-3 space-y-2 text-foreground">
-                              <div className="flex gap-2">
-                                <dt className="w-20 shrink-0 text-muted-foreground">텐션</dt>
-                                <dd className="min-w-0 break-words">
-                                  메인 {tensionMain}
-                                  {tensionCross ? ` / 크로스 ${tensionCross}` : ""}
-                                </dd>
-                              </div>
-                              {line.note || linkedApplication?.requirements ? (
-                                <div className="flex gap-2">
-                                  <dt className="w-20 shrink-0 text-muted-foreground">요청사항</dt>
-                                  <dd className="min-w-0 whitespace-pre-wrap break-words">
-                                    {line.note ?? linkedApplication?.requirements}
+                            <div>
+                              <dt className="text-muted-foreground">출고 방식</dt>
+                              <dd className="mt-1 font-medium">
+                                {isVisitPickup ? "매장 수령" : "대여 라켓 출고"}
+                              </dd>
+                            </div>
+                            {outboundTrackingNo ? (
+                              <>
+                                <div>
+                                  <dt className="text-muted-foreground">출고 택배사</dt>
+                                  <dd className="mt-1 font-medium">
+                                    {getCourierLabel(outboundCourier ?? undefined)}
                                   </dd>
                                 </div>
-                              ) : null}
-                            </dl>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    </details>
-                  </div>
+                                <div>
+                                  <dt className="text-muted-foreground">출고 운송장</dt>
+                                  <dd className="mt-1 break-all font-medium">
+                                    {outboundTrackingNo}
+                                  </dd>
+                                </div>
+                                <div>
+                                  <dt className="text-muted-foreground">출고일</dt>
+                                  <dd className="mt-1 font-medium">
+                                    {outboundShippedAt
+                                      ? formatDate(String(outboundShippedAt))
+                                      : "출고일 확인 중"}
+                                  </dd>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="bp-sm:col-span-2">
+                                <dt className="text-muted-foreground">출고 운송장</dt>
+                                <dd className="mt-1 font-medium text-muted-foreground">
+                                  관리자가 대여 라켓에 스트링을 장착한 뒤 출고 운송장을 등록하면
+                                  이곳에서 확인할 수 있습니다.
+                                </dd>
+                              </div>
+                            )}
+                            {linkedApplication?.shippingInfo?.deliveryRequest ? (
+                              <div className="bp-sm:col-span-2">
+                                <dt className="text-muted-foreground">배송 요청사항</dt>
+                                <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
+                                  {linkedApplication.shippingInfo.deliveryRequest}
+                                </dd>
+                              </div>
+                            ) : null}
+                          </dl>
+                        </div>
+                      </details>
 
-                  <details className="group overflow-hidden rounded-xl bg-muted/10 text-ui-body-sm text-foreground ring-1 ring-border/40">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
-                      <span>장착·출고 상세</span>
-                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div className="space-y-3 border-t border-border/50 p-3">
-                    <div>
-                      <p className="font-semibold text-foreground">장착·출고 안내</p>
-                      <p className="mt-1 text-muted-foreground">
-                        매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다.
+                      <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
+                        {data.stringingApplicationId ? (
+                          <ServiceReviewCTA
+                            applicationId={data.stringingApplicationId}
+                            userConfirmedAt={linkedApplication?.userConfirmedAt ?? null}
+                            className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
+                          />
+                        ) : null}
+                      </div>
+                    </>
+                  ) : canApplyStringService ? (
+                    <div className="flex flex-col gap-3 border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                      <p className="text-muted-foreground">
+                        대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
+                      </p>
+                      <Button
+                        asChild
+                        className="h-9 w-full gap-2 whitespace-normal break-keep bp-sm:w-auto"
+                      >
+                        <Link href={applyHref}>교체서비스 신청하기</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-ui-body-sm text-muted-foreground">
+                      교체서비스 정보를 확인 중입니다.
+                    </p>
+                  )}
+                </MypageDetailCard>
+              </section>
+            ) : null}
+          </div>
+
+          <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-span-2 bp-lg:row-start-1 bp-md:space-y-5">
+            <MypageDetailCard
+              title="결제 요약"
+              icon={<CreditCard className="h-5 w-5 text-primary" />}
+            >
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
+                    <p className="mt-1 break-words font-semibold text-foreground">
+                      {displayStatusLabel}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
+                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                      {fee.toLocaleString()}원
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">보증금</p>
+                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                      {deposit.toLocaleString()}원
+                    </p>
+                  </div>
+                </div>
+
+                {stringPrice > 0 && (
+                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-ui-label font-medium text-muted-foreground">
+                        스트링 상품 금액
+                      </p>
+                      <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                        {stringPrice.toLocaleString()}원
                       </p>
                     </div>
-                    <dl className="grid gap-3 bp-sm:grid-cols-2">
-                      <div>
-                        <dt className="text-muted-foreground">장착 방식</dt>
-                        <dd className="mt-1 font-medium">매장 장착</dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">출고 방식</dt>
-                        <dd className="mt-1 font-medium">
-                          {isVisitPickup ? "매장 수령" : "대여 라켓 출고"}
-                        </dd>
-                      </div>
-                      {outboundTrackingNo ? (
-                        <>
-                          <div>
-                            <dt className="text-muted-foreground">출고 택배사</dt>
-                            <dd className="mt-1 font-medium">
-                              {getCourierLabel(outboundCourier ?? undefined)}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-muted-foreground">출고 운송장</dt>
-                            <dd className="mt-1 break-all font-medium">{outboundTrackingNo}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-muted-foreground">출고일</dt>
-                            <dd className="mt-1 font-medium">
-                              {outboundShippedAt
-                                ? formatDate(String(outboundShippedAt))
-                                : "출고일 확인 중"}
-                            </dd>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="bp-sm:col-span-2">
-                          <dt className="text-muted-foreground">출고 운송장</dt>
-                          <dd className="mt-1 font-medium text-muted-foreground">
-                            관리자가 대여 라켓에 스트링을 장착한 뒤 출고 운송장을 등록하면 이곳에서
-                            확인할 수 있습니다.
-                          </dd>
-                        </div>
-                      )}
-                      {linkedApplication?.shippingInfo?.deliveryRequest ? (
-                        <div className="bp-sm:col-span-2">
-                          <dt className="text-muted-foreground">배송 요청사항</dt>
-                          <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
-                            {linkedApplication.shippingInfo.deliveryRequest}
-                          </dd>
-                        </div>
-                      ) : null}
-                    </dl>
-                    </div>
-                  </details>
-
-                  <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
-                    {data.stringingApplicationId ? (
-                      <ServiceReviewCTA
-                        applicationId={data.stringingApplicationId}
-                        userConfirmedAt={linkedApplication?.userConfirmedAt ?? null}
-                        className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
-                      />
-                    ) : null}
                   </div>
-                </>
-              ) : canApplyStringService ? (
-                <div className="flex flex-col gap-3 border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                  <p className="text-muted-foreground">
-                    대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
-                  </p>
-                  <Button
-                    asChild
-                    className="h-9 w-full gap-2 whitespace-normal break-keep bp-sm:w-auto"
-                  >
-                    <Link href={applyHref}>
-                      교체서비스 신청하기
-                    </Link>
-                  </Button>
+                )}
+
+                {stringingFee > 0 && (
+                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-ui-label font-medium text-muted-foreground">
+                        교체서비스 비용
+                      </p>
+                      <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                        {stringingFee.toLocaleString()}원
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
+                  <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">총 결제 금액</p>
+                    <p className="mt-1 break-words text-ui-section-title font-semibold text-primary tabular-nums">
+                      {total.toLocaleString()}원
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-ui-body-sm text-muted-foreground">
-                  교체서비스 정보를 확인 중입니다.
-                </p>
-              )}
-          </MypageDetailCard>
-        </section>
-      ) : null}
+              </div>
+            </MypageDetailCard>
+
+            <MypageDetailCard
+              title="배송/수령 요약"
+              icon={<Truck className="h-5 w-5 text-primary" />}
+            >
+              <div className="grid gap-4">
+                <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
+                <MypageInfoField
+                  label="수령/출고 정보"
+                  value={
+                    isVisitPickup
+                      ? outboundTrackingNo
+                        ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
+                        : "매장 수령 준비 중입니다."
+                      : outboundTrackingNo
+                        ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
+                        : "출고 운송장 등록 전입니다."
+                  }
+                  valueClassName="break-all"
+                />
+              </div>
+            </MypageDetailCard>
+
+            <MypageDetailCard title="반납 요약" icon={<Truck className="h-5 w-5 text-primary" />}>
+              <div className="grid gap-4">
+                <MypageInfoField
+                  label="반납 예정일"
+                  value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+                />
+                <MypageInfoField label="반납 방식" value={returnMethodLabel} />
+                <MypageInfoField
+                  label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"}
+                  value={returnTrackingNo}
+                  fallback="반납 운송장이 아직 등록되지 않았습니다."
+                  valueClassName="break-all"
+                />
+              </div>
+            </MypageDetailCard>
+          </aside>
         </div>
-
-        <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-span-2 bp-lg:row-start-1 bp-md:space-y-5">
-        <MypageDetailCard title="결제 요약" icon={<CreditCard className="h-5 w-5 text-primary" />}>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
-                <p className="mt-1 break-words font-semibold text-foreground">
-                  {displayStatusLabel}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
-                <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                  {fee.toLocaleString()}원
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">보증금</p>
-                <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                  {deposit.toLocaleString()}원
-                </p>
-              </div>
-            </div>
-
-            {stringPrice > 0 && (
-              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">
-                    스트링 상품 금액
-                  </p>
-                  <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                    {stringPrice.toLocaleString()}원
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {stringingFee > 0 && (
-              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <p className="text-ui-label font-medium text-muted-foreground">교체서비스 비용</p>
-                  <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                    {stringingFee.toLocaleString()}원
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
-              <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <div className="flex-1">
-                <p className="text-ui-label font-medium text-muted-foreground">총 결제 금액</p>
-                <p className="mt-1 break-words text-ui-section-title font-semibold text-primary tabular-nums">
-                  {total.toLocaleString()}원
-                </p>
-              </div>
-            </div>
-          </div>
-        </MypageDetailCard>
-
-        <MypageDetailCard title="배송/수령 요약" icon={<Truck className="h-5 w-5 text-primary" />}>
-          <div className="grid gap-4">
-            <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
-            <MypageInfoField
-              label="수령/출고 정보"
-              value={
-                isVisitPickup
-                  ? outboundTrackingNo
-                    ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
-                    : "매장 수령 준비 중입니다."
-                  : outboundTrackingNo
-                    ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
-                    : "출고 운송장 등록 전입니다."
-              }
-              valueClassName="break-all"
-            />
-          </div>
-        </MypageDetailCard>
-
-        <MypageDetailCard title="반납 요약" icon={<Truck className="h-5 w-5 text-primary" />}>
-          <div className="grid gap-4">
-            <MypageInfoField
-              label="반납 예정일"
-              value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-            />
-            <MypageInfoField label="반납 방식" value={returnMethodLabel} />
-            <MypageInfoField
-              label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"}
-              value={returnTrackingNo}
-              fallback="반납 운송장이 아직 등록되지 않았습니다."
-              valueClassName="break-all"
-            />
-          </div>
-        </MypageDetailCard>
-
-        </aside>
-      </div>
 
         <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
@@ -1150,224 +1156,236 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <div className="space-y-4 border-t border-border/60 p-4 bp-lg:p-5">
-            <MypageDetailCard title="배송/수령 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="rounded-xl bg-muted/10 shadow-none ring-border/40">
-          <div className="grid gap-4 bp-sm:grid-cols-2">
-            <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
-            <div className="border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <p className="text-ui-label font-medium text-muted-foreground">수령/출고 정보</p>
-              <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                {isVisitPickup
-                  ? outboundTrackingNo
-                    ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
-                    : "매장 수령 준비 중입니다."
-                  : outboundTrackingNo
-                    ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
-                    : "출고 운송장 등록 전입니다."}
-              </p>
-            </div>
-            <MypageInfoField
-              label="출고 택배사"
-              value={outboundCourier ? getCourierLabel(outboundCourier) : null}
-              fallback={isVisitPickup ? "방문 수령" : "출고 택배사 확인 중"}
-            />
-            <MypageInfoField
-              label="출고 운송장"
-              value={outboundTrackingNo}
-              fallback={
-                isVisitPickup ? "방문 수령 준비 상태로 안내됩니다." : "출고 운송장 등록 전입니다."
-              }
-              valueClassName="break-all"
-            />
-            <MypageInfoField
-              label="출고일"
-              value={
-                outboundShippedAt
-                  ? formatDateTime(
-                      outboundShippedAt instanceof Date
-                        ? outboundShippedAt.toISOString()
-                        : outboundShippedAt,
-                    )
-                  : null
-              }
-              fallback="출고일 확인 중"
-            />
-          </div>
-        </MypageDetailCard>
+            <MypageDetailCard
+              title="배송/수령 상세"
+              icon={<Truck className="h-5 w-5 text-primary" />}
+              className="rounded-xl bg-muted/10 shadow-none ring-border/40"
+            >
+              <div className="grid gap-4 bp-sm:grid-cols-2">
+                <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
+                <div className="border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <p className="text-ui-label font-medium text-muted-foreground">수령/출고 정보</p>
+                  <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
+                    {isVisitPickup
+                      ? outboundTrackingNo
+                        ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
+                        : "매장 수령 준비 중입니다."
+                      : outboundTrackingNo
+                        ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
+                        : "출고 운송장 등록 전입니다."}
+                  </p>
+                </div>
+                <MypageInfoField
+                  label="출고 택배사"
+                  value={outboundCourier ? getCourierLabel(outboundCourier) : null}
+                  fallback={isVisitPickup ? "방문 수령" : "출고 택배사 확인 중"}
+                />
+                <MypageInfoField
+                  label="출고 운송장"
+                  value={outboundTrackingNo}
+                  fallback={
+                    isVisitPickup
+                      ? "방문 수령 준비 상태로 안내됩니다."
+                      : "출고 운송장 등록 전입니다."
+                  }
+                  valueClassName="break-all"
+                />
+                <MypageInfoField
+                  label="출고일"
+                  value={
+                    outboundShippedAt
+                      ? formatDateTime(
+                          outboundShippedAt instanceof Date
+                            ? outboundShippedAt.toISOString()
+                            : outboundShippedAt,
+                        )
+                      : null
+                  }
+                  fallback="출고일 확인 중"
+                />
+              </div>
+            </MypageDetailCard>
 
-        <MypageDetailCard title="반납 상세" icon={<Truck className="h-5 w-5 text-primary" />} className="rounded-xl bg-muted/10 shadow-none ring-border/40">
-          <div className="grid gap-4 bp-sm:grid-cols-2">
-            <MypageInfoField
-              label="반납 예정일"
-              value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-            />
-            <MypageInfoField label="반납 방식" value={returnMethodLabel} />
-            <MypageInfoField
-              label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"}
-              value={returnTrackingNo}
-              fallback="반납 운송장이 아직 등록되지 않았습니다."
-              valueClassName="break-all"
-            />
-            <MypageInfoField
-              label="반납 확인"
-              value={data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 전"}
-            />
-          </div>
-        </MypageDetailCard>
+            <MypageDetailCard
+              title="반납 상세"
+              icon={<Truck className="h-5 w-5 text-primary" />}
+              className="rounded-xl bg-muted/10 shadow-none ring-border/40"
+            >
+              <div className="grid gap-4 bp-sm:grid-cols-2">
+                <MypageInfoField
+                  label="반납 예정일"
+                  value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+                />
+                <MypageInfoField label="반납 방식" value={returnMethodLabel} />
+                <MypageInfoField
+                  label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"}
+                  value={returnTrackingNo}
+                  fallback="반납 운송장이 아직 등록되지 않았습니다."
+                  valueClassName="break-all"
+                />
+                <MypageInfoField
+                  label="반납 확인"
+                  value={data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 전"}
+                />
+              </div>
+            </MypageDetailCard>
 
-        <MypageDetailCard title="신청 정보" icon={<Briefcase className="h-5 w-5 text-primary" />} className="rounded-xl bg-muted/10 shadow-none ring-border/40">
-          <div className="grid gap-4">
-            <MypageInfoField label="신청번호" value={data.id} valueClassName="break-all" />
-            <MypageInfoField
-              label="신청일"
-              value={data.createdAt ? formatDateTime(data.createdAt) : null}
-              fallback="신청일 확인 중"
-            />
-            <p className="text-ui-body-sm text-muted-foreground">
-              신청자 연락처는 계정 정보 기준으로 관리됩니다. 연락처 변경이 필요하면 고객센터로
-              문의해주세요.
-            </p>
-          </div>
-        </MypageDetailCard>
+            <MypageDetailCard
+              title="신청 정보"
+              icon={<Briefcase className="h-5 w-5 text-primary" />}
+              className="rounded-xl bg-muted/10 shadow-none ring-border/40"
+            >
+              <div className="grid gap-4">
+                <MypageInfoField label="신청번호" value={data.id} valueClassName="break-all" />
+                <MypageInfoField
+                  label="신청일"
+                  value={data.createdAt ? formatDateTime(data.createdAt) : null}
+                  fallback="신청일 확인 중"
+                />
+                <p className="text-ui-body-sm text-muted-foreground">
+                  신청자 연락처는 계정 정보 기준으로 관리됩니다. 연락처 변경이 필요하면 고객센터로
+                  문의해주세요.
+                </p>
+              </div>
+            </MypageDetailCard>
           </div>
         </details>
 
-
-      <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
-          <span>진행 단계</span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-        </summary>
-        <Card className="border-0 bg-transparent shadow-none">
-        <CardHeader className="hidden border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-          <CardTitle className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-primary" />
+        <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
             <span>진행 단계</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 bp-sm:p-5">
-          <div className="grid gap-3">
-            <div className="flex items-start gap-4 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <Card className="border-0 bg-transparent shadow-none">
+            <CardHeader className="hidden border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
+              <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-ui-body-sm font-medium text-foreground">대여 시작</p>
-                <p className="text-ui-body-sm text-foreground/80">
-                  {data.outAt ? formatDateTime(data.outAt) : "수령 확인 대기"}
-                </p>
-              </div>
-            </div>
-
-            {outboundTrackingNo && (
-              <div className="flex items-start gap-4 py-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                  <Truck className="h-5 w-5 text-primary" />
+                <span>진행 단계</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 bp-sm:p-5">
+              <div className="grid gap-3">
+                <div className="flex items-start gap-4 py-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-ui-body-sm font-medium text-foreground">대여 시작</p>
+                    <p className="text-ui-body-sm text-foreground/80">
+                      {data.outAt ? formatDateTime(data.outAt) : "수령 확인 대기"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-ui-body-sm font-medium text-foreground">
-                    {isVisitPickup ? "매장 수령 준비 완료" : "출고 운송장 등록"}
-                  </p>
-                  <p className="text-ui-label text-foreground/75">
-                    {fmtDateOnly(outboundShippedAt)}
-                  </p>
-                  <p className="text-ui-body-sm mt-1">
-                    {isVisitPickup ? (
-                      <>준비 확인 번호 · {outboundTrackingNo ?? "-"}</>
-                    ) : (
-                      <>
-                        {getCourierLabel(outboundCourier ?? undefined)} ·{" "}
-                        <a
-                          className="underline underline-offset-2"
-                          href={getTrackHref(outboundCourier ?? undefined, outboundTrackingNo)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {outboundTrackingNo ?? "-"}
-                        </a>
-                      </>
-                    )}
-                  </p>
+
+                {outboundTrackingNo && (
+                  <div className="flex items-start gap-4 py-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                      <Truck className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-ui-body-sm font-medium text-foreground">
+                        {isVisitPickup ? "매장 수령 준비 완료" : "출고 운송장 등록"}
+                      </p>
+                      <p className="text-ui-label text-foreground/75">
+                        {fmtDateOnly(outboundShippedAt)}
+                      </p>
+                      <p className="text-ui-body-sm mt-1">
+                        {isVisitPickup ? (
+                          <>준비 확인 번호 · {outboundTrackingNo ?? "-"}</>
+                        ) : (
+                          <>
+                            {getCourierLabel(outboundCourier ?? undefined)} ·{" "}
+                            <a
+                              className="underline underline-offset-2"
+                              href={getTrackHref(outboundCourier ?? undefined, outboundTrackingNo)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {outboundTrackingNo ?? "-"}
+                            </a>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-4 py-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                    <Clock className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-ui-body-sm font-medium text-foreground">반납 예정</p>
+                    <p className="text-ui-body-sm text-foreground/80">
+                      {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 반납 운송장 등록(사용자 발송) */}
+                {returnTrackingNo && (
+                  <div className="flex items-start gap-4 py-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/25">
+                      <Truck className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-ui-body-sm font-medium text-foreground">
+                        {isVisitPickup ? "매장 반환 접수 완료" : "반납 운송장 등록"}
+                      </p>
+                      <p className="text-ui-label text-foreground/75">
+                        {fmtDateOnly(getShippedAtValue(data.shipping?.return))}
+                      </p>
+                      <p className="text-ui-body-sm mt-1">
+                        {isVisitPickup ? (
+                          <>접수 번호 · {returnTrackingNo ?? "-"}</>
+                        ) : (
+                          <>
+                            {getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} ·{" "}
+                            <a
+                              className="underline underline-offset-2"
+                              href={getTrackHref(
+                                getCourierValue(data.shipping?.return) ?? undefined,
+                                returnTrackingNo,
+                              )}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {returnTrackingNo ?? "-"}
+                            </a>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-4 py-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/25">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-ui-body-sm font-medium text-foreground">반납 완료</p>
+                    <p className="text-ui-body-sm text-foreground/80">
+                      {data.returnedAt ? formatDateTime(data.returnedAt) : "-"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 py-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-ui-body-sm font-medium text-foreground">보증금 환불</p>
+                    <p className="text-ui-body-sm text-foreground/80">
+                      {data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : "-"}
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
-
-            <div className="flex items-start gap-4 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                <Clock className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-ui-body-sm font-medium text-foreground">반납 예정</p>
-                <p className="text-ui-body-sm text-foreground/80">
-                  {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                </p>
-              </div>
-            </div>
-
-            {/* 반납 운송장 등록(사용자 발송) */}
-            {returnTrackingNo && (
-              <div className="flex items-start gap-4 py-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/25">
-                  <Truck className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-ui-body-sm font-medium text-foreground">
-                    {isVisitPickup ? "매장 반환 접수 완료" : "반납 운송장 등록"}
-                  </p>
-                  <p className="text-ui-label text-foreground/75">
-                    {fmtDateOnly(getShippedAtValue(data.shipping?.return))}
-                  </p>
-                  <p className="text-ui-body-sm mt-1">
-                    {isVisitPickup ? (
-                      <>접수 번호 · {returnTrackingNo ?? "-"}</>
-                    ) : (
-                      <>
-                        {getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} ·{" "}
-                        <a
-                          className="underline underline-offset-2"
-                          href={getTrackHref(
-                            getCourierValue(data.shipping?.return) ?? undefined,
-                            returnTrackingNo,
-                          )}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {returnTrackingNo ?? "-"}
-                        </a>
-                      </>
-                    )}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-start gap-4 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/25">
-                <CheckCircle className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-ui-body-sm font-medium text-foreground">반납 완료</p>
-                <p className="text-ui-body-sm text-foreground/80">
-                  {data.returnedAt ? formatDateTime(data.returnedAt) : "-"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                <CreditCard className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-ui-body-sm font-medium text-foreground">보증금 환불</p>
-                <p className="text-ui-body-sm text-foreground/80">
-                  {data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : "-"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-        </Card>
-      </details>
-
+            </CardContent>
+          </Card>
+        </details>
       </SiteContainer>
 
       {/* 다이얼로그는 클릭 시점에만 마운트해 초기 번들을 경량화 */}

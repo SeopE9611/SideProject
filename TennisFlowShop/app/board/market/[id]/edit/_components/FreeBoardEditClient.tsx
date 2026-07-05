@@ -1328,7 +1328,9 @@ export default function FreeBoardEditClient({ id }: Props) {
                         isCompactSticky && "px-4 py-2.5",
                       )}
                     >
-                      <h3 className="text-ui-body-sm font-semibold text-foreground">수정 전 확인</h3>
+                      <h3 className="text-ui-body-sm font-semibold text-foreground">
+                        수정 전 확인
+                      </h3>
                       <div className="flex items-center gap-2 text-ui-label text-muted-foreground">
                         <span>
                           {checklistDoneCount}/{checklist.length} 완료

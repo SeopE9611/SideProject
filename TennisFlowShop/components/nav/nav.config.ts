@@ -62,8 +62,5 @@ export const NAV_LINKS = {
   ],
 
   /** 커뮤니티형 게시판: 닫힘 상태에서는 리뷰만, 열림 상태에서는 주요 게시판 링크 복구 */
-  boards: [
-    ...communityBoardLinks,
-    { name: "리뷰", href: "/reviews" },
-  ],
+  boards: [...communityBoardLinks, { name: "리뷰", href: "/reviews" }],
 } as const;

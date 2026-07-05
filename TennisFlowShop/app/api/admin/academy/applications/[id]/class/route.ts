@@ -150,20 +150,24 @@ async function autoCloseClassWhenConfirmedCapacityReached(db: Db, academyClass: 
     typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
   if (!capacity || capacity <= 0) return { classAutoClosed: false, confirmedCount: null, capacity };
 
-  const confirmedCount = await db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME).countDocuments({
-    ...buildClassApplicationFilter(classId),
-    status: "confirmed",
-    adminDeletedAt: { $exists: false },
-  });
+  const confirmedCount = await db
+    .collection<AcademyLessonApplicationDoc>(COLLECTION_NAME)
+    .countDocuments({
+      ...buildClassApplicationFilter(classId),
+      status: "confirmed",
+      adminDeletedAt: { $exists: false },
+    });
 
   if (academyClass.status !== "visible" || confirmedCount < capacity) {
     return { classAutoClosed: false, confirmedCount, capacity };
   }
 
-  const updateResult = await db.collection(CLASS_COLLECTION_NAME).updateOne(
-    { _id: academyClass._id, status: "visible" },
-    { $set: { status: "closed", updatedAt: new Date().toISOString() } },
-  );
+  const updateResult = await db
+    .collection(CLASS_COLLECTION_NAME)
+    .updateOne(
+      { _id: academyClass._id, status: "visible" },
+      { $set: { status: "closed", updatedAt: new Date().toISOString() } },
+    );
 
   return { classAutoClosed: updateResult.modifiedCount > 0, confirmedCount, capacity };
 }
@@ -176,7 +180,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ success: false, message: "유효하지 않은 신청 ID입니다." }, { status: 400 });
+    return NextResponse.json(
+      { success: false, message: "유효하지 않은 신청 ID입니다." },
+      { status: 400 },
+    );
   }
 
   const body = (await req.json().catch(() => null)) as unknown;
@@ -184,14 +191,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const classId = trimString(payload.classId, 100);
   const reason = trimString(payload.reason, 500);
   if (!ObjectId.isValid(classId)) {
-    return NextResponse.json({ success: false, message: "유효하지 않은 클래스 ID입니다." }, { status: 400 });
+    return NextResponse.json(
+      { success: false, message: "유효하지 않은 클래스 ID입니다." },
+      { status: 400 },
+    );
   }
 
   const _id = new ObjectId(id);
   const collection = guard.db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME);
   const current = await collection.findOne({ _id, adminDeletedAt: { $exists: false } });
   if (!current) {
-    return NextResponse.json({ success: false, message: "신청 내역을 찾을 수 없습니다." }, { status: 404 });
+    return NextResponse.json(
+      { success: false, message: "신청 내역을 찾을 수 없습니다." },
+      { status: 404 },
+    );
   }
   if (current.status === "cancelled") {
     return NextResponse.json(
@@ -204,7 +217,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .collection(CLASS_COLLECTION_NAME)
     .findOne({ _id: new ObjectId(classId) });
   if (!academyClass) {
-    return NextResponse.json({ success: false, message: "클래스를 찾을 수 없습니다." }, { status: 404 });
+    return NextResponse.json(
+      { success: false, message: "클래스를 찾을 수 없습니다." },
+      { status: 404 },
+    );
   }
   if (academyClass.status !== "visible" && academyClass.status !== "closed") {
     return NextResponse.json(
@@ -226,7 +242,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
   }
 
-  const capacity = typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
+  const capacity =
+    typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
   if (current.status === "confirmed" && capacity && capacity > 0) {
     const confirmedCount = await collection.countDocuments({
       ...buildClassApplicationFilter(classId),
@@ -269,7 +286,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   );
 
   if (!updated) {
-    return NextResponse.json({ success: false, message: "신청 내역을 찾을 수 없습니다." }, { status: 404 });
+    return NextResponse.json(
+      { success: false, message: "신청 내역을 찾을 수 없습니다." },
+      { status: 404 },
+    );
   }
 
   let classAutoClosed = false;

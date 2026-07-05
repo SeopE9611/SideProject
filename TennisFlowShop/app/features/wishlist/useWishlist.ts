@@ -13,6 +13,10 @@ export type WishlistItem = WishlistOptionPayload & {
   id: string;
   name: string;
   price: number;
+  regularPrice?: number | null;
+  salePrice?: number | null;
+  discountAmount?: number | null;
+  discountRate?: number | null;
   image: string;
   stock: number;
   createdAt: string;

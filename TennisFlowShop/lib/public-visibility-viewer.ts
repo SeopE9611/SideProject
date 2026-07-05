@@ -32,10 +32,9 @@ export async function getVisibilityViewerFromUserId(
     return { isAdmin: false };
   }
 
-  const user = await db.collection("users").findOne(
-    { _id: new ObjectId(userId) },
-    { projection: { role: 1 } },
-  );
+  const user = await db
+    .collection("users")
+    .findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
 
   return {
     isAdmin: isAdminRole(String(user?.role ?? "")),

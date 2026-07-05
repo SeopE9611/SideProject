@@ -210,9 +210,7 @@ export default function ReviewsClient() {
             <Star className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className={adminTypography.pageTitle}>
-              리뷰 관리
-            </h1>
+            <h1 className={adminTypography.pageTitle}>리뷰 관리</h1>
             <p className={adminTypography.metaMuted}>
               고객 리뷰를 관리하고 서비스 품질을 향상시키세요
             </p>

@@ -31,7 +31,11 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function withSearchFilter(baseFilter: Filter<Document>, searchFields: string[], escapedQuery: string) {
+function withSearchFilter(
+  baseFilter: Filter<Document>,
+  searchFields: string[],
+  escapedQuery: string,
+) {
   const searchFilter: Filter<Document> = {
     $or: searchFields.map((field) => ({ [field]: { $regex: escapedQuery, $options: "i" } })),
   };

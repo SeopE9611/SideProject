@@ -1,5 +1,6 @@
 "use client";
 
+import { getCustomerOrderStatusLabel } from "@/app/mypage/_lib/flow-display";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { StackedCardListSkeleton } from "@/components/system/loading";
@@ -17,7 +18,6 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { getCustomerOrderStatusLabel } from "@/app/mypage/_lib/flow-display";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -54,6 +54,10 @@ interface Order {
     name: string;
     quantity: number;
     price: number;
+    regularPrice?: number | null;
+    salePrice?: number | null;
+    discountAmount?: number | null;
+    discountRate?: number | null;
     imageUrl?: string | null;
     kind?: "racket" | "string" | "product";
     selectedGauge?: string | null;
@@ -387,22 +391,24 @@ export default function OrderList() {
 
         // 모바일 보조 CTA: "교체 신청" 또는 "교체서비스 보기" 중 하나라도 있으면 2버튼 레이아웃
         const showMobileSecondCTA = Boolean(stringServiceCTAHref);
-        const confirmedOrderReviewLabel = order.unreviewedCount && order.unreviewedCount > 0
-          ? "후기를 남길 수 있어요."
-          : order.reviewAllDone === true
-            ? "이용이 완료되었습니다."
-            : "상세에서 후기 작성 가능 여부를 확인해보세요.";
-        const nextActionLabel = isDelivered && !isReviewStatusConfirmed
-          ? "상품을 받으셨다면 구매 확정을 진행해주세요."
-          : order.cancelStatus === "requested"
-            ? "취소 요청 확인을 기다려주세요."
-            : stringServiceCTAHref
-              ? "교체서비스 신청을 이어갈 수 있어요."
-              : isReviewStatusConfirmed
-                ? confirmedOrderReviewLabel
-                : ["결제완료", "처리중", "배송중"].includes(order.status)
-                  ? "주문 진행 상황이 변경되면 이곳에서 안내됩니다."
-                  : "상세에서 주문 진행 내용을 확인할 수 있어요.";
+        const confirmedOrderReviewLabel =
+          order.unreviewedCount && order.unreviewedCount > 0
+            ? "후기를 남길 수 있어요."
+            : order.reviewAllDone === true
+              ? "이용이 완료되었습니다."
+              : "상세에서 후기 작성 가능 여부를 확인해보세요.";
+        const nextActionLabel =
+          isDelivered && !isReviewStatusConfirmed
+            ? "상품을 받으셨다면 구매 확정을 진행해주세요."
+            : order.cancelStatus === "requested"
+              ? "취소 요청 확인을 기다려주세요."
+              : stringServiceCTAHref
+                ? "교체서비스 신청을 이어갈 수 있어요."
+                : isReviewStatusConfirmed
+                  ? confirmedOrderReviewLabel
+                  : ["결제완료", "처리중", "배송중"].includes(order.status)
+                    ? "주문 진행 상황이 변경되면 이곳에서 안내됩니다."
+                    : "상세에서 주문 진행 내용을 확인할 수 있어요.";
 
         return (
           <Card
@@ -420,16 +426,16 @@ export default function OrderList() {
               {/* Header */}
               <div className="mb-4 flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
-                      <span className="font-semibold text-foreground">주문</span>
-                      <span className="tabular-nums">주문번호 끝 {String(order.id).slice(-6)}</span>
-                    </div>
-                    <h3 className="line-clamp-2 break-keep text-ui-body font-semibold leading-snug text-foreground bp-sm:text-ui-card-title-lg">
-                      {getOrderCompositionTitle(order)}
-                    </h3>
-                    <p className="mt-1 text-ui-label tabular-nums text-muted-foreground">
-                      주문일 {formatDate(order.date)}
-                    </p>
+                  <div className="mb-1 flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
+                    <span className="font-semibold text-foreground">주문</span>
+                    <span className="tabular-nums">주문번호 끝 {String(order.id).slice(-6)}</span>
+                  </div>
+                  <h3 className="line-clamp-2 break-keep text-ui-body font-semibold leading-snug text-foreground bp-sm:text-ui-card-title-lg">
+                    {getOrderCompositionTitle(order)}
+                  </h3>
+                  <p className="mt-1 text-ui-label tabular-nums text-muted-foreground">
+                    주문일 {formatDate(order.date)}
+                  </p>
                 </div>
 
                 {/* 상태/취소 관련 영역 */}
@@ -492,7 +498,8 @@ export default function OrderList() {
               {/* Footer */}
               <div className="flex flex-col gap-4 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                 <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
-                  <span className="font-semibold text-foreground">다음 할 일</span> · {nextActionLabel}
+                  <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
+                  {nextActionLabel}
                 </p>
 
                 <div className="hidden bp-sm:flex flex-wrap items-center justify-end gap-2">

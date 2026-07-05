@@ -34,8 +34,10 @@ export function isAdminForceCancelRequired(
   status: string | null | undefined,
   hasTrackingNumber = false,
 ): boolean {
-  return isAdminForceCancelableOrderStatus(status) &&
-    (!isAdminSimpleCancelableOrderStatus(status) || hasTrackingNumber);
+  return (
+    isAdminForceCancelableOrderStatus(status) &&
+    (!isAdminSimpleCancelableOrderStatus(status) || hasTrackingNumber)
+  );
 }
 
 export function isAdminCancelableOrderStatus(status: string | null | undefined): boolean {

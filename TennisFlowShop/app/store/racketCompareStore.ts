@@ -35,8 +35,7 @@ export type CompareRacketItem = {
 };
 
 type ToggleResult =
-  | { ok: true; action: "added" | "removed" }
-  | { ok: false; action: "rejected"; message: string };
+  { ok: true; action: "added" | "removed" } | { ok: false; action: "rejected"; message: string };
 
 interface RacketCompareState {
   items: CompareRacketItem[];

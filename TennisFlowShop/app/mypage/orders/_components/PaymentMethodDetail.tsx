@@ -66,7 +66,9 @@ export default function PaymentMethodDetail({
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-ui-body-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{paymentSummary.userLabel}</div>
-            {paymentSummary.cardDisplayName && <div className="text-ui-body-sm">카드사: {paymentSummary.cardDisplayName}</div>}
+            {paymentSummary.cardDisplayName && (
+              <div className="text-ui-body-sm">카드사: {paymentSummary.cardDisplayName}</div>
+            )}
             {statusLabel && <div className="text-ui-body-sm">결제 상태: {statusLabel}</div>}
           </div>
         ) : bankInfo ? (

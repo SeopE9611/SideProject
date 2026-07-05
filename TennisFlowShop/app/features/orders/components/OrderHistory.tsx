@@ -191,82 +191,82 @@ export default function OrderHistory({
 
   const historyContent = (
     <>
-        {/* 로딩 중일 때 스켈레톤 5줄 */}
-        {isInitialLoading || isPageTransitionLoading ? (
-          Array.from({ length: LIMIT }).map((_, i) => (
-            <div key={i} className="flex animate-pulse space-x-4 py-3">
-              <div className="h-10 w-10 rounded-full bg-muted" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-4 w-full" />
+      {/* 로딩 중일 때 스켈레톤 5줄 */}
+      {isInitialLoading || isPageTransitionLoading ? (
+        Array.from({ length: LIMIT }).map((_, i) => (
+          <div key={i} className="flex animate-pulse space-x-4 py-3">
+            <div className="h-10 w-10 rounded-full bg-muted" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          </div>
+        ))
+      ) : hasDataError ? (
+        <AsyncState
+          kind="error"
+          variant="card"
+          tone="admin"
+          resourceName="주문 처리 이력"
+          onAction={() => {
+            void mutateHistory();
+          }}
+        />
+      ) : /* 빈 상태일 때 메시지 */
+      shouldShowEmptyState ? (
+        <AsyncState kind="empty" variant="card" tone="admin" resourceName="주문 처리 이력" />
+      ) : shouldShowRows ? (
+        /* 실제 데이터 렌더 */
+        pageItems.map((item, idx) => {
+          const displayStatus = getOrderStatusLabelForDisplay(item.status, shippingMethod);
+          const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status, isVisitPickup);
+          return (
+            <div key={idx} className="flex gap-3 py-3 bp-sm:gap-4">
+              <div
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bp-sm:h-10 bp-sm:w-10 ${wrapperClasses}`}
+              >
+                <Icon className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
+                  <span className="break-keep font-semibold leading-snug">{displayStatus}</span>
+                  <span className="text-ui-label text-muted-foreground bp-sm:shrink-0 bp-sm:text-ui-body-sm">
+                    {formatHistoryDate(item.date)}
+                  </span>
+                </div>
+                <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-words">
+                  {getHistoryDescriptionForDisplay(item)}
+                </p>
               </div>
             </div>
-          ))
-        ) : hasDataError ? (
-          <AsyncState
-            kind="error"
-            variant="card"
-            tone="admin"
-            resourceName="주문 처리 이력"
-            onAction={() => {
-              void mutateHistory();
-            }}
-          />
-        ) : /* 빈 상태일 때 메시지 */
-        shouldShowEmptyState ? (
-          <AsyncState kind="empty" variant="card" tone="admin" resourceName="주문 처리 이력" />
-        ) : shouldShowRows ? (
-          /* 실제 데이터 렌더 */
-          pageItems.map((item, idx) => {
-            const displayStatus = getOrderStatusLabelForDisplay(item.status, shippingMethod);
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status, isVisitPickup);
-            return (
-              <div key={idx} className="flex gap-3 py-3 bp-sm:gap-4">
-                <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bp-sm:h-10 bp-sm:w-10 ${wrapperClasses}`}
-                >
-                  <Icon className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
-                    <span className="break-keep font-semibold leading-snug">{displayStatus}</span>
-                    <span className="text-ui-label text-muted-foreground bp-sm:shrink-0 bp-sm:text-ui-body-sm">
-                      {formatHistoryDate(item.date)}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-words">
-                    {getHistoryDescriptionForDisplay(item)}
-                  </p>
-                </div>
-              </div>
-            );
-          })
-        ) : null}
+          );
+        })
+      ) : null}
 
-        {/* 4) 페이지네이션 */}
-        {totalPages > 1 && (
-          <div className="mt-6 flex justify-center gap-3">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              이전
-            </Button>
-            <span className="text-ui-body-sm text-muted-foreground">
-              {page} / {totalPages}
-            </span>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-            >
-              다음
-            </Button>
-          </div>
-        )}
+      {/* 4) 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center gap-3">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            이전
+          </Button>
+          <span className="text-ui-body-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            다음
+          </Button>
+        </div>
+      )}
     </>
   );
 
@@ -275,7 +275,9 @@ export default function OrderHistory({
   return (
     <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
       <CardHeader className="border-b border-border/60 bg-muted/30 pb-3 dark:bg-card rounded-t-xl">
-        <CardTitle className="text-ui-card-title-lg font-semibold bp-sm:text-ui-section-title">처리 이력</CardTitle>
+        <CardTitle className="text-ui-card-title-lg font-semibold bp-sm:text-ui-section-title">
+          처리 이력
+        </CardTitle>
         <p className="text-ui-label text-muted-foreground bp-sm:shrink-0 bp-sm:text-ui-body-sm">
           최신 변경이 맨 위에 표시됩니다.
         </p>

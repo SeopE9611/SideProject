@@ -32,7 +32,10 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { communityBoardClosedResponse, isClosedCommunityType } from "@/lib/community/community-board-policy";
+import {
+  communityBoardClosedResponse,
+  isClosedCommunityType,
+} from "@/lib/community/community-board-policy";
 
 const COMMUNITY_KIND_VALUES = ["free", "market", "gear", "brand"] as const;
 type CommunityKindParam = (typeof COMMUNITY_KIND_VALUES)[number];
@@ -280,17 +283,18 @@ export async function GET(req: NextRequest) {
   // 허용된 field 값만 사용, 그 외는 all 처리
   const allowedFields = new Set(["all", "title", "content", "title_content"]);
   const field = (allowedFields.has(fieldRaw) ? fieldRaw : "all") as
-    | "all"
-    | "title"
-    | "content"
-    | "title_content";
+    "all" | "title" | "content" | "title_content";
 
   // type 유효성 가드: 기본은 notice, 'qna'면 qna로
   const type: BoardType = typeParam === "qna" ? "qna" : "notice";
 
   const communityKind = parseCommunityKindParam(kindParam);
 
-  if (isClosedCommunityType(kindParam) || isClosedCommunityType(typeParam) || isClosedCommunityType(rawCategory)) {
+  if (
+    isClosedCommunityType(kindParam) ||
+    isClosedCommunityType(typeParam) ||
+    isClosedCommunityType(rawCategory)
+  ) {
     return communityBoardClosedResponse();
   }
 

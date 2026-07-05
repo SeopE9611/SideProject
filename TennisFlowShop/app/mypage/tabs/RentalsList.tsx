@@ -143,7 +143,9 @@ export default function RentalsList() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary md:mb-6">
             <Briefcase className="h-10 w-10 text-foreground" />
           </div>
-          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">대여 내역이 없습니다</h3>
+          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">
+            대여 내역이 없습니다
+          </h3>
           <p className="text-muted-foreground">
             아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!
           </p>
@@ -177,17 +179,18 @@ export default function RentalsList() {
         const rentalTitle = `${racketBrandLabel(r.brand)} ${r.model ?? ""}`.trim() || "라켓 대여";
         const rentalMetaDate = r.updatedAt || r.createdAt;
         const returnDueDate = r.returnDueDate || r.endDate || r.dueDate || r.expectedReturnDate;
-        const nextActionLabel = r.cancelStatus === "requested"
-          ? "취소 요청 확인을 기다려주세요."
-          : r.status === "returned" && !r.userConfirmedAt
-            ? "반납 내용을 확인하고 수령 확인을 진행해주세요."
-            : r.withStringService && !r.stringingApplicationId
-              ? "교체서비스 신청을 이어갈 수 있어요."
-              : r.status === "returned" || r.status === "canceled"
-                ? "추가로 진행할 일은 없습니다."
-                : r.hasReturnShipping
-                  ? "상세에서 반납 진행 상황을 확인해주세요."
-                  : "상세에서 대여 진행 상황을 확인해주세요.";
+        const nextActionLabel =
+          r.cancelStatus === "requested"
+            ? "취소 요청 확인을 기다려주세요."
+            : r.status === "returned" && !r.userConfirmedAt
+              ? "반납 내용을 확인하고 수령 확인을 진행해주세요."
+              : r.withStringService && !r.stringingApplicationId
+                ? "교체서비스 신청을 이어갈 수 있어요."
+                : r.status === "returned" || r.status === "canceled"
+                  ? "추가로 진행할 일은 없습니다."
+                  : r.hasReturnShipping
+                    ? "상세에서 반납 진행 상황을 확인해주세요."
+                    : "상세에서 대여 진행 상황을 확인해주세요.";
 
         return (
           <Card
@@ -233,9 +236,7 @@ export default function RentalsList() {
               <div className="grid grid-cols-1 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-sm:grid-cols-3">
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <div>
-                    <div className="text-ui-label text-muted-foreground">
-                      대여 기간
-                    </div>
+                    <div className="text-ui-label text-muted-foreground">대여 기간</div>
                     <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
                       {r.days}일
                     </div>
@@ -245,9 +246,7 @@ export default function RentalsList() {
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-ui-label text-muted-foreground">
-                      반납 예정일
-                    </div>
+                    <div className="text-ui-label text-muted-foreground">반납 예정일</div>
                     <div className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                       {returnDueDate ? formatDate(returnDueDate) : "상세 확인"}
                     </div>
@@ -257,9 +256,7 @@ export default function RentalsList() {
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-ui-label text-muted-foreground">
-                      총 결제 금액
-                    </div>
+                    <div className="text-ui-label text-muted-foreground">총 결제 금액</div>
                     <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
                       {total.toLocaleString()}원
                     </div>
@@ -269,7 +266,8 @@ export default function RentalsList() {
 
               <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
                 <p className="break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mr-auto">
-                  <span className="font-semibold text-foreground">다음 할 일</span> · {nextActionLabel}
+                  <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
+                  {nextActionLabel}
                 </p>
                 <Button size="sm" variant="outline" asChild className="bg-transparent">
                   <Link

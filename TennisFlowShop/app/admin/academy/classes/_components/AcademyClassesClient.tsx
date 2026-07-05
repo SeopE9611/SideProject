@@ -410,13 +410,19 @@ export default function AcademyClassesClient() {
                       </TableCell>
                       <TableCell className={adminDataTable.cellTopLeft}>
                         <div
-                          className={cn("line-clamp-2 max-w-[260px] break-words", adminTypography.bodyStrong)}
+                          className={cn(
+                            "line-clamp-2 max-w-[260px] break-words",
+                            adminTypography.bodyStrong,
+                          )}
                           title={item.name || "-"}
                         >
                           {item.name || "-"}
                         </div>
                         <div
-                          className={cn("line-clamp-2 max-w-[260px] break-words", adminTypography.caption)}
+                          className={cn(
+                            "line-clamp-2 max-w-[260px] break-words",
+                            adminTypography.caption,
+                          )}
                           title={item.description || "설명 미입력"}
                         >
                           {item.description || "설명 미입력"}
@@ -436,7 +442,10 @@ export default function AcademyClassesClient() {
                           {item.instructorName || "강사 미입력"}
                         </div>
                         <div
-                          className={cn("line-clamp-2 max-w-[220px] break-words", adminTypography.caption)}
+                          className={cn(
+                            "line-clamp-2 max-w-[220px] break-words",
+                            adminTypography.caption,
+                          )}
                           title={item.scheduleText || "일정 미입력"}
                         >
                           {item.scheduleText || "일정 미입력"}
@@ -454,7 +463,12 @@ export default function AcademyClassesClient() {
                         <ApplicationStatsCell item={item} />
                       </TableCell>
                       <TableCell className={adminDataTable.cellCenter}>
-                        <div className={cn("whitespace-nowrap tabular-nums", adminTypography.bodyStrong)}>
+                        <div
+                          className={cn(
+                            "whitespace-nowrap tabular-nums",
+                            adminTypography.bodyStrong,
+                          )}
+                        >
                           {formatPrice(item.price)}
                         </div>
                         <div className="mt-1">

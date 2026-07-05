@@ -84,7 +84,9 @@ export default function RentDialog({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-border bg-card shadow-sm sm:max-w-md">
           <DialogHeader className="pr-8 text-left">
-            <DialogTitle className="text-ui-section-title font-semibold text-foreground">대여 기간 선택</DialogTitle>
+            <DialogTitle className="text-ui-section-title font-semibold text-foreground">
+              대여 기간 선택
+            </DialogTitle>
             <DialogDescription className="break-keep text-ui-body-sm text-muted-foreground">
               스트링 선택 단계로 이동하기 전 대여 기간을 선택해 주세요.
             </DialogDescription>
@@ -126,13 +128,17 @@ export default function RentDialog({
 
             <div className="space-y-3 rounded-xl border border-border bg-background p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-keep text-ui-body-sm text-muted-foreground">대여료</span>
+                <span className="min-w-0 break-keep text-ui-body-sm text-muted-foreground">
+                  대여료
+                </span>
                 <span className="shrink-0 whitespace-nowrap text-right font-semibold text-foreground tabular-nums">
                   {fee.toLocaleString()}원
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-keep text-ui-body-sm text-muted-foreground">보증금</span>
+                <span className="min-w-0 break-keep text-ui-body-sm text-muted-foreground">
+                  보증금
+                </span>
                 <span className="shrink-0 whitespace-nowrap text-right font-semibold text-foreground tabular-nums">
                   {(rental.deposit ?? 0).toLocaleString()}원
                 </span>

@@ -205,15 +205,20 @@ function CartOptionChangeContent({
           </div>
         </div>
         <div className="rounded-xl bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
-          현재 옵션: {item.selectedGauge ? `게이지(굵기) ${formatGaugeLabel(item.selectedGauge)}` : ""}
+          현재 옵션:{" "}
+          {item.selectedGauge ? `게이지(굵기) ${formatGaugeLabel(item.selectedGauge)}` : ""}
           {item.selectedGauge && (item.selectedColorLabel || item.selectedColor) ? " · " : ""}
           {item.selectedColorLabel ||
             item.selectedColor ||
             (!item.selectedGauge ? "기본 옵션" : "")}
         </div>
-        {loading && <p className="text-ui-body-sm text-muted-foreground">옵션 정보를 불러오는 중...</p>}
+        {loading && (
+          <p className="text-ui-body-sm text-muted-foreground">옵션 정보를 불러오는 중...</p>
+        )}
         {error && (
-          <p className="rounded-lg bg-destructive/10 p-3 text-ui-body-sm text-destructive">{error}</p>
+          <p className="rounded-lg bg-destructive/10 p-3 text-ui-body-sm text-destructive">
+            {error}
+          </p>
         )}
         {!loading && !error && product && (
           <>

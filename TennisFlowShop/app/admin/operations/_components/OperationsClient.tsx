@@ -841,8 +841,7 @@ export default function OperationsClient() {
   const navigationSummaryKey = "/api/admin/navigation-summary";
   const { cache } = useSWRConfig();
   const navigationSummary = cache.get(navigationSummaryKey)?.data as
-    | NavigationSummaryResponse
-    | undefined;
+    NavigationSummaryResponse | undefined;
 
   const { data, isLoading, error, mutate } = useSWR<AdminOperationsListResponseDto>(
     key,
@@ -1250,7 +1249,9 @@ export default function OperationsClient() {
                   void handleRefreshList();
                 }}
               >
-                <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", isRefreshingList && "animate-spin")} />
+                <RefreshCw
+                  className={cn("mr-1.5 h-3.5 w-3.5", isRefreshingList && "animate-spin")}
+                />
                 {isRefreshingList ? "새로고침 중..." : "목록 새로고침"}
               </Button>
               <Button
@@ -1267,7 +1268,12 @@ export default function OperationsClient() {
         />
 
         {showActionsGuide && (
-          <div className={cn(adminSurface.fieldPanelMuted, "grid grid-cols-1 gap-1.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4")}>
+          <div
+            className={cn(
+              adminSurface.fieldPanelMuted,
+              "grid grid-cols-1 gap-1.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4",
+            )}
+          >
             {PAGE_COPY.actions.map((action) => (
               <div
                 key={action.title}
@@ -1993,7 +1999,12 @@ export default function OperationsClient() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className={cn("p-0 pt-2", isLoading || shouldShowEmptyState ? "min-h-[360px]" : "min-h-0")}>
+        <CardContent
+          className={cn(
+            "p-0 pt-2",
+            isLoading || shouldShowEmptyState ? "min-h-[360px]" : "min-h-0",
+          )}
+        >
           {isLoading ? (
             <div className="space-y-4 px-4 py-4">
               <div className="hidden bp-lg:block overflow-x-auto">
@@ -2057,9 +2068,15 @@ export default function OperationsClient() {
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
                       <TableHead className={cn(thClasses, "w-[18%]")}>우선순위/업무</TableHead>
-                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>문서/고객</TableHead>
-                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>상태/다음 작업</TableHead>
-                      <TableHead className={cn(thClasses, "w-[16%] border-l border-border/20 text-right")}>
+                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>
+                        문서/고객
+                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>
+                        상태/다음 작업
+                      </TableHead>
+                      <TableHead
+                        className={cn(thClasses, "w-[16%] border-l border-border/20 text-right")}
+                      >
                         금액/접수
                       </TableHead>
                       <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[12%]")}>
@@ -2133,7 +2150,13 @@ export default function OperationsClient() {
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="min-w-0 space-y-1">
                                 <div className="flex flex-wrap items-center gap-1">
-                                  <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(priorityMeta.tone))}>
+                                  <Badge
+                                    className={cn(
+                                      badgeBase,
+                                      badgeSizeSm,
+                                      badgeToneClass(priorityMeta.tone),
+                                    )}
+                                  >
                                     {priorityMeta.label}
                                   </Badge>
                                   <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
@@ -2166,39 +2189,80 @@ export default function OperationsClient() {
                                       }}
                                     >
                                       <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                                      {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
+                                      {syncingNiceOrderId === g.anchor.id
+                                        ? "확인 중..."
+                                        : "PG 상태 확인"}
                                     </Button>
                                   )}
                                 </div>
                               </div>
                             </TableCell>
 
-                            <TableCell className={cn(tdClasses, rowDensityClass, "border-l border-border/20")}>
+                            <TableCell
+                              className={cn(
+                                tdClasses,
+                                rowDensityClass,
+                                "border-l border-border/20",
+                              )}
+                            >
                               <div className="min-w-0 space-y-1">
                                 <div className="flex min-w-0 items-center gap-1.5">
-                                  <span className={cn("truncate font-mono text-foreground/70", adminTypography.caption)}>{docLabel}</span>
-                                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={() => copyToClipboard(g.anchor.id)} title={ROW_ACTION_LABELS.copyId} aria-label={ROW_ACTION_LABELS.copyId}>
+                                  <span
+                                    className={cn(
+                                      "truncate font-mono text-foreground/70",
+                                      adminTypography.caption,
+                                    )}
+                                  >
+                                    {docLabel}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                    onClick={() => copyToClipboard(g.anchor.id)}
+                                    title={ROW_ACTION_LABELS.copyId}
+                                    aria-label={ROW_ACTION_LABELS.copyId}
+                                  >
                                     <Copy className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
-                                <span className={cn("block truncate", adminTypography.bodyStrong)}>{customerName || "-"}</span>
+                                <span className={cn("block truncate", adminTypography.bodyStrong)}>
+                                  {customerName || "-"}
+                                </span>
                                 <div className="flex min-w-0 items-center gap-1.5">
-                                  <span className={cn("truncate", adminTypography.caption)}>{customerEmail || "이메일 없음"}</span>
+                                  <span className={cn("truncate", adminTypography.caption)}>
+                                    {customerEmail || "이메일 없음"}
+                                  </span>
                                   {customerEmail && (
-                                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={() => copyToClipboard(customerEmail)} title="이메일 복사" aria-label="이메일 복사">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                      onClick={() => copyToClipboard(customerEmail)}
+                                      title="이메일 복사"
+                                      aria-label="이메일 복사"
+                                    >
                                       <Copy className="h-3.5 w-3.5" />
                                     </Button>
                                   )}
                                 </div>
                                 {isGroup && children[0] && (
                                   <p className={cn("line-clamp-1", adminTypography.caption)}>
-                                    연결 {opsKindLabel(children[0].kind)} {shortenId(children[0].id)}{children.length > 1 ? ` 외 ${children.length - 1}건` : ""}
+                                    연결 {opsKindLabel(children[0].kind)}{" "}
+                                    {shortenId(children[0].id)}
+                                    {children.length > 1 ? ` 외 ${children.length - 1}건` : ""}
                                   </p>
                                 )}
                               </div>
                             </TableCell>
 
-                            <TableCell className={cn(tdClasses, rowDensityClass, "border-l border-border/20")}>
+                            <TableCell
+                              className={cn(
+                                tdClasses,
+                                rowDensityClass,
+                                "border-l border-border/20",
+                              )}
+                            >
                               <div className="space-y-1">
                                 <div className="flex flex-wrap items-center gap-1">
                                   <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
@@ -2217,12 +2281,25 @@ export default function OperationsClient() {
                                   ) : null}
                                 </div>
                                 {primarySignal ? (
-                                  <p className={cn("line-clamp-1 rounded-sm bg-warning/10 px-1.5 py-0.5 text-warning", adminTypography.caption)} title={toOperatorSentence(primarySignal.description)}>
+                                  <p
+                                    className={cn(
+                                      "line-clamp-1 rounded-sm bg-warning/10 px-1.5 py-0.5 text-warning",
+                                      adminTypography.caption,
+                                    )}
+                                    title={toOperatorSentence(primarySignal.description)}
+                                  >
                                     {toOperatorSentence(primarySignal.title)}
                                   </p>
                                 ) : null}
                                 <div className="border-l-2 border-primary/25 pl-2">
-                                  <p className={cn("mb-0.5 text-foreground/55", adminTypography.caption)}>다음</p>
+                                  <p
+                                    className={cn(
+                                      "mb-0.5 text-foreground/55",
+                                      adminTypography.caption,
+                                    )}
+                                  >
+                                    다음
+                                  </p>
                                   <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
                                     {nextActionText}
                                   </p>
@@ -2231,7 +2308,11 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell
-                              className={cn(tdClasses, rowDensityClass, "border-l border-border/20 text-right tabular-nums")}
+                              className={cn(
+                                tdClasses,
+                                rowDensityClass,
+                                "border-l border-border/20 text-right tabular-nums",
+                              )}
                             >
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-left md:text-right">

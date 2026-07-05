@@ -282,7 +282,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     if (hasVariantInventories) {
       if (!selectedColor) return showErrorToast?.("스트링 색상을 선택해주세요.");
       if (!selectedGauge) return showErrorToast?.("스트링 게이지(굵기)를 선택해주세요.");
-      if (!selectedVariant) return showErrorToast?.("선택한 색상과 게이지(굵기) 조합을 찾을 수 없습니다.");
+      if (!selectedVariant)
+        return showErrorToast?.("선택한 색상과 게이지(굵기) 조합을 찾을 수 없습니다.");
       if (!isSellableVariant(selectedVariant)) {
         return showErrorToast?.("선택한 색상과 게이지(굵기) 조합은 품절되었습니다.");
       }

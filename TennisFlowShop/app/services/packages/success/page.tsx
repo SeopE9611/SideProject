@@ -433,7 +433,9 @@ export default async function PackageSuccessPage({
 
                   {serviceInfo?.serviceRequest && (
                     <div className="min-w-0">
-                      <span className="text-ui-body-sm text-muted-foreground">서비스 요청사항:</span>
+                      <span className="text-ui-body-sm text-muted-foreground">
+                        서비스 요청사항:
+                      </span>
                       <span className="ml-2 break-words font-semibold text-foreground">
                         {serviceInfo.serviceRequest}
                       </span>

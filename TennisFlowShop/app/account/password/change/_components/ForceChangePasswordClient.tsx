@@ -219,7 +219,9 @@ export default function ForceChangePasswordClient() {
                 : ""
             }
           />
-          <p className="min-h-[18px] text-ui-label text-destructive">{fieldErrors.newPassword ?? ""}</p>
+          <p className="min-h-[18px] text-ui-label text-destructive">
+            {fieldErrors.newPassword ?? ""}
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirmPassword" className="text-ui-label font-medium">

@@ -50,13 +50,7 @@ export interface StringItem {
 
 /** 신청서 상태 */
 export type ApplicationStatus =
-  | "draft"
-  | "submitted"
-  | "reviewing"
-  | "accepted"
-  | "in_progress"
-  | "completed"
-  | "canceled";
+  "draft" | "submitted" | "reviewing" | "accepted" | "in_progress" | "completed" | "canceled";
 
 /** 신청서 기본 스키마(서버 DB용; 필요 필드만 예시) */
 export interface StringingApplication {

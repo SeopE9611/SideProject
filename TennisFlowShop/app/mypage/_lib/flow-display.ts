@@ -1,4 +1,7 @@
-import { getMypagePaymentStatusLabel, getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
+import {
+  getMypagePaymentStatusLabel,
+  getMypageUserStatusLabel,
+} from "@/app/mypage/_lib/status-label";
 
 const normalize = (value?: string | null) => String(value ?? "").trim();
 const lower = (value?: string | null) => normalize(value).toLowerCase();
@@ -51,7 +54,6 @@ const CUSTOMER_APPLICATION_STATUS_LABELS: Record<string, string> = {
   취소: "취소 완료",
 };
 
-
 const CUSTOMER_RENTAL_STATUS_LABELS: Record<string, string> = {
   pending: "대여 신청 확인 중",
   대기중: "대여 신청 확인 중",
@@ -91,7 +93,11 @@ export function getCustomerApplicationStatusLabel(status?: string | null) {
   const raw = normalize(status);
   if (!raw) return "상태 확인 중";
   const base = getMypageUserStatusLabel(raw);
-  return CUSTOMER_APPLICATION_STATUS_LABELS[lower(raw)] ?? CUSTOMER_APPLICATION_STATUS_LABELS[base] ?? base;
+  return (
+    CUSTOMER_APPLICATION_STATUS_LABELS[lower(raw)] ??
+    CUSTOMER_APPLICATION_STATUS_LABELS[base] ??
+    base
+  );
 }
 
 export function getCustomerRentalStatusLabel(status?: string | null) {
@@ -125,7 +131,10 @@ export function getCustomerNextActionCopy(params: {
     return { title: "추가로 진행할 일이 없습니다.", description: "취소된 주문입니다." };
   }
   if (params.isCompleted) {
-    return { title: "이용이 완료되었습니다.", description: "주문과 서비스 이용이 마무리되었습니다." };
+    return {
+      title: "이용이 완료되었습니다.",
+      description: "주문과 서비스 이용이 마무리되었습니다.",
+    };
   }
   return {
     title: "현재는 기다려주세요.",

@@ -87,7 +87,9 @@ export default function RefundPolicyPage() {
         <section className="mt-8 space-y-4 md:space-y-5">
           {sections.map((section) => (
             <PublicSurface key={section.title}>
-              <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">{section.title}</h2>
+              <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">
+                {section.title}
+              </h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
                 {section.items.map((item) => (
                   <li key={item}>{item}</li>
@@ -98,7 +100,9 @@ export default function RefundPolicyPage() {
         </section>
 
         <PublicSurface variant="muted" className="mt-8">
-          <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">문의 안내</h2>
+          <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">
+            문의 안내
+          </h2>
           <p className="mt-2 max-w-3xl break-keep text-ui-body-sm text-muted-foreground leading-relaxed bp-md:text-ui-body">
             최종 환불 가능 여부와 금액은 주문/서비스 상태 확인 후 안내드리며, 필요 시 운영 정책
             기준에 따라 추가 확인이 진행될 수 있습니다.

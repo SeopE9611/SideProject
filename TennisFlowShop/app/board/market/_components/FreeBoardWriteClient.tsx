@@ -634,7 +634,9 @@ export default function FreeBoardWriteClient() {
                     <Tag className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-ui-body-sm font-semibold text-foreground">상품 기본 정보</h2>
+                    <h2 className="text-ui-body-sm font-semibold text-foreground">
+                      상품 기본 정보
+                    </h2>
                     <p className="text-ui-body-sm text-foreground/75">
                       판매할 상품의 분류와 브랜드를 선택하세요.
                     </p>
@@ -742,7 +744,9 @@ export default function FreeBoardWriteClient() {
                   </div>
                   <div>
                     <h2 className="text-ui-body-sm font-semibold text-foreground">게시글 내용</h2>
-                    <p className="text-ui-body-sm text-foreground/75">제목과 상세 설명을 작성하세요.</p>
+                    <p className="text-ui-body-sm text-foreground/75">
+                      제목과 상세 설명을 작성하세요.
+                    </p>
                   </div>
                 </div>
                 <div className="px-5 py-5 md:px-6 space-y-5">
@@ -834,7 +838,9 @@ export default function FreeBoardWriteClient() {
                     <ImageIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-ui-body-sm font-semibold text-foreground">판매 이미지 / 파일</h2>
+                    <h2 className="text-ui-body-sm font-semibold text-foreground">
+                      판매 이미지 / 파일
+                    </h2>
                     <p className="text-ui-body-sm text-foreground/75">
                       실물 사진을 첨부하면 거래 성사율이 높아집니다.
                     </p>

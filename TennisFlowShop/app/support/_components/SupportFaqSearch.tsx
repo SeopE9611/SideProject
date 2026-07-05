@@ -16,13 +16,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 
 type FaqCategory =
-  | "전체"
-  | "주문/결제"
-  | "배송/수령"
-  | "교체서비스"
-  | "대여/반납"
-  | "패키지권"
-  | "회원/비회원";
+  "전체" | "주문/결제" | "배송/수령" | "교체서비스" | "대여/반납" | "패키지권" | "회원/비회원";
 
 type FaqItem = {
   id: string;
@@ -160,7 +154,9 @@ export default function SupportFaqSearch() {
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="break-keep text-ui-section-title font-semibold text-foreground">자주 묻는 질문</h2>
+            <h2 className="break-keep text-ui-section-title font-semibold text-foreground">
+              자주 묻는 질문
+            </h2>
             <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
               자주 묻는 내용을 먼저 확인해보세요.
             </p>
@@ -231,7 +227,9 @@ export default function SupportFaqSearch() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Search className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="break-keep text-ui-body-lg font-medium text-foreground">찾는 FAQ가 없습니다</p>
+            <p className="break-keep text-ui-body-lg font-medium text-foreground">
+              찾는 FAQ가 없습니다
+            </p>
             <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
               다른 표현으로 다시 검색하거나 고객센터로 문의해 주세요.
             </p>

@@ -78,7 +78,9 @@ export default function AdminTaskCard({
                 <Icon className="h-4 w-4" />
               </span>
             ) : null}
-            <CardTitle className={cn("min-w-0 break-words", adminTypography.panelTitle)}>{title}</CardTitle>
+            <CardTitle className={cn("min-w-0 break-words", adminTypography.panelTitle)}>
+              {title}
+            </CardTitle>
           </div>
           <span className={cn("shrink-0 whitespace-nowrap", adminTypography.kpiValue)}>
             {typeof count === "number" ? `${count.toLocaleString("ko-KR")}건` : count}

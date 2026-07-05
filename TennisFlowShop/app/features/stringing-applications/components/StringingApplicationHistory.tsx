@@ -184,7 +184,9 @@ export default function StringingApplicationHistory({
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-foreground" />
-          <CardTitle className="text-ui-card-title-lg font-semibold bp-sm:text-ui-section-title">처리 이력</CardTitle>
+          <CardTitle className="text-ui-card-title-lg font-semibold bp-sm:text-ui-section-title">
+            처리 이력
+          </CardTitle>
         </div>
 
         <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-words">
