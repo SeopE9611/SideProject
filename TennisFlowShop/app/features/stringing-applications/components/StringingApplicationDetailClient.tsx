@@ -28,7 +28,6 @@ import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero } from "@/components/public";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -1151,7 +1150,11 @@ export default function StringingApplicationDetailClient({
   // - handleGetStringingApplication에서 linkedOrderPickupMethod를 내려주므로,
   // 신청서 상세에서도 같은 수령방식을 표시할 수 있다.
   const linkedOrderPickupMethod = (data as any)?.linkedOrderPickupMethod as
-    "visit" | "delivery" | "quick" | null | undefined;
+    | "visit"
+    | "delivery"
+    | "quick"
+    | null
+    | undefined;
   const linkedOrderPickupBadge = linkedOrderPickupMethod
     ? getShippingMethodBadge({
         shippingInfo: { shippingMethod: linkedOrderPickupMethod },
@@ -1341,13 +1344,19 @@ export default function StringingApplicationDetailClient({
   return (
     <main className="w-full">
       {!isAdmin && (
-        <PublicPageHero
-          eyebrow="마이페이지"
-          title="교체서비스 신청 상세"
-          description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
-          className="rounded-2xl border-0 bg-card py-6 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 bp-sm:py-8"
-          actions={
-            <>
+        <section className="rounded-xl border border-border/60 bg-background/70 p-4 bp-sm:p-5">
+          <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
+            <div className="min-w-0 space-y-1">
+              <p className="text-ui-label font-semibold text-primary">마이페이지</p>
+              <h2 className="break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
+                교체서비스 신청 상세
+              </h2>
+              <p className="break-keep text-ui-body-sm text-muted-foreground">
+                현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요.
+              </p>
+            </div>
+
+            <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
               <Button
                 asChild
                 variant="outline"
@@ -1359,6 +1368,7 @@ export default function StringingApplicationDetailClient({
                   <span className="hidden bp-sm:inline">신청 목록으로 돌아가기</span>
                 </Link>
               </Button>
+
               <Button
                 variant={isEditMode ? "destructive" : "outline"}
                 size="sm"
@@ -1375,15 +1385,16 @@ export default function StringingApplicationDetailClient({
               >
                 {isEditMode ? "편집 취소" : "편집 모드"}
               </Button>
-            </>
-          }
-        >
-          <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
+            </div>
+          </div>
+
+          <div className="mt-5 flex w-full flex-col gap-5 rounded-xl bg-muted/15 p-4 ring-1 ring-border/40 bp-sm:p-5">
             <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] bp-lg:items-stretch">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10">
                   <Target className="h-6 w-6 text-primary" />
                 </div>
+
                 <div className="min-w-0 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <ApplicationStatusBadge status={data.status} />
@@ -1396,6 +1407,7 @@ export default function StringingApplicationDetailClient({
                   </p>
                 </div>
               </div>
+
               <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4">
                 <div className="min-w-0">
                   <div className="space-y-2">
@@ -1410,6 +1422,7 @@ export default function StringingApplicationDetailClient({
                     </div>
                   </div>
                 </div>
+
                 {userNextTodo?.ctaLabel ? (
                   <Button
                     asChild={Boolean(userNextTodo.ctaHref)}
@@ -1434,7 +1447,7 @@ export default function StringingApplicationDetailClient({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-2 bp-sm:p-4 bp-lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 rounded-xl bg-background/70 p-3 bp-sm:grid-cols-2 bp-sm:p-4 bp-lg:grid-cols-4">
               <MypageInfoField label="신청 유형" value={applicationContext.label} />
               <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
               <MypageInfoField
@@ -1444,7 +1457,7 @@ export default function StringingApplicationDetailClient({
               <MypageInfoField label="연결 정보" value={applicationContext.payment} />
             </div>
           </div>
-        </PublicPageHero>
+        </section>
       )}
       <div
         className={cn(

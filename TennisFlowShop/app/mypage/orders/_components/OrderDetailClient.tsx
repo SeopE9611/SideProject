@@ -13,7 +13,6 @@ import {
 import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero } from "@/components/public";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
@@ -240,7 +239,12 @@ type OrderTrackingResponse =
   | {
       success: false;
       errorCode?:
-        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
 
@@ -895,13 +899,19 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
   return (
     <main className="w-full">
-      <PublicPageHero
-        eyebrow="마이페이지"
-        title={serviceLinkedOrder ? "교체서비스 신청 상세" : "주문 상세"}
-        description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 살펴보세요."
-        className="rounded-2xl border-0 bg-card py-6 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 bp-sm:py-8"
-        actions={
-          <>
+      <section className="rounded-xl border border-border/60 bg-background/70 p-4 bp-sm:p-5">
+        <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p className="text-ui-label font-semibold text-primary">마이페이지</p>
+            <h2 className="break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
+              {serviceLinkedOrder ? "교체서비스 신청 상세" : "주문 상세"}
+            </h2>
+            <p className="break-keep text-ui-body-sm text-muted-foreground">
+              현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 살펴보세요.
+            </p>
+          </div>
+
+          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
             <Button
               variant="outline"
               size="sm"
@@ -936,10 +946,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 취소 요청
               </Button>
             )}
-          </>
-        }
-      >
-        <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
+          </div>
+        </div>
+
+        <div className="mt-5 flex w-full flex-col gap-5 rounded-xl bg-muted/15 p-4 ring-1 ring-border/40 bp-sm:p-5">
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)] bp-lg:items-stretch">
             <div className="flex min-w-0 items-start gap-3">
               <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary ring-1 ring-primary/10">
@@ -961,6 +971,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </p>
               </div>
             </div>
+
             <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4 bp-lg:items-stretch">
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-primary">다음 할 일</p>
@@ -971,6 +982,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   {nextActionCopy.description}
                 </p>
               </div>
+
               {nextTodo ? (
                 <Button
                   asChild={Boolean(nextTodo.ctaHref)}
@@ -990,7 +1002,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <Separator />
 
-          <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-3 bp-sm:p-4">
+          <div className="grid grid-cols-1 gap-3 rounded-xl bg-background/70 p-3 bp-sm:grid-cols-3 bp-sm:p-4">
             <MypageInfoField
               label="주문 유형"
               value={serviceLinkedOrder ? "스트링 교체서비스 포함" : "상품 주문"}
@@ -999,7 +1011,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             <MypageInfoField label="주문일" value={formatDate(orderDetail.date)} />
           </div>
         </div>
-      </PublicPageHero>
+      </section>
 
       <SiteContainer
         variant="wide"

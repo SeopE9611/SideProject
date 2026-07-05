@@ -8,7 +8,6 @@ import {
   getCustomerRentalStatusLabel,
 } from "@/app/mypage/_lib/flow-display";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero } from "@/components/public";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -596,12 +595,19 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   const returnMethodLabel = isVisitPickup ? "매장 반납" : "택배 반납";
   return (
     <main>
-      <PublicPageHero
-        eyebrow="마이페이지"
-        title="대여 상세"
-        description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
-        actions={
-          <>
+      <section className="rounded-xl border border-border/60 bg-background/70 p-4 bp-sm:p-5">
+        <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p className="text-ui-label font-semibold text-primary">마이페이지</p>
+            <h2 className="break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
+              대여 상세
+            </h2>
+            <p className="break-keep text-ui-body-sm text-muted-foreground">
+              현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요.
+            </p>
+          </div>
+
+          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
             {isReturnShippingAvailable && (
               <Button
                 variant="outline"
@@ -615,7 +621,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               </Button>
             )}
 
-            {/* 버튼은 항상 노출하되, 조건을 만족하지 않으면 비활성화 */}
             {canRequestCancel ? (
               <Button
                 variant="destructive"
@@ -640,15 +645,16 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             >
               <Link href={backUrl}>목록으로 돌아가기</Link>
             </Button>
-          </>
-        }
-      >
-        <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
+          </div>
+        </div>
+
+        <div className="mt-5 flex w-full flex-col gap-5 rounded-xl bg-muted/15 p-4 ring-1 ring-border/40 bp-sm:p-5">
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] bp-lg:items-stretch">
             <div className="flex min-w-0 items-start gap-3">
               <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10">
                 <Briefcase className="h-6 w-6 text-primary" />
               </div>
+
               <div className="min-w-0 space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   {getStatusIcon(data.status)}
@@ -664,6 +670,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 </p>
               </div>
             </div>
+
             <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4">
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-primary">다음 할 일</p>
@@ -676,6 +683,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </p>
                 ) : null}
               </div>
+
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap">
                 {canReceiveRental && (
                   <Button
@@ -687,6 +695,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     {isReceiving ? "수령 확인 처리 중..." : "수령 확인하고 대여 시작"}
                   </Button>
                 )}
+
                 {nextTodo?.ctaLabel && nextTodo.ctaHref ? (
                   <Button
                     variant="outline"
@@ -701,7 +710,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-2 bp-sm:p-4 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 rounded-xl bg-background/70 p-3 bp-sm:grid-cols-2 bp-sm:p-4 xl:grid-cols-4">
             <MypageInfoField
               label="대여 상품"
               value={`${racketBrandLabel(data.brand)} ${data.model}`}
@@ -720,7 +729,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             />
           </div>
         </div>
-      </PublicPageHero>
+      </section>
 
       <SiteContainer variant="wide" className="space-y-5 py-5 bp-sm:space-y-6 bp-sm:py-6">
         {/* 대여 취소 상태 안내 배너 */}
