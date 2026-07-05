@@ -1,6 +1,8 @@
 "use client";
 
 import ApplicationStatusBadge from "@/app/features/stringing-applications/components/ApplicationStatusBadge";
+import MypageNextAction from "@/app/mypage/_components/MypageNextAction";
+import MypageSummaryStrip from "@/app/mypage/_components/MypageSummaryStrip";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
@@ -618,36 +620,36 @@ export default function ApplicationsClient() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-2 rounded-xl border border-border/50 bg-muted/20 p-2 md:grid-cols-3">
-                  {isStringService ? (
-                    <>
-                      <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                        <p className="text-ui-label text-muted-foreground">라켓 수</p>
-                        <p className="mt-1 text-ui-body-sm font-semibold text-foreground">
-                          {(app as any).rackets?.length
-                            ? `${(app as any).rackets.length}개`
-                            : app.racketType?.trim()
-                              ? "1개"
-                              : "미입력"}
-                        </p>
-                      </div>
-                      <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                        <p className="text-ui-label text-muted-foreground">방문/발송 상태</p>
-                        <p className="mt-1 line-clamp-1 break-keep text-ui-body-sm font-semibold text-foreground">
-                          {isVisit && app.preferredDate && app.preferredTime
+                {isStringService ? (
+                  <MypageSummaryStrip
+                    columns={3}
+                    items={[
+                      {
+                        label: "라켓 수",
+                        value: (app as any).rackets?.length
+                          ? `${(app as any).rackets.length}개`
+                          : app.racketType?.trim()
+                            ? "1개"
+                            : "미입력",
+                      },
+                      {
+                        label: "방문/발송 상태",
+                        value:
+                          isVisit && app.preferredDate && app.preferredTime
                             ? visitTimeLabel
-                            : collectionLabel || (hasTracking ? "운송장 등록됨" : "운송장 미등록")}
-                        </p>
-                      </div>
-                      <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                        <p className="text-ui-label text-muted-foreground">연결 서비스</p>
-                        <p className="mt-1 line-clamp-1 break-keep text-ui-body-sm font-semibold text-foreground">
-                          {metaLinkLabel ?? "단독 교체서비스"}
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
+                            : collectionLabel ||
+                              (hasTracking ? "운송장 등록됨" : "운송장 미등록"),
+                        valueClassName: "line-clamp-1 whitespace-normal break-keep",
+                      },
+                      {
+                        label: "연결 서비스",
+                        value: metaLinkLabel ?? "단독 교체서비스",
+                        valueClassName: "line-clamp-1 whitespace-normal break-keep",
+                      },
+                    ]}
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 rounded-xl border border-border/50 bg-muted/20 p-2 md:grid-cols-3">
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
                         <div>
@@ -695,9 +697,8 @@ export default function ApplicationsClient() {
                           </p>
                         </div>
                       </div>
-                    </>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {isAcademyLesson ? (
                   <div className="space-y-3 rounded-xl border border-border/50 bg-muted/20 p-3 text-ui-body-sm text-foreground">
@@ -776,10 +777,7 @@ export default function ApplicationsClient() {
                 ) : null}
 
                 <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
-                  <p className="break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mr-auto">
-                    <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
-                    {nextActionLabel}
-                  </p>
+                  <MypageNextAction className="bp-sm:mr-auto">{nextActionLabel}</MypageNextAction>
                   {isStringService || isAcademyLesson ? (
                     <Button
                       data-cy="mypage-application-detail-cta"

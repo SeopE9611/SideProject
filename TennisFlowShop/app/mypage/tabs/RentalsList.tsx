@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Clock,
-  CreditCard,
   Package,
   ArrowRight,
   Briefcase,
@@ -24,6 +23,8 @@ import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
+import MypageNextAction from "@/app/mypage/_components/MypageNextAction";
+import MypageSummaryStrip from "@/app/mypage/_components/MypageSummaryStrip";
 
 type RentalsResponse = {
   items: unknown[];
@@ -233,42 +234,20 @@ export default function RentalsList() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-sm:grid-cols-3">
-                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <div>
-                    <div className="text-ui-label text-muted-foreground">대여 기간</div>
-                    <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
-                      {r.days}일
-                    </div>
-                  </div>
-                </div>
-
-                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <div className="text-ui-label text-muted-foreground">반납 예정일</div>
-                    <div className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                      {returnDueDate ? formatDate(returnDueDate) : "상세 확인"}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <div className="text-ui-label text-muted-foreground">총 결제 금액</div>
-                    <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
-                      {total.toLocaleString()}원
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <MypageSummaryStrip
+                columns={3}
+                items={[
+                  { label: "대여 기간", value: `${r.days}일` },
+                  {
+                    label: "반납 예정일",
+                    value: returnDueDate ? formatDate(returnDueDate) : "상세 확인",
+                  },
+                  { label: "총 결제 금액", value: `${total.toLocaleString()}원` },
+                ]}
+              />
 
               <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
-                <p className="break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mr-auto">
-                  <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
-                  {nextActionLabel}
-                </p>
+                <MypageNextAction className="bp-sm:mr-auto">{nextActionLabel}</MypageNextAction>
                 <Button size="sm" variant="outline" asChild className="bg-transparent">
                   <Link
                     href={`/mypage?tab=orders&flowType=rental&flowId=${r.id}&from=orders`}

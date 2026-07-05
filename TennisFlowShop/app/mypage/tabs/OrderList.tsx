@@ -1,6 +1,8 @@
 "use client";
 
 import { getCustomerOrderStatusLabel } from "@/app/mypage/_lib/flow-display";
+import MypageNextAction from "@/app/mypage/_components/MypageNextAction";
+import MypageSummaryStrip from "@/app/mypage/_components/MypageSummaryStrip";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { StackedCardListSkeleton } from "@/components/system/loading";
@@ -472,35 +474,31 @@ export default function OrderList() {
                 </div>
               </div>
 
-              <div className="mb-4 grid grid-cols-1 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-sm:grid-cols-3">
-                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-ui-micro font-medium text-muted-foreground">결제 금액</p>
-                  <p className="mt-1 truncate text-ui-body-sm font-semibold tabular-nums text-foreground">
-                    {typeof order.totalPrice === "number"
-                      ? `${order.totalPrice.toLocaleString()}원`
-                      : "정보 없음"}
-                  </p>
-                </div>
-                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-ui-micro font-medium text-muted-foreground">교체서비스</p>
-                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
-                    {order.shippingInfo?.withStringService ? "포함" : "미포함"}
-                  </p>
-                </div>
-                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-ui-micro font-medium text-muted-foreground">수령 방법</p>
-                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
-                    {isVisitPickupOrder(order.shippingInfo) ? "방문 수령" : "배송"}
-                  </p>
-                </div>
-              </div>
+              <MypageSummaryStrip
+                className="mb-4"
+                columns={3}
+                items={[
+                  {
+                    label: "결제 금액",
+                    value:
+                      typeof order.totalPrice === "number"
+                        ? `${order.totalPrice.toLocaleString()}원`
+                        : "정보 없음",
+                  },
+                  {
+                    label: "교체서비스",
+                    value: order.shippingInfo?.withStringService ? "포함" : "미포함",
+                  },
+                  {
+                    label: "수령 방법",
+                    value: isVisitPickupOrder(order.shippingInfo) ? "방문 수령" : "배송",
+                  },
+                ]}
+              />
 
               {/* Footer */}
               <div className="flex flex-col gap-4 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
-                  <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
-                  {nextActionLabel}
-                </p>
+                <MypageNextAction>{nextActionLabel}</MypageNextAction>
 
                 <div className="hidden bp-sm:flex flex-wrap items-center justify-end gap-2">
                   <Button

@@ -1,6 +1,7 @@
 "use client";
 
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
+import MypageNextAction from "@/app/mypage/_components/MypageNextAction";
 import OrdersScopeTabs, { parseOrdersScope } from "@/app/mypage/_components/OrdersScopeTabs";
 import {
   getMypageNormalizedStatus,
@@ -1206,10 +1207,7 @@ export default function TransactionFlowList() {
                       <span className="text-muted-foreground"> · {nextActionText}</span>
                     </p>
                   ) : nextActionText ? (
-                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                      <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
-                      {nextActionText}
-                    </p>
+                    <MypageNextAction className="line-clamp-2">{nextActionText}</MypageNextAction>
                   ) : null}
                 </div>
 
