@@ -328,6 +328,7 @@ export default function OrderList() {
         // 상태 판정은 boolean으로 분리 (TS 좁힘/비교 에러 방지)
         const isDelivered = order.status === "배송완료";
         const isConfirmed = order.status === "구매확정";
+        const isReviewStatusConfirmed = Boolean(order.userConfirmedAt) || isConfirmed;
 
         // 버튼/메뉴 분기용 값 (모바일 핵심 1~2개 + 더보기)
         const detailHref = `/mypage?tab=orders&flowType=order&flowId=${order.id}&from=orders`;
@@ -386,13 +387,12 @@ export default function OrderList() {
 
         // 모바일 보조 CTA: "교체 신청" 또는 "교체서비스 보기" 중 하나라도 있으면 2버튼 레이아웃
         const showMobileSecondCTA = Boolean(stringServiceCTAHref);
-        const isReviewStatusConfirmed = Boolean(order.userConfirmedAt) || order.status === "구매확정";
         const confirmedOrderReviewLabel = order.unreviewedCount && order.unreviewedCount > 0
           ? "후기를 남길 수 있어요."
           : order.reviewAllDone === true
             ? "이용이 완료되었습니다."
             : "상세에서 후기 작성 가능 여부를 확인해보세요.";
-        const nextActionLabel = isDelivered && !isConfirmed
+        const nextActionLabel = isDelivered && !isReviewStatusConfirmed
           ? "상품을 받으셨다면 구매 확정을 진행해주세요."
           : order.cancelStatus === "requested"
             ? "취소 요청 확인을 기다려주세요."
