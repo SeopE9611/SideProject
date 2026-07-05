@@ -71,7 +71,6 @@ import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  ArrowRight,
   Calendar,
   ChevronDown,
   CheckCircle2,
@@ -79,7 +78,6 @@ import {
   Copy,
   CreditCard,
   Edit3,
-  Pencil,
   Settings,
   ShoppingCart,
   Target,
@@ -1330,7 +1328,6 @@ export default function StringingApplicationDetailClient({
                 <Link href={backUrl}>
                   <span className="bp-sm:hidden">목록</span>
                   <span className="hidden bp-sm:inline">신청 목록으로 돌아가기</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button
@@ -1347,7 +1344,6 @@ export default function StringingApplicationDetailClient({
                   setEditingCustomer(false);
                 }}
               >
-                <Pencil className="mr-1 h-4 w-4" />
                 {isEditMode ? "편집 취소" : "편집 모드"}
               </Button>
             </>
@@ -1546,7 +1542,6 @@ export default function StringingApplicationDetailClient({
                       <Link href={backUrl}>
                         <span className="sm:hidden">목록</span>
                         <span className="hidden sm:inline">신청 목록으로 돌아가기</span>
-                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
 
@@ -1596,7 +1591,6 @@ export default function StringingApplicationDetailClient({
                               setEditingCustomer(false);
                             }}
                           >
-                            <Pencil className="mr-1 h-4 w-4" />
                             {isEditMode ? "편집 취소" : "편집 모드"}
                           </Button>
                         </span>
@@ -1627,7 +1621,7 @@ export default function StringingApplicationDetailClient({
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    {isAdmin && <Calendar className="h-4 w-4 text-muted-foreground" />}
                     <span
                       className={cn(
                         "text-ui-body-sm font-medium",
@@ -1650,7 +1644,7 @@ export default function StringingApplicationDetailClient({
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    {isAdmin && <CreditCard className="h-4 w-4 text-muted-foreground" />}
                     <span
                       className={cn(
                         "text-ui-body-sm font-medium",
@@ -1673,7 +1667,7 @@ export default function StringingApplicationDetailClient({
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
-                    <Target className="h-4 w-4 text-muted-foreground" />
+                    {isAdmin && <Target className="h-4 w-4 text-muted-foreground" />}
                     <span
                       className={cn(
                         "text-ui-body-sm font-medium",
@@ -1700,7 +1694,7 @@ export default function StringingApplicationDetailClient({
                   }
                 >
                   <div className="mb-2 flex items-center space-x-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
+                    {isAdmin && <User className="h-4 w-4 text-muted-foreground" />}
                     <span
                       className={cn(
                         "text-ui-body-sm font-medium",
@@ -1729,7 +1723,6 @@ export default function StringingApplicationDetailClient({
                 {!isAdmin && (
                   <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
                     <div className="mb-2 flex items-center space-x-2">
-                      <Truck className="h-4 w-4 text-muted-foreground" />
                       <span className="text-ui-body-sm font-medium text-foreground">
                         라켓 발송 상태
                       </span>
@@ -1814,7 +1807,7 @@ export default function StringingApplicationDetailClient({
                 )}
                 {data.orderId && (
                   <div className="flex min-w-0 flex-wrap items-center gap-2 text-ui-body-sm text-foreground">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    {isAdmin && <Truck className="h-4 w-4 text-muted-foreground" />}
                     <span className="shrink-0 break-keep font-medium">주문 수령 방식</span>
                     <Badge
                       className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass("danger")}`}
@@ -1826,7 +1819,7 @@ export default function StringingApplicationDetailClient({
 
                 {shouldShowReturnMethod && (
                   <div className="flex min-w-0 flex-wrap items-center gap-2 text-ui-body-sm text-foreground">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    {isAdmin && <Truck className="h-4 w-4 text-muted-foreground" />}
                     <span className="shrink-0 break-keep font-medium">
                       {isAdmin ? "완성 라켓 배송 방식" : "완성 라켓 배송/수령 방식"}
                     </span>
@@ -2213,7 +2206,6 @@ export default function StringingApplicationDetailClient({
                             disabled={isPending}
                             className="w-full"
                           >
-                            <XCircle className="mr-2 h-4 w-4" />
                             취소 요청
                           </Button>
                         )}

@@ -56,15 +56,12 @@ import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  ArrowRight,
   CheckCircle,
   ChevronDown,
   Clock,
   CreditCard,
-  Pencil,
   ShoppingCart,
   Truck,
-  Undo2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -897,7 +894,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             >
               <span className="bp-sm:hidden">목록</span>
               <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
-              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
 
             <Button
@@ -911,7 +907,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   "border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20",
               )}
             >
-              <Pencil className="mr-1 h-4 w-4" />
               {isEditMode ? "수정 종료" : "주문 정보 수정"}
             </Button>
 
@@ -1007,7 +1002,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 disabled={isWithdrawingCancelRequest}
                 className="h-9 w-full gap-1.5 whitespace-normal break-keep bp-sm:ml-4 bp-sm:w-auto"
               >
-                <Undo2 className="h-4 w-4" />
                 {isWithdrawingCancelRequest ? "철회 중..." : "취소 요청 철회"}
               </Button>
             )}
