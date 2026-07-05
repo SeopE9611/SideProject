@@ -17,7 +17,6 @@ import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   AlertCircle,
-  ArrowRight,
   Briefcase,
   Calendar,
   CheckCircle,
@@ -626,7 +625,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 lg:w-auto"
               >
                 <Link href={returnShippingHref}>
-                  <Truck className="mr-2 h-4 w-4" />
                   {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
                 </Link>
               </Button>
@@ -640,7 +638,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 onClick={() => setCancelDialogOpen(true)}
                 className="h-9 w-full gap-2 whitespace-normal break-keep lg:w-auto"
               >
-                <XCircle className="h-4 w-4" />
                 대여 취소
               </Button>
             ) : isOnlineCancelRestricted ? (
@@ -658,7 +655,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             >
               <Link href={backUrl}>
                 목록으로 돌아가기
-                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -810,7 +806,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             )}
 
             <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-muted-foreground">대여 기간</p>
                 <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
@@ -840,7 +835,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </div>
 
             <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
                 <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
@@ -860,7 +854,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
             {stringPrice > 0 && (
               <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <p className="text-ui-label font-medium text-muted-foreground">
                     스트링 상품 금액
@@ -897,7 +890,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
         <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
-            <span className="flex items-center gap-2"><Truck className="h-5 w-5 text-primary" />상세 정보</span>
+            <span>상세 정보</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <div className="space-y-4 border-t border-border/60 p-4 bp-lg:p-5">
@@ -1202,7 +1195,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     className="h-9 w-full gap-2 whitespace-normal break-keep bp-sm:w-auto"
                   >
                     <Link href={applyHref}>
-                      <Wrench className="h-4 w-4" />
                       교체서비스 신청하기
                     </Link>
                   </Button>
@@ -1219,7 +1211,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
       <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
-          <span className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" />진행 단계</span>
+          <span>진행 단계</span>
           <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
         <Card className="border-0 bg-transparent shadow-none">
