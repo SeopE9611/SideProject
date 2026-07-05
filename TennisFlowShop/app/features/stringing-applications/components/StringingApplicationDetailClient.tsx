@@ -14,6 +14,8 @@ import {
   getStringingAddressReadLabels,
   orderShippingMethodLabel,
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
+import { mypageDetailLayout } from "@/app/mypage/_components/mypage-detail-style";
+import MypageDetailHero from "@/app/mypage/_components/MypageDetailHero";
 import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
 import { getCustomerApplicationStatusLabel } from "@/app/mypage/_lib/flow-display";
 import { useStringingStore } from "@/app/store/stringingStore";
@@ -741,14 +743,14 @@ export default function StringingApplicationDetailClient({
       >
         <SiteContainer
           variant={isAdmin ? "full" : "wide"}
-          className={cn(
+          className={
             isAdmin
               ? "space-y-6 px-0 bp-sm:px-0 bp-md:px-0 bp-lg:px-0"
-              : "space-y-5 px-0 py-4 bp-sm:space-y-6 bp-sm:px-4 bp-sm:py-5 bp-md:px-6 bp-lg:px-0",
-          )}
+              : mypageDetailLayout.contentContainer
+          }
         >
           <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-7xl")}>
-            <div className="mb-6 rounded-2xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 bp-sm:mb-8 bp-sm:p-6 bp-md:p-8 lg:p-6">
+            <div className="mb-6 rounded-2xl border border-border/60 bg-card p-4 shadow-sm shadow-foreground/[0.02] bp-sm:mb-8 bp-sm:p-5">
               <div className="space-y-3">
                 <Skeleton className="h-8 w-52" />
                 <Skeleton className="h-4 w-72 max-w-full" />
@@ -1331,32 +1333,28 @@ export default function StringingApplicationDetailClient({
           ? "아래 버튼으로 다음 단계를 진행해 주세요."
           : "상세 정보와 진행 이력을 확인해 주세요.");
 
-  const detailGridClass = isAdmin
-    ? "grid gap-4 xl:grid-cols-12"
-    : "grid gap-4 bp-lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)] bp-lg:items-start bp-lg:gap-5";
-  const detailColumnClass = isAdmin ? "contents" : "contents bp-lg:block bp-lg:space-y-5";
+  const detailGridClass = isAdmin ? "grid gap-4 xl:grid-cols-12" : mypageDetailLayout.contentGrid;
+  const detailColumnClass = isAdmin
+    ? "contents"
+    : `contents bp-lg:block ${mypageDetailLayout.mainColumn}`;
   const detailCardClass = isAdmin
     ? "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
-    : "overflow-hidden rounded-2xl border-0 bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50";
+    : "overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]";
   const detailCardHeaderClass = isAdmin
     ? "border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5 lg:p-6"
-    : "border-b border-border/70 bg-secondary/30 px-4 py-4 bp-sm:px-5 bp-lg:px-6";
+    : "border-b border-border/60 bg-secondary/20 px-4 py-4 bp-sm:px-5";
   return (
     <main className="w-full">
       {!isAdmin && (
-        <section className="rounded-xl border border-border/60 bg-background/70 p-4 bp-sm:p-5">
-          <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
-            <div className="min-w-0 space-y-1">
-              <p className="text-ui-label font-semibold text-primary">마이페이지</p>
-              <h2 className="break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
-                교체서비스 신청 상세
-              </h2>
-              <p className="break-keep text-ui-body-sm text-muted-foreground">
-                현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요.
-              </p>
-            </div>
-
-            <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
+        <MypageDetailHero
+          title="교체서비스 신청 상세"
+          description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
+          icon={<Target className="h-6 w-6 text-primary" />}
+          status={<ApplicationStatusBadge status={data.status} />}
+          statusTitle={customerStatusLabel}
+          identifier={`신청번호: #${toShortApplicationId(data.id)}`}
+          actions={
+            <>
               <Button
                 asChild
                 variant="outline"
@@ -1385,69 +1383,35 @@ export default function StringingApplicationDetailClient({
               >
                 {isEditMode ? "편집 취소" : "편집 모드"}
               </Button>
-            </div>
-          </div>
-
-          <div className="mt-5 flex w-full flex-col gap-5 rounded-xl bg-muted/15 p-4 ring-1 ring-border/40 bp-sm:p-5">
-            <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] bp-lg:items-stretch">
-              <div className="flex min-w-0 items-start gap-3">
-                <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10">
-                  <Target className="h-6 w-6 text-primary" />
-                </div>
-
-                <div className="min-w-0 space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <ApplicationStatusBadge status={data.status} />
-                    <p className="break-keep text-ui-body font-semibold text-foreground">
-                      {customerStatusLabel}
-                    </p>
-                  </div>
-                  <p className="break-all text-ui-body-sm text-muted-foreground" title={data.id}>
-                    신청번호: #{toShortApplicationId(data.id)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4">
-                <div className="min-w-0">
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-ui-label font-medium text-primary">다음 할 일</p>
-                      <p className="break-keep text-ui-body font-semibold text-foreground">
-                        {isUserConfirmed ? "이용 완료" : userNextActionLabel}
-                      </p>
-                      <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground">
-                        {userStatusDescription}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {userNextTodo?.ctaLabel ? (
-                  <Button
-                    asChild={Boolean(userNextTodo.ctaHref)}
-                    onClick={userNextTodo.onCtaClick}
-                    disabled={isConfirmSubmitting}
-                    className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
-                  >
-                    {userNextTodo.ctaHref ? (
-                      <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
-                    ) : (
-                      userNextTodo.ctaLabel
-                    )}
-                  </Button>
+            </>
+          }
+          nextActionTitle={isUserConfirmed ? "이용 완료" : userNextActionLabel}
+          nextActionDescription={userStatusDescription}
+          nextActionSlot={
+            userNextTodo?.ctaLabel ? (
+              <Button
+                asChild={Boolean(userNextTodo.ctaHref)}
+                onClick={userNextTodo.onCtaClick}
+                disabled={isConfirmSubmitting}
+                className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
+              >
+                {userNextTodo.ctaHref ? (
+                  <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
                 ) : (
-                  <ServiceReviewCTA
-                    applicationId={data.id}
-                    status={data.status}
-                    userConfirmedAt={data.userConfirmedAt ?? null}
-                    className="h-10 w-full whitespace-normal break-keep"
-                  />
+                  userNextTodo.ctaLabel
                 )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 rounded-xl bg-background/70 p-3 bp-sm:grid-cols-2 bp-sm:p-4 bp-lg:grid-cols-4">
+              </Button>
+            ) : (
+              <ServiceReviewCTA
+                applicationId={data.id}
+                status={data.status}
+                userConfirmedAt={data.userConfirmedAt ?? null}
+                className="h-10 w-full whitespace-normal break-keep"
+              />
+            )
+          }
+          summary={
+            <>
               <MypageInfoField label="신청 유형" value={applicationContext.label} />
               <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
               <MypageInfoField
@@ -1455,9 +1419,9 @@ export default function StringingApplicationDetailClient({
                 value={isVisit ? visitTimeLabel : inboundStatusLabel}
               />
               <MypageInfoField label="연결 정보" value={applicationContext.payment} />
-            </div>
-          </div>
-        </section>
+            </>
+          }
+        />
       )}
       <div
         className={cn(
@@ -1467,11 +1431,11 @@ export default function StringingApplicationDetailClient({
       >
         <SiteContainer
           variant={isAdmin ? "full" : "wide"}
-          className={cn(
+          className={
             isAdmin
               ? "space-y-6 px-0 bp-sm:px-0 bp-md:px-0 bp-lg:px-0"
-              : "space-y-5 px-0 py-4 bp-sm:space-y-6 bp-sm:px-4 bp-sm:py-5 bp-md:px-6 bp-lg:px-0",
-          )}
+              : mypageDetailLayout.contentContainer
+          }
         >
           {isLoading ? (
             <div className="mx-auto w-full max-w-[1500px] border-l-2 border-primary/30 bg-primary/5 px-4 py-2 text-ui-body-sm text-foreground/80">
@@ -2319,9 +2283,7 @@ export default function StringingApplicationDetailClient({
                     <ShoppingCart
                       className={cn("text-foreground", isAdmin ? "h-5 w-5" : "w-6 h-6")}
                     />
-                    <CardTitle
-                      className={cn("text-ui-card-title-lg font-semibold", !isAdmin && "mt-2")}
-                    >
+                    <CardTitle className={cn("text-ui-card-title font-medium", !isAdmin && "mt-2")}>
                       {isAdmin ? "신청 스트링 정보" : "라켓/스트링 정보"}
                     </CardTitle>
                   </CardHeader>
@@ -2723,7 +2685,7 @@ export default function StringingApplicationDetailClient({
                 {!isAdmin && (
                   <Card className={cn(detailCardClass, "order-2")}>
                     <CardHeader className={detailCardHeaderClass}>
-                      <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
+                      <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
                         <Truck className="h-5 w-5 text-primary" />
                         라켓 발송 정보
                       </CardTitle>
@@ -2866,7 +2828,7 @@ export default function StringingApplicationDetailClient({
                       <span>요청사항</span>
                       <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                     </summary>
-                    <CardContent className="hidden p-4 group-open:block bp-md:block bp-lg:p-6">
+                    <CardContent className="hidden p-4 bp-sm:p-5 group-open:block bp-md:block">
                       {editingRequirements ? (
                         <RequirementsEditForm
                           initial={data.stringDetails.requirements ?? ""}
@@ -2914,7 +2876,7 @@ export default function StringingApplicationDetailClient({
                       </CardTitle>
                       <CardDescription>접수부터 확정까지의 진행 흐름입니다.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 p-4 bp-lg:p-6">
+                    <CardContent className="space-y-4 p-4 bp-sm:p-5">
                       <div className="flex flex-col gap-3 border-l-2 border-primary/30 bg-primary/5 px-3 py-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4">
                         <div className="min-w-0">
                           <p className="text-ui-body-sm font-medium text-foreground">
@@ -3045,10 +3007,10 @@ export default function StringingApplicationDetailClient({
                 )}
                 {applicationId && !isAdmin && (
                   <Card className="order-7 rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
-                    <CardHeader className="rounded-t-2xl border-b border-border bg-muted/20 pb-3">
+                    <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
                       <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                         <div>
-                          <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
+                          <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
                             <Clock className="h-5 w-5 text-primary" />
                             처리 이력
                           </CardTitle>
@@ -3067,7 +3029,7 @@ export default function StringingApplicationDetailClient({
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className={cn("p-4 bp-lg:p-6", !isHistoryExpanded && "hidden")}>
+                    <CardContent className={cn("p-4 bp-sm:p-5", !isHistoryExpanded && "hidden")}>
                       <div id="stringing-history">
                         <StringingApplicationHistory
                           applicationId={applicationId}
@@ -3100,7 +3062,7 @@ export default function StringingApplicationDetailClient({
                       !isAdmin && "pb-2",
                     )}
                   >
-                    <CardTitle className="text-ui-card-title-lg font-semibold flex items-center gap-2">
+                    <CardTitle className="text-ui-card-title font-medium flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
                     </CardTitle>
                     <div className="flex items-center space-x-2">
@@ -3116,7 +3078,7 @@ export default function StringingApplicationDetailClient({
                     </div>
                   </CardHeader>
 
-                  <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
+                  <CardContent className={cn("p-4 bp-sm:p-5", !isAdmin && "py-3 bp-lg:py-5")}>
                     {editingPayment ? (
                       <PaymentEditForm
                         initialData={{
@@ -3364,7 +3326,7 @@ export default function StringingApplicationDetailClient({
                       {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
+                  <CardContent className={cn("p-4 bp-sm:p-5", !isAdmin && "py-3 bp-lg:py-5")}>
                     {editingCustomer ? (
                       <CustomerEditForm
                         initialData={{
@@ -3451,7 +3413,7 @@ export default function StringingApplicationDetailClient({
                     className={cn(detailCardHeaderClass, "flex flex-row items-center gap-2")}
                   >
                     <Truck className="h-5 w-5 text-foreground" />
-                    <CardTitle className="text-ui-card-title-lg font-semibold">
+                    <CardTitle className="text-ui-card-title font-medium">
                       라켓 발송·완성 라켓 배송 정보
                     </CardTitle>
                   </CardHeader>
@@ -3619,7 +3581,7 @@ export default function StringingApplicationDetailClient({
           }}
         >
           <DialogContent className="max-w-md">
-            <DialogTitle className="text-ui-card-title-lg font-semibold">
+            <DialogTitle className="text-ui-card-title font-medium">
               취소 요청을 거절할까요?
             </DialogTitle>
             <p className="mt-2 text-ui-body-sm text-foreground/80">
@@ -3671,7 +3633,7 @@ export default function StringingApplicationDetailClient({
           }}
         >
           <DialogContent className="max-w-md">
-            <DialogTitle className="text-ui-card-title-lg font-semibold">
+            <DialogTitle className="text-ui-card-title font-medium">
               신청을 직접 취소할까요?
             </DialogTitle>
             <p className="mt-2 text-ui-body-sm text-foreground/80">

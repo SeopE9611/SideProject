@@ -24,7 +24,7 @@ export default function MypageInfoField({
       <p className="text-ui-label font-medium text-muted-foreground">{label}</p>
       <div
         className={cn(
-          "min-w-0 break-words text-ui-body-sm font-semibold text-foreground",
+          "min-w-0 break-words text-ui-body-sm font-medium text-foreground",
           isEmpty && "font-normal text-muted-foreground",
           valueClassName,
         )}

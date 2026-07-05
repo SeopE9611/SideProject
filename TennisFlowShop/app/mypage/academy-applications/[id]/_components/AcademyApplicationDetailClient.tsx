@@ -1,6 +1,8 @@
 "use client";
 
-import { ResultState, SummaryCard } from "@/components/public";
+import MypageDetailHero from "@/app/mypage/_components/MypageDetailHero";
+import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
+import { ResultState } from "@/components/public";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +18,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -24,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -40,8 +42,6 @@ import {
 } from "@/lib/types/academy";
 import {
   ArrowLeft,
-  CalendarDays,
-  CheckCircle2,
   GraduationCap,
   MessageSquareText,
   PhoneCall,
@@ -130,8 +130,8 @@ const CUSTOMER_EDITABLE_STATUSES = new Set(["submitted", "reviewing"]);
 function DetailSkeleton() {
   return (
     <div className="space-y-4 md:space-y-6">
-      <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-        <CardContent className="space-y-4 p-4 md:p-6">
+      <Card className="border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+        <CardContent className="space-y-4 p-4 bp-sm:p-5">
           <Skeleton className="h-9 w-32" />
           <Skeleton className="h-8 w-56" />
           <Skeleton className="h-5 w-full max-w-md" />
@@ -140,7 +140,7 @@ function DetailSkeleton() {
       {Array.from({ length: 4 }).map((_, index) => (
         <Card
           key={`academy-detail-skeleton-${index}`}
-          className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
+          className="border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]"
         >
           <CardHeader>
             <Skeleton className="h-6 w-40" />
@@ -188,15 +188,15 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
 
   if (!classSnapshot) {
     return (
-      <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-        <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
+      <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+        <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+          <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
             <GraduationCap className="h-5 w-5 text-primary" />
             클래스 정보
           </CardTitle>
           <CardDescription>선택 클래스 없이 접수된 일반 아카데미 신청입니다.</CardDescription>
         </CardHeader>
-        <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+        <CardContent className="p-4 bp-sm:p-5">
           <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-2.5 text-ui-body-sm leading-relaxed text-muted-foreground">
             담당자가 상담을 통해 적합한 수업을 안내해드립니다.
           </div>
@@ -206,19 +206,19 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   }
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-      <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-        <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
+    <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+      <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+        <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
           <GraduationCap className="h-5 w-5 text-primary" />
           클래스 정보
         </CardTitle>
         <CardDescription>신청 당시 선택한 클래스 정보입니다.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 p-4 bp-sm:p-5 bp-lg:p-6">
+      <CardContent className="space-y-4 p-4 bp-sm:p-5">
         <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5">
           <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0">
-              <p className="break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground">
+              <p className="break-keep text-ui-card-title font-medium leading-snug text-foreground">
                 {displayValue(classSnapshot.name)}
               </p>
               {classSnapshot.description ? (
@@ -269,15 +269,15 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
 
 function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
-    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-      <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-        <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
+    <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+      <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+        <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
           <UserRound className="h-5 w-5 text-primary" />
           신청자 정보
         </CardTitle>
         <CardDescription>신청자와 접수 정보를 확인하세요.</CardDescription>
       </CardHeader>
-      <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+      <CardContent className="p-4 bp-sm:p-5">
         <dl className="grid gap-3 bp-sm:grid-cols-2">
           <InfoBox label="신청자명" value={item.applicantName} />
           <InfoBox label="연락처" value={item.phone} />
@@ -299,15 +299,15 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
 
 function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
-    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-      <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-        <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
+    <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+      <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+        <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
           <MessageSquareText className="h-5 w-5 text-primary" />
           레슨 목표 및 요청사항
         </CardTitle>
         <CardDescription>신청 당시 남긴 목표와 요청사항입니다.</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-3 p-4 bp-sm:p-5 bp-lg:p-6">
+      <CardContent className="grid gap-3 p-4 bp-sm:p-5">
         <InfoBox label="레슨 목표" value={item.lessonGoal || "미입력"} multiline />
         <InfoBox label="요청사항" value={item.requestMemo || "미입력"} multiline />
       </CardContent>
@@ -500,36 +500,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
-      <SummaryCard
-        eyebrow="마이페이지"
+    <div className="mx-auto w-full max-w-5xl space-y-4 bp-sm:space-y-5">
+      <MypageDetailHero
         title="아카데미 신청 상세"
         description="신청 상태, 수업 정보, 일정과 다음 해야 할 일을 한눈에 확인할 수 있습니다."
-        action={
-          <Button asChild variant="ghost" size="sm" className="w-fit px-0 hover:bg-transparent">
-            <Link href="/mypage?tab=academy">
-              <ArrowLeft className="h-4 w-4" />
-              클래스 신청 목록
-            </Link>
-          </Button>
-        }
-        contentClassName="space-y-4"
-      >
-        <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-          <div className="min-w-0 space-y-2">
-            <div className="flex flex-wrap items-center gap-2 text-ui-body-sm text-muted-foreground">
-              <CalendarDays className="h-4 w-4 text-primary" />
-              <span>신청일 {formatDateTime(item.createdAt)}</span>
-              <span aria-hidden="true">·</span>
-              <span className="min-w-0 break-all">접수번호 {formatReceiptId(item._id)}</span>
-            </div>
-            <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground bp-sm:text-ui-page-title-lg">
-              {item.classSnapshot?.name || "아카데미 클래스 신청"}
-            </h1>
-            <p className="break-keep text-ui-body-sm text-muted-foreground">
-              신청 진행 상황과 상담 안내를 확인할 수 있습니다.
-            </p>
-          </div>
+        icon={<GraduationCap className="h-6 w-6 text-primary" />}
+        status={
           <Badge
             variant={badgeToneVariant(statusTone)}
             wrap="normal"
@@ -537,52 +513,68 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           >
             {item.statusLabel}
           </Badge>
-        </div>
-        <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            <span className="text-ui-body-sm font-medium text-muted-foreground">현재 상태</span>
-            <Badge variant={badgeToneVariant(statusTone)}>{item.statusLabel}</Badge>
-          </div>
-          <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-foreground">
-            {getStatusDescription(item.status)}
-          </p>
-        </div>
-      </SummaryCard>
+        }
+        statusTitle={item.classSnapshot?.name || "아카데미 클래스 신청"}
+        identifier={`접수번호 ${formatReceiptId(item._id)} · 신청일 ${formatDateTime(item.createdAt)}`}
+        actions={
+          <Button asChild variant="outline" size="sm" className="h-9 w-full bp-sm:w-auto">
+            <Link href="/mypage?tab=academy">
+              <ArrowLeft className="h-4 w-4" />
+              클래스 신청 목록
+            </Link>
+          </Button>
+        }
+        nextActionTitle={item.statusLabel}
+        nextActionDescription={getStatusDescription(item.status)}
+        summary={
+          <>
+            <MypageInfoField
+              label="수업 유형"
+              value={item.classSnapshot?.lessonTypeLabel ?? item.desiredLessonTypeLabel}
+            />
+            <MypageInfoField label="현재 실력" value={item.currentLevelLabel} />
+            <MypageInfoField
+              label="희망 요일"
+              value={item.preferredDays.length ? item.preferredDays.join(", ") : "미입력"}
+            />
+            <MypageInfoField label="희망 시간대" value={item.preferredTimeText || "미입력"} />
+          </>
+        }
+      />
 
       <ClassInfoCard item={item} />
       <ApplicationInfoCard item={item} />
       <RequestInfoCard item={item} />
 
       {item.customerMessage ? (
-        <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-          <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-            <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
+        <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+          <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+            <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
               <MessageSquareText className="h-5 w-5 text-primary" />
               관리자 안내
             </CardTitle>
             <CardDescription>도깨비테니스 담당자가 남긴 안내입니다.</CardDescription>
           </CardHeader>
-          <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+          <CardContent className="p-4 bp-sm:p-5">
             <p className="whitespace-pre-wrap break-words rounded-xl bg-muted/15 p-3 text-ui-body-sm leading-relaxed text-foreground">
               {item.customerMessage}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <p className="rounded-2xl border-0 bg-card p-4 text-ui-body-sm text-muted-foreground shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+        <p className="rounded-2xl border border-border/60 bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm shadow-foreground/[0.02]">
           아직 등록된 관리자 안내가 없습니다.
         </p>
       )}
 
-      <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-        <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-          <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
+      <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+        <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+          <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
             <WalletCards className="h-5 w-5 text-primary" />
             현장결제 안내
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+        <CardContent className="p-4 bp-sm:p-5">
           <p className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5 break-keep text-ui-body-sm leading-relaxed text-foreground">
             아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이 확정되면 첫 방문 또는
             안내된 일정에 맞춰 현장에서 결제해 주세요.
@@ -590,9 +582,9 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-        <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-          <CardTitle className="text-ui-card-title-lg">신청 관리</CardTitle>
+      <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+        <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+          <CardTitle className="text-ui-card-title font-medium">신청 관리</CardTitle>
           <CardDescription>
             {isCancelled
               ? "취소된 신청입니다."
@@ -601,7 +593,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 : "상담이 진행된 신청은 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 p-4 bp-sm:p-5 bp-lg:p-6">
+        <CardContent className="space-y-4 p-4 bp-sm:p-5">
           {!isCancelled && canEditApplication ? (
             <div className="space-y-4 rounded-xl bg-muted/15 p-4">
               {!isEditing ? (

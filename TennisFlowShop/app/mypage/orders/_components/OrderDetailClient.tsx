@@ -26,7 +26,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { refreshOnce } from "@/lib/auth/refresh-mutex";
 import {
@@ -61,6 +60,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
 import useSWRInfinite from "swr/infinite";
+import { mypageDetailLayout } from "../../_components/mypage-detail-style";
+import MypageDetailHero from "../../_components/MypageDetailHero";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 
 const CancelOrderDialog = dynamic(() => import("./CancelOrderDialog"), {
@@ -899,19 +900,21 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
   return (
     <main className="w-full">
-      <section className="rounded-xl border border-border/60 bg-background/70 p-4 bp-sm:p-5">
-        <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
-          <div className="min-w-0 space-y-1">
-            <p className="text-ui-label font-semibold text-primary">마이페이지</p>
-            <h2 className="break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
-              {serviceLinkedOrder ? "교체서비스 신청 상세" : "주문 상세"}
-            </h2>
-            <p className="break-keep text-ui-body-sm text-muted-foreground">
-              현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 살펴보세요.
-            </p>
-          </div>
-
-          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
+      <MypageDetailHero
+        title={serviceLinkedOrder ? "교체서비스 신청 상세" : "주문 상세"}
+        description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 살펴보세요."
+        icon={<ShoppingCart className="h-6 w-6 text-primary" />}
+        status={
+          <OrderStatusBadge
+            orderId={orderId}
+            initialStatus={orderDetail.status}
+            shippingMethod={orderDetail.shippingInfo}
+          />
+        }
+        statusTitle={customerStatusLabel}
+        identifier={`주문번호: #${orderId.slice(-6).toUpperCase()}`}
+        actions={
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -936,7 +939,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               {isEditMode ? "수정 종료" : "주문 정보 수정"}
             </Button>
 
-            {canShowCancelButton && (
+            {canShowCancelButton ? (
               <Button
                 variant="destructive"
                 size="sm"
@@ -945,78 +948,44 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               >
                 취소 요청
               </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-5 flex w-full flex-col gap-5 rounded-xl bg-muted/15 p-4 ring-1 ring-border/40 bp-sm:p-5">
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)] bp-lg:items-stretch">
-            <div className="flex min-w-0 items-start gap-3">
-              <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary ring-1 ring-primary/10">
-                <ShoppingCart className="h-6 w-6 text-primary" />
-              </div>
-              <div className="min-w-0 space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <OrderStatusBadge
-                    orderId={orderId}
-                    initialStatus={orderDetail.status}
-                    shippingMethod={orderDetail.shippingInfo}
-                  />
-                  <p className="break-keep text-ui-card-title-lg font-semibold text-foreground">
-                    {customerStatusLabel}
-                  </p>
-                </div>
-                <p className="break-all text-ui-body-sm text-muted-foreground" title={orderId}>
-                  주문번호: #{orderId.slice(-6).toUpperCase()}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4 bp-lg:items-stretch">
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-label font-medium text-primary">다음 할 일</p>
-                <p className="mt-1 break-keep text-ui-body-sm font-semibold text-foreground">
-                  {nextActionCopy.title}
-                </p>
-                <p className="mt-1 break-keep text-ui-label text-muted-foreground">
-                  {nextActionCopy.description}
-                </p>
-              </div>
-
-              {nextTodo ? (
-                <Button
-                  asChild={Boolean(nextTodo.ctaHref)}
-                  onClick={nextTodo.onCtaClick}
-                  disabled={isConfirmingPurchase}
-                  className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
-                >
-                  {nextTodo.ctaHref ? (
-                    <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
-                  ) : (
-                    nextTodo.ctaLabel
-                  )}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="grid grid-cols-1 gap-3 rounded-xl bg-background/70 p-3 bp-sm:grid-cols-3 bp-sm:p-4">
+            ) : null}
+          </>
+        }
+        nextActionTitle={nextActionCopy.title}
+        nextActionDescription={nextActionCopy.description}
+        nextActionSlot={
+          nextTodo ? (
+            <Button
+              asChild={Boolean(nextTodo.ctaHref)}
+              onClick={nextTodo.onCtaClick}
+              disabled={isConfirmingPurchase}
+              className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
+            >
+              {nextTodo.ctaHref ? (
+                <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
+              ) : (
+                nextTodo.ctaLabel
+              )}
+            </Button>
+          ) : null
+        }
+        summary={
+          <>
             <MypageInfoField
               label="주문 유형"
               value={serviceLinkedOrder ? "스트링 교체서비스 포함" : "상품 주문"}
             />
-            <MypageInfoField label="총 결제금액" value={formatCurrency(orderDetail.total)} />
+            <MypageInfoField
+              label="총 결제금액"
+              value={formatCurrency(orderDetail.total)}
+              valueClassName="font-semibold tabular-nums"
+            />
             <MypageInfoField label="주문일" value={formatDate(orderDetail.date)} />
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
-      <SiteContainer
-        variant="wide"
-        className="space-y-4 px-0 py-4 bp-sm:space-y-5 bp-sm:px-4 bp-sm:py-5 bp-md:px-6 bp-lg:px-0"
-      >
+      <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
         {/* 취소 요청 상태 안내 배너 */}
         {cancelLabel && (
           <div className="mb-4 flex flex-col gap-3 border-l-2 border-destructive/50 bg-muted/20 px-3 py-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
@@ -1035,8 +1004,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
           </div>
         )}
-        <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] bp-lg:items-start">
-          <div className="space-y-5 bp-lg:col-start-1 bp-lg:row-start-1">
+        <div className={mypageDetailLayout.contentGrid}>
+          <div className={cn(mypageDetailLayout.mainColumn, "bp-lg:col-start-1 bp-lg:row-start-1")}>
             {/* 주문 항목 */}
             <MypageDetailCard
               title="주문/서비스 요약"
@@ -1438,16 +1407,21 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
           </div>
 
-          <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-span-2 bp-lg:row-start-1 bp-md:space-y-5">
+          <aside
+            className={cn(
+              mypageDetailLayout.sideColumn,
+              "bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-span-2 bp-lg:row-start-1",
+            )}
+          >
             {/* 결제 정보 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+              <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-foreground" />
                   <span>결제 요약</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 bp-lg:p-6">
+              <CardContent className="p-4 bp-sm:p-5">
                 <div className="space-y-3">
                   <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
                     <div className="min-w-0 flex-1">
@@ -1490,8 +1464,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
 
             {/* 배송/수령 요약 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+              <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
                 <CardTitle className="flex items-center space-x-2">
                   <Truck className="h-5 w-5 text-primary" />
                   <span>배송/수령 요약</span>
@@ -1499,7 +1473,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 <CardDescription>수령·배송 핵심 정보입니다.</CardDescription>
               </CardHeader>
               {editingCustomer ? (
-                <CardContent className="p-4 bp-lg:p-6">
+                <CardContent className="p-4 bp-sm:p-5">
                   <CustomerEditForm
                     initialData={{
                       name: orderDetail.customer.name,
@@ -1520,7 +1494,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   />
                 </CardContent>
               ) : (
-                <CardContent className="space-y-4 p-4 bp-lg:p-6">
+                <CardContent className="space-y-4 p-4 bp-sm:p-5">
                   <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
                     <MypageInfoField label="수령 방법" value={shippingMethodLabel} />
                     <MypageInfoField
@@ -1776,8 +1750,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
 
             {orderDetail.stringService ? (
-              <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+              <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+                <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
                   <CardTitle>패키지 사용 요약</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 p-4 text-ui-body-sm bp-lg:p-5">
@@ -1873,19 +1847,21 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <div className="space-y-5 bp-lg:col-start-1 bp-lg:row-start-2">
             <details className="group bp-md:block">
-              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
+              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-medium text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
                 <span>진행 단계</span>
                 <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
-              <Card className="hidden rounded-2xl border-0 bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50 group-open:block bp-md:block">
-                <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                  <CardTitle>주문 진행 타임라인</CardTitle>
+              <Card className="hidden overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02] group-open:block bp-md:block">
+                <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+                  <CardTitle className="text-ui-card-title font-medium">
+                    주문 진행 타임라인
+                  </CardTitle>
                   <CardDescription>
                     주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수
                     있습니다.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-4 bp-lg:p-6">
+                <CardContent className="p-4 bp-sm:p-5">
                   {timelineSteps.map((step, index) => {
                     const tone = getTimelineStepTone(step.state);
                     const Icon =
@@ -1940,13 +1916,19 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
             {/* 처리 이력 */}
             <details className="group bp-md:block">
-              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
+              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-medium text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
                 <span>처리 이력</span>
                 <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
-              <div className="hidden group-open:block bp-md:block">
-                <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />
-              </div>
+              <Card className="hidden overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02] group-open:block bp-md:block">
+                <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+                  <CardTitle className="text-ui-card-title font-medium">처리 이력</CardTitle>
+                  <CardDescription>최신 변경이 맨 위에 표시됩니다.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 bp-sm:p-5">
+                  <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} embedded />
+                </CardContent>
+              </Card>
             </details>
           </div>
         </div>
