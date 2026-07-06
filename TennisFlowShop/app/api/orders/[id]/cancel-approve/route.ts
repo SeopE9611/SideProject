@@ -1,23 +1,23 @@
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
-import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import jwt from "jsonwebtoken";
-import { revertConsumption } from "@/lib/passes.service";
-import { deductPoints, grantPoints } from "@/lib/points.service";
+import clientPromise from "@/lib/mongodb";
+import { isExternallyCanceledPayment } from "@/lib/orders/cancel-finalization";
 import {
   getAdminCancelPolicyMessage,
   isAdminCancelableOrderStatus,
   isAdminForceCancelRequired,
 } from "@/lib/orders/cancel-refund-policy";
-import { isExternallyCanceledPayment } from "@/lib/orders/cancel-finalization";
-import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
+import { revertConsumption } from "@/lib/passes.service";
+import { cancelNicePaymentByTid, getNicePaymentByTid } from "@/lib/payments/nice/server";
+import { deductPoints, grantPoints } from "@/lib/points.service";
 import {
   buildCancelRefundSubject,
   recordCancelRefundSignal,
 } from "@/lib/risk/recordCancelRefundSignal";
+import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 function toReasonPreview(value: unknown, max = 200): string | null {
   if (typeof value !== "string") return null;
@@ -43,6 +43,16 @@ function safeVerifyAccessToken(token?: string | null) {
   } catch {
     return null;
   }
+}
+
+function createNiceCancelOrderId(orderId: unknown): string {
+  const suffix = String(orderId ?? "")
+    .replace(/[^0-9a-zA-Z]/g, "")
+    .slice(-16);
+
+  const random = Math.random().toString(36).slice(2, 8);
+
+  return `C${Date.now()}${suffix}${random}`.slice(0, 64);
 }
 
 function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | null {
@@ -531,24 +541,74 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         );
       }
 
-      const niceOrderId = String(
+      const originalNiceOrderId = String(
         existing.orderId ?? existing.paymentInfo?.rawSummary?.orderId ?? "",
       ).trim();
-      if (!niceOrderId) {
+
+      if (!originalNiceOrderId) {
         return NextResponse.json(
           {
             ok: false,
             errorCode: "NICE_ORDER_ID_REQUIRED",
-            message: "NICE 취소에 필요한 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다.",
+            message:
+              "NICE 취소에 필요한 원 결제 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다.",
           },
           { status: 400 },
         );
       }
 
       try {
+        const niceBeforeCancel = await getNicePaymentByTid({
+          tid,
+          clientKey,
+          secretKey,
+        });
+
+        const localExpectedAmount = Math.floor(
+          Number(existing.paymentInfo?.total ?? existing.totalPrice ?? 0),
+        );
+
+        const pgBalanceAmount = Math.floor(Number(niceBeforeCancel.balanceAmt ?? 0));
+
+        const cancelAmount = pgBalanceAmount > 0 ? pgBalanceAmount : localExpectedAmount;
+
+        if (!Number.isFinite(cancelAmount) || cancelAmount <= 0) {
+          return NextResponse.json(
+            {
+              ok: false,
+              errorCode: "NICE_CANCEL_AMOUNT_INVALID",
+              message: "NICE 취소 금액을 확인할 수 없습니다.",
+              data: {
+                localExpectedAmount,
+                pgBalanceAmount,
+                pgStatus: niceBeforeCancel.status ?? null,
+              },
+            },
+            { status: 400 },
+          );
+        }
+
+        const niceCancelOrderId = createNiceCancelOrderId(existing._id);
+
+        console.info("[nicepay][cancel_amount_decision]", {
+          orderId: String(existing._id),
+          tid,
+          localExpectedAmount,
+          pgAmount: niceBeforeCancel.amount ?? null,
+          pgBalanceAmount,
+          selectedCancelAmount: cancelAmount,
+          pgStatus: niceBeforeCancel.status ?? null,
+          payMethod: niceBeforeCancel.payMethod ?? null,
+          cardCanPartCancel: niceBeforeCancel["card.canPartCancel"] ?? null,
+          cancelledAt: niceBeforeCancel.cancelledAt ?? null,
+          cancels: niceBeforeCancel.cancels ?? null,
+          rawKeys: Object.keys(niceBeforeCancel),
+        });
+
         const cancelRaw = await cancelNicePaymentByTid({
           tid,
-          orderId: niceOrderId,
+          orderId: niceCancelOrderId,
+          cancelAmt: cancelAmount,
           reason: "관리자 주문 취소 승인 처리",
           clientKey,
           secretKey,
@@ -556,7 +616,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         const resultCode = String(cancelRaw.resultCode ?? cancelRaw.ResultCode ?? "").trim();
         const resultMsg = String(cancelRaw.resultMsg ?? cancelRaw.ResultMsg ?? "").trim();
-        if (resultCode !== "0000") {
+        const successCodes = new Set(["0000", "2001", "2211"]);
+
+        if (!successCodes.has(resultCode)) {
           return NextResponse.json(
             {
               ok: false,
@@ -589,6 +651,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             resultCode: resultCode || "0000",
             resultMsg: resultMsg || null,
             canceledAt,
+            cancelAmount,
+            originalOrderId: originalNiceOrderId,
+            cancelOrderId: niceCancelOrderId,
           },
         };
       } catch (error: any) {

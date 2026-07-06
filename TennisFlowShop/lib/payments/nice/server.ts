@@ -183,7 +183,7 @@ export async function cancelNicePaymentByTid(params: {
   if (!body.orderId) throw new Error("NICE_ORDER_ID_REQUIRED");
 
   if (typeof params.cancelAmt === "number") {
-    body.cancelAmt = toPositiveAmount(params.cancelAmt);
+    body.amount = toPositiveAmount(params.cancelAmt);
   }
 
   return requestNicePayment({
@@ -219,13 +219,23 @@ async function requestNicePayment(params: {
   const actionSuffix = params.action ? `/${params.action}` : "";
   const url = `${endpointBase}/${encodeURIComponent(tid)}${actionSuffix}`;
 
+  const requestBody = params.method === "POST" ? (params.body ?? {}) : undefined;
+
+  console.info("[nicepay][request]", {
+    method: params.method,
+    action: params.action ?? null,
+    url,
+    tid,
+    body: requestBody,
+  });
+
   const response = await fetch(url, {
     method: params.method,
     headers: {
       "Content-Type": "application/json",
       Authorization: createNiceBasicAuthorization(params.clientKey, params.secretKey),
     },
-    body: params.method === "POST" ? JSON.stringify(params.body ?? {}) : undefined,
+    body: requestBody ? JSON.stringify(requestBody) : undefined,
     cache: "no-store",
   });
 
@@ -238,6 +248,19 @@ async function requestNicePayment(params: {
   }
 
   const raw = toRecordString(parsed);
+
+  console.info("[nicepay][response]", {
+    httpStatus: response.status,
+    ok: response.ok,
+    resultCode: raw.resultCode || raw.ResultCode || null,
+    resultMsg: raw.resultMsg || raw.ResultMsg || raw.message || null,
+    status: raw.status || null,
+    amount: raw.amount || raw.Amt || raw.totalAmount || raw.paidAmount || null,
+    balanceAmt: raw.balanceAmt || raw.balanceAmount || raw.remainAmount || null,
+    cancelAmount: raw.cancelAmount || raw.cancelAmt || raw.canceledAmount || null,
+    rawKeys: Object.keys(raw),
+  });
+
   if (!response.ok) {
     const message = raw.resultMsg || raw.message || `NICE_APPROVE_HTTP_${response.status}`;
     const error = new Error(message) as Error & {
