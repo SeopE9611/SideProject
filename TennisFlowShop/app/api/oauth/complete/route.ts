@@ -1,25 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import { getDb } from "@/lib/mongodb";
-import { baseCookie } from "@/lib/cookieOptions";
-import {
-  ACCESS_TOKEN_SECRET,
-  REFRESH_TOKEN_SECRET,
-  ACCESS_TOKEN_EXPIRES_IN,
-  REFRESH_TOKEN_EXPIRES_IN,
-} from "@/lib/constants";
-import { autoLinkStringingByEmail } from "@/lib/claims";
-import { Collection } from "mongodb";
-import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/lib/points.policy";
-import { grantPoints } from "@/lib/points.service";
-import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
-import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import { compactId, maskPhone, truthyField } from "@/lib/admin-alerts/formatters";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import {
   AUTH_RATE_LIMIT_POLICIES,
   enforcePublicAuthRateLimit,
   getClientIp,
   normalizeRateLimitIdentifier,
 } from "@/lib/auth/publicAuthRateLimit";
+import { autoLinkStringingByEmail } from "@/lib/claims";
+import {
+  ACCESS_TOKEN_EXPIRES_IN,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_EXPIRES_IN,
+  REFRESH_TOKEN_SECRET,
+} from "@/lib/constants";
+import { baseCookie } from "@/lib/cookieOptions";
+import { getDb } from "@/lib/mongodb";
+import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/lib/points.policy";
+import { grantPoints } from "@/lib/points.service";
+import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
+import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import jwt from "jsonwebtoken";
+import { Collection } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 type PendingDoc = {
   _id: string; // token
@@ -114,6 +116,7 @@ export async function POST(req: NextRequest) {
   const finalSignupName = incomingName || fallbackName;
 
   const users = db.collection("users");
+  const providerLabel = pending.provider === "naver" ? "네이버" : "카카오";
 
   // 1) 같은 이메일 유저가 이미 있으면 "연동 + 로그인"으로 처리
   // 케이스 차이로 인한 매칭 실패 방지: raw/lower 둘 다 조회
@@ -124,7 +127,6 @@ export async function POST(req: NextRequest) {
 
   if (user) {
     const providerKey = pending.provider; // 'kakao' | 'naver'
-    const providerLabel = providerKey === "naver" ? "네이버" : "카카오";
     const existingOauthId = (user as any)?.oauth?.[providerKey]?.id ?? null;
 
     if (existingOauthId && pending.oauthId && String(existingOauthId) !== String(pending.oauthId)) {
@@ -206,9 +208,16 @@ export async function POST(req: NextRequest) {
   // (이벤트) 회원가입 보너스 지급: "신규 생성"일 때만
   // - 중복 호출/리트라이가 있어도 refKey(unique)로 멱등 보장
   // - 지급 실패가 회원가입/로그인을 막지 않도록 try/catch로 격리
+  let signupBonusAlertText = "기존 회원";
+
   if (isNewUser) {
+    const signupBonusActive = isSignupBonusActive();
+    signupBonusAlertText = signupBonusActive
+      ? `지급 예정 ${SIGNUP_BONUS_POINTS.toLocaleString("ko-KR")}P`
+      : "비활성";
+
     try {
-      if (isSignupBonusActive()) {
+      if (signupBonusActive) {
         await grantPoints(db, {
           userId: user._id,
           amount: SIGNUP_BONUS_POINTS,
@@ -216,10 +225,32 @@ export async function POST(req: NextRequest) {
           refKey: signupBonusRefKey(user._id),
           reason: `회원가입 보너스 ${SIGNUP_BONUS_POINTS}P`,
         });
+
+        signupBonusAlertText = `지급됨 ${SIGNUP_BONUS_POINTS.toLocaleString("ko-KR")}P`;
       }
     } catch (e) {
+      signupBonusAlertText = `지급 실패 ${SIGNUP_BONUS_POINTS.toLocaleString("ko-KR")}P`;
       console.warn("[oauth complete] signup bonus grant failed:", e);
     }
+  }
+
+  if (isNewUser) {
+    await sendAdminOperationalAlert({
+      kind: "user_registered",
+      title: "👤 신규 회원가입",
+      summary: "신규 소셜 회원이 가입했습니다. 관리자 회원 상세에서 확인해 주세요.",
+      href: `/admin/users/${String(user._id)}`,
+      dedupeKey: `user_registered:${pending.provider}:${String(user._id)}`,
+      fields: [
+        { name: "회원번호", value: compactId(user._id) },
+        { name: "가입 경로", value: `${providerLabel} 소셜 회원가입` },
+        { name: "이름", value: String(user.name ?? finalSignupName) },
+        { name: "이메일", value: String(user.email ?? pendingEmail) },
+        truthyField("연락처", maskPhone(user.phone || body.phone)),
+        truthyField("우편번호", user.postalCode || body.postalCode),
+        { name: "가입 보너스", value: signupBonusAlertText },
+      ].filter(Boolean) as Array<{ name: string; value: string }>,
+    });
   }
 
   // 3) 로그인 쿠키 발급

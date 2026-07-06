@@ -1,18 +1,19 @@
-// app/api/register/route.ts
-import { NextResponse } from "next/server";
-import { getDb } from "@/lib/mongodb"; // 단일 DB 유틸 사용
-import { hash } from "bcryptjs";
-import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/lib/points.policy";
-import { grantPoints } from "@/lib/points.service";
-import { z } from "zod";
-import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
-import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import { compactId, maskPhone, truthyField } from "@/lib/admin-alerts/formatters";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import {
   AUTH_RATE_LIMIT_POLICIES,
   enforcePublicAuthRateLimit,
   getClientIp,
   normalizeRateLimitIdentifier,
 } from "@/lib/auth/publicAuthRateLimit";
+import { getDb } from "@/lib/mongodb"; // 단일 DB 유틸 사용
+import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/lib/points.policy";
+import { grantPoints } from "@/lib/points.service";
+import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
+import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import { hash } from "bcryptjs";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 /**
  * POST /api/register
@@ -171,8 +172,13 @@ export async function POST(req: Request) {
 
     // 6) 회원가입 보너스 지급(이벤트 ON + 기간 내)
     // - 실패해도 회원가입 자체는 성공해야 하므로 try/catch로 격리
+    const signupBonusActive = isSignupBonusActive();
+    let signupBonusAlertText = signupBonusActive
+      ? `지급 예정 ${SIGNUP_BONUS_POINTS.toLocaleString("ko-KR")}P`
+      : "비활성";
+
     try {
-      if (isSignupBonusActive()) {
+      if (signupBonusActive) {
         await grantPoints(db, {
           userId: insertRes.insertedId,
           amount: SIGNUP_BONUS_POINTS,
@@ -180,10 +186,30 @@ export async function POST(req: Request) {
           refKey: signupBonusRefKey(insertRes.insertedId),
           reason: `회원가입 보너스 ${SIGNUP_BONUS_POINTS}P`,
         });
+
+        signupBonusAlertText = `지급됨 ${SIGNUP_BONUS_POINTS.toLocaleString("ko-KR")}P`;
       }
     } catch (e) {
+      signupBonusAlertText = `지급 실패 ${SIGNUP_BONUS_POINTS.toLocaleString("ko-KR")}P`;
       console.warn("[register] signup bonus grant failed", e);
     }
+
+    await sendAdminOperationalAlert({
+      kind: "user_registered",
+      title: "👤 신규 회원가입",
+      summary: "신규 회원이 가입했습니다. 관리자 회원 상세에서 확인해 주세요.",
+      href: `/admin/users/${String(insertRes.insertedId)}`,
+      dedupeKey: `user_registered:local:${String(insertRes.insertedId)}`,
+      fields: [
+        { name: "회원번호", value: compactId(insertRes.insertedId) },
+        { name: "가입 경로", value: "이메일 회원가입" },
+        { name: "이름", value: name },
+        { name: "이메일", value: email },
+        truthyField("연락처", maskPhone(phone)),
+        truthyField("우편번호", postalCode),
+        { name: "가입 보너스", value: signupBonusAlertText },
+      ].filter(Boolean) as Array<{ name: string; value: string }>,
+    });
 
     return NextResponse.json({ message: "회원가입 완료" }, { status: 201 });
   } catch (err: any) {

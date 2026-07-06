@@ -6,6 +6,7 @@ export type AdminOperationalAlertKind =
   | "cancel_requested"
   | "rental_order_created"
   | "rental_cancel_requested"
+  | "user_registered"
   | "private_payment_paid"
   | "private_payment_canceled";
 
