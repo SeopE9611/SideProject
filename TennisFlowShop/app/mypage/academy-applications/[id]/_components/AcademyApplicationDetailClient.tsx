@@ -851,7 +851,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   </p>
                 </div>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isCancelling}>취소하지 않기</AlertDialogCancel>
+                  <AlertDialogCancel disabled={isCancelling}>닫기</AlertDialogCancel>
                   <AlertDialogAction
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     disabled={isCancelling || !cancelReason}

@@ -12,7 +12,7 @@ type MypageDetailHeroProps = {
   statusTitle: ReactNode;
   identifier?: ReactNode;
   actions?: ReactNode;
-  nextActionTitle: ReactNode;
+  nextActionTitle?: ReactNode;
   nextActionDescription?: ReactNode;
   nextActionSlot?: ReactNode;
   summary?: ReactNode;
@@ -34,6 +34,9 @@ export default function MypageDetailHero({
   summary,
   className,
 }: MypageDetailHeroProps) {
+  const hasNextAction =
+    Boolean(nextActionTitle) || Boolean(nextActionDescription) || Boolean(nextActionSlot);
+
   return (
     <section className={cn(mypageDetailLayout.heroSection, className)}>
       <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
@@ -53,7 +56,7 @@ export default function MypageDetailHero({
       </div>
 
       <div className={mypageDetailLayout.heroShell}>
-        <div className={mypageDetailLayout.heroGrid}>
+        <div className={cn(mypageDetailLayout.heroGrid, !hasNextAction && "bp-lg:grid-cols-1")}>
           <div className="flex min-w-0 items-start gap-3">
             <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10">
               {icon}
@@ -73,25 +76,31 @@ export default function MypageDetailHero({
             </div>
           </div>
 
-          <div className={mypageDetailLayout.actionPanel}>
-            <div className="min-w-0 flex-1">
-              <p className="text-ui-label font-medium text-primary">다음 할 일</p>
-              <div className="mt-1 break-keep text-ui-body-sm font-medium text-foreground">
-                {nextActionTitle}
+          {hasNextAction ? (
+            <div className={mypageDetailLayout.actionPanel}>
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-primary">다음 할 일</p>
+
+                {nextActionTitle ? (
+                  <div className="mt-1 break-keep text-ui-body-sm font-medium text-foreground">
+                    {nextActionTitle}
+                  </div>
+                ) : null}
+
+                {nextActionDescription ? (
+                  <div className="mt-1 break-keep text-ui-label text-muted-foreground">
+                    {nextActionDescription}
+                  </div>
+                ) : null}
               </div>
-              {nextActionDescription ? (
-                <div className="mt-1 break-keep text-ui-label text-muted-foreground">
-                  {nextActionDescription}
+
+              {nextActionSlot ? (
+                <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-lg:flex-col">
+                  {nextActionSlot}
                 </div>
               ) : null}
             </div>
-
-            {nextActionSlot ? (
-              <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-lg:flex-col">
-                {nextActionSlot}
-              </div>
-            ) : null}
-          </div>
+          ) : null}
         </div>
 
         {summary ? <div className={mypageDetailLayout.summaryGrid}>{summary}</div> : null}

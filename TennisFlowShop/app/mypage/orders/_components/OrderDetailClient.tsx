@@ -1,7 +1,6 @@
 "use client";
 
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
-import OrderHistory from "@/app/features/orders/components/OrderHistory";
 import MypageDetailCard from "@/app/mypage/_components/MypageDetailCard";
 import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
 import {
@@ -48,7 +47,6 @@ import {
   shouldShowDeliveryOnlyFields,
 } from "@/lib/order-shipping";
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
-import { formatKoreanPhone } from "@/lib/phone";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -59,7 +57,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
-import useSWRInfinite from "swr/infinite";
 import { mypageDetailLayout } from "../../_components/mypage-detail-style";
 import MypageDetailHero from "../../_components/MypageDetailHero";
 import { OrderStatusBadge } from "./OrderStatusBadge";
@@ -68,8 +65,6 @@ const CancelOrderDialog = dynamic(() => import("./CancelOrderDialog"), {
   loading: () => null,
 });
 
-// SWR Infinite용 getKey (처리 이력 페이지네이션)
-const LIMIT = 5;
 const WITHDRAW_TIMEOUT_MS = 12000;
 
 const parseApiMessage = async (res: Response, fallback: string) => {
@@ -83,13 +78,6 @@ const parseApiMessage = async (res: Response, fallback: string) => {
 
   const text = await res.text().catch(() => "");
   return text.trim() || fallback;
-};
-
-const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) => {
-  // orderId가 없으면 요청 중단
-  if (!orderId) return null;
-  if (prev && prev.history.length === 0) return null;
-  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
 };
 
 interface OrderItem {
@@ -240,7 +228,12 @@ type OrderTrackingResponse =
   | {
       success: false;
       errorCode?:
-        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
 
@@ -286,43 +279,7 @@ function getCancelRequestLabel(order: any): string | null {
   }
 }
 
-type TimelineStepState = "done" | "active" | "waiting";
-
-type TimelineStep = {
-  title: string;
-  description: string;
-  state: TimelineStepState;
-};
-
 const paymentDoneKeywords = ["paid", "결제완료", "결제 완료", "완료"];
-
-const getTimelineStateLabel = (state: TimelineStepState) => {
-  if (state === "done") return "완료";
-  if (state === "active") return "진행 중";
-  return "대기";
-};
-
-const getTimelineStepTone = (state: TimelineStepState) => {
-  if (state === "done") {
-    return {
-      wrapper: "border border-success/30 bg-success/10 text-success",
-      badge: "bg-success/15 text-success",
-      Icon: CheckCircle,
-    };
-  }
-  if (state === "active") {
-    return {
-      wrapper: "border border-primary/30 bg-primary/10 text-primary",
-      badge: "bg-primary/15 text-primary",
-      Icon: Clock,
-    };
-  }
-  return {
-    wrapper: "border border-border bg-muted/50 text-muted-foreground",
-    badge: "bg-muted text-muted-foreground",
-    Icon: Clock,
-  };
-};
 
 export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const router = useRouter();
@@ -351,16 +308,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     isLoading: isOrderLoading,
     mutate: mutateOrderDetail,
   } = useSWR<OrderDetail>(`/api/orders/${orderId}`, authenticatedSWRFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
-
-  // 처리 이력 데이터를 SWRInfinite로 가져오기
-  const {
-    data: historyPages,
-    error: historyError,
-    mutate: mutateHistory,
-  } = useSWRInfinite(getOrderHistoryKey(orderId), authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -451,8 +398,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   // 편집 가능 상태: 배송 중/완료/환불/취소가 아니어야 함
   const nonEditableStatuses = ["배송중", "배송완료", "환불", "취소"];
   const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? "");
-  // 이력 페이지를 합쳐서 하나의 배열로
-  const allHistory: any[] = historyPages ? historyPages.flatMap((page: any) => page.history) : [];
 
   // 날짜/금액 포맷 함수
   const formatDate = (dateString: string | null | undefined) => {
@@ -627,12 +572,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     : null;
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
-  const selfShipStatusLabel = hasSelfShipTracking ? "등록 완료" : "미등록";
   const selfShipCourierValue = selfShipInfo?.courier?.trim();
   const selfShipCourierLabel = selfShipCourierValue
     ? getCourierDisplayName(selfShipCourierValue)
     : "미등록";
-  const selfShipTrackingNoLabel = selfShipInfo?.trackingNo?.trim() || "미등록";
 
   // 취소 요청 상태/라벨 계산
   const normalizedStatus = String(orderDetail?.status ?? "")
@@ -646,6 +589,19 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const paymentDone = paymentDoneKeywords.some(
     (keyword) => normalizedPaymentStatus.includes(keyword) || paymentLabel.includes(keyword),
   );
+
+  // 결제대기 무통장 여부 변수
+  const normalizedPaymentMethod = String(orderDetail?.paymentMethod ?? "")
+    .trim()
+    .toLowerCase();
+
+  const isBankTransferPayment =
+    normalizedPaymentMethod.includes("무통장") ||
+    normalizedPaymentMethod.includes("bank") ||
+    normalizedPaymentMethod.includes("deposit");
+
+  const isPaymentWaiting = isBankTransferPayment && !paymentDone && !isOrderCanceled;
+
   const isPreparing = ["processing", "preparing", "배송준비", "배송준비중", "처리중"].some(
     (keyword) => normalizedStatus.includes(keyword),
   );
@@ -657,50 +613,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     Boolean(orderDetail?.userConfirmedAt) ||
     ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
 
-  const timelineSteps: TimelineStep[] = [
-    {
-      title: "주문 접수",
-      description: "주문이 정상적으로 접수되었습니다.",
-      state: receivedDone ? "done" : "waiting",
-    },
-    {
-      title: "결제 확인",
-      description: "결제 상태를 확인하고 다음 절차를 준비합니다.",
-      state: paymentDone ? "done" : receivedDone ? "active" : "waiting",
-    },
-    {
-      title: "상품 준비",
-      description: "주문 상품을 출고 또는 수령 준비 상태로 진행합니다.",
-      state:
-        isShipped || isDelivered || isCompleted
-          ? "done"
-          : paymentDone || isPreparing
-            ? "active"
-            : "waiting",
-    },
-    {
-      title: isVisitPickup
-        ? "방문 수령 준비"
-        : serviceLinkedOrder
-          ? "완성 라켓 배송 진행"
-          : "배송 진행",
-      description: isVisitPickup
-        ? "방문 수령 준비 상태와 수령정보를 확인해주세요."
-        : serviceLinkedOrder
-          ? "완성 라켓 배송정보를 확인해주세요."
-          : "배송정보를 확인해주세요.",
-      state: isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
-    },
-    {
-      title: "완료/구매 확정",
-      description: "주문 이용이 마무리된 단계입니다.",
-      state: isCompleted ? "done" : isDelivered ? "active" : "waiting",
-    },
-  ];
-
-  const shouldShowStringingTimelineHint = Boolean(
-    orderDetail?.shippingInfo?.withStringService || primaryStringingAppId,
-  );
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
   const canWithdrawCancelRequest = cancelStatus === "requested";
@@ -723,11 +635,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       }
 
       showSuccessToast("구매 확정이 완료되었습니다.");
-      await Promise.all([
-        mutateOrderDetail(),
-        mutateHistory(),
-        mutate(`/api/orders/${orderDetail._id}/status`),
-      ]);
+      await Promise.all([mutateOrderDetail(), mutate(`/api/orders/${orderDetail._id}/status`)]);
     } catch (e) {
       console.error(e);
       showErrorToast("구매 확정 처리 중 오류가 발생했습니다.");
@@ -753,8 +661,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     description?: string;
   } | null = shouldShowInboundShippingTodo
     ? {
-        label: "라켓 발송 운송장 등록이 필요합니다.",
-        description: "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
+        label: isPaymentWaiting
+          ? "입금 후 라켓 발송 운송장을 등록해주세요."
+          : "라켓 발송 운송장 등록이 필요합니다.",
+        description: isPaymentWaiting
+          ? "무통장입금 주문은 입금 확인 후 작업이 진행됩니다. 라켓을 먼저 보내실 수는 있지만, 입금이 확인되지 않으면 교체 작업이 시작되지 않습니다."
+          : "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
         ctaLabel: "라켓 발송 운송장 등록",
         ctaHref: inboundShippingHref,
       }
@@ -802,17 +714,29 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
   const hasDeliveryRequest = Boolean(orderDetail.shippingInfo.deliveryRequest?.trim());
   const hasAddress = Boolean(orderDetail.customer.address || orderDetail.customer.addressDetail);
-  const addressSummary = hasAddress ? "배송지 등록됨" : "배송지 미등록";
+
+  const deliveryAddress = [orderDetail.customer.address, orderDetail.customer.addressDetail]
+    .filter(Boolean)
+    .join(" ");
+
   const shippingProgressLabel = shouldShowTrackingStatusNotice
     ? trackingData?.success && trackingData.supported
       ? trackingData.displayStatus
       : displayOrderStatusLabel
     : displayOrderStatusLabel || "상태 확인 중";
-  const outboundTrackingLabel = orderDetail.shippingInfo.invoice?.trackingNumber
-    ? "운송장 등록됨"
-    : isVisitPickup
-      ? "방문 수령 준비"
-      : "운송장 미등록";
+
+  const outboundInvoice = orderDetail.shippingInfo.invoice;
+  const hasOutboundTracking = Boolean(outboundInvoice?.trackingNumber);
+
+  const outboundDeliveryLabel = serviceLinkedOrder ? "완성 라켓 배송" : "배송 정보";
+
+  const outboundDeliveryValue = isVisitPickup
+    ? "매장 방문 수령"
+    : hasOutboundTracking && outboundInvoice
+      ? `${getCourierDisplayName(outboundInvoice.courier)} · ${outboundInvoice.trackingNumber}`
+      : serviceLinkedOrder
+        ? "작업 완료 후 배송 준비"
+        : shippingProgressLabel;
 
   const handleWithdrawCancelRequest = async () => {
     if (!orderDetail?._id || isWithdrawingCancelRequest) return;
@@ -863,16 +787,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         throw new Error(await parseApiMessage(res, "취소 요청 처리 중 오류가 발생했습니다."));
       }
 
-      // SWR 캐시 갱신: 상태, 이력, 마이페이지 목록, 상세 모두 재검증
+      // SWR 캐시 갱신: 마이페이지 목록과 주문 상세를 재검증
       await Promise.all([
         mutateOrderDetail(),
-        mutateHistory(),
-        mutate(
-          (key) =>
-            typeof key === "string" && key.startsWith(`/api/orders/${orderDetail._id}/history`),
-          undefined,
-          { revalidate: true },
-        ),
+
         mutate(
           (key) => typeof key === "string" && key.startsWith("/api/users/me/orders"),
           undefined,
@@ -896,8 +814,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   return (
     <main className="w-full">
       <MypageDetailHero
-        title={serviceLinkedOrder ? "교체서비스 신청 상세" : "주문 상세"}
-        description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 살펴보세요."
+        title={serviceLinkedOrder ? "상품 구매 + 교체서비스 상세" : "주문 상세"}
+        description={
+          serviceLinkedOrder
+            ? "주문 상품, 결제 상태, 교체서비스 진행 정보를 확인하세요."
+            : "주문 상품, 결제 상태, 배송 정보를 확인하세요."
+        }
         icon={<ShoppingCart className="h-6 w-6 text-primary" />}
         status={
           <OrderStatusBadge
@@ -946,38 +868,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             ) : null}
           </>
         }
-        nextActionTitle={nextActionCopy.title}
-        nextActionDescription={nextActionCopy.description}
-        nextActionSlot={
-          nextTodo ? (
-            <Button
-              asChild={Boolean(nextTodo.ctaHref)}
-              onClick={nextTodo.onCtaClick}
-              disabled={isConfirmingPurchase}
-              className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
-            >
-              {nextTodo.ctaHref ? (
-                <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
-              ) : (
-                nextTodo.ctaLabel
-              )}
-            </Button>
-          ) : null
-        }
-        summary={
-          <>
-            <MypageInfoField
-              label="주문 유형"
-              value={serviceLinkedOrder ? "스트링 교체서비스 포함" : "상품 주문"}
-            />
-            <MypageInfoField
-              label="총 결제금액"
-              value={formatCurrency(orderDetail.total)}
-              valueClassName="font-semibold tabular-nums"
-            />
-            <MypageInfoField label="주문일" value={formatDate(orderDetail.date)} />
-          </>
-        }
       />
 
       <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
@@ -999,8 +889,38 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
           </div>
         )}
-        <div className={mypageDetailLayout.contentGrid}>
-          <div className={cn(mypageDetailLayout.mainColumn, "bp-lg:col-start-1 bp-lg:row-start-1")}>
+
+        {nextTodo ? (
+          <div className="mb-5 flex w-full flex-col gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-sm shadow-foreground/[0.02] bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-5">
+            <div className="min-w-0 space-y-1">
+              <p className="text-ui-label font-medium text-muted-foreground">다음 할 일</p>
+              <p className="break-keep text-ui-body-sm font-medium text-foreground">
+                {nextActionCopy.title}
+              </p>
+              {nextActionCopy.description ? (
+                <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
+                  {nextActionCopy.description}
+                </p>
+              ) : null}
+            </div>
+
+            <Button
+              asChild={Boolean(nextTodo.ctaHref)}
+              onClick={nextTodo.onCtaClick}
+              disabled={isConfirmingPurchase}
+              className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto"
+            >
+              {nextTodo.ctaHref ? (
+                <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
+              ) : (
+                nextTodo.ctaLabel
+              )}
+            </Button>
+          </div>
+        ) : null}
+
+        <div className="w-full space-y-5">
+          <div className="space-y-5">
             {/* 주문 항목 */}
             <MypageDetailCard
               title="주문/서비스 요약"
@@ -1134,17 +1054,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 <MypageDetailCard
                   title="연결된 교체서비스"
                   description="진행 상태와 핵심 일정을 요약했습니다."
-                  action={
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">주문</Badge>
-                      {hasLinkedStringingApps ? (
-                        <Badge variant="secondary">교체서비스 연결</Badge>
-                      ) : null}
-                      {shouldShowInboundShippingBlock && !hasSelfShipTracking ? (
-                        <Badge variant="destructive">라켓 발송 운송장 등록 필요</Badge>
-                      ) : null}
-                    </div>
-                  }
                   contentClassName="space-y-4"
                 >
                   {hasLinkedStringingApps ? (
@@ -1207,16 +1116,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                 <p>
                                   <span className="text-muted-foreground">라켓 수:</span>{" "}
                                   {app.racketCount ?? displayLines.length}자루
-                                </p>
-                                <p>
-                                  <span className="text-muted-foreground">신청 금액:</span>{" "}
-                                  {typeof app.totalPrice === "number"
-                                    ? formatCurrency(app.totalPrice)
-                                    : "확인 중"}
-                                </p>
-                                <p>
-                                  <span className="text-muted-foreground">최근 업데이트:</span>{" "}
-                                  {app.updatedAt ? formatDate(app.updatedAt) : "-"}
                                 </p>
                               </div>
                             </div>
@@ -1320,51 +1219,64 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           </details>
 
                           {appNeedsTracking ? (
-                            <div className="mt-4 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
-                              <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                  <p className="mt-1 break-words font-semibold text-foreground">
-                                    라켓 발송 정보
-                                  </p>
-                                  <p className="mt-1 text-muted-foreground">
-                                    상태: {appHasTracking ? "등록 완료" : "미등록"}
-                                  </p>
-                                </div>
-                                {appHasTracking ? (
+                            <div className="mt-4 rounded-xl bg-muted/15 px-3 py-3 text-ui-body-sm">
+                              {appHasTracking ? (
+                                <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                                  <div className="min-w-0">
+                                    <p className="font-medium text-foreground">
+                                      라켓 발송 운송장이 등록되었습니다.
+                                    </p>
+                                    <p className="mt-1 break-all text-muted-foreground">
+                                      {appSelfShipInfo?.courier?.trim()
+                                        ? getCourierDisplayName(appSelfShipInfo.courier)
+                                        : "택배사 확인 중"}
+                                      {appSelfShipInfo?.trackingNo?.trim()
+                                        ? ` · ${appSelfShipInfo.trackingNo}`
+                                        : ""}
+                                    </p>
+                                    {appSelfShipInfo?.shippedAt ? (
+                                      <p className="mt-1 text-ui-label text-muted-foreground">
+                                        발송일: {formatDate(appSelfShipInfo.shippedAt)}
+                                      </p>
+                                    ) : null}
+                                    {appSelfShipInfo?.note ? (
+                                      <p className="mt-1 whitespace-pre-wrap break-words text-ui-label text-muted-foreground">
+                                        메모: {appSelfShipInfo.note}
+                                      </p>
+                                    ) : null}
+                                  </div>
+
                                   <Button
                                     asChild
                                     size="sm"
                                     variant="outline"
                                     className="h-8 w-full bg-transparent bp-sm:w-auto"
                                   >
-                                    <Link href={appShippingHref}>라켓 발송 운송장 수정</Link>
+                                    <Link href={appShippingHref}>운송장 수정</Link>
                                   </Button>
-                                ) : null}
-                              </div>
-                              <div className="mt-3 grid gap-2 bp-sm:grid-cols-2">
-                                <p>
-                                  <span className="text-muted-foreground">택배사:</span>{" "}
-                                  {appSelfShipInfo?.courier?.trim()
-                                    ? getCourierDisplayName(appSelfShipInfo.courier)
-                                    : "미등록"}
-                                </p>
-                                <p>
-                                  <span className="text-muted-foreground">운송장 번호:</span>{" "}
-                                  {appSelfShipInfo?.trackingNo?.trim() || "미등록"}
-                                </p>
-                                <p>
-                                  <span className="text-muted-foreground">발송일:</span>{" "}
-                                  {appSelfShipInfo?.shippedAt
-                                    ? formatDate(appSelfShipInfo.shippedAt)
-                                    : "미등록"}
-                                </p>
-                                {appSelfShipInfo?.note ? (
-                                  <p>
-                                    <span className="text-muted-foreground">메모:</span>{" "}
-                                    {appSelfShipInfo.note}
-                                  </p>
-                                ) : null}
-                              </div>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                                  <div className="min-w-0">
+                                    <p className="font-medium text-foreground">
+                                      라켓 발송 전입니다.
+                                    </p>
+                                    <p className="mt-1 break-keep text-muted-foreground">
+                                      {isPaymentWaiting
+                                        ? "무통장입금 주문은 입금 확인 후 작업이 진행됩니다. 입금과 라켓 발송을 완료한 뒤 운송장을 등록해주세요."
+                                        : "라켓을 매장으로 보내고 운송장을 등록해주세요."}
+                                    </p>
+                                  </div>
+
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    className="w-full shrink-0 bp-sm:w-auto"
+                                  >
+                                    <Link href={appShippingHref}>라켓 발송 운송장 등록</Link>
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           ) : null}
                         </div>
@@ -1402,12 +1314,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
           </div>
 
-          <aside
-            className={cn(
-              mypageDetailLayout.sideColumn,
-              "bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-span-2 bp-lg:row-start-1",
-            )}
-          >
+          <aside className="space-y-5">
             {/* 결제 정보 */}
             <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
               <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
@@ -1480,9 +1387,13 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     }}
                     orderId={orderId}
                     resourcePath="/api/orders"
-                    onSuccess={() => {
-                      mutateOrderDetail();
-                      mutateHistory();
+                    onSuccess={async () => {
+                      await mutateOrderDetail();
+                      showSuccessToast(
+                        showDeliveryOnlyFields
+                          ? "배송지/연락처가 수정되었습니다."
+                          : "수령자 정보가 수정되었습니다.",
+                      );
                       setEditingCustomer(false);
                     }}
                     onCancel={() => setEditingCustomer(false)}
@@ -1490,29 +1401,30 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardContent>
               ) : (
                 <CardContent className="space-y-4 p-4 bp-sm:p-5">
-                  <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
+                  <div className="space-y-3">
                     <MypageInfoField label="수령 방법" value={shippingMethodLabel} />
+
+                    {showDeliveryOnlyFields && hasAddress ? (
+                      <MypageInfoField
+                        label="배송지"
+                        value={deliveryAddress}
+                        valueClassName="break-keep"
+                      />
+                    ) : null}
+
                     <MypageInfoField
-                      label={isVisitPickup ? "수령 상태" : "배송/수령 상태"}
-                      value={shippingProgressLabel}
+                      label={outboundDeliveryLabel}
+                      value={outboundDeliveryValue}
+                      valueClassName={hasOutboundTracking ? "break-all" : undefined}
                     />
-                    <MypageInfoField label="배송지" value={addressSummary} />
-                    <MypageInfoField
-                      label="요청사항"
-                      value={hasDeliveryRequest ? "있음" : "없음"}
-                    />
-                    <MypageInfoField
-                      label={isVisitPickup ? "출고 상태" : "운송장"}
-                      value={outboundTrackingLabel}
-                    />
-                    <MypageInfoField
-                      label="예상 수령일"
-                      value={
-                        orderDetail.shippingInfo?.estimatedDate
-                          ? formatDate(orderDetail.shippingInfo.estimatedDate)
-                          : "미등록"
-                      }
-                    />
+
+                    {hasDeliveryRequest ? (
+                      <MypageInfoField
+                        label="배송 요청사항"
+                        value={orderDetail.shippingInfo.deliveryRequest}
+                        valueClassName="whitespace-pre-wrap break-words"
+                      />
+                    ) : null}
                   </div>
 
                   {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber ? (
@@ -1599,135 +1511,76 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </details>
                   ) : null}
 
-                  <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
-                      <span>배송/연락처 상세</span>
-                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div className="space-y-3 border-t border-border/60 p-3 bp-sm:p-4">
-                      <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
-                        <MypageInfoField
-                          label="이름"
-                          value={orderDetail.customer.name}
-                          fallback="이름 없음"
+                  {showDeliveryOnlyFields && isEditMode && canUserEdit ? (
+                    <div className="rounded-xl bg-muted/10 p-3 ring-1 ring-border/40">
+                      {editingRequest ? (
+                        <RequestEditForm
+                          initialData={orderDetail.shippingInfo.deliveryRequest || ""}
+                          orderId={orderId}
+                          onSuccess={async () => {
+                            await mutateOrderDetail();
+                            showSuccessToast("배송 요청사항이 수정되었습니다.");
+                            setEditingRequest(false);
+                          }}
+                          onCancel={() => setEditingRequest(false)}
                         />
-                        <MypageInfoField
-                          label="전화번호"
-                          value={formatKoreanPhone(orderDetail.customer.phone)}
-                          fallback="전화번호 없음"
-                        />
-                        <MypageInfoField
-                          label="이메일"
-                          value={orderDetail.customer.email}
-                          fallback="이메일 없음"
-                          valueClassName="break-all"
-                        />
-                        <MypageInfoField label="우편번호" value={orderDetail.customer.postalCode} />
-                        <MypageInfoField
-                          label="주소"
-                          value={orderDetail.customer.address}
-                          fallback="주소 없음"
-                        />
-                        <MypageInfoField
-                          label="상세 주소"
-                          value={orderDetail.customer.addressDetail}
-                        />
-                      </div>
-
-                      {showDeliveryOnlyFields ? (
-                        <div className="space-y-3 border-t border-border/50 pt-3">
-                          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                            <div className="min-w-0">
-                              <p className="text-ui-label font-medium text-muted-foreground">
-                                배송 요청사항
-                              </p>
-                              <p className="mt-1 text-ui-label text-muted-foreground">
-                                결제 시 입력한 배송 관련 요청사항입니다.
-                              </p>
-                            </div>
-                            {isEditMode && canUserEdit && !editingRequest ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setEditingRequest(true)}
-                                className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto"
-                              >
-                                요청사항 수정
-                              </Button>
-                            ) : null}
-                          </div>
-                          {editingRequest ? (
-                            <RequestEditForm
-                              initialData={orderDetail.shippingInfo.deliveryRequest || ""}
-                              orderId={orderId}
-                              onSuccess={() => {
-                                mutateOrderDetail();
-                                mutateHistory();
-                                setEditingRequest(false);
-                              }}
-                              onCancel={() => setEditingRequest(false)}
-                            />
-                          ) : orderDetail.shippingInfo.deliveryRequest ? (
-                            <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3">
-                              <p className="whitespace-pre-wrap break-words text-foreground">
-                                {orderDetail.shippingInfo.deliveryRequest}
-                              </p>
-                            </div>
-                          ) : (
-                            <p className="text-ui-body-sm italic text-muted-foreground">
-                              요청사항이 입력되지 않았습니다.
-                            </p>
-                          )}
-                        </div>
                       ) : (
-                        <p className="text-ui-label font-medium text-muted-foreground">
-                          방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.
-                        </p>
-                      )}
-                    </div>
-                  </details>
+                        <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="text-ui-body-sm font-medium text-foreground">
+                              배송 요청사항
+                            </p>
+                            <p className="mt-1 text-ui-label text-muted-foreground">
+                              필요한 경우 배송 요청사항만 수정할 수 있습니다.
+                            </p>
+                          </div>
 
-                  {shouldShowInboundShippingBlock && !hasLinkedStringingApps && (
-                    <div className="border-l-2 border-primary/50 bg-primary/5 px-3 py-3 dark:bg-primary/10">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <p className="text-ui-body-sm font-semibold text-foreground">
-                            라켓 발송 정보
-                          </p>
-                          <p className="text-ui-label text-foreground/75">
-                            매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.
-                          </p>
-                        </div>
-                        {hasSelfShipTracking ? (
                           <Button
-                            asChild
                             size="sm"
                             variant="outline"
-                            className="h-8 w-full bp-sm:w-auto"
+                            onClick={() => setEditingRequest(true)}
+                            className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto"
                           >
-                            <Link href={inboundShippingHref ?? "#"}>라켓 발송 운송장 수정</Link>
+                            요청사항 수정
                           </Button>
-                        ) : null}
-                      </div>
-                      <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">
-                        <p>
-                          <span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">택배사:</span>{" "}
-                          {selfShipCourierLabel}
-                        </p>
-                        <p className="min-w-0 break-all">
-                          <span className="text-muted-foreground">운송장 번호:</span>{" "}
-                          {selfShipTrackingNoLabel}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">발송일:</span>{" "}
-                          {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : "미등록"}
-                        </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {shouldShowInboundShippingBlock &&
+                  !hasLinkedStringingApps &&
+                  hasSelfShipTracking ? (
+                    <div className="rounded-xl bg-muted/15 px-3 py-3 text-ui-body-sm">
+                      <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground">
+                            라켓 발송 운송장이 등록되었습니다.
+                          </p>
+                          <p className="mt-1 break-all text-muted-foreground">
+                            {selfShipCourierValue ? selfShipCourierLabel : "택배사 확인 중"}
+                            {selfShipInfo?.trackingNo?.trim()
+                              ? ` · ${selfShipInfo.trackingNo}`
+                              : ""}
+                          </p>
+                          {selfShipInfo?.shippedAt ? (
+                            <p className="mt-1 text-ui-label text-muted-foreground">
+                              발송일: {formatDate(selfShipInfo.shippedAt)}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="h-8 w-full bp-sm:w-auto"
+                        >
+                          <Link href={inboundShippingHref ?? "#"}>운송장 수정</Link>
+                        </Button>
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </CardContent>
               )}
               {isEditMode && canUserEdit && !editingCustomer && (
@@ -1738,7 +1591,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     onClick={() => setEditingCustomer(true)}
                     className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
                   >
-                    고객정보 수정
+                    {showDeliveryOnlyFields ? "배송지/연락처 수정" : "수령자 정보 수정"}
                   </Button>
                 </CardFooter>
               )}
@@ -1778,154 +1631,66 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               </Card>
             ) : null}
 
-            <div id="reviews-cta" className="mt-4">
-              {serviceLinkedOrder ? (
-                <div className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-muted-foreground">
-                  이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할 수 있습니다.
-                </div>
-              ) : allReviewed ? (
-                <div className="flex flex-col gap-3 border-l-2 border-primary/50 bg-primary/10 px-3 py-3 dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
-                  <div className="flex items-center gap-3 text-primary">
-                    <CheckCircle className="h-6 w-6" />
-                    <div>
-                      <p className="mt-1 break-words font-semibold text-foreground">
-                        이 주문은 리뷰를 작성하였습니다.
-                      </p>
-                      <p className="text-ui-body-sm text-foreground">
-                        내가 작성한 리뷰를 확인할 수 있어요.
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-sm:w-auto"
-                  >
-                    <Link href="/mypage?tab=reviews">리뷰 관리로 이동</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3 border-l-2 border-warning/60 bg-warning/10 px-3 py-3 dark:bg-warning/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-6 w-6 text-warning" />
-                    <div>
-                      <p className="font-semibold text-warning">
-                        이 주문은 리뷰를 작성하지 않았습니다.
-                      </p>
-                      <p className="text-ui-body-sm text-warning">
-                        아래 ‘후기 작성’ 버튼을 눌러 상품별로 후기를 남겨주세요.
-                      </p>
-                      {/* 방문 수령 주문은 배송완료 대신 수령 완료 문구로 안내 */}
-                      <p className="text-ui-body-sm text-destructive">
-                        ※
-                        {isVisitPickup
-                          ? "상품을 구매 확정하면 [후기 작성] 버튼이 나타납니다."
-                          : "구매 확정 후 [후기 작성] 버튼이 나타납니다."}
-                      </p>
-                    </div>
-                  </div>
-                  <OrderReviewCTA
-                    orderId={orderDetail._id as string}
-                    reviewAllDone={allReviewed}
-                    unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
-                    reviewNextTargetProductId={firstUnreviewed?.id ?? null}
-                    orderStatus={orderDetail.status}
-                    userConfirmedAt={orderDetail.userConfirmedAt ?? null}
-                    showOnlyWhenCompleted
-                    serviceLinkedOrder={serviceLinkedOrder}
-                    loading={!reviewsReady}
-                  />
-                </div>
-              )}
-            </div>
-          </aside>
-
-          <div className="space-y-5 bp-lg:col-start-1 bp-lg:row-start-2">
-            <details className="group bp-md:block">
-              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-medium text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
-                <span>진행 단계</span>
-                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-              </summary>
-              <Card className="hidden overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02] group-open:block bp-md:block">
-                <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-                  <CardTitle className="text-ui-card-title font-medium">
-                    주문 진행 타임라인
-                  </CardTitle>
-                  <CardDescription>
-                    주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수
-                    있습니다.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 bp-sm:p-5">
-                  {timelineSteps.map((step, index) => {
-                    const tone = getTimelineStepTone(step.state);
-                    const Icon =
-                      step.state === "active" && !isVisitPickup && step.title.includes("배송")
-                        ? Truck
-                        : tone.Icon;
-                    return (
-                      <div
-                        key={step.title}
-                        className="border-t border-border/60 py-3 first:border-t-0"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={cn(
-                              "mt-0.5 flex h-8 w-8 items-center justify-center rounded-full",
-                              tone.wrapper,
-                            )}
-                          >
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-medium text-foreground">
-                                {index + 1}. {step.title}
-                              </p>
-                              <Badge className={cn("px-2 py-0.5 text-ui-label", tone.badge)}>
-                                {getTimelineStateLabel(step.state)}
-                              </Badge>
-                            </div>
-                            <p className="mt-1 text-ui-body-sm text-muted-foreground">
-                              {step.description}
-                            </p>
-                          </div>
-                        </div>
+            {!serviceLinkedOrder ? (
+              <div id="reviews-cta" className="mt-4">
+                {allReviewed ? (
+                  <div className="flex flex-col gap-3 border-l-2 border-primary/50 bg-primary/10 px-3 py-3 dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
+                    <div className="flex items-center gap-3 text-primary">
+                      <CheckCircle className="h-6 w-6" />
+                      <div>
+                        <p className="mt-1 break-words font-semibold text-foreground">
+                          이 주문은 리뷰를 작성하였습니다.
+                        </p>
+                        <p className="text-ui-body-sm text-foreground">
+                          내가 작성한 리뷰를 확인할 수 있어요.
+                        </p>
                       </div>
-                    );
-                  })}
-                  <div className="mt-3 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
-                    <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
-                    <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
-                    {shouldShowStringingTimelineHint && (
-                      <p>
-                        {primaryStringingAppId
-                          ? "이 주문 상세의 교체서비스 정보 영역에서 작업 진행 상태를 함께 확인할 수 있습니다."
-                          : "교체서비스가 포함된 주문은 이 주문 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </details>
+                    </div>
 
-            {/* 처리 이력 */}
-            <details className="group bp-md:block">
-              <summary className="mb-3 flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-card p-4 text-ui-body-sm font-medium text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-sm:p-5 bp-md:hidden [&::-webkit-details-marker]:hidden">
-                <span>처리 이력</span>
-                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-              </summary>
-              <Card className="hidden overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02] group-open:block bp-md:block">
-                <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-                  <CardTitle className="text-ui-card-title font-medium">처리 이력</CardTitle>
-                  <CardDescription>최신 변경이 맨 위에 표시됩니다.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 bp-sm:p-5">
-                  <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} embedded />
-                </CardContent>
-              </Card>
-            </details>
-          </div>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-sm:w-auto"
+                    >
+                      <Link href="/mypage?tab=reviews">리뷰 관리로 이동</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3 border-l-2 border-warning/60 bg-warning/10 px-3 py-3 dark:bg-warning/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-6 w-6 text-warning" />
+                      <div>
+                        <p className="font-semibold text-warning">
+                          이 주문은 리뷰를 작성하지 않았습니다.
+                        </p>
+                        <p className="text-ui-body-sm text-warning">
+                          아래 ‘후기 작성’ 버튼을 눌러 상품별로 후기를 남겨주세요.
+                        </p>
+                        <p className="text-ui-body-sm text-destructive">
+                          ※
+                          {isVisitPickup
+                            ? "상품을 구매 확정하면 [후기 작성] 버튼이 나타납니다."
+                            : "구매 확정 후 [후기 작성] 버튼이 나타납니다."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <OrderReviewCTA
+                      orderId={orderDetail._id as string}
+                      reviewAllDone={allReviewed}
+                      unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
+                      reviewNextTargetProductId={firstUnreviewed?.id ?? null}
+                      orderStatus={orderDetail.status}
+                      userConfirmedAt={orderDetail.userConfirmedAt ?? null}
+                      showOnlyWhenCompleted
+                      serviceLinkedOrder={false}
+                      loading={!reviewsReady}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </aside>
         </div>
 
         {/* 취소 다이얼로그는 실제 요청 시점에만 mount */}
