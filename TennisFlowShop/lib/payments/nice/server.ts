@@ -221,14 +221,15 @@ async function requestNicePayment(params: {
 
   const requestBody = params.method === "POST" ? (params.body ?? {}) : undefined;
 
-  console.info("[nicepay][request]", {
-    method: params.method,
-    action: params.action ?? null,
-    url,
-    tid,
-    body: requestBody,
-  });
-
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[nicepay][request]", {
+      method: params.method,
+      action: params.action ?? null,
+      url,
+      tid,
+      body: requestBody,
+    });
+  }
   const response = await fetch(url, {
     method: params.method,
     headers: {
@@ -249,17 +250,19 @@ async function requestNicePayment(params: {
 
   const raw = toRecordString(parsed);
 
-  console.info("[nicepay][response]", {
-    httpStatus: response.status,
-    ok: response.ok,
-    resultCode: raw.resultCode || raw.ResultCode || null,
-    resultMsg: raw.resultMsg || raw.ResultMsg || raw.message || null,
-    status: raw.status || null,
-    amount: raw.amount || raw.Amt || raw.totalAmount || raw.paidAmount || null,
-    balanceAmt: raw.balanceAmt || raw.balanceAmount || raw.remainAmount || null,
-    cancelAmount: raw.cancelAmount || raw.cancelAmt || raw.canceledAmount || null,
-    rawKeys: Object.keys(raw),
-  });
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[nicepay][response]", {
+      httpStatus: response.status,
+      ok: response.ok,
+      resultCode: raw.resultCode || raw.ResultCode || null,
+      resultMsg: raw.resultMsg || raw.ResultMsg || raw.message || null,
+      status: raw.status || null,
+      amount: raw.amount || raw.Amt || raw.totalAmount || raw.paidAmount || null,
+      balanceAmt: raw.balanceAmt || raw.balanceAmount || raw.remainAmount || null,
+      cancelAmount: raw.cancelAmount || raw.cancelAmt || raw.canceledAmount || null,
+      rawKeys: Object.keys(raw),
+    });
+  }
 
   if (!response.ok) {
     const message = raw.resultMsg || raw.message || `NICE_APPROVE_HTTP_${response.status}`;

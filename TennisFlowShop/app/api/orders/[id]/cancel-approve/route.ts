@@ -590,20 +590,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         const niceCancelOrderId = createNiceCancelOrderId(existing._id);
 
-        console.info("[nicepay][cancel_amount_decision]", {
-          orderId: String(existing._id),
-          tid,
-          localExpectedAmount,
-          pgAmount: niceBeforeCancel.amount ?? null,
-          pgBalanceAmount,
-          selectedCancelAmount: cancelAmount,
-          pgStatus: niceBeforeCancel.status ?? null,
-          payMethod: niceBeforeCancel.payMethod ?? null,
-          cardCanPartCancel: niceBeforeCancel["card.canPartCancel"] ?? null,
-          cancelledAt: niceBeforeCancel.cancelledAt ?? null,
-          cancels: niceBeforeCancel.cancels ?? null,
-          rawKeys: Object.keys(niceBeforeCancel),
-        });
+        if (process.env.NODE_ENV !== "production") {
+          console.info("[nicepay][cancel_amount_decision]", {
+            orderId: String(existing._id),
+            tid,
+            localExpectedAmount,
+            pgAmount: niceBeforeCancel.amount ?? null,
+            pgBalanceAmount,
+            selectedCancelAmount: cancelAmount,
+            pgStatus: niceBeforeCancel.status ?? null,
+            payMethod: niceBeforeCancel.payMethod ?? null,
+            cardCanPartCancel: niceBeforeCancel["card.canPartCancel"] ?? null,
+            cancelledAt: niceBeforeCancel.cancelledAt ?? null,
+            cancels: niceBeforeCancel.cancels ?? null,
+            rawKeys: Object.keys(niceBeforeCancel),
+          });
+        }
 
         const cancelRaw = await cancelNicePaymentByTid({
           tid,

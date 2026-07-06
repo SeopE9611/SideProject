@@ -70,7 +70,6 @@ export async function recordCancelRefundSignal(db: Db, input: CancelRefundRiskSi
           category: "cancel_refund",
           eventType: input.eventType,
           subjectKey: input.subjectKey,
-          count: 0,
           firstAt: now,
           createdAt: now,
         },
