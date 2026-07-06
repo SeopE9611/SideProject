@@ -4,7 +4,6 @@ import { collectionMethodLabel } from "@/app/features/stringing-applications/lib
 import OrdersScopeTabs, { parseOrdersScope } from "@/app/mypage/_components/OrdersScopeTabs";
 import {
   getMypageNormalizedStatus,
-  getMypagePaymentStatusLabel,
   getMypageUserStatusLabel,
 } from "@/app/mypage/_lib/status-label";
 import ActivityOrderReviewCTA from "@/app/mypage/tabs/_components/ActivityOrderReviewCTA";
@@ -14,6 +13,12 @@ import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   getApplicationStatusBadgeSpec,
@@ -24,18 +29,18 @@ import {
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import {
-  AlertCircle,
   ArrowRight,
   CheckCircle,
-  ChevronDown,
-  ChevronUp,
+  MoreHorizontal,
   Package,
   Sparkles,
   Undo2,
   XCircle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Fragment, useMemo, useState } from "react";
@@ -91,6 +96,7 @@ type ActivityGroup = {
     shippingMethod?: string;
     totalPrice: number;
     firstItemName?: string;
+    firstItemImageUrl?: string | null;
     itemsCount: number;
     linkedApplicationCount: number;
     stringingApplicationId?: string | null;
@@ -110,6 +116,7 @@ type ActivityGroup = {
     userConfirmedAt?: string | null;
     brand?: string;
     model?: string;
+    imageUrl?: string | null;
     totalAmount?: number;
     days?: number;
     linkedApplicationCount: number;
@@ -196,17 +203,6 @@ const OrderShippingInfoDialog = dynamic(
   { loading: () => null },
 );
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
-};
-
 const formatAmount = (amount?: number | null) => {
   if (typeof amount !== "number") return "-";
   return `${amount.toLocaleString()}원`;
@@ -228,11 +224,12 @@ const normalizeLabel = (value?: string | null) =>
 const isFilledText = (value?: string | null) =>
   Boolean(value && value.trim() && value.trim() !== "-");
 
-const getRepresentativeTitle = (group: ActivityGroup) => {
+const getRepresentativeTitle = (group: ActivityGroup): string => {
   if (group.kind === "order") {
     const firstItemName = group.order?.firstItemName?.trim();
     const itemsCount = group.order?.itemsCount ?? 0;
-    const baseName = isFilledText(firstItemName) ? firstItemName : "주문 상품";
+    const baseName = firstItemName && firstItemName !== "-" ? firstItemName : "주문 상품";
+
     return itemsCount > 1 ? `${baseName} 외 ${itemsCount - 1}건` : baseName;
   }
 
@@ -240,6 +237,7 @@ const getRepresentativeTitle = (group: ActivityGroup) => {
     const brand = group.rental?.brand?.trim() ?? "";
     const model = group.rental?.model?.trim() ?? "";
     const racketName = `${brand} ${model}`.trim() || "라켓";
+
     return `${racketName} 대여`;
   }
 
@@ -560,6 +558,62 @@ const getFlowNextActionText = (
   if (normalized === "승인") return "신청이 확인되었습니다. 다음 안내를 기다려주세요.";
   return null;
 };
+
+const FALLBACK_FLOW_IMAGE = "/placeholder.svg?height=96&width=96&query=tennis+gear";
+const SERVICE_FLOW_IMAGE = "/tennis-promo-bg.png";
+
+const TODO_STATUS_LABEL_MAP: Record<string, string> = {
+  "구매 확정 필요": "확정필요",
+  "수령 확인 필요": "확인필요",
+  "라켓 발송 운송장 등록 필요": "발송필요",
+  "교체서비스 확정 필요": "확정필요",
+  "후기를 남길 수 있어요": "후기작성",
+  "상품 후기 작성 가능": "후기작성",
+  "상품·교체서비스 후기 작성 가능": "후기작성",
+  "교체서비스 신청 필요": "신청필요",
+  "반납 운송장 수정 필요": "반납필요",
+  "반납 운송장 등록 필요": "반납필요",
+};
+
+const getCompactStatusLabel = (label: string, kind: ActivityGroup["kind"]) => {
+  if (label === "대기중" && (kind === "order" || kind === "rental")) {
+    return "결제대기";
+  }
+
+  if (label === "구매확정") return "완료";
+  if (label === "반납완료") return "완료";
+
+  return label;
+};
+
+const getCompactDate = (iso: string) => {
+  const d = new Date(iso);
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+};
+
+const getRepresentativeImage = (
+  group: ActivityGroup,
+  displayApplication?: ActivityApplicationSummary,
+) => {
+  if (group.kind === "order") {
+    return group.order?.firstItemImageUrl || FALLBACK_FLOW_IMAGE;
+  }
+
+  if (group.kind === "rental") {
+    return group.rental?.imageUrl || FALLBACK_FLOW_IMAGE;
+  }
+
+  if (displayApplication) {
+    return SERVICE_FLOW_IMAGE;
+  }
+
+  return FALLBACK_FLOW_IMAGE;
+};
+
 const canShowOrderShippingInfo = (status?: string | null) => {
   const normalized = getMypageNormalizedStatus(status);
   return normalized === "배송중" || normalized === "배송완료" || normalized === "구매확정";
@@ -587,7 +641,6 @@ export default function TransactionFlowList() {
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const [confirmingRentalId, setConfirmingRentalId] = useState<string | null>(null);
   const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
-  const [expandedSecondaryKey, setExpandedSecondaryKey] = useState<string | null>(null);
   const [cancelOrderDialogId, setCancelOrderDialogId] = useState<string | null>(null);
   const [cancelApplicationDialogId, setCancelApplicationDialogId] = useState<string | null>(null);
   const [cancelRentalDialogId, setCancelRentalDialogId] = useState<string | null>(null);
@@ -954,14 +1007,11 @@ export default function TransactionFlowList() {
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 shrink-0 text-primary" />
             <p className="break-keep text-ui-label font-medium text-foreground">
-              지금 처리할 수 있는 구매 확정, 운송장 등록, 후기 작성 항목만 모았습니다.
+              지금 처리할 수 있는 항목만 모았습니다.
             </p>
           </div>
         </div>
       ) : null}
-      <p className="break-keep text-ui-label text-muted-foreground">
-        주문 내역, 신청 내역, 라켓 대여와 연결된 교체서비스 상태를 함께 확인할 수 있습니다.
-      </p>
       {items.length === 0 ? (
         <EmptyState
           icon={<Package className="h-8 w-8" />}
@@ -1037,32 +1087,17 @@ export default function TransactionFlowList() {
                   ? (g.rental?.linkedApplicationCount ?? 0)
                   : 0;
             const needsTrackingAction = isApplicationTrackingNeeded(applicationActionTarget);
-            const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
-            const normalizedFlowLabel = normalizeLabel(g.flowLabel);
             const todoPrimaryReason =
               scope === "todo" || scope === "all" ? getTodoPrimaryReason(g) : null;
-            const nextActionText = getFlowNextActionText(g, {
-              prefersApplicationView,
-              todoPrimaryReason,
-            });
 
-            const linkedFlowBadgeLabel =
-              !prefersApplicationView &&
-              (g.flowType === "order_plus_stringing" || g.flowType === "rental_plus_stringing")
-                ? "교체서비스 연결"
-                : null;
-            const shouldShowFlowBadge =
-              !prefersApplicationView &&
-              !linkedFlowBadgeLabel &&
-              Boolean(normalizedFlowLabel) &&
-              normalizedFlowLabel !== normalizedMetaLabel;
             const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
             const isApplicationActionContext =
               Boolean(applicationActionTarget) &&
               (isDirectApplicationCard || scope === "todo" || scope === "all");
-            const displayTitle = prefersApplicationView
-              ? getApplicationTitle(displayApplication)
-              : getRepresentativeTitle(g);
+            const displayTitle: string =
+              (prefersApplicationView
+                ? getApplicationTitle(displayApplication)
+                : getRepresentativeTitle(g)) || "거래/이용 내역";
             const displayStatus = prefersApplicationView ? displayApplication?.status : status;
             const displayUserStatusLabel = prefersApplicationView
               ? getMypageUserStatusLabel(displayStatus)
@@ -1091,124 +1126,110 @@ export default function TransactionFlowList() {
             const displayMetaLabel = prefersApplicationView
               ? "교체서비스 신청"
               : FLOW_TYPE_META_LABEL[g.flowType];
-            const showLinkedStatusBadge =
-              g.flowType !== "application_only" && linkedCount > 0 && !prefersApplicationView;
-            const standaloneApplicationIdMeta =
-              isStandaloneApplication(displayApplication) && displayApplication?.id
-                ? ` · #${shortId(displayApplication.id) ?? "-"}`
-                : "";
             const isCancelRequested =
               (displayKind === "order" && g.order?.cancelStatus === "requested") ||
               (displayKind === "rental" && g.rental?.cancelStatus === "requested") ||
               (displayKind === "application" &&
                 (displayApplication ?? g.application)?.cancelStatus === "requested");
-            const heroSummary =
+            const amountText =
               displayKind === "order"
                 ? formatAmount(g.order?.totalPrice)
                 : displayKind === "rental"
                   ? formatAmount(g.rental?.totalAmount)
-                  : getApplicationTrackingLabel(displayApplication);
-            const heroSubSummary =
-              displayKind === "order"
-                ? getMypagePaymentStatusLabel(g.order?.paymentStatus)
-                : displayKind === "rental"
-                  ? typeof g.rental?.days === "number"
-                    ? `${g.rental.days}일 대여`
-                    : "대여 기간 확인"
-                  : getApplicationCollectionLabel(displayApplication);
+                  : null;
+
+            const primaryMetaText = [getCompactDate(displayDateValue), amountText]
+              .filter(Boolean)
+              .join(" · ");
             const linkedStringSummary = !prefersApplicationView
               ? getStringSelectionSummary(g.application)
               : null;
-            const linkedApplicationStatusLabel =
-              !prefersApplicationView && g.application
-                ? getMypageUserStatusLabel(g.application.status)
-                : null;
+            const secondaryMetaText =
+              displayKind === "order"
+                ? [
+                    linkedStringSummary,
+                    g.order && g.order.itemsCount > 1 ? `${g.order.itemsCount}개 상품` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
+                : displayKind === "rental"
+                  ? [
+                      typeof g.rental?.days === "number" ? `${g.rental.days}일 대여` : null,
+                      linkedStringSummary,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")
+                  : [
+                      getApplicationCollectionLabel(displayApplication),
+                      getStringSelectionSummary(displayApplication),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
+
+            const representativeStatusLabel = isCancelRequested
+              ? "취소요청"
+              : todoPrimaryReason
+                ? (TODO_STATUS_LABEL_MAP[todoPrimaryReason] ?? "처리필요")
+                : getCompactStatusLabel(displayUserStatusLabel, g.kind);
+
+            const representativeStatusBadgeSpec = isCancelRequested
+              ? getWorkflowMetaBadgeSpec("cancel_requested")
+              : todoPrimaryReason
+                ? getWorkflowMetaBadgeSpec("action_required")
+                : displayStatusBadgeSpec;
+
+            const representativeImage = getRepresentativeImage(g, displayApplication);
 
             return (
               <div
                 key={g.key}
-                className="grid gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 md:grid-cols-[minmax(0,1fr)_168px] md:items-start md:gap-4"
+                className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 md:grid-cols-[72px_minmax(0,1fr)_168px] md:items-start md:gap-4"
               >
-                <div className="flex min-w-0 items-start justify-between gap-3 md:col-span-2">
-                  <div className="min-w-0">
-                    <p className="text-ui-body-sm font-semibold text-foreground">
+                <Link
+                  href={detailHref}
+                  className="relative block h-16 w-16 overflow-hidden rounded-xl border border-border/60 bg-muted md:h-[72px] md:w-[72px]"
+                  aria-label={`${displayTitle} 상세 보기`}
+                >
+                  <Image
+                    src={representativeImage}
+                    alt={displayTitle}
+                    width={72}
+                    height={72}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </Link>
+
+                <div className="min-w-0 space-y-1.5">
+                  <div className="flex items-start justify-between gap-2 md:hidden">
+                    <p className="min-w-0 break-keep text-ui-label font-medium text-muted-foreground">
                       {displayMetaLabel}
                     </p>
-                    <p className="mt-0.5 text-ui-label text-muted-foreground">
-                      {formatDate(displayDateValue)} · 현재 상태 {displayUserStatusLabel}
-                    </p>
+                    <Badge
+                      variant={representativeStatusBadgeSpec.variant}
+                      className="shrink-0 whitespace-nowrap"
+                    >
+                      {representativeStatusLabel}
+                    </Badge>
                   </div>
-                </div>
-                {/* 중간: 메인 정보 */}
-                <div className="flex min-w-0 flex-col gap-1.5">
-                  <Link href={detailHref} className="inline-flex max-w-full items-start">
-                    <span className="line-clamp-2 break-keep text-ui-body-sm font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-ui-body">
+
+                  <p className="hidden break-keep text-ui-label font-medium text-muted-foreground md:block">
+                    {displayMetaLabel}
+                  </p>
+
+                  <Link href={detailHref} className="block min-w-0">
+                    <span className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground transition-colors hover:text-primary bp-sm:text-ui-body">
                       {displayTitle}
                     </span>
                   </Link>
+
                   <p className="break-keep text-ui-label tabular-nums text-muted-foreground bp-sm:text-ui-body-sm">
-                    {heroSummary}
-                    {heroSubSummary ? ` · ${heroSubSummary}` : ""}
-                    {standaloneApplicationIdMeta}
+                    {primaryMetaText}
                   </p>
 
-                  {linkedFlowBadgeLabel ||
-                  shouldShowFlowBadge ||
-                  showLinkedStatusBadge ||
-                  isCancelRequested ? (
-                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-ui-label">
-                      {linkedFlowBadgeLabel ? (
-                        <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
-                          {linkedFlowBadgeLabel}
-                        </Badge>
-                      ) : null}
-                      {shouldShowFlowBadge ? (
-                        <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                          {g.flowLabel}
-                        </Badge>
-                      ) : null}
-                      {showLinkedStatusBadge ? (
-                        <Badge
-                          variant="secondary"
-                          className="hidden shrink-0 whitespace-nowrap bp-sm:inline-flex"
-                        >
-                          {getLinkedApplicationStatusSummary(linkedApps)}
-                        </Badge>
-                      ) : null}
-                      {isCancelRequested ? (
-                        <Badge
-                          variant={getWorkflowMetaBadgeSpec("cancel_requested").variant}
-                          className="gap-1"
-                        >
-                          <AlertCircle className="h-3 w-3" />
-                          취소 요청됨
-                        </Badge>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  {linkedStringSummary || linkedApplicationStatusLabel ? (
+                  {secondaryMetaText ? (
                     <p className="line-clamp-1 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                      {[
-                        linkedStringSummary,
-                        linkedApplicationStatusLabel
-                          ? `교체서비스 ${linkedApplicationStatusLabel}`
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  ) : null}
-
-                  {todoPrimaryReason && nextActionText ? (
-                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed">
-                      <span className="font-semibold text-primary">다음 할 일</span>
-                      <span className="text-muted-foreground"> · {nextActionText}</span>
-                    </p>
-                  ) : nextActionText ? (
-                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                      <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
-                      {nextActionText}
+                      {secondaryMetaText}
                     </p>
                   ) : null}
                 </div>
@@ -1249,16 +1270,6 @@ export default function TransactionFlowList() {
                         ? `/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}&focus=stringing`
                         : detailHref;
 
-                  const resolvedDetailLabel = hasOrderLinkedApplication
-                    ? "주문 상세 보기"
-                    : hasRentalLinkedApplication
-                      ? "대여 상세 보기"
-                      : detailTargetType === "order"
-                        ? "주문 상세 보기"
-                        : detailTargetType === "rental"
-                          ? "대여 상세 보기"
-                          : "교체서비스 상세 보기";
-
                   const detailPriority = scope === "todo" || prefersApplicationView ? 10 : 3;
                   actions.push({
                     key: "flow-detail",
@@ -1271,8 +1282,8 @@ export default function TransactionFlowList() {
                         variant="outline"
                         className="bg-transparent"
                       >
-                        <Link href={resolvedDetailHref}>
-                          {resolvedDetailLabel} <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        <Link href={resolvedDetailHref} aria-label={`${displayTitle} 상세 보기`}>
+                          상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                         </Link>
                       </Button>
                     ),
@@ -1373,7 +1384,8 @@ export default function TransactionFlowList() {
                           <Button
                             key="order-cancel-withdraw"
                             size="sm"
-                            variant="destructive"
+                            variant="outline"
+                            className="border-transparent bg-transparent text-foreground shadow-none hover:bg-muted hover:text-foreground"
                             disabled={withdrawingOrderCancelId === orderId}
                             onClick={() => handleOrderCancelWithdraw(orderId)}
                           >
@@ -1391,7 +1403,8 @@ export default function TransactionFlowList() {
                           <Button
                             key="order-cancel-request"
                             size="sm"
-                            variant="destructive"
+                            variant="outline"
+                            className="border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => setCancelOrderDialogId(orderId)}
                           >
                             <XCircle className="mr-1 h-3.5 w-3.5" />
@@ -1470,7 +1483,8 @@ export default function TransactionFlowList() {
                           <Button
                             key="rental-cancel-request"
                             size="sm"
-                            variant="destructive"
+                            variant="outline"
+                            className="border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => setCancelRentalDialogId(rentalId)}
                           >
                             <XCircle className="mr-1 h-3.5 w-3.5" />
@@ -1564,7 +1578,8 @@ export default function TransactionFlowList() {
                           <Button
                             key="application-cancel-request"
                             size="sm"
-                            variant="destructive"
+                            variant="outline"
+                            className="border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}
                           >
                             <XCircle className="mr-1 h-3.5 w-3.5" />
@@ -1665,67 +1680,87 @@ export default function TransactionFlowList() {
                   const secondaryActions = shouldUseSecondary
                     ? [...nonPinned.slice(primaryCount), ...forcedSecondary]
                     : [];
-                  const isSecondaryOpen = expandedSecondaryKey === g.key;
+
+                  const hasSecondaryActions = secondaryActions.length > 0;
+
+                  const detailInlineAction = inlineActions.find(
+                    (action) => action.key === "flow-detail",
+                  );
+                  const primaryInlineActions = inlineActions.filter(
+                    (action) => action.key !== "flow-detail",
+                  );
 
                   return (
                     <>
                       {/* 오른쪽 컬럼: 상태 배지 + 액션 버튼 */}
-                      <div className="flex w-full shrink-0 flex-col items-start gap-2 md:w-[168px] md:items-stretch md:self-start">
+                      <div className="col-span-2 flex w-full shrink-0 flex-col items-start gap-2 md:col-span-1 md:w-[168px] md:items-stretch md:self-start">
                         <div className="hidden flex-wrap items-center gap-1.5 md:flex md:justify-end">
                           <Badge
-                            variant={displayStatusBadgeSpec.variant}
+                            variant={representativeStatusBadgeSpec.variant}
                             className="shrink-0 whitespace-nowrap"
                           >
-                            {displayUserStatusLabel}
+                            {representativeStatusLabel}
                           </Badge>
                         </div>
 
                         {inlineActions.length > 0 || secondaryActions.length > 0 ? (
-                          <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep md:[&_button]:h-8 md:[&_button]:px-3">
-                            {inlineActions.map((action) => (
-                              <Fragment key={action.key}>{action.node}</Fragment>
-                            ))}
-                            {secondaryActions.length > 0 ? (
-                              <button
-                                type="button"
-                                className={`group relative flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-ui-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-8 md:px-3 ${
-                                  isSecondaryOpen
-                                    ? "border-border bg-muted text-foreground shadow-none"
-                                    : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
-                                }`}
-                                onClick={() =>
-                                  setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))
-                                }
-                              >
-                                <span>
-                                  {isSecondaryOpen
-                                    ? "접기"
-                                    : `추가 작업 ${secondaryActions.length}개`}
-                                </span>
-                                {isSecondaryOpen ? (
-                                  <ChevronUp className="h-3.5 w-3.5" />
-                                ) : (
-                                  <ChevronDown className="h-3.5 w-3.5" />
-                                )}
-                              </button>
+                          <div className="flex w-full flex-col gap-2">
+                            {primaryInlineActions.length > 0 ? (
+                              <div className="grid w-full gap-2 [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep md:[&_button]:h-8 md:[&_button]:px-3">
+                                {primaryInlineActions.map((action) => (
+                                  <Fragment key={action.key}>{action.node}</Fragment>
+                                ))}
+                              </div>
                             ) : null}
-                          </div>
-                        ) : null}
-                        {secondaryActions.length > 0 && isSecondaryOpen ? (
-                          <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-3 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-3 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep">
-                            {secondaryActions.map((action) => (
-                              <Fragment key={action.key}>{action.node}</Fragment>
-                            ))}
+
+                            <div
+                              className={cn(
+                                "grid w-full gap-2 [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep md:[&_a]:h-8 md:[&_a]:px-3",
+                                hasSecondaryActions
+                                  ? "grid-cols-[minmax(0,1fr)_40px]"
+                                  : "grid-cols-1",
+                              )}
+                            >
+                              {detailInlineAction ? (
+                                <Fragment key={detailInlineAction.key}>
+                                  {detailInlineAction.node}
+                                </Fragment>
+                              ) : null}
+
+                              {hasSecondaryActions ? (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-9 w-10 shrink-0 rounded-lg border-border bg-background px-0 text-muted-foreground hover:bg-muted hover:text-foreground md:h-8 md:w-10"
+                                      aria-label={`${secondaryActions.length}개 추가 작업 보기`}
+                                      title="더보기"
+                                    >
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+
+                                  <DropdownMenuContent align="end" className="w-40 p-1">
+                                    <div className="grid gap-1 [&_a]:h-8 [&_a]:w-full [&_a]:justify-start [&_a]:px-3 [&_a]:text-ui-label [&_a]:font-medium [&_button]:h-8 [&_button]:w-full [&_button]:justify-start [&_button]:px-3 [&_button]:text-ui-label [&_button]:font-medium">
+                                      {secondaryActions.map((action) => (
+                                        <DropdownMenuItem
+                                          key={action.key}
+                                          asChild
+                                          className="p-0 focus:bg-transparent"
+                                        >
+                                          {action.node}
+                                        </DropdownMenuItem>
+                                      ))}
+                                    </div>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              ) : null}
+                            </div>
                           </div>
                         ) : null}
                       </div>
-                      {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="col-span-full grid w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep">
-                          {secondaryActions.map((action) => (
-                            <Fragment key={action.key}>{action.node}</Fragment>
-                          ))}
-                        </div>
-                      ) : null}
                     </>
                   );
                 })()}

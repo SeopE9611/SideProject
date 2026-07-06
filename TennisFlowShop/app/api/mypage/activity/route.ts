@@ -95,6 +95,7 @@ type ActivityOrderSummary = {
   shippingMethod: string;
   totalPrice: number;
   firstItemName: string;
+  firstItemImageUrl?: string | null;
   itemsCount: number;
   withStringService: boolean;
   stringingApplicationIds: string[];
@@ -121,6 +122,8 @@ type ActivityRentalSummary = {
   shippingMethod?: string;
   brand?: string;
   model?: string;
+  racketId?: string | null;
+  imageUrl?: string | null;
   days?: number;
   totalAmount?: number;
   deposit?: number;
@@ -214,6 +217,38 @@ function firstText(...values: unknown[]): string | null {
     if (typeof value === "number" && Number.isFinite(value)) return String(value);
   }
   return null;
+}
+
+function firstImageUrl(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+function pickOrderItemImage(item: any): string | null {
+  if (!item) return null;
+
+  const firstImageFromArray =
+    Array.isArray(item.images) && typeof item.images[0] === "string" ? item.images[0] : null;
+
+  return firstImageUrl(
+    item.selectedColorImage,
+    item.imageUrl,
+    item.image,
+    item.thumbnail,
+    item.thumbnailUrl,
+    firstImageFromArray,
+  );
+}
+
+function pickUsedRacketImage(doc: any): string | null {
+  if (!doc) return null;
+
+  const firstImageFromArray =
+    Array.isArray(doc.images) && typeof doc.images[0] === "string" ? doc.images[0] : null;
+
+  return firstImageUrl(doc.image, doc.thumbnail, doc.thumbnailUrl, firstImageFromArray);
 }
 
 function getApplicationLines(stringDetails: any): any[] {
@@ -470,6 +505,7 @@ export async function GET(req: Request) {
             updatedAt: 1,
             status: 1,
             userConfirmedAt: 1,
+            racketId: 1,
             brand: 1,
             model: 1,
             days: 1,
@@ -775,6 +811,28 @@ export async function GET(req: Request) {
     apps.sort(compareByUpdatedThenCreatedDesc);
   }
 
+  const rentalRacketObjectIds = Array.from(
+    new Set(
+      (rentals as any[]).map((r) => String(r?.racketId ?? "")).filter((id) => ObjectId.isValid(id)),
+    ),
+  ).map((id) => new ObjectId(id));
+
+  const rentalImageByRacketId = new Map<string, string | null>();
+
+  if (rentalRacketObjectIds.length > 0) {
+    const usedRackets = await db
+      .collection("used_rackets")
+      .find(
+        { _id: { $in: rentalRacketObjectIds } },
+        { projection: { images: 1, image: 1, thumbnail: 1, thumbnailUrl: 1 } },
+      )
+      .toArray();
+
+    for (const racket of usedRackets as any[]) {
+      rentalImageByRacketId.set(String(racket._id), pickUsedRacketImage(racket));
+    }
+  }
+
   // 6) 그룹 생성(주문/대여 + 단독신청)
   const groups: ActivityGroup[] = [];
 
@@ -857,6 +915,7 @@ export async function GET(req: Request) {
         shippingMethod: resolveOrderShippingMethod(o?.shippingInfo),
         totalPrice: calcOrderTotal(o),
         firstItemName: first?.name ?? "(상품명 없음)",
+        firstItemImageUrl: pickOrderItemImage(first),
         itemsCount: items.length,
         withStringService,
         stringingApplicationIds: linkedApps.map((app) => app.id),
@@ -921,8 +980,10 @@ export async function GET(req: Request) {
               ? r.userConfirmedAt
               : null,
         shippingMethod: String(r?.shipping?.shippingMethod ?? ""),
+        racketId: r.racketId ? String(r.racketId) : null,
         brand: r.brand,
         model: r.model,
+        imageUrl: r.racketId ? (rentalImageByRacketId.get(String(r.racketId)) ?? null) : null,
         days: r.days,
         totalAmount: r?.amount?.total,
         deposit: r?.amount?.deposit,

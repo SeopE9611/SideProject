@@ -1152,11 +1152,7 @@ export default function StringingApplicationDetailClient({
   // - handleGetStringingApplication에서 linkedOrderPickupMethod를 내려주므로,
   // 신청서 상세에서도 같은 수령방식을 표시할 수 있다.
   const linkedOrderPickupMethod = (data as any)?.linkedOrderPickupMethod as
-    | "visit"
-    | "delivery"
-    | "quick"
-    | null
-    | undefined;
+    "visit" | "delivery" | "quick" | null | undefined;
   const linkedOrderPickupBadge = linkedOrderPickupMethod
     ? getShippingMethodBadge({
         shippingInfo: { shippingMethod: linkedOrderPickupMethod },

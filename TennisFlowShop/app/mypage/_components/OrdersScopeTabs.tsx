@@ -47,10 +47,13 @@ type OrdersScopeTabsProps = {
 export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeTabsProps) {
   return (
     <nav
-      className={cn("relative border-b border-border", className)}
+      className={cn(
+        "relative overflow-x-auto border-b border-border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        className,
+      )}
       aria-label="거래/이용내역 하위 탭"
     >
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 sm:gap-x-7">
+      <div className="flex min-w-max items-center gap-x-5 sm:gap-x-7">
         {SCOPE_ITEMS.map((item) => {
           const isActive = item.value === activeScope;
           return (
@@ -59,10 +62,10 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group relative -mb-px flex min-w-fit items-center whitespace-nowrap border-b-2 px-0.5 py-3 text-ui-body-sm",
+                "group relative -mb-px flex min-w-fit items-center whitespace-nowrap border-b-2 px-0.5 py-2.5 text-ui-label bp-sm:py-3 bp-sm:text-ui-body-sm",
                 "transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
                 isActive
-                  ? "border-foreground font-semibold text-foreground"
+                  ? "border-foreground font-medium text-foreground"
                   : "border-transparent font-medium text-muted-foreground hover:text-foreground",
               )}
             >

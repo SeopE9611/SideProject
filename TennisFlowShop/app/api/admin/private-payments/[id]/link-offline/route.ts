@@ -188,19 +188,17 @@ export async function POST(req: Request, ctx: Ctx) {
       );
       if (!linked) throw new Error("개인결제 오프라인 작업 기록 연결 갱신에 실패했습니다.");
       updated = linked;
-      await guard.db
-        .collection("offline_customers")
-        .updateOne(
-          { _id: customer._id },
-          {
-            $inc: { "stats.visitCount": 1, "stats.totalServiceCount": 1 },
-            $set: {
-              "stats.lastVisitedAt": record.occurredAt,
-              updatedAt: now,
-              updatedBy: guard.admin._id,
-            },
+      await guard.db.collection("offline_customers").updateOne(
+        { _id: customer._id },
+        {
+          $inc: { "stats.visitCount": 1, "stats.totalServiceCount": 1 },
+          $set: {
+            "stats.lastVisitedAt": record.occurredAt,
+            updatedAt: now,
+            updatedBy: guard.admin._id,
           },
-        );
+        },
+      );
     } catch (error) {
       console.error("[private-payments/link-offline] offline record creation failed", {
         paymentId: paymentId.toString(),
