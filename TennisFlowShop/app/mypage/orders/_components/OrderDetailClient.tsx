@@ -89,6 +89,7 @@ interface OrderItem {
   discountAmount?: number | null;
   discountRate?: number | null;
   imageUrl?: string | null;
+  selectedColorImage?: string | null;
   selectedStringName?: string | null;
   stringPrice?: number | null;
   selectedGauge?: string;
@@ -422,10 +423,19 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   };
 
   const resolveOrderItemPriceDisplay = (item: OrderItem) => {
-    const displayUnitPrice =
-      toFinitePriceOrNull(item.salePrice) ?? toFinitePriceOrNull(item.price) ?? 0;
+    const rawPrice = toFinitePriceOrNull(item.price);
+    const rawSalePrice = toFinitePriceOrNull(item.salePrice);
+    const rawRegularPrice = toFinitePriceOrNull(item.regularPrice);
+    const rawDiscountRate = toFinitePriceOrNull(item.discountRate);
 
-    const regularPrice = toFinitePriceOrNull(item.regularPrice);
+    const isExplicitFree = rawSalePrice === 0 && rawDiscountRate === 100;
+
+    const displayUnitPrice =
+      rawSalePrice !== null && (rawSalePrice > 0 || isExplicitFree)
+        ? rawSalePrice
+        : (rawPrice ?? 0);
+
+    const regularPrice = rawRegularPrice;
     const hasDiscount = regularPrice !== null && regularPrice > displayUnitPrice;
 
     return {
@@ -941,73 +951,58 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           <div className="space-y-5">
             {/* 주문 항목 */}
             <MypageDetailCard
-              title="주문/서비스 요약"
-              description="상품과 연결 서비스를 요약했습니다."
+              title="주문상품"
+              description="구매한 상품과 선택 옵션을 확인하세요."
               icon={<ShoppingCart className="h-5 w-5 text-warning" />}
             >
               <div className="divide-y divide-border/60">
-                {orderDetail.items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex flex-col gap-4 py-4 transition-colors first:pt-0 last:pb-0 bp-sm:flex-row bp-sm:items-start"
-                  >
-                    {/* 상품 썸네일 */}
-                    {item.imageUrl && (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="h-12 w-12 shrink-0 object-cover rounded"
-                      />
-                    )}
+                {orderDetail.items.map((item, idx) => {
+                  const optionParts = [
+                    `${item.quantity}개`,
+                    item.selectedGauge ? `게이지 ${formatGaugeLabel(item.selectedGauge)}` : null,
+                    item.selectedColorLabel || item.selectedColor || null,
+                  ].filter(Boolean);
 
-                    {/* 상품명 + 수량 */}
-                    <div className="w-full min-w-0 flex-1">
-                      <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
-                        {item.name}
-                      </h4>
-                      <p className="break-keep text-ui-body-sm text-foreground/80">
-                        수량: {item.quantity}개
-                      </p>
-                      {item.selectedStringName && (
-                        <p className="text-ui-label text-foreground/70">
-                          선택 스트링: {item.selectedStringName}
-                        </p>
-                      )}
-                      {item.selectedGauge && (
-                        <p className="text-ui-label text-foreground/70">
-                          게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
-                        </p>
-                      )}
-                      {(item.selectedColorLabel || item.selectedColor) && (
-                        <p className="flex items-center gap-2 text-ui-label text-foreground/70">
-                          <span>색상:</span>
-                          {item.selectedColorHex && (
-                            <span
-                              className="h-3 w-3 rounded-full border border-border"
-                              style={{ backgroundColor: item.selectedColorHex }}
-                              aria-hidden="true"
-                            />
-                          )}
-                          <span>{item.selectedColorLabel || item.selectedColor}</span>
-                        </p>
-                      )}
-                    </div>
+                  const priceDisplay = resolveOrderItemPriceDisplay(item);
+                  const lineAmount = priceDisplay.displayUnitPrice * item.quantity;
+                  const itemImageUrl = item.imageUrl || item.selectedColorImage || null;
 
-                    {/* 가격 및 소계 */}
-                    <div className="w-full shrink-0 border-t border-border/50 pt-3 text-left bp-sm:w-auto bp-sm:border-t-0 bp-sm:pt-0 bp-sm:text-right">
-                      {(() => {
-                        const priceDisplay = resolveOrderItemPriceDisplay(item);
-                        const lineSubtotal = priceDisplay.displayUnitPrice * item.quantity;
+                  return (
+                    <div key={idx} className="flex gap-3 py-4 first:pt-0 last:pb-0 bp-sm:gap-4">
+                      {itemImageUrl ? (
+                        <img
+                          src={itemImageUrl}
+                          alt={item.name || "주문 상품"}
+                          className="h-16 w-16 shrink-0 rounded-xl border border-border/60 object-cover bp-sm:h-20 bp-sm:w-20"
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/20 bp-sm:h-20 bp-sm:w-20">
+                          <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
 
-                        return (
-                          <>
-                            <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                              판매가: {formatCurrency(priceDisplay.displayUnitPrice)}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                          <div className="min-w-0">
+                            <h4 className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
+                              {item.name}
+                            </h4>
+
+                            {optionParts.length > 0 ? (
+                              <p className="mt-1 break-keep text-ui-label text-muted-foreground">
+                                {optionParts.join(" · ")}
+                              </p>
+                            ) : null}
+                          </div>
+
+                          <div className="shrink-0 text-left bp-sm:text-right">
+                            <p className="whitespace-nowrap text-ui-body-sm font-semibold tabular-nums text-foreground">
+                              상품가 {formatCurrency(lineAmount)}
                             </p>
 
-                            {priceDisplay.hasDiscount && priceDisplay.regularPrice !== null && (
+                            {priceDisplay.hasDiscount && priceDisplay.regularPrice !== null ? (
                               <p className="whitespace-nowrap text-ui-label tabular-nums text-muted-foreground">
-                                정가:{" "}
+                                정가{" "}
                                 <span className="line-through">
                                   {formatCurrency(priceDisplay.regularPrice)}
                                 </span>
@@ -1015,56 +1010,43 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                   ? ` · ${priceDisplay.discountRate}% 할인`
                                   : ""}
                               </p>
-                            )}
+                            ) : null}
+                          </div>
+                        </div>
 
-                            {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
-                              <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                                스트링 가격: {formatCurrency(item.stringPrice)}
-                              </p>
-                            )}
-
-                            {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
-                              <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                                장착비: {formatCurrency(item.mountingFee)}
-                              </p>
-                            )}
-
-                            <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
-                              상품 소계: {formatCurrency(lineSubtotal)}
-                            </p>
-                          </>
-                        );
-                      })()}
-
-                      <div className="mt-2">
-                        {canShowProductReviewCTA &&
-                          (reviewedMap[item.id] ? (
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="secondary"
-                              className="w-full bp-sm:w-auto"
-                            >
-                              <Link href={`/products/${item.id}?tab=reviews`}>후기 상세 보기</Link>
-                            </Button>
-                          ) : (
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="outline"
-                              className="w-full bp-sm:w-auto"
-                            >
-                              <Link
-                                href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
+                        {canShowProductReviewCTA ? (
+                          <div className="mt-3">
+                            {reviewedMap[item.id] ? (
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="secondary"
+                                className="w-full bp-sm:w-auto"
                               >
-                                후기 작성
-                              </Link>
-                            </Button>
-                          ))}
+                                <Link href={`/products/${item.id}?tab=reviews`}>
+                                  후기 상세 보기
+                                </Link>
+                              </Button>
+                            ) : (
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="w-full bp-sm:w-auto"
+                              >
+                                <Link
+                                  href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
+                                >
+                                  후기 작성
+                                </Link>
+                              </Button>
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </MypageDetailCard>
             {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (

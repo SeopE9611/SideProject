@@ -116,20 +116,37 @@ function toFiniteNonNegativeNumber(value: unknown): number | null {
 
 function buildOrderLinePriceDisplay(item: any, product: any) {
   const snapshotPrice = toFiniteNonNegativeNumber(item?.price);
-  const effectiveProductPrice = getEffectiveProductPrice(product);
+  const snapshotSalePrice = toFiniteNonNegativeNumber(item?.salePrice);
+  const snapshotRegularPrice = toFiniteNonNegativeNumber(item?.regularPrice);
+  const snapshotDiscountRate = toFiniteNonNegativeNumber(item?.discountRate);
+
+  const effectiveProductPrice = toFiniteNonNegativeNumber(getEffectiveProductPrice(product)) ?? 0;
   const productPriceMeta = getProductPriceDisplayMeta(product);
 
-  const snapshotRegularPrice = toFiniteNonNegativeNumber(item?.regularPrice);
   const productRegularPrice = toFiniteNonNegativeNumber(productPriceMeta.regularPrice);
   const productSalePrice = toFiniteNonNegativeNumber(productPriceMeta.salePrice);
 
+  /**
+   * 과거 주문/교체서비스 연결 주문에서 item.price가 0으로 저장된 경우가 있음.
+   * 단, 명시적으로 무료 판매/100% 할인으로 저장된 주문은 0원을 유지해야 함.
+   */
+  const isExplicitFreeSnapshot =
+    snapshotPrice === 0 && (snapshotSalePrice === 0 || snapshotDiscountRate === 100);
+
+  const shouldUseSnapshotPrice =
+    snapshotPrice !== null &&
+    (snapshotPrice > 0 || isExplicitFreeSnapshot || effectiveProductPrice <= 0);
+
   const displayPrice =
+    shouldUseSnapshotPrice &&
     snapshotPrice !== null &&
     productRegularPrice !== null &&
     productSalePrice !== null &&
     snapshotPrice === productRegularPrice
       ? productSalePrice
-      : (snapshotPrice ?? effectiveProductPrice ?? 0);
+      : shouldUseSnapshotPrice && snapshotPrice !== null
+        ? snapshotPrice
+        : effectiveProductPrice;
 
   const regularPrice =
     snapshotRegularPrice !== null && snapshotRegularPrice > displayPrice
@@ -251,7 +268,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
               {
                 _id: { $in: uniqueProductIds.map((pid) => new ObjectId(pid)) },
               },
-              { projection: { _id: 1, name: 1, price: 1, inventory: 1, mountingFee: 1 } },
+              {
+                projection: {
+                  _id: 1,
+                  name: 1,
+                  price: 1,
+                  inventory: 1,
+                  mountingFee: 1,
+                  images: 1,
+                },
+              },
             )
             .toArray()
         : [],
@@ -328,16 +354,22 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           id: normalizedId,
           name: prod.name,
 
-          // 화면과 후속 UI에서 쓰는 단가. 정가가 아니라 실제 주문/판매가 기준.
           price: priceDisplay.displayPrice,
 
-          // 할인 표시용 메타
           regularPrice: priceDisplay.regularPrice,
           salePrice: priceDisplay.salePrice,
           discountAmount: priceDisplay.discountAmount,
           discountRate: priceDisplay.discountRate,
 
+          imageUrl:
+            (item as any)?.imageUrl ??
+            (item as any)?.selectedColorImage ??
+            (Array.isArray(prod.images) ? prod.images[0] : null) ??
+            null,
+          selectedColorImage: (item as any)?.selectedColorImage ?? null,
+
           mountingFee: isMountableString ? rawMountingFee : 0,
+
           isMountableString,
           quantity: item.quantity,
           kind: "product" as const,
@@ -357,6 +389,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           name: "알 수 없는 라켓",
           price: 0,
           mountingFee: (item as any)?.mountingFee ?? 0,
+          imageUrl: (item as any)?.imageUrl ?? (item as any)?.selectedColorImage ?? null,
           isMountableString: false,
           quantity: item.quantity,
           kind: "racket" as const,
