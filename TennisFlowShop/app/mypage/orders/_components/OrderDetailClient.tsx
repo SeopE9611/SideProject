@@ -9,7 +9,6 @@ import {
   getCustomerOrderStatusLabel,
   getCustomerPaymentStatusLabel,
 } from "@/app/mypage/_lib/flow-display";
-import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
@@ -601,6 +600,25 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     normalizedPaymentMethod.includes("deposit");
 
   const isPaymentWaiting = isBankTransferPayment && !paymentDone && !isOrderCanceled;
+
+  const depositorName = orderDetail.shippingInfo?.depositor?.trim();
+
+  const customerPaymentMethodLabel = isBankTransferPayment
+    ? "무통장입금"
+    : orderDetail.paymentEasyPayProvider
+      ? `${orderDetail.paymentEasyPayProvider} 간편결제`
+      : orderDetail.paymentCardDisplayName ||
+        orderDetail.paymentCardLabel ||
+        orderDetail.paymentCardCompany ||
+        orderDetail.paymentMethod ||
+        "결제수단 확인 중";
+
+  const paymentApprovedAtLabel = orderDetail.paymentApprovedAt
+    ? formatDateTime(orderDetail.paymentApprovedAt)
+    : null;
+
+  const bankAccountLabel = "카카오뱅크 3333-2110-92155";
+  const bankAccountHolderLabel = "김재민";
 
   const isPreparing = ["processing", "preparing", "배송준비", "배송준비중", "처리중"].some(
     (keyword) => normalizedStatus.includes(keyword),
@@ -1339,20 +1357,32 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </div>
                   </div>
 
-                  <div className="min-w-0 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
-                    <PaymentMethodDetail
-                      method={orderDetail.paymentMethod || "무통장입금"}
-                      bankKey={orderDetail.paymentBank ?? undefined}
-                      depositor={orderDetail.shippingInfo?.depositor}
-                      paymentProvider={orderDetail.paymentProvider}
-                      easyPayProvider={orderDetail.paymentEasyPayProvider}
-                      paymentStatus={orderDetail.paymentStatus}
-                      paymentTid={orderDetail.paymentTid}
-                      paymentCardDisplayName={orderDetail.paymentCardDisplayName}
-                      paymentCardCompany={orderDetail.paymentCardCompany}
-                      paymentCardLabel={orderDetail.paymentCardLabel}
-                      paymentNiceSync={orderDetail.paymentNiceSync}
-                    />
+                  <div className="space-y-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
+                    <MypageInfoField label="결제 방식" value={customerPaymentMethodLabel} />
+
+                    {isBankTransferPayment ? (
+                      <div className="rounded-xl bg-muted/15 p-3 ring-1 ring-border/40">
+                        <p className="text-ui-label font-medium text-muted-foreground">입금 계좌</p>
+                        <p className="mt-1 font-medium text-foreground">{bankAccountLabel}</p>
+                        <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                          예금주: {bankAccountHolderLabel}
+                        </p>
+
+                        {depositorName ? (
+                          <p className="mt-2 text-ui-body-sm text-foreground">
+                            입금자명: {depositorName}
+                          </p>
+                        ) : null}
+
+                        {isPaymentWaiting ? (
+                          <p className="mt-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
+                            입금 확인 후 주문과 교체서비스 작업이 진행됩니다.
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : paymentApprovedAtLabel ? (
+                      <MypageInfoField label="결제 일시" value={paymentApprovedAtLabel} />
+                    ) : null}
                   </div>
 
                   <MypageInfoField
