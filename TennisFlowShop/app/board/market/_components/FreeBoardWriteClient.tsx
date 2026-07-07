@@ -564,6 +564,7 @@ export default function FreeBoardWriteClient() {
     { label: "제목 입력", ok: title.trim().length >= TITLE_MIN },
     { label: "내용 입력", ok: content.trim().length >= CONTENT_MIN },
     { label: "이미지 첨부", ok: images.length > 0 },
+    { label: "정책 확인", ok: policyConfirmed },
   ];
 
   /**
@@ -996,8 +997,9 @@ export default function FreeBoardWriteClient() {
                       위험물·무기류·의약품·주류·담배 등 제한 품목
                     </p>
                   </div>
-                  <label className="flex items-start gap-3 rounded-lg border border-border bg-background px-4 py-3 text-ui-body-sm text-foreground">
+                  <div className="flex items-start gap-3 rounded-lg border border-border bg-background px-4 py-3 text-ui-body-sm text-foreground">
                     <Checkbox
+                      id="market-policy-confirm"
                       checked={policyConfirmed}
                       onCheckedChange={(checked) => {
                         setPolicyConfirmed(checked === true);
@@ -1007,8 +1009,13 @@ export default function FreeBoardWriteClient() {
                       }}
                       className="mt-0.5"
                     />
-                    <span>중고거래 이용 안내와 금지 품목 정책을 확인했습니다.</span>
-                  </label>
+                    <Label
+                      htmlFor="market-policy-confirm"
+                      className="cursor-pointer text-ui-body-sm font-normal leading-relaxed text-foreground"
+                    >
+                      중고거래 이용 안내와 금지 품목 정책을 확인했습니다.
+                    </Label>
+                  </div>
                 </div>
               </section>
 
