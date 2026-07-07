@@ -187,6 +187,10 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
       ? (doc as any).paymentInfo
       : {}
   ) as Record<string, unknown>;
+  const legacyPayment =
+    (doc as any)?.payment && typeof (doc as any).payment === "object"
+      ? ((doc as any).payment as Record<string, unknown>)
+      : {};
   const paymentRawSummary =
     paymentInfo.rawSummary && typeof paymentInfo.rawSummary === "object"
       ? (paymentInfo.rawSummary as Record<string, unknown>)
@@ -211,13 +215,15 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     returnedAt: doc.returnedAt ?? null, // 반납 완료
     depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
     paymentStatus: nullableTrim((doc as any)?.paymentStatus ?? paymentInfo.status),
-    paymentMethod: nullableTrim(paymentInfo.method ?? (doc as any)?.paymentMethod),
+    paymentMethod: nullableTrim(
+      paymentInfo.method ?? (doc as any)?.paymentMethod ?? legacyPayment.method,
+    ),
     paymentProvider: nullableTrim(paymentInfo.provider ?? (doc as any)?.paymentProvider),
     paymentEasyPayProvider: nullableTrim(paymentInfo.easyPayProvider ?? paymentRawEasyPay.provider),
     paymentCardDisplayName: nullableTrim(paymentInfo.cardDisplayName),
     paymentCardCompany: nullableTrim(paymentInfo.cardCompany),
     paymentCardLabel: nullableTrim(paymentInfo.cardLabel),
-    paymentBank: nullableTrim(paymentInfo.bank),
+    paymentBank: nullableTrim(paymentInfo.bank ?? legacyPayment.bank),
     paymentApprovedAt: toNullableIsoString(paymentInfo.approvedAt),
     // 스트링 교체 신청서 연결 정보 (대여 기반 신청 시 저장됨)
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
