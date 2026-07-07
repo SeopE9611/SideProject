@@ -50,7 +50,7 @@ import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { CheckCircle, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
+import { CheckCircle, ChevronDown, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -99,6 +99,12 @@ interface OrderItem {
   mountingFee?: number;
   isMountableString?: boolean;
 }
+
+type StringingApplicationPackageInfo = {
+  applied?: boolean;
+  useCount?: number | null;
+  remainingCount?: number | null;
+};
 
 interface OrderDetail {
   _id: string;
@@ -170,11 +176,7 @@ interface OrderDetail {
     stringNames?: string[];
     reservationLabel?: string | null;
     totalPrice?: number | null;
-    packageInfo?: {
-      applied?: boolean;
-      useCount?: number | null;
-      remainingCount?: number | null;
-    } | null;
+    packageInfo?: StringingApplicationPackageInfo | null;
     requirements?: string | null;
     lines?: Array<{
       id?: string | null;
@@ -205,9 +207,6 @@ interface Props {
   backUrl?: string;
 }
 
-type StringingApplicationPackageInfo = NonNullable<
-  NonNullable<OrderDetail["stringingApplications"]>[number]["packageInfo"]
->;
 
 type OrderTrackingResponse =
   | {
@@ -562,14 +561,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
-  const packageUsageInfos: StringingApplicationPackageInfo[] = linkedStringingApps.reduce(
+  const packageUsageInfos = linkedStringingApps.reduce<StringingApplicationPackageInfo[]>(
     (infos, app) => {
-      if (app.packageInfo?.applied) {
-        infos.push(app.packageInfo);
+      const packageInfo = app.packageInfo;
+      if (packageInfo?.applied) {
+        infos.push(packageInfo);
       }
       return infos;
     },
-    [] as StringingApplicationPackageInfo[],
+    [],
   );
   const packageUsedSlots = packageUsageInfos.reduce(
     (sum, info) => sum + Math.max(0, info.useCount ?? 1),
