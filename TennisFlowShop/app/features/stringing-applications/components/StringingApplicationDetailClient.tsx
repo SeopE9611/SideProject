@@ -950,6 +950,8 @@ export default function StringingApplicationDetailClient({
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
   const linkedPayment = data.linkedPayment ?? null;
   const packageApplied = Boolean(data.packageInfo?.applied);
+  const packageUsedCount = packageApplied ? Math.max(0, data.packageInfo?.useCount ?? 1) : 0;
+  const packageRemainingCount = data.packageInfo?.remainingCount ?? null;
   const hasOrderLinkedPayment =
     paymentSourceRaw.startsWith("order:") &&
     Boolean(linkedPayment) &&
@@ -1152,7 +1154,11 @@ export default function StringingApplicationDetailClient({
   // - handleGetStringingApplication에서 linkedOrderPickupMethod를 내려주므로,
   // 신청서 상세에서도 같은 수령방식을 표시할 수 있다.
   const linkedOrderPickupMethod = (data as any)?.linkedOrderPickupMethod as
-    "visit" | "delivery" | "quick" | null | undefined;
+    | "visit"
+    | "delivery"
+    | "quick"
+    | null
+    | undefined;
   const linkedOrderPickupBadge = linkedOrderPickupMethod
     ? getShippingMethodBadge({
         shippingInfo: { shippingMethod: linkedOrderPickupMethod },
@@ -1766,7 +1772,7 @@ export default function StringingApplicationDetailClient({
                           <Badge variant="neutral" className={summaryBadgeClass}>
                             {inboundRequired
                               ? collectionMethodLabel(collectionMethodRaw)
-                              : "별도 입고 불필요"}
+                              : "별도 발송 불필요"}
                           </Badge>
                           {shouldShowReturnMethod && (
                             <Badge className={cn(summaryBadgeClass, shippingMethodBadge.color)}>
@@ -2023,7 +2029,7 @@ export default function StringingApplicationDetailClient({
             <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
               <CardHeader className={detailCardHeaderClass}>
                 <div className="flex items-center justify-between gap-3">
-                  <CardTitle>{isAdmin ? "작업 상태 관리" : "신청 상태"}</CardTitle>
+                  <CardTitle>{isAdmin ? "작업 상태 관리" : "신청 관리"}</CardTitle>
                   <ApplicationStatusBadge status={data.status} />
                 </div>
                 {isAdmin && (
@@ -2169,9 +2175,8 @@ export default function StringingApplicationDetailClient({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
-                    {/* 왼쪽: 안내 문구 */}
-                    <div className="text-ui-body-sm text-foreground/80">
+                  <div className="space-y-4">
+                    <div className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-foreground/80 bp-sm:p-4">
                       {isCancelled && (
                         <span className="italic">
                           취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.
@@ -2212,7 +2217,7 @@ export default function StringingApplicationDetailClient({
                       </p>
                     )}
 
-                    <div className="grid w-full grid-cols-1 gap-2 bp-sm:w-auto bp-sm:grid-cols-2 bp-lg:flex bp-lg:justify-end">
+                    <div className="grid w-full grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:justify-end">
                       {/* 사용자: 아직 취소 요청 전 → "취소 요청" 버튼 */}
                       {!isAdmin &&
                         !isRentalLinkedApplication &&
@@ -2280,7 +2285,7 @@ export default function StringingApplicationDetailClient({
                       className={cn("text-foreground", isAdmin ? "h-5 w-5" : "w-6 h-6")}
                     />
                     <CardTitle className={cn("text-ui-card-title font-medium", !isAdmin && "mt-2")}>
-                      {isAdmin ? "신청 스트링 정보" : "라켓/스트링 정보"}
+                      {isAdmin ? "신청 스트링 정보" : "신청 서비스"}
                     </CardTitle>
                   </CardHeader>
 
@@ -2301,23 +2306,27 @@ export default function StringingApplicationDetailClient({
                         </Badge>
                       </div>
 
-                      <div className="text-ui-label sm:text-ui-body-sm font-semibold text-primary">
-                        총 장착비 {totalPrice.toLocaleString()}원
-                      </div>
+                      {isAdmin && (
+                        <div className="text-ui-label sm:text-ui-body-sm font-semibold text-primary">
+                          총 장착비 {totalPrice.toLocaleString()}원
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <CardContent className="px-4 pb-4 bp-lg:px-6 bp-lg:pb-6">
                     <div className={cn("space-y-4", !isAdmin && "space-y-5 bp-lg:space-y-6")}>
-                      <section className="flex flex-col gap-2 border-b border-dashed border-border pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                        <div className="flex items-center gap-2 text-foreground">
-                          <Calendar className="w-5 h-5" />
-                          <span className="font-medium">희망 일시</span>
-                        </div>
-                        <div className="break-keep text-ui-body-sm text-foreground bp-sm:text-right">
-                          {visitTimeLabel}
-                        </div>
-                      </section>
+                      {isAdmin && (
+                        <section className="flex flex-col gap-2 border-b border-dashed border-border pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                          <div className="flex items-center gap-2 text-foreground">
+                            <Calendar className="w-5 h-5" />
+                            <span className="font-medium">희망 일시</span>
+                          </div>
+                          <div className="break-keep text-ui-body-sm text-foreground bp-sm:text-right">
+                            {visitTimeLabel}
+                          </div>
+                        </section>
+                      )}
 
                       {(selectedGauge || selectedColorLabel) && (
                         <section className="space-y-2 border-b border-dashed border-border pb-4">
@@ -2343,7 +2352,7 @@ export default function StringingApplicationDetailClient({
                           </div>
                         </section>
                       )}
-                      {data.orderId && linkedOrderItems.length > 0 && (
+                      {isAdmin && data.orderId && linkedOrderItems.length > 0 && (
                         <section className="space-y-3 border-b border-dashed border-border pb-4">
                           <div className="flex items-center gap-2 text-foreground">
                             <ShoppingCart className="w-5 h-5" />
@@ -2534,7 +2543,7 @@ export default function StringingApplicationDetailClient({
                       )}
 
                       {/* 섹션 3: 장착 상품 정보 (스트링 상품 리스트) */}
-                      {itemSummary.length > 0 && (
+                      {isAdmin && itemSummary.length > 0 && (
                         <section className="space-y-2">
                           <div className="flex items-center gap-2 text-foreground">
                             <ShoppingCart className="w-5 h-5" />
@@ -2614,6 +2623,22 @@ export default function StringingApplicationDetailClient({
                         </section>
                       )}
 
+                      {!isAdmin && (
+                        <section className="space-y-2 border-t border-dashed border-border pt-4">
+                          <div className="flex items-center gap-2 text-foreground">
+                            <Edit3 className="h-5 w-5" />
+                            <span className="font-medium">요청 메모</span>
+                          </div>
+                          {data.stringDetails.requirements?.trim() ? (
+                            <p className="whitespace-pre-wrap break-words rounded-xl bg-muted/15 p-3 text-ui-body-sm leading-relaxed text-foreground">
+                              {data.stringDetails.requirements}
+                            </p>
+                          ) : (
+                            <AdminInlineEmpty>요청 메모 없음</AdminInlineEmpty>
+                          )}
+                        </section>
+                      )}
+
                       {/* 섹션 4: 라켓 종류 요약 */}
                       <section className="flex flex-col gap-2 border-t border-dashed border-border pt-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                         <div className="flex items-center gap-2 text-foreground">
@@ -2683,20 +2708,20 @@ export default function StringingApplicationDetailClient({
                     <CardHeader className={detailCardHeaderClass}>
                       <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
                         <Truck className="h-5 w-5 text-primary" />
-                        라켓 발송 정보
+                        접수/수령 정보
                       </CardTitle>
                       <CardDescription>
-                        매장으로 보내는 라켓 발송 정보와 운송장 등록 상태를 확인하세요.
+                        라켓 접수부터 완성 라켓 수령까지 필요한 정보를 확인하세요.
                       </CardDescription>
                     </CardHeader>
                     <details className="group bp-md:block">
                       <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden [&::-webkit-details-marker]:hidden">
-                        <span>배송/발송 정보</span>
+                        <span>접수/수령 정보</span>
                         <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                       </summary>
                       <CardContent className="hidden gap-5 p-4 group-open:grid bp-md:grid bp-sm:p-6 bp-xl:grid-cols-2">
                         <div className="min-w-0 border-l-2 border-primary/25 bg-primary/5 px-3 py-3 leading-relaxed bp-sm:px-4">
-                          <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
+                          <p className="text-ui-body-sm font-semibold text-foreground">라켓 접수</p>
                           <p className="mt-1 text-ui-label text-foreground/75">
                             {inboundRequired
                               ? isVisit
@@ -2706,11 +2731,11 @@ export default function StringingApplicationDetailClient({
                           </p>
                           <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                             <p>
-                              입고 방식:{" "}
+                              라켓 접수 방식:{" "}
                               <span className="font-medium text-foreground">
                                 {inboundRequired
                                   ? collectionMethodLabel(collectionMethodRaw)
-                                  : "입고 불필요"}
+                                  : "별도 발송 불필요"}
                               </span>
                             </p>
                             {isVisit && (
@@ -2742,28 +2767,30 @@ export default function StringingApplicationDetailClient({
                                 <p>등록된 운송장이 없습니다.</p>
                               ))}
                           </div>
-                          {needsInboundTracking && hasTracking && (
+                          {needsInboundTracking && (
                             <Button
                               asChild
                               size="sm"
                               variant="outline"
                               className="mt-3 w-full bp-sm:w-auto"
                             >
-                              <Link href={inboundTrackingHref}>라켓 발송 운송장 수정</Link>
+                              <Link href={inboundTrackingHref}>
+                                {hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
+                              </Link>
                             </Button>
                           )}
                         </div>
 
                         <div className="min-w-0 border-l-2 border-primary/25 bg-primary/5 px-3 py-3 leading-relaxed bp-sm:px-4">
                           <p className="text-ui-body-sm font-semibold text-foreground">
-                            완성 라켓 배송
+                            완성 라켓 수령
                           </p>
                           <p className="mt-1 text-ui-label text-foreground/75">
                             작업 완료 후 완성 라켓 배송 운송장 또는 방문 수령 정보를 확인합니다.
                           </p>
                           <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                             <p>
-                              배송/수령 방식:{" "}
+                              완성 라켓 수령 방식:{" "}
                               <span className="font-medium text-foreground">
                                 {shouldShowReturnMethod
                                   ? shippingMethodBadge.label
@@ -2797,6 +2824,9 @@ export default function StringingApplicationDetailClient({
                             ) : (
                               <AdminInlineEmpty>완성 라켓 배송 정보 미등록</AdminInlineEmpty>
                             )}
+                            {data.shippingInfo?.deliveryRequest && (
+                              <p>배송 요청사항: {data.shippingInfo.deliveryRequest}</p>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -2805,62 +2835,64 @@ export default function StringingApplicationDetailClient({
                 )}
 
                 {/* 요청사항 카드 */}
-                <Card
-                  id="admin-stringing-request"
-                  className={cn(
-                    detailCardClass,
-                    isAdmin && "xl:col-span-12",
-                    !isAdmin && "order-5",
-                  )}
-                >
-                  <CardHeader className={detailCardHeaderClass}>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>요청사항</span>
-                      {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
-                    </CardTitle>
-                  </CardHeader>
-                  <details className="group bp-md:block">
-                    <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden [&::-webkit-details-marker]:hidden">
-                      <span>요청사항</span>
-                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                    </summary>
-                    <CardContent className="hidden p-4 bp-sm:p-5 group-open:block bp-md:block">
-                      {editingRequirements ? (
-                        <RequirementsEditForm
-                          initial={data.stringDetails.requirements ?? ""}
-                          resourcePath={`${baseUrl}/api/applications/stringing`}
-                          entityId={data.id}
-                          onSuccess={() => {
-                            mutate();
-                            historyMutateRef.current?.();
-                            setEditingRequirements(false);
-                          }}
-                          onCancel={() => setEditingRequirements(false)}
-                        />
-                      ) : data.stringDetails.requirements?.trim() ? (
-                        <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
-                          <p className="whitespace-pre-wrap break-words leading-relaxed text-foreground">
-                            {data.stringDetails.requirements}
-                          </p>
-                        </div>
-                      ) : (
-                        <AdminInlineEmpty>요청사항 없음</AdminInlineEmpty>
-                      )}
-                    </CardContent>
-                  </details>
-                  {!editingRequirements && isEditMode && (
-                    <CardFooter className="flex justify-center bg-muted/20">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingRequirements(true)}
-                        className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border"
-                      >
-                        요청사항 수정
-                      </Button>
-                    </CardFooter>
-                  )}
-                </Card>
+                {isAdmin && (
+                  <Card
+                    id="admin-stringing-request"
+                    className={cn(
+                      detailCardClass,
+                      isAdmin && "xl:col-span-12",
+                      !isAdmin && "order-5",
+                    )}
+                  >
+                    <CardHeader className={detailCardHeaderClass}>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>요청사항</span>
+                        {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+                      </CardTitle>
+                    </CardHeader>
+                    <details className="group bp-md:block">
+                      <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden [&::-webkit-details-marker]:hidden">
+                        <span>요청사항</span>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                      </summary>
+                      <CardContent className="hidden p-4 bp-sm:p-5 group-open:block bp-md:block">
+                        {editingRequirements ? (
+                          <RequirementsEditForm
+                            initial={data.stringDetails.requirements ?? ""}
+                            resourcePath={`${baseUrl}/api/applications/stringing`}
+                            entityId={data.id}
+                            onSuccess={() => {
+                              mutate();
+                              historyMutateRef.current?.();
+                              setEditingRequirements(false);
+                            }}
+                            onCancel={() => setEditingRequirements(false)}
+                          />
+                        ) : data.stringDetails.requirements?.trim() ? (
+                          <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
+                            <p className="whitespace-pre-wrap break-words leading-relaxed text-foreground">
+                              {data.stringDetails.requirements}
+                            </p>
+                          </div>
+                        ) : (
+                          <AdminInlineEmpty>요청사항 없음</AdminInlineEmpty>
+                        )}
+                      </CardContent>
+                    </details>
+                    {!editingRequirements && isEditMode && (
+                      <CardFooter className="flex justify-center bg-muted/20">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingRequirements(true)}
+                          className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border"
+                        >
+                          요청사항 수정
+                        </Button>
+                      </CardFooter>
+                    )}
+                  </Card>
+                )}
 
                 {/* 신청 타임라인: 마이페이지 전용 */}
                 {!isAdmin && (
@@ -3046,6 +3078,36 @@ export default function StringingApplicationDetailClient({
                   !isAdmin && "bp-lg:order-2 bp-lg:sticky bp-lg:top-24",
                 )}
               >
+                {!isAdmin && packageApplied && (
+                  <Card className={cn(detailCardClass, "order-2")}>
+                    <CardHeader className={detailCardHeaderClass}>
+                      <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
+                        <Ticket className="h-5 w-5 text-primary" />
+                        패키지 사용
+                      </CardTitle>
+                      <CardDescription>이번 이용에 패키지 이용권이 사용되었습니다.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 p-4 bp-sm:p-5">
+                      <div className="rounded-xl bg-primary/5 p-3 text-ui-body-sm text-foreground/80 ring-1 ring-primary/10">
+                        <p className="font-semibold text-foreground">
+                          사용 {packageUsedCount}회
+                          {typeof packageRemainingCount === "number"
+                            ? ` · 남은 ${packageRemainingCount}회`
+                            : ""}
+                        </p>
+                        <p className="mt-1">
+                          {packageRemainingCount === 0
+                            ? "이번 이용으로 패키지를 모두 사용했습니다."
+                            : `이번 이용에 패키지 ${packageUsedCount}회가 차감되었습니다.`}
+                        </p>
+                      </div>
+                      <Button asChild variant="outline" size="sm" className="w-full bp-sm:w-auto">
+                        <Link href="/mypage?tab=passes">패키지 관리로 이동</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* 결제 정보 */}
                 <Card
                   id="admin-stringing-payment"
@@ -3059,7 +3121,8 @@ export default function StringingApplicationDetailClient({
                     )}
                   >
                     <CardTitle className="text-ui-card-title font-medium flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
+                      <CreditCard className="w-5 h-5 text-primary" />{" "}
+                      {isAdmin ? "결제 정보" : "결제 요약"}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
                       {(() => {
@@ -3092,8 +3155,20 @@ export default function StringingApplicationDetailClient({
                     ) : (
                       <div className="space-y-3">
                         <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-xl:grid-cols-3">
+                          {!isAdmin && (
+                            <AdminCompactField
+                              label="서비스비/장착비"
+                              value={`${totalPrice.toLocaleString()}원`}
+                            />
+                          )}
+                          {!isAdmin && packageApplied && (
+                            <AdminCompactField
+                              label="패키지 차감"
+                              value={`${packageUsedCount}회 사용`}
+                            />
+                          )}
                           <AdminCompactField
-                            label="총 결제 금액"
+                            label={isAdmin ? "총 결제 금액" : "최종 결제금액"}
                             className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
                             value={`${data.totalPrice.toLocaleString()}원`}
                             valueClassName="font-semibold text-primary"
@@ -3111,67 +3186,69 @@ export default function StringingApplicationDetailClient({
                           />
                           <AdminCompactField label="결제 방식" value={paymentMethodRaw} />
                         </div>
-                        <details className="group border-t border-border/60 py-1">
-                          <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
-                            입금/PG 상세 정보
-                            <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
-                              펼치기
-                            </span>
-                            <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
-                              접기
-                            </span>
-                          </summary>
-                          <div className="mt-1 border-t border-border/60 p-3 text-ui-body-sm">
-                            <PaymentMethodDetail
-                              method={paymentMethodRaw}
-                              bankKey={
-                                useStandaloneBankFallback
-                                  ? (linkedPayment?.bank ?? data.shippingInfo?.bank ?? undefined)
-                                  : (linkedPayment?.bank ?? undefined)
-                              }
-                              depositor={
-                                useStandaloneBankFallback
-                                  ? (linkedPayment?.depositor ??
-                                    data.shippingInfo?.depositor ??
-                                    undefined)
-                                  : (linkedPayment?.depositor ?? undefined)
-                              }
-                              isPackageApplied={packageApplied}
-                              paymentProvider={linkedPayment?.provider}
-                              easyPayProvider={linkedPayment?.easyPayProvider}
-                              paymentStatus={paymentStatus}
-                              paymentTid={linkedPayment?.tid}
-                              paymentCardDisplayName={linkedPayment?.cardDisplayName}
-                              paymentCardCompany={linkedPayment?.cardCompany}
-                              paymentCardLabel={linkedPayment?.cardLabel}
-                              approvedAt={linkedPayment?.approvedAt ?? null}
-                              paymentNiceSync={linkedPayment?.niceSync ?? null}
-                              niceOrderId={linkedPayment?.rawSummary?.orderId ?? null}
-                              showAdminPgDetails={isAdmin}
-                            />
-                            {canSyncStandaloneNicePayment && (
-                              <div className="mt-3">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={handleNiceSync}
-                                  disabled={isSyncingNice}
-                                >
-                                  {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
-                                </Button>
-                              </div>
-                            )}
-                            {isLinkedApplication && (
-                              <p className="mt-2 border-l-2 border-primary/30 bg-primary/5 px-3 py-2 text-ui-body-sm leading-relaxed text-foreground/80">
-                                {isOrderLinkedApplication
-                                  ? "주문 결제에 포함됨: 이 교체 작업의 결제는 연결 주문에서 처리합니다."
-                                  : "대여 결제에 포함됨: 이 교체 작업의 결제는 연결 대여에서 처리합니다."}
-                              </p>
-                            )}
-                          </div>
-                        </details>
+                        {isAdmin && (
+                          <details className="group border-t border-border/60 py-1">
+                            <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+                              입금/PG 상세 정보
+                              <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
+                                펼치기
+                              </span>
+                              <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
+                                접기
+                              </span>
+                            </summary>
+                            <div className="mt-1 border-t border-border/60 p-3 text-ui-body-sm">
+                              <PaymentMethodDetail
+                                method={paymentMethodRaw}
+                                bankKey={
+                                  useStandaloneBankFallback
+                                    ? (linkedPayment?.bank ?? data.shippingInfo?.bank ?? undefined)
+                                    : (linkedPayment?.bank ?? undefined)
+                                }
+                                depositor={
+                                  useStandaloneBankFallback
+                                    ? (linkedPayment?.depositor ??
+                                      data.shippingInfo?.depositor ??
+                                      undefined)
+                                    : (linkedPayment?.depositor ?? undefined)
+                                }
+                                isPackageApplied={packageApplied}
+                                paymentProvider={linkedPayment?.provider}
+                                easyPayProvider={linkedPayment?.easyPayProvider}
+                                paymentStatus={paymentStatus}
+                                paymentTid={linkedPayment?.tid}
+                                paymentCardDisplayName={linkedPayment?.cardDisplayName}
+                                paymentCardCompany={linkedPayment?.cardCompany}
+                                paymentCardLabel={linkedPayment?.cardLabel}
+                                approvedAt={linkedPayment?.approvedAt ?? null}
+                                paymentNiceSync={linkedPayment?.niceSync ?? null}
+                                niceOrderId={linkedPayment?.rawSummary?.orderId ?? null}
+                                showAdminPgDetails={isAdmin}
+                              />
+                              {canSyncStandaloneNicePayment && (
+                                <div className="mt-3">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleNiceSync}
+                                    disabled={isSyncingNice}
+                                  >
+                                    {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
+                                  </Button>
+                                </div>
+                              )}
+                              {isLinkedApplication && (
+                                <p className="mt-2 border-l-2 border-primary/30 bg-primary/5 px-3 py-2 text-ui-body-sm leading-relaxed text-foreground/80">
+                                  {isOrderLinkedApplication
+                                    ? "주문 결제에 포함됨: 이 교체 작업의 결제는 연결 주문에서 처리합니다."
+                                    : "대여 결제에 포함됨: 이 교체 작업의 결제는 연결 대여에서 처리합니다."}
+                                </p>
+                              )}
+                            </div>
+                          </details>
+                        )}
                         {/* 패키지 사용 요약 */}
-                        {data.packageInfo && (
+                        {isAdmin && data.packageInfo && (
                           <div
                             className={
                               data.packageInfo.applied
@@ -3255,42 +3332,44 @@ export default function StringingApplicationDetailClient({
                         )}
 
                         {/* 패키지 사용 카드 아래에 차감 이력 표시 */}
-                        {data.packageConsumptions && data.packageConsumptions.length > 0 && (
-                          <div className="mt-3 border-t border-dashed border-border bg-muted/20 px-3 py-2 text-ui-label text-foreground/60 dark:bg-muted/30">
-                            <div className="mb-1 flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                              <div className="flex items-center gap-1 break-keep">
-                                <Clock className="h-3.5 w-3.5 text-foreground" />
-                                <span className="font-semibold">패키지 차감 이력</span>
+                        {isAdmin &&
+                          data.packageConsumptions &&
+                          data.packageConsumptions.length > 0 && (
+                            <div className="mt-3 border-t border-dashed border-border bg-muted/20 px-3 py-2 text-ui-label text-foreground/60 dark:bg-muted/30">
+                              <div className="mb-1 flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                                <div className="flex items-center gap-1 break-keep">
+                                  <Clock className="h-3.5 w-3.5 text-foreground" />
+                                  <span className="font-semibold">패키지 차감 이력</span>
+                                </div>
+                                <span className="text-ui-body-sm text-foreground/75">
+                                  총 {totalPackageConsumed}회
+                                </span>
                               </div>
-                              <span className="text-ui-body-sm text-foreground/75">
-                                총 {totalPackageConsumed}회
-                              </span>
+                              <ul className="space-y-1.5">
+                                {data.packageConsumptions.map((c) => (
+                                  <li
+                                    key={c.id}
+                                    className="flex flex-col gap-0.5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
+                                  >
+                                    <span className="text-ui-body-sm text-foreground/75">
+                                      {new Date(c.usedAt).toLocaleString("ko-KR", {
+                                        dateStyle: "short",
+                                        timeStyle: "short",
+                                      })}
+                                    </span>
+                                    <span className="text-ui-micro font-medium text-primary">
+                                      {c.count ?? 1}회 사용
+                                      {c.reverted && (
+                                        <span className="ml-1 text-ui-label text-destructive">
+                                          (복원됨)
+                                        </span>
+                                      )}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                            <ul className="space-y-1.5">
-                              {data.packageConsumptions.map((c) => (
-                                <li
-                                  key={c.id}
-                                  className="flex flex-col gap-0.5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
-                                >
-                                  <span className="text-ui-body-sm text-foreground/75">
-                                    {new Date(c.usedAt).toLocaleString("ko-KR", {
-                                      dateStyle: "short",
-                                      timeStyle: "short",
-                                    })}
-                                  </span>
-                                  <span className="text-ui-micro font-medium text-primary">
-                                    {c.count ?? 1}회 사용
-                                    {c.reverted && (
-                                      <span className="ml-1 text-ui-label text-destructive">
-                                        (복원됨)
-                                      </span>
-                                    )}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                          )}
                       </div>
                     )}
                   </CardContent>
