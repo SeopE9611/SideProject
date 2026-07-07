@@ -183,6 +183,7 @@ export function getUserStatusBadge(isDeleted: boolean) {
 export const orderStatusColors: Record<string, string> = {
   대기중: SEMANTIC_BADGE.warning,
   처리중: SEMANTIC_BADGE.info,
+  취소처리중: SEMANTIC_BADGE.warning,
   결제완료: SEMANTIC_BADGE.success,
   배송중: SEMANTIC_BADGE.info,
   배송완료: SEMANTIC_BADGE.success,
@@ -194,6 +195,7 @@ export const orderStatusColors: Record<string, string> = {
 export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? "").trim();
   if (!normalized) return "neutral";
+  if (normalized === "취소처리중") return "warning";
   if (normalized.includes("취소") || normalized.includes("환불")) return "danger";
   if (normalized === "결제완료" || normalized === "배송완료" || normalized === "구매확정")
     return "success";

@@ -16,6 +16,11 @@ interface PaymentMethodDetailProps {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
     source?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    cancelAmount?: number | null;
+    manualActionRequired?: boolean | null;
+    manualActionReason?: string | null;
   } | null;
 }
 
@@ -91,6 +96,18 @@ export default function PaymentMethodDetail({
                 PG 상태: {paymentNiceSync.pgStatus}
               </div>
             )}
+            {(paymentNiceSync?.resultCode || paymentNiceSync?.resultMsg) && (
+              <div className="text-ui-body-sm text-muted-foreground">
+                NICE 결과: {paymentNiceSync.resultCode || "-"}
+                {paymentNiceSync.resultMsg ? ` / ${paymentNiceSync.resultMsg}` : ""}
+              </div>
+            )}
+            {paymentNiceSync?.manualActionRequired &&
+              paymentNiceSync?.manualActionReason === "unsettled_amount_shortage" && (
+                <div className="text-ui-label text-amber-700 dark:text-amber-300">
+                  입금 후 취소 필요
+                </div>
+              )}
             {paymentNiceSync?.lastSyncedAt && (
               <div className="text-ui-body-sm text-muted-foreground">
                 최근 동기화: {new Date(paymentNiceSync.lastSyncedAt).toLocaleString("ko-KR")}

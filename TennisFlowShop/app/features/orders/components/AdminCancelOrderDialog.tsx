@@ -31,6 +31,21 @@ import {
 
 const CANCEL_REASONS = ["상품 품절", "고객 요청", "배송 지연", "결제 오류", "기타"];
 
+async function parseCancelApproveError(res: Response): Promise<string> {
+  const text = await res.text().catch(() => "");
+  if (!text) return "서버 오류";
+
+  try {
+    const json = JSON.parse(text);
+    if (json?.errorCode === "NICE_UNSETTLED_AMOUNT_SHORTAGE") {
+      return "NICE 미정산금액 부족으로 자동 카드취소가 불가합니다. 입금 후 취소 절차를 진행해 주세요.";
+    }
+    return json?.message || json?.error || text;
+  } catch {
+    return text;
+  }
+}
+
 interface Props {
   orderId: string;
   disabled?: boolean;
@@ -90,7 +105,7 @@ export default function AdminCancelOrderDialog({
       });
 
       if (!res.ok) {
-        const message = await res.text().catch(() => "");
+        const message = await parseCancelApproveError(res);
         throw new Error(message || "서버 오류");
       }
 
