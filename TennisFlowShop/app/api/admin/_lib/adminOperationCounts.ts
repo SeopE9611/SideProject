@@ -74,6 +74,10 @@ const orderNeedsActionFilter: Filter<Document> = {
         { "cancel.status": "requested" },
         { "cancelRequest.status": { $in: ["requested", "요청"] } },
         { cancelStatus: "requested" },
+        { status: "취소처리중" },
+        { "cancelRequest.status": "approved_pending_pg_cancel" },
+        { "cancelRequest.pgCancelBlocked.reason": "unsettled_amount_shortage" },
+        { "paymentInfo.niceSync.manualActionReason": "unsettled_amount_shortage" },
         { paymentStatus: { $in: PAYMENT_PENDING_VALUES } },
         {
           status: {
@@ -219,6 +223,10 @@ const cancelRequestFilter: Filter<Document> = {
     { cancelStatus: "requested" },
     { cancelRequested: true },
     { cancelRequestStatus: "requested" },
+    { status: "취소처리중" },
+    { "cancelRequest.status": "approved_pending_pg_cancel" },
+    { "cancelRequest.pgCancelBlocked.reason": "unsettled_amount_shortage" },
+    { "paymentInfo.niceSync.manualActionReason": "unsettled_amount_shortage" },
   ],
 };
 

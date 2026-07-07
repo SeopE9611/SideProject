@@ -20,11 +20,11 @@ export type OpsLikeItem = {
   depositRefundedAt?: string | null;
   linkedApplicationStatus?: string | null;
   shippingMethod?: string | null;
-  cancelStatus?: "none" | "requested" | "approved" | "rejected" | null;
+  cancelStatus?: "none" | "requested" | "approved" | "rejected" | "approved_pending_pg_cancel" | null;
   cancelRequested?: boolean;
   refundAccountReady?: boolean;
   cancel?: {
-    status?: "none" | "requested" | "approved" | "rejected" | null;
+    status?: "none" | "requested" | "approved" | "rejected" | "approved_pending_pg_cancel" | null;
     refundAccountReady?: boolean;
   } | null;
   needsCancelFinalization?: boolean;
@@ -112,7 +112,15 @@ const isRentalClosed = (status?: string | null) => {
   return st.includes("취소") || st === "canceled" || st === "cancelled";
 };
 
+const isCancelProcessingStatus = (status?: string | null) => {
+  const s = String(status ?? "").trim().toLowerCase();
+  return (
+    s === "취소처리중" || s === "cancel_processing" || s === "approved_pending_pg_cancel"
+  );
+};
+
 const isOrderClosed = (status?: string | null) => {
+  if (isCancelProcessingStatus(status)) return false;
   const s = String(status ?? "").toLowerCase();
   return (
     s.includes("환불") ||
@@ -141,6 +149,15 @@ function isCancelRequested(item: OpsLikeItem) {
   return status === "requested";
 }
 
+function isCancelProcessing(item: OpsLikeItem) {
+  const status = getEffectiveCancelStatus(item);
+  return (
+    status === "approved_pending_pg_cancel" ||
+    isCancelProcessingStatus(item.statusLabel) ||
+    isCancelProcessingStatus(item.statusDisplayLabel)
+  );
+}
+
 function getEffectiveCancelStatus(item: OpsLikeItem) {
   return item.cancel?.status ?? item.cancelStatus;
 }
@@ -152,6 +169,7 @@ function getEffectiveRefundAccountReady(item: OpsLikeItem) {
 }
 
 function isTerminalOpsItem(item: OpsLikeItem) {
+  if (isCancelProcessing(item)) return false;
   if (item.needsCancelFinalization) return false;
   const cancelStatus = getEffectiveCancelStatus(item);
   if (cancelStatus === "approved") return true;
@@ -243,6 +261,13 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
 }
 
 export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
+  if (isCancelProcessing(item)) {
+    return {
+      stage: "취소 처리중",
+      nextAction: "NICE 입금 후 취소 완료 여부 확인 및 PG 상태 다시 확인 필요",
+    };
+  }
+
   if (isCancelRequested(item)) {
     if (getEffectiveRefundAccountReady(item)) {
       return {
@@ -372,6 +397,14 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
   }
   if (rental && isTerminalOpsItem(rental)) {
     return terminalGuide(rental);
+  }
+
+  const processingCancels = items.filter((it) => isCancelProcessing(it));
+  if (processingCancels.length > 0) {
+    return {
+      stage: "취소 처리중",
+      nextAction: "NICE 입금 후 취소 완료 여부 확인 및 PG 상태 다시 확인 필요",
+    };
   }
 
   const requestedCancels = items.filter((it) => isCancelRequested(it));
