@@ -104,7 +104,7 @@ export default function PaymentMethodDetail({
             )}
             {paymentNiceSync?.manualActionRequired &&
               paymentNiceSync?.manualActionReason === "unsettled_amount_shortage" && (
-                <div className="text-ui-label text-amber-700 dark:text-amber-300">
+                <div className="text-ui-label text-warning">
                   입금 후 취소 필요
                 </div>
               )}

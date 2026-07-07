@@ -2203,12 +2203,12 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                   </div>
                 </CardContent>
                 {hasNiceUnsettledAmountShortage && (
-                  <Card className="border-amber-200 bg-amber-50/70 dark:border-amber-900/60 dark:bg-amber-950/20">
+                  <Card className="border-warning/40 bg-warning/10">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base text-amber-900 dark:text-amber-100">
+                      <CardTitle className="text-base text-warning">
                         NICE 자동 카드취소 불가
                       </CardTitle>
-                      <CardDescription className="text-amber-800/90 dark:text-amber-200/80">
+                      <CardDescription className="text-muted-foreground">
                         가맹점 미정산금액이 취소금액보다 부족해 NICE 자동취소가 거절되었습니다. NICE 입금 후 취소 절차를 진행한 뒤, 강제취소 완료 후 이 화면에서 PG 상태를 다시 확인하세요.
                       </CardDescription>
                     </CardHeader>
