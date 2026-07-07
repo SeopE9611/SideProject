@@ -182,6 +182,20 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     }
   }
 
+  const paymentInfo = (
+    (doc as any)?.paymentInfo && typeof (doc as any).paymentInfo === "object"
+      ? (doc as any).paymentInfo
+      : {}
+  ) as Record<string, unknown>;
+  const paymentRawSummary =
+    paymentInfo.rawSummary && typeof paymentInfo.rawSummary === "object"
+      ? (paymentInfo.rawSummary as Record<string, unknown>)
+      : {};
+  const paymentRawEasyPay =
+    paymentRawSummary.easyPay && typeof paymentRawSummary.easyPay === "object"
+      ? (paymentRawSummary.easyPay as Record<string, unknown>)
+      : {};
+
   // 응답 평탄화
   return NextResponse.json({
     id: doc._id.toString(),
@@ -196,6 +210,15 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     dueAt: doc.dueAt ?? null, // 반납 예정
     returnedAt: doc.returnedAt ?? null, // 반납 완료
     depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
+    paymentStatus: nullableTrim((doc as any)?.paymentStatus ?? paymentInfo.status),
+    paymentMethod: nullableTrim(paymentInfo.method ?? (doc as any)?.paymentMethod),
+    paymentProvider: nullableTrim(paymentInfo.provider ?? (doc as any)?.paymentProvider),
+    paymentEasyPayProvider: nullableTrim(paymentInfo.easyPayProvider ?? paymentRawEasyPay.provider),
+    paymentCardDisplayName: nullableTrim(paymentInfo.cardDisplayName),
+    paymentCardCompany: nullableTrim(paymentInfo.cardCompany),
+    paymentCardLabel: nullableTrim(paymentInfo.cardLabel),
+    paymentBank: nullableTrim(paymentInfo.bank),
+    paymentApprovedAt: toNullableIsoString(paymentInfo.approvedAt),
     // 스트링 교체 신청서 연결 정보 (대여 기반 신청 시 저장됨)
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
     // ObjectId로 저장된 경우를 대비해 string으로 정규화

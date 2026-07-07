@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { racketBrandLabel } from "@/lib/constants";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -70,6 +71,15 @@ type Rental = {
   outAt?: string | null;
   returnedAt?: string | null;
   depositRefundedAt?: string | null;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
+  paymentEasyPayProvider?: string | null;
+  paymentCardDisplayName?: string | null;
+  paymentCardCompany?: string | null;
+  paymentCardLabel?: string | null;
+  paymentBank?: string | null;
+  paymentApprovedAt?: string | null;
 
   // 대여 기반 교체 서비스 신청서 연결
   stringingApplicationId?: string | null;
@@ -412,6 +422,9 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   // 교체 신청하기 링크(대여 기반 신청)
   const applyHref = `/services/apply?rentalId=${encodeURIComponent(id)}`;
   const returnShippingHref = `/mypage/rentals/${id}/return-shipping`;
+  const stringingDetailHref = data?.stringingApplicationId
+    ? `/mypage?tab=orders&flowType=application&flowId=${data.stringingApplicationId}&from=orders`
+    : null;
 
   if (loading) {
     return (
@@ -483,6 +496,9 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     data.applicationSummary?.status === "교체완료";
   const canReceiveRental =
     data.status === "paid" && !isVisitPickup && hasOutboundShipping && isLinkedStringingComplete;
+  const paymentStatusLabel =
+    data.paymentStatus ??
+    (data.status === "pending" ? "결제대기" : data.status === "canceled" ? "결제취소" : "결제완료");
   const displayStatusLabel = data.depositRefundedAt
     ? "보증금 환급 완료"
     : data.status === "paid"
@@ -596,6 +612,34 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   : "진행 상황이 변경되면 이 화면에서 안내해 드립니다.";
   const shippingMethodLabel = isVisitPickup ? "매장 수령" : "택배 배송";
   const returnMethodLabel = isVisitPickup ? "매장 반납" : "택배 반납";
+  const paymentSummary = getPaymentDisplaySummary({
+    method: data.paymentMethod,
+    provider: data.paymentProvider,
+    easyPayProvider: data.paymentEasyPayProvider,
+    cardDisplayName: data.paymentCardDisplayName,
+    cardCompany: data.paymentCardCompany,
+    cardLabel: data.paymentCardLabel,
+    bank: data.paymentBank,
+  });
+  const depositRefundLabel = data.depositRefundedAt
+    ? `보증금 환급 완료 · ${formatDate(data.depositRefundedAt)}`
+    : data.returnedAt
+      ? "반납 확인 후 보증금 환급을 준비하고 있습니다."
+      : "반납 확인 후 보증금 환급 예정";
+  const outboundInfoLabel = isVisitPickup
+    ? outboundTrackingNo
+      ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
+      : "매장 수령 준비가 완료되면 안내됩니다."
+    : outboundTrackingNo
+      ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
+      : "출고 운송장이 등록되면 이곳에서 확인할 수 있습니다.";
+  const returnInfoLabel = returnTrackingNo
+    ? isVisitPickup
+      ? `접수 번호 · ${returnTrackingNo}`
+      : `${getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} · ${returnTrackingNo}`
+    : isVisitPickup
+      ? "매장 반납 후 확인됩니다."
+      : "반납 운송장을 등록하면 이곳에서 확인할 수 있습니다.";
   return (
     <main>
       <MypageDetailHero
@@ -751,7 +795,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
         <div className={mypageDetailLayout.contentGrid}>
           <div className={mypageDetailLayout.mainColumn}>
-            <MypageDetailCard title="대여 요약" icon={<Package className="h-5 w-5 text-primary" />}>
+            <MypageDetailCard title="대여상품" icon={<Package className="h-5 w-5 text-primary" />}>
               <div className="divide-y divide-border/60">
                 <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
@@ -779,13 +823,73 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
                   </div>
                 </div>
+              </div>
+            </MypageDetailCard>
 
-                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">반납 예정일</p>
-                    <p className="mt-1 break-words font-semibold text-foreground">
-                      {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                    </p>
+            <MypageDetailCard
+              title="수령/반납 정보"
+              description="대여 상품을 받는 방법과 반납 방법을 한곳에 정리했습니다."
+              icon={<Truck className="h-5 w-5 text-primary" />}
+              contentClassName="space-y-5"
+            >
+              <div className="grid gap-4 bp-md:grid-cols-2">
+                <div className="rounded-xl bg-muted/10 p-4 ring-1 ring-border/40">
+                  <p className="mb-3 font-semibold text-foreground">대여 상품 수령</p>
+                  <div className="grid gap-3">
+                    <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
+                    <MypageInfoField
+                      label={isVisitPickup ? "매장 수령 준비" : "출고 운송장"}
+                      value={outboundInfoLabel}
+                      valueClassName="break-all"
+                    />
+                    {canReceiveRental ? (
+                      <div className="rounded-lg bg-primary/5 p-3 text-ui-body-sm text-muted-foreground">
+                        상품을 받으셨다면 상단의 수령 확인 버튼으로 대여를 시작해 주세요.
+                      </div>
+                    ) : null}
+                    {linkedApplication?.shippingInfo?.deliveryRequest ? (
+                      <MypageInfoField
+                        label="배송 요청사항"
+                        value={linkedApplication.shippingInfo.deliveryRequest}
+                        valueClassName="whitespace-pre-wrap break-words"
+                      />
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-muted/10 p-4 ring-1 ring-border/40">
+                  <p className="mb-3 font-semibold text-foreground">반납</p>
+                  <div className="grid gap-3">
+                    <MypageInfoField label="반납 방식" value={returnMethodLabel} />
+                    <MypageInfoField
+                      label="반납 예정일"
+                      value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+                    />
+                    <MypageInfoField
+                      label={isVisitPickup ? "반환 접수" : "반납 운송장"}
+                      value={returnInfoLabel}
+                      valueClassName="break-all"
+                    />
+                    <MypageInfoField
+                      label="반납 완료"
+                      value={
+                        data.returnedAt
+                          ? formatDateTime(data.returnedAt)
+                          : "반납 확인 후 안내됩니다."
+                      }
+                    />
+                    {isReturnShippingAvailable ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="h-9 w-full bp-sm:w-fit"
+                      >
+                        <Link href={returnShippingHref}>
+                          {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
+                        </Link>
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -813,7 +917,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 >
                   {linkedApplication || data.applicationSummary ? (
                     <>
-                      <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-2 bp-lg:grid-cols-[repeat(auto-fit,minmax(160px,1fr))]">
+                      <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-2 bp-lg:grid-cols-3">
                         <div className="p-3 bp-sm:p-4">
                           <p className="text-muted-foreground">진행 상태</p>
                           <Badge
@@ -826,16 +930,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                           </Badge>
                         </div>
                         <div className="p-3 bp-sm:p-4">
-                          <p className="text-muted-foreground">신청일</p>
-                          <p className="mt-2 font-semibold tabular-nums text-foreground">
-                            {linkedApplication?.createdAt
-                              ? formatDate(linkedApplication.createdAt)
-                              : data.createdAt
-                                ? formatDate(data.createdAt)
-                                : "-"}
-                          </p>
-                        </div>
-                        <div className="p-3 bp-sm:p-4">
                           <p className="text-muted-foreground">희망 작업일</p>
                           <p className="mt-2 break-words font-semibold text-foreground">
                             {linkedApplication?.reservationLabel ??
@@ -844,13 +938,15 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                           </p>
                         </div>
                         <div className="p-3 bp-sm:p-4">
-                          <p className="text-muted-foreground">서비스 금액</p>
-                          <p className="mt-2 font-semibold tabular-nums text-foreground">
-                            {typeof linkedApplication?.totalPrice === "number"
-                              ? formatCurrency(linkedApplication.totalPrice)
-                              : stringingFee > 0
-                                ? formatCurrency(stringingFee)
-                                : "결제 정보 확인"}
+                          <p className="text-muted-foreground">스트링/텐션</p>
+                          <p className="mt-2 break-words font-semibold text-foreground">
+                            {[
+                              installedStringLabel,
+                              linkedApplication?.tensionSummary ??
+                                data.applicationSummary?.tensionSummary,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
                           </p>
                         </div>
                       </div>
@@ -924,74 +1020,17 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         </details>
                       </div>
 
-                      <details className="group overflow-hidden rounded-xl bg-muted/10 text-ui-body-sm text-foreground ring-1 ring-border/40">
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
-                          <span>장착·출고 상세</span>
-                          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                        </summary>
-                        <div className="space-y-3 border-t border-border/50 p-3">
-                          <div>
-                            <p className="font-semibold text-foreground">장착·출고 안내</p>
-                            <p className="mt-1 text-muted-foreground">
-                              매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다.
-                            </p>
-                          </div>
-                          <dl className="grid gap-3 bp-sm:grid-cols-2">
-                            <div>
-                              <dt className="text-muted-foreground">장착 방식</dt>
-                              <dd className="mt-1 font-medium">매장 장착</dd>
-                            </div>
-                            <div>
-                              <dt className="text-muted-foreground">출고 방식</dt>
-                              <dd className="mt-1 font-medium">
-                                {isVisitPickup ? "매장 수령" : "대여 라켓 출고"}
-                              </dd>
-                            </div>
-                            {outboundTrackingNo ? (
-                              <>
-                                <div>
-                                  <dt className="text-muted-foreground">출고 택배사</dt>
-                                  <dd className="mt-1 font-medium">
-                                    {getCourierLabel(outboundCourier ?? undefined)}
-                                  </dd>
-                                </div>
-                                <div>
-                                  <dt className="text-muted-foreground">출고 운송장</dt>
-                                  <dd className="mt-1 break-all font-medium">
-                                    {outboundTrackingNo}
-                                  </dd>
-                                </div>
-                                <div>
-                                  <dt className="text-muted-foreground">출고일</dt>
-                                  <dd className="mt-1 font-medium">
-                                    {outboundShippedAt
-                                      ? formatDate(String(outboundShippedAt))
-                                      : "출고일 확인 중"}
-                                  </dd>
-                                </div>
-                              </>
-                            ) : (
-                              <div className="bp-sm:col-span-2">
-                                <dt className="text-muted-foreground">출고 운송장</dt>
-                                <dd className="mt-1 font-medium text-muted-foreground">
-                                  관리자가 대여 라켓에 스트링을 장착한 뒤 출고 운송장을 등록하면
-                                  이곳에서 확인할 수 있습니다.
-                                </dd>
-                              </div>
-                            )}
-                            {linkedApplication?.shippingInfo?.deliveryRequest ? (
-                              <div className="bp-sm:col-span-2">
-                                <dt className="text-muted-foreground">배송 요청사항</dt>
-                                <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
-                                  {linkedApplication.shippingInfo.deliveryRequest}
-                                </dd>
-                              </div>
-                            ) : null}
-                          </dl>
-                        </div>
-                      </details>
-
                       <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
+                        {stringingDetailHref ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
+                          >
+                            <Link href={stringingDetailHref}>교체서비스 상세보기</Link>
+                          </Button>
+                        ) : null}
                         {data.stringingApplicationId ? (
                           <ServiceReviewCTA
                             applicationId={data.stringingApplicationId}
@@ -1030,7 +1069,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             )}
           >
             <MypageDetailCard
-              title="결제 요약"
+              title="결제/보증금 요약"
               icon={<CreditCard className="h-5 w-5 text-primary" />}
             >
               <div className="space-y-3">
@@ -1038,8 +1077,22 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   <div className="min-w-0 flex-1">
                     <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
                     <p className="mt-1 break-words font-semibold text-foreground">
-                      {displayStatusLabel}
+                      {paymentStatusLabel}
                     </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">결제수단</p>
+                    <p className="mt-1 break-words font-semibold text-foreground">
+                      {paymentSummary.userLabel}
+                    </p>
+                    {data.paymentApprovedAt ? (
+                      <p className="mt-1 text-ui-label text-muted-foreground">
+                        승인일 {formatDateTime(data.paymentApprovedAt)}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
@@ -1087,6 +1140,17 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </div>
                 )}
 
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">
+                      보증금 환급 상태
+                    </p>
+                    <p className="mt-1 break-words font-semibold text-foreground">
+                      {depositRefundLabel}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
                   <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <div className="flex-1">
@@ -1098,127 +1162,15 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 </div>
               </div>
             </MypageDetailCard>
-
-            <MypageDetailCard
-              title="배송/수령 요약"
-              icon={<Truck className="h-5 w-5 text-primary" />}
-            >
-              <div className="grid gap-4">
-                <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
-                <MypageInfoField
-                  label="수령/출고 정보"
-                  value={
-                    isVisitPickup
-                      ? outboundTrackingNo
-                        ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
-                        : "매장 수령 준비 중입니다."
-                      : outboundTrackingNo
-                        ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
-                        : "출고 운송장 등록 전입니다."
-                  }
-                  valueClassName="break-all"
-                />
-              </div>
-            </MypageDetailCard>
-
-            <MypageDetailCard title="반납 요약" icon={<Truck className="h-5 w-5 text-primary" />}>
-              <div className="grid gap-4">
-                <MypageInfoField
-                  label="반납 예정일"
-                  value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                />
-                <MypageInfoField label="반납 방식" value={returnMethodLabel} />
-                <MypageInfoField
-                  label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"}
-                  value={returnTrackingNo}
-                  fallback="반납 운송장이 아직 등록되지 않았습니다."
-                  valueClassName="break-all"
-                />
-              </div>
-            </MypageDetailCard>
           </aside>
         </div>
 
         <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
-            <span>상세 정보</span>
+            <span>신청 정보</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <div className="space-y-4 border-t border-border/60 p-4 bp-lg:p-5">
-            <MypageDetailCard
-              title="배송/수령 상세"
-              icon={<Truck className="h-5 w-5 text-primary" />}
-              className="rounded-xl bg-muted/10 shadow-none ring-border/40"
-            >
-              <div className="grid gap-4 bp-sm:grid-cols-2">
-                <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
-                <div className="border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <p className="text-ui-label font-medium text-muted-foreground">수령/출고 정보</p>
-                  <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                    {isVisitPickup
-                      ? outboundTrackingNo
-                        ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
-                        : "매장 수령 준비 중입니다."
-                      : outboundTrackingNo
-                        ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
-                        : "출고 운송장 등록 전입니다."}
-                  </p>
-                </div>
-                <MypageInfoField
-                  label="출고 택배사"
-                  value={outboundCourier ? getCourierLabel(outboundCourier) : null}
-                  fallback={isVisitPickup ? "방문 수령" : "출고 택배사 확인 중"}
-                />
-                <MypageInfoField
-                  label="출고 운송장"
-                  value={outboundTrackingNo}
-                  fallback={
-                    isVisitPickup
-                      ? "방문 수령 준비 상태로 안내됩니다."
-                      : "출고 운송장 등록 전입니다."
-                  }
-                  valueClassName="break-all"
-                />
-                <MypageInfoField
-                  label="출고일"
-                  value={
-                    outboundShippedAt
-                      ? formatDateTime(
-                          outboundShippedAt instanceof Date
-                            ? outboundShippedAt.toISOString()
-                            : outboundShippedAt,
-                        )
-                      : null
-                  }
-                  fallback="출고일 확인 중"
-                />
-              </div>
-            </MypageDetailCard>
-
-            <MypageDetailCard
-              title="반납 상세"
-              icon={<Truck className="h-5 w-5 text-primary" />}
-              className="rounded-xl bg-muted/10 shadow-none ring-border/40"
-            >
-              <div className="grid gap-4 bp-sm:grid-cols-2">
-                <MypageInfoField
-                  label="반납 예정일"
-                  value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                />
-                <MypageInfoField label="반납 방식" value={returnMethodLabel} />
-                <MypageInfoField
-                  label={isVisitPickup ? "반환 접수 번호" : "반납 운송장"}
-                  value={returnTrackingNo}
-                  fallback="반납 운송장이 아직 등록되지 않았습니다."
-                  valueClassName="break-all"
-                />
-                <MypageInfoField
-                  label="반납 확인"
-                  value={data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 전"}
-                />
-              </div>
-            </MypageDetailCard>
-
             <MypageDetailCard
               title="신청 정보"
               icon={<Briefcase className="h-5 w-5 text-primary" />}
@@ -1242,14 +1194,14 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
         <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
-            <span>진행 단계</span>
+            <span>진행 기록</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <Card className="border-0 bg-transparent shadow-none">
             <CardHeader className="hidden border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                <span>진행 단계</span>
+                <span>진행 기록</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 bp-sm:p-5">
@@ -1365,7 +1317,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     <CreditCard className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-ui-body-sm font-medium text-foreground">보증금 환불</p>
+                    <p className="text-ui-body-sm font-medium text-foreground">보증금 환급</p>
                     <p className="text-ui-body-sm text-foreground/80">
                       {data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : "-"}
                     </p>
