@@ -50,7 +50,7 @@ import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { CheckCircle, ChevronDown, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
+import { CheckCircle, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -170,6 +170,11 @@ interface OrderDetail {
     stringNames?: string[];
     reservationLabel?: string | null;
     totalPrice?: number | null;
+    packageInfo?: {
+      applied?: boolean;
+      useCount?: number | null;
+      remainingCount?: number | null;
+    } | null;
     requirements?: string | null;
     lines?: Array<{
       id?: string | null;
@@ -553,6 +558,17 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
+  const packageUsageInfos = linkedStringingApps
+    .map((app) => app.packageInfo)
+    .filter((info): info is NonNullable<(typeof linkedStringingApps)[number]["packageInfo"]> => {
+      return Boolean(info?.applied || (info?.useCount ?? 0) > 0);
+    });
+  const packageUsedSlots = packageUsageInfos.reduce(
+    (sum, info) => sum + Math.max(0, info.useCount ?? 0),
+    0,
+  );
+  const packageRemainingSlots =
+    packageUsageInfos.find((info) => typeof info.remainingCount === "number")?.remainingCount ?? 0;
 
   const reviewableStringingApp =
     linkedStringingApps.find((app) => app.serviceReviewPending) ?? primaryStringingApp;
@@ -1609,36 +1625,26 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               )}
             </Card>
 
-            {orderDetail.stringService ? (
+            {packageUsedSlots > 0 ? (
               <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
                 <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-                  <CardTitle>패키지 사용 요약</CardTitle>
+                  <CardTitle>패키지 사용</CardTitle>
+                  <CardDescription>이번 이용에 패키지 이용권이 사용되었습니다.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 p-4 text-ui-body-sm bp-lg:p-5">
-                  <div className="grid grid-cols-3 gap-2 rounded-xl bg-muted/15 p-3 text-center">
-                    <div>
-                      <p className="text-ui-label text-muted-foreground">전체</p>
-                      <p className="font-semibold text-foreground">{totalSlots}회</p>
-                    </div>
-                    <div>
-                      <p className="text-ui-label text-muted-foreground">사용</p>
-                      <p className="font-semibold text-foreground">{usedSlots}회</p>
-                    </div>
-                    <div>
-                      <p className="text-ui-label text-muted-foreground">남은</p>
-                      <p className="font-semibold text-foreground">{remainingSlots}회</p>
-                    </div>
+                  <div className="rounded-xl bg-muted/15 p-3 text-foreground">
+                    <p className="text-ui-body font-medium">
+                      사용 {packageUsedSlots}회 · 남은 {packageRemainingSlots}회
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {packageRemainingSlots > 0
+                        ? `이번 이용에 패키지 ${packageUsedSlots}회가 차감되었습니다.`
+                        : "이번 이용으로 패키지를 모두 사용했습니다."}
+                    </p>
                   </div>
-                  <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
-                      <span>패키지 상세</span>
-                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div className="space-y-2 border-t border-border/50 p-3 text-muted-foreground">
-                      <p>교체서비스 패키지 사용 횟수와 남은 횟수입니다.</p>
-                      <p>추가 신청 가능 여부는 연결된 교체서비스 안내에서 확인해주세요.</p>
-                    </div>
-                  </details>
+                  <Button asChild size="sm" variant="outline" className="w-full bp-sm:w-auto">
+                    <Link href="/mypage?tab=passes">패키지 관리로 이동</Link>
+                  </Button>
                 </CardContent>
               </Card>
             ) : null}

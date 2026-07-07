@@ -168,6 +168,75 @@ function buildOrderLinePriceDisplay(item: any, product: any) {
   };
 }
 
+function getSnapshotString(value: unknown): string | null {
+  const trimmed = String(value ?? "").trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function getOrderItemSnapshotImage(item: any): string | null {
+  return getSnapshotString(item?.selectedColorImage) ?? getSnapshotString(item?.imageUrl);
+}
+
+function getProductVariantImage(item: any, product: any): string | null {
+  const selectedColor = getSnapshotString(item?.selectedColor);
+  const selectedGauge = getSnapshotString(item?.selectedGauge);
+
+  if (Array.isArray(product?.variantInventories)) {
+    const variant = product.variantInventories.find((row: any) => {
+      const colorMatches =
+        !selectedColor || row?.colorValue === selectedColor || row?.color === selectedColor;
+      const gaugeMatches =
+        !selectedGauge || row?.gaugeValue === selectedGauge || row?.gauge === selectedGauge;
+      return colorMatches && gaugeMatches;
+    });
+    const image = getSnapshotString(variant?.colorImage) ?? getSnapshotString(variant?.image);
+    if (image) return image;
+  }
+
+  if (Array.isArray(product?.colorInventories)) {
+    const color = product.colorInventories.find((row: any) => {
+      return !selectedColor || row?.value === selectedColor || row?.color === selectedColor;
+    });
+    const image = getSnapshotString(color?.image) ?? getSnapshotString(color?.colorImage);
+    if (image) return image;
+  }
+
+  return null;
+}
+
+function buildOrderLineSnapshotFallback(
+  item: any,
+  normalizedId: string | null,
+  kind: "product" | "racket",
+) {
+  const snapshotPrice = toFiniteNonNegativeNumber(item?.price);
+
+  return {
+    id: normalizedId ?? String(item?.productId ?? ""),
+    name:
+      getSnapshotString(item?.name) ??
+      (kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품"),
+    price: snapshotPrice ?? 0,
+    regularPrice: toFiniteNonNegativeNumber(item?.regularPrice),
+    salePrice: toFiniteNonNegativeNumber(item?.salePrice),
+    discountAmount: toFiniteNonNegativeNumber(item?.discountAmount),
+    discountRate: toFiniteNonNegativeNumber(item?.discountRate),
+    imageUrl: getOrderItemSnapshotImage(item),
+    selectedColorImage: getSnapshotString(item?.selectedColorImage),
+    mountingFee: toFiniteNonNegativeNumber(item?.mountingFee) ?? 0,
+    isMountableString: Boolean(item?.isMountableString),
+    quantity: item?.quantity ?? 1,
+    kind,
+    selectedStringName: getSnapshotString(item?.selectedStringName),
+    stringPrice: toFiniteNonNegativeNumber(item?.stringPrice),
+    selectedGauge: getSnapshotString(item?.selectedGauge),
+    selectedColor: getSnapshotString(item?.selectedColor),
+    selectedColorLabel: getSnapshotString(item?.selectedColorLabel),
+    selectedColorHex: getSnapshotString(item?.selectedColorHex),
+    stockDeduction: item?.stockDeduction ?? null,
+  };
+}
+
 // 주문-스트링 신청서 동기화 정책:
 // - draft(임시저장)는 제외
 // - 취소는 포함(운영 추적/감사를 위해 이력 동기화 유지)
@@ -276,6 +345,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
                   inventory: 1,
                   mountingFee: 1,
                   images: 1,
+                  colorInventories: 1,
+                  variantInventories: 1,
                 },
               },
             )
@@ -315,35 +386,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       const normalizedId = ObjectId.isValid(idStr) ? idStr : null;
 
       if (!normalizedId) {
-        return {
-          id: idStr,
-          name: kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품",
-          price: 0,
-          mountingFee: 0,
-          isMountableString: false,
-          quantity: item.quantity,
-          kind,
-        };
+        return buildOrderLineSnapshotFallback(item, null, kind);
       }
 
       if (kind === "product") {
         const prod = productById.get(normalizedId);
         if (!prod) {
           console.warn(`상품을 찾을 수 없음:`, normalizedId);
-          return {
-            id: normalizedId,
-            name: "알 수 없는 상품",
-            price: 0,
-            mountingFee: 0,
-            isMountableString: false,
-            quantity: item.quantity,
-            kind: "product" as const,
-            selectedGauge: (item as any)?.selectedGauge ?? null,
-            selectedColor: (item as any)?.selectedColor ?? null,
-            selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
-            selectedColorHex: (item as any)?.selectedColorHex ?? null,
-            stockDeduction: (item as any)?.stockDeduction ?? null,
-          };
+          return buildOrderLineSnapshotFallback(item, normalizedId, "product");
         }
         const rawMountingFee = prod.mountingFee;
         const isMountableString = isMountableStringByFee(rawMountingFee);
@@ -362,8 +412,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           discountRate: priceDisplay.discountRate,
 
           imageUrl:
-            (item as any)?.imageUrl ??
-            (item as any)?.selectedColorImage ??
+            getOrderItemSnapshotImage(item) ??
+            getProductVariantImage(item, prod) ??
             (Array.isArray(prod.images) ? prod.images[0] : null) ??
             null,
           selectedColorImage: (item as any)?.selectedColorImage ?? null,
@@ -384,23 +434,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       const racket = usedRacketById.get(normalizedId);
       if (!racket) {
         console.warn(`라켓을 찾을 수 없음:`, normalizedId);
-        return {
-          id: normalizedId,
-          name: "알 수 없는 라켓",
-          price: 0,
-          mountingFee: (item as any)?.mountingFee ?? 0,
-          imageUrl: (item as any)?.imageUrl ?? (item as any)?.selectedColorImage ?? null,
-          isMountableString: false,
-          quantity: item.quantity,
-          kind: "racket" as const,
-          selectedStringName: (item as any)?.selectedStringName ?? null,
-          selectedGauge: (item as any)?.selectedGauge ?? null,
-          selectedColor: (item as any)?.selectedColor ?? null,
-          selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
-          selectedColorHex: (item as any)?.selectedColorHex ?? null,
-          stringPrice: (item as any)?.stringPrice ?? null,
-          stockDeduction: (item as any)?.stockDeduction ?? null,
-        };
+        return buildOrderLineSnapshotFallback(item, normalizedId, "racket");
       }
 
       return {
