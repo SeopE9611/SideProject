@@ -841,6 +841,26 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           </div>
         </div>
 
+        {config.boardType === "market" ? (
+          <Card className="border border-border bg-card shadow-sm">
+            <CardContent className="px-4 py-3 sm:px-5">
+              <div className="flex flex-col gap-2 text-ui-body-sm text-muted-foreground sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-semibold text-foreground">중고거래 이용 안내</p>
+                  <p className="mt-1">
+                    도깨비테니스는 개인 간 거래의 당사자가 아니며 거래를 보증하지 않습니다. 상품 상태,
+                    가격, 배송 방식, 환불 가능 여부를 거래 전에 확인해 주세요.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-ui-label sm:max-w-xs">
+                  <span className="font-semibold text-foreground">거래 금지 품목: </span>
+                  도난품, 위조품/가품, 불법 복제품, 개인정보 포함 물품, 법령상 제한 물품, 위험물·무기류·의약품·주류·담배
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+
         {/* 리스트 카드 */}
         <Card className="overflow-hidden border border-border bg-card shadow-sm">
           <CardHeader className="flex flex-col gap-3 border-b border-border bg-muted/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">

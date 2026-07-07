@@ -25,6 +25,7 @@ import {
 import MarketMetaFields from "@/app/board/market/_components/MarketMetaFields";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -100,6 +101,7 @@ const hasMarketMetaInput = (category: CategoryValue, marketMeta: MarketMeta) => 
 
 type FieldKey = "category" | "brand" | "price" | "modelName" | "title" | "content" | "attachments";
 type FieldErrors = Partial<Record<FieldKey, string>>;
+const MARKET_POLICY_CONFIRM_MESSAGE = "중고거래 이용 안내와 금지 품목 정책을 확인해 주세요.";
 const scrollIntoViewOpts: ScrollIntoViewOptions = {
   behavior: "smooth",
   block: "center",
@@ -147,6 +149,7 @@ export default function FreeBoardWriteClient() {
   // 제출 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [policyConfirmed, setPolicyConfirmed] = useState(false);
 
   // 더블클릭/연타 레이스 방지(제출 시작~끝까지 1회만 허용)
   const submitRef = useRef(false);
@@ -459,6 +462,11 @@ export default function FreeBoardWriteClient() {
     if (isUploadingImages || isUploadingFiles) {
       setErrorMsg("첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.");
       requestAnimationFrame(() => focusField("attachments"));
+      return;
+    }
+
+    if (!policyConfirmed) {
+      setErrorMsg(MARKET_POLICY_CONFIRM_MESSAGE);
       return;
     }
 
@@ -965,6 +973,42 @@ export default function FreeBoardWriteClient() {
                       )}
                     </TabsContent>
                   </Tabs>
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="text-ui-body-sm font-semibold text-foreground">
+                      중고거래 이용 안내
+                    </h2>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-ui-body-sm text-muted-foreground">
+                      <li>도깨비테니스는 개인 간 거래의 당사자가 아니며, 거래 자체를 보증하지 않습니다.</li>
+                      <li>사기, 허위매물, 도난품, 위조품, 불법·위해 상품 등록은 금지됩니다.</li>
+                      <li>거래 전 상품 상태, 가격, 배송 방식, 환불 가능 여부를 반드시 확인해 주세요.</li>
+                      <li>문제가 있는 게시글은 신고 또는 관리자 판단에 따라 숨김/삭제될 수 있습니다.</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
+                    <p className="text-ui-label font-semibold text-foreground">거래 금지 품목</p>
+                    <p className="mt-1 text-ui-label leading-5 text-muted-foreground">
+                      도난품, 위조품/가품, 불법 복제품, 개인정보가 포함된 물품, 법령상 거래가 제한된 물품,
+                      위험물·무기류·의약품·주류·담배 등 제한 품목
+                    </p>
+                  </div>
+                  <label className="flex items-start gap-3 rounded-lg border border-border bg-background px-4 py-3 text-ui-body-sm text-foreground">
+                    <Checkbox
+                      checked={policyConfirmed}
+                      onCheckedChange={(checked) => {
+                        setPolicyConfirmed(checked === true);
+                        if (checked === true && errorMsg === MARKET_POLICY_CONFIRM_MESSAGE) {
+                          setErrorMsg(null);
+                        }
+                      }}
+                      className="mt-0.5"
+                    />
+                    <span>중고거래 이용 안내와 금지 품목 정책을 확인했습니다.</span>
+                  </label>
                 </div>
               </section>
 
