@@ -561,10 +561,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const packageUsageInfos = linkedStringingApps
     .map((app) => app.packageInfo)
     .filter((info): info is NonNullable<(typeof linkedStringingApps)[number]["packageInfo"]> => {
-      return Boolean(info?.applied || (info?.useCount ?? 0) > 0);
+      return Boolean(info?.applied);
     });
   const packageUsedSlots = packageUsageInfos.reduce(
-    (sum, info) => sum + Math.max(0, info.useCount ?? 0),
+    (sum, info) => sum + Math.max(0, info.useCount ?? 1),
     0,
   );
   const packageRemainingSlots =
