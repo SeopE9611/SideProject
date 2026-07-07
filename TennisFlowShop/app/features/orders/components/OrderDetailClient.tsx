@@ -965,25 +965,33 @@ export default function OrderDetailClient({ orderId }: Props) {
   const cancelRequestAny: any = (orderDetail as any).cancelRequest ?? {};
   const pgCancelBlocked = cancelRequestAny.pgCancelBlocked ?? null;
   const paymentNiceSync = orderDetail.paymentNiceSync ?? orderDetail.paymentInfo?.niceSync ?? null;
+  const paymentInfoStatus = String(orderDetail.paymentInfo?.status ?? "").trim().toLowerCase();
+  const paymentNicePgStatus = String(paymentNiceSync?.pgStatus ?? "").trim().toLowerCase();
+  const isPgCancelCompleted =
+    orderDetail.paymentStatus === "결제취소" ||
+    paymentInfoStatus === "canceled" ||
+    paymentNicePgStatus === "cancelled" ||
+    paymentNicePgStatus === "canceled";
   const hasNiceUnsettledAmountShortage =
-    paymentNiceSync?.resultCode === "2026" ||
-    pgCancelBlocked?.reason === "unsettled_amount_shortage";
+    !isPgCancelCompleted &&
+    (paymentNiceSync?.resultCode === "2026" ||
+      pgCancelBlocked?.reason === "unsettled_amount_shortage");
   const niceBlockedTid = String(pgCancelBlocked?.tid ?? orderDetail.paymentTid ?? "").trim();
   const niceBlockedTotalAmount = Number(orderDetail.total ?? 0);
   const niceBlockedCancelAmount = Number(
-    paymentNiceSync?.cancelAmount ?? pgCancelBlocked?.amount ?? orderDetail.total ?? 0,
+    pgCancelBlocked?.amount ?? paymentNiceSync?.cancelAmount ?? orderDetail.total ?? 0,
   );
   const niceBlockedResultCode = String(
-    paymentNiceSync?.resultCode ?? pgCancelBlocked?.resultCode ?? "",
+    pgCancelBlocked?.resultCode ?? paymentNiceSync?.resultCode ?? "",
   ).trim();
   const niceBlockedResultMsg = String(
-    paymentNiceSync?.resultMsg ?? pgCancelBlocked?.resultMsg ?? "",
+    pgCancelBlocked?.resultMsg ?? paymentNiceSync?.resultMsg ?? "",
   ).trim();
 
   const handleCopyNiceInquiryTemplate = () => {
     const message = `거래금액: ${niceBlockedTotalAmount.toLocaleString("ko-KR")}원
 TID: ${niceBlockedTid || "-"}
-취소요청 금액: ${niceBlockedTotalAmount.toLocaleString("ko-KR")}원
+취소요청 금액: ${niceBlockedCancelAmount.toLocaleString("ko-KR")}원
 
 NICE 미정산금액 부족으로 자동취소가 실패했습니다.
 입금 후 취소 절차 안내 부탁드립니다.`;

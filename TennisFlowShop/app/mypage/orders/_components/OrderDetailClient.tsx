@@ -150,6 +150,16 @@ interface OrderDetail {
     manualActionRequired?: boolean | null;
     manualActionReason?: string | null;
   } | null;
+  paymentInfo?: {
+    status?: string | null;
+    niceSync?: {
+      pgStatus?: string | null;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      manualActionRequired?: boolean | null;
+      manualActionReason?: string | null;
+    } | null;
+  } | null;
   total: number;
   items: OrderItem[];
   history: Array<any>;
@@ -675,9 +685,18 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const cancelRequestAny = (orderDetail as any)?.cancelRequest ?? {};
   const cancelStatus = cancelRequestAny?.status;
   const pgCancelBlocked = cancelRequestAny?.pgCancelBlocked ?? null;
+  const paymentNiceSync = orderDetail.paymentNiceSync ?? orderDetail.paymentInfo?.niceSync ?? null;
+  const paymentInfoStatus = String(orderDetail.paymentInfo?.status ?? "").trim().toLowerCase();
+  const paymentNicePgStatus = String(paymentNiceSync?.pgStatus ?? "").trim().toLowerCase();
+  const isPgCancelCompleted =
+    orderDetail.paymentStatus === "결제취소" ||
+    paymentInfoStatus === "canceled" ||
+    paymentNicePgStatus === "cancelled" ||
+    paymentNicePgStatus === "canceled";
   const hasNiceUnsettledAmountShortage =
-    orderDetail.paymentNiceSync?.resultCode === "2026" ||
-    pgCancelBlocked?.reason === "unsettled_amount_shortage";
+    !isPgCancelCompleted &&
+    (paymentNiceSync?.resultCode === "2026" ||
+      pgCancelBlocked?.reason === "unsettled_amount_shortage");
   const canWithdrawCancelRequest = cancelStatus === "requested";
   const handleConfirmPurchase = async () => {
     if (!orderDetail?._id || isConfirmingPurchase) return;
