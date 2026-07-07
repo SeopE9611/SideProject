@@ -35,6 +35,7 @@ import {
   CheckCircle,
   MoreHorizontal,
   Package,
+  Wrench,
   Sparkles,
   Undo2,
   XCircle,
@@ -560,7 +561,6 @@ const getFlowNextActionText = (
 };
 
 const FALLBACK_FLOW_IMAGE = "/placeholder.svg?height=96&width=96&query=tennis+gear";
-const SERVICE_FLOW_IMAGE = "/tennis-promo-bg.png";
 
 const TODO_STATUS_LABEL_MAP: Record<string, string> = {
   "구매 확정 필요": "확정필요",
@@ -607,11 +607,7 @@ const getRepresentativeImage = (
     return group.rental?.imageUrl || FALLBACK_FLOW_IMAGE;
   }
 
-  if (displayApplication) {
-    return SERVICE_FLOW_IMAGE;
-  }
-
-  return FALLBACK_FLOW_IMAGE;
+  return displayApplication ? null : FALLBACK_FLOW_IMAGE;
 };
 
 const canShowOrderShippingInfo = (status?: string | null) => {
@@ -1179,6 +1175,7 @@ export default function TransactionFlowList() {
                 : displayStatusBadgeSpec;
 
             const representativeImage = getRepresentativeImage(g, displayApplication);
+            const shouldShowServiceIcon = Boolean(displayApplication);
 
             return (
               <div
@@ -1187,17 +1184,24 @@ export default function TransactionFlowList() {
               >
                 <Link
                   href={detailHref}
-                  className="relative block h-16 w-16 overflow-hidden rounded-xl border border-border/60 bg-muted md:h-[72px] md:w-[72px]"
+                  className={cn(
+                    "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border/60 md:h-[72px] md:w-[72px]",
+                    shouldShowServiceIcon ? "bg-primary/5" : "bg-muted",
+                  )}
                   aria-label={`${displayTitle} 상세 보기`}
                 >
-                  <Image
-                    src={representativeImage}
-                    alt={displayTitle}
-                    width={72}
-                    height={72}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
+                  {shouldShowServiceIcon ? (
+                    <Wrench className="h-7 w-7 text-primary/80" aria-hidden="true" />
+                  ) : (
+                    <Image
+                      src={representativeImage ?? FALLBACK_FLOW_IMAGE}
+                      alt={displayTitle}
+                      width={72}
+                      height={72}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                  )}
                 </Link>
 
                 <div className="min-w-0 space-y-1.5">

@@ -37,7 +37,6 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import MypageDetailHero from "../../_components/MypageDetailHero";
 import { mypageDetailLayout } from "../../_components/mypage-detail-style";
-import { cn } from "@/lib/utils";
 
 const CancelRentalDialog = dynamic(
   () => import("@/app/mypage/rentals/_components/CancelRentalDialog"),
@@ -793,8 +792,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         )}
 
-        <div className={mypageDetailLayout.contentGrid}>
-          <div className={mypageDetailLayout.mainColumn}>
+        <div className="mx-auto w-full max-w-3xl space-y-5">
+          <div className="space-y-5">
             <MypageDetailCard title="대여상품" icon={<Package className="h-5 w-5 text-primary" />}>
               <div className="divide-y divide-border/60">
                 <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
@@ -1062,12 +1061,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             ) : null}
           </div>
 
-          <aside
-            className={cn(
-              mypageDetailLayout.sideColumn,
-              "bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-span-2 bp-lg:row-start-1",
-            )}
-          >
+          <div>
             <MypageDetailCard
               title="결제/보증금 요약"
               icon={<CreditCard className="h-5 w-5 text-primary" />}
@@ -1162,10 +1156,10 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 </div>
               </div>
             </MypageDetailCard>
-          </aside>
+          </div>
         </div>
 
-        <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
+        <details className="group mx-auto max-w-3xl overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
             <span>신청 정보</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
@@ -1192,7 +1186,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </details>
 
-        <details className="group overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
+        <details className="group mx-auto max-w-3xl overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
             <span>진행 기록</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />

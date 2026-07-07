@@ -90,7 +90,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
 import useSWR from "swr";
 
 const CancelStringingDialog = dynamic(
@@ -749,7 +749,7 @@ export default function StringingApplicationDetailClient({
               : mypageDetailLayout.contentContainer
           }
         >
-          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-7xl")}>
+          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-3xl")}>
             <div className="mb-6 rounded-2xl border border-border/60 bg-card p-4 shadow-sm shadow-foreground/[0.02] bp-sm:mb-8 bp-sm:p-5">
               <div className="space-y-3">
                 <Skeleton className="h-8 w-52" />
@@ -1115,7 +1115,7 @@ export default function StringingApplicationDetailClient({
           ? "이 신청은 주문에서 생성되었습니다. 주문 상세에서 결제·배송·최종 취소 흐름을 함께 확인하세요."
           : "이 신청은 대여에서 생성되었습니다. 대여 상세에서 결제·배송·취소 흐름을 함께 확인하세요.";
 
-  const paymentMethodRaw = packageApplied
+  const paymentMethodForDisplay = packageApplied
     ? linkedPayment?.method
     : hasOrderLinkedPayment || hasRentalLinkedPayment
       ? linkedPayment?.method
@@ -1335,10 +1335,10 @@ export default function StringingApplicationDetailClient({
           ? "아래 버튼으로 다음 단계를 진행해 주세요."
           : "상세 정보와 진행 이력을 확인해 주세요.");
 
-  const detailGridClass = isAdmin ? "grid gap-4 xl:grid-cols-12" : mypageDetailLayout.contentGrid;
-  const detailColumnClass = isAdmin
-    ? "contents"
-    : `contents bp-lg:block ${mypageDetailLayout.mainColumn}`;
+  const detailGridClass = isAdmin
+    ? "grid gap-4 xl:grid-cols-12"
+    : "mx-auto w-full max-w-3xl space-y-5";
+  const detailColumnClass = isAdmin ? "contents" : "space-y-5";
   const detailCardClass = isAdmin
     ? "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
     : "overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]";
@@ -1444,7 +1444,7 @@ export default function StringingApplicationDetailClient({
               최신 상태를 확인하고 있습니다...
             </div>
           ) : null}
-          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-7xl")}>
+          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-3xl")}>
             {/* 관리자 헤더 */}
             {isAdmin && (
               <div className={cn("mb-6 rounded-2xl bp-sm:mb-8 p-5 lg:p-6", adminSurface.cardMuted)}>
@@ -3070,12 +3070,7 @@ export default function StringingApplicationDetailClient({
                 )}
               </div>
 
-              <aside
-                className={cn(
-                  detailColumnClass,
-                  !isAdmin && "bp-lg:order-2 bp-lg:sticky bp-lg:top-24",
-                )}
-              >
+              <div className={detailColumnClass}>
                 {!isAdmin && packageApplied && (
                   <Card className={cn(detailCardClass, "order-2")}>
                     <CardHeader className={detailCardHeaderClass}>
@@ -3152,38 +3147,58 @@ export default function StringingApplicationDetailClient({
                       />
                     ) : (
                       <div className="space-y-3">
-                        <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-xl:grid-cols-3">
-                          {!isAdmin && (
+                        {isAdmin ? (
+                          <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-xl:grid-cols-3">
                             <AdminCompactField
-                              label="서비스비/장착비"
-                              value={`${totalPrice.toLocaleString()}원`}
+                              label="총 결제 금액"
+                              className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
+                              value={`${data.totalPrice.toLocaleString()}원`}
+                              valueClassName="font-semibold text-primary"
                             />
-                          )}
-                          {!isAdmin && packageApplied && (
                             <AdminCompactField
-                              label="패키지 차감"
-                              value={`${packageUsedCount}회 사용`}
+                              label="결제 상태"
+                              value={(() => {
+                                const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
+                                return (
+                                  <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                                    {paymentHeaderBadgeLabel}
+                                  </Badge>
+                                );
+                              })()}
                             />
-                          )}
-                          <AdminCompactField
-                            label={isAdmin ? "총 결제 금액" : "최종 결제금액"}
-                            className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
-                            value={`${data.totalPrice.toLocaleString()}원`}
-                            valueClassName="font-semibold text-primary"
-                          />
-                          <AdminCompactField
-                            label="결제 상태"
-                            value={(() => {
-                              const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
-                              return (
-                                <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                                  {paymentHeaderBadgeLabel}
-                                </Badge>
-                              );
-                            })()}
-                          />
-                          <AdminCompactField label="결제 방식" value={paymentMethodRaw} />
-                        </div>
+                            <AdminCompactField label="결제 방식" value={paymentMethodForDisplay} />
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <CustomerSummaryRow label="서비스비/장착비">
+                              {totalPrice.toLocaleString()}원
+                            </CustomerSummaryRow>
+                            {packageApplied && (
+                              <CustomerSummaryRow label="패키지 차감">
+                                {packageUsedCount}회 사용
+                              </CustomerSummaryRow>
+                            )}
+                            <CustomerSummaryRow label="결제 상태">
+                              {(() => {
+                                const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
+                                return (
+                                  <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                                    {paymentHeaderBadgeLabel}
+                                  </Badge>
+                                );
+                              })()}
+                            </CustomerSummaryRow>
+                            <CustomerSummaryRow label="결제 방식">
+                              {getCustomerPaymentMethodLabel(paymentMethodForDisplay, packageApplied)}
+                            </CustomerSummaryRow>
+                            <div className="mt-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
+                              <p className="text-ui-label text-muted-foreground">최종 결제금액</p>
+                              <p className="mt-1 text-right text-ui-title-sm font-semibold text-primary">
+                                {data.totalPrice.toLocaleString()}원
+                              </p>
+                            </div>
+                          </div>
+                        )}
                         {isAdmin && (
                           <details className="group border-t border-border/60 py-1">
                             <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
@@ -3197,7 +3212,7 @@ export default function StringingApplicationDetailClient({
                             </summary>
                             <div className="mt-1 border-t border-border/60 p-3 text-ui-body-sm">
                               <PaymentMethodDetail
-                                method={paymentMethodRaw}
+                                method={paymentMethodForDisplay}
                                 bankKey={
                                   useStandaloneBankFallback
                                     ? (linkedPayment?.bank ?? data.shippingInfo?.bank ?? undefined)
@@ -3420,23 +3435,24 @@ export default function StringingApplicationDetailClient({
                         onCancel={() => setEditingCustomer(false)}
                       />
                     ) : (
-                      <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2">
-                        <AdminCompactField
-                          label="이름"
-                          value={data.customer.name}
-                          emptyValue="이름 미등록"
-                        />
-                        <AdminCompactField
-                          label="이메일"
-                          value={data.customer.email}
-                          emptyValue="이메일 미등록"
-                          valueClassName="break-all"
-                        />
-                        <AdminCompactField
-                          label="전화번호"
-                          value={data.customer?.phone}
-                          emptyValue="전화번호 미등록"
-                        />
+                      isAdmin ? (
+                        <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2">
+                          <AdminCompactField
+                            label="이름"
+                            value={data.customer.name}
+                            emptyValue="이름 미등록"
+                          />
+                          <AdminCompactField
+                            label="이메일"
+                            value={data.customer.email}
+                            emptyValue="이메일 미등록"
+                            valueClassName="break-all"
+                          />
+                          <AdminCompactField
+                            label="전화번호"
+                            value={data.customer?.phone}
+                            emptyValue="전화번호 미등록"
+                          />
                         <AdminCompactField
                           label={customerAddressLabel}
                           value={
@@ -3459,7 +3475,22 @@ export default function StringingApplicationDetailClient({
                           emptyValue="주소 미등록"
                           className="bp-md:col-span-2"
                         />
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <CustomerSummaryRow label="이름">
+                            {data.customer.name || "아직 등록되지 않았습니다."}
+                          </CustomerSummaryRow>
+                          <CustomerSummaryRow label="연락처">
+                            {data.customer?.phone || "아직 등록되지 않았습니다."}
+                          </CustomerSummaryRow>
+                          <CustomerSummaryRow label={customerAddressLabel}>
+                            {customerAddressValue && customerAddressValue !== "정보 없음"
+                              ? `${customerAddressValue}${!isVisit && data.customer?.addressDetail ? ` ${data.customer.addressDetail}` : ""}`
+                              : "아직 등록되지 않았습니다."}
+                          </CustomerSummaryRow>
+                        </div>
+                      )
                     )}
                   </CardContent>
 
@@ -3476,7 +3507,7 @@ export default function StringingApplicationDetailClient({
                     </CardFooter>
                   )}
                 </Card>
-              </aside>
+              </div>
             </div>
             {/* 관리자 전용 운송장 정보 카드 */}
             <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
@@ -3769,3 +3800,33 @@ export default function StringingApplicationDetailClient({
     </main>
   );
 }
+const getCustomerPaymentMethodLabel = (method?: string | null, packageApplied?: boolean) => {
+  if (packageApplied || method === "package") return "패키지 사용";
+  const normalized = String(method ?? "").trim().toLowerCase();
+  if (!normalized) return "결제 정보 확인 중";
+  if (
+    normalized === ["bank", "transfer"].join("_") ||
+    normalized === "bank" ||
+    normalized === "virtual_account"
+  ) {
+    return "무통장입금";
+  }
+  if (normalized === "nicepay" || normalized === "card") return "카드결제";
+  if (normalized.includes("pay") || normalized.includes("card")) return "카드/간편결제";
+  return "결제 정보 확인 중";
+};
+
+const CustomerSummaryRow = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) => (
+  <div className="flex items-start justify-between gap-4 border-b border-border/50 py-2.5 last:border-b-0">
+    <span className="shrink-0 text-ui-body-sm text-muted-foreground">{label}</span>
+    <div className="min-w-0 text-right text-ui-body-sm font-medium text-foreground">
+      {children}
+    </div>
+  </div>
+);
