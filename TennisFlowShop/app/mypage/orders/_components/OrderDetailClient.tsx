@@ -205,6 +205,10 @@ interface Props {
   backUrl?: string;
 }
 
+type StringingApplicationPackageInfo = NonNullable<
+  NonNullable<OrderDetail["stringingApplications"]>[number]["packageInfo"]
+>;
+
 type OrderTrackingResponse =
   | {
       success: true;
@@ -558,11 +562,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
-  const packageUsageInfos = linkedStringingApps
-    .map((app) => app.packageInfo)
-    .filter((info): info is NonNullable<(typeof linkedStringingApps)[number]["packageInfo"]> => {
-      return Boolean(info?.applied);
-    });
+  const packageUsageInfos: StringingApplicationPackageInfo[] = linkedStringingApps.reduce(
+    (infos, app) => {
+      if (app.packageInfo?.applied) {
+        infos.push(app.packageInfo);
+      }
+      return infos;
+    },
+    [] as StringingApplicationPackageInfo[],
+  );
   const packageUsedSlots = packageUsageInfos.reduce(
     (sum, info) => sum + Math.max(0, info.useCount ?? 1),
     0,
