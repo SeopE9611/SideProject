@@ -6,7 +6,12 @@ export type AdminOperationKind = "order" | "stringing_application" | "rental" | 
 export type AdminOperationFlow = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type SettlementAnchor = "order" | "rental" | "application" | "package_purchase";
 export type AdminOperationReviewLevel = "none" | "info" | "action";
-export type AdminOperationCancelStatus = "none" | "requested" | "approved" | "rejected";
+export type AdminOperationCancelStatus =
+  | "none"
+  | "requested"
+  | "approved"
+  | "rejected"
+  | "approved_pending_pg_cancel";
 
 export type OperationSignalLevel = "warn" | "review" | "pending" | "info";
 

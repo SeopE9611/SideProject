@@ -114,7 +114,7 @@ function buildCaseSensitivePrefixRegex(q: string) {
 }
 
 type NormalizedCancel = {
-  status: "none" | "requested" | "approved" | "rejected";
+  status: "none" | "requested" | "approved" | "rejected" | "approved_pending_pg_cancel";
   requestedAt?: string | null;
   handledAt?: string | null;
   reason?: string;
@@ -128,6 +128,8 @@ function normalizeCancelStatus(raw: unknown): NormalizedCancel["status"] {
     .toLowerCase();
   if (!v) return "none";
   if (v === "requested" || v === "요청") return "requested";
+  if (v === "approved_pending_pg_cancel" || v === "cancel_processing" || v === "취소처리중")
+    return "approved_pending_pg_cancel";
   if (v === "approved" || v === "승인") return "approved";
   if (v === "rejected" || v === "거절") return "rejected";
   return "none";
@@ -326,6 +328,7 @@ function getLinkedOrderStringingStatusIssue(items: OpItem[]): LinkedFlowStatusIs
   if (VALID_LINKED_ORDER_STRINGING_STATUS_PAIRS.has(statusPair)) return null;
 
   const isClosed = (status: string) =>
+    !isCancelProcessingStatus(status) &&
     ["취소", "환불", "구매확정", "cancel", "refund", "confirmed"].some((keyword) =>
       status.toLowerCase().includes(keyword.toLowerCase()),
     );
@@ -461,7 +464,23 @@ function isCancelApproved(item: OpItem) {
   return item.cancel?.status === "approved";
 }
 
+function isCancelProcessingStatus(status?: string | null) {
+  const s = normalizeStatusText(status);
+  return (
+    s === "취소처리중" || s === "cancel_processing" || s === "approved_pending_pg_cancel"
+  );
+}
+
+function isCancelProcessingItem(item: OpItem) {
+  return (
+    item.cancel?.status === "approved_pending_pg_cancel" ||
+    isCancelProcessingStatus(item.statusLabel) ||
+    isCancelProcessingStatus(item.statusDisplayLabel)
+  );
+}
+
 function isOrderTerminalStatus(status?: string | null) {
+  if (isCancelProcessingStatus(status)) return false;
   const s = normalizeStatusText(status);
   return (
     s.includes("취소") ||
@@ -476,6 +495,7 @@ function isOrderTerminalStatus(status?: string | null) {
 }
 
 function isClosedForNicePaymentSync(status?: string | null) {
+  if (isCancelProcessingStatus(status)) return false;
   const s = normalizeStatusText(status);
   return (
     s.includes("취소") ||
@@ -521,6 +541,7 @@ function isPackageTerminalStatus(item: OpItem) {
 }
 
 function isTerminalOperationItem(item: OpItem) {
+  if (isCancelProcessingItem(item)) return false;
   if (item.needsCancelFinalization) return false;
   if (isCancelApproved(item)) return true;
   if (item.kind === "order") return isOrderTerminalStatus(item.statusLabel);
@@ -583,6 +604,18 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
       title: "미처리 업무",
       description: reason,
       nextAction: item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
+    });
+  }
+  if ((item.cancel?.status ?? "none") === "approved_pending_pg_cancel") {
+    out.push({
+      code: "PG_CANCEL_BLOCKED_UNSETTLED",
+      level: "pending",
+      sourceKind: item.kind,
+      sourceId: item.id,
+      title: "취소 처리중: PG 취소 확인 필요",
+      description:
+        "관리자가 취소를 승인했지만 NICE 미정산금액 부족으로 자동 카드취소가 완료되지 않았습니다.",
+      nextAction: "NICE 입금 후 취소 완료 여부를 확인하고 PG 상태를 다시 확인하세요.",
     });
   }
   if ((item.cancel?.status ?? "none") === "requested") {
@@ -1700,6 +1733,7 @@ export async function handleAdminOperationsGet(
       pendingReasons: [
         ...(pendingByKey.get(`order:${id}`) ?? []),
         ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
+        ...(cancel.status === "approved_pending_pg_cancel" ? ["PG 취소 확인 필요"] : []),
       ],
       warn: needsCancelFinalization || (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
       cancel,
@@ -2142,8 +2176,13 @@ export async function handleAdminOperationsGet(
       (item) =>
         Boolean(item.nextAction?.trim()) && !String(item.nextAction).includes("후속 조치 없음"),
     );
-  const hasCancelRequested = (group: AdminOperationsGroup) =>
-    group.items.some((item) => item.cancel?.status === "requested");
+  const hasCancelWorkflowPending = (group: AdminOperationsGroup) =>
+    group.items.some(
+      (item) =>
+        item.cancel?.status === "requested" ||
+        item.cancel?.status === "approved_pending_pg_cancel" ||
+        isCancelProcessingItem(item),
+    );
 
   const groupsWithQueue = groups.map((group) => {
     const isTerminalGroup = isOperationallyTerminalGroup(group);
@@ -2155,7 +2194,7 @@ export async function handleAdminOperationsGet(
       ? "clean"
       : isGroupWarn(group)
         ? "urgent"
-        : groupNeedsReview || hasCancelRequested(group) || hasPaymentRisk(group)
+        : groupNeedsReview || hasCancelWorkflowPending(group) || hasPaymentRisk(group)
           ? "caution"
           : isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group)
             ? "pending"
@@ -2198,7 +2237,12 @@ export async function handleAdminOperationsGet(
     group.items.some(predicate);
   const operationSignalCounts: OperationSignalCounts = {
     cancelRequests: allGroups.filter((group) =>
-      groupHas(group, (item) => item.cancel?.status === "requested"),
+      groupHas(
+        group,
+        (item) =>
+          item.cancel?.status === "requested" ||
+          item.cancel?.status === "approved_pending_pg_cancel",
+      ),
     ).length,
     paymentCheck: allGroups.filter(
       (group) =>

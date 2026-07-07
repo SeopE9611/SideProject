@@ -263,9 +263,11 @@ function statusHeadlineOf(item: OpItem) {
   const integratedApplication = item.kind === "stringing_application" && hasRelated;
   const standaloneApplication = item.kind === "stringing_application" && !hasRelated;
   const isCancelRequested = item.cancel?.status === "requested";
+  const isCancelProcessing = item.cancel?.status === "approved_pending_pg_cancel";
   const isCancelDone = item.cancel?.status === "approved" || item.cancel?.status === "rejected";
 
   if (item.kind === "order") {
+    if (isCancelProcessing) return "취소 처리중 주문";
     if (isCancelRequested) return "취소 요청 접수 주문";
     if (isCancelDone || lowerStatus.includes("환불")) return "취소/환불 처리 주문";
     if (lowerStatus.includes("구매확정")) return "구매확정 주문";
@@ -369,7 +371,11 @@ function isTodayQueueGroup(group: { groupQueueBucket: string }) {
 }
 
 function isCancelRequestedGroup(group: { items: OpItem[] }) {
-  return group.items.some((item) => item.cancel?.status === "requested");
+  return group.items.some(
+    (item) =>
+      item.cancel?.status === "requested" ||
+      item.cancel?.status === "approved_pending_pg_cancel",
+  );
 }
 
 function hasPaymentCheckNeeded(group: { items: OpItem[] }) {
@@ -545,12 +551,14 @@ function isWarnGroup(g: { items: OpItem[] }) {
   return (g.items ?? []).some((it) => it.warn === true || (it.warnReasons?.length ?? 0) > 0);
 }
 
-function cancelBadgeSpec(status?: "none" | "requested" | "approved" | "rejected") {
+function cancelBadgeSpec(status?: NonNullable<OpItem["cancel"]>["status"]) {
   if (status === "requested")
     return {
       label: "취소요청",
       spec: getWorkflowMetaBadgeSpec("cancel_requested"),
     };
+  if (status === "approved_pending_pg_cancel")
+    return { label: "취소처리중", spec: getPaymentStatusBadgeSpec("결제대기") };
   if (status === "approved") return { label: "취소승인", spec: getPaymentStatusBadgeSpec("환불") };
   if (status === "rejected")
     return { label: "취소거절", spec: getPaymentStatusBadgeSpec("결제대기") };
@@ -558,10 +566,17 @@ function cancelBadgeSpec(status?: "none" | "requested" | "approved" | "rejected"
 }
 
 function cancelQuickSignalSpec(cancel?: OpItem["cancel"]): {
-  label: "계좌확인 필요" | "검토 가능";
+  label: "계좌확인 필요" | "검토 가능" | "PG 취소대기";
   tone: "warning" | "success";
   tooltipCopy: string;
 } | null {
+  if (cancel?.status === "approved_pending_pg_cancel") {
+    return {
+      label: "PG 취소대기",
+      tone: "warning",
+      tooltipCopy: "NICE 입금 후 취소 완료 여부와 PG 상태 확인이 필요합니다.",
+    };
+  }
   if (cancel?.status !== "requested") return null;
   if (cancel.refundAccountReady === true) {
     return {
@@ -604,6 +619,8 @@ function resolvePrimaryActionTarget(group: {
       return { href: anchor.href, label: "주문 결제 확인" };
     if (next.includes("배송") || next.includes("운송장"))
       return { href: anchor.href, label: "배송 정보 등록" };
+    if (anchor.cancel?.status === "approved_pending_pg_cancel")
+      return { href: anchor.href, label: "PG 상태 확인" };
     if (anchor.cancel?.status === "requested")
       return { href: anchor.href, label: "주문 취소 요청 검토" };
     return { href: anchor.href, label: "주문 상세 확인" };
