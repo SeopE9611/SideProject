@@ -102,6 +102,7 @@ const getStatusIcon = (status: string, isVisitPickup: boolean) => {
     case "배송완료":
       return <CheckCircle className="h-4 w-4 text-primary" />;
     case "대기중":
+    case "취소처리중":
       return <Clock className="h-4 w-4 text-warning" />;
     case "결제완료":
       return <CheckCircle className="h-4 w-4 text-primary" />;

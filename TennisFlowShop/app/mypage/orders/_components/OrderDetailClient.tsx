@@ -145,6 +145,10 @@ interface OrderDetail {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
     source?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    manualActionRequired?: boolean | null;
+    manualActionReason?: string | null;
   } | null;
   total: number;
   items: OrderItem[];
@@ -277,6 +281,8 @@ function getCancelRequestLabel(order: any): string | null {
   switch (cancel.status) {
     case "requested":
       return "취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.";
+    case "approved_pending_pg_cancel":
+      return "취소 요청이 승인되어 카드 취소 처리를 기다리고 있습니다.";
     case "approved":
       // 보통 status === '취소'랑 함께 가겠지만, 혹시 모를 비동기 어긋남에 대비해서 안내
       return "취소 요청이 승인되어 주문이 취소되었습니다.";
@@ -666,7 +672,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
 
   const cancelLabel = getCancelRequestLabel(orderDetail);
-  const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
+  const cancelRequestAny = (orderDetail as any)?.cancelRequest ?? {};
+  const cancelStatus = cancelRequestAny?.status;
+  const pgCancelBlocked = cancelRequestAny?.pgCancelBlocked ?? null;
+  const hasNiceUnsettledAmountShortage =
+    orderDetail.paymentNiceSync?.resultCode === "2026" ||
+    pgCancelBlocked?.reason === "unsettled_amount_shortage";
   const canWithdrawCancelRequest = cancelStatus === "requested";
   const handleConfirmPurchase = async () => {
     if (!orderDetail?._id || isConfirmingPurchase) return;
@@ -939,6 +950,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 {isWithdrawingCancelRequest ? "철회 중..." : "취소 요청 철회"}
               </Button>
             )}
+          </div>
+        )}
+
+        {hasNiceUnsettledAmountShortage && (
+          <div className="mb-5 rounded-2xl border border-warning/40 bg-warning/10 px-4 py-3 text-ui-body-sm text-foreground shadow-sm shadow-foreground/[0.02] bp-sm:px-5">
+            <p className="font-medium text-warning">취소 처리중</p>
+            <p className="mt-1 break-keep text-muted-foreground">
+              관리자 취소 승인이 접수되었고 결제사 카드 취소 처리를 기다리고 있습니다. 카드 취소는 결제사 처리 상태에 따라 영업일 기준 1~3일 소요될 수 있습니다.
+            </p>
           </div>
         )}
 

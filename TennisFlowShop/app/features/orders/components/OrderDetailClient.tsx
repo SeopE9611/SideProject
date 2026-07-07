@@ -155,11 +155,21 @@ interface OrderDetail {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
     source?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    cancelAmount?: number | null;
+    manualActionRequired?: boolean | null;
+    manualActionReason?: string | null;
   } | null;
   paymentInfo?: {
     status?: string | null;
     niceSync?: {
       pgStatus?: string | null;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      cancelAmount?: number | null;
+      manualActionRequired?: boolean | null;
+      manualActionReason?: string | null;
     } | null;
   } | null;
   total: number;
@@ -364,6 +374,21 @@ interface Props {
 }
 
 type CancelRequestConfirmAction = "approveCancel" | "rejectCancel";
+
+async function parseCancelApproveError(res: Response): Promise<string> {
+  const text = await res.text().catch(() => "");
+  if (!text) return "취소 승인 실패";
+
+  try {
+    const json = JSON.parse(text);
+    if (json?.errorCode === "NICE_UNSETTLED_AMOUNT_SHORTAGE") {
+      return "NICE 미정산금액 부족으로 자동 카드취소가 불가합니다. 입금 후 취소 절차를 진행해 주세요.";
+    }
+    return json?.message || json?.error || text;
+  } catch {
+    return text;
+  }
+}
 
 export default function OrderDetailClient({ orderId }: Props) {
   const router = useRouter();
@@ -880,7 +905,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       });
 
       if (!res.ok) {
-        const msg = await res.text().catch(() => "");
+        const msg = await parseCancelApproveError(res);
         throw new Error(msg || "취소 승인 실패");
       }
 
@@ -935,6 +960,38 @@ export default function OrderDetailClient({ orderId }: Props) {
       void handleApproveCancelRequest();
     }
     setConfirmAction(null);
+  };
+
+  const cancelRequestAny: any = (orderDetail as any).cancelRequest ?? {};
+  const pgCancelBlocked = cancelRequestAny.pgCancelBlocked ?? null;
+  const paymentNiceSync = orderDetail.paymentNiceSync ?? orderDetail.paymentInfo?.niceSync ?? null;
+  const hasNiceUnsettledAmountShortage =
+    paymentNiceSync?.resultCode === "2026" ||
+    pgCancelBlocked?.reason === "unsettled_amount_shortage";
+  const niceBlockedTid = String(pgCancelBlocked?.tid ?? orderDetail.paymentTid ?? "").trim();
+  const niceBlockedTotalAmount = Number(orderDetail.total ?? 0);
+  const niceBlockedCancelAmount = Number(
+    paymentNiceSync?.cancelAmount ?? pgCancelBlocked?.amount ?? orderDetail.total ?? 0,
+  );
+  const niceBlockedResultCode = String(
+    paymentNiceSync?.resultCode ?? pgCancelBlocked?.resultCode ?? "",
+  ).trim();
+  const niceBlockedResultMsg = String(
+    paymentNiceSync?.resultMsg ?? pgCancelBlocked?.resultMsg ?? "",
+  ).trim();
+
+  const handleCopyNiceInquiryTemplate = () => {
+    const message = `거래금액: ${niceBlockedTotalAmount.toLocaleString("ko-KR")}원
+TID: ${niceBlockedTid || "-"}
+취소요청 금액: ${niceBlockedTotalAmount.toLocaleString("ko-KR")}원
+
+NICE 미정산금액 부족으로 자동취소가 실패했습니다.
+입금 후 취소 절차 안내 부탁드립니다.`;
+
+    void navigator.clipboard
+      .writeText(message)
+      .then(() => showSuccessToast("NICE 문의 양식이 복사되었습니다."))
+      .catch(() => showErrorToast("문의 양식 복사에 실패했습니다."));
   };
 
   const handleShippingUpdate = () => {
@@ -1822,6 +1879,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     />
                   </div>
                 </CardContent>
+
                 {isEditMode && (
                   <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
                     <Button
@@ -2144,6 +2202,53 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </details>
                   </div>
                 </CardContent>
+                {hasNiceUnsettledAmountShortage && (
+                  <Card className="border-amber-200 bg-amber-50/70 dark:border-amber-900/60 dark:bg-amber-950/20">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base text-amber-900 dark:text-amber-100">
+                        NICE 자동 카드취소 불가
+                      </CardTitle>
+                      <CardDescription className="text-amber-800/90 dark:text-amber-200/80">
+                        가맹점 미정산금액이 취소금액보다 부족해 NICE 자동취소가 거절되었습니다. NICE 입금 후 취소 절차를 진행한 뒤, 강제취소 완료 후 이 화면에서 PG 상태를 다시 확인하세요.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-0">
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <AdminCompactField label="TID" value={niceBlockedTid || "-"} />
+                        <AdminCompactField
+                          label="거래금액"
+                          value={formatCurrency(niceBlockedTotalAmount)}
+                        />
+                        <AdminCompactField
+                          label="취소요청금액"
+                          value={formatCurrency(niceBlockedCancelAmount)}
+                        />
+                        <AdminCompactField
+                          label="NICE 결과"
+                          value={
+                            niceBlockedResultCode || niceBlockedResultMsg
+                              ? `${niceBlockedResultCode || "-"}${niceBlockedResultMsg ? ` / ${niceBlockedResultMsg}` : ""}`
+                              : "-"
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={handleCopyNiceInquiryTemplate}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          NICE 문의 양식 복사
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleNiceSync}
+                          disabled={isSyncingNice}
+                        >
+                          {isSyncingNice ? "확인 중..." : "PG 상태 다시 확인"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 {isEditMode && (
                   <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
                     <Button
