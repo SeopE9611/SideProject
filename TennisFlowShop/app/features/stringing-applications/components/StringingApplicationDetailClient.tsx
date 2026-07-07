@@ -2634,7 +2634,9 @@ export default function StringingApplicationDetailClient({
                               {data.stringDetails.requirements}
                             </p>
                           ) : (
-                            <AdminInlineEmpty>요청 메모 없음</AdminInlineEmpty>
+                            <p className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-muted-foreground">
+                              추가 요청 메모가 없습니다.
+                            </p>
                           )}
                         </section>
                       )}
@@ -2714,12 +2716,7 @@ export default function StringingApplicationDetailClient({
                         라켓 접수부터 완성 라켓 수령까지 필요한 정보를 확인하세요.
                       </CardDescription>
                     </CardHeader>
-                    <details className="group bp-md:block">
-                      <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden [&::-webkit-details-marker]:hidden">
-                        <span>접수/수령 정보</span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                      </summary>
-                      <CardContent className="hidden gap-5 p-4 group-open:grid bp-md:grid bp-sm:p-6 bp-xl:grid-cols-2">
+                    <CardContent className="grid gap-5 p-4 bp-sm:p-6 bp-xl:grid-cols-2">
                         <div className="min-w-0 border-l-2 border-primary/25 bg-primary/5 px-3 py-3 leading-relaxed bp-sm:px-4">
                           <p className="text-ui-body-sm font-semibold text-foreground">라켓 접수</p>
                           <p className="mt-1 text-ui-label text-foreground/75">
@@ -2822,7 +2819,9 @@ export default function StringingApplicationDetailClient({
                                   : "-"}
                               </p>
                             ) : (
-                              <AdminInlineEmpty>완성 라켓 배송 정보 미등록</AdminInlineEmpty>
+                              <p className="text-muted-foreground">
+                                아직 수령/배송 정보가 등록되지 않았습니다.
+                              </p>
                             )}
                             {data.shippingInfo?.deliveryRequest && (
                               <p>배송 요청사항: {data.shippingInfo.deliveryRequest}</p>
@@ -2830,7 +2829,6 @@ export default function StringingApplicationDetailClient({
                           </div>
                         </div>
                       </CardContent>
-                    </details>
                   </Card>
                 )}
 
