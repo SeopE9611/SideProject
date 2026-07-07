@@ -32,6 +32,22 @@ const toNullableIsoString = (value: unknown) => {
   return null;
 };
 
+function firstImageUrl(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+function pickUsedRacketImage(doc: any): string | null {
+  if (!doc) return null;
+
+  const firstImageFromArray =
+    Array.isArray(doc.images) && typeof doc.images[0] === "string" ? doc.images[0] : null;
+
+  return firstImageUrl(doc.image, doc.thumbnail, doc.thumbnailUrl, firstImageFromArray);
+}
+
 function getTensionSummary(lines: any[]): string | null {
   const tensionSet = Array.from(
     new Set(
@@ -182,6 +198,15 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     }
   }
 
+  const racketImageUrl = doc.racketId && ObjectId.isValid(String(doc.racketId))
+    ? pickUsedRacketImage(
+        await db.collection("used_rackets").findOne(
+          { _id: new ObjectId(String(doc.racketId)) },
+          { projection: { images: 1, image: 1, thumbnail: 1, thumbnailUrl: 1 } },
+        ),
+      )
+    : null;
+
   const paymentInfo = (
     (doc as any)?.paymentInfo && typeof (doc as any).paymentInfo === "object"
       ? (doc as any).paymentInfo
@@ -204,6 +229,8 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
   return NextResponse.json({
     id: doc._id.toString(),
     racketId: doc.racketId?.toString?.(),
+    imageUrl: racketImageUrl,
+    racketImageUrl,
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
