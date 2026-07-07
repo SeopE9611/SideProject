@@ -49,6 +49,8 @@ type Rental = {
   id: string;
   brand: string;
   model: string;
+  imageUrl?: string | null;
+  racketImageUrl?: string | null;
   days: number;
   status: "pending" | "paid" | "out" | "returned" | "canceled";
   amount?: {
@@ -632,6 +634,19 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     : outboundTrackingNo
       ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
       : "출고 운송장이 등록되면 이곳에서 확인할 수 있습니다.";
+  const racketImageUrl = data.imageUrl ?? data.racketImageUrl ?? null;
+  const isBeforeRentalStart = data.status === "pending" || data.status === "paid";
+  const isRentalActive = data.status === "out";
+  const isRentalReturned = data.status === "returned" || Boolean(data.returnedAt);
+  const isRentalCanceled = data.status === "canceled";
+  const heroSecondaryLabel = isRentalActive
+    ? data.dueAt
+      ? formatDate(data.dueAt)
+      : "대여 시작 후 계산"
+    : isRentalReturned
+      ? depositRefundLabel
+      : `${data.days}일`;
+  const heroSecondaryTitle = isRentalActive ? "반납 예정일" : isRentalReturned ? "보증금 환급" : "대여 기간";
   const returnInfoLabel = returnTrackingNo
     ? isVisitPickup
       ? `접수 번호 · ${returnTrackingNo}`
@@ -734,16 +749,10 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               value={`${racketBrandLabel(data.brand)} ${data.model}`}
               valueClassName="line-clamp-2 break-keep"
             />
-            <MypageInfoField label="대여 기간" value={`${data.days}일`} />
             <MypageInfoField
-              label="반납 예정일"
-              value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-              valueClassName="font-semibold text-primary"
-            />
-            <MypageInfoField
-              label="총 결제 금액"
-              value={`${(data.amount?.total ?? 0).toLocaleString()}원`}
-              valueClassName="font-semibold tabular-nums"
+              label={heroSecondaryTitle}
+              value={heroSecondaryLabel}
+              valueClassName={isRentalActive ? "font-semibold text-primary" : "font-semibold"}
             />
           </>
         }
@@ -792,35 +801,35 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         )}
 
-        <div className="mx-auto w-full max-w-3xl space-y-5">
+        <div className="w-full space-y-5">
           <div className="space-y-5">
-            <MypageDetailCard title="대여상품" icon={<Package className="h-5 w-5 text-primary" />}>
-              <div className="divide-y divide-border/60">
-                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">라켓</p>
-                    <p className="mt-1 break-words font-semibold text-foreground">
-                      {racketBrandLabel(data.brand)} {data.model}
-                    </p>
-                  </div>
-                </div>
-
-                {withStringService && (
-                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">장착 스트링</p>
-                      <p className="mt-1 break-words font-semibold text-foreground">
-                        {installedStringLabel}
-                      </p>
-                    </div>
+            <MypageDetailCard
+              title="대여상품"
+              description="대여할 라켓과 장착 정보를 확인하세요."
+              icon={<Package className="h-5 w-5 text-primary" />}
+            >
+              <div className="flex gap-3 py-1 bp-sm:gap-4">
+                {racketImageUrl ? (
+                  <img
+                    src={racketImageUrl}
+                    alt={`${racketBrandLabel(data.brand)} ${data.model}`}
+                    className="h-20 w-20 shrink-0 rounded-xl border border-border/60 object-cover bp-sm:h-24 bp-sm:w-24"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/20 bp-sm:h-24 bp-sm:w-24">
+                    <Package className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
 
-                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">대여 기간</p>
-                    <p className="mt-1 break-words font-semibold text-foreground">{data.days}일</p>
-                  </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="line-clamp-2 break-keep text-ui-body font-semibold text-foreground">
+                    {racketBrandLabel(data.brand)} {data.model}
+                  </h4>
+                  <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
+                    {[withStringService ? installedStringLabel : null, `${data.days}일 대여`]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
                 </div>
               </div>
             </MypageDetailCard>
@@ -831,67 +840,88 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               icon={<Truck className="h-5 w-5 text-primary" />}
               contentClassName="space-y-5"
             >
-              <div className="grid gap-4 bp-md:grid-cols-2">
-                <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
-                  <p className="font-semibold text-foreground">대여 상품 수령</p>
-                  <p className="mt-1 text-ui-label text-foreground/75">
-                    {canReceiveRental
-                      ? "상품을 받으셨다면 수령 확인으로 대여를 시작해 주세요."
-                      : outboundTrackingNo
-                        ? "수령 준비가 완료되었습니다."
-                        : "수령 준비가 완료되면 안내됩니다."}
-                  </p>
-                  <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground/80">
-                    <p>
-                      수령 방식: <span className="font-medium text-foreground">{shippingMethodLabel}</span>
+              <div className="space-y-4">
+                {isRentalCanceled ? (
+                  <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                    <p className="font-semibold text-foreground">취소된 대여입니다.</p>
+                    <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                      수령/반납 절차는 진행되지 않습니다. 결제 취소 또는 환불 상태는 결제/보증금 요약에서 확인해 주세요.
                     </p>
-                    <p className="break-all">
-                      {isVisitPickup ? "매장 수령 준비" : "출고 운송장"}: {outboundInfoLabel}
-                    </p>
-                    {linkedApplication?.shippingInfo?.deliveryRequest ? (
-                      <MypageInfoField
-                        label="배송 요청사항"
-                        value={linkedApplication.shippingInfo.deliveryRequest}
-                        valueClassName="whitespace-pre-wrap break-words"
-                      />
-                    ) : null}
                   </div>
-                </div>
-
-                <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
-                  <p className="font-semibold text-foreground">반납</p>
-                  <p className="mt-1 text-ui-label text-foreground/75">
-                    {isReturnShippingAvailable
-                      ? returnTrackingNo
-                        ? "반납 운송장을 수정할 수 있습니다."
-                        : "반납 운송장을 등록해 주세요."
-                      : data.returnedAt
-                        ? "반납 확인이 완료되었습니다."
-                        : "반납 일정에 맞춰 안내됩니다."}
-                  </p>
-                  <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground/80">
-                    <p>
-                      반납 방식: <span className="font-medium text-foreground">{returnMethodLabel}</span>
+                ) : isBeforeRentalStart ? (
+                  <>
+                    <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+                      <p className="font-semibold text-foreground">대여 상품 수령</p>
+                      <p className="mt-1 text-ui-label text-foreground/75">
+                        {canReceiveRental
+                          ? "상품을 받으셨다면 수령 확인으로 대여를 시작해 주세요."
+                          : outboundTrackingNo
+                            ? "수령 준비가 완료되었습니다. 상품 수령 후 확인해 주세요."
+                            : "수령 준비가 완료되면 운송장 또는 수령 안내가 표시됩니다."}
+                      </p>
+                      <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground/80">
+                        <p>
+                          수령 방식: <span className="font-medium text-foreground">{shippingMethodLabel}</span>
+                        </p>
+                        <p className="break-all">
+                          {isVisitPickup ? "매장 수령 준비" : "출고 운송장"}: {outboundInfoLabel}
+                        </p>
+                        {linkedApplication?.shippingInfo?.deliveryRequest ? (
+                          <MypageInfoField
+                            label="배송 요청사항"
+                            value={linkedApplication.shippingInfo.deliveryRequest}
+                            valueClassName="whitespace-pre-wrap break-words"
+                          />
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-border/60 bg-muted/10 p-4 text-ui-body-sm text-muted-foreground">
+                      대여 시작 후 반납 일정과 반납 방법이 안내됩니다.
+                    </div>
+                  </>
+                ) : isRentalActive ? (
+                  <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+                    <p className="font-semibold text-foreground">반납 준비</p>
+                    <p className="mt-1 text-ui-label text-foreground/75">
+                      {isReturnShippingAvailable
+                        ? returnTrackingNo
+                          ? "등록한 반납 운송장을 확인하거나 수정할 수 있습니다."
+                          : "반납 예정일에 맞춰 반납 운송장을 등록해 주세요."
+                        : "반납 예정일에 맞춰 반납 방법을 확인해 주세요."}
                     </p>
-                    <p>반납 예정일: {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산됩니다."}</p>
-                    <p className="break-all">
-                      {isVisitPickup ? "반환 접수" : "반납 운송장"}: {returnInfoLabel}
-                    </p>
-                    <p>반납 완료: {data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 후 안내됩니다."}</p>
-                    {isReturnShippingAvailable ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="h-9 w-full bp-sm:w-fit"
-                      >
-                        <Link href={returnShippingHref}>
-                          {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
-                        </Link>
-                      </Button>
-                    ) : null}
+                    <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground/80">
+                      <p>반납 예정일: {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산됩니다."}</p>
+                      <p>
+                        반납 방식: <span className="font-medium text-foreground">{returnMethodLabel}</span>
+                      </p>
+                      {returnTrackingNo ? (
+                        <p className="break-all">
+                          {isVisitPickup ? "반환 접수" : "반납 운송장"}: {returnInfoLabel}
+                        </p>
+                      ) : null}
+                      {isReturnShippingAvailable ? (
+                        <Button variant="outline" size="sm" asChild className="h-9 w-full bp-sm:w-fit">
+                          <Link href={returnShippingHref}>
+                            {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
+                          </Link>
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
+                ) : isRentalReturned ? (
+                  <div className="rounded-xl border border-success/20 bg-success/10 p-4">
+                    <p className="font-semibold text-foreground">반납 완료</p>
+                    <p className="mt-1 text-ui-label text-foreground/75">{depositRefundLabel}</p>
+                    <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground/80">
+                      <p>반납 완료: {data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 완료"}</p>
+                      {returnTrackingNo ? (
+                        <p className="break-all">
+                          {isVisitPickup ? "반환 접수" : "반납 운송장"}: {returnInfoLabel}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </MypageDetailCard>
 
@@ -917,36 +947,32 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 >
                   {linkedApplication || data.applicationSummary ? (
                     <>
-                      <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-3">
-                        <div className="rounded-xl border border-border/60 bg-card p-3">
-                          <p className="text-muted-foreground">진행 상태</p>
-                          <Badge
-                            variant="info"
-                            className="mt-2 max-w-full whitespace-normal break-keep text-left"
-                          >
+                      <div className="rounded-xl border border-border/60 bg-muted/10 p-4 text-ui-body-sm">
+                        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                          <p className="font-semibold text-foreground">대여 연계 교체서비스</p>
+                          <Badge variant="info" className="w-fit max-w-full whitespace-normal break-keep text-left">
                             {getCustomerApplicationStatusLabel(
                               linkedApplication?.status ?? data.applicationSummary?.status,
                             )}
                           </Badge>
                         </div>
-                        <div className="rounded-xl border border-border/60 bg-card p-3">
-                          <p className="text-muted-foreground">희망 작업일</p>
-                          <p className="mt-2 break-words font-semibold text-foreground">
-                            {linkedApplication?.reservationLabel ??
-                              data.applicationSummary?.reservationLabel ??
-                              "예약 정보 없음"}
+                        <div className="mt-3 space-y-2 text-foreground/80">
+                          <p>
+                            희망 작업일: <span className="font-medium text-foreground">
+                              {linkedApplication?.reservationLabel ??
+                                data.applicationSummary?.reservationLabel ??
+                                "예약 정보 없음"}
+                            </span>
                           </p>
-                        </div>
-                        <div className="rounded-xl border border-border/60 bg-card p-3">
-                          <p className="text-muted-foreground">스트링/텐션</p>
-                          <p className="mt-2 break-words font-semibold text-foreground">
-                            {[
-                              installedStringLabel,
-                              linkedApplication?.tensionSummary ??
-                                data.applicationSummary?.tensionSummary,
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
+                          <p>
+                            스트링/텐션: <span className="font-medium text-foreground">
+                              {[
+                                installedStringLabel,
+                                linkedApplication?.tensionSummary ?? data.applicationSummary?.tensionSummary,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -1067,22 +1093,15 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               title="결제/보증금 요약"
               icon={<CreditCard className="h-5 w-5 text-primary" />}
             >
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
+              <div className="space-y-4">
+                <div className="grid gap-3 bp-sm:grid-cols-2">
+                  <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
                     <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
-                    <p className="mt-1 break-words font-semibold text-foreground">
-                      {paymentStatusLabel}
-                    </p>
+                    <p className="mt-1 break-words font-semibold text-foreground">{paymentStatusLabel}</p>
                   </div>
-                </div>
-
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
+                  <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
                     <p className="text-ui-label font-medium text-muted-foreground">결제수단</p>
-                    <p className="mt-1 break-words font-semibold text-foreground">
-                      {paymentSummary.userLabel}
-                    </p>
+                    <p className="mt-1 break-words font-semibold text-foreground">{paymentSummary.userLabel}</p>
                     {data.paymentApprovedAt ? (
                       <p className="mt-1 text-ui-label text-muted-foreground">
                         승인일 {formatDateTime(data.paymentApprovedAt)}
@@ -1091,59 +1110,35 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
-                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                      {fee.toLocaleString()}원
-                    </p>
+                <div className="rounded-xl border border-border/60 p-4">
+                  <p className="font-semibold text-foreground">금액 구성</p>
+                  <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
+                    <div className="flex justify-between gap-4">
+                      <span>대여료</span>
+                      <span className="font-medium tabular-nums text-foreground">{formatCurrency(fee)}</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span>보증금</span>
+                      <span className="font-medium tabular-nums text-foreground">{formatCurrency(deposit)}</span>
+                    </div>
+                    {stringPrice > 0 ? (
+                      <div className="flex justify-between gap-4">
+                        <span>스트링 상품 금액</span>
+                        <span className="font-medium tabular-nums text-foreground">{formatCurrency(stringPrice)}</span>
+                      </div>
+                    ) : null}
+                    {stringingFee > 0 ? (
+                      <div className="flex justify-between gap-4">
+                        <span>교체서비스 비용</span>
+                        <span className="font-medium tabular-nums text-foreground">{formatCurrency(stringingFee)}</span>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">보증금</p>
-                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                      {deposit.toLocaleString()}원
-                    </p>
-                  </div>
-                </div>
-
-                {stringPrice > 0 && (
-                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">
-                        스트링 상품 금액
-                      </p>
-                      <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                        {stringPrice.toLocaleString()}원
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {stringingFee > 0 && (
-                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">
-                        교체서비스 비용
-                      </p>
-                      <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                        {stringingFee.toLocaleString()}원
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">
-                      보증금 환급 상태
-                    </p>
-                    <p className="mt-1 break-words font-semibold text-foreground">
-                      {depositRefundLabel}
-                    </p>
-                  </div>
+                <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 text-ui-body-sm text-foreground">
+                  <p className="font-semibold">보증금 안내</p>
+                  <p className="mt-1 text-muted-foreground">{depositRefundLabel}</p>
                 </div>
 
                 <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
@@ -1151,7 +1146,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   <div className="flex-1">
                     <p className="text-ui-label font-medium text-muted-foreground">총 결제 금액</p>
                     <p className="mt-1 break-words text-ui-section-title font-semibold text-primary tabular-nums">
-                      {total.toLocaleString()}원
+                      {formatCurrency(total)}
                     </p>
                   </div>
                 </div>
@@ -1160,7 +1155,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </div>
 
-        <details className="group mx-auto max-w-3xl overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
+        <details className="group w-full overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
             <span>신청 정보</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
@@ -1187,7 +1182,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         </details>
 
-        <details className="group mx-auto max-w-3xl overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
+        <details className="group w-full overflow-hidden rounded-2xl bg-card shadow-sm shadow-foreground/[0.02] ring-1 ring-border/50">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-foreground transition-colors hover:bg-muted/30 bp-sm:p-5 [&::-webkit-details-marker]:hidden">
             <span>진행 기록</span>
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
