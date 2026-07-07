@@ -976,7 +976,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           <div className="mb-5 rounded-2xl border border-warning/40 bg-warning/10 px-4 py-3 text-ui-body-sm text-foreground shadow-sm shadow-foreground/[0.02] bp-sm:px-5">
             <p className="font-medium text-warning">취소 처리중</p>
             <p className="mt-1 break-keep text-muted-foreground">
-              관리자 취소 승인이 접수되었고 결제사 카드 취소 처리를 기다리고 있습니다. 카드 취소는 결제사 처리 상태에 따라 영업일 기준 1~3일 소요될 수 있습니다.
+              카드 취소는 결제사 처리 상태에 따라 영업일 기준 1~3일 소요될 수 있습니다.
             </p>
           </div>
         )}
