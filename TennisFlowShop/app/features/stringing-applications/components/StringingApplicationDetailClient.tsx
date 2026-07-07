@@ -2289,7 +2289,14 @@ export default function StringingApplicationDetailClient({
                     </CardTitle>
                   </CardHeader>
 
-                  <div className="mx-4 mb-3 mt-3 border-y border-border/70 bg-muted/30 px-3 py-3 dark:bg-background bp-sm:mx-6 bp-sm:mt-4 bp-sm:px-4">
+                  <div
+                    className={cn(
+                      "mx-4 mb-3 mt-3 px-3 py-3 bp-sm:mx-6 bp-sm:mt-4 bp-sm:px-4",
+                      isAdmin
+                        ? "border-y border-border/70 bg-muted/30 dark:bg-background"
+                        : "rounded-xl border border-primary/10 bg-primary/5",
+                    )}
+                  >
                     <div className="flex flex-col gap-3 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
                       <div className="flex flex-wrap gap-2">
                         <Badge
@@ -2478,8 +2485,15 @@ export default function StringingApplicationDetailClient({
                             <Target className="w-5 h-5" />
                             <span className="font-medium">라켓·스트링별 작업 정보</span>
                           </div>
-                          <div className="space-y-3 border-l-2 border-primary/25 bg-primary/5 px-3 py-3">
-                            <div className="grid grid-cols-1 gap-2.5 text-ui-label leading-relaxed text-foreground/75 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+                          <div
+                            className={cn(
+                              "space-y-3 px-3 py-3",
+                              isAdmin
+                                ? "border-l-2 border-primary/25 bg-primary/5"
+                                : "rounded-xl border border-border/60 bg-card",
+                            )}
+                          >
+                            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-ui-label leading-relaxed text-foreground/75">
                               <p>라켓 {lineSummary.racketCount}자루</p>
                               <p>스트링 {lineSummary.stringTypeCount}종</p>
                               <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>
@@ -2503,7 +2517,10 @@ export default function StringingApplicationDetailClient({
                               {data.lines.map((line, index) => (
                                 <div
                                   key={line.id ?? index}
-                                  className="min-w-0 border-t border-border/70 py-3 first:border-t-0 bp-sm:py-3.5"
+                                  className={cn(
+                                    "min-w-0 py-3 first:pt-0 last:pb-0 bp-sm:py-3.5",
+                                    isAdmin ? "border-t border-border/70 first:border-t-0" : "border-t border-border/50 first:border-t-0",
+                                  )}
                                 >
                                   {/* 라켓 이름 + 순번 */}
                                   <div className="mb-2 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
@@ -2712,9 +2729,7 @@ export default function StringingApplicationDetailClient({
                         <Truck className="h-5 w-5 text-primary" />
                         접수/수령 정보
                       </CardTitle>
-                      <CardDescription>
-                        라켓 접수부터 완성 라켓 수령까지 필요한 정보를 확인하세요.
-                      </CardDescription>
+                      <CardDescription>지금 필요한 발송·수령 정보를 먼저 확인하세요.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-5 p-4 bp-sm:p-6 bp-xl:grid-cols-2">
                         <div className="min-w-0 border-l-2 border-primary/25 bg-primary/5 px-3 py-3 leading-relaxed bp-sm:px-4">
@@ -2723,8 +2738,10 @@ export default function StringingApplicationDetailClient({
                             {inboundRequired
                               ? isVisit
                                 ? "방문 예약 일시에 맞춰 라켓을 가져와 주세요."
-                                : "라켓 발송 운송장과 라켓 입고 여부를 확인합니다."
-                              : "연결 주문/대여 기준으로 별도 입고가 필요하지 않습니다."}
+                                : hasTracking
+                                  ? "등록한 운송장 기준으로 입고를 확인합니다."
+                                  : "자가 발송 후 운송장을 등록해 주세요."
+                              : "별도 발송이 필요하지 않습니다."}
                           </p>
                           <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                             <p>
@@ -2761,7 +2778,7 @@ export default function StringingApplicationDetailClient({
                                   </a>
                                 </p>
                               ) : (
-                                <p>등록된 운송장이 없습니다.</p>
+                                <p>운송장 등록이 필요합니다.</p>
                               ))}
                           </div>
                           {needsInboundTracking && (
@@ -2783,7 +2800,7 @@ export default function StringingApplicationDetailClient({
                             완성 라켓 수령
                           </p>
                           <p className="mt-1 text-ui-label text-foreground/75">
-                            작업 완료 후 완성 라켓 배송 운송장 또는 방문 수령 정보를 확인합니다.
+                            작업 완료 후 수령 방법과 배송 정보를 안내합니다.
                           </p>
                           <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                             <p>
@@ -3038,10 +3055,10 @@ export default function StringingApplicationDetailClient({
                         <div>
                           <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
                             <Clock className="h-5 w-5 text-primary" />
-                            처리 이력
+                            진행 기록
                           </CardTitle>
                           <CardDescription className="mt-1">
-                            상태 변경과 처리 기록을 확인하세요.
+                            필요한 경우 상세 진행 기록을 펼쳐 확인하세요.
                           </CardDescription>
                         </div>
                         <Button
@@ -3051,7 +3068,7 @@ export default function StringingApplicationDetailClient({
                           className="w-full bp-sm:w-auto"
                           onClick={() => setIsHistoryExpanded((prev) => !prev)}
                         >
-                          {isHistoryExpanded ? "처리 이력 접기" : "처리 이력 보기"}
+                          {isHistoryExpanded ? "진행 기록 접기" : "진행 기록 보기"}
                         </Button>
                       </div>
                     </CardHeader>
@@ -3811,7 +3828,7 @@ const getCustomerPaymentMethodLabel = (method?: string | null, packageApplied?: 
   ) {
     return "무통장입금";
   }
-  if (normalized === "nicepay" || normalized === "card") return "카드결제";
+  if (normalized === "nicepay" || normalized === "card" || normalized === "nicepay/card") return "카드결제";
   if (normalized.includes("pay") || normalized.includes("card")) return "카드/간편결제";
   return "결제 정보 확인 중";
 };
