@@ -827,25 +827,27 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
             <MypageDetailCard
               title="수령/반납 정보"
-              description="대여 상품을 받는 방법과 반납 방법을 한곳에 정리했습니다."
+              description="현재 상태와 다음 행동을 확인하세요."
               icon={<Truck className="h-5 w-5 text-primary" />}
               contentClassName="space-y-5"
             >
               <div className="grid gap-4 bp-md:grid-cols-2">
-                <div className="rounded-xl bg-muted/10 p-4 ring-1 ring-border/40">
-                  <p className="mb-3 font-semibold text-foreground">대여 상품 수령</p>
-                  <div className="grid gap-3">
-                    <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
-                    <MypageInfoField
-                      label={isVisitPickup ? "매장 수령 준비" : "출고 운송장"}
-                      value={outboundInfoLabel}
-                      valueClassName="break-all"
-                    />
-                    {canReceiveRental ? (
-                      <div className="rounded-lg bg-primary/5 p-3 text-ui-body-sm text-muted-foreground">
-                        상품을 받으셨다면 상단의 수령 확인 버튼으로 대여를 시작해 주세요.
-                      </div>
-                    ) : null}
+                <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+                  <p className="font-semibold text-foreground">대여 상품 수령</p>
+                  <p className="mt-1 text-ui-label text-foreground/75">
+                    {canReceiveRental
+                      ? "상품을 받으셨다면 수령 확인으로 대여를 시작해 주세요."
+                      : outboundTrackingNo
+                        ? "수령 준비가 완료되었습니다."
+                        : "수령 준비가 완료되면 안내됩니다."}
+                  </p>
+                  <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground/80">
+                    <p>
+                      수령 방식: <span className="font-medium text-foreground">{shippingMethodLabel}</span>
+                    </p>
+                    <p className="break-all">
+                      {isVisitPickup ? "매장 수령 준비" : "출고 운송장"}: {outboundInfoLabel}
+                    </p>
                     {linkedApplication?.shippingInfo?.deliveryRequest ? (
                       <MypageInfoField
                         label="배송 요청사항"
@@ -856,27 +858,26 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-muted/10 p-4 ring-1 ring-border/40">
-                  <p className="mb-3 font-semibold text-foreground">반납</p>
-                  <div className="grid gap-3">
-                    <MypageInfoField label="반납 방식" value={returnMethodLabel} />
-                    <MypageInfoField
-                      label="반납 예정일"
-                      value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                    />
-                    <MypageInfoField
-                      label={isVisitPickup ? "반환 접수" : "반납 운송장"}
-                      value={returnInfoLabel}
-                      valueClassName="break-all"
-                    />
-                    <MypageInfoField
-                      label="반납 완료"
-                      value={
-                        data.returnedAt
-                          ? formatDateTime(data.returnedAt)
-                          : "반납 확인 후 안내됩니다."
-                      }
-                    />
+                <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+                  <p className="font-semibold text-foreground">반납</p>
+                  <p className="mt-1 text-ui-label text-foreground/75">
+                    {isReturnShippingAvailable
+                      ? returnTrackingNo
+                        ? "반납 운송장을 수정할 수 있습니다."
+                        : "반납 운송장을 등록해 주세요."
+                      : data.returnedAt
+                        ? "반납 확인이 완료되었습니다."
+                        : "반납 일정에 맞춰 안내됩니다."}
+                  </p>
+                  <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground/80">
+                    <p>
+                      반납 방식: <span className="font-medium text-foreground">{returnMethodLabel}</span>
+                    </p>
+                    <p>반납 예정일: {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산됩니다."}</p>
+                    <p className="break-all">
+                      {isVisitPickup ? "반환 접수" : "반납 운송장"}: {returnInfoLabel}
+                    </p>
+                    <p>반납 완료: {data.returnedAt ? formatDateTime(data.returnedAt) : "반납 확인 후 안내됩니다."}</p>
                     {isReturnShippingAvailable ? (
                       <Button
                         variant="outline"
@@ -916,8 +917,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 >
                   {linkedApplication || data.applicationSummary ? (
                     <>
-                      <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-2 bp-lg:grid-cols-3">
-                        <div className="p-3 bp-sm:p-4">
+                      <div className="grid grid-cols-1 gap-3 text-ui-body-sm text-foreground bp-sm:grid-cols-3">
+                        <div className="rounded-xl border border-border/60 bg-card p-3">
                           <p className="text-muted-foreground">진행 상태</p>
                           <Badge
                             variant="info"
@@ -928,7 +929,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                             )}
                           </Badge>
                         </div>
-                        <div className="p-3 bp-sm:p-4">
+                        <div className="rounded-xl border border-border/60 bg-card p-3">
                           <p className="text-muted-foreground">희망 작업일</p>
                           <p className="mt-2 break-words font-semibold text-foreground">
                             {linkedApplication?.reservationLabel ??
@@ -936,7 +937,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                               "예약 정보 없음"}
                           </p>
                         </div>
-                        <div className="p-3 bp-sm:p-4">
+                        <div className="rounded-xl border border-border/60 bg-card p-3">
                           <p className="text-muted-foreground">스트링/텐션</p>
                           <p className="mt-2 break-words font-semibold text-foreground">
                             {[

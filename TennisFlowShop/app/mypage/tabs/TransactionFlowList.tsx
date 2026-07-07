@@ -306,7 +306,7 @@ const getLinkedApplicationStatusSummary = (apps: ActivityApplicationSummary[] = 
   return `${label} · ${apps.length}건 연결`;
 };
 
-const isStandaloneApplication = (app?: ActivityApplicationSummary) =>
+const isStandaloneApplication = (app?: ActivityApplicationSummary | null) =>
   Boolean(app && !app.orderId && !app.rentalId);
 
 const shortId = (value?: string | null) => {
@@ -1175,7 +1175,8 @@ export default function TransactionFlowList() {
                 : displayStatusBadgeSpec;
 
             const representativeImage = getRepresentativeImage(g, displayApplication);
-            const shouldShowServiceIcon = Boolean(displayApplication);
+            const shouldShowServiceIcon =
+              g.kind === "application" && isStandaloneApplication(g.application);
 
             return (
               <div
