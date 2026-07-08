@@ -810,7 +810,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                           valueClassName="whitespace-pre-wrap break-words"
                         />
                       ) : null}
-                      <p className="text-muted-foreground">반납 안내: 대여 시작 후 안내</p>
+                      <p className="text-muted-foreground">반납 일정: 대여 시작 후 안내</p>
                     </div>
                   </>
                 ) : isRentalActive ? (
@@ -864,16 +864,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   description="진행 상태와 핵심 일정을 요약했습니다."
                   icon={<Wrench className="h-5 w-5 text-primary" />}
                   action={
-                    <div className="flex flex-wrap gap-2">
-                      {data.stringingApplicationId ? (
-                        <Badge variant="secondary">교체서비스 연결</Badge>
-                      ) : (
-                        <Badge variant="secondary">신청 필요</Badge>
-                      )}
-                      {linkedApplicationIsComplete ? (
-                        <Badge variant="success">교체완료</Badge>
-                      ) : null}
-                    </div>
+                    linkedApplicationIsComplete ? <Badge variant="success">교체완료</Badge> : null
                   }
                   contentClassName="space-y-4"
                 >
