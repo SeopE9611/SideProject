@@ -2059,7 +2059,7 @@ export default function StringingApplicationDetailClient({
             )}
 
             {showUserCancelStatusBanner && (
-              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-ui-body-sm text-amber-900">
+              <div className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-ui-body-sm text-foreground">
                 취소 요청을 확인 중입니다.
               </div>
             )}
