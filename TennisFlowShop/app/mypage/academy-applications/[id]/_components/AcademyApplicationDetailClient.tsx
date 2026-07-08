@@ -70,22 +70,6 @@ function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTon
   }
 }
 
-function getStatusDescription(status: AcademyLessonApplicationStatus) {
-  switch (status) {
-    case "reviewing":
-      return "담당자가 신청 내용을 검토하고 있습니다.";
-    case "contacted":
-      return "상담이 진행되었거나 연락이 완료된 상태입니다.";
-    case "confirmed":
-      return "등록이 확정되었습니다. 방문 일정과 현장결제 안내를 확인해 주세요.";
-    case "cancelled":
-      return "취소된 신청입니다.";
-    case "submitted":
-    default:
-      return "신청이 접수되었습니다. 담당자가 내용을 확인한 뒤 상담을 도와드립니다.";
-  }
-}
-
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "-";
   const date = new Date(value);
@@ -214,7 +198,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
         </CardTitle>
         <CardDescription>신청 당시 선택한 클래스 정보입니다.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 p-4 bp-sm:p-5">
+      <CardContent className="space-y-3 p-4 bp-sm:p-5">
         <div className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5">
           <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0">
@@ -222,7 +206,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
                 {displayValue(classSnapshot.name)}
               </p>
               {classSnapshot.description ? (
-                <p className="mt-2 whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-muted-foreground">
+                <p className="mt-1.5 line-clamp-2 whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-muted-foreground">
                   {classSnapshot.description}
                 </p>
               ) : null}
@@ -235,28 +219,27 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
           </div>
         </div>
 
-        <dl className="grid gap-3 bp-sm:grid-cols-2">
+        <dl className="grid gap-2 bp-sm:grid-cols-2">
           <InfoBox label="수업 유형" value={classSnapshot.lessonTypeLabel} />
           <InfoBox label="레벨" value={classSnapshot.levelLabel} />
-          <InfoBox label="강사" value={classSnapshot.instructorName} />
-          <InfoBox label="장소" value={classSnapshot.location || "상담 후 안내"} />
           <InfoBox label="일정" value={classSnapshot.scheduleText || "상담 후 조율"} multiline />
+          <InfoBox label="장소" value={classSnapshot.location || "상담 후 안내"} />
+          {classSnapshot.instructorName?.trim() ? (
+            <InfoBox label="강사" value={classSnapshot.instructorName} />
+          ) : null}
+          {typeof classSnapshot.capacity === "number" ? (
+            <InfoBox label="정원" value={`${classSnapshot.capacity}명`} />
+          ) : null}
           <InfoBox
-            label="정원"
-            value={
-              typeof classSnapshot.capacity === "number"
-                ? `${classSnapshot.capacity}명`
-                : "상담 후 안내"
-            }
+            label="기준 수강료"
+            value={formatPrice(classSnapshot.price)}
+            className="bp-sm:border-t bp-sm:border-border/60"
           />
-          <div className="py-3 bp-sm:col-span-2 bp-sm:border-t bp-sm:border-border/60 bp-sm:px-3">
+          <div className="py-3 bp-sm:border-t bp-sm:border-border/60 bp-sm:px-3">
             <dt className="flex items-center gap-1 text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
-              <WalletCards className="h-3.5 w-3.5" /> 기준 수강료
+              <WalletCards className="h-3.5 w-3.5" /> 현장결제 안내
             </dt>
-            <dd className="mt-1 text-ui-body-sm font-semibold tabular-nums text-foreground">
-              {formatPrice(classSnapshot.price)}
-            </dd>
-            <dd className="mt-2 break-keep text-ui-label leading-5 text-muted-foreground">
+            <dd className="mt-1 break-keep text-ui-label leading-5 text-muted-foreground">
               수강료는 상담 후 확정되며, 등록 확정 후 현장에서 결제합니다.
             </dd>
           </div>
@@ -289,9 +272,6 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
           <InfoBox label="연락처" value={item.phone} />
           <InfoBox label="이메일" value={item.email} />
           <InfoBox label="신청일" value={formatDateTime(item.createdAt)} />
-          <InfoBox label="희망 레슨 유형" value={item.desiredLessonTypeLabel} />
-          <InfoBox label="현재 실력" value={item.currentLevelLabel} />
-          <InfoBox label="희망 일정" value={getPreferredScheduleText(item)} />
         </dl>
       </CardContent>
     </Card>
@@ -629,7 +609,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     <div className="mx-auto w-full max-w-5xl space-y-4 bp-sm:space-y-5">
       <MypageDetailHero
         title="아카데미 신청 상세"
-        description="신청 상태, 수업 정보, 일정과 다음 해야 할 일을 한눈에 확인할 수 있습니다."
+        description="신청 상태와 상담 정보를 확인하세요."
         icon={<GraduationCap className="h-6 w-6 text-primary" />}
         status={
           <Badge
@@ -643,8 +623,6 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         statusTitle={item.classSnapshot?.name || "아카데미 클래스 신청"}
         identifier={`접수번호 ${formatReceiptId(item._id)}`}
         actions={heroActions}
-        nextActionTitle={item.statusLabel}
-        nextActionDescription={getStatusDescription(item.status)}
         summary={
           <>
             <MypageInfoField
