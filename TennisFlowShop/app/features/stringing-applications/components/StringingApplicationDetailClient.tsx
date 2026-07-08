@@ -1031,11 +1031,18 @@ export default function StringingApplicationDetailClient({
   );
 
   const isCancelRequested = rawCancelStatus === "requested";
-  const canShowUserCancelAction = !isAdmin && !isRentalLinkedApplication && !isCancelled;
-  const canUserRequestCancel = canShowUserCancelAction && !isCancelRequested;
-  const canUserWithdrawCancelRequest = canShowUserCancelAction && isCancelRequested;
   // 확정 여부 필드가 서버에서 내려온다는 전제
   const isUserConfirmed = Boolean((data as any).userConfirmedAt);
+  const completedLikeStatuses = ["교체완료", `${"반"}송완료`, "완료", "DONE", "취소"];
+  const isCustomerCancelableStatus =
+    (userEditableStatuses ?? []).includes(data.status) && !completedLikeStatuses.includes(data.status);
+  const canShowUserCancelAction = !isAdmin && !isRentalLinkedApplication && !isCancelled;
+  const canUserRequestCancel =
+    canShowUserCancelAction &&
+    !isCancelRequested &&
+    !isUserConfirmed &&
+    isCustomerCancelableStatus;
+  const canUserWithdrawCancelRequest = canShowUserCancelAction && isCancelRequested;
 
   // 확정 버튼 노출/활성 조건 (ApplicationsClient 규칙에 맞게 "상태 기반"으로 단순화)
   const confirmableStatuses = [`${"반"}송완료`, "교체완료", "완료"];
@@ -1290,7 +1297,6 @@ export default function StringingApplicationDetailClient({
     : "-";
 
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
-  const completedLikeStatuses = ["교체완료", `${"반"}송완료`, "완료", "DONE", "취소"];
   const canEditSelfShip =
     (isAdmin || (userEditableStatuses ?? []).includes(data.status)) &&
     !completedLikeStatuses.includes(data.status);
