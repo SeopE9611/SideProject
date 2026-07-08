@@ -90,7 +90,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import useSWR from "swr";
 
 const CancelStringingDialog = dynamic(
@@ -435,7 +435,6 @@ export default function StringingApplicationDetailClient({
   const [isConfirmSubmitting, setIsConfirmSubmitting] = useState(false);
   const [isLineDetailsExpanded, setIsLineDetailsExpanded] = useState(isAdmin);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
-  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [isSyncingNice, setIsSyncingNice] = useState(false);
 
   // 1) 버튼에서 모달 여는 함수
@@ -749,7 +748,7 @@ export default function StringingApplicationDetailClient({
               : mypageDetailLayout.contentContainer
           }
         >
-          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-3xl")}>
+          <div className={cn("mx-auto w-full", isAdmin && "max-w-[1500px]")}>
             <div className="mb-6 rounded-2xl border border-border/60 bg-card p-4 shadow-sm shadow-foreground/[0.02] bp-sm:mb-8 bp-sm:p-5">
               <div className="space-y-3">
                 <Skeleton className="h-8 w-52" />
@@ -1325,19 +1324,15 @@ export default function StringingApplicationDetailClient({
           : customerStatusLabel.includes("완료")
             ? "완성 라켓 배송/수령 확인"
             : "매장 확인 대기");
-  const userStatusDescription =
-    userNextTodo?.description ??
-    (isCancelled
-      ? "취소된 신청서입니다. 상태 변경 및 추가 액션이 제한됩니다."
-      : isCancelRequested
-        ? "취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다."
-        : userNextTodo?.label
-          ? "아래 버튼으로 다음 단계를 진행해 주세요."
-          : "상세 정보와 진행 이력을 확인해 주세요.");
+  const showUserManagementPanel =
+    !isAdmin &&
+    !isCancelled &&
+    !isRentalLinkedApplication &&
+    (!isUserConfirmed || isCancelRequested);
 
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
-    : "mx-auto w-full max-w-3xl space-y-5";
+    : "w-full space-y-5";
   const detailColumnClass = isAdmin ? "contents" : "space-y-5";
   const detailCardClass = isAdmin
     ? "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
@@ -1387,40 +1382,10 @@ export default function StringingApplicationDetailClient({
               </Button>
             </>
           }
-          nextActionTitle={isUserConfirmed ? "이용 완료" : userNextActionLabel}
-          nextActionDescription={userStatusDescription}
-          nextActionSlot={
-            userNextTodo?.ctaLabel ? (
-              <Button
-                asChild={Boolean(userNextTodo.ctaHref)}
-                onClick={userNextTodo.onCtaClick}
-                disabled={isConfirmSubmitting}
-                className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
-              >
-                {userNextTodo.ctaHref ? (
-                  <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
-                ) : (
-                  userNextTodo.ctaLabel
-                )}
-              </Button>
-            ) : (
-              <ServiceReviewCTA
-                applicationId={data.id}
-                status={data.status}
-                userConfirmedAt={data.userConfirmedAt ?? null}
-                className="h-10 w-full whitespace-normal break-keep"
-              />
-            )
-          }
           summary={
             <>
               <MypageInfoField label="신청 유형" value={applicationContext.label} />
               <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
-              <MypageInfoField
-                label={isVisit ? "희망 방문일" : "라켓 발송"}
-                value={isVisit ? visitTimeLabel : inboundStatusLabel}
-              />
-              <MypageInfoField label="연결 정보" value={applicationContext.payment} />
             </>
           }
         />
@@ -1444,7 +1409,7 @@ export default function StringingApplicationDetailClient({
               최신 상태를 확인하고 있습니다...
             </div>
           ) : null}
-          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-3xl")}>
+          <div className={cn("mx-auto w-full", isAdmin && "max-w-[1500px]")}>
             {/* 관리자 헤더 */}
             {isAdmin && (
               <div className={cn("mb-6 rounded-2xl bp-sm:mb-8 p-5 lg:p-6", adminSurface.cardMuted)}>
@@ -2025,11 +1990,41 @@ export default function StringingApplicationDetailClient({
               </div>
             )}
 
+            {!isAdmin && userNextTodo?.ctaLabel && (
+              <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-primary/15 bg-primary/5 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                <p className="text-ui-body-sm font-medium text-foreground">{userNextActionLabel}</p>
+                <Button
+                  asChild={Boolean(userNextTodo.ctaHref)}
+                  onClick={userNextTodo.onCtaClick}
+                  disabled={isConfirmSubmitting}
+                  className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto"
+                >
+                  {userNextTodo.ctaHref ? (
+                    <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
+                  ) : (
+                    userNextTodo.ctaLabel
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {!isAdmin && !userNextTodo?.ctaLabel && (
+              <div className="mb-4 flex justify-end">
+                <ServiceReviewCTA
+                  applicationId={data.id}
+                  status={data.status}
+                  userConfirmedAt={data.userConfirmedAt ?? null}
+                  className="h-10 w-full whitespace-normal break-keep bp-sm:w-auto"
+                />
+              </div>
+            )}
+
             {/* 상태 카드 */}
+            {(isAdmin || showUserManagementPanel) && (
             <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
               <CardHeader className={detailCardHeaderClass}>
                 <div className="flex items-center justify-between gap-3">
-                  <CardTitle>{isAdmin ? "작업 상태 관리" : "신청 관리"}</CardTitle>
+                  <CardTitle>{isAdmin ? "작업 상태 관리" : "신청 변경"}</CardTitle>
                   <ApplicationStatusBadge status={data.status} />
                 </div>
                 {isAdmin && (
@@ -2176,7 +2171,7 @@ export default function StringingApplicationDetailClient({
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="rounded-xl bg-muted/15 p-3 text-ui-body-sm text-foreground/80 bp-sm:p-4">
+                    <div className="text-ui-body-sm text-foreground/80">
                       {isCancelled && (
                         <span className="italic">
                           취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.
@@ -2199,9 +2194,7 @@ export default function StringingApplicationDetailClient({
                         !isLinkedApplication &&
                         !canConfirmExchange &&
                         !isUserConfirmed && (
-                          <span className="block">
-                            교체 완료 후 교체서비스 확정을 진행할 수 있습니다.
-                          </span>
+                          <span className="block">완료 후 확정할 수 있습니다.</span>
                         )}
                     </div>
 
@@ -2253,6 +2246,7 @@ export default function StringingApplicationDetailClient({
                 )}
               </CardContent>
             </Card>
+            )}
 
             {!isAdmin && linkedDocs.length > 0 && (
               <LinkedDocsCard
@@ -2483,7 +2477,7 @@ export default function StringingApplicationDetailClient({
                         <section className="space-y-3">
                           <div className="flex items-center gap-2 text-foreground">
                             <Target className="w-5 h-5" />
-                            <span className="font-medium">라켓·스트링별 작업 정보</span>
+                            <span className="font-medium">{isAdmin ? "라켓·스트링별 작업 정보" : "스트링/텐션 요약"}</span>
                           </div>
                           <div
                             className={cn(
@@ -2496,8 +2490,8 @@ export default function StringingApplicationDetailClient({
                             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-ui-label leading-relaxed text-foreground/75">
                               <p>라켓 {lineSummary.racketCount}자루</p>
                               <p>스트링 {lineSummary.stringTypeCount}종</p>
-                              <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>
-                              <p>메모 {lineSummary.notedCount}자루</p>
+                              {isAdmin && <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>}
+                              {(isAdmin || lineSummary.notedCount > 0) && <p>메모 {lineSummary.notedCount}자루</p>}
                             </div>
                             <Button
                               type="button"
@@ -2507,8 +2501,8 @@ export default function StringingApplicationDetailClient({
                               onClick={() => setIsLineDetailsExpanded((prev) => !prev)}
                             >
                               {isLineDetailsExpanded
-                                ? "작업 상세 접기"
-                                : `작업 상세 ${lineCount}건 보기`}
+                                ? isAdmin ? "작업 상세 접기" : "라켓별 상세 접기"
+                                : isAdmin ? `작업 상세 ${lineCount}건 보기` : `라켓별 상세 ${lineCount}건 보기`}
                             </Button>
                           </div>
 
@@ -2729,19 +2723,13 @@ export default function StringingApplicationDetailClient({
                         <Truck className="h-5 w-5 text-primary" />
                         접수/수령 정보
                       </CardTitle>
-                      <CardDescription>지금 필요한 발송·수령 정보를 먼저 확인하세요.</CardDescription>
+                      <CardDescription>발송·수령 상태만 간단히 확인하세요.</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid gap-5 p-4 bp-sm:p-6 bp-xl:grid-cols-2">
-                        <div className="min-w-0 border-l-2 border-primary/25 bg-primary/5 px-3 py-3 leading-relaxed bp-sm:px-4">
+                    <CardContent className="grid gap-4 p-4 bp-sm:p-5 bp-xl:grid-cols-2">
+                        <div className="min-w-0 rounded-xl border border-border/60 px-3 py-3 leading-relaxed bp-sm:px-4">
                           <p className="text-ui-body-sm font-semibold text-foreground">라켓 접수</p>
                           <p className="mt-1 text-ui-label text-foreground/75">
-                            {inboundRequired
-                              ? isVisit
-                                ? "방문 예약 일시에 맞춰 라켓을 가져와 주세요."
-                                : hasTracking
-                                  ? "등록한 운송장 기준으로 입고를 확인합니다."
-                                  : "자가 발송 후 운송장을 등록해 주세요."
-                              : "별도 발송이 필요하지 않습니다."}
+                            {inboundStatusLabel}
                           </p>
                           <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                             <p>
@@ -2778,7 +2766,7 @@ export default function StringingApplicationDetailClient({
                                   </a>
                                 </p>
                               ) : (
-                                <p>운송장 등록이 필요합니다.</p>
+                                <p>운송장: 등록 필요</p>
                               ))}
                           </div>
                           {needsInboundTracking && (
@@ -2795,12 +2783,12 @@ export default function StringingApplicationDetailClient({
                           )}
                         </div>
 
-                        <div className="min-w-0 border-l-2 border-primary/25 bg-primary/5 px-3 py-3 leading-relaxed bp-sm:px-4">
+                        <div className="min-w-0 rounded-xl border border-border/60 px-3 py-3 leading-relaxed bp-sm:px-4">
                           <p className="text-ui-body-sm font-semibold text-foreground">
                             완성 라켓 수령
                           </p>
                           <p className="mt-1 text-ui-label text-foreground/75">
-                            작업 완료 후 수령 방법과 배송 정보를 안내합니다.
+                            {shouldShowReturnMethod ? shippingMethodBadge.label : "연결 주문 기준"}
                           </p>
                           <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                             <p>
@@ -2836,9 +2824,7 @@ export default function StringingApplicationDetailClient({
                                   : "-"}
                               </p>
                             ) : (
-                              <p className="text-muted-foreground">
-                                아직 수령/배송 정보가 등록되지 않았습니다.
-                              </p>
+                              <p className="text-muted-foreground">배송 정보: 준비 중</p>
                             )}
                             {data.shippingInfo?.deliveryRequest && (
                               <p>배송 요청사항: {data.shippingInfo.deliveryRequest}</p>
@@ -3048,43 +3034,6 @@ export default function StringingApplicationDetailClient({
                     </CardContent>
                   </Card>
                 )}
-                {applicationId && !isAdmin && (
-                  <Card className="order-7 rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
-                    <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-                      <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                        <div>
-                          <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
-                            <Clock className="h-5 w-5 text-primary" />
-                            진행 기록
-                          </CardTitle>
-                          <CardDescription className="mt-1">
-                            필요한 경우 상세 진행 기록을 펼쳐 확인하세요.
-                          </CardDescription>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="w-full bp-sm:w-auto"
-                          onClick={() => setIsHistoryExpanded((prev) => !prev)}
-                        >
-                          {isHistoryExpanded ? "진행 기록 접기" : "진행 기록 보기"}
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className={cn("p-4 bp-sm:p-5", !isHistoryExpanded && "hidden")}>
-                      <div id="stringing-history">
-                        <StringingApplicationHistory
-                          applicationId={applicationId}
-                          isAdmin={isAdmin}
-                          onHistoryMutate={(mutateFn) => {
-                            historyMutateRef.current = mutateFn;
-                          }}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
               </div>
 
               <div className={detailColumnClass}>
@@ -3147,7 +3096,7 @@ export default function StringingApplicationDetailClient({
                     </div>
                   </CardHeader>
 
-                  <CardContent className={cn("p-4 bp-sm:p-5", !isAdmin && "py-3 bp-lg:py-5")}>
+                  <CardContent className="p-4 bp-sm:p-5">
                     {editingPayment ? (
                       <PaymentEditForm
                         initialData={{
@@ -3186,28 +3135,16 @@ export default function StringingApplicationDetailClient({
                             <AdminCompactField label="결제 방식" value={paymentMethodForDisplay} />
                           </div>
                         ) : (
-                          <div className="space-y-1">
-                            <CustomerSummaryRow label="서비스비/장착비">
-                              {totalPrice.toLocaleString()}원
-                            </CustomerSummaryRow>
-                            {packageApplied && (
-                              <CustomerSummaryRow label="패키지 차감">
-                                {packageUsedCount}회 사용
-                              </CustomerSummaryRow>
-                            )}
-                            <CustomerSummaryRow label="결제 상태">
-                              {(() => {
-                                const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
-                                return (
-                                  <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                                    {paymentHeaderBadgeLabel}
-                                  </Badge>
-                                );
-                              })()}
-                            </CustomerSummaryRow>
-                            <CustomerSummaryRow label="결제 방식">
-                              {getCustomerPaymentMethodLabel(paymentMethodForDisplay, packageApplied)}
-                            </CustomerSummaryRow>
+                          <div className="space-y-3">
+                            <div className="flex flex-wrap items-center gap-2 text-ui-body-sm font-medium text-foreground">
+                              <span>{paymentHeaderBadgeLabel}</span>
+                              <span className="text-muted-foreground">·</span>
+                              <span>{getCustomerPaymentMethodLabel(paymentMethodForDisplay, packageApplied)}</span>
+                            </div>
+                            <div className="space-y-1 text-ui-body-sm text-foreground/80">
+                              <p>서비스비/장착비 {totalPrice.toLocaleString()}원</p>
+                              {packageApplied && <p>패키지 {packageUsedCount}회 사용</p>}
+                            </div>
                             <div className="mt-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
                               <p className="text-ui-label text-muted-foreground">최종 결제금액</p>
                               <p className="mt-1 text-right text-ui-title-sm font-semibold text-primary">
@@ -3419,19 +3356,20 @@ export default function StringingApplicationDetailClient({
                 </Card>
 
                 {/* 고객 정보 */}
+                {isAdmin && (
                 <Card
-                  className={cn(detailCardClass, isAdmin && "xl:col-span-6", !isAdmin && "order-4")}
+                  className={cn(detailCardClass, "xl:col-span-6")}
                 >
                   <CardHeader className={detailCardHeaderClass}>
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <User className="h-5 w-5 text-primary" />
-                        <span>{isAdmin ? "고객 정보" : "신청자/연락처 정보"}</span>
+                        <span>고객 정보</span>
                       </div>
                       {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className={cn("p-4 bp-sm:p-5", !isAdmin && "py-3 bp-lg:py-5")}>
+                  <CardContent className="p-4 bp-sm:p-5">
                     {editingCustomer ? (
                       <CustomerEditForm
                         initialData={{
@@ -3452,7 +3390,6 @@ export default function StringingApplicationDetailClient({
                         onCancel={() => setEditingCustomer(false)}
                       />
                     ) : (
-                      isAdmin ? (
                         <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2">
                           <AdminCompactField
                             label="이름"
@@ -3493,21 +3430,6 @@ export default function StringingApplicationDetailClient({
                           className="bp-md:col-span-2"
                         />
                         </div>
-                      ) : (
-                        <div className="space-y-1">
-                          <CustomerSummaryRow label="이름">
-                            {data.customer.name || "아직 등록되지 않았습니다."}
-                          </CustomerSummaryRow>
-                          <CustomerSummaryRow label="연락처">
-                            {data.customer?.phone || "아직 등록되지 않았습니다."}
-                          </CustomerSummaryRow>
-                          <CustomerSummaryRow label={customerAddressLabel}>
-                            {customerAddressValue && customerAddressValue !== "정보 없음"
-                              ? `${customerAddressValue}${!isVisit && data.customer?.addressDetail ? ` ${data.customer.addressDetail}` : ""}`
-                              : "아직 등록되지 않았습니다."}
-                          </CustomerSummaryRow>
-                        </div>
-                      )
                     )}
                   </CardContent>
 
@@ -3524,6 +3446,7 @@ export default function StringingApplicationDetailClient({
                     </CardFooter>
                   )}
                 </Card>
+                )}
               </div>
             </div>
             {/* 관리자 전용 운송장 정보 카드 */}
@@ -3832,18 +3755,3 @@ const getCustomerPaymentMethodLabel = (method?: string | null, packageApplied?: 
   if (normalized.includes("pay") || normalized.includes("card")) return "카드/간편결제";
   return "결제 정보 확인 중";
 };
-
-const CustomerSummaryRow = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
-  <div className="flex items-start justify-between gap-4 border-b border-border/50 py-2.5 last:border-b-0">
-    <span className="shrink-0 text-ui-body-sm text-muted-foreground">{label}</span>
-    <div className="min-w-0 text-right text-ui-body-sm font-medium text-foreground">
-      {children}
-    </div>
-  </div>
-);
