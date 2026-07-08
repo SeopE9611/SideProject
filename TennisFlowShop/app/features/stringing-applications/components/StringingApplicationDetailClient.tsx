@@ -64,7 +64,7 @@ import {
   normalizeAdminCancelRequestStatus,
 } from "@/lib/cancel-request/admin-cancel-request-view";
 import { readCancelRequestError } from "@/lib/cancel-request/refund-account-client";
-import { stringColorLabel } from "@/lib/constants";
+import { bankLabelMap, stringColorLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
@@ -1031,6 +1031,9 @@ export default function StringingApplicationDetailClient({
   );
 
   const isCancelRequested = rawCancelStatus === "requested";
+  const canShowUserCancelAction = !isAdmin && !isRentalLinkedApplication && !isCancelled;
+  const canUserRequestCancel = canShowUserCancelAction && !isCancelRequested;
+  const canUserWithdrawCancelRequest = canShowUserCancelAction && isCancelRequested;
   // 확정 여부 필드가 서버에서 내려온다는 전제
   const isUserConfirmed = Boolean((data as any).userConfirmedAt);
 
@@ -1118,6 +1121,17 @@ export default function StringingApplicationDetailClient({
     : hasOrderLinkedPayment || hasRentalLinkedPayment
       ? linkedPayment?.method
       : (linkedPayment?.method ?? "무통장입금");
+  const standaloneBankKey = linkedPayment?.bank ?? data.shippingInfo?.bank ?? "kakao";
+  const standaloneBankInfo = bankLabelMap[standaloneBankKey] ?? bankLabelMap.kakao;
+  const standaloneDepositor = String(
+    linkedPayment?.depositor ?? data.shippingInfo?.depositor ?? "",
+  ).trim();
+  const shouldShowCustomerBankAccount =
+    !isAdmin &&
+    !packageApplied &&
+    totalPrice > 0 &&
+    isBankTransferMethod(paymentMethodForDisplay) &&
+    isWaitingPaymentStatus(paymentStatus);
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, "application");
@@ -1323,11 +1337,7 @@ export default function StringingApplicationDetailClient({
           : customerStatusLabel.includes("완료")
             ? "완성 라켓 배송/수령 확인"
             : "매장 확인 대기");
-  const showUserManagementPanel =
-    !isAdmin &&
-    !isCancelled &&
-    !isRentalLinkedApplication &&
-    (!isUserConfirmed || isCancelRequested);
+  const showUserCancelStatusBanner = !isAdmin && isCancelRequested;
 
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
@@ -1379,6 +1389,30 @@ export default function StringingApplicationDetailClient({
               >
                 {isEditMode ? "수정 취소" : "신청 수정"}
               </Button>
+
+              {canUserRequestCancel && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleOpenCancelDialog}
+                  disabled={isPending}
+                  className="h-9 w-full whitespace-nowrap bp-sm:w-auto"
+                >
+                  취소 요청
+                </Button>
+              )}
+
+              {canUserWithdrawCancelRequest && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleWithdrawCancelRequest}
+                  disabled={isWithdrawingCancel}
+                  className="h-9 w-full whitespace-nowrap border-border text-primary hover:bg-muted hover:text-primary bp-sm:w-auto"
+                >
+                  {isWithdrawingCancel ? "철회 중..." : "취소 요청 철회"}
+                </Button>
+              )}
             </>
           }
           summary={
@@ -2018,9 +2052,15 @@ export default function StringingApplicationDetailClient({
               </div>
             )}
 
+            {showUserCancelStatusBanner && (
+              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-ui-body-sm text-amber-900">
+                취소 요청을 확인 중입니다.
+              </div>
+            )}
+
             {/* 상태 카드 */}
-            {(isAdmin || showUserManagementPanel) && (
-            <Card id="admin-stringing-cancel" className={cn(detailCardClass, isAdmin ? "mb-6 bp-sm:mb-8" : "mb-4")}>
+            {isAdmin && (
+            <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
               {isAdmin && (
                 <CardHeader className={detailCardHeaderClass}>
                   <div className="flex items-center justify-between gap-3">
@@ -2035,7 +2075,7 @@ export default function StringingApplicationDetailClient({
                 </CardHeader>
                 )}
               <CardContent className={cn(isAdmin ? "p-4 lg:p-5" : "p-4 bp-sm:p-5")}>
-                {isAdmin ? (
+                {isAdmin && (
                   <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
                     <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
                       <div className="space-y-3">
@@ -2166,61 +2206,6 @@ export default function StringingApplicationDetailClient({
                           </p>
                         )}
                       </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="text-ui-body-sm text-foreground/80">
-                      {isCancelRequested ? (
-                        <span>취소 요청을 확인 중입니다.</span>
-                      ) : (
-                        <span>신청 내용 확인 중입니다. 필요하면 취소 요청을 보낼 수 있습니다.</span>
-                      )}
-                    </div>
-
-                    {!isAdmin && isOrderLinkedApplication && (
-                      <p className="max-w-xl text-ui-body-sm text-muted-foreground">
-                        이 교체서비스는 연결된 주문의 구매 확정과 함께 처리됩니다.
-                      </p>
-                    )}
-
-                    {!isAdmin && isRentalLinkedApplication && (
-                      <p className="max-w-xl text-ui-body-sm text-muted-foreground">
-                        이 교체서비스는 연결된 대여의 수령 확인과 함께 처리됩니다.
-                      </p>
-                    )}
-
-                    <div className="grid w-full grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:justify-end">
-                      {/* 사용자: 아직 취소 요청 전 → "취소 요청" 버튼 */}
-                      {!isAdmin &&
-                        !isRentalLinkedApplication &&
-                        !isCancelled &&
-                        !isCancelRequested && (
-                          <Button
-                            variant="destructive"
-                            onClick={handleOpenCancelDialog}
-                            disabled={isPending}
-                            className="w-full"
-                          >
-                            취소 요청
-                          </Button>
-                        )}
-
-                      {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
-                      {!isAdmin &&
-                        !isRentalLinkedApplication &&
-                        !isCancelled &&
-                        isCancelRequested && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleWithdrawCancelRequest}
-                            disabled={isWithdrawingCancel}
-                            className="w-full border-border text-primary hover:bg-muted hover:text-primary"
-                          >
-                            {isWithdrawingCancel ? "취소 요청 철회 중..." : "취소 요청 철회"}
-                          </Button>
-                        )}
                     </div>
                   </div>
                 )}
@@ -2990,6 +2975,18 @@ export default function StringingApplicationDetailClient({
                               <span className="text-muted-foreground">·</span>
                               <span>{getCustomerPaymentMethodLabel(paymentMethodForDisplay, packageApplied)}</span>
                             </div>
+                            {shouldShowCustomerBankAccount && standaloneBankInfo && (
+                              <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-ui-body-sm text-foreground/85">
+                                <p className="font-semibold text-foreground">입금 계좌</p>
+                                <p className="mt-1">
+                                  {standaloneBankInfo.label} {standaloneBankInfo.account}
+                                </p>
+                                <p className="text-muted-foreground">예금주: {standaloneBankInfo.holder}</p>
+                                {standaloneDepositor && (
+                                  <p className="text-muted-foreground">입금자명: {standaloneDepositor}</p>
+                                )}
+                              </div>
+                            )}
                             <div className="space-y-1 text-ui-body-sm text-foreground/80">
                               <p>서비스비/장착비 {totalPrice.toLocaleString()}원</p>
                               {packageApplied && <p>패키지 {packageUsedCount}회 사용</p>}
@@ -3589,6 +3586,23 @@ export default function StringingApplicationDetailClient({
     </main>
   );
 }
+const isBankTransferMethod = (method?: string | null) => {
+  const normalized = String(method ?? "").trim().toLowerCase();
+  return (
+    normalized.includes("무통장") ||
+    normalized.includes("bank") ||
+    normalized.includes("deposit") ||
+    normalized === "virtual_account"
+  );
+};
+
+const isWaitingPaymentStatus = (status?: string | null) => {
+  const normalized = String(status ?? "").trim().toLowerCase().replace(/\s+/g, "");
+  return ["결제대기", "입금확인대기", "waiting", "pending", "ready", "unpaid"].some((keyword) =>
+    normalized.includes(keyword),
+  );
+};
+
 const getCustomerPaymentMethodLabel = (method?: string | null, packageApplied?: boolean) => {
   if (packageApplied || method === "package") return "패키지 사용";
   const normalized = String(method ?? "").trim().toLowerCase();
