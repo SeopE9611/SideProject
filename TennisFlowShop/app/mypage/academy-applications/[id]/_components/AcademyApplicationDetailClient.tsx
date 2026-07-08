@@ -257,8 +257,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
               {formatPrice(classSnapshot.price)}
             </dd>
             <dd className="mt-2 break-keep text-ui-label leading-5 text-muted-foreground">
-              수강료는 상담 내용에 따라 최종 확인될 수 있으며, 등록 확정 후 현장에서 결제를
-              안내해드립니다.
+              수강료는 상담 후 확정되며, 등록 확정 후 현장에서 결제합니다.
             </dd>
           </div>
         </dl>
@@ -267,30 +266,32 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   );
 }
 
+function getPreferredScheduleText(item: AcademyCustomerApplicationDetail) {
+  const days = item.preferredDays.length ? item.preferredDays.join(", ") : "";
+  const time = item.preferredTimeText?.trim() || "";
+
+  if (days && time) return `${days} · ${time}`;
+  return days || time || "-";
+}
+
 function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
     <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
       <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
         <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
           <UserRound className="h-5 w-5 text-primary" />
-          신청자 정보
+          신청 내용
         </CardTitle>
-        <CardDescription>신청자와 접수 정보를 확인하세요.</CardDescription>
       </CardHeader>
       <CardContent className="p-4 bp-sm:p-5">
         <dl className="grid gap-3 bp-sm:grid-cols-2">
           <InfoBox label="신청자명" value={item.applicantName} />
           <InfoBox label="연락처" value={item.phone} />
           <InfoBox label="이메일" value={item.email} />
-          <InfoBox label="신청 상태" value={item.statusLabel} />
           <InfoBox label="신청일" value={formatDateTime(item.createdAt)} />
           <InfoBox label="희망 레슨 유형" value={item.desiredLessonTypeLabel} />
           <InfoBox label="현재 실력" value={item.currentLevelLabel} />
-          <InfoBox
-            label="희망 요일"
-            value={item.preferredDays.length ? item.preferredDays.join(", ") : "미입력"}
-          />
-          <InfoBox label="희망 시간대" value={item.preferredTimeText || "미입력"} />
+          <InfoBox label="희망 일정" value={getPreferredScheduleText(item)} />
         </dl>
       </CardContent>
     </Card>
@@ -308,8 +309,8 @@ function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
         <CardDescription>신청 당시 남긴 목표와 요청사항입니다.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3 p-4 bp-sm:p-5">
-        <InfoBox label="레슨 목표" value={item.lessonGoal || "미입력"} multiline />
-        <InfoBox label="요청사항" value={item.requestMemo || "미입력"} multiline />
+        {item.lessonGoal ? <InfoBox label="레슨 목표" value={item.lessonGoal} multiline /> : null}
+        {item.requestMemo ? <InfoBox label="요청사항" value={item.requestMemo} multiline /> : null}
       </CardContent>
     </Card>
   );
@@ -499,6 +500,131 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     }
   };
 
+  const cancelApplicationDialog = !isCancelled ? (
+    <AlertDialog
+      open={isCancelDialogOpen}
+      onOpenChange={(open) => {
+        if (isCancelling) return;
+        setIsCancelDialogOpen(open);
+        if (!open) {
+          setCancelReason("");
+          setCancelReasonDetail("");
+        }
+      }}
+    >
+      <AlertDialogTrigger asChild>
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          wrap="responsive"
+          className="h-9 w-full bp-sm:w-auto"
+        >
+          신청 취소
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>아카데미 신청을 취소할까요?</AlertDialogTitle>
+          <AlertDialogDescription>
+            취소 후에는 이 신청이 취소 상태로 표시됩니다. 다시 수강을 원하시면 아카데미 페이지에서
+            새로 신청해 주세요.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="space-y-4 py-1">
+          <div className="space-y-2">
+            <label className="text-ui-body-sm font-medium" htmlFor="academy-cancel-reason">
+              취소 사유 <span className="text-destructive">*</span>
+            </label>
+            <Select value={cancelReason} onValueChange={setCancelReason} disabled={isCancelling}>
+              <SelectTrigger id="academy-cancel-reason">
+                <SelectValue placeholder="취소 사유를 선택해 주세요" />
+              </SelectTrigger>
+              <SelectContent>
+                {CANCEL_REASON_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {cancelReason === "other" ? (
+            <div className="space-y-2">
+              <label className="text-ui-body-sm font-medium" htmlFor="academy-cancel-detail">
+                상세 사유 <span className="text-muted-foreground">(선택)</span>
+              </label>
+              <Textarea
+                id="academy-cancel-detail"
+                value={cancelReasonDetail}
+                onChange={(event) => setCancelReasonDetail(event.target.value)}
+                maxLength={CANCEL_REASON_DETAIL_MAX_LENGTH}
+                rows={3}
+                placeholder="운영자에게 전달할 내용을 간단히 입력해 주세요."
+                disabled={isCancelling}
+              />
+              <p className="text-right text-ui-label text-muted-foreground">
+                {cancelReasonDetail.length}/{CANCEL_REASON_DETAIL_MAX_LENGTH}
+              </p>
+            </div>
+          ) : null}
+          <p className="break-keep border-l-2 border-muted-foreground/30 bg-muted/20 px-3 py-2 text-ui-label leading-5 text-muted-foreground">
+            취소 사유는 운영자가 신청 내역을 확인하고 안내를 개선하는 데 사용됩니다.
+          </p>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isCancelling}>닫기</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={isCancelling || !cancelReason}
+            onClick={(event) => {
+              event.preventDefault();
+              void handleCancelApplication();
+            }}
+          >
+            {isCancelling ? "취소 중..." : "신청 취소하기"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  ) : null;
+
+  const heroActions = (
+    <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap">
+      <Button asChild variant="outline" size="sm" className="h-9 w-full bp-sm:w-auto">
+        <Link href="/mypage?tab=academy">
+          <ArrowLeft className="h-4 w-4" />
+          클래스 신청 목록
+        </Link>
+      </Button>
+      {!isCancelled && canEditApplication ? (
+        isEditing ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 w-full bp-sm:w-auto"
+            onClick={() => setIsEditing(false)}
+            disabled={isSavingEdit}
+          >
+            수정 취소
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 w-full bp-sm:w-auto"
+            onClick={openEditForm}
+          >
+            신청 정보 수정
+          </Button>
+        )
+      ) : null}
+      {cancelApplicationDialog}
+    </div>
+  );
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4 bp-sm:space-y-5">
       <MypageDetailHero
@@ -515,15 +641,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           </Badge>
         }
         statusTitle={item.classSnapshot?.name || "아카데미 클래스 신청"}
-        identifier={`접수번호 ${formatReceiptId(item._id)} · 신청일 ${formatDateTime(item.createdAt)}`}
-        actions={
-          <Button asChild variant="outline" size="sm" className="h-9 w-full bp-sm:w-auto">
-            <Link href="/mypage?tab=academy">
-              <ArrowLeft className="h-4 w-4" />
-              클래스 신청 목록
-            </Link>
-          </Button>
-        }
+        identifier={`접수번호 ${formatReceiptId(item._id)}`}
+        actions={heroActions}
         nextActionTitle={item.statusLabel}
         nextActionDescription={getStatusDescription(item.status)}
         summary={
@@ -533,18 +652,14 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               value={item.classSnapshot?.lessonTypeLabel ?? item.desiredLessonTypeLabel}
             />
             <MypageInfoField label="현재 실력" value={item.currentLevelLabel} />
-            <MypageInfoField
-              label="희망 요일"
-              value={item.preferredDays.length ? item.preferredDays.join(", ") : "미입력"}
-            />
-            <MypageInfoField label="희망 시간대" value={item.preferredTimeText || "미입력"} />
+            <MypageInfoField label="희망 일정" value={getPreferredScheduleText(item)} />
           </>
         }
       />
 
       <ClassInfoCard item={item} />
       <ApplicationInfoCard item={item} />
-      <RequestInfoCard item={item} />
+      {item.lessonGoal || item.requestMemo ? <RequestInfoCard item={item} /> : null}
 
       {item.customerMessage ? (
         <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
@@ -561,318 +676,184 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             </p>
           </CardContent>
         </Card>
-      ) : (
-        <p className="rounded-2xl border border-border/60 bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm shadow-foreground/[0.02]">
-          아직 등록된 관리자 안내가 없습니다.
-        </p>
-      )}
+      ) : null}
 
-      <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
-        <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-          <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
-            <WalletCards className="h-5 w-5 text-primary" />
-            현장결제 안내
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 bp-sm:p-5">
-          <p className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2.5 break-keep text-ui-body-sm leading-relaxed text-foreground">
-            아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이 확정되면 첫 방문 또는
-            안내된 일정에 맞춰 현장에서 결제해 주세요.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
-        <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-          <CardTitle className="text-ui-card-title font-medium">신청 관리</CardTitle>
-          <CardDescription>
-            {isCancelled
-              ? "취소된 신청입니다."
-              : canEditApplication
-                ? "신청 내용을 수정하거나, 필요한 경우 신청 취소를 진행할 수 있습니다."
-                : "상담이 진행된 신청은 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 p-4 bp-sm:p-5">
-          {!isCancelled && canEditApplication ? (
-            <div className="space-y-4 rounded-xl bg-muted/15 p-4">
-              {!isEditing ? (
-                <Button type="button" variant="outline" onClick={openEditForm}>
-                  신청 정보 수정
-                </Button>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid gap-3 bp-sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <label className="text-ui-body-sm font-medium">희망 레슨 유형</label>
-                      <Select
-                        value={editForm.desiredLessonType}
-                        onValueChange={(value) =>
-                          setEditForm((current) => ({ ...current, desiredLessonType: value }))
-                        }
-                        disabled={isSavingEdit}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ACADEMY_LESSON_TYPES.map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {getAcademyLessonTypeLabel(value)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-ui-body-sm font-medium">현재 실력</label>
-                      <Select
-                        value={editForm.currentLevel}
-                        onValueChange={(value) =>
-                          setEditForm((current) => ({ ...current, currentLevel: value }))
-                        }
-                        disabled={isSavingEdit}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ACADEMY_CURRENT_LEVELS.map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {getAcademyCurrentLevelLabel(value)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-ui-body-sm font-medium">희망 요일</label>
-                    <div className="flex flex-wrap gap-2">
-                      {ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => (
-                        <label
-                          key={day}
-                          className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-ui-body-sm"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={editForm.preferredDays.includes(day)}
-                            onChange={() => toggleEditDay(day)}
-                            disabled={isSavingEdit}
-                          />
-                          {day}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <Input
-                    value={editForm.preferredTimeText}
-                    maxLength={100}
-                    onChange={(event) =>
-                      setEditForm((current) => ({
-                        ...current,
-                        preferredTimeText: event.target.value,
-                      }))
-                    }
-                    placeholder="희망 시간대"
-                    disabled={isSavingEdit}
-                  />
-                  <Textarea
-                    value={editForm.lessonGoal}
-                    maxLength={500}
-                    onChange={(event) =>
-                      setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))
-                    }
-                    placeholder="레슨 목표"
-                    disabled={isSavingEdit}
-                  />
-                  <Textarea
-                    value={editForm.requestMemo}
-                    maxLength={1000}
-                    onChange={(event) =>
-                      setEditForm((current) => ({ ...current, requestMemo: event.target.value }))
-                    }
-                    placeholder="요청사항"
-                    disabled={isSavingEdit}
-                  />
-                  <div className="flex flex-col gap-2 bp-sm:flex-row">
-                    <Button
-                      type="button"
-                      onClick={handleSaveEdit}
-                      disabled={isSavingEdit || editForm.preferredDays.length === 0}
-                    >
-                      {isSavingEdit ? "저장 중..." : "저장"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsEditing(false)}
-                      disabled={isSavingEdit}
-                    >
-                      취소
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : !isCancelled ? (
-            <p className="border-l-2 border-muted-foreground/30 bg-muted/20 px-3 py-2.5 text-ui-body-sm text-muted-foreground">
-              상담이 진행된 신청은 마이페이지에서 직접 수정할 수 없습니다. 변경이 필요하면 문의해
-              주세요.
-            </p>
-          ) : null}
-          {isCancelled ? (
-            <div className="space-y-3">
-              <div className="space-y-2 border-l-2 border-destructive/50 bg-destructive/10 px-3 py-2.5 text-ui-body-sm text-destructive">
-                <p className="font-medium">
-                  이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서 새로 신청해
-                  주세요.
-                </p>
-                {item.cancelReasonLabel ? (
-                  <p className="text-ui-label leading-5 text-destructive/85">
-                    취소 사유: {item.cancelReasonLabel}
-                    {item.cancelReasonDetail ? ` - ${item.cancelReasonDetail}` : ""}
-                  </p>
-                ) : null}
-              </div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    wrap="responsive"
-                    className="w-full bp-sm:w-auto"
-                    disabled={isDeleting}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    {isDeleting ? "삭제 중..." : "기록 삭제"}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>취소 신청 기록을 삭제할까요?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은
-                      보존됩니다.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      disabled={isDeleting}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        void handleDeleteApplication();
-                      }}
-                    >
-                      {isDeleting ? "삭제 중..." : "기록 삭제"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          ) : (
-            <AlertDialog
-              open={isCancelDialogOpen}
-              onOpenChange={(open) => {
-                if (isCancelling) return;
-                setIsCancelDialogOpen(open);
-                if (!open) {
-                  setCancelReason("");
-                  setCancelReasonDetail("");
-                }
-              }}
-            >
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  wrap="responsive"
-                  className="w-full bp-sm:w-auto"
+      {isEditing ? (
+        <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
+          <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
+            <CardTitle className="text-ui-card-title font-medium">신청 정보 수정</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 p-4 bp-sm:p-5">
+            <div className="grid gap-3 bp-sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-ui-body-sm font-medium">희망 레슨 유형</label>
+                <Select
+                  value={editForm.desiredLessonType}
+                  onValueChange={(value) =>
+                    setEditForm((current) => ({ ...current, desiredLessonType: value }))
+                  }
+                  disabled={isSavingEdit}
                 >
-                  신청 취소
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>아카데미 신청을 취소할까요?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    취소 후에는 이 신청이 취소 상태로 표시됩니다. 다시 수강을 원하시면 아카데미
-                    페이지에서 새로 신청해 주세요.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="space-y-4 py-1">
-                  <div className="space-y-2">
-                    <label className="text-ui-body-sm font-medium" htmlFor="academy-cancel-reason">
-                      취소 사유 <span className="text-destructive">*</span>
-                    </label>
-                    <Select
-                      value={cancelReason}
-                      onValueChange={setCancelReason}
-                      disabled={isCancelling}
-                    >
-                      <SelectTrigger id="academy-cancel-reason">
-                        <SelectValue placeholder="취소 사유를 선택해 주세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CANCEL_REASON_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {cancelReason === "other" ? (
-                    <div className="space-y-2">
-                      <label
-                        className="text-ui-body-sm font-medium"
-                        htmlFor="academy-cancel-detail"
-                      >
-                        상세 사유 <span className="text-muted-foreground">(선택)</span>
-                      </label>
-                      <Textarea
-                        id="academy-cancel-detail"
-                        value={cancelReasonDetail}
-                        onChange={(event) => setCancelReasonDetail(event.target.value)}
-                        maxLength={CANCEL_REASON_DETAIL_MAX_LENGTH}
-                        rows={3}
-                        placeholder="운영자에게 전달할 내용을 간단히 입력해 주세요."
-                        disabled={isCancelling}
-                      />
-                      <p className="text-right text-ui-label text-muted-foreground">
-                        {cancelReasonDetail.length}/{CANCEL_REASON_DETAIL_MAX_LENGTH}
-                      </p>
-                    </div>
-                  ) : null}
-                  <p className="break-keep border-l-2 border-muted-foreground/30 bg-muted/20 px-3 py-2 text-ui-label leading-5 text-muted-foreground">
-                    취소 사유는 운영자가 신청 내역을 확인하고 안내를 개선하는 데 사용됩니다.
-                  </p>
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isCancelling}>닫기</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    disabled={isCancelling || !cancelReason}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      void handleCancelApplication();
-                    }}
+                  <SelectTrigger>
+                    <SelectValue placeholder="선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACADEMY_LESSON_TYPES.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {getAcademyLessonTypeLabel(value)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-ui-body-sm font-medium">현재 실력</label>
+                <Select
+                  value={editForm.currentLevel}
+                  onValueChange={(value) =>
+                    setEditForm((current) => ({ ...current, currentLevel: value }))
+                  }
+                  disabled={isSavingEdit}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACADEMY_CURRENT_LEVELS.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {getAcademyCurrentLevelLabel(value)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-ui-body-sm font-medium">희망 요일</label>
+              <div className="flex flex-wrap gap-2">
+                {ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => (
+                  <label
+                    key={day}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-ui-body-sm"
                   >
-                    {isCancelling ? "취소 중..." : "신청 취소하기"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </CardContent>
-      </Card>
+                    <input
+                      type="checkbox"
+                      checked={editForm.preferredDays.includes(day)}
+                      onChange={() => toggleEditDay(day)}
+                      disabled={isSavingEdit}
+                    />
+                    {day}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <Input
+              value={editForm.preferredTimeText}
+              maxLength={100}
+              onChange={(event) =>
+                setEditForm((current) => ({
+                  ...current,
+                  preferredTimeText: event.target.value,
+                }))
+              }
+              placeholder="희망 시간대"
+              disabled={isSavingEdit}
+            />
+            <Textarea
+              value={editForm.lessonGoal}
+              maxLength={500}
+              onChange={(event) =>
+                setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))
+              }
+              placeholder="레슨 목표"
+              disabled={isSavingEdit}
+            />
+            <Textarea
+              value={editForm.requestMemo}
+              maxLength={1000}
+              onChange={(event) =>
+                setEditForm((current) => ({ ...current, requestMemo: event.target.value }))
+              }
+              placeholder="요청사항"
+              disabled={isSavingEdit}
+            />
+            <div className="flex flex-col gap-2 bp-sm:flex-row">
+              <Button
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={isSavingEdit || editForm.preferredDays.length === 0}
+              >
+                {isSavingEdit ? "저장 중..." : "저장"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditing(false)}
+                disabled={isSavingEdit}
+              >
+                취소
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {!isCancelled && !canEditApplication ? (
+        <p className="rounded-2xl border border-border/60 bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm shadow-foreground/[0.02]">
+          상담이 진행된 신청은 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요.
+        </p>
+      ) : null}
+
+      {isCancelled ? (
+        <div className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-ui-body-sm text-destructive shadow-sm shadow-foreground/[0.02]">
+          <div className="space-y-2">
+            <p className="font-medium">취소된 신청입니다.</p>
+            {item.cancelReasonLabel ? (
+              <p className="text-ui-label leading-5 text-destructive/85">
+                취소 사유: {item.cancelReasonLabel}
+                {item.cancelReasonDetail ? ` - ${item.cancelReasonDetail}` : ""}
+              </p>
+            ) : null}
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="destructive"
+                wrap="responsive"
+                className="w-full bp-sm:w-auto"
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4" />
+                {isDeleting ? "삭제 중..." : "기록 삭제"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>취소 신청 기록을 삭제할까요?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은 보존됩니다.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={isDeleting}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    void handleDeleteApplication();
+                  }}
+                >
+                  {isDeleting ? "삭제 중..." : "기록 삭제"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ) : null}
 
       <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:justify-end">
-        <Button asChild variant="outline" wrap="responsive" className="w-full bp-sm:w-auto">
-          <Link href="/mypage?tab=academy">목록으로 돌아가기</Link>
-        </Button>
         <Button asChild variant="secondary" wrap="responsive" className="w-full bp-sm:w-auto">
           <Link href="/academy">아카데미 홈 보기</Link>
         </Button>
