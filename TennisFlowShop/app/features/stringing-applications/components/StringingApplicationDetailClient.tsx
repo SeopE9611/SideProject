@@ -2695,9 +2695,6 @@ export default function StringingApplicationDetailClient({
                     <CardContent className="grid gap-4 p-4 bp-sm:p-5 bp-xl:grid-cols-2">
                         <div className="min-w-0 rounded-xl border border-border/60 px-3 py-3 leading-relaxed bp-sm:px-4">
                           <p className="text-ui-body-sm font-semibold text-foreground">라켓 접수</p>
-                          <p className="mt-1 text-ui-label text-foreground/75">
-                            {inboundStatusLabel}
-                          </p>
                           <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                             <p>
                               접수 방식:{" "}
