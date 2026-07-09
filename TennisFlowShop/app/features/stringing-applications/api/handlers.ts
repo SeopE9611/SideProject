@@ -45,6 +45,7 @@ import {
   normalizeTrackingNumber,
 } from "@/lib/shipping/tracking-number";
 import { getStringingServicePrice } from "@/lib/stringing-prices";
+import { isStringingCanceledStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { ServicePassConsumption } from "@/lib/types/pass";
 import { HistoryItem, HistoryRecord } from "@/lib/types/stringing-application-db";
 import { ObjectId } from "mongodb";
@@ -2414,11 +2415,11 @@ export async function handleStringingAdminCancel(
       return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    if (appDoc.status === "취소") {
+    if (isStringingCanceledStatus(appDoc.status)) {
       return NextResponse.json({ error: "이미 취소된 신청입니다." }, { status: 400 });
     }
 
-    if (appDoc.status === "교체완료") {
+    if (isStringingCompletedStatus(appDoc.status)) {
       return NextResponse.json(
         { error: "교체완료 상태의 신청은 직접 취소할 수 없습니다." },
         { status: 400 },
@@ -3148,7 +3149,7 @@ export async function handleApplicationCancelRequest(
 
     // 5) 비즈니스 룰 체크
     // 5-1) 이미 취소된 신청이면 추가 요청 불가
-    if (existing.status === "취소") {
+    if (isStringingCanceledStatus(existing.status)) {
       return new NextResponse("이미 취소된 신청입니다.", { status: 400 });
     }
 
@@ -3307,7 +3308,7 @@ export async function handleApplicationCancelRequestWithdraw(
 
     // ── 비즈니스 룰 ──
     // 1) 이미 취소된 신청은 철회 의미 없음
-    if (existing.status === "취소") {
+    if (isStringingCanceledStatus(existing.status)) {
       return new NextResponse("이미 취소된 신청입니다.", { status: 400 });
     }
 
@@ -3412,7 +3413,7 @@ export async function handleApplicationCancelApprove(
     }
 
     // ── 비즈니스 룰 ──
-    if (existing.status === "취소") {
+    if (isStringingCanceledStatus(existing.status)) {
       return new NextResponse("이미 취소된 신청입니다.", { status: 400 });
     }
 
