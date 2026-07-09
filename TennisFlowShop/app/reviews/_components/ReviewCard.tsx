@@ -1,5 +1,6 @@
 "use client";
 
+import { getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -156,7 +157,7 @@ export default function ReviewCard({
     item.type === "rental"
       ? [
           item.rentalDays ? `${item.rentalDays}일 대여` : null,
-          item.rentalStatus ? `상태 ${item.rentalStatus}` : null,
+          item.rentalStatus ? `상태 ${getCustomerRentalStatusLabel(item.rentalStatus)}` : null,
         ]
           .filter(Boolean)
           .join(" · ")

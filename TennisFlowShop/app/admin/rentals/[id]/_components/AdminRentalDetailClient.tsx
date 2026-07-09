@@ -40,6 +40,7 @@ import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { shortenId } from "@/lib/shorten";
+import { getCommonApplicationStatusLabel, getCommonRentalStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -65,7 +66,9 @@ const rentalStatusLabels: Record<string, string> = {
   pending: "결제대기",
   paid: "결제완료",
   out: "대여중",
+  rented: "대여중",
   returned: "반납완료",
+  overdue: "연체",
   canceled: "취소됨",
   cancelled: "취소됨",
 };
@@ -676,6 +679,10 @@ export default function AdminRentalDetailClient() {
       ? (APPLICATION_STATUSES[currentApplicationStatusIndex + 1] ?? null)
       : null;
   const applicationStatusBadge = getApplicationStatusBadgeSpec(linkedApplicationStatus);
+  const linkedApplicationStatusLabel =
+    getCommonApplicationStatusLabel(linkedApplicationStatus) ?? linkedApplicationStatus;
+  const formatRentalHistoryStatus = (status?: string | null) =>
+    status ? (getCommonRentalStatusLabel(status) ?? status) : "-";
   const canUpdateLinkedApplication = data?.status === "paid";
   const linkedApplicationLines = Array.isArray(linkedApplication?.lines)
     ? linkedApplication.lines
@@ -846,7 +853,7 @@ export default function AdminRentalDetailClient() {
                   variant={applicationStatusBadge.variant}
                   className={cn(badgeBase, badgeSizeSm)}
                 >
-                  {linkedApplicationStatus ||
+                  {linkedApplicationStatusLabel ||
                     (hasStringingSummary ? "교체 작업 검토 중" : "교체 작업 없음")}
                 </Badge>
               }
@@ -1019,7 +1026,7 @@ export default function AdminRentalDetailClient() {
                 {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
                   <p className="sm:col-span-2">
                     <span className="font-medium text-foreground">상태 변화:</span>{" "}
-                    {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
+                    {formatRentalHistoryStatus(latestProcessingHistory?.from)} → {formatRentalHistoryStatus(latestProcessingHistory?.to)}
                   </p>
                 ) : null}
               </div>
@@ -1103,7 +1110,9 @@ export default function AdminRentalDetailClient() {
                 <p className="text-muted-foreground">
                   교체서비스 상태:{" "}
                   <span className="font-medium text-foreground">
-                    {data?.stringingApplicationStatus ?? "상태 확인 필요"}
+                    {getCommonApplicationStatusLabel(data?.stringingApplicationStatus) ??
+                      data?.stringingApplicationStatus ??
+                      "상태 확인 필요"}
                   </span>
                 </p>
               )}
@@ -1185,7 +1194,7 @@ export default function AdminRentalDetailClient() {
                     variant={applicationStatusBadge.variant}
                     className={cn(badgeBase, badgeSizeSm)}
                   >
-                    {linkedApplicationStatus || "상태 확인 필요"}
+                    {linkedApplicationStatusLabel || "상태 확인 필요"}
                   </Badge>
                 </div>
               </div>
@@ -1284,7 +1293,7 @@ export default function AdminRentalDetailClient() {
                   <p className={adminTypography.panelTitle}>교체 작업 진행 단계</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className="w-fit">
-                      현재: {linkedApplicationStatus || "상태 확인 필요"}
+                      현재: {linkedApplicationStatusLabel || "상태 확인 필요"}
                     </Badge>
                     <Badge variant="outline" className="w-fit">
                       다음: {nextApplicationStatus ?? "다음 단계 없음"}

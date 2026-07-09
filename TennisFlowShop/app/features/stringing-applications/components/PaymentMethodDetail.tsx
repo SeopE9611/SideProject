@@ -1,3 +1,4 @@
+import { getMypagePaymentStatusLabel } from "@/app/mypage/_lib/status-label";
 import { bankLabelMap } from "@/lib/constants";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 
@@ -77,6 +78,7 @@ export default function PaymentMethodDetail({
   const canceledAtLabel = formatApprovedAt(paymentNiceSync?.canceledAt);
   const lastSyncedAtLabel = formatApprovedAt(paymentNiceSync?.lastSyncedAt);
   const shouldShowBankBox = !isPackagePayment && !isTossPayment && !isNicePayment && !!bankInfo;
+  const paymentStatusLabel = paymentStatus ? getMypagePaymentStatusLabel(paymentStatus) : null;
 
   return (
     <div className="space-y-2">
@@ -85,9 +87,9 @@ export default function PaymentMethodDetail({
         {isPackagePayment ? (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">패키지 사용</div>
-            {paymentStatus && (
+            {paymentStatusLabel && (
               <div className="text-ui-body-sm text-muted-foreground">
-                결제 상태: {paymentStatus}
+                결제 상태: {paymentStatusLabel}
               </div>
             )}
           </div>
@@ -99,9 +101,9 @@ export default function PaymentMethodDetail({
                 간편결제: {paymentSummary.easyPayProviderLabel}
               </div>
             )}
-            {paymentStatus && (
+            {paymentStatusLabel && (
               <div className="text-ui-body-sm text-muted-foreground">
-                결제 상태: {paymentStatus}
+                결제 상태: {paymentStatusLabel}
               </div>
             )}
             {approvedAtLabel && (
@@ -123,9 +125,9 @@ export default function PaymentMethodDetail({
                 결제 제공사: {paymentSummary.providerLabel}
               </div>
             )}
-            {paymentStatus && (
+            {paymentStatusLabel && (
               <div className="text-ui-body-sm text-muted-foreground">
-                결제 상태: {paymentStatus}
+                결제 상태: {paymentStatusLabel}
               </div>
             )}
             {showAdminPgDetails && paymentTid && (

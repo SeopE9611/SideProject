@@ -3,6 +3,10 @@
 import type React from "react";
 
 import ApplicationStatusBadge from "@/app/features/stringing-applications/components/ApplicationStatusBadge";
+import {
+  getCustomerApplicationStatusLabel,
+  getCustomerRentalStatusLabel,
+} from "@/app/mypage/_lib/flow-display";
 import SiteContainer from "@/components/layout/SiteContainer";
 import {
   EmptyState,
@@ -1106,7 +1110,7 @@ export default function ReviewWritePage() {
                     const reason = reviewedMap[a._id]
                       ? "이미 리뷰 작성됨"
                       : !isServiceReviewSelectableStatus(a.status)
-                        ? `상태: ${a.status ?? "미정"}`
+                        ? `상태: ${getCustomerApplicationStatusLabel(a.status)}`
                         : "";
                     const optDisabled = showAllApps ? !isEligible : false;
                     const optLabel = reason ? `${a.label} (${reason})` : a.label;
@@ -1232,7 +1236,7 @@ export default function ReviewWritePage() {
                     {rentalMeta.name}
                   </p>
                   <p className="mt-1 text-ui-label text-muted-foreground">
-                    {[rentalMeta.days ? `${rentalMeta.days}일 대여` : null, rentalMeta.status ? `상태 ${rentalMeta.status}` : null]
+                    {[rentalMeta.days ? `${rentalMeta.days}일 대여` : null, rentalMeta.status ? `상태 ${getCustomerRentalStatusLabel(rentalMeta.status)}` : null]
                       .filter(Boolean)
                       .join(" · ") || "라켓 대여"}
                   </p>
