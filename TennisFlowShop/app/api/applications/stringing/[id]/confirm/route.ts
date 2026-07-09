@@ -6,6 +6,7 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { calcOrderEarnPoints } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
 import {
+  isOrderConfirmedStatus,
   isStringingCanceledStatus,
   isStringingCompletedStatus,
   STRINGING_CANCELED_VALUES,
@@ -133,7 +134,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       }
 
       // 이미 주문이 확정된 경우: 신청서도 "표시 목적"으로만 확정 처리(멱등)
-      if ((order as any).userConfirmedAt || (order as any).status === "구매확정") {
+      if ((order as any).userConfirmedAt || isOrderConfirmedStatus((order as any).status)) {
         const confirmedAt = (order as any).userConfirmedAt
           ? new Date((order as any).userConfirmedAt)
           : new Date();

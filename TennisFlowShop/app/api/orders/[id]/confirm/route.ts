@@ -9,6 +9,7 @@ import { createUserNotification } from "@/lib/notifications/user-notification.se
 import { bankLabelMap } from "@/lib/constants";
 import { canConfirmOrderByStatus, isVisitPickupOrder } from "@/lib/order-shipping";
 import {
+  isOrderConfirmedStatus,
   isStringingCanceledStatus,
   isStringingCompletedStatus,
   STRINGING_CANCELED_VALUES,
@@ -102,7 +103,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
    * → 이미 확정이어도 grantPoints(refKey)를 멱등으로 재시도 가능하게 처리
    */
   const alreadyConfirmed = Boolean(
-    (order as any).userConfirmedAt || (order as any).status === "구매확정",
+    (order as any).userConfirmedAt || isOrderConfirmedStatus((order as any).status),
   );
 
   const prevStatus = String((order as any).status ?? "");

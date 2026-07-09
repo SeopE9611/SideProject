@@ -14,6 +14,7 @@ import { deductPoints, grantPoints } from "@/lib/points.service";
 import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 import { normalizeEmailForSearch } from "@/lib/search-email";
+import { isOrderCanceledStatus, isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -885,12 +886,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     // 취소된 주문은 추가 변경 금지
-    if (existing.status === "취소") {
+    if (isOrderCanceledStatus(existing.status)) {
       return new NextResponse("취소된 주문입니다.", { status: 400 });
     }
 
     // 구매확정된 주문은 추가 변경 금지
-    if (existing.status === "구매확정") {
+    if (isOrderConfirmedStatus(existing.status)) {
       return new NextResponse("구매확정된 주문은 상태를 변경할 수 없습니다.", {
         status: 400,
       });
