@@ -31,12 +31,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const doc = await c.findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
 
-  // returned 상태에서만 처리 허용
-  if ((doc as any).status !== "returned") {
+  // 반납완료 상태에서만 처리 허용
+  const rawStatus = String((doc as any).status ?? "").trim().toLowerCase();
+  const isReturned = rawStatus === "returned" || rawStatus.includes("반납완료");
+
+  if (!isReturned) {
     return NextResponse.json(
       {
         ok: false,
-        message: "returned 상태에서만 처리 가능",
+        message: "반납완료 상태에서만 처리 가능",
         status: (doc as any).status,
       },
       { status: 409 },

@@ -117,6 +117,11 @@ function mapApiToViewModel(response: AdminRentalsListResponseDto): {
 
 const won = (n: number) => (n || 0).toLocaleString("ko-KR") + "원";
 
+function isRentalReturnedStatus(status?: string | null) {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  return normalized === "returned" || normalized.includes("반납완료");
+}
+
 const rentalStatusLabels: Record<string, string> = {
   pending: "대기중",
   paid: "결제완료",
@@ -222,7 +227,7 @@ export default function AdminRentalsClient() {
     if (derivePaymentStatus(r) !== "paid") return "결제 확인하기";
     if (r.status === "paid") return "인도 처리하기";
     if (r.status === "out") return "반납 처리하기";
-    if (r.status === "returned" && !r.depositRefundedAt) return "환불 확인하기";
+    if (isRentalReturnedStatus(r.status) && !r.depositRefundedAt) return "환불 확인하기";
     return "대여 상세";
   }
 
@@ -997,6 +1002,7 @@ export default function AdminRentalsClient() {
                   const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
                   const cancelQuickSignal = getCancelQuickSignal(r.cancelRequest);
                   const nextActionLabel = getRentalNextAction(r);
+                  const isReturned = isRentalReturnedStatus(r.status);
                   return (
                     <TableRow
                       key={rid || `row-${idx}`}
@@ -1253,7 +1259,7 @@ export default function AdminRentalsClient() {
                           </p>
                           {r.depositRefundedAt ? (
                             <p className="text-xs text-foreground/70">보증금 환불 완료</p>
-                          ) : r.status === "returned" ? (
+                          ) : isReturned ? (
                             <p className="text-xs text-primary">보증금 환불 확인 필요</p>
                           ) : null}
                         </div>
@@ -1339,7 +1345,7 @@ export default function AdminRentalsClient() {
                                   <Package className="mr-2 h-4 w-4" /> 반납 처리
                                 </DropdownMenuItem>
                               )}
-                              {r.status === "returned" && (
+                              {isReturned && (
                                 <>
                                   {r.depositRefundedAt ? (
                                     <DropdownMenuItem
