@@ -490,7 +490,8 @@ function isOrderTerminalStatus(status?: string | null) {
     s === "canceled" ||
     s === "cancelled" ||
     s === "refunded" ||
-    s === "confirmed"
+    s === "confirmed" ||
+    s === "purchase_confirmed"
   );
 }
 
