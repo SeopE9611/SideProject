@@ -146,12 +146,12 @@ export default function ReviewCard({
           item.serviceTargetName ||
           (item.service === "stringing" ? "교체서비스 후기" : "서비스 후기");
 
-  const typeLabel =
-    item.type === "product"
+  const typeLabel = item.contextLabel || item.serviceContextLabel ||
+    (item.type === "product"
       ? "상품 후기"
       : item.type === "rental"
-        ? "라켓 대여 후기"
-        : "교체서비스 후기";
+        ? "대여 후기"
+        : "교체서비스 후기");
   const TypeIcon = item.type === "product" ? Package : item.type === "rental" ? Briefcase : Wrench;
   const targetMeta =
     item.type === "rental"

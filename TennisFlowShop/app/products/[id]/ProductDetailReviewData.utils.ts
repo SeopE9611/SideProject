@@ -1,4 +1,5 @@
 import type { User } from "@/app/store/authStore";
+import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 
 export function isAdminUser(user: User | null | undefined): boolean {
   return Boolean(
@@ -17,18 +18,23 @@ export function buildProductReviewCta({
   productId: string;
   reviewEligibility: any;
 }) {
-  const productReviewHref = reviewEligibility?.suggestedApplicationId
-    ? `/reviews/write?service=stringing&applicationId=${reviewEligibility.suggestedApplicationId}`
+  const productReviewHref = reviewEligibility?.reviewContext
+    ? buildReviewWriteHref({
+        reviewContext: reviewEligibility.reviewContext,
+        productId: reviewEligibility.suggestedProductId ?? productId,
+        orderId: reviewEligibility.suggestedOrderId,
+        applicationId: reviewEligibility.suggestedApplicationId,
+      })
     : `/reviews/write?productId=${productId}${
         reviewEligibility?.suggestedOrderId ? `&orderId=${reviewEligibility.suggestedOrderId}` : ""
       }`;
 
-  const productReviewCtaLabel = reviewEligibility?.suggestedApplicationId
-    ? "교체서비스 후기 작성"
+  const productReviewCtaLabel = reviewEligibility?.targetLabel
+    ? `${reviewEligibility.targetLabel} 작성`
     : "리뷰 작성하기";
 
-  const productReviewHelper = reviewEligibility?.suggestedApplicationId
-    ? "이 상품으로 이용한 교체서비스 후기를 작성할 수 있습니다."
+  const productReviewHelper = reviewEligibility?.targetLabel
+    ? `${reviewEligibility.targetLabel}를 작성할 수 있습니다.`
     : reviewEligibility?.eligible
       ? "구매확정된 단품 구매 후기를 작성할 수 있습니다."
       : "작성 가능한 이용 내역이 없습니다.";
@@ -112,6 +118,8 @@ export function mergeProductDetailReviews({
         user: r.userName ?? "익명",
         date: typeof r.createdAt === "string" ? r.createdAt.slice(0, 10) : "",
         serviceContextLabel: r.serviceContextLabel,
+        reviewContext: r.reviewContext,
+        contextLabel: r.contextLabel,
       }));
     next = [...next, ...linked];
   }
