@@ -39,6 +39,7 @@ export default function ServiceReviewCTA({
       </Button>
     );
   }
+  if (data?.reason === "coveredByIntegratedReview") return null;
   if (data?.reason === "already") {
     return (
       <Button size="sm" variant="secondary" className={className} disabled>
@@ -62,7 +63,7 @@ export default function ServiceReviewCTA({
     <Button size="sm" variant="default" className={className} asChild>
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
-        후기 작성
+        교체서비스 후기 작성
       </Link>
     </Button>
   );

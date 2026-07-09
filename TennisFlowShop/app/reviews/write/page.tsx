@@ -27,6 +27,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { getReviewContextLabel, normalizeReviewContext } from "@/lib/reviews/review-target";
 import { isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import NextImage from "next/image";
@@ -268,6 +269,7 @@ export default function ReviewWritePage() {
   const service = sp.get("service"); // 'stringing'
   const applicationIdParam = sp.get("applicationId"); // Activity에서 넘어온 대상 신청서
   const rentalIdParam = sp.get("rentalId");
+  const reviewContextParam = normalizeReviewContext(sp.get("reviewContext"));
 
   // 보정된 productId / orderId (URL이 비어있어도 서버 추천으로 채움)
   const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
@@ -277,9 +279,9 @@ export default function ReviewWritePage() {
   const mode: "product" | "service" | "rental" | "invalid" = useMemo(() => {
     if (rentalIdParam) return "rental";
     if (resolvedProductId) return "product";
-    if (service === "stringing") return "service";
+    if (service === "stringing" || reviewContextParam === "standalone_stringing") return "service";
     return "invalid";
-  }, [rentalIdParam, resolvedProductId, service]);
+  }, [rentalIdParam, resolvedProductId, service, reviewContextParam]);
 
   // 폼 상태
   const [rating, setRating] = useState(5);
@@ -901,17 +903,22 @@ export default function ReviewWritePage() {
       if (!resolvedProductId) return;
       payload.productId = resolvedProductId;
       if (resolvedOrderId) payload.orderId = resolvedOrderId;
+      if (reviewContextParam) payload.reviewContext = reviewContextParam;
+      if (applicationIdParam) payload.serviceApplicationId = applicationIdParam;
     } else if (mode === "service") {
       if (!selectedAppId) {
         showInfoToast("대상 신청서를 선택해 주세요.");
         return;
       }
       payload.service = "stringing";
+      payload.reviewContext = reviewContextParam ?? "standalone_stringing";
       payload.serviceApplicationId = selectedAppId;
       setIsSubmitting(true);
     } else if (mode === "rental") {
       if (!rentalIdParam) return;
       payload.rentalId = rentalIdParam;
+      if (reviewContextParam) payload.reviewContext = reviewContextParam;
+      if (applicationIdParam) payload.serviceApplicationId = applicationIdParam;
     }
     setIsSubmitting(true);
     try {
@@ -964,13 +971,14 @@ export default function ReviewWritePage() {
     }
   };
 
-  const targetTitle =
-    mode === "product"
+  const targetTitle = reviewContextParam
+    ? getReviewContextLabel(reviewContextParam)
+    : mode === "product"
       ? "상품 후기"
       : mode === "service"
         ? "교체서비스 후기"
         : mode === "rental"
-          ? "라켓 대여 후기"
+          ? "대여 후기"
           : "리뷰 대상";
   const selectedStringNames = (selectedApp?.stringItems || [])
     .map((s) => s.name)

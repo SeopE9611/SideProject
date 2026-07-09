@@ -3,10 +3,13 @@ import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
+import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import { getReviewContextLabel } from "@/lib/reviews/review-target";
 import {
-  isOrderServiceReviewOnly,
-  isStringingReviewBlockedStatus,
-} from "@/lib/reviews/review-policy";
+  resolveOrderReviewTarget,
+  resolveRentalReviewTarget,
+  resolveStringingApplicationReviewTarget,
+} from "@/lib/reviews/review-target.server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -161,11 +164,19 @@ export async function POST(req: Request) {
     });
     if (already) return NextResponse.json({ message: "already" }, { status: 409 });
 
+    const rentalTarget = await resolveRentalReviewTarget(db, userId, rentalIdStr);
     const now = new Date();
     await db.collection("reviews").insertOne({
       userId,
       reviewType: "rental",
+      reviewContext: rentalTarget?.reviewContext ?? "rental",
+      contextLabel: rentalTarget?.contextLabel ?? getReviewContextLabel("rental"),
       rentalId: rentalIdObj,
+      serviceApplicationId: rentalTarget?.serviceApplicationId && ObjectId.isValid(rentalTarget.serviceApplicationId)
+        ? new ObjectId(rentalTarget.serviceApplicationId)
+        : undefined,
+      relatedProductIds: rentalTarget?.relatedProductIds ?? [],
+      racketId: rental.racketId && ObjectId.isValid(String(rental.racketId)) ? new ObjectId(String(rental.racketId)) : undefined,
       rating,
       content,
       photos: photosClean,
@@ -198,9 +209,7 @@ export async function POST(req: Request) {
       "items.productId": { $in: [productIdStr, productIdObj] },
     });
     if (!bought) return NextResponse.json({ message: "notPurchased" }, { status: 403 });
-    if (await isOrderServiceReviewOnly(db, bought)) {
-      return NextResponse.json({ message: "serviceLinkedOrder" }, { status: 403 });
-    }
+    const orderTarget = await resolveOrderReviewTarget(db, userId, String(orderIdObj), productIdStr);
     if (!bought.userConfirmedAt && String(bought.status ?? "") !== "구매확정") {
       return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
     }
@@ -216,6 +225,14 @@ export async function POST(req: Request) {
     if (orderIdObj) {
       dupFilter.orderId = { $in: [orderIdObj, orderIdRaw] };
     }
+    if (orderTarget?.reviewContext === "product_stringing" && orderTarget.serviceApplicationId) {
+      dupFilter.$or = [
+        { orderId: { $in: [orderIdObj, orderIdRaw] }, productId: { $in: productCandidates } },
+        { serviceApplicationId: { $in: [new ObjectId(orderTarget.serviceApplicationId), orderTarget.serviceApplicationId] } },
+      ];
+      delete dupFilter.orderId;
+      delete dupFilter.productId;
+    }
     const already = await db.collection("reviews").findOne(dupFilter);
     if (already) return NextResponse.json({ message: "already" }, { status: 409 });
 
@@ -223,6 +240,13 @@ export async function POST(req: Request) {
     const doc: any = {
       userId,
       productId: productIdObj,
+      reviewType: "product",
+      reviewContext: orderTarget?.reviewContext ?? "product",
+      contextLabel: orderTarget?.contextLabel ?? getReviewContextLabel("product"),
+      serviceApplicationId: orderTarget?.serviceApplicationId && ObjectId.isValid(orderTarget.serviceApplicationId)
+        ? new ObjectId(orderTarget.serviceApplicationId)
+        : undefined,
+      relatedProductIds: orderTarget?.relatedProductIds ?? (orderTarget?.reviewContext === "product_stringing" ? [productIdObj] : undefined),
       rating,
       content,
       photos: photosClean,
@@ -284,7 +308,7 @@ export async function POST(req: Request) {
     const app = await db.collection("stringing_applications").findOne(
       { _id: appIdObj },
       {
-        projection: { userId: 1, orderId: 1, userConfirmedAt: 1, status: 1 },
+        projection: { userId: 1, orderId: 1, rentalId: 1, userConfirmedAt: 1, status: 1, stringDetails: 1, stringItems: 1 },
       },
     );
     if (!app || String(app.userId) !== String(userId)) {
@@ -295,6 +319,11 @@ export async function POST(req: Request) {
     }
     if (isStringingReviewBlockedStatus(app.status)) {
       return NextResponse.json({ message: "invalidStatus" }, { status: 403 });
+    }
+
+    const appTarget = await resolveStringingApplicationReviewTarget(db, userId, appIdStr);
+    if (appTarget?.reviewContext === "product_stringing" || appTarget?.reviewContext === "rental_stringing") {
+      return NextResponse.json({ message: "coveredByIntegratedReview", reason: "coveredByIntegratedReview" }, { status: 409 });
     }
 
     // 신청서 단위 중복 작성 방지
@@ -309,7 +338,11 @@ export async function POST(req: Request) {
     const insertRes = await db.collection("reviews").insertOne({
       userId,
       service: "stringing",
+      reviewType: "service",
+      reviewContext: "standalone_stringing",
+      contextLabel: getReviewContextLabel("standalone_stringing"),
       serviceApplicationId: appIdObj,
+      relatedProductIds: appTarget?.relatedProductIds ?? [],
       rating,
       content,
       photos: photosClean,
@@ -541,6 +574,9 @@ export async function GET(req: Request) {
     serviceTitle: 1,
     serviceTargetName: 1,
     serviceContextLabel: 1,
+    reviewContext: 1,
+    contextLabel: 1,
+    relatedProductIds: 1,
     __serviceProductIds: 1,
     rating: 1,
     helpfulCount: 1,
@@ -808,7 +844,7 @@ export async function GET(req: Request) {
                 ],
               },
               serviceContextLabel: {
-                $cond: [{ $eq: ["$service", "stringing"] }, "상품·교체서비스 후기", "서비스 후기"],
+                $ifNull: ["$contextLabel", { $cond: [{ $eq: ["$service", "stringing"] }, "교체서비스 후기", "서비스 후기"] }],
               },
             },
           },
@@ -878,6 +914,8 @@ export async function GET(req: Request) {
     const wanted = new Set(productFilterCandidates.map((v) => String(v)));
     rows = rows.filter((row: any) => {
       if (row.type === "product") return wanted.has(String(row.productId));
+      const relatedIds = Array.isArray(row.relatedProductIds) ? row.relatedProductIds : [];
+      if (relatedIds.some((pid: any) => wanted.has(String(pid)))) return true;
       return Array.isArray(row.__serviceProductIds)
         ? row.__serviceProductIds.some((pid: any) => wanted.has(String(pid)))
         : false;
@@ -927,6 +965,11 @@ export async function GET(req: Request) {
       if (parts.length > 1) row.rentalTargetName = `${racketBrandLabel(parts[0])} ${parts.slice(1).join(" ")}`.trim();
     }
 
+    if (!row.reviewContext) {
+      row.reviewContext = row.type === "rental" ? "rental" : row.type === "service" ? "standalone_stringing" : "product";
+    }
+    if (!row.contextLabel) row.contextLabel = getReviewContextLabel(row.reviewContext);
+    if (!row.serviceContextLabel && row.type === "service") row.serviceContextLabel = row.contextLabel;
     delete row.__serviceProductIds;
   }
 

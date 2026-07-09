@@ -32,7 +32,6 @@ export default function ActivityOrderReviewCTA({
   );
 
   if (!completed) return null;
-  if (data?.reason === "serviceLinkedOrder") return null;
 
   // 로딩 중 placeholder(버튼 자리를 유지해 UX 안정)
   if (isLoading) {
@@ -45,6 +44,8 @@ export default function ActivityOrderReviewCTA({
 
   const remaining = data?.counts?.remaining;
   const nextProductId = data?.nextProductId;
+  const nextApplicationId = data?.nextApplicationId;
+  const nextReviewContext = data?.nextReviewContext;
   if (typeof remaining !== "number") return null;
 
   return (
@@ -56,6 +57,8 @@ export default function ActivityOrderReviewCTA({
       reviewAllDone={remaining === 0}
       unreviewedCount={remaining}
       reviewNextTargetProductId={nextProductId}
+      reviewNextApplicationId={nextApplicationId}
+      reviewContext={nextReviewContext}
       className={className}
     />
   );

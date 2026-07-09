@@ -4,12 +4,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquarePlus, Check } from "lucide-react";
+import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 
 type Props = {
   orderId: string;
   reviewAllDone?: boolean;
   unreviewedCount?: number;
   reviewNextTargetProductId?: string | null;
+  reviewNextApplicationId?: string | null;
+  reviewContext?: string | null;
   serviceLinkedOrder?: boolean;
 
   // 상태 게이트용
@@ -28,6 +31,8 @@ export default function OrderReviewCTA({
   reviewAllDone,
   unreviewedCount,
   reviewNextTargetProductId,
+  reviewNextApplicationId,
+  reviewContext,
   serviceLinkedOrder = false,
   orderStatus,
   userConfirmedAt,
@@ -36,8 +41,6 @@ export default function OrderReviewCTA({
   loading = false,
   className,
 }: Props) {
-  if (serviceLinkedOrder) return null;
-
   // 완료(구매확정) 상태 게이트
   const isConfirmed = Boolean(userConfirmedAt) || orderStatus === "구매확정";
   if (showOnlyWhenCompleted && !isConfirmed) {
@@ -74,12 +77,19 @@ export default function OrderReviewCTA({
 
   // 하나 바로 쓸 수 있는 대상이 있으면 곧바로 작성 페이지
   if (reviewNextTargetProductId) {
+    const context = reviewContext ?? (serviceLinkedOrder ? "product_stringing" : "product");
+    const href = buildReviewWriteHref({
+      reviewContext: context as any,
+      orderId,
+      productId: reviewNextTargetProductId,
+      applicationId: reviewNextApplicationId,
+    });
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ""}`}>
         <Button size={size} asChild variant="default" className="shadow-sm">
-          <Link href={`/reviews/write?productId=${reviewNextTargetProductId}&orderId=${orderId}`}>
+          <Link href={href}>
             <MessageSquarePlus className="mr-1 h-4 w-4" />
-            후기 작성
+            {context === "product_stringing" ? "스트링·교체서비스 후기 작성" : "후기 작성"}
           </Link>
         </Button>
         {unreviewedBadge}

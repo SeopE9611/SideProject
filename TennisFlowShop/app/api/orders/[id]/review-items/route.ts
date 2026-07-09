@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
-import { isOrderServiceReviewOnly } from "@/lib/reviews/review-policy";
+import { resolveOrderReviewTarget } from "@/lib/reviews/review-target.server";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -40,17 +40,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ ok: false, error: "orderNotFound" }, { status: 404 });
   }
 
-  if (await isOrderServiceReviewOnly(db, order)) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "serviceLinkedOrder",
-        reason: "serviceLinkedOrder",
-        message: "교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.",
-      },
-      { status: 403, headers: { "Cache-Control": "no-store" } },
-    );
-  }
+  const integratedTarget = await resolveOrderReviewTarget(db, userId, orderId);
 
   const isOrderConfirmed =
     Boolean((order as any).userConfirmedAt) || String((order as any).status ?? "") === "구매확정";
@@ -58,6 +48,42 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json(
       { ok: false, error: "notConfirmed", reason: "notConfirmed" },
       { status: 403, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  if (integratedTarget?.reviewContext === "product_stringing") {
+    const productId = integratedTarget.productId;
+    const appId = integratedTarget.serviceApplicationId;
+    const already = await db.collection("reviews").findOne({
+      userId,
+      isDeleted: { $ne: true },
+      $or: [
+        { orderId: { $in: [orderIdObj, orderId] }, reviewContext: "product_stringing" },
+        ...(appId && ObjectId.isValid(appId)
+          ? [{ serviceApplicationId: { $in: [new ObjectId(appId), appId] } }]
+          : []),
+      ],
+    });
+    const reviewed = Boolean(already);
+    return NextResponse.json(
+      {
+        ok: true,
+        orderId,
+        items: [
+          {
+            reviewContext: "product_stringing",
+            label: integratedTarget.contextLabel,
+            productId,
+            applicationId: appId,
+            reviewed,
+          },
+        ],
+        counts: { total: 1, reviewed: reviewed ? 1 : 0, remaining: reviewed ? 0 : 1 },
+        nextProductId: reviewed ? null : productId,
+        nextApplicationId: reviewed ? null : appId,
+        nextReviewContext: "product_stringing",
+      },
+      { headers: { "Cache-Control": "no-store" } },
     );
   }
 

@@ -1,9 +1,12 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import { isOrderServiceReviewOnly, isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import {
-  isOrderServiceReviewOnly,
-  isStringingReviewBlockedStatus,
-} from "@/lib/reviews/review-policy";
+  resolveOrderReviewTarget,
+  resolveRentalReviewTarget,
+  resolveStringingApplicationReviewTarget,
+} from "@/lib/reviews/review-target.server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -122,15 +125,18 @@ export async function GET(req: Request) {
         { status: 404, headers: { "Cache-Control": "no-store" } },
       );
     }
+    const rentalTarget = await resolveRentalReviewTarget(db, userId, rentalId);
+    const rentalContext = rentalTarget?.reviewContext ?? "rental";
+    const rentalLabel = rentalTarget?.contextLabel ?? "대여 후기";
     if (isRentalReviewBlockedStatus(rental.status)) {
       return NextResponse.json(
-        { eligible: false, reason: "invalidStatus", targetType: "rental" },
+        { eligible: false, reason: "invalidStatus", targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
     if (!isRentalReviewConfirmed(rental)) {
       return NextResponse.json(
-        { eligible: false, reason: "notConfirmed", targetType: "rental" },
+        { eligible: false, reason: "notConfirmed", targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -141,12 +147,12 @@ export async function GET(req: Request) {
     });
     if (already) {
       return NextResponse.json(
-        { eligible: false, reason: "already", targetType: "rental" },
+        { eligible: false, reason: "already", targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
     return NextResponse.json(
-      { eligible: true, reason: null, targetType: "rental" },
+      { eligible: true, reason: null, targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel, suggestedApplicationId: rentalTarget?.serviceApplicationId ?? null },
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -193,14 +199,28 @@ export async function GET(req: Request) {
           { status: 400, headers: { "Cache-Control": "no-store" } },
         );
       }
-      if (await isOrderServiceReviewOnly(db, order)) {
-        const app = await findReviewableStringingApplicationForProduct(db, userId, productId);
+      const orderTarget = await resolveOrderReviewTarget(db, userId, orderId, productId);
+      if (orderTarget?.reviewContext === "product_stringing") {
+        const already = await db.collection("reviews").findOne({
+          userId,
+          isDeleted: { $ne: true },
+          $or: [
+            { orderId: { $in: [orderIdObj, orderId] }, reviewContext: "product_stringing" },
+            ...(orderTarget.serviceApplicationId && ObjectId.isValid(orderTarget.serviceApplicationId)
+              ? [{ serviceApplicationId: { $in: [new ObjectId(orderTarget.serviceApplicationId), orderTarget.serviceApplicationId] } }]
+              : []),
+          ],
+        });
         return NextResponse.json(
           {
-            eligible: false,
-            reason: "serviceLinkedOrder",
-            suggestedApplicationId: app ? String(app._id) : null,
-            targetLabel: "상품·교체서비스 이용 후기",
+            eligible: !already,
+            reason: already ? "already" : null,
+            reviewContext: "product_stringing",
+            targetType: "product_stringing",
+            targetLabel: orderTarget.contextLabel,
+            suggestedOrderId: orderId,
+            suggestedProductId: orderTarget.productId ?? productId,
+            suggestedApplicationId: orderTarget.serviceApplicationId,
           },
           { headers: { "Cache-Control": "no-store" } },
         );
@@ -273,22 +293,39 @@ export async function GET(req: Request) {
       ({ order, serviceOnly }) => !serviceOnly && !reviewedSet.has(String(order._id)),
     )?.order;
     if (!candidate) {
+      const integratedOrder = orderEligibility.find(
+        ({ order, serviceOnly }) => serviceOnly && !reviewedSet.has(String(order._id)),
+      )?.order;
+      if (integratedOrder) {
+        const target = await resolveOrderReviewTarget(db, userId, String(integratedOrder._id), productId);
+        return NextResponse.json(
+          {
+            eligible: true,
+            reason: null,
+            reviewContext: "product_stringing",
+            targetType: "product_stringing",
+            targetLabel: target?.contextLabel ?? "스트링·교체서비스 후기",
+            suggestedOrderId: String(integratedOrder._id),
+            suggestedProductId: target?.productId ?? productId,
+            suggestedApplicationId: target?.serviceApplicationId ?? null,
+          },
+          { headers: { "Cache-Control": "no-store" } },
+        );
+      }
       const serviceApp = await findReviewableStringingApplicationForProduct(db, userId, productId);
       return NextResponse.json(
         {
           eligible: false,
-          reason: orderEligibility.every(({ serviceOnly }) => serviceOnly)
-            ? "serviceLinkedOrder"
-            : "already",
+          reason: "already",
           suggestedApplicationId: serviceApp ? String(serviceApp._id) : null,
-          targetLabel: serviceApp ? "상품·교체서비스 이용 후기" : undefined,
+          targetLabel: serviceApp ? "스트링·교체서비스 후기" : undefined,
         },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
 
     return NextResponse.json(
-      { eligible: true, reason: null, suggestedOrderId: String(candidate._id) },
+      { eligible: true, reason: null, reviewContext: "product", targetType: "product", targetLabel: "상품 후기", suggestedOrderId: String(candidate._id), suggestedProductId: productId },
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -315,9 +352,19 @@ export async function GET(req: Request) {
         { headers: { "Cache-Control": "no-store" } },
       );
     }
-    if (await isOrderServiceReviewOnly(db, order)) {
+    const orderTarget = await resolveOrderReviewTarget(db, userId, orderId);
+    if (orderTarget?.reviewContext === "product_stringing") {
       return NextResponse.json(
-        { eligible: false, reason: "serviceLinkedOrder" },
+        {
+          eligible: true,
+          reason: null,
+          reviewContext: "product_stringing",
+          targetType: "product_stringing",
+          targetLabel: orderTarget.contextLabel,
+          suggestedProductId: orderTarget.productId,
+          suggestedOrderId: String(orderIdObj),
+          suggestedApplicationId: orderTarget.serviceApplicationId,
+        },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -395,6 +442,25 @@ export async function GET(req: Request) {
       if (isStringingReviewBlockedStatus(app.status)) {
         return NextResponse.json(
           { eligible: false, reason: "invalidStatus" },
+          { headers: { "Cache-Control": "no-store" } },
+        );
+      }
+
+      const appTarget = await resolveStringingApplicationReviewTarget(db, userId, applicationId);
+      if (appTarget?.reviewContext === "product_stringing" || appTarget?.reviewContext === "rental_stringing") {
+        return NextResponse.json(
+          {
+            eligible: false,
+            reason: "coveredByIntegratedReview",
+            reviewContext: appTarget.reviewContext,
+            targetLabel: appTarget.contextLabel,
+            redirectHref: buildReviewWriteHref({
+              reviewContext: appTarget.reviewContext,
+              orderId: appTarget.orderId,
+              rentalId: appTarget.rentalId,
+              applicationId,
+            }),
+          },
           { headers: { "Cache-Control": "no-store" } },
         );
       }

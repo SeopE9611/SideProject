@@ -50,11 +50,16 @@ export default function RentalReviewCTA({
   }
   if (data?.eligible === false) return null;
 
+  const isRentalStringing = data?.reviewContext === "rental_stringing" || data?.targetType === "rental_stringing";
+  const href = isRentalStringing
+    ? `/reviews/write?reviewContext=rental_stringing&rentalId=${rentalId}${data?.suggestedApplicationId ? `&applicationId=${data.suggestedApplicationId}` : ""}`
+    : `/reviews/write?rentalId=${rentalId}`;
+
   return (
     <Button size="sm" variant="default" className={className} asChild>
-      <Link href={`/reviews/write?rentalId=${rentalId}`}>
+      <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
-        대여 후기 작성
+        {isRentalStringing ? "대여·스트링 교체 후기 작성" : "대여 후기 작성"}
       </Link>
     </Button>
   );

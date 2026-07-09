@@ -1695,8 +1695,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               </Card>
             ) : null}
 
-            {!serviceLinkedOrder ? (
-              <div id="reviews-cta" className="mt-4">
+            <div id="reviews-cta" className="mt-4">
                 {allReviewed ? (
                   <div className="flex flex-col gap-3 border-l-2 border-primary/50 bg-primary/10 px-3 py-3 dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
                     <div className="flex items-center gap-3 text-primary">
@@ -1743,17 +1742,18 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       orderId={orderDetail._id as string}
                       reviewAllDone={allReviewed}
                       unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
-                      reviewNextTargetProductId={firstUnreviewed?.id ?? null}
+                      reviewNextTargetProductId={firstUnreviewed?.id ?? items[0]?.id ?? null}
+                      reviewNextApplicationId={reviewableStringingAppId ?? null}
+                      reviewContext={serviceLinkedOrder ? "product_stringing" : "product"}
                       orderStatus={orderDetail.status}
                       userConfirmedAt={orderDetail.userConfirmedAt ?? null}
                       showOnlyWhenCompleted
-                      serviceLinkedOrder={false}
+                      serviceLinkedOrder={serviceLinkedOrder}
                       loading={!reviewsReady}
                     />
                   </div>
                 )}
               </div>
-            ) : null}
           </aside>
         </div>
 
