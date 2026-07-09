@@ -4,7 +4,6 @@ import {
   isApplicationTodoActionable,
   isOrderTodoActionable,
   isRentalTodoActionable,
-  normalizeMypageTodoStatus,
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import clientPromise from "@/lib/mongodb";
@@ -124,7 +123,6 @@ export async function GET() {
     const reviewTargetProductIds = getOrderReviewTargetProductIds(order);
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
-    const status = normalizeMypageTodoStatus(order?.status);
     const isConfirmed = Boolean(order?.userConfirmedAt) || isOrderConfirmedStatus(order?.status);
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
