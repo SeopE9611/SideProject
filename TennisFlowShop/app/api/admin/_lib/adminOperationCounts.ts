@@ -65,6 +65,9 @@ const VISIT_PICKUP_VALUES = [
   "방문수령",
   "방문 수령",
   "매장수령",
+  "매장 수령",
+  "매장방문",
+  "매장 방문",
 ];
 
 const orderNeedsActionFilter: Filter<Document> = {
