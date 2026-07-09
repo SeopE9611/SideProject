@@ -2969,7 +2969,7 @@ export default function StringingApplicationDetailClient({
                                 );
                               })()}
                             />
-                            <AdminCompactField label="결제 방식" value={paymentMethodForDisplay} />
+                            <AdminCompactField label="결제 방식" value={getCustomerPaymentMethodLabel(paymentMethodForDisplay, packageApplied)} />
                           </div>
                         ) : (
                           <div className="space-y-3">
