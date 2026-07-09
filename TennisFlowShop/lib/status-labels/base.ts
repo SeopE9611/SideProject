@@ -15,16 +15,23 @@ const getMappedLabel = (raw: string, map: Record<string, string>): string | null
 
 const ORDER_STATUS_LABEL_MAP: Record<string, string> = {
   pending: "대기중",
+  paid: "결제완료",
+  payment_completed: "결제완료",
+  shipping_pending: "배송준비중",
   shipped: "배송중",
   delivered: "배송완료",
   confirmed: "구매확정",
+  purchase_confirmed: "구매확정",
   cancel_processing: "취소처리중",
   cancelprocessing: "취소처리중",
   approved_pending_pg_cancel: "취소처리중",
   canceled: "취소",
   cancelled: "취소",
-  refunded: "환불",
-  paid: "결제완료",
+  partial_canceled: "부분취소",
+  partialcanceled: "부분취소",
+  partial_cancelled: "부분취소",
+  refunded: "환불완료",
+  refund_completed: "환불완료",
 };
 
 const PAYMENT_STATUS_LABEL_MAP: Record<string, string> = {
@@ -34,18 +41,36 @@ const PAYMENT_STATUS_LABEL_MAP: Record<string, string> = {
   canceled: "결제취소",
   cancelled: "결제취소",
   refunded: "환불완료",
+  refund_completed: "환불완료",
+  partial_canceled: "부분취소",
+  partialcanceled: "부분취소",
+  partial_cancelled: "부분취소",
 };
 
 const APPLICATION_STATUS_LABEL_MAP: Record<string, string> = {
   requested: "접수완료",
   received: "접수완료",
+  reviewing: "검토 중",
+  in_progress: "작업 중",
+  work_pending: "작업 대기",
+  completed: "교체완료",
+  done: "교체완료",
+  work_done: "교체완료",
   approved: "승인",
   rejected: "거절",
+  canceled: "취소",
+  cancelled: "취소",
 };
 
 const RENTAL_STATUS_LABEL_MAP: Record<string, string> = {
+  pending: "대기중",
+  paid: "결제완료",
+  rented: "대여중",
   out: "대여중",
   returned: "반납완료",
+  overdue: "연체",
+  canceled: "취소",
+  cancelled: "취소",
 };
 
 export function getCommonOrderStatusLabel(raw?: string | null): string | null {

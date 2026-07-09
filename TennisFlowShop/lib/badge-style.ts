@@ -196,12 +196,17 @@ export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? "").trim();
   if (!normalized) return "neutral";
   if (normalized === "취소처리중") return "warning";
-  if (normalized.includes("취소") || normalized.includes("환불")) return "danger";
+  const lower = normalized.toLowerCase();
+  if (normalized.includes("취소") || normalized.includes("환불") || normalized === "부분취소") return "danger";
+  if (["canceled", "cancelled", "refunded", "refund_completed", "partial_canceled", "partialcanceled", "partial_cancelled"].includes(lower)) return "danger";
   if (normalized === "결제완료" || normalized === "배송완료" || normalized === "구매확정")
     return "success";
+  if (["paid", "payment_completed", "delivered", "confirmed", "purchase_confirmed"].includes(lower)) return "success";
   if (normalized === "배송중" || normalized === "처리중" || normalized === "배송준비중")
     return "info";
+  if (["shipped", "shipping_pending"].includes(lower)) return "info";
   if (normalized === "대기중") return "warning";
+  if (lower === "pending") return "warning";
   return "neutral";
 }
 
@@ -224,12 +229,16 @@ export const paymentStatusColors: Record<string, string> = {
 export function getPaymentStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? "").trim();
   if (!normalized) return "neutral";
+  const lower = normalized.toLowerCase();
+  if (["canceled", "cancelled", "refunded", "refund_completed", "partial_canceled", "partialcanceled", "partial_cancelled"].includes(lower)) return "danger";
   if (normalized.includes("실패") || normalized.includes("취소") || normalized.includes("환불"))
     return "danger";
   if (normalized === "결제완료" || normalized === "주문결제포함" || normalized === "대여결제포함")
     return "success";
+  if (lower === "paid" || lower === "payment_completed") return "success";
   if (normalized === "패키지차감") return "info";
   if (normalized === "결제대기") return "warning";
+  if (lower === "pending") return "warning";
   if (normalized === "확인필요") return "warning";
   return "neutral";
 }
@@ -372,10 +381,11 @@ export function getRentalStatusTone(status?: string | null): BadgeSemanticTone {
     .toLowerCase();
   if (!normalized) return "neutral";
   if (normalized === "paid" || normalized === "결제완료") return "success";
-  if (normalized === "out" || normalized === "대여중") return "info";
+  if (normalized === "out" || normalized === "rented" || normalized === "대여중") return "info";
   if (normalized === "returned" || normalized === "반납완료") return "success";
+  if (normalized === "overdue" || normalized === "연체") return "danger";
   if (normalized === "pending" || normalized === "대기중") return "warning";
-  if (normalized === "canceled" || normalized === "취소" || normalized === "취소됨")
+  if (normalized === "canceled" || normalized === "cancelled" || normalized === "취소" || normalized === "취소됨")
     return "danger";
   return "neutral";
 }
@@ -396,11 +406,13 @@ export const applicationStatusColors = {
 export function getApplicationStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? "").trim();
   if (!normalized) return "neutral";
-  if (normalized === "교체완료") return "success";
-  if (normalized === "작업 중") return "info";
-  if (normalized === "검토 중") return "info";
-  if (normalized === "접수완료") return "warning";
-  if (normalized.includes("취소")) return "danger";
+  const lower = normalized.toLowerCase();
+  if (normalized === "교체완료" || ["completed", "done", "work_done"].includes(lower)) return "success";
+  if (normalized === "작업 중" || lower === "in_progress") return "info";
+  if (normalized === "검토 중" || lower === "reviewing") return "info";
+  if (normalized === "작업 대기" || lower === "work_pending") return "warning";
+  if (normalized === "접수완료" || lower === "received") return "warning";
+  if (normalized.includes("취소") || lower === "canceled" || lower === "cancelled") return "danger";
   return "neutral";
 }
 
