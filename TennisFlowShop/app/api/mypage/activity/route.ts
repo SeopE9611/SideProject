@@ -5,7 +5,6 @@ import {
   isApplicationTodoActionable,
   isOrderTodoActionable,
   isRentalTodoActionable,
-  normalizeMypageTodoStatus,
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import {
@@ -588,7 +587,6 @@ export async function GET(req: Request) {
     const reviewTargetProductIds: string[] = [...new Set<string>(filteredReviewTargetProductIds)];
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
-    const status = normalizeMypageTodoStatus(o?.status);
     const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
@@ -841,7 +839,6 @@ export async function GET(req: Request) {
     const orderId = String(o._id);
     const items = Array.isArray(o.items) ? o.items : [];
     const first = items[0] ?? null;
-    const status = normalizeMypageTodoStatus(o?.status);
     const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
     const linkedApps = appByOrderId.get(orderId) ?? [];
     const serviceLinkedOrder = isOrderLinkedToStringing(o, linkedApps);

@@ -29,7 +29,12 @@ import {
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
-import { isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
+import {
+  isOrderConfirmedStatus,
+  isOrderDeliveredStatus,
+  isRentalReturnedStatus,
+  isStringingCompletedStatus,
+} from "@/lib/status/flow-status";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -363,7 +368,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     // 취소/환불된 주문은 사용자가 더 처리할 일이 없으므로 Todo에서 제외합니다.
     if (isTerminalCanceledStatus(group.order?.status)) return null;
 
-    if (getMypageNormalizedStatus(group.order?.status) === "배송완료") {
+    if (isOrderDeliveredStatus(group.order?.status)) {
       return "구매 확정 필요";
     }
 
@@ -377,7 +382,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
 
     const isConfirmed =
       Boolean(group.order?.userConfirmedAt) ||
-      getMypageNormalizedStatus(group.order?.status) === "구매확정";
+      isOrderConfirmedStatus(group.order?.status);
 
     if (isConfirmed && (group.order?.reviewPendingCount ?? 0) > 0) {
       return "상품 후기 작성 가능";
@@ -474,8 +479,8 @@ const getFlowNextActionText = (
         ? "수령 준비 상태를 확인해주세요."
         : "완성 라켓 배송 중입니다. 배송정보를 확인해주세요.";
     }
-    if (normalized === "배송완료") return "상품을 받으셨다면 구매 확정을 진행해주세요.";
-    if (normalized === "구매확정") {
+    if (isOrderDeliveredStatus(group.order?.status)) return "상품을 받으셨다면 구매 확정을 진행해주세요.";
+    if (isOrderConfirmedStatus(group.order?.status)) {
       const hasPendingOrderReview =
         Boolean(group.order?.hasPendingReview) || (group.order?.reviewPendingCount ?? 0) > 0;
 
@@ -517,7 +522,7 @@ const getFlowNextActionText = (
     if (normalized === "대기중") return "결제를 완료해주세요.";
     if (normalized === "결제완료") return "대여 상품 출고 또는 수령 준비 중입니다.";
     if (normalized === "대여중") return "대여 중입니다. 반납 일정을 확인해주세요.";
-    if (normalized === "반납완료") {
+    if (isRentalReturnedStatus(group.rental?.status)) {
       const hasPendingServiceReview =
         Boolean(group.application?.serviceReviewPending) ||
         (group.rental?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
@@ -545,7 +550,7 @@ const getFlowNextActionText = (
   if (normalized === "거절") return "신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.";
   if (normalized === "처리중" || normalized === "작업 중")
     return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
-  if (normalized === "교체완료")
+  if (isStringingCompletedStatus(app?.status))
     return app?.serviceReviewPending
       ? "후기를 남길 수 있어요."
       : "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
@@ -614,7 +619,7 @@ const getRepresentativeImage = (
 
 const canShowOrderShippingInfo = (status?: string | null) => {
   const normalized = getMypageNormalizedStatus(status);
-  return normalized === "배송중" || normalized === "배송완료" || normalized === "구매확정";
+  return normalized === "배송중" || isOrderDeliveredStatus(status) || isOrderConfirmedStatus(status);
 };
 
 function FlowListSkeleton() {
@@ -1297,7 +1302,7 @@ export default function TransactionFlowList() {
                   });
 
                   const canRenderOrderReview =
-                    Boolean(g.order?.userConfirmedAt) || normalizedStatus === "구매확정";
+                    Boolean(g.order?.userConfirmedAt) || isOrderConfirmedStatus(g.order?.status);
 
                   if (prefersApplicationView) {
                     if (orderId) {
@@ -1419,7 +1424,7 @@ export default function TransactionFlowList() {
                           </Button>
                         ),
                       });
-                    } else if (normalizedStatus === "배송완료") {
+                    } else if (isOrderDeliveredStatus(g.order?.status)) {
                       actions.push({
                         key: "order-confirm",
                         priority: 0,
