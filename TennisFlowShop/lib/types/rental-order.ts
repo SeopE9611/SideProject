@@ -2,7 +2,7 @@
 
 import { RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 
-// pending → paid → out → returned (종결) / canceled(종결)
+// pending → paid → out → returned(라켓 반납 완료) → depositRefundedAt 기록 시 운영 마감 / canceled는 취소 종결
 export type RentalStatus =
   | "pending" // 대기중(신청 완료, 결제 전)
   | "paid" // 결제완료(출고 전)

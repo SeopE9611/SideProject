@@ -506,10 +506,11 @@ export default function AdminRentalDetailClient() {
   ).trim();
   const hasLinkedApplication = hasRentalStringingService(data);
   const isStringingComplete = isRentalStringingComplete(linkedApplicationStatus);
+  const normalizedStatus = String(data?.status ?? "").trim().toLowerCase();
+  const isOut = normalizedStatus === "out" || normalizedStatus.includes("대여중");
+  const isReturned = normalizedStatus === "returned" || normalizedStatus.includes("반납완료");
   const hasStatusOrderMismatch =
-    hasLinkedApplication &&
-    ["out", "returned"].includes(String(data?.status ?? "")) &&
-    !isStringingComplete;
+    hasLinkedApplication && (isOut || isReturned) && !isStringingComplete;
   const hasOutboundTracking = Boolean(
     String(data?.shipping?.outbound?.trackingNumber ?? "").trim(),
   );
@@ -545,7 +546,7 @@ export default function AdminRentalDetailClient() {
     data?.stringingReservationLabel,
   );
 
-  const lowerStatus = String(data.status ?? "").toLowerCase();
+  const lowerStatus = normalizedStatus;
   const lowerPayment = String(paymentLabel ?? "").toLowerCase();
   const hasCancelRequested = cancelInfo?.status === "requested";
   const needsPaymentCheck =
@@ -555,8 +556,7 @@ export default function AdminRentalDetailClient() {
     lowerPayment.includes("pending");
   const isBeforeOut = lowerStatus === "pending" || lowerStatus === "paid";
   const hasReturnTracking = Boolean(String(data?.shipping?.return?.trackingNumber ?? "").trim());
-  const needsReturnCheck = lowerStatus === "out" && (Boolean(data?.dueAt) || hasReturnTracking);
-  const isReturned = lowerStatus === "returned" || lowerStatus.includes("반납완료");
+  const needsReturnCheck = isOut && (Boolean(data?.dueAt) || hasReturnTracking);
   const needsDepositRefund = isReturned && !data?.depositRefundedAt;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequested
     ? {
@@ -791,7 +791,7 @@ export default function AdminRentalDetailClient() {
               tone={
                 hasStatusOrderMismatch
                   ? "warning"
-                  : data.status === "returned"
+                  : isReturned
                     ? "success"
                     : "neutral"
               }
@@ -860,18 +860,18 @@ export default function AdminRentalDetailClient() {
               title="인도 / 반납"
               icon={Truck}
               tone={
-                data.status === "returned"
+                isReturned
                   ? "success"
-                  : data.status === "out"
+                  : isOut
                     ? "warning"
                     : hasOutboundTracking
                       ? "primary"
                       : "neutral"
               }
               value={
-                data.status === "returned"
+                isReturned
                   ? "반납 완료"
-                  : data.status === "out"
+                  : isOut
                     ? "반납 필요"
                     : Outbound?.trackingNumber
                       ? "인도 완료"
@@ -959,7 +959,7 @@ export default function AdminRentalDetailClient() {
           }
           secondaryActions={
             <>
-              {data.status === "returned" && !data.depositRefundedAt ? (
+              {isReturned && !data.depositRefundedAt ? (
                 <Button
                   size="sm"
                   variant="outline"
@@ -1267,8 +1267,7 @@ export default function AdminRentalDetailClient() {
                   장착 작업이 완료되었습니다. 인도 정보 등록 또는 대여 시작 단계를 진행할 수
                   있습니다.
                 </p>
-              ) : ["out", "returned"].includes(data.status) &&
-                linkedApplicationStatus !== "교체완료" ? (
+              ) : (isOut || isReturned) && linkedApplicationStatus !== "교체완료" ? (
                 <p className="rounded-md border border-warning/25 bg-warning/[0.04] px-3 py-2 text-sm text-foreground">
                   상태 순서 확인 필요: 교체 작업이 완료되지 않았는데 대여가 인도 또는 반납 단계로
                   진행되었습니다. 교체 작업 상태와 처리 이력을 확인하세요.
@@ -1332,9 +1331,9 @@ export default function AdminRentalDetailClient() {
                 <p>교체완료: 장착 작업이 완료되어 인도 또는 수령 준비가 가능한 상태입니다.</p>
                 {!canUpdateLinkedApplication && (
                   <p className="font-medium text-foreground">
-                    {data.status === "returned"
+                    {isReturned
                       ? "반납 완료된 대여에서는 교체 작업 상태를 변경할 수 없습니다."
-                      : data.status === "out"
+                      : isOut
                         ? "대여 시작 후에는 교체 작업 상태를 읽기 전용으로 확인합니다."
                         : "결제완료 상태에서 교체 작업 상태를 변경할 수 있습니다."}
                   </p>
@@ -1419,7 +1418,7 @@ export default function AdminRentalDetailClient() {
               )}
 
               {/* 환불/해제 버튼 (아래는 기존 코드 그대로) */}
-              {data.status === "returned" &&
+              {isReturned &&
                 (data.depositRefundedAt ? (
                   <Button
                     size="sm"
