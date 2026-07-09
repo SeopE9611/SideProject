@@ -433,8 +433,12 @@ function hasRentalDue(group: { items: OpItem[] }) {
   return group.items.some((item) => {
     if (item.kind !== "rental") return false;
     const combined = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""} ${item.nextAction ?? ""}`;
+    const isReturned = combined.toLowerCase().includes("returned") || combined.includes("반납완료");
+    const hasDepositRefundSignal =
+      item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED") === true;
     const needsDepositRefund =
-      !item.depositRefundedAt && (combined.includes("보증금") || combined.includes("환불"));
+      !item.depositRefundedAt &&
+      (hasDepositRefundSignal || (isReturned && combined.includes("보증금")));
     if (needsDepositRefund) return true;
     if (excludeKeywords.some((word) => combined.includes(word))) return false;
     const stage = normalizeText(item.stage);

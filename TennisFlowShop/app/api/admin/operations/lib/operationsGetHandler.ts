@@ -2243,12 +2243,17 @@ export async function handleAdminOperationsGet(
   };
   const groupHas = (group: AdminOperationsGroup, predicate: (item: OpItem) => boolean) =>
     group.items.some(predicate);
+  const isRentalReturnedForDeposit = (item: OpItem) => {
+    const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`.toLowerCase();
+    return statusText.includes("returned") || statusText.includes("반납완료");
+  };
+  const hasDepositRefundSignal = (item: OpItem) =>
+    item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED") === true;
   const isRentalDepositRefundRequiredItem = (item: OpItem) =>
     item.kind === "rental" &&
     !item.depositRefundedAt &&
-    (item.nextAction?.includes("보증금") ||
-      item.nextAction?.includes("환불") ||
-      item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED"));
+    (hasDepositRefundSignal(item) ||
+      (isRentalReturnedForDeposit(item) && item.nextAction?.includes("보증금")));
   const operationSignalCounts: OperationSignalCounts = {
     cancelRequests: allGroups.filter((group) =>
       groupHas(
