@@ -1,5 +1,12 @@
 import type { Db, Document, Filter } from "mongodb";
 
+import {
+  ORDER_CANCELED_TERMINAL_VALUES,
+  ORDER_CONFIRMED_TERMINAL_VALUES,
+  ORDER_DELIVERED_MONITORING_VALUES,
+  ORDER_REFUNDED_TERMINAL_VALUES,
+} from "@/lib/status/flow-status";
+
 import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
 import {
   EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
@@ -19,25 +26,14 @@ type OperationCountsOptions = {
 };
 
 const TERMINAL_STATUS_VALUES = [
-  "취소",
-  "취소완료",
-  "환불",
-  "환불완료",
-  "결제취소",
-  "구매확정",
+  ...ORDER_CANCELED_TERMINAL_VALUES,
+  ...ORDER_REFUNDED_TERMINAL_VALUES,
+  ...ORDER_CONFIRMED_TERMINAL_VALUES,
   "completed",
-  "cancelled",
-  "canceled",
-  "refunded",
-  "refund_completed",
-  "confirmed",
-  "purchase_confirmed",
   "returned",
   "반납완료",
   "교체완료",
 ];
-
-const ORDER_DELIVERED_MONITORING_VALUES = ["배송완료", "delivered"];
 
 const PAYMENT_PENDING_VALUES = [
   "pending",

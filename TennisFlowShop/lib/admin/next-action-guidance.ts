@@ -1,5 +1,9 @@
 import type { OpsKind } from "@/lib/admin-ops-taxonomy";
 import { isVisitPickupOrder } from "@/lib/order-shipping";
+import {
+  isOrderConfirmedStatus,
+  isOrderDeliveredStatus,
+} from "@/lib/status/flow-status";
 
 export type OpsLikeItem = {
   kind: OpsKind;
@@ -90,17 +94,11 @@ const isOrderShipped = (status?: string | null) => {
 };
 
 // 배송완료는 "구매확정 직전" 단계로 보고, 운영센터에서 후속 모니터링 대상으로 둡니다.
-const isOrderDelivered = (status?: string | null) => {
-  const s = String(status ?? "").toLowerCase();
-  return s.includes("배송완료") || s === "delivered";
-};
+const isOrderDelivered = (status?: string | null) => isOrderDeliveredStatus(status);
 
 // 구매확정은 주문 플로우가 사실상 종료된 상태로 보고,
 // 운영센터 KPI의 "미처리" 건으로 잡히지 않게 별도 분리합니다.
-const isOrderConfirmed = (status?: string | null) => {
-  const s = String(status ?? "").toLowerCase();
-  return s.includes("구매확정") || s === "confirmed";
-};
+const isOrderConfirmed = (status?: string | null) => isOrderConfirmedStatus(status);
 
 const isApplicationClosed = (status?: string | null) => {
   const st = String(status ?? "").toLowerCase();

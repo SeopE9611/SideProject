@@ -37,6 +37,13 @@ import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
+import {
+  isOrderTerminalStatus as isSharedOrderTerminalStatus,
+  isRentalReturnedStatus,
+  isStringingCanceledStatus,
+  isStringingCompletedStatus,
+  normalizeStatusText,
+} from "@/lib/status/flow-status";
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -454,12 +461,6 @@ function dedupeSignals(signals: OperationSignal[]): OperationSignal[] {
   return out;
 }
 
-function normalizeStatusText(value?: string | null) {
-  return String(value ?? "")
-    .trim()
-    .toLowerCase();
-}
-
 function isCancelApproved(item: OpItem) {
   return item.cancel?.status === "approved";
 }
@@ -481,18 +482,7 @@ function isCancelProcessingItem(item: OpItem) {
 
 function isOrderTerminalStatus(status?: string | null) {
   if (isCancelProcessingStatus(status)) return false;
-  const s = normalizeStatusText(status);
-  return (
-    s.includes("취소") ||
-    s.includes("환불") ||
-    s.includes("결제취소") ||
-    s.includes("구매확정") ||
-    s === "canceled" ||
-    s === "cancelled" ||
-    s === "refunded" ||
-    s === "confirmed" ||
-    s === "purchase_confirmed"
-  );
+  return isSharedOrderTerminalStatus(status);
 }
 
 function isClosedForNicePaymentSync(status?: string | null) {
@@ -532,11 +522,6 @@ const isVisitCollectionMethodValue = (value: unknown) => {
     normalized as (typeof VISIT_STRINGING_COLLECTION_METHOD_VALUES)[number],
   );
 };
-
-function isStringingCompletedStatus(status?: string | null) {
-  const s = normalizeStatusText(status);
-  return s === "completed" || s === "done" || s === "work_done" || s.includes("교체완료");
-}
 
 function isVisitPickupLikeStringing(app: UnknownDoc) {
   const shippingInfo = asDoc(app?.shippingInfo);
@@ -600,22 +585,13 @@ function needsStringingShippingFollowup(app: UnknownDoc) {
 }
 
 function isApplicationTerminalStatus(status?: string | null) {
-  const s = normalizeStatusText(status);
-  return (
-    s.includes("취소") ||
-    s.includes("교체완료") ||
-    s === "canceled" ||
-    s === "cancelled" ||
-    s === "done" ||
-    s === "work_done" ||
-    s === "completed"
-  );
+  return isStringingCanceledStatus(status) || isStringingCompletedStatus(status);
 }
 
 function isRentalTerminalStatus(item: OpItem) {
   const s = normalizeStatusText(item.statusLabel);
   if (s.includes("취소") || s === "canceled" || s === "cancelled") return true;
-  if (!(s.includes("반납완료") || s === "returned")) return false;
+  if (!isRentalReturnedStatus(item.statusLabel)) return false;
   return Boolean(item.depositRefundedAt);
 }
 
