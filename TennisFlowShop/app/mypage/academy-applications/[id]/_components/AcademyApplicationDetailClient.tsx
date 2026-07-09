@@ -168,7 +168,12 @@ function InfoBox({
 }
 
 function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const classSnapshot = item.classSnapshot;
+  const description = classSnapshot?.description?.trim();
+  const shouldShowDescriptionToggle = Boolean(
+    description && (description.length > 80 || description.includes("\n")),
+  );
 
   if (!classSnapshot) {
     return (
@@ -205,10 +210,27 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
               <p className="break-keep text-ui-card-title font-medium leading-snug text-foreground">
                 {displayValue(classSnapshot.name)}
               </p>
-              {classSnapshot.description ? (
-                <p className="mt-1.5 line-clamp-2 whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-muted-foreground">
-                  {classSnapshot.description}
-                </p>
+              {description ? (
+                <div className="mt-1.5">
+                  <p
+                    className={`whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-muted-foreground ${
+                      isDescriptionExpanded ? "" : "line-clamp-2"
+                    }`}
+                  >
+                    {description}
+                  </p>
+                  {shouldShowDescriptionToggle ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="mt-1 h-auto px-0 py-0.5 text-ui-label font-medium text-primary hover:bg-transparent hover:text-foreground"
+                      onClick={() => setIsDescriptionExpanded((current) => !current)}
+                    >
+                      {isDescriptionExpanded ? "설명 접기" : "설명 더보기"}
+                    </Button>
+                  ) : null}
+                </div>
               ) : null}
             </div>
             {classSnapshot.statusLabel ? (
