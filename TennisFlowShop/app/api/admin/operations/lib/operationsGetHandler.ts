@@ -2249,11 +2249,13 @@ export async function handleAdminOperationsGet(
   };
   const hasDepositRefundSignal = (item: OpItem) =>
     item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED") === true;
-  const isRentalDepositRefundRequiredItem = (item: OpItem) =>
+  const hasDepositRefundKeyword = (item: OpItem) =>
+    item.nextAction?.includes("보증금") === true;
+  const isRentalDepositRefundRequiredItem = (item: OpItem): boolean =>
     item.kind === "rental" &&
     !item.depositRefundedAt &&
     (hasDepositRefundSignal(item) ||
-      (isRentalReturnedForDeposit(item) && item.nextAction?.includes("보증금")));
+      (isRentalReturnedForDeposit(item) && hasDepositRefundKeyword(item)));
   const operationSignalCounts: OperationSignalCounts = {
     cancelRequests: allGroups.filter((group) =>
       groupHas(
