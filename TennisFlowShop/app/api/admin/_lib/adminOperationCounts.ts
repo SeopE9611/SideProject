@@ -21,20 +21,23 @@ type OperationCountsOptions = {
 const TERMINAL_STATUS_VALUES = [
   "취소",
   "취소완료",
+  "환불",
   "환불완료",
-  "배송완료",
+  "결제취소",
   "구매확정",
   "completed",
   "cancelled",
   "canceled",
   "refunded",
   "refund_completed",
-  "delivered",
+  "confirmed",
   "purchase_confirmed",
   "returned",
   "반납완료",
   "교체완료",
 ];
+
+const ORDER_DELIVERED_MONITORING_VALUES = ["배송완료", "delivered"];
 
 const PAYMENT_PENDING_VALUES = [
   "pending",
@@ -93,6 +96,7 @@ const orderNeedsActionFilter: Filter<Document> = {
               "대기중",
               "결제완료",
               "배송준비중",
+              ...ORDER_DELIVERED_MONITORING_VALUES,
             ],
           },
         },
