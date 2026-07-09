@@ -350,4 +350,9 @@ test("후기 대상 통합 계약: 서비스 연결 주문/대여는 통합 revi
   assert.ok(!reviewItems.includes('status: 403') || !reviewItems.includes('serviceLinkedOrder'));
   assert.ok(reviewsRoute.includes("reviewContext") && reviewsRoute.includes("contextLabel") && reviewsRoute.includes("relatedProductIds"));
   assert.ok(reviewsRoute.includes("relatedProductIds") && reviewsRoute.includes("__serviceProductIds"));
+  assert.ok(reviewsRoute.includes("const matchesProductId = row.productId && wanted.has(String(row.productId));"));
+  assert.ok(reviewsRoute.includes("const matchesRelatedProductId = relatedIds.some((pid: any) => wanted.has(String(pid)));"));
+  assert.ok(reviewsRoute.includes("const matchesLegacyServiceProductId = Array.isArray(row.__serviceProductIds)"));
+  assert.ok(reviewsRoute.includes('if (row.type === "product") return matchesProductId || matchesRelatedProductId;'));
+  assert.ok(!reviewsRoute.includes('if (row.type === "product") return wanted.has(String(row.productId));'));
 });
