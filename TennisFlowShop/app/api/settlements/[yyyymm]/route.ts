@@ -12,6 +12,7 @@ import {
   buildPrivatePaymentSettlementSummary,
 } from "@/app/api/settlements/_lib/settlementPolicy";
 import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
@@ -43,12 +44,6 @@ function nowYyyymmKST() {
 }
 
 export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: string }> }) {
-  const origin = _req.headers.get("origin") || "";
-  const allow = process.env.NEXT_PUBLIC_SITE_URL;
-  if (allow && origin && !origin.startsWith(allow)) {
-    return NextResponse.json({ message: "forbidden" }, { status: 403 });
-  }
-
   let lockKey: string | null = null;
   let lockOwner: string | null = null;
   let lockDb: import("mongodb").Db | null = null;
@@ -57,6 +52,9 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
     // 관리자 인증 + DB 획득(정산 스냅샷 생성은 민감 작업)
     const g = await requireAdmin(_req);
     if (!g.ok) return g.res;
+
+    const csrf = verifyAdminCsrf(_req);
+    if (!csrf.ok) return csrf.res;
 
     const limited = await enforceAdminRateLimit(
       _req,
@@ -283,15 +281,12 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
 
 // 스냅샷 삭제 API
 export async function DELETE(_req: Request, ctx: { params: Promise<{ yyyymm: string }> }) {
-  const origin = _req.headers.get("origin") || "";
-  const allow = process.env.NEXT_PUBLIC_SITE_URL;
-  if (allow && origin && !origin.startsWith(allow)) {
-    return NextResponse.json({ message: "forbidden" }, { status: 403 });
-  }
-
   try {
     const g = await requireAdmin(_req);
     if (!g.ok) return g.res;
+
+    const csrf = verifyAdminCsrf(_req);
+    if (!csrf.ok) return csrf.res;
 
     const limited = await enforceAdminRateLimit(
       _req,
