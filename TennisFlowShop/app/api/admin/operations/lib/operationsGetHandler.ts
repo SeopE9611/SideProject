@@ -507,7 +507,30 @@ function isClosedForNicePaymentSync(status?: string | null) {
   );
 }
 
-const VISIT_PICKUP_METHOD_KEYWORDS = ["visit", "pickup", "방문", "매장"] as const;
+const VISIT_STRINGING_COLLECTION_METHOD_VALUES = [
+  "visit",
+  "pickup",
+  "store_pickup",
+  "visit_pickup",
+  "방문수령",
+  "방문 수령",
+  "매장수령",
+  "매장 수령",
+  "매장방문",
+  "매장 방문",
+] as const;
+
+const normalizeMethodValue = (value: unknown) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase();
+
+const isVisitCollectionMethodValue = (value: unknown) => {
+  const normalized = normalizeMethodValue(value);
+  return VISIT_STRINGING_COLLECTION_METHOD_VALUES.includes(
+    normalized as (typeof VISIT_STRINGING_COLLECTION_METHOD_VALUES)[number],
+  );
+};
 
 function isStringingCompletedStatus(status?: string | null) {
   const s = normalizeStatusText(status);
@@ -516,19 +539,30 @@ function isStringingCompletedStatus(status?: string | null) {
 
 function isVisitPickupLikeStringing(app: UnknownDoc) {
   const shippingInfo = asDoc(app?.shippingInfo);
-  const methodText = [
+  const exactMethodValues = [
     app?.collectionMethod,
     shippingInfo?.collectionMethod,
     shippingInfo?.shippingMethod,
     shippingInfo?.deliveryMethod,
     shippingInfo?.pickupMethod,
     shippingInfo?.servicePickupMethod,
-  ]
-    .map((value) => String(value ?? "").trim().toLowerCase())
+  ];
+
+  if (exactMethodValues.some(isVisitCollectionMethodValue)) return true;
+
+  const koreanText = exactMethodValues
+    .map((value) => String(value ?? "").trim())
     .filter(Boolean)
     .join(" ");
 
-  return VISIT_PICKUP_METHOD_KEYWORDS.some((keyword) => methodText.includes(keyword));
+  return (
+    koreanText.includes("방문수령") ||
+    koreanText.includes("방문 수령") ||
+    koreanText.includes("매장수령") ||
+    koreanText.includes("매장 수령") ||
+    koreanText.includes("매장방문") ||
+    koreanText.includes("매장 방문")
+  );
 }
 
 function hasStringingTracking(shippingInfo: UnknownDoc | null) {
