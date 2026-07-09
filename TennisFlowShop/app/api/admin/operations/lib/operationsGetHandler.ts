@@ -2243,6 +2243,12 @@ export async function handleAdminOperationsGet(
   };
   const groupHas = (group: AdminOperationsGroup, predicate: (item: OpItem) => boolean) =>
     group.items.some(predicate);
+  const isRentalDepositRefundRequiredItem = (item: OpItem) =>
+    item.kind === "rental" &&
+    !item.depositRefundedAt &&
+    (item.nextAction?.includes("보증금") ||
+      item.nextAction?.includes("환불") ||
+      item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED"));
   const operationSignalCounts: OperationSignalCounts = {
     cancelRequests: allGroups.filter((group) =>
       groupHas(
@@ -2274,7 +2280,8 @@ export async function handleAdminOperationsGet(
       groupHas(
         group,
         (item) =>
-          item.kind === "rental" && Boolean(item.rentalDueAt || item.nextAction?.includes("반납")),
+          (item.kind === "rental" && Boolean(item.rentalDueAt || item.nextAction?.includes("반납"))) ||
+          isRentalDepositRefundRequiredItem(item),
       ),
     ).length,
     linkedReview: allGroups.filter((group) => Boolean(group.linkedFlowStatusIssue)).length,
