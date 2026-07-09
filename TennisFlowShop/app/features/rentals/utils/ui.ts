@@ -1,10 +1,15 @@
+function isRentalReturnedStatus(status?: string | null) {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  return normalized === "returned" || normalized.includes("반납완료");
+}
+
 export function getDepositBanner(opts: {
-  status: "pending" | "paid" | "out" | "returned" | "canceled";
+  status: string;
   returnedAt?: string;
   depositRefundedAt?: string;
 }) {
   const { status, returnedAt, depositRefundedAt } = opts;
-  if (status !== "returned") return null;
+  if (!isRentalReturnedStatus(status)) return null;
 
   // 이미 환불 완료
   if (depositRefundedAt) {

@@ -462,26 +462,33 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     !data.withStringService ||
     data.stringingApplication?.status === "교체완료" ||
     data.applicationSummary?.status === "교체완료";
+  const normalizedStatus = String(data.status ?? "").trim().toLowerCase();
+  const isPending = normalizedStatus === "pending" || normalizedStatus.includes("대기중");
+  const isPaid = normalizedStatus === "paid" || normalizedStatus.includes("결제완료");
+  const isOut = normalizedStatus === "out" || normalizedStatus.includes("대여중");
+  const isReturned =
+    normalizedStatus === "returned" || normalizedStatus.includes("반납완료") || Boolean(data.returnedAt);
+  const isCanceled =
+    normalizedStatus === "canceled" ||
+    normalizedStatus === "cancelled" ||
+    normalizedStatus.includes("취소");
   const canReceiveRental =
-    data.status === "paid" && !isVisitPickup && hasOutboundShipping && isLinkedStringingComplete;
+    isPaid && !isVisitPickup && hasOutboundShipping && isLinkedStringingComplete;
   const paymentStatusLabel =
-    data.paymentStatus ??
-    (data.status === "pending" ? "결제대기" : data.status === "canceled" ? "결제취소" : "결제완료");
+    data.paymentStatus ?? (isPending ? "결제대기" : isCanceled ? "결제취소" : "결제완료");
   const displayStatusLabel = data.depositRefundedAt
     ? "보증금 환급 완료"
-    : data.status === "paid"
+    : isPaid
       ? hasOutboundShipping
         ? "배송/수령 준비 중"
         : "대여 준비 중"
       : getCustomerRentalStatusLabel(data.status);
 
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
-  const isOnlineCancelRestricted =
-    ["out", "returned", "canceled", "cancelled"].includes(data.status) ||
-    Boolean(data.depositRefundedAt);
+  const isOnlineCancelRestricted = isOut || isReturned || isCanceled || Boolean(data.depositRefundedAt);
   const canRequestCancel =
     // 상태는 pending 또는 paid만 허용
-    (data.status === "pending" || data.status === "paid") &&
+    (isPending || isPaid) &&
     // 출고 운송장이 아직 없을 때만
     !hasOutboundShipping &&
     // 이미 취소 요청이 들어가 있지 않은 경우만
@@ -505,7 +512,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   const dueDate = data.dueAt ? new Date(data.dueAt) : null;
   if (dueDate) dueDate.setHours(0, 0, 0, 0);
   const isReturnWindowOpen = Boolean(dueDate && today >= dueDate);
-  const isReturnShippingAvailable = data.status === "out" && !data.returnedAt && isReturnWindowOpen;
+  const isReturnShippingAvailable = isOut && !data.returnedAt && isReturnWindowOpen;
 
   const nextTodo = canApplyStringService
     ? {
@@ -547,19 +554,19 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
       ? "상품을 받으셨다면 수령 확인을 눌러 대여를 시작해 주세요."
       : isReturnShippingAvailable
         ? "반납 절차를 진행해 주세요."
-        : data.status === "pending"
+        : isPending
           ? "결제 또는 입금 확인을 기다리고 있습니다."
-          : data.status === "paid"
+          : isPaid
             ? isVisitPickup
               ? "매장 수령 준비 상태를 확인해 주세요."
               : "대여 상품 수령을 준비해 주세요."
-            : data.status === "out"
+            : isOut
               ? "대여 기간과 반납 예정일을 확인해 주세요."
-              : data.status === "returned"
+              : isReturned
                 ? data.depositRefundedAt
                   ? "이용이 완료되었습니다."
                   : "반납 확인과 보증금 환급을 기다리고 있습니다."
-                : data.status === "canceled"
+                : isCanceled
                   ? "취소가 완료되었습니다."
                   : "진행 상황이 변경되면 이 화면에서 안내해 드립니다.";
   const shippingMethodLabel = isVisitPickup ? "매장 수령" : "택배 배송";
@@ -586,10 +593,10 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
       ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
       : "준비 중";
   const racketImageUrl = data.imageUrl ?? data.racketImageUrl ?? null;
-  const isBeforeRentalStart = data.status === "pending" || data.status === "paid";
-  const isRentalActive = data.status === "out";
-  const isRentalReturned = data.status === "returned" || Boolean(data.returnedAt);
-  const isRentalCanceled = data.status === "canceled";
+  const isBeforeRentalStart = isPending || isPaid;
+  const isRentalActive = isOut;
+  const isRentalReturned = isReturned;
+  const isRentalCanceled = isCanceled;
   const heroSecondaryLabel = isRentalActive
     ? data.dueAt
       ? formatDate(data.dueAt)
