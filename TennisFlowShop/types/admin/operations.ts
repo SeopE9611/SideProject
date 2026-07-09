@@ -86,6 +86,7 @@ export type AdminOperationItem = {
   shippingMethod?: string | null;
   hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
+  shippingFollowupRequired?: boolean;
   needsCancelFinalization?: boolean;
   rentalDueAt?: string | null;
   depositRefundedAt?: string | null;

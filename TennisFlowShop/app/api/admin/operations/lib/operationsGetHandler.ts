@@ -507,6 +507,61 @@ function isClosedForNicePaymentSync(status?: string | null) {
   );
 }
 
+const VISIT_PICKUP_METHOD_KEYWORDS = ["visit", "pickup", "방문", "매장"] as const;
+
+function isStringingCompletedStatus(status?: string | null) {
+  const s = normalizeStatusText(status);
+  return s === "completed" || s === "done" || s === "work_done" || s.includes("교체완료");
+}
+
+function isVisitPickupLikeShippingInfo(shippingInfo: UnknownDoc | null) {
+  if (!shippingInfo) return false;
+  const methodText = [
+    shippingInfo.shippingMethod,
+    shippingInfo.deliveryMethod,
+    shippingInfo.pickupMethod,
+    shippingInfo.servicePickupMethod,
+  ]
+    .map((value) => String(value ?? "").trim().toLowerCase())
+    .filter(Boolean)
+    .join(" ");
+
+  return VISIT_PICKUP_METHOD_KEYWORDS.some((keyword) => methodText.includes(keyword));
+}
+
+function hasStringingTracking(shippingInfo: UnknownDoc | null) {
+  if (!shippingInfo) return false;
+  const invoice = asDoc(shippingInfo.invoice);
+  const returnInvoice = asDoc(shippingInfo.returnInvoice);
+  const outboundTracking =
+    getString(invoice?.trackingNumber) ??
+    getString(shippingInfo.trackingNumber) ??
+    getString(shippingInfo.trackingNo) ??
+    "";
+  const returnTracking =
+    getString(returnInvoice?.trackingNumber) ??
+    getString(shippingInfo.returnTrackingNumber) ??
+    getString(shippingInfo.returnTrackingNo) ??
+    "";
+
+  return Boolean(outboundTracking.trim() || returnTracking.trim());
+}
+
+function isStringingPaymentCancelled(status?: string | null) {
+  const s = normalizeStatusText(status);
+  return s === "cancelled" || s === "canceled" || s === "refunded" || s === "환불완료";
+}
+
+function needsStringingShippingFollowup(app: UnknownDoc) {
+  const shippingInfo = asDoc(app?.shippingInfo);
+  return (
+    isStringingCompletedStatus(getString(app?.status)) &&
+    !isStringingPaymentCancelled(getString(app?.paymentStatus)) &&
+    !isVisitPickupLikeShippingInfo(shippingInfo) &&
+    !hasStringingTracking(shippingInfo)
+  );
+}
+
 function isApplicationTerminalStatus(status?: string | null) {
   const s = normalizeStatusText(status);
   return (
@@ -542,7 +597,10 @@ function isTerminalOperationItem(item: OpItem) {
   if (item.needsCancelFinalization) return false;
   if (isCancelApproved(item)) return true;
   if (item.kind === "order") return isOrderTerminalStatus(item.statusLabel);
-  if (item.kind === "stringing_application") return isApplicationTerminalStatus(item.statusLabel);
+  if (item.kind === "stringing_application") {
+    if (item.shippingFollowupRequired) return false;
+    return isApplicationTerminalStatus(item.statusLabel);
+  }
   if (item.kind === "rental") return isRentalTerminalStatus(item);
   if (item.kind === "package_purchase") return isPackageTerminalStatus(item);
   return false;
@@ -595,12 +653,20 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
   for (const reason of item.pendingReasons ?? []) {
     const isRentalDepositRefundRequired =
       item.kind === "rental" && reason === "대여가 반납완료 상태지만 보증금 환불 완료 기록이 없습니다.";
+    const isStringingShippingFollowupRequired =
+      item.kind === "stringing_application" &&
+      item.shippingFollowupRequired &&
+      reason === "교체완료 상태지만 배송/반송 운송장 정보가 없습니다.";
     out.push({
       code: isRentalDepositRefundRequired ? "RENTAL_DEPOSIT_REFUND_REQUIRED" : "PENDING_TASK",
       level: "pending",
       sourceKind: item.kind,
       sourceId: item.id,
-      title: isRentalDepositRefundRequired ? "보증금 환불 확인 필요" : "미처리 업무",
+      title: isRentalDepositRefundRequired
+        ? "보증금 환불 확인 필요"
+        : isStringingShippingFollowupRequired
+          ? "교체서비스 운송장 확인 필요"
+          : "미처리 업무",
       description: reason,
       nextAction: isRentalDepositRefundRequired
         ? "환불 계좌/결제 수단과 실제 환불 여부를 확인한 뒤 보증금 환불 처리하세요."
@@ -1103,6 +1169,7 @@ export async function handleAdminOperationsGet(
     guestName: 1,
     guestEmail: 1,
     cancelRequest: 1,
+    shippingInfo: 1,
   };
   let rawApps = await measure("operations.fetchStringingApplications", () =>
     db
@@ -1347,6 +1414,7 @@ export async function handleAdminOperationsGet(
         guestName: 1,
         guestEmail: 1,
         cancelRequest: 1,
+        shippingInfo: 1,
       })
       .toArray();
 
@@ -1835,6 +1903,11 @@ export async function handleAdminOperationsGet(
     const reviewLevel: AdminOperationReviewLevel =
       reviewActionReasons.length > 0 ? "action" : reviewInfoReasons.length > 0 ? "info" : "none";
 
+    const shippingFollowupRequired = needsStringingShippingFollowup(a);
+    const stringingShippingPendingReason =
+      "교체완료 상태지만 배송/반송 운송장 정보가 없습니다.";
+    const stringingShippingNextAction = "배송/반송 운송장 등록 여부를 확인하세요.";
+
     const amountNote = (() => {
       if (amount !== 0) return undefined;
       if (a?.packageApplied === true) return "패키지차감";
@@ -1898,6 +1971,7 @@ export async function handleAdminOperationsGet(
       pendingReasons: [
         ...(pendingByKey.get(`stringing_application:${id}`) ?? []),
         ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
+        ...(shippingFollowupRequired ? [stringingShippingPendingReason] : []),
       ],
       warn: (warnByKey.get(`stringing_application:${id}`)?.length ?? 0) > 0,
       needsReview: reviewLevel === "action",
@@ -1910,6 +1984,7 @@ export async function handleAdminOperationsGet(
             : undefined,
       reviewReasons,
       cancel,
+      shippingFollowupRequired,
       ...inferNextActionForOperationItem({
         kind: "stringing_application",
         statusLabel: String(a?.status ?? "접수완료"),
@@ -1918,6 +1993,9 @@ export async function handleAdminOperationsGet(
         cancelStatus: cancel.status,
         refundAccountReady: cancel.refundAccountReady,
       }),
+      ...(shippingFollowupRequired
+        ? { stage: "운송장 확인", nextAction: stringingShippingNextAction }
+        : {}),
     };
   });
 
