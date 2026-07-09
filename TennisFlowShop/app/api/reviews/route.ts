@@ -913,12 +913,15 @@ export async function GET(req: Request) {
   if (productFilterCandidates && type !== "product") {
     const wanted = new Set(productFilterCandidates.map((v) => String(v)));
     rows = rows.filter((row: any) => {
-      if (row.type === "product") return wanted.has(String(row.productId));
+      const matchesProductId = row.productId && wanted.has(String(row.productId));
       const relatedIds = Array.isArray(row.relatedProductIds) ? row.relatedProductIds : [];
-      if (relatedIds.some((pid: any) => wanted.has(String(pid)))) return true;
-      return Array.isArray(row.__serviceProductIds)
+      const matchesRelatedProductId = relatedIds.some((pid: any) => wanted.has(String(pid)));
+      const matchesLegacyServiceProductId = Array.isArray(row.__serviceProductIds)
         ? row.__serviceProductIds.some((pid: any) => wanted.has(String(pid)))
         : false;
+
+      if (row.type === "product") return matchesProductId || matchesRelatedProductId;
+      return matchesRelatedProductId || matchesLegacyServiceProductId;
     });
   }
 
