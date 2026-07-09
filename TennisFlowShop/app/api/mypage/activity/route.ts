@@ -7,6 +7,7 @@ import {
   isRentalTodoActionable,
   normalizeMypageTodoStatus,
 } from "@/lib/mypage/activity-todo";
+import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import {
   isOrderLinkedToStringing,
   isStringingReviewBlockedStatus,
@@ -588,7 +589,7 @@ export async function GET(req: Request) {
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
     const status = normalizeMypageTodoStatus(o?.status);
-    const isConfirmed = Boolean(o?.userConfirmedAt) || status === "구매확정";
+    const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
       reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
@@ -841,7 +842,7 @@ export async function GET(req: Request) {
     const items = Array.isArray(o.items) ? o.items : [];
     const first = items[0] ?? null;
     const status = normalizeMypageTodoStatus(o?.status);
-    const isConfirmed = Boolean(o?.userConfirmedAt) || status === "구매확정";
+    const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
     const linkedApps = appByOrderId.get(orderId) ?? [];
     const serviceLinkedOrder = isOrderLinkedToStringing(o, linkedApps);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];

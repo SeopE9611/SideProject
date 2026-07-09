@@ -29,6 +29,7 @@ import {
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
+import { isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -274,7 +275,7 @@ const isApplicationConfirmNeeded = (app?: ActivityApplicationSummary) => {
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
 
-  return getMypageNormalizedStatus(app.status) === "교체완료" && !app.userConfirmedAt;
+  return isStringingCompletedStatus(app.status) && !app.userConfirmedAt;
 };
 
 const isApplicationServiceReviewPending = (app?: ActivityApplicationSummary) =>
@@ -397,7 +398,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (
-      getMypageNormalizedStatus(group.rental?.status) === "반납완료" &&
+      isRentalReturnedStatus(group.rental?.status) &&
       !group.rental?.userConfirmedAt
     ) {
       return "수령 확인 필요";
@@ -790,7 +791,7 @@ export default function TransactionFlowList() {
               if (item.order?.id !== orderId) return item;
 
               const patchConfirmedApp = (app: ActivityApplicationSummary) => {
-                if (app.userConfirmedAt || getMypageNormalizedStatus(app.status) !== "교체완료")
+                if (app.userConfirmedAt || !isStringingCompletedStatus(app.status))
                   return app;
                 return { ...app, userConfirmedAt: optimisticConfirmedAt };
               };
@@ -1458,7 +1459,7 @@ export default function TransactionFlowList() {
                   }
 
                   if (g.kind === "rental" && rentalId && !prefersApplicationView) {
-                    if (normalizedStatus === "반납완료" && !g.rental?.userConfirmedAt) {
+                    if (isRentalReturnedStatus(g.rental?.status) && !g.rental?.userConfirmedAt) {
                       actions.push({
                         key: "rental-confirm",
                         priority: 0,
@@ -1613,7 +1614,7 @@ export default function TransactionFlowList() {
                     }
 
                     if (
-                      getMypageNormalizedStatus(applicationActionTarget.status) === "교체완료" &&
+                      isStringingCompletedStatus(applicationActionTarget.status) &&
                       !applicationActionTarget.userConfirmedAt &&
                       !isLinkedApplicationConfirmSuppressed
                     ) {

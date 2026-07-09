@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { readCancelRequestError } from "@/lib/cancel-request/refund-account-client";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { isStringingCanceledStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
 import {
   ArrowRight,
   Ban,
@@ -526,8 +527,7 @@ export default function ApplicationsClient() {
               isStringService && needsInboundTracking && !isLinkedApplication;
 
             // 종료 상태(수정 금지)
-            const CLOSED = ["작업 중", "교체완료"];
-            const isClosed = CLOSED.includes(String((app as any).status));
+            const isClosed = String((app as any).status) === "작업 중" || isStringingCompletedStatus(app.status);
 
             // 취소 상태 계산 (한글/영문 둘 다 대응)
             const rawCancelStatus = app.cancelStatus ?? "none";
@@ -564,9 +564,9 @@ export default function ApplicationsClient() {
                   : "라켓 발송 운송장을 등록해주세요."
                 : isLinkedApplication
                   ? "연결된 주문/대여 상세에서 진행 상황을 확인해보세요."
-                  : isStringService && app.status === "교체완료" && !(app as any).userConfirmedAt
+                  : isStringService && isStringingCompletedStatus(app.status) && !(app as any).userConfirmedAt
                     ? "작업 내용을 확인하고 교체서비스 확정을 진행해주세요."
-                    : app.status === "교체완료" || app.status === "취소"
+                    : isStringingCompletedStatus(app.status) || isStringingCanceledStatus(app.status)
                       ? "추가로 진행할 일은 없습니다."
                       : "상세에서 신청 진행 상황을 확인해주세요.";
 
@@ -864,7 +864,7 @@ export default function ApplicationsClient() {
 
                               const canConfirm =
                                 !isLinkedApplication &&
-                                app.status === "교체완료" &&
+                                isStringingCompletedStatus(app.status) &&
                                 !isUserConfirmed &&
                                 !isCancelRequested &&
                                 confirmingId !== app.id;
@@ -901,7 +901,7 @@ export default function ApplicationsClient() {
                             if (isUserConfirmed) return <p>이미 교체서비스 확정된 신청입니다.</p>;
                             if (isCancelRequested)
                               return <p>취소 요청 처리 중에는 확정할 수 없습니다.</p>;
-                            if (app.status !== "교체완료")
+                            if (!isStringingCompletedStatus(app.status))
                               return <p>교체완료 상태에서만 교체서비스 확정이 가능합니다.</p>;
 
                             return <p>교체서비스 확정 시 포인트가 지급됩니다.</p>;
