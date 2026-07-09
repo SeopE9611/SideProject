@@ -48,6 +48,7 @@ import {
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
+import { isOrderConfirmedStatus, isOrderDeliveredStatus } from "@/lib/status/flow-status";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { CheckCircle, ChevronDown, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
@@ -387,8 +388,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   );
 
   const canShowReviewCTA =
-    Boolean(orderDetail?.userConfirmedAt) || orderDetail?.status === "구매확정";
-  const canConfirmPurchase = getCommonOrderStatusLabel(orderDetail?.status ?? "") === "배송완료";
+    Boolean(orderDetail?.userConfirmedAt) || isOrderConfirmedStatus(orderDetail?.status);
+  const canConfirmPurchase = isOrderDeliveredStatus(orderDetail?.status);
   const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
 
   useEffect(() => {
@@ -674,12 +675,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     (keyword) => normalizedStatus.includes(keyword),
   );
   const isShipped = ["shipped", "배송중"].some((keyword) => normalizedStatus.includes(keyword));
-  const isDelivered = ["delivered", "배송완료"].some((keyword) =>
-    normalizedStatus.includes(keyword),
-  );
+  const isDelivered = isOrderDeliveredStatus(orderDetail.status);
   const isCompleted =
     Boolean(orderDetail?.userConfirmedAt) ||
-    ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
+    isOrderConfirmedStatus(orderDetail.status);
 
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelRequestAny = (orderDetail as any)?.cancelRequest ?? {};

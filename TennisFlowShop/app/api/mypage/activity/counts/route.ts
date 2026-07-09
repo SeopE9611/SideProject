@@ -6,6 +6,7 @@ import {
   isRentalTodoActionable,
   normalizeMypageTodoStatus,
 } from "@/lib/mypage/activity-todo";
+import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -124,7 +125,7 @@ export async function GET() {
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
     const status = normalizeMypageTodoStatus(order?.status);
-    const isConfirmed = Boolean(order?.userConfirmedAt) || status === "구매확정";
+    const isConfirmed = Boolean(order?.userConfirmedAt) || isOrderConfirmedStatus(order?.status);
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
       reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));

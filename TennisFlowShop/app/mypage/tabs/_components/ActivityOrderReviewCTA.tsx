@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
+import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
@@ -23,7 +24,7 @@ export default function ActivityOrderReviewCTA({
   userConfirmedAt,
   className,
 }: Props) {
-  const completed = Boolean(userConfirmedAt) || orderStatus === "구매확정";
+  const completed = Boolean(userConfirmedAt) || isOrderConfirmedStatus(orderStatus);
   const { data, isLoading } = useSWR(
     completed ? `/api/orders/${orderId}/review-items` : null,
     fetcher,

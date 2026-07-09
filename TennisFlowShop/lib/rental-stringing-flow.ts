@@ -1,3 +1,5 @@
+import { isStringingCompletedStatus } from "@/lib/status/flow-status";
+
 export type RentalStringingLike = {
   isStringServiceApplied?: boolean | null;
   stringingApplicationId?: unknown;
@@ -15,5 +17,5 @@ export function hasRentalStringingService(rental?: RentalStringingLike | null) {
 }
 
 export function isRentalStringingComplete(status?: string | null) {
-  return status === "교체완료";
+  return isStringingCompletedStatus(status);
 }

@@ -33,6 +33,13 @@ import {
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
+import {
+  isOrderConfirmedStatus,
+  isOrderDeliveredStatus,
+  isRentalReturnedStatus,
+  isStringingCanceledStatus,
+  isStringingCompletedStatus,
+} from "@/lib/status/flow-status";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -250,14 +257,14 @@ function linkedApplicationSummaries(g: ActivityGroup): ActivityApplicationSummar
 function isDone(g: ActivityGroup) {
   if (g.kind === "order") {
     const s = g.order?.status ?? "";
-    return /구매확정|배송완료|취소|환불/.test(s);
+    return isOrderConfirmedStatus(s) || isOrderDeliveredStatus(s) || /취소|환불/.test(s);
   }
   if (g.kind === "application") {
     const s = g.application?.status ?? "";
-    return /교체완료|취소/.test(s);
+    return isStringingCompletedStatus(s) || isStringingCanceledStatus(s);
   }
   const s = g.rental?.status ?? "";
-  return /returned|canceled|반납완료|취소/.test(s);
+  return isRentalReturnedStatus(s) || /canceled|cancelled|취소/.test(s);
 }
 
 function isTerminalCanceledStatus(status?: string | null) {
@@ -452,15 +459,21 @@ export default function ActivityFeed() {
   // 주문 단위 UX: 배송/수령 정보 모달 / 구매확정 / 리뷰 CTA
   // - 방문 수령 주문도 내부 raw status는 배송중/배송완료를 쓰므로 동일 기준을 유지한다.
   const canShowOrderDeliveryInfo = (status?: string) =>
-    status === "배송중" || status === "배송완료" || status === "구매확정";
+    status === "배송중" || isOrderDeliveredStatus(status) || isOrderConfirmedStatus(status);
   const canShowOrderReviewCta = (order?: ActivityOrderSummary | null) =>
-    Boolean(order?.userConfirmedAt) || order?.status === "구매확정";
+    Boolean(order?.userConfirmedAt) || isOrderConfirmedStatus(order?.status);
 
   // 교체 서비스(스트링 교체 신청서) CTA 조건
   // - 교체확정: 교체완료 상태이고, 아직 사용자가 확정(userConfirmedAt)하지 않은 경우에만 노출
   // - 리뷰작성: 사용자 확정(userConfirmedAt) 이후에만 노출
   const canShowStringingConfirmCta = (app?: ActivityApplicationSummary | null) =>
-    !!(app && app.status === "교체완료" && !app.userConfirmedAt && !app.orderId && !app.rentalId);
+    !!(
+      app &&
+      isStringingCompletedStatus(app.status) &&
+      !app.userConfirmedAt &&
+      !app.orderId &&
+      !app.rentalId
+    );
 
   const canShowStringingReviewCta = (app?: ActivityApplicationSummary | null) =>
     Boolean(app?.userConfirmedAt);
@@ -1264,7 +1277,7 @@ export default function ActivityFeed() {
                       const showMore = Boolean(
                         canShowShippingEdit || // 운송장 수정(이미 등록된 경우)만 보조로 내리기
                         (appDetailHref && g.kind !== "application") ||
-                        (g.kind === "order" && g.order?.id && g.order.status === "배송완료") ||
+                        (g.kind === "order" && g.order?.id && isOrderDeliveredStatus(g.order.status)) ||
                         (appId && canShowStringingReviewCta(app)) ||
                         (appId && canShowStringingConfirmCta(app)),
                       );
@@ -1531,7 +1544,7 @@ export default function ActivityFeed() {
                                       {/* 구매확정: 배송완료에서만(보조 액션으로 내림) */}
                                       {g.kind === "order" &&
                                       g.order?.id &&
-                                      g.order.status === "배송완료" ? (
+                                      isOrderDeliveredStatus(g.order.status) ? (
                                         <DropdownMenuItem
                                           disabled={confirmingOrderId === g.order.id}
                                           onSelect={(e) => {

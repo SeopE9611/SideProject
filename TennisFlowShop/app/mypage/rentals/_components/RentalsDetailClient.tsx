@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { racketBrandLabel } from "@/lib/constants";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
+import { isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -460,14 +461,14 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   const isVisitPickup = rentalShippingMethod === "pickup";
   const isLinkedStringingComplete =
     !data.withStringService ||
-    data.stringingApplication?.status === "교체완료" ||
-    data.applicationSummary?.status === "교체완료";
+    isStringingCompletedStatus(data.stringingApplication?.status) ||
+    isStringingCompletedStatus(data.applicationSummary?.status);
   const normalizedStatus = String(data.status ?? "").trim().toLowerCase();
   const isPending = normalizedStatus === "pending" || normalizedStatus.includes("대기중");
   const isPaid = normalizedStatus === "paid" || normalizedStatus.includes("결제완료");
   const isOut = normalizedStatus === "out" || normalizedStatus.includes("대여중");
   const isReturned =
-    normalizedStatus === "returned" || normalizedStatus.includes("반납완료") || Boolean(data.returnedAt);
+    isRentalReturnedStatus(data.status) || Boolean(data.returnedAt);
   const isCanceled =
     normalizedStatus === "canceled" ||
     normalizedStatus === "cancelled" ||
@@ -547,7 +548,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
       : "선택된 스트링 정보 없음";
   const linkedApplicationStatus =
     linkedApplication?.status ?? data.applicationSummary?.status ?? null;
-  const linkedApplicationIsComplete = linkedApplicationStatus === "교체완료";
+  const linkedApplicationIsComplete = isStringingCompletedStatus(linkedApplicationStatus);
   const rentalNextActionMessage = canApplyStringService
     ? "연결된 교체서비스 신청서를 작성해 주세요."
     : canReceiveRental

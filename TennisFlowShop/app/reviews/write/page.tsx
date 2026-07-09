@@ -23,6 +23,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import NextImage from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -107,10 +108,9 @@ type AppLite = {
   requirements?: string | null;
 };
 
-const SERVICE_REVIEW_SELECTABLE_STATUSES = new Set(["교체완료", "반송완료", "완료"]);
-
 function isServiceReviewSelectableStatus(status?: string | null) {
-  return SERVICE_REVIEW_SELECTABLE_STATUSES.has(String(status ?? "").trim());
+  const normalized = String(status ?? "").trim();
+  return isStringingCompletedStatus(normalized) || normalized === "반송완료" || normalized === "완료";
 }
 
 // 예약일자 포멧

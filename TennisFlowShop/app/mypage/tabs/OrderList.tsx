@@ -17,6 +17,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from "@/lib/badge-style";
+import {
+  isOrderCanceledStatus,
+  isOrderConfirmedStatus,
+  isOrderDeliveredStatus,
+  isOrderRefundedStatus,
+} from "@/lib/status/flow-status";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -331,8 +337,8 @@ export default function OrderList() {
             order.cancelStatus === "none" ||
             order.cancelStatus === "rejected");
         // 상태 판정은 boolean으로 분리 (TS 좁힘/비교 에러 방지)
-        const isDelivered = order.status === "배송완료";
-        const isConfirmed = order.status === "구매확정";
+        const isDelivered = isOrderDeliveredStatus(order.status);
+        const isConfirmed = isOrderConfirmedStatus(order.status);
         const isReviewStatusConfirmed = Boolean(order.userConfirmedAt) || isConfirmed;
 
         // 버튼/메뉴 분기용 값 (모바일 핵심 1~2개 + 더보기)
@@ -349,7 +355,7 @@ export default function OrderList() {
 
         const primaryDetailLabel = hasLinkedApplication ? "교체서비스 상세 보기" : "주문 상세 보기";
 
-        const showConfirm = order.status !== "취소" && order.status !== "환불";
+        const showConfirm = !isOrderCanceledStatus(order.status) && !isOrderRefundedStatus(order.status);
 
         const canConfirm =
           showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
@@ -358,7 +364,8 @@ export default function OrderList() {
         const usedSlots = order.stringService?.usedSlots ?? 0;
         const remainingSlots =
           order.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
-        const isOrderTerminalCanceled = order.status === "취소" || order.status === "환불";
+        const isOrderTerminalCanceled =
+          isOrderCanceledStatus(order.status) || isOrderRefundedStatus(order.status);
         const canApplyMoreStringService =
           !isOrderTerminalCanceled &&
           (order.canApplyMoreStringService ??
@@ -675,7 +682,7 @@ export default function OrderList() {
                       <DropdownMenuSeparator />
 
                       {/* 리뷰 CTA: 구매확정 이후에만 노출 */}
-                      {(Boolean(order.userConfirmedAt) || order.status === "구매확정") && (
+                      {(Boolean(order.userConfirmedAt) || isConfirmed) && (
                         <DropdownMenuItem asChild>
                           <Link href={detailHref} className="flex items-center gap-2">
                             <MessageSquarePlus className="h-4 w-4" />

@@ -1,3 +1,10 @@
+import {
+  isOrderConfirmedStatus,
+  isOrderDeliveredStatus,
+  isRentalReturnedStatus,
+  isStringingCompletedStatus,
+} from "@/lib/status/flow-status";
+
 export type ActivityTodoApplicationLike = {
   status?: string | null;
   hasTracking?: boolean | null;
@@ -40,7 +47,7 @@ export function isApplicationTodoActionable(app?: ActivityTodoApplicationLike | 
 
   return Boolean(
     (app.needsInboundTracking && !app.hasTracking) ||
-    (status === "교체완료" && !app.userConfirmedAt) ||
+    (isStringingCompletedStatus(app.status) && !app.userConfirmedAt) ||
     app.serviceReviewPending,
   );
 }
@@ -68,14 +75,14 @@ export function isOrderTodoActionable(params: {
 
   if (isTerminalCanceledTodoStatus(status)) return false;
 
-  const isConfirmed = Boolean(params.userConfirmedAt) || status === "구매확정";
+  const isConfirmed = Boolean(params.userConfirmedAt) || isOrderConfirmedStatus(params.status);
   const hasPendingReview = (params.reviewPendingCount ?? 0) > 0;
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
     (app) => isApplicationTrackingTodoActionable(app) || isApplicationServiceReviewTodoPending(app),
   );
 
   return Boolean(
-    status === "배송완료" ||
+    isOrderDeliveredStatus(params.status) ||
     hasActionableLinkedApplication ||
     (isConfirmed && hasPendingReview) ||
     isApplicationTrackingTodoActionable(params.primaryApplication) ||
@@ -98,7 +105,7 @@ export function isRentalTodoActionable(params: {
     (app) => isApplicationTrackingTodoActionable(app) || isApplicationServiceReviewTodoPending(app),
   );
   return Boolean(
-    (status === "반납완료" && !params.userConfirmedAt) ||
+    (isRentalReturnedStatus(params.status) && !params.userConfirmedAt) ||
     hasActionableLinkedApplication ||
     isApplicationTrackingTodoActionable(params.primaryApplication) ||
     isApplicationServiceReviewTodoPending(params.primaryApplication) ||

@@ -25,6 +25,7 @@ import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
+import { isRentalReturnedStatus } from "@/lib/status/flow-status";
 
 type RentalsResponse = {
   items: unknown[];
@@ -42,11 +43,6 @@ const getKey = (index: number, prev: any) => {
   if (prev && prev.items && prev.items.length < LIMIT) return null;
   const page = index + 1;
   return `/api/me/rentals?page=${page}&pageSize=${LIMIT}`;
-};
-
-const isRentalReturnedStatus = (status?: string | null) => {
-  const normalized = String(status ?? "").trim().toLowerCase();
-  return normalized === "returned" || normalized.includes("반납완료");
 };
 
 const isRentalCanceledStatus = (status?: string | null) => {
