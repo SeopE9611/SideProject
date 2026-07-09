@@ -85,6 +85,8 @@ export async function GET(req: Request) {
       amount: d.amount, // { fee, deposit, total }
       createdAt: d.createdAt,
       dueAt: d.dueAt,
+      returnedAt: d.returnedAt ?? null,
+      userConfirmedAt: d.userConfirmedAt ?? null,
       depositRefundedAt: d.depositRefundedAt ?? null,
       // 출고/반납 운송장 등록 여부를 별도 플래그로 내려서 마이페이지 카드에서 쉽게 사용
       hasOutboundShipping: Boolean(outboundTracking),

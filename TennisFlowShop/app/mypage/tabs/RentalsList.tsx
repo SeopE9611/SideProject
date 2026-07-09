@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import AsyncState from "@/components/system/AsyncState";
 import { StackedCardListSkeleton } from "@/components/system/loading";
+import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -278,6 +279,15 @@ export default function RentalsList() {
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </Button>
+
+                {r.userConfirmedAt || r.returnedAt ? (
+                  <RentalReviewCTA
+                    rentalId={r.id}
+                    status={r.status}
+                    userConfirmedAt={r.userConfirmedAt ?? null}
+                    returnedAt={r.returnedAt ?? null}
+                  />
+                ) : null}
 
                 {r.stringingApplicationId ? (
                   <Button size="sm" variant="outline" asChild className="bg-transparent">

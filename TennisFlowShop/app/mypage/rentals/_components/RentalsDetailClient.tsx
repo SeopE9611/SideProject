@@ -8,6 +8,7 @@ import {
   getCustomerRentalStatusLabel,
 } from "@/app/mypage/_lib/flow-display";
 import SiteContainer from "@/components/layout/SiteContainer";
+import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -852,6 +853,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         {isVisitPickup ? "반환 접수" : "반납 운송장"}: {returnInfoLabel}
                       </p>
                     ) : null}
+                    <RentalReviewCTA
+                      rentalId={data.id}
+                      status={data.status}
+                      userConfirmedAt={(data as any).userConfirmedAt ?? null}
+                      returnedAt={data.returnedAt ?? null}
+                      className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
+                    />
                   </div>
                 ) : null}
               </div>
