@@ -78,7 +78,9 @@ import {
   isAdminForceCancelRequired,
 } from "@/lib/orders/cancel-refund-policy";
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
+import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -656,7 +658,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       for (const app of apps) {
         if (!app?.id) continue;
         const parts: string[] = [];
-        if (app.status) parts.push(`상태: ${app.status}`);
+        if (app.status) parts.push(`상태: ${getCommonApplicationStatusLabel(app.status) ?? app.status}`);
         if (app.createdAt) parts.push(formatDate(app.createdAt));
         parts.push(`라켓 ${app.racketCount ?? 0}개`);
         docs.push({
@@ -761,6 +763,16 @@ export default function OrderDetailClient({ orderId }: Props) {
     isLinkedStringingOrder && isPaymentCompletedLike
       ? "주문 결제에 포함됨"
       : orderDetail.paymentStatus || "결제 상태 미확인";
+  const paymentMethodDisplayLabel = getPaymentDisplaySummary({
+    method: orderDetail.paymentMethod,
+    provider: orderDetail.paymentProvider,
+    easyPayProvider: orderDetail.paymentEasyPayProvider,
+    cardDisplayName: orderDetail.paymentCardDisplayName,
+    cardLabel: orderDetail.paymentCardLabel,
+    cardCompany: orderDetail.paymentCardCompany,
+    bank: orderDetail.paymentBank,
+    depositor: orderDetail.shippingInfo?.depositor,
+  }).adminLabel;
   const needsPaymentCheck =
     lowerPayment.includes("대기") ||
     lowerPayment.includes("입금") ||
@@ -845,6 +857,10 @@ export default function OrderDetailClient({ orderId }: Props) {
   ].filter((action) => action.show);
 
   const latestProcessingHistory = allHistory[0] ?? null;
+  const latestProcessingHistoryStatusLabel =
+    getCommonApplicationStatusLabel(latestProcessingHistory?.status) ??
+    latestProcessingHistory?.status ??
+    "기록 없음";
   const latestProcessingDate = formatDateTime(latestProcessingHistory?.date);
   const variantStockDeductionItems = Array.isArray(orderDetail.items)
     ? orderDetail.items.filter((item) => item?.stockDeduction?.mode === "variant")
@@ -1181,7 +1197,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 value="주문에 포함된 교체 작업"
                 description={
                   latestLinkedApplication?.status
-                    ? `작업 상태 ${latestLinkedApplication.status}`
+                    ? `작업 상태 ${getCommonApplicationStatusLabel(latestLinkedApplication.status) ?? latestLinkedApplication.status}`
                     : "교체 작업 문서 확인 필요"
                 }
                 icon={LinkIcon}
@@ -1267,7 +1283,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
                   <p>
                     <span className="font-medium text-foreground">마지막 처리:</span>{" "}
-                    {latestProcessingHistory.status ?? "기록 없음"}
+                    {latestProcessingHistoryStatusLabel}
                   </p>
                   <p>
                     <span className="font-medium text-foreground">처리 시각:</span>{" "}
@@ -1353,7 +1369,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 {latestLinkedApplication?.id && latestLinkedApplication?.status && (
                   <div className="grid gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
                     <p className={adminTypography.bodyStrong}>
-                      연결 진행 단계: {orderGuide.stage || latestLinkedApplication.status}
+                      연결 진행 단계: {orderGuide.stage || getCommonApplicationStatusLabel(latestLinkedApplication.status) || latestLinkedApplication.status}
                     </p>
                     <p className={cn("md:text-right", adminTypography.meta)}>
                       다음 할 일:{" "}
@@ -1446,7 +1462,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         <p>
                           <span className="text-muted-foreground">작업 상태:</span>{" "}
                           <span className="font-medium text-foreground">
-                            {latestLinkedApplication.status}
+                            {getCommonApplicationStatusLabel(latestLinkedApplication.status) ?? latestLinkedApplication.status}
                           </span>
                         </p>
                       )}
@@ -2164,7 +2180,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       />
                       <AdminCompactField
                         label="결제 방식"
-                        value={orderDetail.paymentMethod || "무통장입금"}
+                        value={paymentMethodDisplayLabel}
                       />
                     </div>
 

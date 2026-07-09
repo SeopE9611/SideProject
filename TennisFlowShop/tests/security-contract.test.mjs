@@ -289,3 +289,36 @@ test("표시 계약: 후기/교체서비스/관리자 대여 화면은 raw 상�
   assert.ok(adminRentalDetail.includes("formatRentalHistoryStatus(latestProcessingHistory?.to)"));
   assert.ok(!adminRentalDetail.includes('{latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}'));
 });
+
+test("표시 계약: 주문/패키지/개인결제 화면은 raw 상태와 결제수단을 직접 렌더링하지 않는다", () => {
+  const orderDetail = read("app/features/orders/components/OrderDetailClient.tsx");
+  const ordersClient = read("app/features/orders/components/OrdersClient.tsx");
+  const checkoutSuccess = read("app/checkout/success/page.tsx");
+  const privatePaymentSuccess = read("app/private-payments/success/page.tsx");
+  const packageList = read("app/admin/packages/page.tsx");
+  const packageDetail = read("app/admin/packages/[id]/PackageDetailClient.tsx");
+  const stringingHistory = read("app/features/stringing-applications/components/StringingApplicationHistory.tsx");
+  const userActivity = read("app/admin/users/_components/UserActivityTabsSection.tsx");
+
+  assert.ok(orderDetail.includes("getCommonApplicationStatusLabel(app.status)"));
+  assert.ok(!orderDetail.includes("`상태: ${app.status}`"));
+  assert.ok(!orderDetail.includes("`작업 상태 ${latestLinkedApplication.status}`"));
+  assert.ok(orderDetail.includes("paymentMethodDisplayLabel"));
+  assert.ok(!orderDetail.includes('value={orderDetail.paymentMethod || "무통장입금"}'));
+  assert.ok(ordersClient.includes("getCommonPaymentStatusLabel(order.paymentStatus)"));
+  assert.ok(!ordersClient.includes("{order.paymentStatus}"));
+  assert.ok(checkoutSuccess.includes("paymentStatusLabel"));
+  assert.ok(!checkoutSuccess.includes('{order.paymentStatus || "결제완료"}'));
+  assert.ok(privatePaymentSuccess.includes("paymentStatusLabel"));
+  assert.ok(!privatePaymentSuccess.includes('{item.paymentStatus || "-"}'));
+  assert.ok(packageList.includes("{paymentLabel}"));
+  assert.ok(!packageList.includes("{pkg.paymentStatus}"));
+  assert.ok(packageDetail.includes("getPackagePaymentDisplayLabel(data.paymentStatus)"));
+  assert.ok(!packageDetail.includes('{data.paymentStatus ?? "결제대기"}'));
+  assert.ok(stringingHistory.includes("getCommonApplicationStatusLabel(log.status)"));
+  assert.ok(!stringingHistory.includes("{log.status}"));
+  assert.ok(userActivity.includes("getCommonOrderStatusLabel(o?.status)"));
+  assert.ok(userActivity.includes("getCommonApplicationStatusLabel(a?.status || a?.applicationStatus)"));
+  assert.ok(!userActivity.includes("subtitle={o?.status || o?.computedStatus || \"—\"}"));
+  assert.ok(!userActivity.includes("subtitle={a?.status || a?.applicationStatus || \"—\"}"));
+});

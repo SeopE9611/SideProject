@@ -64,6 +64,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 
 type PackageDetail = AdminPackageDetailDto;
 type OperationsHistoryItem = AdminPackageOperationHistoryDto;
@@ -102,6 +103,8 @@ const fmtDateTime = (v?: string | Date | null) => {
     return String(v);
   }
 };
+const getPackagePaymentDisplayLabel = (status?: string | null) =>
+  getCommonPaymentStatusLabel(status) ?? status ?? "결제대기";
 
 function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
   if (!items || items.length === 0)
@@ -129,7 +132,8 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
           chips.push(
             `${it.extendedSessions! > 0 ? "+" : ""}${it.extendedSessions ?? 0}회 ${it.extendedSessions! >= 0 ? "증가" : "감소"}`,
           );
-        if (isPayment && it.paymentStatus) chips.push(`결제상태: ${it.paymentStatus}`);
+        if (isPayment && it.paymentStatus)
+          chips.push(`결제상태: ${getPackagePaymentDisplayLabel(it.paymentStatus)}`);
 
         // 스타일 (점/헤더색)
         const dotCls = isPayment
@@ -612,8 +616,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <CreditCard className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">결제 상태</span>
             </div>
-            <Badge variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}>
-              {data.paymentStatus ?? "결제대기"}
+            <Badge variant={getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus)).variant}>
+              {getPackagePaymentDisplayLabel(data.paymentStatus)}
             </Badge>
           </div>
         </div>
@@ -739,9 +743,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">결제 상태</span>
                 <Badge
-                  variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}
+                  variant={getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus)).variant}
                 >
-                  {data.paymentStatus ?? "결제대기"}
+                  {getPackagePaymentDisplayLabel(data.paymentStatus)}
                 </Badge>
               </div>
               {isNicePayment && (

@@ -21,6 +21,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
 
 const LIMIT = 5;
 const fetcher = (url: string) => authenticatedSWRFetcher<HistoryResponse>(url);
@@ -219,7 +220,8 @@ export default function StringingApplicationHistory({
           <AsyncState kind="empty" variant="card" resourceName="신청 처리 이력" />
         ) : shouldShowRows ? (
           historyItems.map((log, idx) => {
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
+            const statusLabel = getCommonApplicationStatusLabel(log.status) ?? log.status;
+            const { Icon, wrapperClasses, iconClasses } = getIconProps(statusLabel);
             return (
               <div
                 key={idx}
@@ -232,7 +234,7 @@ export default function StringingApplicationHistory({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
-                    <span className="break-keep font-semibold leading-snug">{log.status}</span>
+                    <span className="break-keep font-semibold leading-snug">{statusLabel}</span>
                     <span className="text-ui-label text-muted-foreground bp-sm:shrink-0 bp-sm:text-ui-body-sm">
                       {new Intl.DateTimeFormat("ko-KR", {
                         year: "numeric",

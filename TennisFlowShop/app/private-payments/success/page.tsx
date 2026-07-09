@@ -4,6 +4,7 @@ import { privatePayments } from "@/lib/private-payments";
 import { formatKoreanDateTime } from "@/lib/korean-date";
 import { ResultState } from "@/components/public";
 import { Button } from "@/components/ui/button";
+import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import Link from "next/link";
 
 export default async function PrivatePaymentSuccessPage({
@@ -42,6 +43,8 @@ export default async function PrivatePaymentSuccessPage({
         </ResultState>
       </main>
     );
+  const paymentStatusLabel =
+    getCommonPaymentStatusLabel(item.paymentStatus) ?? item.paymentStatus ?? "-";
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
       <ResultState title="결제가 완료되었습니다." description="개인결제 승인 내역을 확인해 주세요.">
@@ -58,7 +61,7 @@ export default async function PrivatePaymentSuccessPage({
           </div>
           <div className="flex items-start justify-between gap-4">
             <span className="text-muted-foreground">결제상태</span>
-            <span className="text-right font-medium">{item.paymentStatus || "-"}</span>
+            <span className="text-right font-medium">{paymentStatusLabel}</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <span className="text-muted-foreground">결제일</span>
