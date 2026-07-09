@@ -1,6 +1,7 @@
 // 스냅샷 일괄 삭제 API
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
@@ -10,18 +11,15 @@ import {
 } from "@/lib/admin/adminExecutionLock";
 
 export async function POST(req: Request) {
-  const origin = req.headers.get("origin") || "";
-  const allow = process.env.NEXT_PUBLIC_SITE_URL;
-  if (allow && origin && !origin.startsWith(allow)) {
-    return NextResponse.json({ message: "forbidden" }, { status: 403 });
-  }
-
   let lockOwner: string | null = null;
   let lockDb: import("mongodb").Db | null = null;
 
   try {
     const g = await requireAdmin(req);
     if (!g.ok) return g.res;
+
+    const csrf = verifyAdminCsrf(req);
+    if (!csrf.ok) return csrf.res;
 
     const limited = await enforceAdminRateLimit(
       req,

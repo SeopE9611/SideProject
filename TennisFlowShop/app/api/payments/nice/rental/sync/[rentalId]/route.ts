@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import {
   extractNiceCardInfo,
   getNicePaymentByTid,
@@ -95,6 +96,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ rental
   try {
     const guard = await requireAdmin(_req);
     if (!guard.ok) return guard.res;
+
+    const csrf = verifyAdminCsrf(_req);
+    if (!csrf.ok) return csrf.res;
 
     const { rentalId } = await params;
     if (!ObjectId.isValid(rentalId)) {

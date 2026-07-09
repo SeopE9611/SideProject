@@ -44,3 +44,44 @@ test("보안 계약: CSRF 실패, Origin 불일치, 토큰 오류, 재전송(멱
   assert.ok(packageOrders.includes("'meta.idemKey': idem"));
   assert.ok(packageOrders.includes("reused: true"));
 });
+
+test("관리자 결제 동기화/정산 변경 API는 표준 CSRF 검증을 사용한다", () => {
+  const adminNiceOrderSync = read("app/api/admin/payments/nice/sync/[orderId]/route.ts");
+  const niceOrderSync = read("app/api/payments/nice/sync/[orderId]/route.ts");
+  const niceRentalSync = read("app/api/payments/nice/rental/sync/[rentalId]/route.ts");
+  const nicePackageSync = read("app/api/payments/nice/package/sync/[packageOrderId]/route.ts");
+  const settlementMonth = read("app/api/settlements/[yyyymm]/route.ts");
+  const settlementBulkDelete = read("app/api/settlements/bulk-delete/route.ts");
+  const nicePrepare = read("app/api/payments/nice/prepare/route.ts");
+  const niceReturn = read("app/api/payments/nice/return/route.ts");
+  const niceRentalPrepare = read("app/api/payments/nice/rental/prepare/route.ts");
+  const niceRentalReturn = read("app/api/payments/nice/rental/return/route.ts");
+  const nicePackagePrepare = read("app/api/payments/nice/package/prepare/route.ts");
+  const nicePackageReturn = read("app/api/payments/nice/package/return/route.ts");
+
+  for (const [label, src] of [
+    ["admin nice order sync", adminNiceOrderSync],
+    ["nice order sync", niceOrderSync],
+    ["nice rental sync", niceRentalSync],
+    ["nice package sync", nicePackageSync],
+    ["settlement month", settlementMonth],
+    ["settlement bulk delete", settlementBulkDelete],
+  ]) {
+    assert.ok(src.includes("requireAdmin("), `${label}: 관리자 표준 인증을 사용해야 합니다.`);
+    assert.ok(src.includes("verifyAdminCsrf("), `${label}: 관리자 CSRF 검증을 사용해야 합니다.`);
+  }
+
+  assert.ok(!settlementMonth.includes(".startsWith(allow)"));
+  assert.ok(!settlementBulkDelete.includes(".startsWith(allow)"));
+
+  for (const [label, src] of [
+    ["nice prepare", nicePrepare],
+    ["nice return", niceReturn],
+    ["nice rental prepare", niceRentalPrepare],
+    ["nice rental return", niceRentalReturn],
+    ["nice package prepare", nicePackagePrepare],
+    ["nice package return", nicePackageReturn],
+  ]) {
+    assert.ok(!src.includes("verifyAdminCsrf("), `${label}: 고객/PG 플로우에 관리자 CSRF를 요구하면 안 됩니다.`);
+  }
+});
