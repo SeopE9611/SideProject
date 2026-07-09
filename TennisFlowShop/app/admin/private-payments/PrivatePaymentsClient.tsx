@@ -12,6 +12,7 @@ import {
 import { adminFetcher } from "@/lib/admin/adminFetcher";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { formatKoreanDateTime } from "@/lib/korean-date";
+import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,17 @@ const emptyOfflineLinkForm = {
   createRecord: true,
 };
 const defaultSummary: Summary = { total: 0, pending: 0, paid: 0, canceled: 0, monthPaidAmount: 0 };
+
+const privatePaymentStatusLabels: Record<string, string> = {
+  payment_completed: "결제완료",
+};
+
+const getPrivatePaymentStatusLabel = (status?: string | null) => {
+  const normalized = String(status ?? "").trim();
+  return (
+    getCommonPaymentStatusLabel(normalized) ?? privatePaymentStatusLabels[normalized] ?? normalized
+  );
+};
 
 const statusLabel = (status: string) => (status === "active" ? "활성" : "비활성");
 const money = (amount: number) => `${amount.toLocaleString("ko-KR")}원`;
@@ -548,8 +560,11 @@ export default function PrivatePaymentsClient() {
                     </td>
                   </tr>
                 ) : (
-                  items.map((item) => (
-                    <tr key={item.id} className={adminSurface.tableRow}>
+                  items.map((item) => {
+                    const paymentStatusLabel = getPrivatePaymentStatusLabel(item.paymentStatus);
+
+                    return (
+                      <tr key={item.id} className={adminSurface.tableRow}>
                       <td className={adminSurface.tableCell}>
                         <input
                           type="checkbox"
@@ -592,14 +607,15 @@ export default function PrivatePaymentsClient() {
                         <div className="flex flex-wrap gap-1.5">
                           <Badge
                             variant={
-                              item.paymentStatus === "결제완료"
+                              paymentStatusLabel === "결제완료"
                                 ? "default"
-                                : item.paymentStatus === "결제취소"
+                                : paymentStatusLabel === "결제취소" ||
+                                    paymentStatusLabel === "환불완료"
                                   ? "destructive"
                                   : "outline"
                             }
                           >
-                            {item.paymentStatus}
+                            {paymentStatusLabel}
                           </Badge>
                           <Badge variant={item.status === "active" ? "secondary" : "outline"}>
                             {statusLabel(item.status)}
@@ -741,8 +757,9 @@ export default function PrivatePaymentsClient() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
-                    </tr>
-                  ))
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

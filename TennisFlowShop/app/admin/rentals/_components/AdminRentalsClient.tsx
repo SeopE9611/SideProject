@@ -62,6 +62,10 @@ import {
 } from "@/components/ui/select";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import {
+  getCommonApplicationStatusLabel,
+  getCommonRentalStatusLabel,
+} from "@/lib/status-labels/base";
+import {
   adminMutator,
   ensureAdminMutationSucceeded,
   getAdminErrorMessage,
@@ -126,9 +130,22 @@ const rentalStatusLabels: Record<string, string> = {
   pending: "대기중",
   paid: "결제완료",
   out: "대여중",
+  rented: "대여중",
   returned: "반납완료",
+  overdue: "연체",
   canceled: "취소됨",
+  cancelled: "취소됨",
 };
+
+function getRentalStatusDisplayLabel(status?: string | null): string {
+  const normalized = String(status ?? "").trim();
+  return getCommonRentalStatusLabel(normalized) ?? rentalStatusLabels[normalized] ?? normalized;
+}
+
+function getStringingApplicationStatusDisplayLabel(status?: string | null): string {
+  const normalized = String(status ?? "").trim();
+  return getCommonApplicationStatusLabel(normalized) ?? normalized;
+}
 
 const paymentFilterLabels: Record<AdminRentalPaymentFilter, string> = {
   all: "결제 전체",
@@ -428,7 +445,7 @@ export default function AdminRentalsClient() {
     Boolean(to);
 
   const activeFilterLabels = [
-    status ? rentalStatusLabels[status] : null,
+    status ? getRentalStatusDisplayLabel(status) : null,
     payFilter !== "all" ? paymentFilterLabels[payFilter] : null,
     shipFilter !== "all" ? shippingFilterLabels[shipFilter] : null,
   ].filter((label): label is string => Boolean(label));
@@ -1095,7 +1112,10 @@ export default function AdminRentalsClient() {
                                 </div>
                                 {r.stringingApplicationStatus && (
                                   <p className="line-clamp-1 text-xs text-foreground/70">
-                                    교체서비스 {r.stringingApplicationStatus}
+                                    교체서비스{" "}
+                                    {getStringingApplicationStatusDisplayLabel(
+                                      r.stringingApplicationStatus,
+                                    )}
                                   </p>
                                 )}
                               </div>
@@ -1248,7 +1268,7 @@ export default function AdminRentalsClient() {
                                     "whitespace-nowrap shrink-0",
                                   )}
                                 >
-                                  {rentalStatusLabels[r.status] || r.status}
+                                  {getRentalStatusDisplayLabel(r.status)}
                                 </Badge>
                               );
                             })()}
