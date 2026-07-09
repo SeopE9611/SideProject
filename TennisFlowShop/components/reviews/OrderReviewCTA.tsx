@@ -89,7 +89,7 @@ export default function OrderReviewCTA({
         <Button size={size} asChild variant="default" className="shadow-sm">
           <Link href={href}>
             <MessageSquarePlus className="mr-1 h-4 w-4" />
-            {context === "product_stringing" ? "스트링·교체서비스 후기 작성" : "후기 작성"}
+            후기 작성
           </Link>
         </Button>
         {unreviewedBadge}

@@ -1644,6 +1644,8 @@ export default function TransactionFlowList() {
                     }
 
                     if (
+                      !applicationActionTarget.orderId &&
+                      !applicationActionTarget.rentalId &&
                       applicationActionTarget.userConfirmedAt &&
                       applicationActionTarget.serviceReviewPending
                     ) {

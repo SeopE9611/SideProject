@@ -7,8 +7,8 @@ import {
   isRentalTodoActionable,
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
+import { resolveOrderReviewTarget } from "@/lib/reviews/review-target.server";
 import {
-  isOrderLinkedToStringing,
   isStringingReviewBlockedStatus,
 } from "@/lib/reviews/review-policy";
 import jwt from "jsonwebtoken";
@@ -841,23 +841,34 @@ export async function GET(req: Request) {
     const first = items[0] ?? null;
     const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
     const linkedApps = appByOrderId.get(orderId) ?? [];
-    const serviceLinkedOrder = isOrderLinkedToStringing(o, linkedApps);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
     const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
     const reviewPendingProductIds = reviewTargetProductIds.filter(
       (productId) => !reviewedProductIds.has(productId),
     );
-    const reviewPendingCount =
-      isConfirmed && !serviceLinkedOrder ? reviewPendingProductIds.length : 0;
+    const integratedTarget = await resolveOrderReviewTarget(db, userId, orderId);
+    let reviewPendingCount = isConfirmed ? reviewPendingProductIds.length : 0;
+    let reviewAllDone =
+      isConfirmed && reviewTargetProductIds.length > 0 && reviewPendingCount === 0;
+    let reviewNextTargetProductId =
+      reviewPendingCount > 0 ? (reviewPendingProductIds[0] ?? null) : null;
+    if (isConfirmed && integratedTarget?.reviewContext === "product_stringing") {
+      const appId = integratedTarget.serviceApplicationId;
+      const already = await db.collection("reviews").findOne({
+        userId,
+        isDeleted: { $ne: true },
+        $or: [
+          { orderId: { $in: [o._id, orderId] }, reviewContext: "product_stringing" },
+          ...(appId && ObjectId.isValid(appId)
+            ? [{ serviceApplicationId: { $in: [new ObjectId(appId), appId] } }]
+            : []),
+        ],
+      });
+      reviewPendingCount = already ? 0 : 1;
+      reviewAllDone = Boolean(already);
+      reviewNextTargetProductId = already ? null : integratedTarget.productId;
+    }
     const hasPendingReview = reviewPendingCount > 0;
-    const reviewAllDone =
-      isConfirmed &&
-      !serviceLinkedOrder &&
-      reviewTargetProductIds.length > 0 &&
-      reviewPendingCount === 0;
-    const reviewNextTargetProductId = hasPendingReview
-      ? (reviewPendingProductIds[0] ?? null)
-      : null;
 
     const linked = pickPrimaryLinkedApplication(linkedApps);
     const hasRacketItem = items.some(

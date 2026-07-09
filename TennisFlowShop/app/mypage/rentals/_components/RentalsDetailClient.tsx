@@ -9,7 +9,6 @@ import {
 } from "@/app/mypage/_lib/flow-display";
 import SiteContainer from "@/components/layout/SiteContainer";
 import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
-import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -923,13 +922,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                           >
                             <Link href={stringingDetailHref}>교체서비스 상세보기</Link>
                           </Button>
-                        ) : null}
-                        {data.stringingApplicationId ? (
-                          <ServiceReviewCTA
-                            applicationId={data.stringingApplicationId}
-                            userConfirmedAt={linkedApplication?.userConfirmedAt ?? null}
-                            className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
-                          />
                         ) : null}
                       </div>
                     </>

@@ -12,7 +12,6 @@ import {
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
-import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,6 +48,7 @@ import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { isOrderConfirmedStatus, isOrderDeliveredStatus } from "@/lib/status/flow-status";
+import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { CheckCircle, ChevronDown, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
@@ -362,8 +362,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     });
   }, [searchParams, orderDetail?._id]);
 
-  // 상품 후기 작성 여부 맵: { [productId]: boolean }
-  const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
 
   // 완료 상태
   const isVisitPickup = isVisitPickupOrder(orderDetail?.shippingInfo);
@@ -390,36 +388,29 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const canShowReviewCTA =
     Boolean(orderDetail?.userConfirmedAt) || isOrderConfirmedStatus(orderDetail?.status);
   const canConfirmPurchase = isOrderDeliveredStatus(orderDetail?.status);
-  const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
-
-  useEffect(() => {
-    const ids = (orderDetail?.items ?? []).map((it) => it.id).filter(Boolean);
-    if (!ids.length) return;
-    let aborted = false;
-    (async () => {
-      const order = orderDetail?._id;
-      const results = await Promise.allSettled(
-        ids.map((id) =>
-          fetch(`/api/reviews/self?productId=${id}&orderId=${order}`, {
-            credentials: "include",
-          }).then((r) => (r.ok ? r.json() : null)),
-        ),
-      );
-      if (aborted) return;
-      const next: Record<string, boolean> = {};
-      results.forEach((res, i) => {
-        next[ids[i]] = res.status === "fulfilled" && !!res.value; // 존재하면 true
-      });
-      setReviewedMap(next);
-    })();
-    return () => {
-      aborted = true;
-    };
-  }, [orderDetail?._id]);
+  const { data: reviewItemsData, isLoading: isReviewItemsLoading } = useSWR(
+    orderDetail?._id && canShowReviewCTA ? `/api/orders/${orderDetail._id}/review-items` : null,
+    authenticatedSWRFetcher,
+    { revalidateOnFocus: false },
+  );
 
   const items = orderDetail?.items ?? [];
-  const allReviewed = items.length > 0 && items.every((it) => reviewedMap[it.id]);
-  const firstUnreviewed = items.find((it) => !reviewedMap[it.id]);
+  const reviewedMap = new Map<string, boolean>(
+    Array.isArray(reviewItemsData?.items)
+      ? reviewItemsData.items
+          .filter((it: any) => it?.productId)
+          .map((it: any) => [String(it.productId), Boolean(it.reviewed)])
+      : [],
+  );
+  const reviewRemaining =
+    typeof reviewItemsData?.counts?.remaining === "number" ? reviewItemsData.counts.remaining : null;
+  const nextReviewContext = reviewItemsData?.nextReviewContext ?? null;
+  const nextReviewProductId = reviewItemsData?.nextProductId ?? null;
+  const nextReviewApplicationId = reviewItemsData?.nextApplicationId ?? null;
+  const isIntegratedProductStringingReview = nextReviewContext === "product_stringing";
+  const allReviewed = reviewRemaining === 0;
+  const firstUnreviewed = items.find((it) => reviewedMap.get(it.id) === false);
+  const reviewsReady = !isReviewItemsLoading && typeof reviewRemaining === "number";
   // 편집 가능 상태: 배송 중/완료/환불/취소가 아니어야 함
   const nonEditableStatuses = ["배송중", "배송완료", "환불", "취소"];
   const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? "");
@@ -600,15 +591,24 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
   const reviewableStringingAppId = reviewableStringingApp?.id ?? primaryStringingAppId;
 
-  const canShowProductReviewCTA = canShowReviewCTA && !serviceLinkedOrder;
+  const canShowProductReviewCTA =
+    canShowReviewCTA && !serviceLinkedOrder && !isIntegratedProductStringingReview;
 
-  const canShowServiceReviewCTA = Boolean(
-    serviceLinkedOrder && reviewableStringingAppId && reviewableStringingApp?.serviceReviewPending,
-  );
+  const canShowIntegratedOrderReviewCTA =
+    canShowReviewCTA &&
+    isIntegratedProductStringingReview &&
+    reviewsReady &&
+    (reviewRemaining ?? 0) > 0;
 
-  const serviceReviewHref = reviewableStringingAppId
-    ? `/reviews/write?service=stringing&applicationId=${reviewableStringingAppId}`
-    : null;
+  const integratedOrderReviewHref =
+    canShowIntegratedOrderReviewCTA && nextReviewProductId
+      ? buildReviewWriteHref({
+          reviewContext: "product_stringing",
+          orderId: orderDetail._id,
+          productId: nextReviewProductId,
+          applicationId: nextReviewApplicationId ?? reviewableStringingAppId ?? null,
+        })
+      : null;
 
   const isOrderCanceled = orderDetail.status === "취소";
   const isPrimaryStringingAppCanceled = primaryStringingApp?.status === "취소";
@@ -732,7 +732,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     !isDelivered &&
     !isCompleted &&
     !canConfirmPurchase &&
-    !(canShowProductReviewCTA && Boolean(firstUnreviewed));
+    !(canShowProductReviewCTA && Boolean(firstUnreviewed)) && !canShowIntegratedOrderReviewCTA;
 
   const nextTodo: {
     label: string;
@@ -762,12 +762,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           ctaLabel: isConfirmingPurchase ? "확정 중…" : "구매 확정",
           onCtaClick: handleConfirmPurchase,
         }
-      : canShowServiceReviewCTA && serviceReviewHref
+      : canShowIntegratedOrderReviewCTA && integratedOrderReviewHref
         ? {
-            label: "상품·교체서비스 후기 작성 가능",
-            description: "수령 확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
+            label: "스트링·교체서비스 후기를 남겨주세요.",
+            description: "상품과 교체서비스 경험을 하나의 후기로 남길 수 있어요.",
             ctaLabel: "후기 작성",
-            ctaHref: serviceReviewHref,
+            ctaHref: integratedOrderReviewHref,
           }
         : canShowProductReviewCTA && Boolean(firstUnreviewed)
           ? {
@@ -1078,7 +1078,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
                         {canShowProductReviewCTA ? (
                           <div className="mt-3">
-                            {reviewedMap[item.id] ? (
+                            {reviewedMap.get(item.id) ? (
                               <Button
                                 asChild
                                 size="sm"
@@ -1364,13 +1364,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       연결된 교체서비스 신청 정보를 확인 중입니다.
                     </div>
                   )}
-
-                  {reviewableStringingAppId ? (
-                    <ServiceReviewCTA
-                      applicationId={reviewableStringingAppId}
-                      userConfirmedAt={reviewableStringingApp?.userConfirmedAt ?? null}
-                    />
-                  ) : null}
                 </MypageDetailCard>
               </section>
             )}
@@ -1727,7 +1720,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           이 주문은 리뷰를 작성하지 않았습니다.
                         </p>
                         <p className="text-ui-body-sm text-warning">
-                          아래 ‘후기 작성’ 버튼을 눌러 상품별로 후기를 남겨주세요.
+                          {isIntegratedProductStringingReview
+                            ? "스트링·교체서비스 후기를 남겨주세요."
+                            : "아래 ‘후기 작성’ 버튼을 눌러 상품 후기를 남겨주세요."}
                         </p>
                         <p className="text-ui-body-sm text-destructive">
                           ※
@@ -1738,19 +1733,29 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       </div>
                     </div>
 
-                    <OrderReviewCTA
-                      orderId={orderDetail._id as string}
-                      reviewAllDone={allReviewed}
-                      unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
-                      reviewNextTargetProductId={firstUnreviewed?.id ?? items[0]?.id ?? null}
-                      reviewNextApplicationId={reviewableStringingAppId ?? null}
-                      reviewContext={serviceLinkedOrder ? "product_stringing" : "product"}
-                      orderStatus={orderDetail.status}
-                      userConfirmedAt={orderDetail.userConfirmedAt ?? null}
-                      showOnlyWhenCompleted
-                      serviceLinkedOrder={serviceLinkedOrder}
-                      loading={!reviewsReady}
-                    />
+                    {nextTodo?.ctaHref === integratedOrderReviewHref ||
+                    nextTodo?.ctaHref?.includes("/reviews/write") ? null : (
+                      <OrderReviewCTA
+                        orderId={orderDetail._id as string}
+                        reviewAllDone={allReviewed}
+                        unreviewedCount={reviewRemaining ?? 0}
+                        reviewNextTargetProductId={
+                          nextReviewProductId ?? firstUnreviewed?.id ?? null
+                        }
+                        reviewNextApplicationId={
+                          nextReviewApplicationId ?? reviewableStringingAppId ?? null
+                        }
+                        reviewContext={
+                          nextReviewContext ??
+                          (serviceLinkedOrder ? "product_stringing" : "product")
+                        }
+                        orderStatus={orderDetail.status}
+                        userConfirmedAt={orderDetail.userConfirmedAt ?? null}
+                        showOnlyWhenCompleted
+                        serviceLinkedOrder={serviceLinkedOrder}
+                        loading={!reviewsReady}
+                      />
+                    )}
                   </div>
                 )}
               </div>
