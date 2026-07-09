@@ -15,7 +15,7 @@ node_modules
 
 # 빌드 산출물
 .next
-out
+/out
 dist
 build
 
