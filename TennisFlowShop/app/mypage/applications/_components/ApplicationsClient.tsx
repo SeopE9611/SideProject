@@ -911,7 +911,7 @@ export default function ApplicationsClient() {
                     </TooltipProvider>
                   )}
 
-                  {isStringService && (
+                  {isStringService && !isLinkedApplication && (
                     <ServiceReviewCTA
                       applicationId={app.id}
                       status={app.status}

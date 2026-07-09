@@ -89,6 +89,8 @@ interface Order {
   reviewAllDone?: boolean;
   unreviewedCount?: number;
   reviewNextTargetProductId?: string | null;
+  reviewNextApplicationId?: string | null;
+  reviewContext?: string | null;
 
   // 주문 취소 요청 상태/사유(목록 카드용)
   cancelStatus?: string;
@@ -528,6 +530,8 @@ export default function OrderList() {
                     reviewAllDone={order.reviewAllDone}
                     unreviewedCount={order.unreviewedCount}
                     reviewNextTargetProductId={order.reviewNextTargetProductId}
+                    reviewNextApplicationId={order.reviewNextApplicationId}
+                    reviewContext={order.reviewContext}
                     orderStatus={order.status}
                     userConfirmedAt={order.userConfirmedAt ?? null}
                     showOnlyWhenCompleted

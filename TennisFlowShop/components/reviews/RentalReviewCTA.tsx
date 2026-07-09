@@ -59,7 +59,7 @@ export default function RentalReviewCTA({
     <Button size="sm" variant="default" className={className} asChild>
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
-        {isRentalStringing ? "대여·스트링 교체 후기 작성" : "대여 후기 작성"}
+        후기 작성
       </Link>
     </Button>
   );

@@ -4,6 +4,7 @@ import {
   isRentalTodoActionable,
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
+import { resolveOrderReviewTarget } from "@/lib/reviews/review-target.server";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -290,9 +291,25 @@ export async function GET() {
     const orderId = String(order._id);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
     const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
-    const reviewPendingCount = reviewTargetProductIds.filter(
-      (productId) => !reviewedProductIds.has(productId),
-    ).length;
+    const isConfirmed = Boolean(order?.userConfirmedAt) || isOrderConfirmedStatus(order?.status);
+    let reviewPendingCount = isConfirmed
+      ? reviewTargetProductIds.filter((productId) => !reviewedProductIds.has(productId)).length
+      : 0;
+    const integratedTarget = await resolveOrderReviewTarget(db, userId, orderId);
+    if (isConfirmed && integratedTarget?.reviewContext === "product_stringing") {
+      const appId = integratedTarget.serviceApplicationId;
+      const already = await db.collection("reviews").findOne({
+        userId,
+        isDeleted: { $ne: true },
+        $or: [
+          { orderId: { $in: [order._id, orderId] }, reviewContext: "product_stringing" },
+          ...(appId && ObjectId.isValid(appId)
+            ? [{ serviceApplicationId: { $in: [new ObjectId(appId), appId] } }]
+            : []),
+        ],
+      });
+      reviewPendingCount = already ? 0 : 1;
+    }
 
     const needsAction = isOrderTodoActionable({
       status: order?.status,
