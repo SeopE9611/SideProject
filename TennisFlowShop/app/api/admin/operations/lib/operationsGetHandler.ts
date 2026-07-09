@@ -514,13 +514,15 @@ function isStringingCompletedStatus(status?: string | null) {
   return s === "completed" || s === "done" || s === "work_done" || s.includes("교체완료");
 }
 
-function isVisitPickupLikeShippingInfo(shippingInfo: UnknownDoc | null) {
-  if (!shippingInfo) return false;
+function isVisitPickupLikeStringing(app: UnknownDoc) {
+  const shippingInfo = asDoc(app?.shippingInfo);
   const methodText = [
-    shippingInfo.shippingMethod,
-    shippingInfo.deliveryMethod,
-    shippingInfo.pickupMethod,
-    shippingInfo.servicePickupMethod,
+    app?.collectionMethod,
+    shippingInfo?.collectionMethod,
+    shippingInfo?.shippingMethod,
+    shippingInfo?.deliveryMethod,
+    shippingInfo?.pickupMethod,
+    shippingInfo?.servicePickupMethod,
   ]
     .map((value) => String(value ?? "").trim().toLowerCase())
     .filter(Boolean)
@@ -557,7 +559,7 @@ function needsStringingShippingFollowup(app: UnknownDoc) {
   return (
     isStringingCompletedStatus(getString(app?.status)) &&
     !isStringingPaymentCancelled(getString(app?.paymentStatus)) &&
-    !isVisitPickupLikeShippingInfo(shippingInfo) &&
+    !isVisitPickupLikeStringing(app) &&
     !hasStringingTracking(shippingInfo)
   );
 }
@@ -570,6 +572,7 @@ function isApplicationTerminalStatus(status?: string | null) {
     s === "canceled" ||
     s === "cancelled" ||
     s === "done" ||
+    s === "work_done" ||
     s === "completed"
   );
 }
@@ -1169,6 +1172,7 @@ export async function handleAdminOperationsGet(
     guestName: 1,
     guestEmail: 1,
     cancelRequest: 1,
+    collectionMethod: 1,
     shippingInfo: 1,
   };
   let rawApps = await measure("operations.fetchStringingApplications", () =>
