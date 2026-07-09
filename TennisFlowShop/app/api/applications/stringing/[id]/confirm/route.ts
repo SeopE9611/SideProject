@@ -8,6 +8,31 @@ import { grantPoints } from "@/lib/points.service";
 
 const MAX_REWARD_BASE_AMOUNT = 1_000_000_000;
 
+const STRINGING_COMPLETED_STATUSES = ["교체완료", "completed", "done", "work_done"] as const;
+const STRINGING_CANCELED_STATUSES = ["취소", "canceled", "cancelled"] as const;
+
+const normalizeStatusText = (status?: unknown) =>
+  String(status ?? "").trim().toLowerCase();
+
+const isStringingCompletedStatus = (status?: unknown) => {
+  const normalized = normalizeStatusText(status);
+  return (
+    normalized === "completed" ||
+    normalized === "done" ||
+    normalized === "work_done" ||
+    normalized.includes("교체완료")
+  );
+};
+
+const isStringingCanceledStatus = (status?: unknown) => {
+  const normalized = normalizeStatusText(status);
+  return (
+    normalized === "canceled" ||
+    normalized === "cancelled" ||
+    normalized === "취소"
+  );
+};
+
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
   try {
@@ -87,7 +112,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       );
     }
 
-    if (app.status !== "교체완료") {
+    if (!isStringingCompletedStatus(app.status)) {
       return NextResponse.json(
         { ok: false, message: "교체완료 상태에서만 확정할 수 있습니다." },
         { status: 400 },
@@ -168,7 +193,8 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       const blocking = linkedApps.filter((a: any) => {
         const st = String(a?.status ?? "");
         const confirmed = Boolean(a?.userConfirmedAt);
-        const doneLike = confirmed || st === "교체완료" || st === "취소";
+        const doneLike =
+          confirmed || isStringingCompletedStatus(st) || isStringingCanceledStatus(st);
         return !doneLike;
       });
 
@@ -237,7 +263,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       const svcRes = await db.collection("stringing_applications").updateMany(
         {
           orderId: orderObjectId,
-          status: { $in: ["교체완료", "취소"] },
+          status: { $in: [...STRINGING_COMPLETED_STATUSES, ...STRINGING_CANCELED_STATUSES] },
           $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
         },
         { $set: { userConfirmedAt: now } },
