@@ -330,6 +330,18 @@ const stringingShippingMissingFilter: Filter<Document> = {
     },
     {
       $or: [
+        { collectionMethod: { $exists: false } },
+        { collectionMethod: { $nin: VISIT_PICKUP_VALUES } },
+      ],
+    },
+    {
+      $or: [
+        { "shippingInfo.collectionMethod": { $exists: false } },
+        { "shippingInfo.collectionMethod": { $nin: VISIT_PICKUP_VALUES } },
+      ],
+    },
+    {
+      $or: [
         { "shippingInfo.shippingMethod": { $exists: false } },
         { "shippingInfo.shippingMethod": { $nin: VISIT_PICKUP_VALUES } },
       ],
