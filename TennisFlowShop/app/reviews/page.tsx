@@ -21,7 +21,7 @@ export default function ReviewsPage() {
       <SiteContainer className="space-y-6 py-6 md:py-8">
         <SummaryCard
           title="작성 가능한 후기가 있나요?"
-          description="구매확정된 상품이나 완료된 서비스가 있다면 마이페이지에서 후기를 남길 수 있어요."
+          description="구매확정·수령확인·반납완료 내역에서 후기를 남길 수 있어요."
           action={
             <Button asChild className="w-full sm:w-auto">
               <Link href="/mypage?tab=orders&scope=todo">작성 가능한 후기 확인하기</Link>

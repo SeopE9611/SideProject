@@ -964,7 +964,7 @@ export default function ReviewWritePage() {
     mode === "product"
       ? "상품 후기"
       : mode === "service"
-        ? "상품·교체서비스 후기"
+        ? "교체서비스 후기"
         : mode === "rental"
           ? "라켓 대여 후기"
           : "리뷰 대상";
@@ -988,10 +988,10 @@ export default function ReviewWritePage() {
         <PublicPageHero
           eyebrow="리뷰 작성"
           title="후기 작성"
-          description="구매 또는 서비스 이용 경험을 바탕으로 다른 사용자에게 도움이 되는 후기를 남겨주세요."
+          description="구매·서비스·대여 경험을 다른 사용자에게 공유해 주세요."
         />
         <SiteContainer className="py-6 md:py-8">
-          <div className="mx-auto max-w-3xl space-y-4">
+          <div className="mx-auto max-w-6xl space-y-5">
             <PublicSurface className="space-y-4">
               <Skeleton className="h-7 w-40" />
               <Skeleton className="h-4 w-64 max-w-full" />
@@ -1016,7 +1016,7 @@ export default function ReviewWritePage() {
       <PublicPageHero
         eyebrow="리뷰 작성"
         title="후기 작성"
-        description="구매 또는 서비스 이용 경험을 바탕으로 다른 사용자에게 도움이 되는 후기를 남겨주세요."
+        description="구매·서비스·대여 경험을 다른 사용자에게 공유해 주세요."
         actions={
           <>
             <Button
@@ -1039,11 +1039,11 @@ export default function ReviewWritePage() {
         }
       />
       <SiteContainer className="py-6 md:py-8">
-        <div className="mx-auto max-w-3xl space-y-4">
+        <div className="mx-auto max-w-6xl space-y-5">
           <PublicSurface className="space-y-4" padding="md">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-ui-label font-medium text-muted-foreground">리뷰 대상</p>
+                <p className="text-ui-label font-medium text-muted-foreground">어떤 경험을 남기나요?</p>
                 <h2 className="mt-1 break-keep text-ui-card-title-lg font-semibold text-foreground">
                   {targetTitle}
                 </h2>
@@ -1306,8 +1306,9 @@ export default function ReviewWritePage() {
             )}
           </PublicSurface>
 
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <SummaryCard
-            title="후기 내용 작성"
+            title="후기를 남겨주세요"
             description="별점, 이용 경험, 사진을 입력해 후기를 등록해 주세요."
           >
             <form onSubmit={onSubmit} className="space-y-6">
@@ -1394,7 +1395,7 @@ export default function ReviewWritePage() {
                     이용 경험에 가까운 점수를 선택하세요.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
+                <div className="rounded-2xl border border-border bg-muted/20 px-4 py-5 shadow-sm">
                   <Stars value={rating} onChange={setRating} disabled={locked} />
                   <div className="mt-3 text-center text-ui-body-sm font-medium text-foreground">
                     {rating}점
@@ -1413,7 +1414,7 @@ export default function ReviewWritePage() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={reviewPlaceholder}
-                  className="min-h-[120px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-[180px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring"
                   disabled={locked}
                 />
               </section>
@@ -1451,7 +1452,7 @@ export default function ReviewWritePage() {
                   type="button"
                   variant="outline"
                   onClick={() => confirmLeaveIfDirty(goPrimary)}
-                  className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto"
+                  className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto"
                 >
                   {mode === "product"
                     ? "상품 상세"
@@ -1466,21 +1467,22 @@ export default function ReviewWritePage() {
                   type="submit"
                   disabled={locked || isUploading}
                   aria-disabled={locked || isUploading}
-                  className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto"
+                  className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto"
                 >
                   {isUploading ? "이미지 업로드 중..." : "리뷰 등록"}
                 </Button>
               </div>
             </form>
           </SummaryCard>
-          <PublicSurface className="space-y-2" padding="md">
-            <h2 className="text-ui-body-sm font-semibold text-foreground">작성 기준</h2>
+          <PublicSurface className="space-y-2 lg:sticky lg:top-24" padding="md">
+            <h2 className="text-ui-body-sm font-semibold text-foreground">등록 전 확인</h2>
             <ul className="space-y-1 text-ui-body-sm text-muted-foreground">
               <li>• 실제 사용 경험을 중심으로 작성해주세요.</li>
               <li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li>
               <li>• 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.</li>
             </ul>
           </PublicSurface>
+          </div>
         </div>
       </SiteContainer>
     </div>
