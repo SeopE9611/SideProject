@@ -1,6 +1,10 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  getCommonApplicationStatusLabel,
+  getCommonOrderStatusLabel,
+} from "@/lib/status-labels/base";
 import { Box, Wrench, Star } from "lucide-react";
 
 export function UserActivityTabsSection({
@@ -40,7 +44,12 @@ export function UserActivityTabsSection({
           render={(o: any) => (
             <Row
               title={o?.title || o?.number || `주문 #${o?._id || o?.id || "-"}`}
-              subtitle={o?.status || o?.computedStatus || "—"}
+              subtitle={
+                o?.computedStatus ||
+                getCommonOrderStatusLabel(o?.status) ||
+                o?.status ||
+                "—"
+              }
               right={o?.totalPrice ? `${o.totalPrice.toLocaleString()}원` : ""}
               href={o?._id || o?.id ? `/admin/orders/${o._id || o.id}` : undefined}
             />
@@ -57,7 +66,12 @@ export function UserActivityTabsSection({
               title={
                 a?.racketType || a?.stringTypes?.join(", ") || `신청 #${a?._id || a?.id || "-"}`
               }
-              subtitle={a?.status || a?.applicationStatus || "—"}
+              subtitle={
+                getCommonApplicationStatusLabel(a?.status || a?.applicationStatus) ||
+                a?.status ||
+                a?.applicationStatus ||
+                "—"
+              }
               right={a?.price ? `${a.price.toLocaleString()}원` : ""}
               href={a?._id || a?.id ? `/admin/applications/stringing/${a._id || a.id}` : undefined}
             />

@@ -61,6 +61,10 @@ export const badgeSizeCls = "px-2.5 py-0.5 text-xs leading-[1.05] rounded-md";
 
 export function normalizePackagePaymentStatus(status?: string | null): PaymentStatus {
   if (status === "결제완료" || status === "결제대기" || status === "결제취소") return status;
+  const lower = String(status ?? "").trim().toLowerCase();
+  if (lower === "paid" || lower === "payment_completed") return "결제완료";
+  if (lower === "pending") return "결제대기";
+  if (lower === "canceled" || lower === "cancelled") return "결제취소";
   return "결제대기";
 }
 

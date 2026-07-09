@@ -69,6 +69,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
+import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -1291,6 +1292,10 @@ export default function StringingApplicationDetailClient({
         return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
       })[0] ?? null)
     : null;
+  const latestProcessingHistoryStatusLabel =
+    getCommonApplicationStatusLabel(latestProcessingHistory?.status) ??
+    latestProcessingHistory?.status ??
+    "기록 없음";
 
   const latestProcessingDate = latestProcessingHistory?.date
     ? new Date(latestProcessingHistory.date).toLocaleString("ko-KR")
@@ -2006,7 +2011,7 @@ export default function StringingApplicationDetailClient({
                   footer={
                     <div>
                       <span className="font-medium text-foreground">최근 처리 이력:</span>{" "}
-                      {latestProcessingHistory?.status ?? "기록 없음"} · {latestProcessingDate}
+                      {latestProcessingHistoryStatusLabel} · {latestProcessingDate}
                       {latestProcessingHistory?.description ? (
                         <span className="ml-2 text-muted-foreground">
                           {latestProcessingHistory.description}

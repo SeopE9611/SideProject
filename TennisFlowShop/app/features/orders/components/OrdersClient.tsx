@@ -52,6 +52,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { shortenId } from "@/lib/shorten";
+import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import type { ApiResponse, OrderWithType } from "@/lib/types/order";
@@ -1493,7 +1494,7 @@ export default function OrdersClient() {
                             </div>
                             <div className="mt-1.5 flex w-full items-baseline justify-end gap-3 tabular-nums">
                               <span className="text-ui-label text-foreground/70">
-                                {order.paymentStatus}
+                                {getCommonPaymentStatusLabel(order.paymentStatus) ?? order.paymentStatus}
                               </span>
                               <span className="whitespace-nowrap text-ui-body-sm font-medium text-foreground">
                                 {formatCurrency(order.total)}

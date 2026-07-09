@@ -1466,7 +1466,7 @@ export default function PackageOrdersClient() {
                                   )}
                                   aria-label={`결제상태 ${String(pkg.paymentStatus)}`}
                                 >
-                                  {pkg.paymentStatus}
+                                  {paymentLabel}
                                 </Badge>
                               );
                             })()}

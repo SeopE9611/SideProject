@@ -21,6 +21,7 @@ import { bankLabelMap } from "@/lib/constants";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import clientPromise from "@/lib/mongodb";
+import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import {
   getOrderDeliveryInfoTitle,
   isVisitPickupOrder,
@@ -608,6 +609,8 @@ export default async function CheckoutSuccessPage({
     const isTossPayment = paymentProvider === "tosspayments" || paymentProvider === "toss";
     const isNicePayment = paymentProvider === "nicepay";
     const paymentMethodLabel = isZeroPayment ? "결제 불필요" : paymentSummary.userLabel;
+    const paymentStatusLabel =
+      getCommonPaymentStatusLabel(order.paymentStatus) ?? order.paymentStatus ?? "결제완료";
 
     console.info("[checkout][success][render_success_with_details]", {
       orderId,
@@ -818,7 +821,7 @@ export default async function CheckoutSuccessPage({
                           <p>
                             <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
-                              {order.paymentStatus || "결제완료"}
+                              {paymentStatusLabel}
                             </span>
                           </p>
                           <p>
@@ -848,7 +851,7 @@ export default async function CheckoutSuccessPage({
                           <p>
                             <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
-                              {order.paymentStatus || "결제완료"}
+                              {paymentStatusLabel}
                             </span>
                           </p>
                           <p>
