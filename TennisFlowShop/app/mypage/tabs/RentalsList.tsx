@@ -44,10 +44,22 @@ const getKey = (index: number, prev: any) => {
   return `/api/me/rentals?page=${page}&pageSize=${LIMIT}`;
 };
 
+const isRentalReturnedStatus = (status?: string | null) => {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  return normalized === "returned" || normalized.includes("반납완료");
+};
+
+const isRentalCanceledStatus = (status?: string | null) => {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  return normalized === "canceled" || normalized === "cancelled" || normalized.includes("취소");
+};
+
 const getStatusIcon = (status: string) => {
+  if (isRentalReturnedStatus(status)) {
+    return <CheckCircle className="h-4 w-4 text-primary" />;
+  }
+
   switch (status) {
-    case "returned":
-      return <CheckCircle className="h-4 w-4 text-primary" />;
     case "out":
       return <Clock className="h-4 w-4 text-primary" />;
     case "paid":
@@ -60,9 +72,11 @@ const getStatusIcon = (status: string) => {
 };
 
 const getStatusBadgeVariant = (status: string) => {
+  if (isRentalReturnedStatus(status)) {
+    return "success";
+  }
+
   switch (status) {
-    case "returned":
-      return "success";
     case "out":
       return "info";
     case "paid":
@@ -76,6 +90,7 @@ const getStatusBadgeVariant = (status: string) => {
 
 const getStatusLabel = (status: string, hasOutboundShipping = false) => {
   if (status === "paid" && hasOutboundShipping) return "수령 확인 필요";
+  if (isRentalReturnedStatus(status)) return getCustomerRentalStatusLabel("returned");
   return getCustomerRentalStatusLabel(status);
 };
 
@@ -180,14 +195,16 @@ export default function RentalsList() {
         const rentalTitle = `${racketBrandLabel(r.brand)} ${r.model ?? ""}`.trim() || "라켓 대여";
         const rentalMetaDate = r.updatedAt || r.createdAt;
         const returnDueDate = r.returnDueDate || r.endDate || r.dueDate || r.expectedReturnDate;
+        const isReturned = isRentalReturnedStatus(r.status);
+        const isCanceled = isRentalCanceledStatus(r.status);
         const nextActionLabel =
           r.cancelStatus === "requested"
             ? "취소 요청 확인을 기다려주세요."
-            : r.status === "returned" && !r.userConfirmedAt
+            : isReturned && !r.userConfirmedAt
               ? "반납 내용을 확인하고 수령 확인을 진행해주세요."
               : r.withStringService && !r.stringingApplicationId
                 ? "교체서비스 신청을 이어갈 수 있어요."
-                : r.status === "returned" || r.status === "canceled"
+                : isReturned || isCanceled
                   ? "추가로 진행할 일은 없습니다."
                   : r.hasReturnShipping
                     ? "상세에서 반납 진행 상황을 확인해주세요."
