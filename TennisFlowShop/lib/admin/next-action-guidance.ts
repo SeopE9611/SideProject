@@ -179,7 +179,7 @@ function isTerminalOpsItem(item: OpsLikeItem) {
     return isApplicationClosed(item.statusLabel) || isAppDone(item.statusLabel);
   if (item.kind === "rental") {
     if (isRentalClosed(item.statusLabel)) return true;
-    if (isRentalReturned(item.statusLabel)) return !item.nextAction?.includes("보증금");
+    if (isRentalReturned(item.statusLabel)) return Boolean(item.depositRefundedAt);
     return false;
   }
   if (item.kind === "package_purchase")
@@ -296,7 +296,7 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
     if (isRentalReturned(item.statusLabel)) {
       return {
         stage: "대여 반납 완료 단계",
-        nextAction: item.depositRefundedAt ? "후속 조치 없음" : "보증금 환급 확인 필요",
+        nextAction: item.depositRefundedAt ? "후속 조치 없음" : "보증금 환불 확인 필요",
       };
     }
     if (isRentalPending(item.statusLabel) || !doneLike(item.paymentLabel)) {
@@ -395,6 +395,10 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
   if (order && isTerminalOpsItem(order)) {
     return terminalGuide(order);
   }
+  if (rental && isRentalReturned(rental.statusLabel) && !rental.depositRefundedAt) {
+    return inferNextActionForOperationItem(rental);
+  }
+
   if (rental && isTerminalOpsItem(rental)) {
     return terminalGuide(rental);
   }
