@@ -8,31 +8,12 @@ import { grantPoints } from "@/lib/points.service";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { bankLabelMap } from "@/lib/constants";
 import { canConfirmOrderByStatus, isVisitPickupOrder } from "@/lib/order-shipping";
-
-const STRINGING_COMPLETED_STATUSES = ["교체완료", "completed", "done", "work_done"] as const;
-const STRINGING_CANCELED_STATUSES = ["취소", "canceled", "cancelled"] as const;
-
-const normalizeStatusText = (status?: unknown) =>
-  String(status ?? "").trim().toLowerCase();
-
-const isStringingCompletedStatus = (status?: unknown) => {
-  const normalized = normalizeStatusText(status);
-  return (
-    normalized === "completed" ||
-    normalized === "done" ||
-    normalized === "work_done" ||
-    normalized.includes("교체완료")
-  );
-};
-
-const isStringingCanceledStatus = (status?: unknown) => {
-  const normalized = normalizeStatusText(status);
-  return (
-    normalized === "canceled" ||
-    normalized === "cancelled" ||
-    normalized === "취소"
-  );
-};
+import {
+  isStringingCanceledStatus,
+  isStringingCompletedStatus,
+  STRINGING_CANCELED_VALUES,
+  STRINGING_COMPLETED_VALUES,
+} from "@/lib/status/flow-status";
 
 function paymentMethodLabel(paymentInfo: any): string {
   const method = String(paymentInfo?.method ?? "").trim();
@@ -270,7 +251,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   const svcRes = await db.collection("stringing_applications").updateMany(
     {
       orderId: orderObjectId,
-      status: { $in: [...STRINGING_COMPLETED_STATUSES, ...STRINGING_CANCELED_STATUSES] },
+      status: { $in: [...STRINGING_COMPLETED_VALUES, ...STRINGING_CANCELED_VALUES] },
       $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
     },
     { $set: { userConfirmedAt: confirmedAt } },
