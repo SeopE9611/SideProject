@@ -143,7 +143,26 @@ export default function ReviewCard({
         ? item.rentalTargetName || item.rentalTitle || "라켓 대여 후기"
         : item.serviceTitle ||
           item.serviceTargetName ||
-          (item.service === "stringing" ? "상품·교체서비스 이용 후기" : "서비스");
+          (item.service === "stringing" ? "교체서비스 후기" : "서비스 후기");
+
+  const typeLabel =
+    item.type === "product"
+      ? "상품 후기"
+      : item.type === "rental"
+        ? "라켓 대여 후기"
+        : "교체서비스 후기";
+  const TypeIcon = item.type === "product" ? Package : item.type === "rental" ? Briefcase : Wrench;
+  const targetMeta =
+    item.type === "rental"
+      ? [
+          item.rentalDays ? `${item.rentalDays}일 대여` : null,
+          item.rentalStatus ? `상태 ${item.rentalStatus}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : item.type === "service" && item.serviceApplicationId
+        ? `신청번호 ${item.serviceApplicationId}`
+        : null;
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
@@ -248,28 +267,25 @@ export default function ReviewCard({
 
         {/* Header with badges and date */}
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+          <div className="min-w-0 space-y-2">
             <Badge
               variant={item.type === "product" ? "info" : item.type === "rental" ? "success" : "neutral"}
               className="gap-1.5 rounded-full px-2.5 py-1 font-medium"
             >
-              {item.type === "product" ? (
-                <Package className="h-3.5 w-3.5" />
-              ) : item.type === "rental" ? (
-                <Briefcase className="h-3.5 w-3.5" />
-              ) : (
-                <Wrench className="h-3.5 w-3.5" />
-              )}
-              {item.type === "product"
-                ? "상품 후기"
-                : item.type === "rental"
-                  ? "라켓 대여 후기"
-                  : "교체서비스 후기"}
+              <TypeIcon className="h-3.5 w-3.5" />
+              {typeLabel}
             </Badge>
             {!!headerTitle && (
-              <span className="line-clamp-1 max-w-full min-w-0 text-ui-body-sm font-semibold text-foreground sm:max-w-[320px]">
-                {headerTitle}
-              </span>
+              <div className="min-w-0">
+                <p className="line-clamp-2 break-words text-ui-body font-semibold text-foreground">
+                  {headerTitle}
+                </p>
+                {targetMeta && (
+                  <p className="mt-1 line-clamp-1 break-words text-ui-label text-muted-foreground">
+                    {targetMeta}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 

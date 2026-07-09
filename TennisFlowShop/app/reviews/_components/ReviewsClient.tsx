@@ -154,19 +154,19 @@ export default function ReviewsClient() {
                   value="product"
                   className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                 >
-                  상품 후기
+                  상품
                 </TabsTrigger>
                 <TabsTrigger
                   value="service"
                   className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                 >
-                  교체서비스 후기
+                  교체서비스
                 </TabsTrigger>
                 <TabsTrigger
                   value="rental"
                   className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                 >
-                  대여 후기
+                  대여
                 </TabsTrigger>
               </TabsList>
             </Tabs>
