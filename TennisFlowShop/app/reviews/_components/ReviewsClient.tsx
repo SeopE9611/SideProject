@@ -2,6 +2,7 @@
 
 import useSWRInfinite from "swr/infinite";
 import { useMemo, useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -27,7 +28,7 @@ type RatingFilter = "all" | "5" | "4" | "3" | "2" | "1";
 /** 서버 아이템 타입(표시용) */
 type Item = {
   _id: string;
-  type: "product" | "service";
+  type: "product" | "service" | "rental";
   productId?: string;
   productName?: string;
   productImage?: string;
@@ -47,8 +48,14 @@ type Item = {
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function ReviewsClient() {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab");
   /* 컨트롤 상태 */
-  const [tab, setTab] = useState<"product" | "service" | "all">("all");
+  const [tab, setTab] = useState<"product" | "service" | "rental" | "all">(
+    initialTab === "product" || initialTab === "service" || initialTab === "rental"
+      ? initialTab
+      : "all",
+  );
   const [sort, setSort] = useState<"latest" | "helpful" | "rating">("latest");
   const [rating, setRating] = useState<RatingFilter>("all");
   const [hasPhoto, setHasPhoto] = useState<boolean>(false);
@@ -109,7 +116,7 @@ export default function ReviewsClient() {
 
   /* 필터 요약 칩 표시용 텍스트 */
   const summary = [
-    tab === "all" ? "전체" : tab === "product" ? "상품" : "서비스",
+    tab === "all" ? "전체" : tab === "product" ? "상품" : tab === "service" ? "교체서비스" : "대여",
     sort === "latest" ? "최신순" : sort === "helpful" ? "도움순" : "평점순",
     rating !== "all" ? `${rating}점만` : null,
     hasPhoto ? "사진만" : null,
@@ -136,7 +143,7 @@ export default function ReviewsClient() {
           <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center">
             {/* Tabs with tennis court styling */}
             <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full lg:w-auto">
-              <TabsList className="grid w-full grid-cols-3 bg-secondary p-1 lg:w-auto">
+              <TabsList className="grid w-full grid-cols-4 bg-secondary p-1 lg:w-auto">
                 <TabsTrigger
                   value="all"
                   className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
@@ -154,6 +161,12 @@ export default function ReviewsClient() {
                   className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                 >
                   교체서비스 후기
+                </TabsTrigger>
+                <TabsTrigger
+                  value="rental"
+                  className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
+                >
+                  대여 후기
                 </TabsTrigger>
               </TabsList>
             </Tabs>

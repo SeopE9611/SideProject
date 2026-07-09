@@ -8,6 +8,7 @@ import {
 } from "@/app/mypage/_lib/status-label";
 import ActivityOrderReviewCTA from "@/app/mypage/tabs/_components/ActivityOrderReviewCTA";
 import { EmptyState } from "@/components/public/EmptyState";
+import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -1512,6 +1513,23 @@ export default function TransactionFlowList() {
                                 : "반납 운송장 등록"}
                             </Link>
                           </Button>
+                        ),
+                      });
+                    }
+
+                    if (g.rental?.userConfirmedAt || g.rental?.returnedAt) {
+                      actions.push({
+                        key: "rental-review",
+                        priority: 0,
+                        pinInline: true,
+                        node: (
+                          <RentalReviewCTA
+                            key="rental-review"
+                            rentalId={rentalId}
+                            status={g.rental?.status}
+                            userConfirmedAt={g.rental?.userConfirmedAt ?? null}
+                            returnedAt={g.rental?.returnedAt ?? null}
+                          />
                         ),
                       });
                     }

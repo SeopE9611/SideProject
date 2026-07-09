@@ -28,6 +28,7 @@ import {
   MoreHorizontal,
   Package,
   Pencil,
+  Briefcase,
   Star,
   ThumbsUp,
   Trash2,
@@ -138,9 +139,11 @@ export default function ReviewCard({
   const headerTitle =
     item.type === "product"
       ? item.productName
-      : item.serviceTitle ||
-        item.serviceTargetName ||
-        (item.service === "stringing" ? "상품·교체서비스 이용 후기" : "서비스");
+      : item.type === "rental"
+        ? item.rentalTargetName || item.rentalTitle || "라켓 대여 후기"
+        : item.serviceTitle ||
+          item.serviceTargetName ||
+          (item.service === "stringing" ? "상품·교체서비스 이용 후기" : "서비스");
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
@@ -247,15 +250,21 @@ export default function ReviewCard({
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
             <Badge
-              variant={item.type === "product" ? "info" : "neutral"}
+              variant={item.type === "product" ? "info" : item.type === "rental" ? "success" : "neutral"}
               className="gap-1.5 rounded-full px-2.5 py-1 font-medium"
             >
               {item.type === "product" ? (
                 <Package className="h-3.5 w-3.5" />
+              ) : item.type === "rental" ? (
+                <Briefcase className="h-3.5 w-3.5" />
               ) : (
                 <Wrench className="h-3.5 w-3.5" />
               )}
-              {item.type === "product" ? "상품 후기" : "교체서비스 후기"}
+              {item.type === "product"
+                ? "상품 후기"
+                : item.type === "rental"
+                  ? "라켓 대여 후기"
+                  : "교체서비스 후기"}
             </Badge>
             {!!headerTitle && (
               <span className="line-clamp-1 max-w-full min-w-0 text-ui-body-sm font-semibold text-foreground sm:max-w-[320px]">

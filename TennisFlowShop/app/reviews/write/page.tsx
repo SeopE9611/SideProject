@@ -71,12 +71,26 @@ type MiniMeta = {
   href: string;
 };
 
+type RentalMeta = {
+  id: string;
+  name: string;
+  image: string | null;
+  days?: number | null;
+  status?: string | null;
+  createdAt?: string | null;
+  dueAt?: string | null;
+  returnedAt?: string | null;
+};
+
 type EligState =
   | "loading"
   | "ok"
   | "notPurchased"
   | "already"
   | "serviceLinkedOrder"
+  | "rentalNotFound"
+  | "notConfirmed"
+  | "invalidStatus"
   | "unauthorized"
   | "invalid"
   | "error";
@@ -249,17 +263,19 @@ export default function ReviewWritePage() {
   const orderIdParam = sp.get("orderId"); // URL에서 orderId 읽기
   const service = sp.get("service"); // 'stringing'
   const applicationIdParam = sp.get("applicationId"); // Activity에서 넘어온 대상 신청서
+  const rentalIdParam = sp.get("rentalId");
 
   // 보정된 productId / orderId (URL이 비어있어도 서버 추천으로 채움)
   const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
   const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(orderIdParam);
 
-  // 모드 결정: productId가 “보정된 값”으로 존재할 때 product 모드
-  const mode: "product" | "service" | "invalid" = useMemo(() => {
+  // 모드 결정: rentalId가 있으면 대여 리뷰를 product/service보다 우선합니다.
+  const mode: "product" | "service" | "rental" | "invalid" = useMemo(() => {
+    if (rentalIdParam) return "rental";
     if (resolvedProductId) return "product";
     if (service === "stringing") return "service";
     return "invalid";
-  }, [resolvedProductId, service]);
+  }, [rentalIdParam, resolvedProductId, service]);
 
   // 폼 상태
   const [rating, setRating] = useState(5);
@@ -330,12 +346,13 @@ export default function ReviewWritePage() {
   // 주문 아이템/현재 상품 메타
   const [orderItems, setOrderItems] = useState<OrderReviewItem[] | null>(null);
   const [currentMeta, setCurrentMeta] = useState<MiniMeta | null>(null);
+  const [rentalMeta, setRentalMeta] = useState<RentalMeta | null>(null);
 
   // orderId-only 진입 시 추천 productId 받기
   useEffect(() => {
     if (!allowGuestCheckout && !authChecked) return;
     if (blockedByLoginGate) return;
-    if (productIdParam || !orderIdParam || resolvedProductId) return;
+    if (rentalIdParam || productIdParam || !orderIdParam || resolvedProductId) return;
     let aborted = false;
     (async () => {
       try {
@@ -386,6 +403,7 @@ export default function ReviewWritePage() {
   }, [
     productIdParam,
     orderIdParam,
+    rentalIdParam,
     resolvedProductId,
     resolvedOrderId,
     allowGuestCheckout,
@@ -415,7 +433,9 @@ export default function ReviewWritePage() {
       const qs =
         mode === "product"
           ? `productId=${encodeURIComponent(resolvedProductId!)}${resolvedOrderId ? `&orderId=${encodeURIComponent(resolvedOrderId)}` : ""}`
-          : `service=stringing${applicationIdParam ? `&applicationId=${encodeURIComponent(applicationIdParam)}` : ""}`;
+          : mode === "rental"
+            ? `rentalId=${encodeURIComponent(rentalIdParam!)}`
+            : `service=stringing${applicationIdParam ? `&applicationId=${encodeURIComponent(applicationIdParam)}` : ""}`;
       try {
         const r = await fetch(`/api/reviews/eligibility?${qs}`, {
           credentials: "include",
@@ -475,6 +495,7 @@ export default function ReviewWritePage() {
     resolvedOrderId,
     orderIdParam,
     applicationIdParam,
+    rentalIdParam,
     allowGuestCheckout,
     authChecked,
     blockedByLoginGate,
@@ -659,8 +680,9 @@ export default function ReviewWritePage() {
     );
   }, [allApps, apps, selectedAppId]);
 
-  // 잠금: 서비스 모드에서는 신청서가 선택되어 있어야 언락
-  const locked = state !== "ok" || (mode === "service" && !selectedAppId);
+  // 잠금: 서비스 모드에서는 신청서가, 대여 모드에서는 대여 정보가 선택되어 있어야 언락
+  const locked =
+    state !== "ok" || (mode === "service" && !selectedAppId) || (mode === "rental" && !rentalMeta);
 
   const badge =
     state === "loading" ? (
@@ -670,6 +692,10 @@ export default function ReviewWritePage() {
     ) : state === "serviceLinkedOrder" ? (
       <p className="font-medium">상품·교체서비스 후기 대상입니다.</p>
     ) : state === "notPurchased" ? (
+      "아직 후기를 작성할 수 없어요"
+    ) : state === "rentalNotFound" ? (
+      "대여 내역을 찾을 수 없어요"
+    ) : state === "notConfirmed" || state === "invalidStatus" ? (
       "아직 후기를 작성할 수 없어요"
     ) : state === "unauthorized" ? (
       "로그인이 필요합니다"
@@ -699,7 +725,7 @@ export default function ReviewWritePage() {
       })();
     }
     // 현재 상품 mini 메타 (orderId 유무와 무관)
-    if (resolvedProductId) {
+    if (resolvedProductId && mode === "product") {
       (async () => {
         try {
           const r = await fetch(`/api/products/${resolvedProductId}/mini`, {
@@ -737,7 +763,51 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [resolvedOrderId, resolvedProductId, allowGuestCheckout, authChecked, blockedByLoginGate]);
+  }, [mode, resolvedOrderId, resolvedProductId, allowGuestCheckout, authChecked, blockedByLoginGate]);
+
+  // 대여 모드: 대여 대상 메타 로드
+  useEffect(() => {
+    if (!allowGuestCheckout && !authChecked) return;
+    if (blockedByLoginGate) return;
+    if (mode !== "rental" || !rentalIdParam) return;
+    let aborted = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/me/rentals/${encodeURIComponent(rentalIdParam)}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (aborted) return;
+        if (!r.ok) {
+          setRentalMeta(null);
+          if (r.status === 401) setState("unauthorized");
+          else setState("rentalNotFound");
+          return;
+        }
+        const d = await r.json();
+        const brand = String(d?.brand ?? "").trim();
+        const model = String(d?.model ?? "").trim();
+        setRentalMeta({
+          id: String(d?.id ?? rentalIdParam),
+          name: [brand, model].filter(Boolean).join(" ") || "대여 라켓",
+          image: d?.imageUrl ?? d?.racketImageUrl ?? null,
+          days: typeof d?.days === "number" ? d.days : null,
+          status: d?.status ?? null,
+          createdAt: d?.createdAt ?? null,
+          dueAt: d?.dueAt ?? null,
+          returnedAt: d?.returnedAt ?? null,
+        });
+      } catch {
+        if (!aborted) {
+          setRentalMeta(null);
+          setState("error");
+        }
+      }
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [mode, rentalIdParam, allowGuestCheckout, authChecked, blockedByLoginGate]);
 
   // orderItems/현재 상품 변경 때 currentMeta 보정 (주문 스냅샷 우선)
   useEffect(() => {
@@ -811,6 +881,8 @@ export default function ReviewWritePage() {
       router.replace(currentMeta?.href ?? `/products/${resolvedProductId}`);
     } else if (mode === "service") {
       router.replace("/services");
+    } else if (mode === "rental") {
+      router.replace(rentalIdParam ? `/mypage/rentals/${rentalIdParam}` : "/mypage?tab=orders&scope=rental");
     } else {
       router.replace("/reviews");
     }
@@ -833,7 +905,11 @@ export default function ReviewWritePage() {
       payload.service = "stringing";
       payload.serviceApplicationId = selectedAppId;
       setIsSubmitting(true);
+    } else if (mode === "rental") {
+      if (!rentalIdParam) return;
+      payload.rentalId = rentalIdParam;
     }
+    setIsSubmitting(true);
     try {
       const r = await fetch("/api/reviews", {
         method: "POST",
@@ -847,8 +923,12 @@ export default function ReviewWritePage() {
           const href = currentMeta?.href ?? `/products/${resolvedProductId}`;
           const next = currentMeta?.kind === "product" ? `${href}#reviews` : href;
           router.replace(next);
-        } else {
+        } else if (mode === "service") {
           router.replace("/reviews?tab=service");
+        } else if (mode === "rental") {
+          router.replace("/reviews?tab=rental");
+        } else {
+          router.replace("/reviews");
         }
         return;
       }
@@ -881,7 +961,13 @@ export default function ReviewWritePage() {
   };
 
   const targetTitle =
-    mode === "product" ? "상품 후기" : mode === "service" ? "상품·교체서비스 후기" : "리뷰 대상";
+    mode === "product"
+      ? "상품 후기"
+      : mode === "service"
+        ? "상품·교체서비스 후기"
+        : mode === "rental"
+          ? "라켓 대여 후기"
+          : "리뷰 대상";
   const selectedStringNames = (selectedApp?.stringItems || [])
     .map((s) => s.name)
     .filter(Boolean)
@@ -891,7 +977,9 @@ export default function ReviewWritePage() {
       ? "상품의 사용감과 만족도를 적어주세요."
       : mode === "service"
         ? "상품 사용감과 교체서비스 경험을 함께 적어주세요."
-        : "상품 사용감, 장착 과정, 서비스 경험을 편하게 적어주세요.";
+        : mode === "rental"
+          ? "대여 라켓의 사용감과 대여 경험을 적어주세요."
+          : "상품 사용감, 장착 과정, 서비스 경험을 편하게 적어주세요.";
 
   // 비회원 차단
   if (!allowGuestCheckout && !authChecked) {
@@ -1122,6 +1210,46 @@ export default function ReviewWritePage() {
               </div>
             )}
 
+            {mode === "rental" && rentalMeta && (
+              <div className="flex gap-3 rounded-2xl border border-border bg-muted/30 p-3">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border bg-background">
+                  {rentalMeta.image ? (
+                    <NextImage
+                      src={rentalMeta.image}
+                      alt={rentalMeta.name}
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center text-ui-label text-muted-foreground">
+                      IMG
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 break-words text-ui-body-sm font-medium text-foreground">
+                    {rentalMeta.name}
+                  </p>
+                  <p className="mt-1 text-ui-label text-muted-foreground">
+                    {[rentalMeta.days ? `${rentalMeta.days}일 대여` : null, rentalMeta.status ? `상태 ${rentalMeta.status}` : null]
+                      .filter(Boolean)
+                      .join(" · ") || "라켓 대여"}
+                  </p>
+                  {(rentalMeta.createdAt || rentalMeta.dueAt || rentalMeta.returnedAt) && (
+                    <p className="mt-1 text-ui-label text-muted-foreground">
+                      {[rentalMeta.createdAt ? `신청 ${formatKoDate(rentalMeta.createdAt)}` : null, rentalMeta.dueAt ? `반납예정 ${formatKoDate(rentalMeta.dueAt)}` : null, rentalMeta.returnedAt ? `반납완료 ${formatKoDate(rentalMeta.returnedAt)}` : null]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
+                  <p className="mt-1 break-all text-ui-label text-muted-foreground">
+                    대여번호 {rentalMeta.id}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {mode === "product" && orderItems && orderItems.length > 1 && (
               <div className="space-y-2 border-t border-border pt-4">
                 <div className="flex items-center justify-between gap-3 text-ui-body-sm">
@@ -1227,6 +1355,14 @@ export default function ReviewWritePage() {
                       </p>
                     </div>
                   )}
+                  {(state === "rentalNotFound" || state === "notConfirmed" || state === "invalidStatus") && (
+                    <div className="space-y-1">
+                      <p className="font-medium">라켓 대여 후기를 작성할 수 없는 상태입니다.</p>
+                      <p className="text-muted-foreground">
+                        반납 완료 또는 반납 확정이 끝난 대여 내역에서 후기를 작성할 수 있습니다.
+                      </p>
+                    </div>
+                  )}
                   {state === "unauthorized" && "로그인이 필요합니다."}
                   {state === "error" && "접근 확인 중 문제가 발생했어요."}
                 </ResultState>
@@ -1321,7 +1457,9 @@ export default function ReviewWritePage() {
                     ? "상품 상세"
                     : mode === "service"
                       ? "서비스 소개"
-                      : "리뷰 목록"}
+                      : mode === "rental"
+                        ? "대여 내역 보기"
+                        : "리뷰 목록"}
                 </Button>
                 <Button
                   data-cy="submit-review"

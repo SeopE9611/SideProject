@@ -21,6 +21,15 @@ const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
 const ALLOWED_PATH_PREFIXES = ["/storage/v1/object/public/tennis-images/"];
 
 /** http/https + 화이트리스트(host, path) 체크 */
+const isRentalReviewConfirmed = (rental: any) =>
+  Boolean(rental?.userConfirmedAt) ||
+  Boolean(rental?.returnedAt) ||
+  ["returned", "반납완료", "완료"].includes(String(rental?.status ?? "").trim());
+const isRentalReviewBlockedStatus = (status: unknown) =>
+  ["created", "pending", "paid", "out", "canceled", "cancelled", "취소", "대여중", "준비중", "수령전"].includes(
+    String(status ?? "").trim().toLowerCase(),
+  );
+
 const isAllowedHttpUrl = (v: unknown): v is string => {
   if (typeof v !== "string") return false;
   try {
@@ -129,6 +138,46 @@ export async function POST(req: Request) {
   if (!rating || rating < 1 || rating > 5)
     return NextResponse.json({ message: "invalid rating" }, { status: 400 });
   if (!content) return NextResponse.json({ message: "empty content" }, { status: 400 });
+
+  // 라켓 대여 리뷰
+  if (body.rentalId) {
+    const rentalIdStr = String(body.rentalId);
+    if (!ObjectId.isValid(rentalIdStr)) {
+      return NextResponse.json({ message: "invalid rentalId" }, { status: 400 });
+    }
+    const rentalIdObj = new ObjectId(rentalIdStr);
+    const rental = await db.collection("rental_orders").findOne({ _id: rentalIdObj, userId });
+    if (!rental) return NextResponse.json({ message: "rentalNotFound" }, { status: 404 });
+    if (isRentalReviewBlockedStatus(rental.status)) {
+      return NextResponse.json({ message: "invalidStatus" }, { status: 403 });
+    }
+    if (!isRentalReviewConfirmed(rental)) {
+      return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
+    }
+    const already = await db.collection("reviews").findOne({
+      userId,
+      rentalId: { $in: [rentalIdObj, rentalIdStr] },
+      isDeleted: { $ne: true },
+    });
+    if (already) return NextResponse.json({ message: "already" }, { status: 409 });
+
+    const now = new Date();
+    await db.collection("reviews").insertOne({
+      userId,
+      reviewType: "rental",
+      rentalId: rentalIdObj,
+      rating,
+      content,
+      photos: photosClean,
+      status: "visible",
+      helpfulCount: 0,
+      userName,
+      createdAt: now,
+      updatedAt: now,
+    });
+    // TODO: 라켓 대여 리뷰 포인트 정책이 정해지면 적립 로직을 연결합니다.
+    return NextResponse.json({ ok: true }, { status: 201 });
+  }
 
   // 상품 리뷰
   if (body.productId) {
@@ -342,7 +391,7 @@ export async function GET(req: Request) {
   }
 
   const url = new URL(req.url);
-  const type = (url.searchParams.get("type") || "all") as "product" | "service" | "all";
+  const type = (url.searchParams.get("type") || "all") as "product" | "service" | "rental" | "all";
   const rating = url.searchParams.get("rating");
   const hasPhoto = url.searchParams.get("hasPhoto") === "1";
   const sort = (url.searchParams.get("sort") || "latest") as "latest" | "helpful" | "rating";
@@ -356,6 +405,7 @@ export async function GET(req: Request) {
       ? [new ObjectId(productFilterId), productFilterId]
       : null;
   const needServiceJoin = type === "all" || type === "service" || Boolean(productFilterCandidates);
+  const needRentalJoin = type === "all" || type === "rental";
 
   // match 조건 구성
   const match: any = {};
@@ -368,6 +418,9 @@ export async function GET(req: Request) {
   if (withHidden !== "mask" && withHidden !== "all") match.status = "visible";
   if (type === "product") match.productId = { $exists: true };
   if (type === "service") match.service = { $exists: true };
+  if (type === "rental") {
+    match.$or = [{ reviewType: "rental" }, { rentalId: { $exists: true } }];
+  }
   if (productFilterCandidates && type === "product") {
     match.productId = { $in: productFilterCandidates };
   }
@@ -420,8 +473,20 @@ export async function GET(req: Request) {
   // $lookup으로 상품 표시 정보 붙이기
   const project: any = {
     _id: 1,
-    type: { $cond: [{ $ifNull: ["$productId", false] }, "product", "service"] },
+    type: {
+      $cond: [
+        { $or: [{ $eq: ["$reviewType", "rental"] }, { $ifNull: ["$rentalId", false] }] },
+        "rental",
+        { $cond: [{ $ifNull: ["$productId", false] }, "product", "service"] },
+      ],
+    },
     productId: 1,
+    reviewType: 1,
+    rentalId: 1,
+    rentalTitle: 1,
+    rentalTargetName: 1,
+    rentalStatus: "$rental.status",
+    rentalDays: "$rental.days",
     // products / used_rackets 구분(라켓 리뷰 fallback용)
     productKind: {
       $cond: [
@@ -546,6 +611,41 @@ export async function GET(req: Request) {
       },
     },
     { $unwind: { path: "$racket", preserveNullAndEmptyArrays: true } },
+    ...(needRentalJoin
+      ? [
+          {
+            $addFields: {
+              rentalIdObj: {
+                $cond: [
+                  { $eq: [{ $type: "$rentalId" }, "objectId"] },
+                  "$rentalId",
+                  { $convert: { input: "$rentalId", to: "objectId", onError: null, onNull: null } },
+                ],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "rental_orders",
+              localField: "rentalIdObj",
+              foreignField: "_id",
+              as: "rental",
+              pipeline: [{ $project: { brand: 1, model: 1, status: 1, days: 1 } }],
+            },
+          },
+          { $unwind: { path: "$rental", preserveNullAndEmptyArrays: true } },
+          {
+            $addFields: {
+              rentalTargetName: {
+                $trim: {
+                  input: { $concat: [{ $ifNull: ["$rental.brand", ""] }, " ", { $ifNull: ["$rental.model", ""] }] },
+                },
+              },
+              rentalTitle: "라켓 대여 후기",
+            },
+          },
+        ]
+      : []),
     ...(needServiceJoin
       ? [
           // 서비스(스트링 교체) 리뷰면 신청서에서 "교체한 스트링 상품명"을 가져와서 제목을 만들어줌
@@ -822,6 +922,11 @@ export async function GET(req: Request) {
     delete row.__racketBrand;
     delete row.__racketModel;
     delete row.__racketImages;
+    if (row.type === "rental" && row.rentalTargetName) {
+      const parts = String(row.rentalTargetName).trim().split(/\s+/);
+      if (parts.length > 1) row.rentalTargetName = `${racketBrandLabel(parts[0])} ${parts.slice(1).join(" ")}`.trim();
+    }
+
     delete row.__serviceProductIds;
   }
 

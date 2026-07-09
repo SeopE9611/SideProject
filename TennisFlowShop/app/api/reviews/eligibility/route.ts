@@ -11,6 +11,14 @@ import { NextResponse } from "next/server";
 const isOrderReviewConfirmed = (order: any) =>
   Boolean(order?.userConfirmedAt) || String(order?.status ?? "") === "구매확정";
 const isStringingReviewConfirmed = (app: any) => Boolean(app?.userConfirmedAt);
+const isRentalReviewConfirmed = (rental: any) =>
+  Boolean(rental?.userConfirmedAt) ||
+  Boolean(rental?.returnedAt) ||
+  ["returned", "반납완료", "완료"].includes(String(rental?.status ?? "").trim());
+const isRentalReviewBlockedStatus = (status: unknown) =>
+  ["created", "pending", "paid", "out", "canceled", "cancelled", "취소", "대여중", "준비중", "수령전"].includes(
+    String(status ?? "").trim().toLowerCase(),
+  );
 
 async function findReviewableStringingApplicationForProduct(
   db: any,
@@ -77,6 +85,7 @@ export async function GET(req: Request) {
   const orderId = url.searchParams.get("orderId");
   const service = url.searchParams.get("service");
   const applicationId = url.searchParams.get("applicationId");
+  const rentalId = url.searchParams.get("rentalId");
 
   // 인증
   const token = (await cookies()).get("accessToken")?.value;
@@ -96,6 +105,51 @@ export async function GET(req: Request) {
   }
   const db = await getDb();
   const userId = new ObjectId(subStr);
+
+  // 대여 모드: rentalId가 있으면 다른 파라미터보다 우선 검사
+  if (rentalId) {
+    if (!ObjectId.isValid(rentalId)) {
+      return NextResponse.json(
+        { eligible: false, reason: "invalid" },
+        { status: 400, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    const rentalIdObj = new ObjectId(rentalId);
+    const rental = await db.collection("rental_orders").findOne({ _id: rentalIdObj, userId });
+    if (!rental) {
+      return NextResponse.json(
+        { eligible: false, reason: "rentalNotFound" },
+        { status: 404, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    if (isRentalReviewBlockedStatus(rental.status)) {
+      return NextResponse.json(
+        { eligible: false, reason: "invalidStatus", targetType: "rental" },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    if (!isRentalReviewConfirmed(rental)) {
+      return NextResponse.json(
+        { eligible: false, reason: "notConfirmed", targetType: "rental" },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    const already = await db.collection("reviews").findOne({
+      userId,
+      rentalId: { $in: [rentalIdObj, rentalId] },
+      isDeleted: { $ne: true },
+    });
+    if (already) {
+      return NextResponse.json(
+        { eligible: false, reason: "already", targetType: "rental" },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    return NextResponse.json(
+      { eligible: true, reason: null, targetType: "rental" },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
 
   // 상품 모드: productId (+ 선택적으로 orderId) 가 있을 때
   if (productId) {
