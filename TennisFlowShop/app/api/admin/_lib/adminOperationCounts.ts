@@ -99,32 +99,50 @@ const orderNeedsActionFilter: Filter<Document> = {
   ],
 };
 
-const rentalNeedsActionFilter: Filter<Document> = {
+const rentalDepositRefundRequiredFilter: Filter<Document> = {
   $and: [
+    { status: { $in: ["returned", "반납완료"] } },
     {
       $or: [
-        { "cancel.status": "requested" },
-        { "cancelRequest.status": { $in: ["requested", "요청"] } },
-        { cancelStatus: "requested" },
-        {
-          status: {
-            $in: [
-              "created",
-              "paid",
-              "ready",
-              "out",
-              "rented",
-              "overdue",
-              "return_requested",
-              "대여중",
-              "연체",
-            ],
-          },
-        },
-        { paymentStatus: { $in: PAYMENT_PENDING_VALUES } },
+        { depositRefundedAt: { $exists: false } },
+        { depositRefundedAt: null },
+        { depositRefundedAt: "" },
       ],
     },
-    { status: { $nin: TERMINAL_STATUS_VALUES } },
+  ],
+};
+
+const rentalNeedsActionFilter: Filter<Document> = {
+  $or: [
+    rentalDepositRefundRequiredFilter,
+    {
+      $and: [
+        {
+          $or: [
+            { "cancel.status": "requested" },
+            { "cancelRequest.status": { $in: ["requested", "요청"] } },
+            { cancelStatus: "requested" },
+            {
+              status: {
+                $in: [
+                  "created",
+                  "paid",
+                  "ready",
+                  "out",
+                  "rented",
+                  "overdue",
+                  "return_requested",
+                  "대여중",
+                  "연체",
+                ],
+              },
+            },
+            { paymentStatus: { $in: PAYMENT_PENDING_VALUES } },
+          ],
+        },
+        { status: { $nin: TERMINAL_STATUS_VALUES } },
+      ],
+    },
   ],
 };
 
@@ -367,32 +385,37 @@ const rentalShippingMissingFilter: Filter<Document> = {
 };
 
 const rentalDueFilter = (nowPlus48Hours: Date): Filter<Document> => ({
-  $and: [
+  $or: [
+    rentalDepositRefundRequiredFilter,
     {
-      $or: [
-        { status: { $in: ["overdue", "return_requested", "연체"] } },
+      $and: [
         {
-          $and: [
-            { status: { $in: ["rented", "out", "대여중"] } },
+          $or: [
+            { status: { $in: ["overdue", "return_requested", "연체"] } },
             {
-              $or: [
-                { returnDueAt: { $lte: nowPlus48Hours } },
-                { endDate: { $lte: nowPlus48Hours } },
-                { dueAt: { $lte: nowPlus48Hours } },
+              $and: [
+                { status: { $in: ["rented", "out", "대여중"] } },
                 {
-                  $and: [
-                    { returnDueAt: { $in: [null, ""] } },
-                    { endDate: { $in: [null, ""] } },
-                    { dueAt: { $in: [null, ""] } },
+                  $or: [
+                    { returnDueAt: { $lte: nowPlus48Hours } },
+                    { endDate: { $lte: nowPlus48Hours } },
+                    { dueAt: { $lte: nowPlus48Hours } },
+                    {
+                      $and: [
+                        { returnDueAt: { $in: [null, ""] } },
+                        { endDate: { $in: [null, ""] } },
+                        { dueAt: { $in: [null, ""] } },
+                      ],
+                    },
                   ],
                 },
               ],
             },
           ],
         },
+        { status: { $nin: TERMINAL_STATUS_VALUES } },
       ],
     },
-    { status: { $nin: TERMINAL_STATUS_VALUES } },
   ],
 });
 

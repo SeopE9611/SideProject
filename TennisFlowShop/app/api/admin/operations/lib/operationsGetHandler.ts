@@ -523,10 +523,7 @@ function isRentalTerminalStatus(item: OpItem) {
   const s = normalizeStatusText(item.statusLabel);
   if (s.includes("취소") || s === "canceled" || s === "cancelled") return true;
   if (!(s.includes("반납완료") || s === "returned")) return false;
-  return (
-    !item.nextAction?.includes("보증금") &&
-    !item.pendingReasons?.some((reason) => reason.includes("보증금"))
-  );
+  return Boolean(item.depositRefundedAt);
 }
 
 function isPackageTerminalStatus(item: OpItem) {
@@ -596,14 +593,18 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
     }
   }
   for (const reason of item.pendingReasons ?? []) {
+    const isRentalDepositRefundRequired =
+      item.kind === "rental" && reason === "대여가 반납완료 상태지만 보증금 환불 완료 기록이 없습니다.";
     out.push({
-      code: "PENDING_TASK",
+      code: isRentalDepositRefundRequired ? "RENTAL_DEPOSIT_REFUND_REQUIRED" : "PENDING_TASK",
       level: "pending",
       sourceKind: item.kind,
       sourceId: item.id,
-      title: "미처리 업무",
+      title: isRentalDepositRefundRequired ? "보증금 환불 확인 필요" : "미처리 업무",
       description: reason,
-      nextAction: item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
+      nextAction: isRentalDepositRefundRequired
+        ? "환불 계좌/결제 수단과 실제 환불 여부를 확인한 뒤 보증금 환불 처리하세요."
+        : item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
     });
   }
   if ((item.cancel?.status ?? "none") === "approved_pending_pg_cancel") {
@@ -1954,6 +1955,9 @@ export async function handleAdminOperationsGet(
     const reviewLevel: AdminOperationReviewLevel =
       rentalPaymentMeta.source === "derived" ? "info" : "none";
     const cancel = normalizeCancelRequest(r);
+    const depositRefundedAt = toISO(r?.depositRefundedAt);
+    const rentalStatusLabel = normalizeRentalStatus(r?.status);
+    const needsDepositRefund = rentalStatusLabel === "반납완료" && !depositRefundedAt;
 
     return {
       id,
@@ -1962,7 +1966,7 @@ export async function handleAdminOperationsGet(
       customer: cust,
       title:
         `${String(r?.brand ?? "")} ${String(r?.model ?? "")}`.trim() + (days ? ` (${days}일)` : ""),
-      statusLabel: normalizeRentalStatus(r?.status),
+      statusLabel: rentalStatusLabel,
       paymentLabel: rentalPaymentMeta.label,
       amount,
       flow: rentalFlowByWithService(withStringService),
@@ -1981,6 +1985,9 @@ export async function handleAdminOperationsGet(
       warnReasons: warnByKey.get(`rental:${id}`) ?? [],
       pendingReasons: [
         ...(pendingByKey.get(`rental:${id}`) ?? []),
+        ...(needsDepositRefund
+          ? ["대여가 반납완료 상태지만 보증금 환불 완료 기록이 없습니다."]
+          : []),
         ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
       ],
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
@@ -2002,14 +2009,15 @@ export async function handleAdminOperationsGet(
         : undefined,
       hasOutboundTracking,
       rentalDueAt,
+      depositRefundedAt,
       cancel,
       ...inferNextActionForOperationItem({
         kind: "rental",
-        statusLabel: normalizeRentalStatus(r?.status),
+        statusLabel: rentalStatusLabel,
         paymentLabel: rentalPaymentMeta.label,
         hasOutboundTracking,
         rentalDueAt,
-        depositRefundedAt: toISO(r?.depositRefundedAt),
+        depositRefundedAt,
         linkedApplicationStatus: getString(linkedApplication?.status),
         cancelStatus: cancel.status,
         refundAccountReady: cancel.refundAccountReady,

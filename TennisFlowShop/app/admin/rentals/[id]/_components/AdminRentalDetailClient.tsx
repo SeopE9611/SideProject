@@ -556,7 +556,7 @@ export default function AdminRentalDetailClient() {
   const isBeforeOut = lowerStatus === "pending" || lowerStatus === "paid";
   const hasReturnTracking = Boolean(String(data?.shipping?.return?.trackingNumber ?? "").trim());
   const needsReturnCheck = lowerStatus === "out" && (Boolean(data?.dueAt) || hasReturnTracking);
-  const needsDepositRefund = lowerStatus === "returned" && data?.depositRefunded !== true;
+  const needsDepositRefund = lowerStatus === "returned" && !data?.depositRefundedAt;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequested
     ? {
         tone: "urgent",

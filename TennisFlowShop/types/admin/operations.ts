@@ -88,6 +88,7 @@ export type AdminOperationItem = {
   hasOutboundTracking?: boolean;
   needsCancelFinalization?: boolean;
   rentalDueAt?: string | null;
+  depositRefundedAt?: string | null;
   cancel?: {
     status: AdminOperationCancelStatus;
     requestedAt?: string | null;

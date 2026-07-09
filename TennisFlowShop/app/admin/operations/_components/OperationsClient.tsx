@@ -280,6 +280,7 @@ function statusHeadlineOf(item: OpItem) {
 
   if (item.kind === "rental") {
     if (isCancelRequested) return "취소 요청 접수 대여 건";
+    if (lowerStatus.includes("반납완료") && !item.depositRefundedAt) return "보증금 환불 확인 필요 대여 건";
     if (lowerStatus.includes("반납완료")) return "대여 완료 건";
     if (lowerStatus.includes("대여중") || lowerStatus.includes("out")) return "대여 진행 건";
     if (lowerStatus.includes("대기") || lowerStatus.includes("결제완료"))
@@ -432,6 +433,9 @@ function hasRentalDue(group: { items: OpItem[] }) {
   return group.items.some((item) => {
     if (item.kind !== "rental") return false;
     const combined = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""} ${item.nextAction ?? ""}`;
+    const needsDepositRefund =
+      !item.depositRefundedAt && (combined.includes("보증금") || combined.includes("환불"));
+    if (needsDepositRefund) return true;
     if (excludeKeywords.some((word) => combined.includes(word))) return false;
     const stage = normalizeText(item.stage);
     if (includeStageKeywords.some((word) => stage.includes(word))) return true;
@@ -633,6 +637,8 @@ function resolvePrimaryActionTarget(group: {
   }
   if (anchor.kind === "rental") {
     const next = anchor.nextAction ?? "";
+    if (next.includes("보증금") || next.includes("환불"))
+      return { href: anchor.href, label: "보증금 환불 확인" };
     if (next.includes("반납")) return { href: anchor.href, label: "대여 반납 확인" };
     if (next.includes("인도") || next.includes("배송") || next.includes("운송장"))
       return { href: anchor.href, label: "대여 인도 처리" };
