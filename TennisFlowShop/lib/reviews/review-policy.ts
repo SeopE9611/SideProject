@@ -1,3 +1,5 @@
+import { isOrderConfirmedStatus, isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
+
 type OrderLike = {
   _id?: unknown;
   stringingApplicationId?: unknown;
@@ -45,4 +47,28 @@ export function isStringingReviewBlockedStatus(status: unknown) {
     .trim()
     .toLowerCase();
   return BLOCKED_STRINGING_REVIEW_STATUS_TOKENS.some((token) => normalized.includes(token));
+}
+
+
+export function isOrderReviewEligible(order: any) {
+  return Boolean(order?.userConfirmedAt) || isOrderConfirmedStatus(order?.status);
+}
+
+export function isRentalReviewEligible(rental: any) {
+  return isRentalReturnedStatus(rental?.status) && Boolean(rental?.userConfirmedAt);
+}
+
+export function isStandaloneStringingReviewEligible(app: any) {
+  return (
+    Boolean(app?.userConfirmedAt) &&
+    isStringingCompletedStatus(app?.status) &&
+    !isStringingReviewBlockedStatus(app?.status)
+  );
+}
+
+export function getStandaloneStringingIneligibleReason(app: any) {
+  if (isStringingReviewBlockedStatus(app?.status)) return "invalidStatus";
+  if (!isStringingCompletedStatus(app?.status)) return "notCompleted";
+  if (!app?.userConfirmedAt) return "notConfirmed";
+  return null;
 }

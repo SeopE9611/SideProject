@@ -8,9 +8,6 @@ import {
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
-import {
-  isStringingReviewBlockedStatus,
-} from "@/lib/reviews/review-policy";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -653,44 +650,6 @@ export async function GET(req: Request) {
       },
     ]),
   );
-
-  const serviceReviewCandidateIds = [...linkedApps, ...standaloneApps]
-    .filter((app: any) => {
-      const userConfirmedAt = app?.userConfirmedAt;
-      return Boolean(userConfirmedAt) && !isStringingReviewBlockedStatus(app?.status);
-    })
-    .map((app: any) => String(app._id))
-    .filter((id) => ObjectId.isValid(id));
-  const serviceReviewCandidateSet = new Set(serviceReviewCandidateIds);
-  const reviewedServiceApplicationIds = new Set<string>();
-
-  if (serviceReviewCandidateIds.length > 0) {
-    const serviceReviews = await db
-      .collection("reviews")
-      .find(
-        {
-          userId,
-          service: "stringing",
-          serviceApplicationId: {
-            $in: serviceReviewCandidateIds.flatMap((id) => [new ObjectId(id), id]),
-          },
-          isDeleted: { $ne: true },
-        },
-        { projection: { serviceApplicationId: 1 } },
-      )
-      .toArray();
-
-    for (const review of serviceReviews as any[]) {
-      reviewedServiceApplicationIds.add(String(review.serviceApplicationId));
-    }
-  }
-
-  const hasPendingServiceReview = (applicationId?: string | null) =>
-    Boolean(
-      applicationId &&
-      serviceReviewCandidateSet.has(applicationId) &&
-      !reviewedServiceApplicationIds.has(applicationId),
-    );
 
   for (const doc of linkedApps as any[]) {
     const details = doc.stringDetails ?? {};
