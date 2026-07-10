@@ -111,6 +111,8 @@ type ActivityOrderSummary = {
   hasPendingReview: boolean;
   reviewAllDone: boolean;
   reviewNextTargetProductId: string | null;
+  reviewNextApplicationId: string | null;
+  reviewContext: string | null;
 };
 
 type ActivityRentalSummary = {
@@ -850,10 +852,14 @@ export async function GET(req: Request) {
     let reviewPendingCount = isConfirmed ? reviewPendingProductIds.length : 0;
     let reviewAllDone =
       isConfirmed && reviewTargetProductIds.length > 0 && reviewPendingCount === 0;
-    let reviewNextTargetProductId =
+    let reviewNextTargetProductId: string | null =
       reviewPendingCount > 0 ? (reviewPendingProductIds[0] ?? null) : null;
+    let reviewNextApplicationId: string | null = null;
+    let reviewContext: string | null = integratedTarget?.reviewContext ?? "product";
     if (isConfirmed && integratedTarget?.reviewContext === "product_stringing") {
       const appId = integratedTarget.serviceApplicationId;
+      reviewNextApplicationId = appId ?? null;
+      reviewContext = integratedTarget.reviewContext;
       const already = await db.collection("reviews").findOne({
         userId,
         isDeleted: { $ne: true },
@@ -940,6 +946,8 @@ export async function GET(req: Request) {
         hasPendingReview,
         reviewAllDone,
         reviewNextTargetProductId,
+        reviewNextApplicationId,
+        reviewContext,
       },
       application: linked, // 연결 신청서가 있으면 같이 내려줌(카드에서 CTA 가능)
     });
