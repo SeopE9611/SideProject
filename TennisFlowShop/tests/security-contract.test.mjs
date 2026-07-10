@@ -502,3 +502,34 @@ test("canonical 후기 target resolver 계약: eligibility/count/rental_stringin
     assert.ok(eligibility.includes(field), `eligibility 응답 필드 유지: ${field}`);
   }
 });
+
+
+test("후기 GET/POST canonical 정책 통일 계약: reviewed 우선, 공용 helper, 중복 방어를 유지한다", () => {
+  const eligibility = read("app/api/reviews/eligibility/route.ts");
+  const reviewsRoute = read("app/api/reviews/route.ts");
+  const policy = read("lib/reviews/review-policy.ts");
+
+  assert.ok(policy.includes("export function getReviewSubmissionBlockReason"));
+  assert.ok(policy.indexOf('if (target.reviewed) return "already"') < policy.indexOf("if (!target.eligible)"));
+  assert.ok(eligibility.includes("const blockReason = getReviewSubmissionBlockReason(target)"));
+  assert.ok(eligibility.includes('blockReason === "coveredByIntegratedReview"'));
+  assert.ok(eligibility.includes("nextTarget: null"));
+
+  assert.ok(reviewsRoute.includes("isOrderReviewEligible(bought)"));
+  assert.ok(reviewsRoute.includes("isRentalReviewEligible(rental)"));
+  assert.ok(reviewsRoute.includes("isStandaloneStringingReviewEligible(app)"));
+  assert.ok(!reviewsRoute.includes("const isRentalReviewConfirmed"));
+  assert.ok(!reviewsRoute.includes('String(bought.status ?? "") !== "구매확정"'));
+  assert.ok(reviewsRoute.includes('appBlockReason === "coveredByIntegratedReview"'));
+  assert.ok(reviewsRoute.includes('message: "coveredByIntegratedReview", reason: "coveredByIntegratedReview"'));
+
+  assert.ok(reviewsRoute.includes("const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget)"));
+  assert.ok(reviewsRoute.indexOf("const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget)") < reviewsRoute.indexOf('db.collection("reviews").findOne({\n      userId,\n      rentalId: { $in: [rentalIdObj, rentalIdStr] }'));
+  assert.ok(reviewsRoute.includes('db.collection("reviews").findOne(dupFilter)'));
+  assert.ok(reviewsRoute.includes('db.collection("reviews").findOne({\n      userId,\n      service: "stringing"'));
+
+  assert.ok(reviewsRoute.includes("REVIEW_REWARD_POINTS"));
+  assert.ok(reviewsRoute.includes("grantPoints"));
+  assert.ok(reviewsRoute.includes('type: "review_reward_product"'));
+  assert.ok(reviewsRoute.includes('type: "review_reward_service"'));
+});

@@ -1,6 +1,6 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
-import { isOrderReviewEligible, isOrderServiceReviewOnly, isRentalReviewEligible, isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import { getReviewSubmissionBlockReason, isOrderReviewEligible, isOrderServiceReviewOnly, isRentalReviewEligible, isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import {
   resolveApplicationReviewTargetBundlesBatch,
@@ -429,37 +429,41 @@ export async function GET(req: Request) {
       const appTarget = await resolveStringingApplicationReviewTarget(db, userId, applicationId);
       const bundle = appTarget?.targetBundle ?? null;
       const target = bundle?.targets?.[0] ?? null;
-      const reason = target?.reviewed ? "already" : target?.ineligibleReason ?? null;
+      const blockReason = getReviewSubmissionBlockReason(target);
+      const basePayload = {
+        subjectType: "application",
+        subjectId: applicationId,
+        reviewContext: target?.reviewContext ?? appTarget?.reviewContext ?? "standalone_stringing",
+        targetType: target?.reviewContext ?? appTarget?.reviewContext ?? "standalone_stringing",
+        targetLabel: target?.contextLabel ?? appTarget?.contextLabel ?? "교체서비스 후기",
+        suggestedApplicationId: applicationId,
+        coveredBySubjectType: target?.coveredBySubjectType ?? appTarget?.coveredBySubjectType ?? null,
+        coveredBySubjectId: target?.coveredBySubjectId ?? appTarget?.coveredBySubjectId ?? null,
+      };
 
-      if (!target?.eligible) {
+      if (blockReason) {
         return NextResponse.json(
           {
             eligible: false,
-            reason: reason ?? "notConfirmed",
-            subjectType: "application",
-            subjectId: applicationId,
-            reviewContext: target?.reviewContext ?? appTarget?.reviewContext ?? "standalone_stringing",
-            targetType: target?.reviewContext ?? appTarget?.reviewContext ?? "standalone_stringing",
-            targetLabel: target?.contextLabel ?? appTarget?.contextLabel ?? "교체서비스 후기",
-            suggestedApplicationId: applicationId,
-            nextTarget: bundle?.nextTarget ?? null,
-            coveredBySubjectType: target?.coveredBySubjectType ?? appTarget?.coveredBySubjectType ?? null,
-            coveredBySubjectId: target?.coveredBySubjectId ?? appTarget?.coveredBySubjectId ?? null,
-            redirectHref: target?.redirectTarget
-              ? buildReviewWriteHref({
-                  reviewContext: target.redirectTarget.reviewContext,
-                  orderId: target.redirectTarget.orderId,
-                  rentalId: target.redirectTarget.rentalId,
-                  applicationId,
-                })
-              : undefined,
+            reason: blockReason,
+            ...basePayload,
+            nextTarget: null,
+            redirectHref:
+              blockReason === "coveredByIntegratedReview" && target?.redirectTarget
+                ? buildReviewWriteHref({
+                    reviewContext: target.redirectTarget.reviewContext,
+                    orderId: target.redirectTarget.orderId,
+                    rentalId: target.redirectTarget.rentalId,
+                    applicationId,
+                  })
+                : undefined,
           },
-          { headers: { "Cache-Control": "no-store" } },
+          { status: blockReason === "notFound" ? 404 : 200, headers: { "Cache-Control": "no-store" } },
         );
       }
 
       return NextResponse.json(
-        { eligible: true, reason: null, subjectType: "application", subjectId: applicationId, reviewContext: target.reviewContext, targetType: target.reviewContext, targetLabel: target.contextLabel, suggestedApplicationId: applicationId, nextTarget: bundle?.nextTarget ?? null, coveredBySubjectType: target.coveredBySubjectType ?? null, coveredBySubjectId: target.coveredBySubjectId ?? null },
+        { eligible: true, reason: null, ...basePayload, nextTarget: bundle?.nextTarget ?? null },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
