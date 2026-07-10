@@ -375,3 +375,66 @@ test("후기 대상 통합 계약: 서비스 연결 주문/대여는 통합 revi
   assert.ok(reviewsRoute.includes('if (row.type === "product") return matchesProductId || matchesRelatedProductId;'));
   assert.ok(!reviewsRoute.includes('if (row.type === "product") return wanted.has(String(row.productId));'));
 });
+
+test("후기 canonical resolver 계약: subject/target/bundle과 호환 export를 유지한다", () => {
+  const client = read("lib/reviews/review-target.ts");
+  const server = read("lib/reviews/review-target.server.ts");
+  assert.ok(client.includes('export type ReviewSubjectType = "order" | "rental" | "application"'));
+  assert.ok(client.includes("export type CanonicalReviewTarget"));
+  assert.ok(client.includes("subjectType: ReviewSubjectType"));
+  assert.ok(client.includes("subjectId: string"));
+  assert.ok(client.includes("applicationIds: string[]"));
+  assert.ok(client.includes("relatedProductIds: string[]"));
+  assert.ok(client.includes("relatedRacketIds: string[]"));
+  assert.ok(client.includes("export type ReviewTargetBundle"));
+  assert.ok(client.includes("dedupeStringIds"));
+  assert.ok(client.includes("buildReviewTargetKey"));
+  assert.ok(server.includes("resolveOrderReviewTargetBundle"));
+  assert.ok(server.includes("resolveRentalReviewTargetBundle"));
+  assert.ok(server.includes("resolveApplicationReviewTargetBundle"));
+  assert.ok(server.includes("resolveOrderReviewTargetBundlesBatch"));
+  assert.ok(server.includes("resolveRentalReviewTargetBundlesBatch"));
+  assert.ok(server.includes("export async function resolveOrderReviewTarget("));
+  assert.ok(server.includes("export async function resolveRentalReviewTarget("));
+  assert.ok(server.includes("export async function resolveStringingApplicationReviewTarget("));
+});
+
+test("후기 canonical resolver 계약: 복수 신청서와 통합 target 정책을 보장한다", () => {
+  const server = read("lib/reviews/review-target.server.ts");
+  assert.ok(server.includes("findLinkedStringingApplicationsForOrder"));
+  assert.ok(server.includes("findLinkedStringingApplicationsForRental"));
+  assert.ok(!server.match(/findLinkedStringingApplicationsForOrder[\s\S]*?\.findOne\(/));
+  assert.ok(server.includes('reviewContext: "product_stringing"'));
+  assert.ok(server.includes('reviewContext: "rental_stringing"'));
+  assert.ok(server.includes('reviewContext: "standalone_stringing"'));
+  assert.ok(server.includes('buildReviewTargetKey({ subjectType: "order", subjectId, reviewContext: "product_stringing" })'));
+  assert.ok(server.includes('buildReviewTargetKey({ subjectType: "rental", subjectId, reviewContext })'));
+  assert.ok(server.includes('ineligibleReason: target.subjectType !== "application" ? "coveredByIntegratedReview" : null'));
+  assert.ok(server.includes("collectStringProductIdsFromApplication"));
+  assert.ok(server.includes("stringDetails?.lines"));
+  assert.ok(server.includes("stringProductId"));
+  assert.ok(server.includes("stringId"));
+  assert.ok(server.includes("collectOrderRacketIds"));
+  assert.ok(server.includes("collectRentalRacketIds"));
+});
+
+test("후기 canonical API 계약: 주요 API가 bundle 결과와 기존 응답 필드를 함께 제공한다", () => {
+  const reviewItems = read("app/api/orders/[id]/review-items/route.ts");
+  const userOrders = read("app/api/users/me/orders/route.ts");
+  const activity = read("app/api/mypage/activity/route.ts");
+  const counts = read("app/api/mypage/activity/counts/route.ts");
+  const summary = read("app/api/mypage/summary/route.ts");
+  assert.ok(reviewItems.includes("resolveOrderReviewTargetBundle"));
+  assert.ok(reviewItems.includes("targetBundle"));
+  assert.ok(reviewItems.includes("nextProductId"));
+  assert.ok(reviewItems.includes("nextApplicationId"));
+  assert.ok(reviewItems.includes("nextReviewContext"));
+  assert.ok(userOrders.includes("resolveOrderReviewTargetBundlesBatch"));
+  assert.ok(userOrders.includes("targetBundle?.counts.remaining"));
+  assert.ok(userOrders.includes("reviewAllDone"));
+  assert.ok(userOrders.includes("reviewNextTargetProductId"));
+  assert.ok(activity.includes("resolveOrderReviewTargetBundlesBatch"));
+  assert.ok(counts.includes("resolveOrderReviewTargetBundlesBatch"));
+  assert.ok(summary.includes("resolveOrderReviewTargetBundlesBatch"));
+  assert.ok(!userOrders.includes('reviewContext: "product_stringing" },\n            ...(reviewNextApplicationId'));
+});

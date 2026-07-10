@@ -1,3 +1,5 @@
+export type ReviewSubjectType = "order" | "rental" | "application";
+
 export type ReviewContext =
   | "product"
   | "product_stringing"
@@ -12,6 +14,46 @@ export type ReviewWriteTarget = {
   applicationId?: string | null;
   serviceApplicationId?: string | null;
   rentalId?: string | null;
+};
+
+export type CanonicalReviewTarget = {
+  targetKey: string;
+  subjectType: ReviewSubjectType;
+  subjectId: string;
+  reviewContext: ReviewContext;
+  contextLabel: string;
+  eligible: boolean;
+  reviewed: boolean;
+  reviewId?: string | null;
+  ineligibleReason?: string | null;
+  orderId?: string | null;
+  rentalId?: string | null;
+  applicationIds: string[];
+  relatedProductIds: string[];
+  relatedRacketIds: string[];
+  primaryProductId?: string | null;
+  primaryApplicationId?: string | null;
+  primaryRacketId?: string | null;
+  relatedItems?: Array<{
+    type: "product" | "racket" | "string" | "service" | "rental";
+    id?: string | null;
+    name?: string | null;
+    imageUrl?: string | null;
+    optionLabel?: string | null;
+  }>;
+};
+
+export type ReviewTargetBundle = {
+  subjectType: ReviewSubjectType;
+  subjectId: string;
+  targets: CanonicalReviewTarget[];
+  counts: {
+    total: number;
+    reviewed: number;
+    remaining: number;
+  };
+  allReviewed: boolean;
+  nextTarget: CanonicalReviewTarget | null;
 };
 
 const REVIEW_CONTEXT_LABELS: Record<ReviewContext, string> = {
@@ -34,6 +76,29 @@ export function getReviewContextLabel(context: unknown) {
 
 export function isIntegratedReviewContext(context: unknown) {
   return ["product_stringing", "rental_stringing"].includes(String(context ?? ""));
+}
+
+export function dedupeStringIds(values: unknown[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const id = String(value ?? "").trim();
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    result.push(id);
+  }
+  return result.sort();
+}
+
+export function buildReviewTargetKey(params: {
+  subjectType: ReviewSubjectType;
+  subjectId: string;
+  reviewContext: ReviewContext;
+  productId?: string | null;
+}) {
+  return [params.subjectType, params.subjectId, params.reviewContext, params.productId ?? ""]
+    .filter(Boolean)
+    .join(":");
 }
 
 export function getReviewCtaLabel(target: ReviewWriteTarget) {
