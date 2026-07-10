@@ -7,7 +7,7 @@ import {
   isRentalTodoActionable,
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
-import { resolveOrderReviewTarget } from "@/lib/reviews/review-target.server";
+import { resolveOrderReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
 import {
   isStringingReviewBlockedStatus,
 } from "@/lib/reviews/review-policy";
@@ -834,6 +834,8 @@ export async function GET(req: Request) {
     }
   }
 
+  const reviewBundlesByOrderId = await resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]);
+
   // 6) 그룹 생성(주문/대여 + 단독신청)
   const groups: ActivityGroup[] = [];
 
@@ -843,37 +845,13 @@ export async function GET(req: Request) {
     const first = items[0] ?? null;
     const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
     const linkedApps = appByOrderId.get(orderId) ?? [];
-    const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
-    const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
-    const reviewPendingProductIds = reviewTargetProductIds.filter(
-      (productId) => !reviewedProductIds.has(productId),
-    );
-    const integratedTarget = await resolveOrderReviewTarget(db, userId, orderId);
-    let reviewPendingCount = isConfirmed ? reviewPendingProductIds.length : 0;
-    let reviewAllDone =
-      isConfirmed && reviewTargetProductIds.length > 0 && reviewPendingCount === 0;
-    let reviewNextTargetProductId: string | null =
-      reviewPendingCount > 0 ? (reviewPendingProductIds[0] ?? null) : null;
-    let reviewNextApplicationId: string | null = null;
-    let reviewContext: string | null = integratedTarget?.reviewContext ?? "product";
-    if (isConfirmed && integratedTarget?.reviewContext === "product_stringing") {
-      const appId = integratedTarget.serviceApplicationId;
-      reviewNextApplicationId = appId ?? null;
-      reviewContext = integratedTarget.reviewContext;
-      const already = await db.collection("reviews").findOne({
-        userId,
-        isDeleted: { $ne: true },
-        $or: [
-          { orderId: { $in: [o._id, orderId] }, reviewContext: "product_stringing" },
-          ...(appId && ObjectId.isValid(appId)
-            ? [{ serviceApplicationId: { $in: [new ObjectId(appId), appId] } }]
-            : []),
-        ],
-      });
-      reviewPendingCount = already ? 0 : 1;
-      reviewAllDone = Boolean(already);
-      reviewNextTargetProductId = already ? null : integratedTarget.productId;
-    }
+    const targetBundle = reviewBundlesByOrderId.get(orderId);
+    const nextTarget = targetBundle?.nextTarget ?? null;
+    const reviewPendingCount = isConfirmed ? (targetBundle?.counts.remaining ?? 0) : 0;
+    const reviewAllDone = Boolean(targetBundle?.allReviewed);
+    const reviewNextTargetProductId: string | null = nextTarget?.primaryProductId ?? null;
+    const reviewNextApplicationId: string | null = nextTarget?.primaryApplicationId ?? null;
+    const reviewContext: string | null = nextTarget?.reviewContext ?? targetBundle?.targets[0]?.reviewContext ?? "product";
     const hasPendingReview = reviewPendingCount > 0;
 
     const linked = pickPrimaryLinkedApplication(linkedApps);

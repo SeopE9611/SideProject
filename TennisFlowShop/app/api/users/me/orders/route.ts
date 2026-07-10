@@ -4,7 +4,7 @@ import clientPromise from "@/lib/mongodb";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
-import { resolveOrderReviewTarget } from "@/lib/reviews/review-target.server";
+import { resolveOrderReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
 
 /**
  * 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity 방지)
@@ -295,6 +295,8 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const reviewBundlesByOrderId = await resolveOrderReviewTargetBundlesBatch(db, userId, orders);
+
     // 각 주문별 리뷰 진행상태 계산
     const list: OrderListItem[] = [];
     for (const order of orders) {
@@ -310,34 +312,13 @@ export async function GET(req: NextRequest) {
       // 이미 작성한 리뷰 (배치 조회 결과 사용)
       const reviewedSet = reviewedByOrderId.get(String(order._id)) ?? new Set<string>();
 
-      const integratedTarget = await resolveOrderReviewTarget(db, userId, String(order._id));
-      const reviewContext: string | null = integratedTarget?.reviewContext ?? "product";
-      let reviewNextApplicationId: string | null = null;
-      let unreviewedCount = 0;
-      let reviewNextTargetProductId: string | null = null;
-      let reviewAllDone = false;
-
-      if (integratedTarget?.reviewContext === "product_stringing") {
-        reviewNextApplicationId = integratedTarget.serviceApplicationId ?? null;
-        const already = await db.collection("reviews").findOne({
-          userId,
-          isDeleted: { $ne: true },
-          $or: [
-            { orderId: { $in: [order._id, String(order._id)] }, reviewContext: "product_stringing" },
-            ...(reviewNextApplicationId && ObjectId.isValid(reviewNextApplicationId)
-              ? [{ serviceApplicationId: { $in: [new ObjectId(reviewNextApplicationId), reviewNextApplicationId] } }]
-              : []),
-          ],
-        });
-        unreviewedCount = already ? 0 : 1;
-        reviewNextTargetProductId = already ? null : integratedTarget.productId;
-        reviewAllDone = Boolean(already);
-      } else {
-        const unreviewedIds = validProductIds.filter((pid) => !reviewedSet.has(pid));
-        unreviewedCount = unreviewedIds.length;
-        reviewNextTargetProductId = unreviewedIds.length ? unreviewedIds[0] : null;
-        reviewAllDone = validProductIds.length > 0 && unreviewedCount === 0;
-      }
+      const targetBundle = reviewBundlesByOrderId.get(String(order._id));
+      const nextTarget = targetBundle?.nextTarget ?? null;
+      const reviewContext: string | null = nextTarget?.reviewContext ?? targetBundle?.targets[0]?.reviewContext ?? "product";
+      const reviewNextApplicationId: string | null = nextTarget?.primaryApplicationId ?? null;
+      const unreviewedCount = targetBundle?.counts.remaining ?? validProductIds.filter((pid) => !reviewedSet.has(pid)).length;
+      const reviewNextTargetProductId: string | null = nextTarget?.primaryProductId ?? null;
+      const reviewAllDone = Boolean(targetBundle?.allReviewed);
 
       // 총액 계산
       const totalPrice = calcOrderTotal(order);

@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
-import { resolveOrderReviewTarget } from "@/lib/reviews/review-target.server";
+import { resolveOrderReviewTargetBundle } from "@/lib/reviews/review-target.server";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -40,7 +40,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ ok: false, error: "orderNotFound" }, { status: 404 });
   }
 
-  const integratedTarget = await resolveOrderReviewTarget(db, userId, orderId);
+  const targetBundle = await resolveOrderReviewTargetBundle(db, userId, orderId);
+  const integratedTarget = targetBundle?.nextTarget ?? targetBundle?.targets[0] ?? null;
 
   const isOrderConfirmed =
     Boolean((order as any).userConfirmedAt) || String((order as any).status ?? "") === "구매확정";
@@ -52,23 +53,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   if (integratedTarget?.reviewContext === "product_stringing") {
-    const productId = integratedTarget.productId;
-    const appId = integratedTarget.serviceApplicationId;
-    const already = await db.collection("reviews").findOne({
-      userId,
-      isDeleted: { $ne: true },
-      $or: [
-        { orderId: { $in: [orderIdObj, orderId] }, reviewContext: "product_stringing" },
-        ...(appId && ObjectId.isValid(appId)
-          ? [{ serviceApplicationId: { $in: [new ObjectId(appId), appId] } }]
-          : []),
-      ],
-    });
-    const reviewed = Boolean(already);
+    const productId = integratedTarget.primaryProductId ?? null;
+    const appId = integratedTarget.primaryApplicationId ?? null;
+    const reviewed = integratedTarget.reviewed;
     return NextResponse.json(
       {
         ok: true,
         orderId,
+        subjectType: targetBundle?.subjectType ?? "order",
+        subjectId: targetBundle?.subjectId ?? orderId,
+        targetBundle,
+        nextTarget: targetBundle?.nextTarget ?? null,
         items: [
           {
             reviewContext: "product_stringing",
@@ -78,7 +73,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
             reviewed,
           },
         ],
-        counts: { total: 1, reviewed: reviewed ? 1 : 0, remaining: reviewed ? 0 : 1 },
+        counts: targetBundle?.counts ?? { total: 1, reviewed: reviewed ? 1 : 0, remaining: reviewed ? 0 : 1 },
         nextProductId: reviewed ? null : productId,
         nextApplicationId: reviewed ? null : appId,
         nextReviewContext: "product_stringing",
@@ -213,6 +208,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       items: list,
       counts: { ...counts, remaining },
       nextProductId: next,
+      nextApplicationId: null,
+      nextReviewContext: "product",
+      subjectType: targetBundle?.subjectType ?? "order",
+      subjectId: targetBundle?.subjectId ?? orderId,
+      targetBundle,
+      nextTarget: targetBundle?.nextTarget ?? null,
     },
     { headers: { "Cache-Control": "no-store" } },
   );
