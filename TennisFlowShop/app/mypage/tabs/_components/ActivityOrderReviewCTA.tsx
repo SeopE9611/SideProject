@@ -11,6 +11,9 @@ type Props = {
   orderId: string;
   orderStatus?: string; // 예: '배송완료' | '구매확정'
   userConfirmedAt?: string | null;
+  nextProductId?: string | null;
+  nextApplicationId?: string | null;
+  nextReviewContext?: string | null;
   className?: string;
 };
 
@@ -22,6 +25,9 @@ export default function ActivityOrderReviewCTA({
   orderId,
   orderStatus,
   userConfirmedAt,
+  nextProductId: initialNextProductId,
+  nextApplicationId: initialNextApplicationId,
+  nextReviewContext: initialNextReviewContext,
   className,
 }: Props) {
   const completed = Boolean(userConfirmedAt) || isOrderConfirmedStatus(orderStatus);
@@ -43,9 +49,9 @@ export default function ActivityOrderReviewCTA({
   }
 
   const remaining = data?.counts?.remaining;
-  const nextProductId = data?.nextProductId;
-  const nextApplicationId = data?.nextApplicationId;
-  const nextReviewContext = data?.nextReviewContext;
+  const nextProductId = data?.nextProductId ?? initialNextProductId ?? null;
+  const nextApplicationId = data?.nextApplicationId ?? initialNextApplicationId ?? null;
+  const nextReviewContext = data?.nextReviewContext ?? initialNextReviewContext ?? null;
   if (typeof remaining !== "number") return null;
 
   return (

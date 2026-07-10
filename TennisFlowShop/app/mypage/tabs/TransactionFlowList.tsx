@@ -115,6 +115,8 @@ type ActivityGroup = {
     hasPendingReview?: boolean;
     reviewAllDone?: boolean;
     reviewNextTargetProductId?: string | null;
+    reviewNextApplicationId?: string | null;
+    reviewContext?: string | null;
     applicationSummaries?: ActivityApplicationSummary[];
   };
   rental?: {
@@ -1456,6 +1458,9 @@ export default function TransactionFlowList() {
                             orderId={orderId}
                             orderStatus={status}
                             userConfirmedAt={g.order?.userConfirmedAt}
+                            nextProductId={g.order?.reviewNextTargetProductId}
+                            nextApplicationId={g.order?.reviewNextApplicationId}
+                            nextReviewContext={g.order?.reviewContext}
                             className="bg-transparent"
                           />
                         ),
