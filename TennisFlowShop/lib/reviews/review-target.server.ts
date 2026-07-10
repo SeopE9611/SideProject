@@ -9,7 +9,7 @@ import {
   type ReviewSubjectType,
   type ReviewTargetBundle,
 } from "./review-target";
-import { hasStringingApplicationLink, isStringingReviewBlockedStatus } from "./review-policy";
+import { getStandaloneStringingIneligibleReason, hasStringingApplicationLink, isOrderReviewEligible, isRentalReviewEligible, isStandaloneStringingReviewEligible, isStringingReviewBlockedStatus } from "./review-policy";
 
 export type ReviewResolutionLoadContext = {
   applicationsByOrderId: Map<string, any[]>;
@@ -50,15 +50,17 @@ function objectIds(ids: string[]) {
   return ids.filter(ObjectId.isValid).map((id) => new ObjectId(id));
 }
 
-function makeBundle(subjectType: ReviewSubjectType, subjectId: string, targets: CanonicalReviewTarget[]): ReviewTargetBundle {
-  const reviewed = targets.filter((target) => target.reviewed).length;
+export function makeBundle(subjectType: ReviewSubjectType, subjectId: string, targets: CanonicalReviewTarget[]): ReviewTargetBundle {
+  const eligibleTargets = targets.filter((target) => target.eligible);
+  const reviewedEligibleTargets = eligibleTargets.filter((target) => target.reviewed);
+  const remainingTargets = eligibleTargets.filter((target) => !target.reviewed);
   return {
     subjectType,
     subjectId,
     targets,
-    counts: { total: targets.length, reviewed, remaining: Math.max(targets.length - reviewed, 0) },
-    allReviewed: targets.length > 0 && reviewed === targets.length,
-    nextTarget: targets.find((target) => !target.reviewed && target.eligible) ?? null,
+    counts: { total: eligibleTargets.length, reviewed: reviewedEligibleTargets.length, remaining: remainingTargets.length },
+    allReviewed: eligibleTargets.length === 0 || remainingTargets.length === 0,
+    nextTarget: remainingTargets[0] ?? null,
   };
 }
 
@@ -158,11 +160,11 @@ function withStatus(ctx: ReviewResolutionLoadContext, target: CanonicalReviewTar
   return { ...target, ...resolveReviewedFromLoadedReviews(target, allReviewsForTarget(ctx, target)) };
 }
 
-function buildProductItem(ctx: ReviewResolutionLoadContext, id: string, order?: any) {
+function buildProductItem(ctx: ReviewResolutionLoadContext, id: string, order?: any, options?: { forceType?: "product" | "string" }) {
   const item = (Array.isArray(order?.items) ? order.items : []).find((it: any) => String(it?.productId) === id);
   const doc = ctx.productsById.get(id) ?? item;
-  const type = String(item?.kind ?? item?.type ?? item?.category ?? "").toLowerCase().includes("string") ? "string" : "product";
-  return relatedItem({ type: type as "product" | "string", id, doc, optionLabel: optionFromOrderItem(item) });
+  const inferredType = String(item?.kind ?? item?.type ?? item?.category ?? "").toLowerCase().includes("string") ? "string" : "product";
+  return relatedItem({ type: options?.forceType ?? inferredType as "product" | "string", id, doc, optionLabel: optionFromOrderItem(item) });
 }
 function buildRacketItem(ctx: ReviewResolutionLoadContext, id: string, fallback?: any) {
   return relatedItem({ type: "racket", id, doc: ctx.racketsById.get(id) ?? fallback, optionLabel: null, fallbackName: "라켓" });
@@ -171,6 +173,7 @@ function buildRacketItem(ctx: ReviewResolutionLoadContext, id: string, fallback?
 export function buildOrderReviewTargetBundleFromLoadedData(ctx: ReviewResolutionLoadContext, order: any): ReviewTargetBundle {
   const subjectId = String(order._id);
   const applications = validApps(ctx.applicationsByOrderId.get(subjectId) ?? []);
+  const orderReviewEligible = isOrderReviewEligible(order);
   const hasLegacyDirect = hasStringingApplicationLink(order);
   const isService = applications.length > 0 || (hasLegacyDirect && toId(order?.stringingApplicationId) && !isStringingReviewBlockedStatus(ctx.applicationById.get(String(order.stringingApplicationId))?.status));
   const targets: CanonicalReviewTarget[] = [];
@@ -183,13 +186,13 @@ export function buildOrderReviewTargetBundleFromLoadedData(ctx: ReviewResolution
     const primaryProductId = appProductIds[0] ?? orderStringIds[0] ?? orderProductIds[0] ?? null;
     const relatedItems = dedupeRelatedItems([
       ...racketIds.map((id) => buildRacketItem(ctx, id)),
-      ...dedupeStringIds([...orderStringIds, ...appProductIds]).map((id) => buildProductItem(ctx, id, order)),
+      ...dedupeStringIds([...orderStringIds, ...appProductIds]).map((id) => buildProductItem(ctx, id, order, { forceType: "string" })),
       ...applications.map((app) => relatedItem({ type: "service", id: String(app._id), doc: app, optionLabel: serviceOption(app), fallbackName: "교체서비스" })),
     ]);
-    targets.push(withStatus(ctx, makeTarget({ subjectType: "order", subjectId, reviewContext: "product_stringing", eligible: true, reviewed: false, orderId: subjectId, rentalId: null, applicationIds, relatedProductIds: [...orderProductIds, ...appProductIds], relatedRacketIds: racketIds, primaryProductId, primaryApplicationId: applicationIds[0] ?? null, primaryRacketId: racketIds[0] ?? null, relatedItems, targetKey: buildReviewTargetKey({ subjectType: "order", subjectId, reviewContext: "product_stringing" }) })));
+    targets.push(withStatus(ctx, makeTarget({ subjectType: "order", subjectId, reviewContext: "product_stringing", eligible: orderReviewEligible, reviewed: false, orderId: subjectId, rentalId: null, applicationIds, relatedProductIds: [...orderProductIds, ...appProductIds], relatedRacketIds: racketIds, primaryProductId, primaryApplicationId: applicationIds[0] ?? null, primaryRacketId: racketIds[0] ?? null, relatedItems, targetKey: buildReviewTargetKey({ subjectType: "order", subjectId, reviewContext: "product_stringing" }) })));
   } else {
     for (const productId of collectOrderProductIds(order)) {
-      targets.push(withStatus(ctx, makeTarget({ subjectType: "order", subjectId, reviewContext: "product", eligible: true, reviewed: false, orderId: subjectId, rentalId: null, applicationIds: [], relatedProductIds: [productId], relatedRacketIds: [], primaryProductId: productId, relatedItems: [buildProductItem(ctx, productId, order)] })));
+      targets.push(withStatus(ctx, makeTarget({ subjectType: "order", subjectId, reviewContext: "product", eligible: orderReviewEligible, reviewed: false, orderId: subjectId, rentalId: null, applicationIds: [], relatedProductIds: [productId], relatedRacketIds: [], primaryProductId: productId, relatedItems: [buildProductItem(ctx, productId, order)] })));
     }
   }
   return makeBundle("order", subjectId, targets);
@@ -197,18 +200,21 @@ export function buildOrderReviewTargetBundleFromLoadedData(ctx: ReviewResolution
 
 export function buildRentalReviewTargetBundleFromLoadedData(ctx: ReviewResolutionLoadContext, rental: any): ReviewTargetBundle {
   const subjectId = String(rental._id);
-  const applications = validApps(ctx.applicationsByRentalId.get(subjectId) ?? []);
+  const directApplication = toId(rental?.stringingApplicationId) ? ctx.applicationById.get(String(rental.stringingApplicationId)) : null;
+  const linkedApps = ctx.applicationsByRentalId.get(subjectId) ?? [];
+  const applications = validApps([...linkedApps, ...(directApplication ? [directApplication] : [])]).filter((app) => !app?.rentalId || String(app.rentalId) === subjectId || String(app._id) === String(rental?.stringingApplicationId));
+  const rentalReviewEligible = isRentalReviewEligible(rental);
   const racketIds = dedupeStringIds([...collectRentalRacketIds(rental), ...applications.flatMap(collectRacketIdsFromApplication)]);
   const applicationIds = applications.map((app) => String(app._id));
   const productIds = applications.flatMap(collectStringProductIdsFromApplication);
-  const reviewContext: ReviewContext = applications.length || rental?.stringingApplicationId || rental?.stringing?.requested ? "rental_stringing" : "rental";
+  const reviewContext: ReviewContext = applications.length ? "rental_stringing" : "rental";
   const relatedItems = dedupeRelatedItems([
     relatedItem({ type: "rental", id: subjectId, doc: rental, optionLabel: rentalPeriod(rental), fallbackName: "대여" }),
     ...racketIds.map((id) => buildRacketItem(ctx, id, rental?.racket)),
-    ...productIds.map((id) => buildProductItem(ctx, id)),
+    ...productIds.map((id) => buildProductItem(ctx, id, undefined, { forceType: "string" })),
     ...applications.map((app) => relatedItem({ type: "service", id: String(app._id), doc: app, optionLabel: serviceOption(app), fallbackName: "교체서비스" })),
   ]);
-  const base = makeTarget({ subjectType: "rental", subjectId, reviewContext, eligible: true, reviewed: false, orderId: null, rentalId: subjectId, applicationIds, relatedProductIds: productIds, relatedRacketIds: racketIds, primaryProductId: productIds[0] ?? null, primaryApplicationId: applicationIds[0] ?? null, primaryRacketId: racketIds[0] ?? null, relatedItems, targetKey: buildReviewTargetKey({ subjectType: "rental", subjectId, reviewContext }) });
+  const base = makeTarget({ subjectType: "rental", subjectId, reviewContext, eligible: rentalReviewEligible, reviewed: false, orderId: null, rentalId: subjectId, applicationIds, relatedProductIds: productIds, relatedRacketIds: racketIds, primaryProductId: productIds[0] ?? null, primaryApplicationId: applicationIds[0] ?? null, primaryRacketId: racketIds[0] ?? null, relatedItems, targetKey: buildReviewTargetKey({ subjectType: "rental", subjectId, reviewContext }) });
   return makeBundle("rental", subjectId, [withStatus(ctx, base)]);
 }
 
@@ -218,16 +224,16 @@ export function buildApplicationReviewTargetBundleFromLoadedData(ctx: ReviewReso
   const parentRental = (app.rentalId ? ctx.parentRentalByApplicationId.get(subjectId) : null) ?? ctx.parentRentalByApplicationId.get(subjectId);
   if (parentOrder) {
     const parent = buildOrderReviewTargetBundleFromLoadedData(ctx, parentOrder);
-    return { ...parent, subjectType: "application", subjectId, targets: parent.targets.map((t) => ({ ...t, eligible: false, ineligibleReason: "coveredByIntegratedReview", coveredBySubjectType: "order", coveredBySubjectId: String(parentOrder._id), redirectTarget: t })) };
+    return makeBundle("application", subjectId, parent.targets.map((t) => ({ ...t, subjectType: "application" as const, subjectId, eligible: false, ineligibleReason: "coveredByIntegratedReview", coveredBySubjectType: "order" as const, coveredBySubjectId: String(parentOrder._id), redirectTarget: t })));
   }
   if (parentRental) {
     const parent = buildRentalReviewTargetBundleFromLoadedData(ctx, parentRental);
-    return { ...parent, subjectType: "application", subjectId, targets: parent.targets.map((t) => ({ ...t, eligible: false, ineligibleReason: "coveredByIntegratedReview", coveredBySubjectType: "rental", coveredBySubjectId: String(parentRental._id), redirectTarget: t })) };
+    return makeBundle("application", subjectId, parent.targets.map((t) => ({ ...t, subjectType: "application" as const, subjectId, eligible: false, ineligibleReason: "coveredByIntegratedReview", coveredBySubjectType: "rental" as const, coveredBySubjectId: String(parentRental._id), redirectTarget: t })));
   }
   const productIds = collectStringProductIdsFromApplication(app);
   const racketIds = collectRacketIdsFromApplication(app);
-  const relatedItems = dedupeRelatedItems([...racketIds.map((id) => buildRacketItem(ctx, id)), ...productIds.map((id) => buildProductItem(ctx, id)), relatedItem({ type: "service", id: subjectId, doc: app, optionLabel: serviceOption(app), fallbackName: "교체서비스" })]);
-  const base = makeTarget({ subjectType: "application", subjectId, reviewContext: "standalone_stringing", eligible: !isStringingReviewBlockedStatus(app?.status), reviewed: false, ineligibleReason: isStringingReviewBlockedStatus(app?.status) ? "invalidStatus" : null, orderId: null, rentalId: null, applicationIds: [subjectId], relatedProductIds: productIds, relatedRacketIds: racketIds, primaryProductId: productIds[0] ?? null, primaryApplicationId: subjectId, primaryRacketId: racketIds[0] ?? null, relatedItems });
+  const relatedItems = dedupeRelatedItems([...racketIds.map((id) => buildRacketItem(ctx, id)), ...productIds.map((id) => buildProductItem(ctx, id, undefined, { forceType: "string" })), relatedItem({ type: "service", id: subjectId, doc: app, optionLabel: serviceOption(app), fallbackName: "교체서비스" })]);
+  const base = makeTarget({ subjectType: "application", subjectId, reviewContext: "standalone_stringing", eligible: isStandaloneStringingReviewEligible(app), reviewed: false, ineligibleReason: getStandaloneStringingIneligibleReason(app), orderId: null, rentalId: null, applicationIds: [subjectId], relatedProductIds: productIds, relatedRacketIds: racketIds, primaryProductId: productIds[0] ?? null, primaryApplicationId: subjectId, primaryRacketId: racketIds[0] ?? null, relatedItems });
   return makeBundle("application", subjectId, [withStatus(ctx, base)]);
 }
 

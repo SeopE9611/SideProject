@@ -476,3 +476,29 @@ test("후기 canonical resolver 계약: 실제 batch, 공통 정책, 호환 필�
     assert.ok(src.includes("resolveApplicationReviewTargetBundlesBatch"), `${label}: 신청서 bundle 사용`);
   }
 });
+
+test("canonical 후기 target resolver 계약: eligibility/count/rental_stringing/activity 중복 조회를 고정한다", () => {
+  const server = read("lib/reviews/review-target.server.ts");
+  const policy = read("lib/reviews/review-policy.ts");
+  const activity = read("app/api/mypage/activity/route.ts");
+  const eligibility = read("app/api/reviews/eligibility/route.ts");
+
+  assert.ok(server.includes("const eligibleTargets = targets.filter((target) => target.eligible)"));
+  assert.ok(server.includes("allReviewed: eligibleTargets.length === 0 || remainingTargets.length === 0"));
+  assert.ok(server.includes("return makeBundle(\"application\", subjectId, parent.targets.map"));
+  assert.ok(server.includes("eligible: false") && server.includes("redirectTarget: t"));
+  assert.ok(policy.includes("isStandaloneStringingReviewEligible"));
+  assert.ok(policy.includes("Boolean(app?.userConfirmedAt)") && policy.includes("isStringingCompletedStatus(app?.status)") && policy.includes("!isStringingReviewBlockedStatus(app?.status)"));
+  assert.ok(server.includes('const reviewContext: ReviewContext = applications.length ? "rental_stringing" : "rental"'));
+  assert.ok(!server.includes('rental?.stringing?.requested ? "rental_stringing"'));
+  assert.ok(!activity.includes("serviceReviewCandidateIds"));
+  assert.ok(!activity.includes("reviewedServiceApplicationIds"));
+  assert.ok(!activity.includes("hasPendingServiceReview"));
+  assert.ok(!activity.includes('service: "stringing",\n          serviceApplicationId'));
+  assert.ok(server.includes('forceType?: "product" | "string"'));
+  assert.ok(server.includes('forceType: "string"'));
+  assert.ok(server.includes("resolveOrderReviewTarget") && server.includes("resolveRentalReviewTarget") && server.includes("resolveStringingApplicationReviewTarget"));
+  for (const field of ["eligible", "reason", "reviewContext", "targetLabel", "suggestedApplicationId", "redirectHref", "subjectType", "subjectId", "nextTarget", "coveredBySubjectType", "coveredBySubjectId"]) {
+    assert.ok(eligibility.includes(field), `eligibility 응답 필드 유지: ${field}`);
+  }
+});
