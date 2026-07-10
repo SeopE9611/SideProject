@@ -438,3 +438,41 @@ test("후기 canonical API 계약: 주요 API가 bundle 결과와 기존 응답 
   assert.ok(summary.includes("resolveOrderReviewTargetBundlesBatch"));
   assert.ok(!userOrders.includes('reviewContext: "product_stringing" },\n            ...(reviewNextApplicationId'));
 });
+
+test("후기 canonical resolver 계약: 실제 batch, 공통 정책, 호환 필드를 유지한다", () => {
+  const server = read("lib/reviews/review-target.server.ts");
+  const target = read("lib/reviews/review-target.ts");
+  const eligibility = read("app/api/reviews/eligibility/route.ts");
+  const activity = read("app/api/mypage/activity/route.ts");
+  const counts = read("app/api/mypage/activity/counts/route.ts");
+  const summary = read("app/api/mypage/summary/route.ts");
+
+  const orderBatch = server.match(/export async function resolveOrderReviewTargetBundlesBatch[\s\S]*?\n}/)?.[0] ?? "";
+  assert.ok(!orderBatch.includes("resolveOrderReviewTargetBundle("), "주문 batch는 단건 resolver를 반복 호출하지 않아야 합니다.");
+  assert.ok(server.includes("loadReviewResolutionContext"));
+  assert.ok(server.includes('db.collection("stringing_applications").find'));
+  assert.ok(server.includes('db.collection("reviews").find'));
+  assert.ok(!server.includes("async function resolveReviewed"));
+  assert.ok(server.includes("resolveReviewedFromLoadedReviews"));
+  assert.ok(server.includes("matchReviewToCanonicalTarget"));
+  assert.ok(server.includes("isStringingReviewBlockedStatus"));
+  assert.ok(server.includes("relatedItems"));
+  assert.ok(server.includes("coveredBySubjectType"));
+  assert.ok(server.includes("coveredBySubjectId"));
+  assert.ok(target.includes("coveredBySubjectType"));
+  assert.ok(target.includes("redirectTarget"));
+  assert.ok(server.includes("export async function resolveOrderReviewTarget"));
+  assert.ok(server.includes("export async function resolveRentalReviewTarget"));
+  assert.ok(server.includes("export async function resolveStringingApplicationReviewTarget"));
+
+  assert.ok(eligibility.includes("resolveApplicationReviewTargetBundlesBatch"));
+  assert.ok(eligibility.includes('reviewContext: nextTarget?.reviewContext ?? "standalone_stringing"'));
+  assert.ok(eligibility.includes("reverseLinkedIds"));
+  assert.ok(eligibility.includes("coveredByIntegratedReview"));
+
+  for (const [label, src] of [["activity", activity], ["counts", counts], ["summary", summary]]) {
+    assert.ok(src.includes("resolveOrderReviewTargetBundlesBatch"), `${label}: 주문 bundle 사용`);
+    assert.ok(src.includes("resolveRentalReviewTargetBundlesBatch"), `${label}: 대여 bundle 사용`);
+    assert.ok(src.includes("resolveApplicationReviewTargetBundlesBatch"), `${label}: 신청서 bundle 사용`);
+  }
+});

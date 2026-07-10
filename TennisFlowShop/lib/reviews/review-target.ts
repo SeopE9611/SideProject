@@ -34,6 +34,9 @@ export type CanonicalReviewTarget = {
   primaryProductId?: string | null;
   primaryApplicationId?: string | null;
   primaryRacketId?: string | null;
+  coveredBySubjectType?: "order" | "rental" | null;
+  coveredBySubjectId?: string | null;
+  redirectTarget?: CanonicalReviewTarget | null;
   relatedItems?: Array<{
     type: "product" | "racket" | "string" | "service" | "rental";
     id?: string | null;
@@ -87,7 +90,11 @@ export function dedupeStringIds(values: unknown[]): string[] {
     seen.add(id);
     result.push(id);
   }
-  return result.sort();
+  return result;
+}
+
+export function sortStringIdsDeterministically(values: unknown[]): string[] {
+  return dedupeStringIds(values).sort();
 }
 
 export function buildReviewTargetKey(params: {

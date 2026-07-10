@@ -260,41 +260,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 페이지 내 주문들의 리뷰를 한 번에 조회해 N+1 쿼리를 제거하고,
-    // 주문 수가 늘어나도 리뷰 조회 횟수를 1회로 고정해 성능을 개선한다.
-    const allValidProductObjectIds = Array.from(
-      new Set(
-        orders
-          .flatMap((order) => (Array.isArray(order.items) ? order.items : []))
-          .map((it) => (it?.productId ? String(it.productId) : null))
-          .filter((pid): pid is string => !!pid && ObjectId.isValid(pid)),
-      ),
-    ).map((pid) => new ObjectId(pid));
-
-    const reviewedByOrderId = new Map<string, Set<string>>();
-    if (orderIds.length && allValidProductObjectIds.length) {
-      const reviewedDocs = await db
-        .collection("reviews")
-        .find({
-          userId,
-          orderId: { $in: orderIds },
-          productId: { $in: allValidProductObjectIds },
-          isDeleted: { $ne: true },
-        })
-        .project({ orderId: 1, productId: 1 })
-        .toArray();
-
-      for (const reviewedDoc of reviewedDocs as Array<{
-        orderId: ObjectId;
-        productId: ObjectId;
-      }>) {
-        const key = String(reviewedDoc.orderId);
-        const existing = reviewedByOrderId.get(key) ?? new Set<string>();
-        existing.add(String(reviewedDoc.productId));
-        reviewedByOrderId.set(key, existing);
-      }
-    }
-
     const reviewBundlesByOrderId = await resolveOrderReviewTargetBundlesBatch(db, userId, orders);
 
     // 각 주문별 리뷰 진행상태 계산
@@ -309,14 +274,11 @@ export async function GET(req: NextRequest) {
       // ObjectId 변환 throw 방지 (비정상 productId는 리뷰 대상에서 제외)
       const validProductIds = productIds.filter((pid) => ObjectId.isValid(pid));
 
-      // 이미 작성한 리뷰 (배치 조회 결과 사용)
-      const reviewedSet = reviewedByOrderId.get(String(order._id)) ?? new Set<string>();
-
       const targetBundle = reviewBundlesByOrderId.get(String(order._id));
       const nextTarget = targetBundle?.nextTarget ?? null;
       const reviewContext: string | null = nextTarget?.reviewContext ?? targetBundle?.targets[0]?.reviewContext ?? "product";
       const reviewNextApplicationId: string | null = nextTarget?.primaryApplicationId ?? null;
-      const unreviewedCount = targetBundle?.counts.remaining ?? validProductIds.filter((pid) => !reviewedSet.has(pid)).length;
+      const unreviewedCount = targetBundle?.counts.remaining ?? validProductIds.length;
       const reviewNextTargetProductId: string | null = nextTarget?.primaryProductId ?? null;
       const reviewAllDone = Boolean(targetBundle?.allReviewed);
 
