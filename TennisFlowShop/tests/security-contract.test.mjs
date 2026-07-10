@@ -533,3 +533,44 @@ test("후기 GET/POST canonical 정책 통일 계약: reviewed 우선, 공용 he
   assert.ok(reviewsRoute.includes('type: "review_reward_product"'));
   assert.ok(reviewsRoute.includes('type: "review_reward_service"'));
 });
+
+
+test("마이페이지 거래 카드 계약: 상태 배지와 액션 배치를 단순화한다", () => {
+  const transactionFlowList = read("app/mypage/tabs/TransactionFlowList.tsx");
+
+  assert.ok(!transactionFlowList.includes("TODO_STATUS_LABEL_MAP"));
+  assert.ok(!transactionFlowList.includes("TODO_STATUS_LABEL_MAP[todoPrimaryReason]"));
+  assert.ok(transactionFlowList.includes("getCompactStatusLabel(displayUserStatusLabel, g.kind)"));
+  assert.ok(!transactionFlowList.includes("priority:"));
+  assert.ok(!transactionFlowList.includes("pinInline"));
+  assert.ok(!transactionFlowList.includes("forceSecondary"));
+  assert.ok(!transactionFlowList.includes("inlineEligible"));
+  assert.ok(!transactionFlowList.includes("shouldUseSecondary"));
+  assert.ok(transactionFlowList.includes("let primaryAction: CardAction | null = null;"));
+  assert.ok(transactionFlowList.includes("primaryAction = primaryAction ?? candidate;"));
+  assert.ok(transactionFlowList.includes("const detailAction: CardAction"));
+  assert.ok(transactionFlowList.includes("{detailAction.node}"));
+  assert.ok(!transactionFlowList.includes('key: "flow-detail"') || !transactionFlowList.includes('addSecondaryAction({ key: "flow-detail"'));
+  assert.ok(!transactionFlowList.includes("미작성"));
+  assert.ok(!transactionFlowList.includes("ActivityOrderReviewCTA"));
+  assert.ok(!transactionFlowList.includes("RentalReviewCTA"));
+  assert.ok(!transactionFlowList.includes("ServiceReviewCTA"));
+  assert.ok(transactionFlowList.includes("reviewPendingCount: g.order?.reviewPendingCount"));
+  assert.ok(transactionFlowList.includes("nextReviewTarget: g.order?.nextReviewTarget"));
+  assert.ok(transactionFlowList.includes("reviewPendingCount: g.rental?.reviewPendingCount"));
+  assert.ok(transactionFlowList.includes("nextReviewTarget: g.rental?.nextReviewTarget"));
+  assert.ok(transactionFlowList.includes("reviewPendingCount: applicationActionTarget.reviewPendingCount"));
+  assert.ok(transactionFlowList.includes("buildReviewWriteHref"));
+  assert.ok(transactionFlowList.includes("if ((params.reviewPendingCount ?? 0) <= 0) return null;"));
+  assert.ok(!transactionFlowList.includes("모든 후기를 남겼어요"));
+  assert.ok(!transactionFlowList.includes("이미 대여 후기를 남겼어요"));
+  assert.ok(!transactionFlowList.includes("이미 이용 후기를 남겼어요"));
+  assert.ok(transactionFlowList.includes("handleConfirmPurchase(orderId)"));
+  assert.ok(transactionFlowList.includes("handleConfirmRental(rentalId)"));
+  assert.ok(transactionFlowList.includes("handleConfirmApplication(applicationActionTarget.id)"));
+  assert.ok(transactionFlowList.includes("setCancelOrderDialogId(orderId)"));
+  assert.ok(transactionFlowList.includes("setCancelRentalDialogId(rentalId)"));
+  assert.ok(transactionFlowList.includes("setCancelApplicationDialogId(applicationActionTarget.id)"));
+  assert.ok(transactionFlowList.includes(">상세 보기 <"));
+  assert.ok(transactionFlowList.includes("md:hidden"));
+});

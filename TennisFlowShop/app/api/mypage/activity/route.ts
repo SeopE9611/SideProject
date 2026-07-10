@@ -110,6 +110,8 @@ type ActivityOrderSummary = {
   reviewNextTargetProductId: string | null;
   reviewNextApplicationId: string | null;
   reviewContext: string | null;
+  reviewTargetBundle?: unknown;
+  nextReviewTarget?: unknown;
 };
 
 type ActivityRentalSummary = {
@@ -856,6 +858,8 @@ export async function GET(req: Request) {
         reviewNextTargetProductId,
         reviewNextApplicationId,
         reviewContext,
+        reviewTargetBundle: targetBundle ?? null,
+        nextReviewTarget: nextTarget ?? null,
       },
       application: linked, // 연결 신청서가 있으면 같이 내려줌(카드에서 CTA 가능)
     });
