@@ -311,7 +311,7 @@ export async function GET(req: NextRequest) {
       const reviewedSet = reviewedByOrderId.get(String(order._id)) ?? new Set<string>();
 
       const integratedTarget = await resolveOrderReviewTarget(db, userId, String(order._id));
-      let reviewContext: string | null = integratedTarget?.reviewContext ?? "product";
+      const reviewContext: string | null = integratedTarget?.reviewContext ?? "product";
       let reviewNextApplicationId: string | null = null;
       let unreviewedCount = 0;
       let reviewNextTargetProductId: string | null = null;
