@@ -66,6 +66,26 @@ export function isStandaloneStringingReviewEligible(app: any) {
   );
 }
 
+export type ReviewSubmissionBlockReason =
+  | "notFound"
+  | "already"
+  | "coveredByIntegratedReview"
+  | "notConfirmed"
+  | "notCompleted"
+  | "invalidStatus"
+  | null;
+
+export function getReviewSubmissionBlockReason(
+  target: { reviewed?: boolean; eligible?: boolean; ineligibleReason?: string | null } | null | undefined,
+): ReviewSubmissionBlockReason {
+  if (!target) return "notFound";
+  if (target.reviewed) return "already";
+  if (!target.eligible) {
+    return (target.ineligibleReason as ReviewSubmissionBlockReason) ?? "notConfirmed";
+  }
+  return null;
+}
+
 export function getStandaloneStringingIneligibleReason(app: any) {
   if (isStringingReviewBlockedStatus(app?.status)) return "invalidStatus";
   if (!isStringingCompletedStatus(app?.status)) return "notCompleted";

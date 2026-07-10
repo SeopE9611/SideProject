@@ -3,7 +3,12 @@ import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
-import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import {
+  getReviewSubmissionBlockReason,
+  isOrderReviewEligible,
+  isRentalReviewEligible,
+  isStandaloneStringingReviewEligible,
+} from "@/lib/reviews/review-policy";
 import { getReviewContextLabel } from "@/lib/reviews/review-target";
 import {
   resolveOrderReviewTarget,
@@ -24,15 +29,6 @@ const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
 const ALLOWED_PATH_PREFIXES = ["/storage/v1/object/public/tennis-images/"];
 
 /** http/https + 화이트리스트(host, path) 체크 */
-const isRentalReviewConfirmed = (rental: any) =>
-  Boolean(rental?.userConfirmedAt) ||
-  Boolean(rental?.returnedAt) ||
-  ["returned", "반납완료", "완료"].includes(String(rental?.status ?? "").trim());
-const isRentalReviewBlockedStatus = (status: unknown) =>
-  ["created", "pending", "paid", "out", "canceled", "cancelled", "취소", "대여중", "준비중", "수령전"].includes(
-    String(status ?? "").trim().toLowerCase(),
-  );
-
 const isAllowedHttpUrl = (v: unknown): v is string => {
   if (typeof v !== "string") return false;
   try {
@@ -150,12 +146,18 @@ export async function POST(req: Request) {
     }
     const rentalIdObj = new ObjectId(rentalIdStr);
     const rental = await db.collection("rental_orders").findOne({ _id: rentalIdObj, userId });
-    if (!rental) return NextResponse.json({ message: "rentalNotFound" }, { status: 404 });
-    if (isRentalReviewBlockedStatus(rental.status)) {
-      return NextResponse.json({ message: "invalidStatus" }, { status: 403 });
+    if (!rental) return NextResponse.json({ message: "rentalNotFound", reason: "notFound" }, { status: 404 });
+    const rentalTarget = await resolveRentalReviewTarget(db, userId, rentalIdStr);
+    const rentalCanonicalTarget = rentalTarget?.targetBundle?.targets?.[0] ?? null;
+    const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget);
+    if (rentalBlockReason === "already") {
+      return NextResponse.json({ message: "already", reason: "already" }, { status: 409 });
     }
-    if (!isRentalReviewConfirmed(rental)) {
-      return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
+    if (rentalBlockReason) {
+      return NextResponse.json({ message: rentalBlockReason, reason: rentalBlockReason }, { status: rentalBlockReason === "notFound" ? 404 : 403 });
+    }
+    if (!isRentalReviewEligible(rental)) {
+      return NextResponse.json({ message: "notConfirmed", reason: "notConfirmed" }, { status: 403 });
     }
     const already = await db.collection("reviews").findOne({
       userId,
@@ -164,7 +166,6 @@ export async function POST(req: Request) {
     });
     if (already) return NextResponse.json({ message: "already" }, { status: 409 });
 
-    const rentalTarget = await resolveRentalReviewTarget(db, userId, rentalIdStr);
     const now = new Date();
     await db.collection("reviews").insertOne({
       userId,
@@ -210,8 +211,16 @@ export async function POST(req: Request) {
     });
     if (!bought) return NextResponse.json({ message: "notPurchased" }, { status: 403 });
     const orderTarget = await resolveOrderReviewTarget(db, userId, String(orderIdObj), productIdStr);
-    if (!bought.userConfirmedAt && String(bought.status ?? "") !== "구매확정") {
-      return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
+    const orderCanonicalTarget = orderTarget?.targetBundle?.targets?.find((target: any) => target.primaryProductId === productIdStr) ?? orderTarget?.targetBundle?.nextTarget ?? orderTarget?.targetBundle?.targets?.[0] ?? null;
+    const orderBlockReason = getReviewSubmissionBlockReason(orderCanonicalTarget);
+    if (orderBlockReason === "already") {
+      return NextResponse.json({ message: "already", reason: "already" }, { status: 409 });
+    }
+    if (orderBlockReason) {
+      return NextResponse.json({ message: orderBlockReason, reason: orderBlockReason }, { status: orderBlockReason === "notFound" ? 404 : 403 });
+    }
+    if (!isOrderReviewEligible(bought)) {
+      return NextResponse.json({ message: "notConfirmed", reason: "notConfirmed" }, { status: 403 });
     }
 
     // 중복 작성 방지 (주문 단위): 같은 주문 + 같은 상품 + 같은 유저
@@ -314,16 +323,21 @@ export async function POST(req: Request) {
     if (!app || String(app.userId) !== String(userId)) {
       return NextResponse.json({ message: "forbidden" }, { status: 403 });
     }
-    if (!app.userConfirmedAt) {
-      return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
-    }
-    if (isStringingReviewBlockedStatus(app.status)) {
-      return NextResponse.json({ message: "invalidStatus" }, { status: 403 });
-    }
-
     const appTarget = await resolveStringingApplicationReviewTarget(db, userId, appIdStr);
-    if (appTarget?.reviewContext === "product_stringing" || appTarget?.reviewContext === "rental_stringing") {
+    const appCanonicalTarget = appTarget?.targetBundle?.targets?.[0] ?? null;
+    const appBlockReason = getReviewSubmissionBlockReason(appCanonicalTarget);
+    if (appBlockReason === "already") {
+      return NextResponse.json({ message: "already", reason: "already" }, { status: 409 });
+    }
+    if (appBlockReason === "coveredByIntegratedReview") {
       return NextResponse.json({ message: "coveredByIntegratedReview", reason: "coveredByIntegratedReview" }, { status: 409 });
+    }
+    if (appBlockReason) {
+      return NextResponse.json({ message: appBlockReason, reason: appBlockReason }, { status: appBlockReason === "notFound" ? 404 : 403 });
+    }
+    if (!isStandaloneStringingReviewEligible(app)) {
+      const fallbackReason = !app.userConfirmedAt ? "notConfirmed" : "notCompleted";
+      return NextResponse.json({ message: fallbackReason, reason: fallbackReason }, { status: 403 });
     }
 
     // 신청서 단위 중복 작성 방지
