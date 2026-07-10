@@ -222,6 +222,23 @@ interface Props {
   backUrl?: string;
 }
 
+type ReviewItemsResponse = {
+  ok: boolean;
+  orderId?: string;
+  items?: Array<{
+    productId?: string | null;
+    applicationId?: string | null;
+    reviewed?: boolean;
+  }>;
+  counts?: {
+    total?: number;
+    reviewed?: number;
+    remaining?: number;
+  };
+  nextProductId?: string | null;
+  nextApplicationId?: string | null;
+  nextReviewContext?: string | null;
+};
 
 type OrderTrackingResponse =
   | {
@@ -388,7 +405,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const canShowReviewCTA =
     Boolean(orderDetail?.userConfirmedAt) || isOrderConfirmedStatus(orderDetail?.status);
   const canConfirmPurchase = isOrderDeliveredStatus(orderDetail?.status);
-  const { data: reviewItemsData, isLoading: isReviewItemsLoading } = useSWR(
+  const { data: reviewItemsData, isLoading: isReviewItemsLoading } = useSWR<ReviewItemsResponse>(
     orderDetail?._id && canShowReviewCTA ? `/api/orders/${orderDetail._id}/review-items` : null,
     authenticatedSWRFetcher,
     { revalidateOnFocus: false },
