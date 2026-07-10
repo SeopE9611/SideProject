@@ -7,7 +7,7 @@ import {
   isRentalTodoActionable,
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
-import { resolveOrderReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
+import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
 import {
   isStringingReviewBlockedStatus,
 } from "@/lib/reviews/review-policy";
@@ -141,6 +141,14 @@ type ActivityRentalSummary = {
   stringingApplicationId: string | null;
   cancelStatus?: string | null;
   linkedApplicationCount: number;
+  reviewContext?: string | null;
+  reviewPendingCount?: number;
+  reviewAllDone?: boolean;
+  reviewNextTargetProductId?: string | null;
+  reviewNextApplicationId?: string | null;
+  reviewNextRacketId?: string | null;
+  reviewTargetBundle?: unknown;
+  nextReviewTarget?: unknown;
 };
 
 type FlowType =
@@ -177,6 +185,13 @@ type ActivityApplicationSummary = {
   selectedStringName?: string | null;
   selectedGauge?: string | null;
   selectedColorLabel?: string | null;
+  reviewContext?: string | null;
+  reviewPendingCount?: number;
+  reviewAllDone?: boolean;
+  reviewNextTargetProductId?: string | null;
+  reviewNextApplicationId?: string | null;
+  reviewTargetBundle?: unknown;
+  nextReviewTarget?: unknown;
 };
 
 export type ActivityGroup = {
@@ -363,6 +378,11 @@ function resolveOrderShippingMethod(shippingInfo: any): string {
   }
 
   return "";
+}
+
+function isOrderHasRacketItem(order: any): boolean {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  return items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
 }
 
 function summarizeRacketType(details: any): string {
@@ -567,62 +587,10 @@ export async function GET(req: Request) {
    * - (Activity API는 take만큼만 로드하므로, 여기서는 로드된 orders 범위에서만 판단하면 충분)
    */
   const orderHasRacketById = new Map<string, boolean>();
-  const orderReviewProductIdsById = new Map<string, string[]>();
-  const confirmedOrderIds: ObjectId[] = [];
-  const reviewProductIdsPool = new Set<string>();
-
-  for (const o of orders as any[]) {
-    const orderId = String(o._id);
-    const items = Array.isArray(o.items) ? o.items : [];
-    const hasRacket = items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
-    orderHasRacketById.set(orderId, hasRacket);
-
-    const rawReviewTargetProductIds: (string | null)[] = items.map((it: any): string | null =>
-      it?.productId ? String(it.productId) : null,
-    );
-
-    const filteredReviewTargetProductIds: string[] = rawReviewTargetProductIds.filter(
-      (productId: string | null): productId is string =>
-        productId !== null && ObjectId.isValid(productId),
-    );
-
-    const reviewTargetProductIds: string[] = [...new Set<string>(filteredReviewTargetProductIds)];
-    orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
-
-    const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
-    if (isConfirmed && reviewTargetProductIds.length > 0) {
-      confirmedOrderIds.push(new ObjectId(orderId));
-      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
-    }
+  for (const order of orders as any[]) {
+    orderHasRacketById.set(String(order._id), isOrderHasRacketItem(order));
   }
 
-  const reviewedProductIdsByOrderId = new Map<string, Set<string>>();
-  if (confirmedOrderIds.length > 0 && reviewProductIdsPool.size > 0) {
-    const reviewedDocs = await db
-      .collection("reviews")
-      .find(
-        {
-          userId,
-          orderId: { $in: confirmedOrderIds },
-          productId: {
-            $in: Array.from(reviewProductIdsPool).map((id) => new ObjectId(id)),
-          },
-          isDeleted: { $ne: true },
-        },
-        { projection: { orderId: 1, productId: 1 } },
-      )
-      .toArray();
-
-    for (const reviewed of reviewedDocs as any[]) {
-      const orderId = String(reviewed.orderId);
-      const productId = String(reviewed.productId);
-      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
-      bucket.add(productId);
-      reviewedProductIdsByOrderId.set(orderId, bucket);
-    }
-  }
-
-  // 5) 연결 신청서 로드(주문/대여 후보에 붙일 용도)
   const orderIdsAny = orders.flatMap((o: any) => [o._id, String(o._id)]);
   const rentalIdsAny = rentals.flatMap((r: any) => [r._id, String(r._id)]);
 
@@ -787,7 +755,6 @@ export async function GET(req: Request) {
       packageApplied: paymentContext.packageApplied,
       paymentStatus: paymentContext.paymentStatus,
       paymentProvider: paymentContext.paymentProvider,
-      serviceReviewPending: hasPendingServiceReview(String(doc._id)),
       ...stringSelection,
     };
 
@@ -834,7 +801,11 @@ export async function GET(req: Request) {
     }
   }
 
-  const reviewBundlesByOrderId = await resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]);
+  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] = await Promise.all([
+    resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
+    resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
+    resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
+  ]);
 
   // 6) 그룹 생성(주문/대여 + 단독신청)
   const groups: ActivityGroup[] = [];
@@ -994,6 +965,14 @@ export async function GET(req: Request) {
         stringingApplicationId: linked?.id ?? null,
         cancelStatus: r?.cancelRequest?.status ?? null,
         linkedApplicationCount: linkedApps.length,
+        reviewContext: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.reviewContext ?? reviewBundlesByRentalId.get(rentalId)?.targets[0]?.reviewContext ?? null,
+        reviewPendingCount: reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0,
+        reviewAllDone: Boolean(reviewBundlesByRentalId.get(rentalId)?.allReviewed),
+        reviewNextTargetProductId: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryProductId ?? null,
+        reviewNextApplicationId: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryApplicationId ?? null,
+        reviewNextRacketId: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryRacketId ?? null,
+        reviewTargetBundle: reviewBundlesByRentalId.get(rentalId) ?? null,
+        nextReviewTarget: reviewBundlesByRentalId.get(rentalId)?.nextTarget ?? null,
       },
       application: linked,
     });
@@ -1062,7 +1041,14 @@ export async function GET(req: Request) {
         packageApplied: paymentContext.packageApplied,
         paymentStatus: paymentContext.paymentStatus,
         paymentProvider: paymentContext.paymentProvider,
-        serviceReviewPending: hasPendingServiceReview(String(doc._id)),
+        serviceReviewPending: (reviewBundlesByApplicationId.get(String(doc._id))?.counts.remaining ?? 0) > 0,
+        reviewContext: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.reviewContext ?? reviewBundlesByApplicationId.get(String(doc._id))?.targets[0]?.reviewContext ?? null,
+        reviewPendingCount: reviewBundlesByApplicationId.get(String(doc._id))?.counts.remaining ?? 0,
+        reviewAllDone: Boolean(reviewBundlesByApplicationId.get(String(doc._id))?.allReviewed),
+        reviewNextTargetProductId: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.primaryProductId ?? null,
+        reviewNextApplicationId: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.primaryApplicationId ?? null,
+        reviewTargetBundle: reviewBundlesByApplicationId.get(String(doc._id)) ?? null,
+        nextReviewTarget: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget ?? null,
         ...stringSelection,
       },
     });
@@ -1094,6 +1080,7 @@ export async function GET(req: Request) {
           userConfirmedAt: group.rental?.userConfirmedAt,
           linkedApplications: group.rental?.applicationSummaries,
           primaryApplication: group.application,
+          reviewPendingCount: group.rental?.reviewPendingCount,
           stringingApplicationId: group.rental?.stringingApplicationId,
           withStringService: group.rental?.withStringService,
         });

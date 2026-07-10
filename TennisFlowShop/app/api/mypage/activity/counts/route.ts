@@ -6,7 +6,7 @@ import {
   isRentalTodoActionable,
 } from "@/lib/mypage/activity-todo";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
-import { resolveOrderReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
+import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -113,48 +113,8 @@ export async function GET() {
   ]);
 
   const orderHasRacketById = new Map<string, boolean>();
-  const orderReviewProductIdsById = new Map<string, string[]>();
-  const confirmedOrderIds: ObjectId[] = [];
-  const reviewProductIdsPool = new Set<string>();
-
   for (const order of orders as any[]) {
-    const orderId = String(order._id);
-    orderHasRacketById.set(orderId, isOrderHasRacketItem(order));
-
-    const reviewTargetProductIds = getOrderReviewTargetProductIds(order);
-    orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
-
-    const isConfirmed = Boolean(order?.userConfirmedAt) || isOrderConfirmedStatus(order?.status);
-    if (isConfirmed && reviewTargetProductIds.length > 0) {
-      confirmedOrderIds.push(new ObjectId(orderId));
-      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
-    }
-  }
-
-  const reviewedProductIdsByOrderId = new Map<string, Set<string>>();
-  if (confirmedOrderIds.length > 0 && reviewProductIdsPool.size > 0) {
-    const reviewedDocs = await db
-      .collection("reviews")
-      .find(
-        {
-          userId,
-          orderId: { $in: confirmedOrderIds },
-          productId: {
-            $in: Array.from(reviewProductIdsPool).map((id) => new ObjectId(id)),
-          },
-          isDeleted: { $ne: true },
-        },
-        { projection: { orderId: 1, productId: 1 } },
-      )
-      .toArray();
-
-    for (const reviewed of reviewedDocs as any[]) {
-      const orderId = String(reviewed.orderId);
-      const productId = String(reviewed.productId);
-      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
-      bucket.add(productId);
-      reviewedProductIdsByOrderId.set(orderId, bucket);
-    }
+    orderHasRacketById.set(String(order._id), isOrderHasRacketItem(order));
   }
 
   const orderIdsAny = (orders as any[]).flatMap((o) => [o._id, String(o._id)]);
@@ -229,7 +189,11 @@ export async function GET() {
     }
   }
 
-  const reviewBundlesByOrderId = await resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]);
+  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] = await Promise.all([
+    resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
+    resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
+    resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
+  ]);
 
   let todoOrderCount = 0;
   for (const order of orders as any[]) {
@@ -286,6 +250,7 @@ export async function GET() {
         ? String(rental.stringingApplicationId)
         : null,
       withStringService,
+      reviewPendingCount: (reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0),
     });
 
     if (needsAction) todoRentalCount += 1;

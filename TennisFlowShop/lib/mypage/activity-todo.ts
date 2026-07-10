@@ -97,6 +97,7 @@ export function isRentalTodoActionable(params: {
   primaryApplication?: ActivityTodoApplicationLike | null;
   stringingApplicationId?: string | null;
   withStringService?: boolean | null;
+  reviewPendingCount?: number | null;
 }): boolean {
   const status = normalizeMypageTodoStatus(params.status);
   if (isTerminalCanceledTodoStatus(status)) return false;
@@ -104,8 +105,9 @@ export function isRentalTodoActionable(params: {
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
     (app) => isApplicationTrackingTodoActionable(app) || isApplicationServiceReviewTodoPending(app),
   );
+  const hasPendingReview = (params.reviewPendingCount ?? 0) > 0;
   return Boolean(
-    (isRentalReturnedStatus(params.status) && !params.userConfirmedAt) ||
+    (isRentalReturnedStatus(params.status) && (!params.userConfirmedAt || hasPendingReview)) ||
     hasActionableLinkedApplication ||
     isApplicationTrackingTodoActionable(params.primaryApplication) ||
     isApplicationServiceReviewTodoPending(params.primaryApplication) ||

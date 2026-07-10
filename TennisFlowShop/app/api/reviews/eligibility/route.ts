@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { isOrderServiceReviewOnly, isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import {
+  resolveApplicationReviewTargetBundlesBatch,
   resolveOrderReviewTarget,
   resolveRentalReviewTarget,
   resolveStringingApplicationReviewTarget,
@@ -480,16 +481,23 @@ export async function GET(req: Request) {
       }
 
       return NextResponse.json(
-        { eligible: true, reason: null },
+        { eligible: true, reason: null, subjectType: "application", subjectId: applicationId, reviewContext: appTarget?.reviewContext ?? "standalone_stringing", targetType: "standalone_stringing", targetLabel: appTarget?.contextLabel ?? "교체서비스 후기", suggestedApplicationId: applicationId, nextTarget: appTarget?.targetBundle?.nextTarget ?? appTarget?.targetBundle?.targets?.[0] ?? null },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
 
-    // 추천 모드: 아직 리뷰 안 쓴 '사용자 확정 완료' 신청서 하나 추천
+    // 추천 모드: canonical 기준의 단독 교체서비스만 추천한다.
     const myApps = await col
       .find(
-        { userId, userConfirmedAt: { $exists: true, $ne: null } },
-        { projection: { _id: 1, createdAt: 1, desiredDateTime: 1, status: 1 } },
+        {
+          userId,
+          userConfirmedAt: { $exists: true, $ne: null },
+          $and: [
+            { $or: [{ orderId: { $exists: false } }, { orderId: null }] },
+            { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] },
+          ],
+        },
+        { projection: { _id: 1, createdAt: 1, desiredDateTime: 1, status: 1, orderId: 1, rentalId: 1, userConfirmedAt: 1, stringDetails: 1 } },
       )
       .sort({ createdAt: -1 })
       .toArray();
@@ -501,21 +509,19 @@ export async function GET(req: Request) {
       );
     }
 
-    const reviewed = await db
-      .collection("reviews")
-      .find({
-        userId,
-        service: "stringing",
-        serviceApplicationId: { $exists: true },
-        isDeleted: { $ne: true },
-      })
-      .project({ serviceApplicationId: 1 })
-      .toArray();
-
-    const reviewedSet = new Set(reviewed.map((r) => String(r.serviceApplicationId)));
-    const candidate = myApps.find(
-      (a) => !isStringingReviewBlockedStatus(a.status) && !reviewedSet.has(String(a._id)),
-    );
+    const appIds = myApps.map((app) => String(app._id));
+    const [referencingOrder, referencingRental, bundlesByApplicationId] = await Promise.all([
+      db.collection("orders").find({ userId, stringingApplicationId: { $in: appIds.flatMap((id) => [id, new ObjectId(id)]) } }).project({ _id: 1, stringingApplicationId: 1 }).toArray(),
+      db.collection("rental_orders").find({ userId, stringingApplicationId: { $in: appIds.flatMap((id) => [id, new ObjectId(id)]) } }).project({ _id: 1, stringingApplicationId: 1 }).toArray(),
+      resolveApplicationReviewTargetBundlesBatch(db, userId, myApps),
+    ]);
+    const reverseLinkedIds = new Set([...referencingOrder, ...referencingRental].map((doc: any) => String(doc.stringingApplicationId)));
+    const candidate = myApps.find((app: any) => {
+      if (reverseLinkedIds.has(String(app._id)) || isStringingReviewBlockedStatus(app.status)) return false;
+      const bundle = bundlesByApplicationId.get(String(app._id));
+      const target = bundle?.nextTarget ?? null;
+      return target?.reviewContext === "standalone_stringing" && target.eligible && !target.reviewed;
+    });
 
     if (!candidate) {
       return NextResponse.json(
@@ -523,12 +529,20 @@ export async function GET(req: Request) {
         { headers: { "Cache-Control": "no-store" } },
       );
     }
+    const candidateBundle = bundlesByApplicationId.get(String(candidate._id));
+    const nextTarget = candidateBundle?.nextTarget ?? null;
 
     return NextResponse.json(
       {
         eligible: true,
         reason: null,
+        subjectType: "application",
+        subjectId: String(candidate._id),
+        reviewContext: nextTarget?.reviewContext ?? "standalone_stringing",
+        targetType: nextTarget?.reviewContext ?? "standalone_stringing",
+        targetLabel: nextTarget?.contextLabel ?? "교체서비스 후기",
         suggestedApplicationId: String(candidate._id),
+        nextTarget,
       },
       { headers: { "Cache-Control": "no-store" } },
     );

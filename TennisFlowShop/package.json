@@ -36,7 +36,8 @@
     "test:e2e:service-flow": "cypress run --spec cypress/e2e/service-flow.scenarios.cy.ts",
     "db:explain-admin-operations-search": "node scripts/db/explain-admin-operations-search.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:review-target": "node --test tests/review-target-resolver.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
