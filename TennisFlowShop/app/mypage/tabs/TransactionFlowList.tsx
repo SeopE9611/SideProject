@@ -1254,10 +1254,10 @@ export default function TransactionFlowList() {
                     node: React.ReactNode;
                   };
 
-                  let primaryAction: CardAction | null = null;
+                  const primaryActionCandidates: CardAction[] = [];
                   const secondaryActions: CardAction[] = [];
-                  const setPrimaryActionOnce = (candidate: CardAction) => {
-                    primaryAction = primaryAction ?? candidate;
+                  const addPrimaryActionCandidate = (candidate: CardAction) => {
+                    primaryActionCandidates.push(candidate);
                   };
                   const addSecondaryAction = (action: CardAction) => {
                     secondaryActions.push(action);
@@ -1367,7 +1367,7 @@ export default function TransactionFlowList() {
                   if (g.kind === "order" && orderId && !prefersApplicationView) {
                     const actionableOrderApplication = linkedApps.find((app) => isApplicationTrackingNeeded(app));
                     if (actionableOrderApplication?.id) {
-                      setPrimaryActionOnce({
+                      addPrimaryActionCandidate({
                         key: "application-shipping",
                         node: (
                           <Button asChild size="sm">
@@ -1378,7 +1378,7 @@ export default function TransactionFlowList() {
                         ),
                       });
                     } else if (isOrderDeliveredStatus(g.order?.status)) {
-                      setPrimaryActionOnce({
+                      addPrimaryActionCandidate({
                         key: "order-confirm",
                         node: (
                           <Button size="sm" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
@@ -1397,7 +1397,7 @@ export default function TransactionFlowList() {
                         fallbackProductId: g.order?.reviewNextTargetProductId,
                         fallbackApplicationId: g.order?.reviewNextApplicationId,
                       });
-                      if (reviewAction) setPrimaryActionOnce(reviewAction);
+                      if (reviewAction) addPrimaryActionCandidate(reviewAction);
                     }
 
                     if (canShowOrderShippingInfo(status)) {
@@ -1417,9 +1417,9 @@ export default function TransactionFlowList() {
 
                   if (g.kind === "rental" && rentalId && !prefersApplicationView) {
                     if (isRentalReturnShippingAvailable(g.rental) && !g.rental?.hasReturnShipping) {
-                      setPrimaryActionOnce({ key: "rental-return-shipping", node: <Button asChild size="sm"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 등록</Link></Button> });
+                      addPrimaryActionCandidate({ key: "rental-return-shipping", node: <Button asChild size="sm"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 등록</Link></Button> });
                     } else if (isRentalReturnedStatus(g.rental?.status) && !g.rental?.userConfirmedAt) {
-                      setPrimaryActionOnce({ key: "rental-confirm", node: <Button size="sm" disabled={confirmingRentalId === rentalId} onClick={() => handleConfirmRental(rentalId)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}</Button> });
+                      addPrimaryActionCandidate({ key: "rental-confirm", node: <Button size="sm" disabled={confirmingRentalId === rentalId} onClick={() => handleConfirmRental(rentalId)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}</Button> });
                     } else if (g.rental?.userConfirmedAt) {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "rental-review",
@@ -1430,9 +1430,9 @@ export default function TransactionFlowList() {
                         fallbackProductId: g.rental?.reviewNextTargetProductId,
                         fallbackApplicationId: g.rental?.reviewNextApplicationId,
                       });
-                      if (reviewAction) setPrimaryActionOnce(reviewAction);
+                      if (reviewAction) addPrimaryActionCandidate(reviewAction);
                     } else if (!g.rental?.stringingApplicationId && g.rental?.withStringService) {
-                      setPrimaryActionOnce({ key: "rental-apply-stringing", node: <Button asChild size="sm"><Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
+                      addPrimaryActionCandidate({ key: "rental-apply-stringing", node: <Button asChild size="sm"><Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
                     }
 
                     if (isRentalReturnShippingAvailable(g.rental) && g.rental?.hasReturnShipping) {
@@ -1453,13 +1453,13 @@ export default function TransactionFlowList() {
                     if (!isRentalLinkedApplicationAction && isApplicationTrackingNeeded(applicationActionTarget)) {
                       const action = { key: "application-shipping", node: <Button asChild size="sm" variant={applicationActionTarget.hasTracking ? "outline" : "default"} className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}><Link href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(applicationShippingReturnHref)}`}>{applicationActionTarget.hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}</Link></Button> };
                       if (applicationActionTarget.hasTracking) addSecondaryAction(action);
-                      else setPrimaryActionOnce(action);
+                      else addPrimaryActionCandidate(action);
                     }
                     if (isDirectApplicationCard && ["접수완료", "검토 중"].includes(getMypageNormalizedStatus(applicationActionTarget.status))) {
                       addSecondaryAction({ key: "application-cancel-request", node: <Button size="sm" variant="outline" className="border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}><XCircle className="mr-1 h-3.5 w-3.5" />취소 요청</Button> });
                     }
                     if (isStringingCompletedStatus(applicationActionTarget.status) && !applicationActionTarget.userConfirmedAt && !isLinkedApplicationConfirmSuppressed) {
-                      setPrimaryActionOnce({ key: "application-confirm", node: <Button size="sm" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체서비스 확정"}</Button> });
+                      addPrimaryActionCandidate({ key: "application-confirm", node: <Button size="sm" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체서비스 확정"}</Button> });
                     } else if (!applicationActionTarget.orderId && !applicationActionTarget.rentalId && applicationActionTarget.userConfirmedAt) {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "application-review",
@@ -1470,7 +1470,7 @@ export default function TransactionFlowList() {
                         fallbackProductId: applicationActionTarget.reviewNextTargetProductId,
                         fallbackApplicationId: applicationActionTarget.reviewNextApplicationId ?? applicationActionTarget.id,
                       });
-                      if (reviewAction) setPrimaryActionOnce(reviewAction);
+                      if (reviewAction) addPrimaryActionCandidate(reviewAction);
                     }
                   }
 
@@ -1478,6 +1478,7 @@ export default function TransactionFlowList() {
                     addSecondaryAction({ key: "application-open-sheet", node: <Button asChild size="sm" variant="outline" className="bg-transparent"><Link href={applicationActionTarget ? getStringingDetailHref(applicationActionTarget, flowQuery) : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>교체서비스 상태<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
                   }
 
+                  const primaryAction = primaryActionCandidates[0] ?? null;
                   const hasSecondaryActions = secondaryActions.length > 0;
 
                   return (
