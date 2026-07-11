@@ -18,12 +18,21 @@ export function buildProductReviewCta({
   productId: string;
   reviewEligibility: any;
 }) {
-  const productReviewHref = reviewEligibility?.reviewContext
+  const canonicalTarget = reviewEligibility?.nextTarget ?? reviewEligibility?.target ?? null;
+  const canWriteFromProductReviewTab = Boolean(
+    reviewEligibility?.eligible === true &&
+    canonicalTarget &&
+    canonicalTarget.eligible === true &&
+    canonicalTarget.reviewed === false,
+  );
+
+  const productReviewHref = canWriteFromProductReviewTab
     ? buildReviewWriteHref({
-        reviewContext: reviewEligibility.reviewContext,
-        productId: reviewEligibility.suggestedProductId ?? productId,
-        orderId: reviewEligibility.suggestedOrderId,
-        applicationId: reviewEligibility.suggestedApplicationId,
+        reviewContext: canonicalTarget.reviewContext,
+        orderId: canonicalTarget.orderId,
+        rentalId: canonicalTarget.rentalId,
+        productId: canonicalTarget.primaryProductId,
+        applicationId: canonicalTarget.primaryApplicationId ?? canonicalTarget.applicationIds?.[0],
       })
     : `/reviews/write?productId=${productId}${
         reviewEligibility?.suggestedOrderId ? `&orderId=${reviewEligibility.suggestedOrderId}` : ""
@@ -38,10 +47,6 @@ export function buildProductReviewCta({
     : reviewEligibility?.eligible
       ? "구매확정된 단품 구매 후기를 작성할 수 있습니다."
       : "작성 가능한 이용 내역이 없습니다.";
-
-  const canWriteFromProductReviewTab = Boolean(
-    reviewEligibility?.eligible || reviewEligibility?.suggestedApplicationId,
-  );
 
   return {
     productReviewHref,

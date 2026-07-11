@@ -79,9 +79,11 @@ test("후기 POST 정책 계약: 로컬 우회 조건 제거 및 공용 eligibil
   );
   assert.ok(
     postRoute.includes(
-      'db.collection("reviews").findOne({\n      userId,\n      service: "stringing"',
+      'db.collection("reviews").findOne({\n      userId,\n      isDeleted: { $ne: true }',
     ),
   );
+  assert.ok(postRoute.includes("{ serviceApplicationId: { $in: applicationIdCandidates } }"));
+  assert.ok(postRoute.includes("{ applicationId: { $in: applicationIdCandidates } }"));
   assert.ok(postRoute.includes("REVIEW_REWARD_POINTS"));
   assert.ok(postRoute.includes("grantPoints"));
   assert.ok(postRoute.includes('type: "review_reward_product"'));

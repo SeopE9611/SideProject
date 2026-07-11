@@ -134,6 +134,17 @@ function relatedItem(params: {
     optionLabel: params.optionLabel ?? null,
   };
 }
+function serviceRelatedItem(application: unknown) {
+  const app = application as { _id?: unknown } | null;
+  return {
+    type: "service" as const,
+    id: app?._id ? String(app._id) : null,
+    name: "교체서비스",
+    imageUrl: null,
+    optionLabel: serviceOption(application),
+  };
+}
+
 function dedupeRelatedItems(items: NonNullable<CanonicalReviewTarget["relatedItems"]>) {
   const seen = new Set<string>();
   return items.filter((item) => {
@@ -365,15 +376,7 @@ export function buildOrderReviewTargetBundleFromLoadedData(
       ...dedupeStringIds([...orderStringIds, ...appProductIds]).map((id) =>
         buildProductItem(ctx, id, order, { forceType: "string" }),
       ),
-      ...applications.map((app) =>
-        relatedItem({
-          type: "service",
-          id: String(app._id),
-          doc: app,
-          optionLabel: serviceOption(app),
-          fallbackName: "교체서비스",
-        }),
-      ),
+      ...applications.map((app) => serviceRelatedItem(app)),
     ]);
     targets.push(
       withStatus(
@@ -463,15 +466,7 @@ export function buildRentalReviewTargetBundleFromLoadedData(
     }),
     ...racketIds.map((id) => buildRacketItem(ctx, id, rental?.racket)),
     ...productIds.map((id) => buildProductItem(ctx, id, undefined, { forceType: "string" })),
-    ...applications.map((app) =>
-      relatedItem({
-        type: "service",
-        id: String(app._id),
-        doc: app,
-        optionLabel: serviceOption(app),
-        fallbackName: "교체서비스",
-      }),
-    ),
+    ...applications.map((app) => serviceRelatedItem(app)),
   ]);
   const base = makeTarget({
     subjectType: "rental",
@@ -543,13 +538,7 @@ export function buildApplicationReviewTargetBundleFromLoadedData(
   const relatedItems = dedupeRelatedItems([
     ...racketIds.map((id) => buildRacketItem(ctx, id)),
     ...productIds.map((id) => buildProductItem(ctx, id, undefined, { forceType: "string" })),
-    relatedItem({
-      type: "service",
-      id: subjectId,
-      doc: app,
-      optionLabel: serviceOption(app),
-      fallbackName: "교체서비스",
-    }),
+    serviceRelatedItem(app),
   ]);
   const base = makeTarget({
     subjectType: "application",
