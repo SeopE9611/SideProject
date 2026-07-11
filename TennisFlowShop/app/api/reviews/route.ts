@@ -143,10 +143,11 @@ export async function POST(req: Request) {
     userName = user?.name ?? null;
   } catch {}
 
+  const photosInput = "photos" in body ? body.photos : [];
   const inputValidation = validateReviewInput({
     rating: body.rating,
     content: body.content,
-    photos: Array.isArray(body.photos) ? body.photos : [],
+    photos: photosInput,
   });
   if (!inputValidation.ok) {
     return NextResponse.json(
@@ -618,18 +619,6 @@ export async function GET(req: Request) {
         ? { rating: -1, _id: -1 }
         : { createdAt: -1, _id: -1 };
 
-  let after: any = null;
-  if (cursorB64) {
-    try {
-      after = JSON.parse(Buffer.from(cursorB64, "base64").toString("utf-8"));
-    } catch {
-      return NextResponse.json(
-        { ok: false, reason: "invalidCursor", message: "잘못된 페이지 요청입니다." },
-        { status: 400 },
-      );
-    }
-  }
-
   const invalidCursorResponse = () =>
     NextResponse.json(
       { ok: false, reason: "invalidCursor", message: "잘못된 페이지 요청입니다." },
@@ -638,37 +627,55 @@ export async function GET(req: Request) {
   const isValidCursorNumber = (value: unknown) =>
     typeof value === "number" && Number.isFinite(value);
 
+  let after: Record<string, unknown> | null = null;
+  if (cursorB64) {
+    try {
+      const parsed = JSON.parse(Buffer.from(cursorB64, "base64").toString("utf-8"));
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return invalidCursorResponse();
+      }
+      if (!ObjectId.isValid(String(parsed.id ?? ""))) return invalidCursorResponse();
+      if (sort === "latest") {
+        if (typeof parsed.createdAt !== "string" && !(parsed.createdAt instanceof Date)) {
+          return invalidCursorResponse();
+        }
+        if (Number.isNaN(new Date(parsed.createdAt).getTime())) return invalidCursorResponse();
+      }
+      if (sort === "helpful" && !isValidCursorNumber(parsed.helpfulCount)) {
+        return invalidCursorResponse();
+      }
+      if (sort === "rating" && !isValidCursorNumber(parsed.rating)) {
+        return invalidCursorResponse();
+      }
+      after = parsed as Record<string, unknown>;
+    } catch {
+      return invalidCursorResponse();
+    }
+  }
+
   const cursorCond: any = {};
-  if (after && after.id) {
-    if (!ObjectId.isValid(String(after.id))) return invalidCursorResponse();
-    if (sort === "helpful" && !isValidCursorNumber(after.helpfulCount))
-      return invalidCursorResponse();
-    if (sort === "rating" && !isValidCursorNumber(after.rating)) return invalidCursorResponse();
-    if (sort === "latest" && after.createdAt && Number.isNaN(new Date(after.createdAt).getTime()))
-      return invalidCursorResponse();
+  if (after) {
     if (sort === "helpful") {
       cursorCond.$or = [
-        { helpfulCount: { $lt: after.helpfulCount } },
+        { helpfulCount: { $lt: after.helpfulCount as number } },
         {
-          helpfulCount: after.helpfulCount,
-          _id: { $lt: new ObjectId(after.id) },
+          helpfulCount: after.helpfulCount as number,
+          _id: { $lt: new ObjectId(String(after.id)) },
         },
       ];
     } else if (sort === "rating") {
       cursorCond.$or = [
-        { rating: { $lt: after.rating } },
-        { rating: after.rating, _id: { $lt: new ObjectId(after.id) } },
-      ];
-    } else if (after.createdAt) {
-      cursorCond.$or = [
-        { createdAt: { $lt: new Date(after.createdAt) } },
-        {
-          createdAt: new Date(after.createdAt),
-          _id: { $lt: new ObjectId(after.id) },
-        },
+        { rating: { $lt: after.rating as number } },
+        { rating: after.rating as number, _id: { $lt: new ObjectId(String(after.id)) } },
       ];
     } else {
-      cursorCond._id = { $lt: new ObjectId(after.id) };
+      cursorCond.$or = [
+        { createdAt: { $lt: new Date(after.createdAt as string | Date) } },
+        {
+          createdAt: new Date(after.createdAt as string | Date),
+          _id: { $lt: new ObjectId(String(after.id)) },
+        },
+      ];
     }
   }
 

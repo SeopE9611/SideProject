@@ -26,6 +26,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+import {
+  REVIEW_CONTENT_MAX_LENGTH,
+  REVIEW_MAX_PHOTOS,
+  reviewInputMessage,
+  validateReviewInput,
+} from "@/lib/reviews/review-input-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Package, Star, Trash2 } from "lucide-react";
@@ -201,6 +207,15 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   // 수정 저장
   const submitEdit = useCallback(async () => {
     if (!editing) return;
+    const inputValidation = validateReviewInput({
+      rating: editRating,
+      content: editContent,
+      photos: editPhotos,
+    });
+    if (!inputValidation.ok) {
+      showErrorToast(reviewInputMessage(inputValidation.reason));
+      return;
+    }
     // 스냅샷(롤백용)
     const snapshot = data;
     setSaving(true);
@@ -263,7 +278,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       try {
         resJson = await res.json();
       } catch {}
-      if (!res.ok) throw new Error(resJson?.message || "리뷰 수정 실패");
+      if (!res.ok) {
+        throw new Error(resJson?.reason ? reviewInputMessage(resJson.reason) : resJson?.message || "리뷰 수정 실패");
+      }
 
       showSuccessToast("리뷰가 수정되었습니다.");
       await mutate();
@@ -623,16 +640,20 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 rows={6}
+                maxLength={REVIEW_CONTENT_MAX_LENGTH}
               />
+              <p className="mt-1 text-right text-ui-body-xs text-muted-foreground">
+                {editContent.trim().length} / {REVIEW_CONTENT_MAX_LENGTH}자
+              </p>
             </div>
 
             <div>
-              <div className="text-ui-body-sm mb-2">사진 (선택, 최대 5장)</div>
+              <div className="text-ui-body-sm mb-2">사진 (선택, 최대 {REVIEW_MAX_PHOTOS}장)</div>
               <PhotosUploader
                 key={editing?._id ?? "new"}
                 value={editPhotos}
                 onChange={setEditPhotos}
-                max={5}
+                max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
               />
               <PhotosReorderGrid value={editPhotos} onChange={setEditPhotos} />
@@ -643,7 +664,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             <Button variant="ghost" onClick={closeEdit}>
               취소
             </Button>
-            <Button onClick={submitEdit} disabled={saving}>
+            <Button onClick={submitEdit} disabled={saving || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok} aria-disabled={saving || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok}>
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" /> 저장 중…

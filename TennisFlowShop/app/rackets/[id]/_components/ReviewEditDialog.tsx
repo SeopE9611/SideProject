@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  REVIEW_CONTENT_MAX_LENGTH,
+  REVIEW_MAX_PHOTOS,
+  validateReviewInput,
+} from "@/lib/reviews/review-input-policy";
 import { Loader2, Star } from "lucide-react";
 
 type EditForm = {
@@ -37,6 +42,7 @@ export default function ReviewEditDialog({
   onClose,
   onSubmit,
 }: Props) {
+  const isValid = validateReviewInput(editForm).ok;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -78,7 +84,11 @@ export default function ReviewEditDialog({
               onChange={(e) => setEditForm((p) => ({ ...p, content: e.target.value }))}
               rows={6}
               placeholder="후기 내용을 입력하세요."
+              maxLength={REVIEW_CONTENT_MAX_LENGTH}
             />
+            <p className="text-right text-ui-body-xs text-muted-foreground">
+              {editForm.content.trim().length} / {REVIEW_CONTENT_MAX_LENGTH}자
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -86,6 +96,7 @@ export default function ReviewEditDialog({
             <PhotosUploader
               value={editForm.photos}
               onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
+              max={REVIEW_MAX_PHOTOS}
             />
             <PhotosReorderGrid
               value={editForm.photos}
@@ -97,7 +108,7 @@ export default function ReviewEditDialog({
             <Button variant="outline" onClick={onClose} disabled={busy}>
               취소
             </Button>
-            <Button onClick={onSubmit} disabled={busy}>
+            <Button onClick={onSubmit} disabled={busy || !isValid} aria-disabled={busy || !isValid}>
               {busy ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
