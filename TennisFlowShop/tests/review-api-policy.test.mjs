@@ -90,6 +90,7 @@ test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 �
     "canonicalHrefForTarget",
     "buildReviewSubmissionPayload",
     "getReviewDestination",
+    "getReviewPostFailureState",
     "useUnsavedChangesGuard",
     "useBackNavigationGuard",
     "PhotosUploader",
@@ -98,6 +99,12 @@ test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 �
   ]) {
     assert.ok(reviewWrite.includes(required), `write page에 유지/추가되어야 합니다: ${required}`);
   }
+
+  assert.ok(!reviewWrite.includes("function stateFromPostFailure"));
+  assert.ok(reviewWrite.includes("getReviewPostFailureState"));
+  assert.ok(reviewWritePolicy.includes("export function getReviewPostFailureState"));
+  assert.ok(reviewWritePolicy.includes("function getTargetApplicationId"));
+  assert.ok(reviewWritePolicy.includes("applicationId: getTargetApplicationId(target)"));
 
   assert.ok(reviewWrite.includes("eligibility?.nextTarget ?? eligibility?.target ?? null"));
   assert.ok(reviewWrite.includes("const reviewDestination = canonicalTarget ? getReviewDestination(canonicalTarget) : null"));

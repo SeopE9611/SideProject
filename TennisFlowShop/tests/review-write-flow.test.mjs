@@ -24,6 +24,7 @@ const {
   canonicalHrefForTarget,
   getRequiredTargetError,
   getReviewDestination,
+  getReviewPostFailureState,
 } = await import(path.join(tmp, "review-write.js"));
 
 const id = (n) => String(n).padStart(24, "0");
@@ -53,6 +54,24 @@ function assertNoNullish(payload) {
     assert.notEqual(value, "", `${key} should not be blank`);
   }
 }
+
+test("POST 실패 응답 reason을 후기 작성 상태로 매핑한다", () => {
+  assert.equal(getReviewPostFailureState(401, ""), "unauthorized");
+  assert.equal(getReviewPostFailureState(409, "already"), "already");
+  assert.equal(getReviewPostFailureState(403, "notPurchased"), "notPurchased");
+  assert.equal(getReviewPostFailureState(403, "noPurchase"), "notPurchased");
+  assert.equal(getReviewPostFailureState(403, "notConfirmed"), "notConfirmed");
+  assert.equal(getReviewPostFailureState(403, "notCompleted"), "notCompleted");
+  assert.equal(getReviewPostFailureState(403, "invalidStatus"), "invalidStatus");
+  assert.equal(getReviewPostFailureState(409, "coveredByIntegratedReview"), "coveredByIntegratedReview");
+
+  for (const reason of ["notFound", "invalid", "orderNotFound", "rentalNotFound"]) {
+    assert.equal(getReviewPostFailureState(404, reason), "invalid");
+  }
+
+  assert.equal(getReviewPostFailureState(500, "unknown"), null);
+  assert.equal(getReviewPostFailureState(500, null), null);
+});
 
 test("일반 상품 후기는 상품 payload와 상품 후기 탭 CTA를 만든다", () => {
   const target = base("product", { orderId: id(1), primaryProductId: id(2) });
@@ -169,4 +188,71 @@ test("canonicalHrefForTarget은 buildReviewWriteHref 규격을 유지한다", ()
     canonicalHrefForTarget(target),
     `/reviews/write?reviewContext=standalone_stringing&applicationId=${id(11)}&service=stringing`,
   );
+});
+
+test("단독 교체서비스 후기는 applicationIds[0]을 application fallback으로 사용한다", () => {
+  const target = base("standalone_stringing", {
+    primaryApplicationId: null,
+    applicationIds: [id(12)],
+  });
+  assert.equal(getRequiredTargetError(target), null);
+  const payload = buildReviewSubmissionPayload(target, form);
+  assert.equal(payload.serviceApplicationId, id(12));
+  assert.equal(
+    canonicalHrefForTarget(target),
+    `/reviews/write?reviewContext=standalone_stringing&applicationId=${id(12)}&service=stringing`,
+  );
+});
+
+test("상품+교체서비스 후기는 applicationIds[0] fallback을 payload와 canonical URL에 포함한다", () => {
+  const target = base("product_stringing", {
+    orderId: id(13),
+    primaryProductId: id(14),
+    primaryApplicationId: null,
+    applicationIds: [id(15)],
+  });
+  assert.equal(getRequiredTargetError(target), null);
+  const payload = buildReviewSubmissionPayload(target, form);
+  assert.equal(payload.productId, id(14));
+  assert.equal(payload.orderId, id(13));
+  assert.equal(payload.serviceApplicationId, id(15));
+  assert.equal(
+    canonicalHrefForTarget(target),
+    `/reviews/write?reviewContext=product_stringing&orderId=${id(13)}&productId=${id(14)}&applicationId=${id(15)}`,
+  );
+  assert.deepEqual(getReviewDestination(target), {
+    href: `/products/${id(14)}?tab=reviews`,
+    label: "상품 후기 보기",
+  });
+});
+
+test("대여+교체서비스 후기는 applicationIds[0] fallback을 payload와 canonical URL에 포함한다", () => {
+  const target = base("rental_stringing", {
+    rentalId: id(16),
+    primaryApplicationId: null,
+    applicationIds: [id(17)],
+  });
+  assert.equal(getRequiredTargetError(target), null);
+  const payload = buildReviewSubmissionPayload(target, form);
+  assert.equal(payload.rentalId, id(16));
+  assert.equal(payload.serviceApplicationId, id(17));
+  assert.equal(
+    canonicalHrefForTarget(target),
+    `/reviews/write?reviewContext=rental_stringing&applicationId=${id(17)}&rentalId=${id(16)}`,
+  );
+  assert.deepEqual(getReviewDestination(target), {
+    href: "/mypage?tab=reviews",
+    label: "후기 관리로 이동",
+  });
+});
+
+test("단독 교체서비스 application ID가 완전히 없으면 필수값 오류와 application 없는 payload를 만든다", () => {
+  const target = base("standalone_stringing", {
+    primaryApplicationId: null,
+    applicationIds: [],
+  });
+  assert.equal(typeof getRequiredTargetError(target), "string");
+  const payload = buildReviewSubmissionPayload(target, form);
+  assert.equal(payload.service, "stringing");
+  assert.equal("serviceApplicationId" in payload, false);
 });
