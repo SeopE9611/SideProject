@@ -277,8 +277,7 @@ test("표시 계약: 후기/교체서비스/관리자 대여 화면은 raw 상�
 
   assert.ok(applicationBadge.includes("getCommonApplicationStatusLabel(status)"));
   assert.ok(!applicationBadge.includes("{status}\n"));
-  assert.ok(reviewWrite.includes("getCustomerApplicationStatusLabel(a.status)"));
-  assert.ok(reviewWrite.includes("getCustomerRentalStatusLabel(rentalMeta.status)"));
+  assert.ok(reviewWrite.includes("ReviewTargetSummary"));
   assert.ok(!reviewWrite.includes('`상태: ${a.status ?? "미정"}`'));
   assert.ok(!reviewWrite.includes('`상태 ${rentalMeta.status}`'));
   assert.ok(reviewCard.includes("getCustomerRentalStatusLabel(item.rentalStatus)"));
@@ -483,7 +482,7 @@ test("후기 canonical resolver 계약: 실제 batch, 공통 정책, 호환 필�
   assert.ok(server.includes("export async function resolveStringingApplicationReviewTarget"));
 
   assert.ok(eligibility.includes("resolveApplicationReviewTargetBundlesBatch"));
-  assert.ok(eligibility.includes('reviewContext: nextTarget?.reviewContext ?? "standalone_stringing"'));
+  assert.ok(eligibility.includes("target: nextTarget"));
   assert.ok(eligibility.includes("reverseLinkedIds"));
   assert.ok(eligibility.includes("coveredByIntegratedReview"));
 
@@ -515,7 +514,7 @@ test("canonical 후기 target resolver 계약: eligibility/count/rental_stringin
   assert.ok(server.includes('forceType?: "product" | "string"'));
   assert.ok(server.includes('forceType: "string"'));
   assert.ok(server.includes("resolveOrderReviewTarget") && server.includes("resolveRentalReviewTarget") && server.includes("resolveStringingApplicationReviewTarget"));
-  for (const field of ["eligible", "reason", "reviewContext", "targetLabel", "suggestedApplicationId", "redirectHref", "subjectType", "subjectId", "nextTarget", "coveredBySubjectType", "coveredBySubjectId"]) {
+  for (const field of ["eligible", "reason", "reviewContext", "targetType", "targetLabel", "suggestedOrderId", "suggestedProductId", "suggestedApplicationId", "suggestedRentalId", "redirectHref", "subjectType", "subjectId", "target:", "nextTarget", "coveredBySubjectType", "coveredBySubjectId"]) {
     assert.ok(eligibility.includes(field), `eligibility 응답 필드 유지: ${field}`);
   }
 });
@@ -530,7 +529,7 @@ test("후기 GET/POST canonical 정책 통일 계약: reviewed 우선, 공용 he
   assert.ok(policy.indexOf('if (target.reviewed) return "already"') < policy.indexOf("if (!target.eligible)"));
   assert.ok(eligibility.includes("const blockReason = getReviewSubmissionBlockReason(target)"));
   assert.ok(eligibility.includes('blockReason === "coveredByIntegratedReview"'));
-  assert.ok(eligibility.includes("nextTarget: null"));
+  assert.ok(eligibility.includes("const nextTarget = params.eligible ? target : null"));
 
   assert.ok(reviewsRoute.includes("isOrderReviewEligible(bought)"));
   assert.ok(reviewsRoute.includes("isRentalReviewEligible(rental)"));
