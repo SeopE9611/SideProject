@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { Switch } from "@/components/ui/switch";
@@ -33,6 +34,8 @@ import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from "@/types/admin/reviews";
+import { ReviewContextBadge } from "@/components/reviews/ReviewContextBadge";
+import type { ReviewContext } from "@/lib/reviews/review-target";
 import {
   Award,
   Calendar,
@@ -89,19 +92,20 @@ export default function AdminReviewListClient() {
   const [qRaw, setQRaw] = useState("");
   const qDebounced = useDebounced(qRaw, 350);
   const [status, setStatus] = useState<"all" | "visible" | "hidden">("all");
-  const [type, setType] = useState<"all" | "product" | "service">("all");
+  const [context, setContext] = useState<"all" | ReviewContext>("all");
   const [showDeleted, setShowDeleted] = useState(false);
 
   useEffect(() => {
     setSize(1);
-  }, [qDebounced, status, type]);
+  }, [qDebounced, status, context, showDeleted]);
 
   // ---- KPI ----
   const { data: metrics } = useSWR<{
     total: number;
     avg: number;
     five: number;
-    byType: { product: number; service: number };
+    byContext: Record<ReviewContext, number>;
+    byCategory: { product: number; stringing: number; rental: number };
   }>("/api/admin/reviews/metrics", authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -118,11 +122,11 @@ export default function AdminReviewListClient() {
       });
       if (qDebounced.trim()) p.set("q", qDebounced.trim());
       if (status !== "all") p.set("status", status);
-      if (type !== "all") p.set("type", type);
+      if (context !== "all") p.set("context", context);
       if (showDeleted) p.set("withDeleted", "1");
       return `/api/admin/reviews?${p.toString()}`;
     },
-    [qDebounced, status, type, showDeleted],
+    [qDebounced, status, context, showDeleted],
   );
 
   const {
@@ -281,11 +285,11 @@ export default function AdminReviewListClient() {
       setSelected(failedIds);
 
       if (failedCount === targetIds.length) {
-        showErrorToast("선택한 리뷰 삭제에 실패했습니다.");
+        showErrorToast("선택한 후기 삭제에 실패했습니다.");
         return;
       }
 
-      showErrorToast("일부 리뷰 삭제에 실패했습니다. 목록을 다시 불러왔습니다.");
+      showErrorToast("일부 후기 삭제에 실패했습니다. 목록을 다시 불러왔습니다.");
     } catch {
       await mutate(() => snapshot, false);
       showErrorToast("일부 항목 삭제에 실패했습니다.");
@@ -358,7 +362,7 @@ export default function AdminReviewListClient() {
         body: JSON.stringify({ status: next }),
       });
       showSuccessToast(
-        next === "hidden" ? "리뷰를 비공개로 변경했습니다." : "리뷰를 공개로 변경했습니다.",
+        next === "hidden" ? "후기를 비공개로 변경했습니다." : "후기를 공개로 변경했습니다.",
       );
     } catch {
       await mutate(() => snapshot, false);
@@ -398,24 +402,18 @@ export default function AdminReviewListClient() {
       return { date: "-", time: "-" };
     }
   }
-  const typeBadgeClass = (t: Row["type"]) =>
-    t === "product"
-      ? "bg-muted text-foreground hover:bg-muted"
-      : "bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20";
-  const typeLabel = (t: Row["type"]) => (t === "product" ? "상품 리뷰" : "서비스 리뷰");
-
   const GRID =
     "lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
 
   return (
     <div className="space-y-5">
       {/* KPI */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className={adminTypography.caption}>전체 리뷰</p>
+                <p className={adminTypography.caption}>전체 후기</p>
                 <p className={adminTypography.kpiValueCompact}>{metrics?.total ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-primary/10 border border-primary/20 dark:bg-primary/20">
@@ -441,7 +439,7 @@ export default function AdminReviewListClient() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className={adminTypography.caption}>5점 리뷰</p>
+                <p className={adminTypography.caption}>5점 후기</p>
                 <p className={adminTypography.kpiValueCompact}>{metrics?.five ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-primary/10 border border-primary/20 dark:bg-primary/20">
@@ -451,28 +449,17 @@ export default function AdminReviewListClient() {
           </CardContent>
         </Card>
         <Card className={adminSurface.kpiCard}>
-          <CardContent className="p-4">
+          <CardContent className="space-y-2 p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className={adminTypography.caption}>서비스 리뷰</p>
-                <p className={adminTypography.kpiValueCompact}>{metrics?.byType?.service ?? 0}</p>
-              </div>
-              <div className="rounded-md p-2 bg-muted">
-                <TrendingUp className="h-5 w-5 text-foreground" />
-              </div>
+              <p className={adminTypography.caption}>유형별 후기</p>
+              <TrendingUp className="h-5 w-5 text-foreground" />
             </div>
-          </CardContent>
-        </Card>
-        <Card className={adminSurface.kpiCard}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={adminTypography.caption}>상품 리뷰</p>
-                <p className={adminTypography.kpiValueCompact}>{metrics?.byType?.product ?? 0}</p>
-              </div>
-              <div className="rounded-md p-2 bg-muted">
-                <TrendingUp className="h-5 w-5 text-foreground" />
-              </div>
+            <div className="grid grid-cols-1 gap-1 text-[12px] text-muted-foreground sm:grid-cols-2">
+              <span>상품 후기 {metrics?.byContext?.product ?? 0}</span>
+              <span>상품·교체서비스 후기 {metrics?.byContext?.product_stringing ?? 0}</span>
+              <span>교체서비스 후기 {metrics?.byContext?.standalone_stringing ?? 0}</span>
+              <span>대여 후기 {metrics?.byContext?.rental ?? 0}</span>
+              <span>대여·교체서비스 후기 {metrics?.byContext?.rental_stringing ?? 0}</span>
             </div>
           </CardContent>
         </Card>
@@ -489,7 +476,7 @@ export default function AdminReviewListClient() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="리뷰 검색…"
+            placeholder="후기 검색…"
             className="h-9 border-border pl-10 focus:border-border focus:ring-ring"
             value={qRaw}
             onChange={(e) => setQRaw(e.target.value)}
@@ -497,7 +484,26 @@ export default function AdminReviewListClient() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={status} onValueChange={(v) => { setStatus(v as "all" | "visible" | "hidden"); setSize(1); }}>
+            <SelectTrigger className="h-9 w-32"><SelectValue placeholder="상태" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 상태</SelectItem>
+              <SelectItem value="visible">공개</SelectItem>
+              <SelectItem value="hidden">비공개</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={context} onValueChange={(v) => { setContext(v as "all" | ReviewContext); setSize(1); }}>
+            <SelectTrigger className="h-9 w-52"><SelectValue placeholder="후기 유형" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 유형</SelectItem>
+              <SelectItem value="product">상품 후기</SelectItem>
+              <SelectItem value="product_stringing">상품·교체서비스 후기</SelectItem>
+              <SelectItem value="standalone_stringing">교체서비스 후기</SelectItem>
+              <SelectItem value="rental">대여 후기</SelectItem>
+              <SelectItem value="rental_stringing">대여·교체서비스 후기</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5">
             <Checkbox
               checked={rows.length > 0 && selected.length === rows.length}
@@ -511,7 +517,7 @@ export default function AdminReviewListClient() {
             <Checkbox
               id="show-deleted"
               checked={showDeleted}
-              onCheckedChange={(v) => setShowDeleted(!!v)}
+              onCheckedChange={(v) => { setShowDeleted(!!v); setSize(1); }}
               className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             <label htmlFor="show-deleted" className={adminTypography.caption}>
@@ -556,10 +562,10 @@ export default function AdminReviewListClient() {
           >
             <div className={cn(adminDataTable.headCenter, "px-0 opacity-70")}>선택</div>
             <div className={adminDataTable.head}>작성자</div>
-            <div className={adminDataTable.head}>리뷰 내용</div>
+            <div className={adminDataTable.head}>후기 내용</div>
             <div className={adminDataTable.headCenter}>평점 / 도움돼요</div>
             <div className={adminDataTable.headRight}>작성일</div>
-            <div className={adminDataTable.headCenter}>타입</div>
+            <div className={adminDataTable.headCenter}>후기 유형</div>
             <div className={adminDataTable.headCenter}>공개 / 비공개</div>
             <div className={adminDataTable.actionHead}>관리</div>
           </div>
@@ -603,7 +609,7 @@ export default function AdminReviewListClient() {
                 adminTypography.metaMuted,
               )}
             >
-              불러올 리뷰가 없습니다.
+              불러올 후기가 없습니다.
             </div>
           ) : (
             sortedRows.map((r) => {
@@ -633,7 +639,7 @@ export default function AdminReviewListClient() {
                       checked={isSel}
                       onClick={(e) => e.stopPropagation()}
                       onCheckedChange={(v) => toggleSelectOne(r._id, !!v)}
-                      aria-label={`${r.userEmail || "-"} 리뷰 선택`}
+                      aria-label={`${r.userEmail || "-"} 후기 선택`}
                       className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
@@ -663,7 +669,7 @@ export default function AdminReviewListClient() {
                     )}
                   </div>
 
-                  {/* 리뷰 내용 */}
+                  {/* 후기 내용 */}
                   <div className={`min-w-0 ${dim}`}>
                     <TooltipProvider>
                       <Tooltip>
@@ -719,16 +725,11 @@ export default function AdminReviewListClient() {
                     <div className="text-[12px] text-muted-foreground">{time}</div>
                   </div>
 
-                  {/* 타입 */}
+                  {/* 후기 유형 */}
                   <div
                     className={`min-w-0 ${dim} flex items-center justify-center gap-3 whitespace-nowrap`}
                   >
-                    <Badge
-                      variant="outline"
-                      className={typeBadgeClass(r.type) + " ring-1 ring-inset ring-ring shrink-0"}
-                    >
-                      {typeLabel(r.type)}
-                    </Badge>
+                    <ReviewContextBadge reviewContext={r.reviewContext} contextLabel={r.contextLabel} />
                   </div>
 
                   {/* 공개 / 비공개*/}
@@ -838,7 +839,7 @@ export default function AdminReviewListClient() {
                 onClick={() => doBulkUpdateStatus("visible")}
                 className="h-8 px-3"
                 aria-label="선택 공개로 변경"
-                title="선택한 리뷰를 공개로 변경"
+                title="선택한 후기를 공개로 변경"
               >
                 <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 110-8 4 4 0 010 8z" />
@@ -852,7 +853,7 @@ export default function AdminReviewListClient() {
                 onClick={() => doBulkUpdateStatus("hidden")}
                 className="h-8 px-3"
                 aria-label="선택 비공개로 변경"
-                title="선택한 리뷰를 비공개로 변경"
+                title="선택한 후기를 비공개로 변경"
               >
                 <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M2 12s3-7 10-7a9.9 9.9 0 018.06 4.09l1.41-1.41 1.41 1.41-19 19-1.41-1.41L4.1 19.94A12.14 12.14 0 012 12zm10 5a5 5 0 005-5 4.93 4.93 0 00-.79-2.69l-6.9 6.9A4.93 4.93 0 0012 17z" />
@@ -876,15 +877,10 @@ export default function AdminReviewListClient() {
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
         <DialogContent className="border border-border/70 bg-card shadow-2xl sm:max-w-2xl">
           <DialogHeader className="space-y-2 border-b border-border/60 pb-4">
-            <DialogTitle className={adminTypography.sectionTitle}>리뷰 상세</DialogTitle>
+            <DialogTitle className={adminTypography.sectionTitle}>후기 상세</DialogTitle>
             {detail && (
               <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={typeBadgeClass(detail.type) + " ring-1 ring-inset ring-ring"}
-                >
-                  {typeLabel(detail.type)}
-                </Badge>
+                <ReviewContextBadge reviewContext={detail.reviewContext} contextLabel={detail.contextLabel} />
                 <Badge variant={detail.status === "visible" ? "default" : "secondary"}>
                   {detail.status === "visible" ? "공개" : "비공개"}
                 </Badge>
@@ -909,7 +905,7 @@ export default function AdminReviewListClient() {
               {/* 사진 섹션: 헤더와 분리해 항상 같은 위치/폭을 확보 */}
               <section className={adminSurface.cardMuted + " space-y-3 p-4"}>
                 <div className="flex items-center justify-between gap-3">
-                  <h4 className={adminTypography.panelTitle}>리뷰 사진</h4>
+                  <h4 className={adminTypography.panelTitle}>후기 사진</h4>
                   <span className={adminTypography.caption}>{photos.length}장</span>
                 </div>
                 {/* 로딩 스켈레톤: 상세를 불러오는 동안 자리 고정 */}
@@ -932,7 +928,7 @@ export default function AdminReviewListClient() {
                           setViewerOpen(true);
                         }}
                         className="relative h-16 w-16 overflow-hidden rounded-lg border border-border/70 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                        aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                        aria-label={`후기 사진 ${i + 1} 크게 보기`}
                       >
                         <Image
                           src={src}
@@ -964,8 +960,17 @@ export default function AdminReviewListClient() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <div className={adminTypography.caption}>리뷰 대상</div>
+                  <div className={adminTypography.caption}>후기 대상</div>
                   <div className={adminTypography.bodyStrong}>{detail.subject || "-"}</div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {detail.orderId && <a className="text-xs text-primary underline" href={`/admin/orders/${detail.orderId}`}>주문</a>}
+                    {detail.rentalId && <a className="text-xs text-primary underline" href={`/admin/rentals/${detail.rentalId}`}>대여</a>}
+                    {detail.serviceApplicationId && <a className="text-xs text-primary underline" href={`/admin/applications/stringing/${detail.serviceApplicationId}`}>신청서</a>}
+                    {detail.productId && <a className="text-xs text-primary underline" href={`/admin/products/${detail.productId}/edit`}>상품</a>}
+                    {detail.racketId && <a className="text-xs text-primary underline" href={`/admin/rackets/${detail.racketId}/edit`}>라켓</a>}
+                    {detail.relatedProductIds?.map((id) => <a key={`p-${id}`} className="text-xs text-primary underline" href={`/admin/products/${id}/edit`}>관련 상품</a>)}
+                    {detail.relatedRacketIds?.map((id) => <a key={`r-${id}`} className="text-xs text-primary underline" href={`/admin/rackets/${id}/edit`}>관련 라켓</a>)}
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className={adminTypography.caption}>평점</div>
@@ -977,7 +982,7 @@ export default function AdminReviewListClient() {
               </section>
 
               <section className="space-y-2">
-                <h4 className={adminTypography.panelTitle}>리뷰 본문</h4>
+                <h4 className={adminTypography.panelTitle}>후기 본문</h4>
                 <div
                   className={
                     adminSurface.cardMuted +
@@ -1089,8 +1094,8 @@ export default function AdminReviewListClient() {
           setPendingDeleteReviewId(null);
           void doDelete(reviewId);
         }}
-        title="리뷰를 삭제할까요?"
-        description="삭제된 리뷰는 고객 화면과 관리자 목록에서 사라질 수 있습니다."
+        title="후기를 삭제할까요?"
+        description="삭제된 후기는 고객 화면과 관리자 목록에서 사라질 수 있습니다."
         confirmText="삭제"
         severity="danger"
         eventKey="admin-review-list-delete-confirm"
@@ -1103,8 +1108,8 @@ export default function AdminReviewListClient() {
           setConfirmBulkDeleteOpen(false);
           void doBulkDelete();
         }}
-        title="선택한 리뷰를 삭제할까요?"
-        description={`선택한 ${selected.length}개 리뷰는 고객 화면과 관리자 목록에서 사라질 수 있습니다.`}
+        title="선택한 후기를 삭제할까요?"
+        description={`선택한 ${selected.length}개 후기는 고객 화면과 관리자 목록에서 사라질 수 있습니다.`}
         confirmText="선택 삭제"
         severity="danger"
         eventKey="admin-review-list-bulk-delete-confirm"

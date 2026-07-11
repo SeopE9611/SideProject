@@ -1,18 +1,22 @@
+import type { ReviewContext, ReviewManagementCategory } from "@/lib/reviews/review-target";
+
 export type AdminReviewStatus = "visible" | "hidden";
-export type AdminReviewType = "product" | "service";
+export type AdminReviewContextFilter = "all" | ReviewContext;
 
 export interface AdminReviewsListRequestDto {
   page: number;
   limit: number;
   status: "all" | AdminReviewStatus;
-  type: "all" | AdminReviewType;
+  context: AdminReviewContextFilter;
   q: string;
   withDeleted: boolean;
 }
 
 export interface AdminReviewListItemDto {
   _id: string;
-  type: AdminReviewType;
+  reviewContext: ReviewContext;
+  contextLabel: string;
+  category: ReviewManagementCategory;
   subject: string;
   rating: number;
   status: AdminReviewStatus;
@@ -23,6 +27,15 @@ export interface AdminReviewListItemDto {
   helpfulCount: number;
   photos: string[];
   isDeleted: boolean;
+  productId?: string | null;
+  racketId?: string | null;
+  orderId?: string | null;
+  rentalId?: string | null;
+  serviceApplicationId?: string | null;
+  relatedProductIds: string[];
+  relatedRacketIds: string[];
+  reviewType?: string | null;
+  service?: string | null;
 }
 
 export interface AdminReviewsListResponseDto {

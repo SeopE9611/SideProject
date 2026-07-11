@@ -42,7 +42,8 @@
     "test:review-write": "node --test tests/review-write-flow.test.mjs",
     "test:review-surface": "node --test tests/public-review-surface.test.mjs",
     "test:review-security": "node --test tests/review-security-integrity.test.mjs",
-    "db:check-review-duplicates": "node scripts/db/check-review-duplicates.mjs"
+    "db:check-review-duplicates": "node scripts/db/check-review-duplicates.mjs",
+    "test:review-management": "node --test tests/review-management-context.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

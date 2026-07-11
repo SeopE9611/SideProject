@@ -6,6 +6,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { shapeAdminReview } from "@/lib/reviews/admin-review-shape";
+import { buildResolvedReviewContextExpression } from "@/lib/reviews/review-context.server";
 
 type DbAny = any;
 const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
@@ -57,38 +59,34 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const db = await getDb();
   const _id = new ObjectId(id);
-  const review = await db.collection("reviews").findOne(
-    { _id, isDeleted: { $ne: true } },
-    {
-      projection: {
-        userId: 1,
-        productId: 1,
-        rating: 1,
-        status: 1,
-        content: 1,
-        createdAt: 1,
-        helpfulCount: 1,
-        photos: 1,
+  const rows = await db
+    .collection("reviews")
+    .aggregate([
+      { $match: { _id } },
+      { $addFields: { resolvedReviewContext: buildResolvedReviewContextExpression() } },
+      { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "_user" } },
+      { $lookup: { from: "products", localField: "productId", foreignField: "_id", as: "_product" } },
+      { $lookup: { from: "used_rackets", localField: "productId", foreignField: "_id", as: "_racket" } },
+      { $lookup: { from: "rental_orders", localField: "rentalId", foreignField: "_id", as: "_rental" } },
+      { $lookup: { from: "stringing_applications", localField: "serviceApplicationId", foreignField: "_id", as: "_application" } },
+      {
+        $addFields: {
+          resolvedUserEmail: { $ifNull: ["$userEmail", { $arrayElemAt: ["$_user.email", 0] }] },
+          resolvedUserName: { $ifNull: [{ $arrayElemAt: ["$_user.name", 0] }, ""] },
+          productName: { $ifNull: [{ $arrayElemAt: ["$_product.name", 0] }, { $arrayElemAt: ["$_product.title", 0] }] },
+          racketBrand: { $arrayElemAt: ["$_racket.brand", 0] },
+          racketModel: { $arrayElemAt: ["$_racket.model", 0] },
+          rentalBrand: { $arrayElemAt: ["$_rental.brand", 0] },
+          rentalModel: { $arrayElemAt: ["$_rental.model", 0] },
+          stringName: { $arrayElemAt: ["$_application.stringDetails.stringItems.name", 0] },
+          isDeleted: { $toBool: { $ifNull: ["$isDeleted", false] } },
+        },
       },
-    },
-  );
-  if (!review) return NextResponse.json({ message: "not found" }, { status: 404 });
+    ])
+    .toArray();
+  if (!rows[0]) return NextResponse.json({ message: "not found" }, { status: 404 });
 
-  const user = await db
-    .collection("users")
-    .findOne({ _id: review.userId }, { projection: { name: 1, email: 1 } });
-
-  return NextResponse.json({
-    _id: String(review._id),
-    rating: review.rating ?? 0,
-    status: review.status === "hidden" ? "hidden" : "visible",
-    content: review.content ?? "",
-    createdAt: review.createdAt ?? new Date(),
-    helpfulCount: review.helpfulCount ?? 0,
-    photos: Array.isArray(review.photos) ? review.photos : [],
-    userName: user?.name ?? "",
-    userEmail: user?.email ?? "",
-  });
+  return NextResponse.json(shapeAdminReview(rows[0]));
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
