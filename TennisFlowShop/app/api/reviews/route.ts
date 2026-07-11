@@ -38,6 +38,12 @@ function isDuplicateKeyError(error: unknown): boolean {
   );
 }
 
+function isPlainRequestBody(
+  value: unknown,
+): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
 function duplicateReviewResponse() {
   return NextResponse.json(
     { ok: false, reason: "already", message: "이미 이 대상의 후기를 작성했습니다." },
@@ -122,11 +128,17 @@ export async function POST(req: Request) {
   const db = await getDb();
 
   // 깨진 JSON이면 throw → 500 방지
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ message: "invalid_json" }, { status: 400 });
+  }
+  if (!isPlainRequestBody(body)) {
+    return NextResponse.json(
+      { ok: false, reason: "invalidBody", message: "잘못된 후기 요청입니다." },
+      { status: 400 },
+    );
   }
   // orderId는 쿼리나 바디 어느 쪽으로 와도 받게 처리
   const url = new URL(req.url);

@@ -144,3 +144,23 @@ test("cursor와 후기 작성 로그인 정책을 방어한다", () => {
   assert.doesNotMatch(writeSource, /NEXT_PUBLIC_GUEST_ORDER_MODE/);
   assert.match(writeSource, /const blockedByLoginGate = authChecked && !isAuthenticated/);
 });
+
+
+test("후기 중복 진단은 active 조건과 문자열 정규화 group key를 사용한다", () => {
+  const helper = read("scripts/db/review-duplicate-diagnostics.mjs");
+  const runner = read("scripts/db/check-review-duplicates.mjs");
+
+  assert.match(helper, /isDeleted: \{ \$ne: true \}/);
+  assert.match(helper, /export function normalizedField/);
+  assert.match(helper, /to: "string"/);
+  assert.match(helper, /onError: null/);
+  assert.match(helper, /onNull: null/);
+  assert.match(helper, /\{ \$set: Object\.fromEntries\(normalizedEntries\) \}/);
+  assert.match(helper, /\{ \$match: normalizedMatch \}/);
+  assert.match(helper, /keyFields: \["userId", "rentalId"\]/);
+  assert.match(helper, /keyFields: \["userId", "productId", "orderId"\]/);
+  assert.match(helper, /keyFields: \["userId", "serviceApplicationId"\]/);
+  assert.match(runner, /buildDuplicateReviewPipeline\(spec\)/);
+  assert.doesNotMatch(helper, /\$out|\$merge|updateOne|deleteOne|deleteMany/);
+  assert.doesNotMatch(runner, /\$out|\$merge|updateOne|deleteOne|deleteMany/);
+});

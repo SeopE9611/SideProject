@@ -177,6 +177,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   const [editContent, setEditContent] = useState("");
   const [editRating, setEditRating] = useState<number>(5);
   const [saving, setSaving] = useState(false);
+  const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
   const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const [originalEdit, setOriginalEdit] = useState<{
     content: string;
@@ -185,6 +186,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   } | null>(null);
 
   const openEdit = useCallback((it: UiItem) => {
+    setUploadingEditPhotos(false);
     setEditing(it);
     setEditContent(it.content);
     setEditRating(it.rating);
@@ -201,12 +203,17 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     setEditContent("");
     setEditRating(5);
     setEditPhotos([]);
+    setUploadingEditPhotos(false);
     setOriginalEdit(null);
   }, []);
 
   // 수정 저장
   const submitEdit = useCallback(async () => {
     if (!editing) return;
+    if (uploadingEditPhotos) {
+      showErrorToast("사진 업로드가 끝난 후 저장해 주세요.");
+      return;
+    }
     const inputValidation = validateReviewInput({
       rating: editRating,
       content: editContent,
@@ -291,7 +298,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     } finally {
       setSaving(false);
     }
-  }, [data, editing, editContent, editRating, editPhotos, originalEdit, mutate, closeEdit]);
+  }, [data, editing, editContent, editRating, editPhotos, uploadingEditPhotos, originalEdit, mutate, closeEdit]);
 
   // 공개/비공개 토글
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -622,7 +629,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       ) : null}
 
       {/* 수정 다이얼로그 */}
-      <Dialog open={!!editing} onOpenChange={(open) => !open && closeEdit()}>
+      <Dialog open={!!editing} onOpenChange={(open) => !open && !uploadingEditPhotos && closeEdit()}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>리뷰 수정</DialogTitle>
@@ -655,20 +662,23 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 onChange={setEditPhotos}
                 max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
+                onUploadingChange={setUploadingEditPhotos}
               />
               <PhotosReorderGrid value={editPhotos} onChange={setEditPhotos} />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={closeEdit}>
+            <Button variant="ghost" onClick={closeEdit} disabled={saving || uploadingEditPhotos}>
               취소
             </Button>
-            <Button onClick={submitEdit} disabled={saving || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok} aria-disabled={saving || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok}>
+            <Button onClick={submitEdit} disabled={saving || uploadingEditPhotos || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok} aria-disabled={saving || uploadingEditPhotos || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok}>
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" /> 저장 중…
                 </>
+              ) : uploadingEditPhotos ? (
+                "사진 업로드 중…"
               ) : (
                 "저장"
               )}

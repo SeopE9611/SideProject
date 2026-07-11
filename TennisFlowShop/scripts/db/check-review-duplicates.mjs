@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { MongoClient } from "mongodb";
+import { buildDuplicateReviewPipeline, duplicateDiagnostics, stringifyId } from "./review-duplicate-diagnostics.mjs";
 
 const HELP = new Set(["--help", "-h"]);
 if (process.argv.some((arg) => HELP.has(arg))) {
@@ -30,55 +31,11 @@ if (!uri) {
   process.exit(1);
 }
 
-const diagnostics = [
-  {
-    name: "rental",
-    match: { rentalId: { $exists: true, $ne: null }, isDeleted: false },
-    groupId: { userId: "$userId", rentalId: "$rentalId" },
-  },
-  {
-    name: "product",
-    match: {
-      productId: { $exists: true, $ne: null },
-      orderId: { $exists: true, $ne: null },
-      isDeleted: false,
-    },
-    groupId: { userId: "$userId", productId: "$productId", orderId: "$orderId" },
-  },
-  {
-    name: "standalone_service",
-    match: { serviceApplicationId: { $exists: true, $ne: null }, isDeleted: false },
-    groupId: { userId: "$userId", serviceApplicationId: "$serviceApplicationId" },
-  },
-];
-
-function stringifyId(value) {
-  if (value == null) return null;
-  if (typeof value === "object" && typeof value.toString === "function") return value.toString();
-  return String(value);
-}
-
 async function findDuplicates(db, spec) {
   return db
     .collection("reviews")
     .aggregate([
-      { $match: spec.match },
-      {
-        $group: {
-          _id: spec.groupId,
-          count: { $sum: 1 },
-          reviews: {
-            $push: {
-              _id: "$_id",
-              createdAt: "$createdAt",
-              status: "$status",
-              reviewContext: "$reviewContext",
-            },
-          },
-        },
-      },
-      { $match: { count: { $gt: 1 } } },
-      { $sort: { count: -1 } },
+      ...buildDuplicateReviewPipeline(spec),
     ])
     .toArray();
 }
@@ -90,7 +47,7 @@ try {
   const db = client.db(dbName);
   let totalGroups = 0;
 
-  for (const spec of diagnostics) {
+  for (const spec of duplicateDiagnostics) {
     const groups = await findDuplicates(db, spec);
     totalGroups += groups.length;
     console.log(`\n[${spec.name}] duplicate groups: ${groups.length}`);

@@ -27,6 +27,8 @@ type Props = {
   hoverRating: number | null;
   setHoverRating: React.Dispatch<React.SetStateAction<number | null>>;
   busy: boolean;
+  uploadingPhotos?: boolean;
+  onUploadingPhotosChange?: (uploading: boolean) => void;
   onClose: () => void;
   onSubmit: () => void;
 };
@@ -39,12 +41,17 @@ export default function ReviewEditDialog({
   hoverRating,
   setHoverRating,
   busy,
+  uploadingPhotos = false,
+  onUploadingPhotosChange,
   onClose,
   onSubmit,
 }: Props) {
   const isValid = validateReviewInput(editForm).ok;
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => {
+      if (!nextOpen && uploadingPhotos) return;
+      onOpenChange(nextOpen);
+    }}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>후기 수정</DialogTitle>
@@ -97,6 +104,7 @@ export default function ReviewEditDialog({
               value={editForm.photos}
               onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
               max={REVIEW_MAX_PHOTOS}
+              onUploadingChange={onUploadingPhotosChange}
             />
             <PhotosReorderGrid
               value={editForm.photos}
@@ -105,15 +113,17 @@ export default function ReviewEditDialog({
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose} disabled={busy}>
+            <Button variant="outline" onClick={onClose} disabled={busy || uploadingPhotos}>
               취소
             </Button>
-            <Button onClick={onSubmit} disabled={busy || !isValid} aria-disabled={busy || !isValid}>
+            <Button onClick={onSubmit} disabled={busy || uploadingPhotos || !isValid} aria-disabled={busy || uploadingPhotos || !isValid}>
               {busy ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   저장 중...
                 </>
+              ) : uploadingPhotos ? (
+                "사진 업로드 중..."
               ) : (
                 "저장"
               )}
