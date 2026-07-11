@@ -16,6 +16,10 @@ const cardVariants = cva(
         ghost: "border-0 bg-transparent shadow-none",
         muted: "bg-secondary text-foreground",
         elevatedGradient: "shadow-md overflow-hidden",
+        feature: "rounded-panel border-border/80 bg-card shadow-soft",
+        floating: "rounded-control border-border/70 bg-card/95 shadow-float",
+        inverse:
+          "rounded-panel border-surface-inverse-foreground/15 bg-surface-inverse text-surface-inverse-foreground shadow-soft",
       },
     },
     defaultVariants: {

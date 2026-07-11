@@ -49,6 +49,9 @@ const config: Config = {
       "ui-price": ["1.125rem", { lineHeight: "1.5rem" }], // 18px
       "ui-price-lg": ["1.5rem", { lineHeight: "1.875rem" }], // 24px
       "ui-input": ["1rem", { lineHeight: "1.5rem" }], // 16px
+      "ui-kicker": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.16em" }],
+      "ui-display": ["clamp(2.75rem, 12vw, 5.5rem)", { lineHeight: "0.95", letterSpacing: "-0.06em" }],
+      "ui-display-lg": ["clamp(4.5rem, 10vw, 9rem)", { lineHeight: "0.9", letterSpacing: "-0.07em" }],
     },
     extend: {
       /**
@@ -83,6 +86,17 @@ const config: Config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         "brand-text": "hsl(var(--brand-text))",
+        "brand-highlight": {
+          DEFAULT: "hsl(var(--brand-highlight))",
+          foreground: "hsl(var(--brand-highlight-foreground))",
+          muted: "hsl(var(--brand-highlight-muted))",
+        },
+        "surface-inverse": {
+          DEFAULT: "hsl(var(--surface-inverse))",
+          foreground: "hsl(var(--surface-inverse-foreground))",
+          muted: "hsl(var(--surface-inverse-muted))",
+        },
+        "outline-text": "hsl(var(--outline-text))",
         surface: {
           DEFAULT: "hsl(var(--surface))",
           foreground: "hsl(var(--surface-foreground))",
@@ -134,6 +148,13 @@ const config: Config = {
         lg: "0.5rem",
         md: "0.375rem",
         sm: "0.25rem",
+        control: "0.75rem",
+        panel: "1.5rem",
+        hero: "2rem",
+      },
+      boxShadow: {
+        soft: "var(--shadow-soft)",
+        float: "var(--shadow-float)",
       },
       keyframes: {
         "accordion-down": {

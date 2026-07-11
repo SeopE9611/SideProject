@@ -108,6 +108,17 @@ html body[data-scroll-locked] {
   --muted-foreground: 0 0% 42%;
   --brand-text: 0 0% 10%;
 
+  /* Dokkaebi Design System V2 brand emphasis */
+  --brand-highlight: 78 92% 56%;
+  --brand-highlight-foreground: 120 10% 8%;
+  --brand-highlight-muted: 78 80% 92%;
+  --surface-inverse: 132 12% 7%;
+  --surface-inverse-foreground: 45 35% 96%;
+  --surface-inverse-muted: 42 8% 68%;
+  --outline-text: 120 10% 8%;
+  --shadow-soft: 0 20px 60px hsl(120 10% 8% / 0.10);
+  --shadow-float: 0 16px 40px hsl(120 10% 8% / 0.14);
+
   --border: 40 6% 88%;
   --input: 40 6% 88%;
   --ring: 220 7% 38%;
@@ -172,6 +183,17 @@ html body[data-scroll-locked] {
   --muted: 240 3% 17%;
   --muted-foreground: 0 0% 70%;
   --brand-text: 0 0% 96%;
+
+  /* Dokkaebi Design System V2 brand emphasis */
+  --brand-highlight: 78 82% 50%;
+  --brand-highlight-foreground: 120 10% 7%;
+  --brand-highlight-muted: 78 44% 18%;
+  --surface-inverse: 132 12% 5%;
+  --surface-inverse-foreground: 45 35% 96%;
+  --surface-inverse-muted: 42 8% 72%;
+  --outline-text: 45 35% 96%;
+  --shadow-soft: 0 20px 60px hsl(0 0% 0% / 0.28);
+  --shadow-float: 0 16px 40px hsl(0 0% 0% / 0.34);
 
   --border: 240 3% 24%;
   --input: 240 3% 24%;
@@ -260,6 +282,36 @@ body {
     "Malgun Gothic",
     sans-serif;
   font-weight: 500;
+}
+
+.font-brand-display {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.text-brand-outline {
+  color: hsl(var(--outline-text));
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.04em hsl(var(--outline-text));
+  paint-order: stroke fill;
+}
+
+@supports not (-webkit-text-stroke: 1px currentColor) {
+  .text-brand-outline {
+    -webkit-text-fill-color: currentColor;
+    text-shadow: 0 0 0 hsl(var(--outline-text));
+  }
 }
 
 .font-brand-bold {

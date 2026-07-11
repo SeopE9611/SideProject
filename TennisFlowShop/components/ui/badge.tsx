@@ -23,6 +23,10 @@ const badgeVariants = cva(
         warning_solid: "border-transparent bg-warning text-warning-foreground shadow-sm",
         danger_solid: "border-transparent bg-destructive text-destructive-foreground shadow-sm",
         brand_solid: "border-transparent bg-primary text-primary-foreground shadow-sm",
+        signal:
+          "border-brand-highlight/35 bg-brand-highlight-muted text-brand-highlight-foreground dark:border-brand-highlight/45 dark:bg-brand-highlight-muted dark:text-brand-highlight",
+        signal_solid:
+          "border-transparent bg-brand-highlight text-brand-highlight-foreground shadow-sm",
         secondary:
           "border-border/80 bg-muted/80 text-muted-foreground dark:bg-muted/55 dark:text-foreground",
         outline: "border-border bg-background text-foreground",
