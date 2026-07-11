@@ -228,6 +228,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + mountingFee;
   const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
+  const careItemId = searchParams.get("source") === "racket-care" ? searchParams.get("careItemId") : null;
   const serviceCtaLabel = "교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
   const isStandalonePausedMountableString =
@@ -750,8 +751,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
     // 장착비(서비스비) – 없으면 0
     const mountingFee = typeof product.mountingFee === "number" ? product.mountingFee : 0;
 
+    if (careItemId) {
+      sessionStorage.setItem("racket-care-handoff", JSON.stringify({ careItemId, productId: String(product._id), createdAt: new Date().toISOString() }));
+    }
+
     const target = getProductDetailBuyNowWithServiceCheckoutTarget({
       mountingFee,
+      careItemId: careItemId ?? undefined,
     });
 
     // Checkout으로 직접 진입 (장바구니는 건드리지 않음)

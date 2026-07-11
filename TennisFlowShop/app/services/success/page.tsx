@@ -41,6 +41,7 @@ import {
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import RacketCareSuccessFeedback from "@/app/checkout/success/_components/RacketCareSuccessFeedback";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
@@ -464,7 +465,8 @@ export default async function StringServiceSuccessPage(props: Props) {
           <div className="absolute inset-0 bg-overlay/10"></div>
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
-          <ResultState
+          <RacketCareSuccessFeedback />
+        <ResultState
             status="success"
             title="신청이 완료되었습니다"
             description="현재 상태와 다음 단계, 필요한 작업을 확인해주세요."
