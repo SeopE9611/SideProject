@@ -2,6 +2,7 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
 import { getReviewSubmissionBlockReason, isOrderReviewEligible, isOrderServiceReviewOnly, isRentalReviewEligible, isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 import { buildReviewWriteHref } from "@/lib/reviews/review-target";
+import type { CanonicalReviewTarget, ReviewTargetBundle } from "@/lib/reviews/review-target";
 import {
   resolveApplicationReviewTargetBundlesBatch,
   resolveOrderReviewTarget,
@@ -16,6 +17,46 @@ const isRentalReviewBlockedStatus = (status: unknown) =>
   ["created", "pending", "paid", "out", "canceled", "cancelled", "취소", "대여중", "준비중", "수령전"].includes(
     String(status ?? "").trim().toLowerCase(),
   );
+
+function pickBundleTarget(bundle?: ReviewTargetBundle | null, preferredProductId?: string | null) {
+  if (!bundle) return null;
+  return (preferredProductId ? bundle.targets.find((target) => target.primaryProductId === preferredProductId) : null) ?? bundle.nextTarget ?? bundle.targets[0] ?? null;
+}
+
+function eligibilityPayload(params: {
+  eligible: boolean;
+  reason: string | null;
+  bundle?: ReviewTargetBundle | null;
+  target?: CanonicalReviewTarget | null;
+  subjectType?: "order" | "rental" | "application";
+  subjectId?: string;
+  suggestedOrderId?: string | null;
+  suggestedProductId?: string | null;
+  suggestedApplicationId?: string | null;
+  suggestedRentalId?: string | null;
+  redirectHref?: string | null;
+}) {
+  const target = params.target ?? pickBundleTarget(params.bundle);
+  const nextTarget = params.eligible ? target : null;
+  return {
+    eligible: params.eligible,
+    reason: params.reason,
+    subjectType: params.subjectType ?? target?.subjectType,
+    subjectId: params.subjectId ?? target?.subjectId,
+    reviewContext: target?.reviewContext ?? null,
+    targetType: target?.reviewContext ?? null,
+    targetLabel: target?.contextLabel ?? null,
+    suggestedOrderId: params.suggestedOrderId ?? target?.orderId ?? null,
+    suggestedProductId: params.suggestedProductId ?? target?.primaryProductId ?? null,
+    suggestedApplicationId: params.suggestedApplicationId ?? target?.primaryApplicationId ?? null,
+    suggestedRentalId: params.suggestedRentalId ?? target?.rentalId ?? null,
+    target: target ?? null,
+    nextTarget,
+    coveredBySubjectType: target?.coveredBySubjectType ?? null,
+    coveredBySubjectId: target?.coveredBySubjectId ?? null,
+    redirectHref: params.redirectHref ?? null,
+  };
+}
 
 async function findReviewableStringingApplicationForProduct(
   db: any,
@@ -120,17 +161,15 @@ export async function GET(req: Request) {
       );
     }
     const rentalTarget = await resolveRentalReviewTarget(db, userId, rentalId);
-    const rentalContext = rentalTarget?.reviewContext ?? "rental";
-    const rentalLabel = rentalTarget?.contextLabel ?? "대여 후기";
     if (isRentalReviewBlockedStatus(rental.status)) {
       return NextResponse.json(
-        { eligible: false, reason: "invalidStatus", targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel },
+        eligibilityPayload({ eligible: false, reason: "invalidStatus", bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
     if (!isRentalReviewEligible(rental)) {
       return NextResponse.json(
-        { eligible: false, reason: "notConfirmed", targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel },
+        eligibilityPayload({ eligible: false, reason: "notConfirmed", bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -141,12 +180,12 @@ export async function GET(req: Request) {
     });
     if (already) {
       return NextResponse.json(
-        { eligible: false, reason: "already", targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel },
+        eligibilityPayload({ eligible: false, reason: "already", bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
     return NextResponse.json(
-      { eligible: true, reason: null, targetType: rentalContext, reviewContext: rentalContext, targetLabel: rentalLabel, suggestedApplicationId: rentalTarget?.serviceApplicationId ?? null },
+      eligibilityPayload({ eligible: true, reason: null, bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId, suggestedApplicationId: rentalTarget?.serviceApplicationId ?? null }),
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -206,16 +245,17 @@ export async function GET(req: Request) {
           ],
         });
         return NextResponse.json(
-          {
+          eligibilityPayload({
             eligible: !already,
             reason: already ? "already" : null,
-            reviewContext: "product_stringing",
-            targetType: "product_stringing",
-            targetLabel: orderTarget.contextLabel,
+            bundle: orderTarget?.targetBundle,
+            target: pickBundleTarget(orderTarget?.targetBundle, productId),
+            subjectType: "order",
+            subjectId: orderId,
             suggestedOrderId: orderId,
             suggestedProductId: orderTarget.productId ?? productId,
             suggestedApplicationId: orderTarget.serviceApplicationId,
-          },
+          }),
           { headers: { "Cache-Control": "no-store" } },
         );
       }
@@ -229,12 +269,12 @@ export async function GET(req: Request) {
       });
       if (already)
         return NextResponse.json(
-          { eligible: false, reason: "already" },
+          eligibilityPayload({ eligible: false, reason: "already", bundle: orderTarget?.targetBundle, target: pickBundleTarget(orderTarget?.targetBundle, productId), subjectType: "order", subjectId: orderId, suggestedOrderId: orderId, suggestedProductId: productId }),
           { headers: { "Cache-Control": "no-store" } },
         );
 
       return NextResponse.json(
-        { eligible: true, reason: null },
+        eligibilityPayload({ eligible: true, reason: null, bundle: orderTarget?.targetBundle, target: pickBundleTarget(orderTarget?.targetBundle, productId), subjectType: "order", subjectId: orderId, suggestedOrderId: orderId, suggestedProductId: productId }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -293,16 +333,17 @@ export async function GET(req: Request) {
       if (integratedOrder) {
         const target = await resolveOrderReviewTarget(db, userId, String(integratedOrder._id), productId);
         return NextResponse.json(
-          {
+          eligibilityPayload({
             eligible: true,
             reason: null,
-            reviewContext: "product_stringing",
-            targetType: "product_stringing",
-            targetLabel: target?.contextLabel ?? "스트링·교체서비스 후기",
+            bundle: target?.targetBundle,
+            target: pickBundleTarget(target?.targetBundle, productId),
+            subjectType: "order",
+            subjectId: String(integratedOrder._id),
             suggestedOrderId: String(integratedOrder._id),
             suggestedProductId: target?.productId ?? productId,
             suggestedApplicationId: target?.serviceApplicationId ?? null,
-          },
+          }),
           { headers: { "Cache-Control": "no-store" } },
         );
       }
@@ -318,8 +359,9 @@ export async function GET(req: Request) {
       );
     }
 
+    const candidateTarget = await resolveOrderReviewTarget(db, userId, String(candidate._id), productId);
     return NextResponse.json(
-      { eligible: true, reason: null, reviewContext: "product", targetType: "product", targetLabel: "상품 후기", suggestedOrderId: String(candidate._id), suggestedProductId: productId },
+      eligibilityPayload({ eligible: true, reason: null, bundle: candidateTarget?.targetBundle, target: pickBundleTarget(candidateTarget?.targetBundle, productId), subjectType: "order", subjectId: String(candidate._id), suggestedOrderId: String(candidate._id), suggestedProductId: productId }),
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -349,16 +391,17 @@ export async function GET(req: Request) {
     const orderTarget = await resolveOrderReviewTarget(db, userId, orderId);
     if (orderTarget?.reviewContext === "product_stringing") {
       return NextResponse.json(
-        {
+        eligibilityPayload({
           eligible: true,
           reason: null,
-          reviewContext: "product_stringing",
-          targetType: "product_stringing",
-          targetLabel: orderTarget.contextLabel,
+          bundle: orderTarget?.targetBundle,
+          target: pickBundleTarget(orderTarget?.targetBundle),
+          subjectType: "order",
+          subjectId: orderId,
           suggestedProductId: orderTarget.productId,
           suggestedOrderId: String(orderIdObj),
           suggestedApplicationId: orderTarget.serviceApplicationId,
-        },
+        }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -395,12 +438,16 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json(
-      {
+      eligibilityPayload({
         eligible: true,
         reason: null,
+        bundle: orderTarget?.targetBundle,
+        target: pickBundleTarget(orderTarget?.targetBundle, candidatePid),
+        subjectType: "order",
+        subjectId: orderId,
         suggestedProductId: candidatePid,
         suggestedOrderId: String(orderIdObj),
-      },
+      }),
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -430,40 +477,33 @@ export async function GET(req: Request) {
       const bundle = appTarget?.targetBundle ?? null;
       const target = bundle?.targets?.[0] ?? null;
       const blockReason = getReviewSubmissionBlockReason(target);
-      const basePayload = {
-        subjectType: "application",
-        subjectId: applicationId,
-        reviewContext: target?.reviewContext ?? appTarget?.reviewContext ?? "standalone_stringing",
-        targetType: target?.reviewContext ?? appTarget?.reviewContext ?? "standalone_stringing",
-        targetLabel: target?.contextLabel ?? appTarget?.contextLabel ?? "교체서비스 후기",
-        suggestedApplicationId: applicationId,
-        coveredBySubjectType: target?.coveredBySubjectType ?? appTarget?.coveredBySubjectType ?? null,
-        coveredBySubjectId: target?.coveredBySubjectId ?? appTarget?.coveredBySubjectId ?? null,
-      };
-
       if (blockReason) {
         return NextResponse.json(
-          {
+          eligibilityPayload({
             eligible: false,
             reason: blockReason,
-            ...basePayload,
-            nextTarget: null,
+            bundle,
+            target,
+            subjectType: "application",
+            subjectId: applicationId,
+            suggestedApplicationId: applicationId,
             redirectHref:
               blockReason === "coveredByIntegratedReview" && target?.redirectTarget
                 ? buildReviewWriteHref({
                     reviewContext: target.redirectTarget.reviewContext,
                     orderId: target.redirectTarget.orderId,
                     rentalId: target.redirectTarget.rentalId,
-                    applicationId,
+                    productId: target.redirectTarget.primaryProductId,
+                    applicationId: target.redirectTarget.primaryApplicationId,
                   })
                 : undefined,
-          },
+          }),
           { status: blockReason === "notFound" ? 404 : 200, headers: { "Cache-Control": "no-store" } },
         );
       }
 
       return NextResponse.json(
-        { eligible: true, reason: null, ...basePayload, nextTarget: bundle?.nextTarget ?? null },
+        eligibilityPayload({ eligible: true, reason: null, bundle, target: bundle?.nextTarget ?? target, subjectType: "application", subjectId: applicationId, suggestedApplicationId: applicationId }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -515,17 +555,15 @@ export async function GET(req: Request) {
     const nextTarget = candidateBundle?.nextTarget ?? null;
 
     return NextResponse.json(
-      {
+      eligibilityPayload({
         eligible: true,
         reason: null,
+        bundle: candidateBundle,
+        target: nextTarget,
         subjectType: "application",
         subjectId: String(candidate._id),
-        reviewContext: nextTarget?.reviewContext ?? "standalone_stringing",
-        targetType: nextTarget?.reviewContext ?? "standalone_stringing",
-        targetLabel: nextTarget?.contextLabel ?? "교체서비스 후기",
         suggestedApplicationId: String(candidate._id),
-        nextTarget,
-      },
+      }),
       { headers: { "Cache-Control": "no-store" } },
     );
   }

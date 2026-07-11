@@ -31,7 +31,7 @@ test("후기 API 정책 계약: GET applicationId와 POST 등록이 같은 canon
   assert.ok(policy.indexOf('if (target.reviewed) return "already"') < policy.indexOf("if (!target.eligible)"));
   assert.ok(eligibility.includes("const blockReason = getReviewSubmissionBlockReason(target)"));
   assert.ok(eligibility.includes('blockReason === "coveredByIntegratedReview"'));
-  assert.ok(eligibility.includes("nextTarget: null"));
+  assert.ok(eligibility.includes("const nextTarget = params.eligible ? target : null"));
   assert.ok(postRoute.includes("const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget)"));
   assert.ok(postRoute.includes("const orderBlockReason = getReviewSubmissionBlockReason(orderCanonicalTarget)"));
   assert.ok(postRoute.includes("const appBlockReason = getReviewSubmissionBlockReason(appCanonicalTarget)"));
@@ -54,4 +54,53 @@ test("후기 POST 정책 계약: 로컬 우회 조건 제거 및 공용 eligibil
   assert.ok(postRoute.includes("grantPoints"));
   assert.ok(postRoute.includes('type: "review_reward_product"'));
   assert.ok(postRoute.includes('type: "review_reward_service"'));
+});
+
+test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 전환 UI 제거", () => {
+  const reviewWrite = read("app/reviews/write/page.tsx");
+  const summary = read("components/reviews/ReviewTargetSummary.tsx");
+  const eligibility = read("app/api/reviews/eligibility/route.ts");
+
+  for (const forbidden of [
+    "type AppLite",
+    "selectedAppId",
+    "showAllApps",
+    "allApps",
+    "serviceSuggestedAppId",
+    "shownApps",
+    "switchProduct",
+    "nextUnreviewed",
+    "remainingCount",
+    "/api/applications/stringing/list",
+    "/api/reviews/mine?limit=50",
+    "<select",
+    "후기 대상 신청서",
+    "전체 보기",
+    "이 주문의 다른 상품",
+    "리뷰 목록",
+    "serviceLinkedOrder",
+  ]) {
+    assert.ok(!reviewWrite.includes(forbidden), `write page에서 제거되어야 합니다: ${forbidden}`);
+  }
+
+  for (const required of [
+    "canonicalTarget",
+    "relatedItems",
+    "ReviewTargetSummary",
+    "buildReviewWriteHref",
+    "buildReviewSubmissionPayload",
+    "useUnsavedChangesGuard",
+    "useBackNavigationGuard",
+    "PhotosUploader",
+    "PhotosReorderGrid",
+    'fetch("/api/reviews"',
+  ]) {
+    assert.ok(reviewWrite.includes(required), `write page에 유지/추가되어야 합니다: ${required}`);
+  }
+
+  assert.ok(summary.includes("target.relatedItems"));
+  assert.ok(summary.includes("TYPE_LABELS"));
+  assert.ok(eligibility.includes("eligibilityPayload"));
+  assert.ok(eligibility.includes("target: target ?? null"));
+  assert.ok(eligibility.includes("const nextTarget = params.eligible ? target : null"));
 });
