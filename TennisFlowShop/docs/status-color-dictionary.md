@@ -28,3 +28,11 @@
   - 장식성 `emerald/purple/orange` 그라디언트/포인트 색 제거.
   - 입력 포커스 링을 브랜드 색 강제 대신 공통 `ring` 토큰으로 정리.
   - 상태 의미가 있는 `휴무` 배지는 `destructive` 토큰 유지.
+
+## 4) 브랜드 시그널 색상 분리
+
+| 분류 | 허용 토큰 | 사용 예시 |
+| --- | --- | --- |
+| 브랜드 장식/시그널 | `brand-highlight`, `brand-highlight-muted`, `brand-highlight-foreground` | NEW, 기능 안내, 라켓 케어 기능 라벨 |
+
+`brand-highlight`는 decorative/brand signal 전용입니다. 성공/주의/오류 등 상태 전달에는 `success`/`warning`/`destructive`를 계속 사용합니다.

@@ -276,3 +276,24 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - 재혼입 방지 규칙:
   - `/academy` 라우트에 대규모 마케팅성 섹션(커스텀 색상/다크 보정 포함)을 즉시 복원하지 않는다.
   - 복원이 필요하면 `legacy/` 등 분리 경로에서 먼저 정리한 뒤 토큰 정책 검증(`npm run check:color-policy`) 통과를 확인하고 재반영한다.
+
+## Dokkaebi Design System V2 확장 토큰
+
+`app/globals.css`는 계속 색상 값의 SSOT입니다. V2 확장 토큰의 실제 HSL 값은 `:root`와 `.dark`에만 정의하고, `tailwind.config.ts`는 `hsl(var(--...))` 매핑만 담당합니다.
+
+### 신규 브랜드/역상 토큰
+
+- `--brand-highlight`: 도깨비테니스 브랜드 전용 라임 강조입니다. Hero CTA, 기능 안내, NEW, 마케팅 신호에 사용합니다.
+- `--brand-highlight-foreground`: 라임 배경 위 텍스트·아이콘 대비를 위한 전경색입니다.
+- `--brand-highlight-muted`: 라임 강조 칩이나 낮은 강도의 패널 배경에 사용하는 연한 표면입니다.
+- `--surface-inverse`: 딥 블랙형 Hero/가치 설명 섹션을 위한 역상 표면입니다.
+- `--surface-inverse-foreground`: 역상 표면 위 주요 텍스트입니다.
+- `--surface-inverse-muted`: 역상 표면 위 보조 텍스트입니다.
+- `--outline-text`: Hero 외곽선 타이포그래피 전용 텍스트 토큰입니다.
+
+### 역할 분리
+
+- `brand-highlight`는 브랜드 장식·강조 신호이며 `success`/`warning`/`destructive` 같은 상태색이 아닙니다.
+- 완료, 정상, 안전, 반영 성공은 계속 `success`를 사용합니다.
+- `surface-inverse`는 홈/소개/Hero/마케팅 가치 설명처럼 의도적으로 역상 대비가 필요한 섹션에만 사용합니다.
+- raw `lime-*`, `black`, `white` 클래스나 컴포넌트 내부 hex/rgb/hsl 하드코딩은 계속 금지합니다.

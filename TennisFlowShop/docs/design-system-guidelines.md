@@ -56,3 +56,15 @@
 - 카드 radius가 화면 내에서 과하게 섞이지 않는가?
 - dark mode에서 대비가 충분한가?
 - 상태 배지가 색상 + 텍스트로 의미 전달이 되는가?
+
+## 9. Dokkaebi Design System V2 primitive 기준
+
+- Hero: `font-brand-display`, `text-ui-display`/`text-ui-display-lg`, `text-brand-outline`를 조합할 수 있습니다. 실제 제목으로 사용할 때는 외곽선 효과보다 대비와 가독성을 우선합니다.
+- Feature card: 라켓 케어 상태 카드, 마케팅 기능 패널, Hero 내부 핵심 UI에는 `Card`의 `feature` variant와 `rounded-panel`, `shadow-soft`를 사용합니다.
+- Floating card: D-day, 플레이 빈도, 텐션 정보처럼 Hero 주변 보조 정보에는 `Card`의 `floating` variant와 `shadow-float`를 사용합니다. 모바일에서는 일반 흐름으로 배치합니다.
+- Inverse section: 검정형 가치 설명 섹션은 `surface-inverse` 계열 토큰만 사용하고 raw black/white 클래스를 사용하지 않습니다.
+- `brand-highlight`: Hero의 가장 강한 CTA, 브랜드 기능 라벨, 시그널 배지에 제한적으로 사용합니다. 상태 의미 전달에는 사용하지 않습니다.
+- Radius: `rounded-control`은 버튼·작은 카드, `rounded-panel`은 대형 카드, `rounded-hero`는 Hero 컨테이너에 사용합니다.
+- Shadow: `shadow-soft`는 넓은 패널, `shadow-float`는 부유 정보 카드에 사용합니다.
+- Outline text: Hero 장면의 제한적 표현이며 일반 본문, 버튼, 폼에는 사용하지 않습니다.
+- 체크아웃/관리자는 V2 적용 강도를 낮게 유지하고 결제·업무 흐름의 안정성을 우선합니다.
