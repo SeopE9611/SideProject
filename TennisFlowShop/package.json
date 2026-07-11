@@ -38,7 +38,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:review-target": "node --test tests/review-target-resolver.test.mjs",
-    "test:review-api-policy": "node --test tests/review-api-policy.test.mjs"
+    "test:review-api-policy": "node --test tests/review-api-policy.test.mjs",
+    "test:review-write": "node --test tests/review-write-flow.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

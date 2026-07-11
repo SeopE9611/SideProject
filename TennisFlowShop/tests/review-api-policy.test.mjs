@@ -60,6 +60,7 @@ test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 �
   const reviewWrite = read("app/reviews/write/page.tsx");
   const summary = read("components/reviews/ReviewTargetSummary.tsx");
   const eligibility = read("app/api/reviews/eligibility/route.ts");
+  const reviewWritePolicy = read("lib/reviews/review-write.ts");
 
   for (const forbidden of [
     "type AppLite",
@@ -85,10 +86,10 @@ test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 �
 
   for (const required of [
     "canonicalTarget",
-    "relatedItems",
     "ReviewTargetSummary",
-    "buildReviewWriteHref",
+    "canonicalHrefForTarget",
     "buildReviewSubmissionPayload",
+    "getReviewDestination",
     "useUnsavedChangesGuard",
     "useBackNavigationGuard",
     "PhotosUploader",
@@ -97,6 +98,14 @@ test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 �
   ]) {
     assert.ok(reviewWrite.includes(required), `write page에 유지/추가되어야 합니다: ${required}`);
   }
+
+  assert.ok(reviewWrite.includes("eligibility?.nextTarget ?? eligibility?.target ?? null"));
+  assert.ok(reviewWrite.includes("const reviewDestination = canonicalTarget ? getReviewDestination(canonicalTarget) : null"));
+  assert.ok(reviewWrite.includes("router.replace(getReviewDestination(canonicalTarget).href)"));
+  assert.ok(reviewWrite.includes("router.replace(reviewDestination?.href ?? \"/mypage?tab=reviews\")"));
+  assert.ok(!reviewWrite.includes("reviewContext === \"product\" && canonicalTarget.primaryProductId"));
+  assert.ok(reviewWritePolicy.includes("target?.reviewContext === \"product_stringing\""));
+  assert.ok(reviewWritePolicy.includes("`/products/${cleanId(target.primaryProductId)}?tab=reviews`"));
 
   assert.ok(summary.includes("target.relatedItems"));
   assert.ok(summary.includes("TYPE_LABELS"));
