@@ -28,6 +28,7 @@ import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
+import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -285,8 +286,13 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
   const submitEdit = async () => {
     if (!editing?._id) return;
+    const inputValidation = validateReviewInput(editForm);
+    if (!inputValidation.ok) {
+      showErrorToast(reviewInputMessage(inputValidation.reason));
+      return;
+    }
     setBusyReviewId(String(editing._id));
-    const { rating, content } = editForm;
+    const { rating, content } = inputValidation.value;
 
     // 낙관적 업데이트
     if (isMine(editing)) {
@@ -294,7 +300,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         if (!prev?._id || String(prev._id) !== String(editing._id)) return prev;
         return {
           ...prev,
-          rating: rating === "" ? prev.rating : Number(rating),
+          rating,
           content,
           photos: editForm.photos,
           ownedByMe: true,
@@ -308,7 +314,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
           String(r._id) === String(editing._id)
             ? {
                 ...r,
-                rating: rating === "" ? r.rating : Number(rating),
+                rating,
                 content,
                 photos: editForm.photos,
                 masked: false,
@@ -324,12 +330,18 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rating: rating === "" ? undefined : Number(rating),
+          rating,
           content,
           photos: editForm.photos,
         }),
       });
-      if (!res.ok) throw new Error("수정 실패");
+      if (!res.ok) {
+        let err: any = null;
+        try {
+          err = await res.json();
+        } catch {}
+        throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+      }
 
       // 재검증
       if (isMine(editing)) await mutateMyReview?.();

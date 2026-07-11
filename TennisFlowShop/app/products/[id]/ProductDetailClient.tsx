@@ -23,6 +23,7 @@ import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -356,8 +357,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const submitEdit = async () => {
     if (!editing?._id) return;
+    const inputValidation = validateReviewInput(editForm);
+    if (!inputValidation.ok) {
+      showErrorToast(reviewInputMessage(inputValidation.reason));
+      return;
+    }
     setBusyReviewId(String(editing._id));
-    const { rating, content } = editForm;
+    const { rating, content } = inputValidation.value;
 
     // 낙관적 업데이트 (내 후기 vs 관리자-타인 구분)
     if (isMine(editing)) {
@@ -365,7 +371,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         if (!prev?._id || String(prev._id) !== String(editing._id)) return prev;
         return {
           ...prev,
-          rating: rating === "" ? prev.rating : Number(rating),
+          rating,
           content,
           ownedByMe: true,
           masked: false,
@@ -378,7 +384,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           String(r._id) === String(editing._id)
             ? {
                 ...r,
-                rating: rating === "" ? r.rating : Number(rating),
+                rating,
                 content,
                 masked: false,
               }
@@ -393,12 +399,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rating: rating === "" ? undefined : Number(rating),
+          rating,
           content,
           photos: editForm.photos,
         }),
       });
-      if (!res.ok) throw new Error("수정 실패");
+      if (!res.ok) {
+        let err: any = null;
+        try {
+          err = await res.json();
+        } catch {}
+        throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+      }
 
       // 서버 진실로 재검증
       if (isMine(editing)) await mutateMyReview();
@@ -1432,6 +1444,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               hoverRating={hoverRating}
               onClose={closeEdit}
               onSubmit={submitEdit}
+              busy={busyReviewId === String(editing?._id ?? "")}
               onChangeForm={setEditForm}
               onChangeHoverRating={setHoverRating}
             />

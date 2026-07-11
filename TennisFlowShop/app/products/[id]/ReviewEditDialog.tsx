@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  REVIEW_CONTENT_MAX_LENGTH,
+  REVIEW_MAX_PHOTOS,
+  validateReviewInput,
+} from "@/lib/reviews/review-input-policy";
 import { Star } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -26,6 +31,7 @@ type Props = {
   hoverRating: number | null;
   onClose: () => void;
   onSubmit: () => void;
+  busy?: boolean;
   onChangeForm: Dispatch<SetStateAction<EditForm>>;
   onChangeHoverRating: Dispatch<SetStateAction<number | null>>;
 };
@@ -38,7 +44,9 @@ export default function ReviewEditDialog({
   onSubmit,
   onChangeForm,
   onChangeHoverRating,
+  busy = false,
 }: Props) {
+  const isValid = validateReviewInput(editForm).ok;
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? undefined : onClose())}>
       <DialogContent className="sm:max-w-lg">
@@ -103,13 +111,17 @@ export default function ReviewEditDialog({
               value={editForm.content}
               onChange={(e) => onChangeForm((s) => ({ ...s, content: e.target.value }))}
               placeholder="후기 내용을 입력하세요."
+              maxLength={REVIEW_CONTENT_MAX_LENGTH}
             />
+            <p className="text-right text-ui-body-xs text-muted-foreground">
+              {editForm.content.trim().length} / {REVIEW_CONTENT_MAX_LENGTH}자
+            </p>
             <div className="mt-3">
-              <Label>사진 (선택, 최대 5장)</Label>
+              <Label>사진 (선택, 최대 {REVIEW_MAX_PHOTOS}장)</Label>
               <PhotosUploader
                 value={editForm.photos}
                 onChange={(arr) => onChangeForm((s) => ({ ...s, photos: arr }))}
-                max={5}
+                max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
               />
               <PhotosReorderGrid
@@ -132,6 +144,8 @@ export default function ReviewEditDialog({
             type="button"
             className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
             onClick={onSubmit}
+            disabled={busy || !isValid}
+            aria-disabled={busy || !isValid}
           >
             저장
           </button>

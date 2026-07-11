@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { deductPoints } from "@/lib/points.service";
-import { validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
 
 type DbAny = any;
 
@@ -118,20 +118,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     body.visibility = rawBody.visibility as "public" | "private";
   }
   if ("content" in rawBody || "rating" in rawBody || "photos" in rawBody) {
-    const inputValidation = validateReviewInput({
-      rating: rawBody.rating ?? 1,
-      content: rawBody.content ?? "수정 유지",
-      photos: rawBody.photos ?? [],
-    });
+    const inputValidation = validateReviewPatchInput(rawBody);
     if (!inputValidation.ok) {
       return NextResponse.json(
         { ok: false, reason: inputValidation.reason, message: inputValidation.reason },
         { status: 400 },
       );
     }
-    if ("content" in rawBody) body.content = inputValidation.value.content;
-    if ("rating" in rawBody) body.rating = inputValidation.value.rating;
-    if ("photos" in rawBody) body.photos = inputValidation.value.photos;
+    if ("content" in inputValidation.value) body.content = inputValidation.value.content;
+    if ("rating" in inputValidation.value) body.rating = inputValidation.value.rating;
+    if ("photos" in inputValidation.value) body.photos = inputValidation.value.photos;
   }
 
   // visibility만 보낸 케이스도 변경으로 인정해야 함(기존: no changes로 막힐 수 있음)

@@ -4,24 +4,23 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-function validateReviewInput(input) {
-  const rating = Number(input.rating);
-  if (!Number.isFinite(rating) || !Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return { ok: false, reason: "invalidRating" };
-  }
-  if (typeof input.content !== "string") return { ok: false, reason: "contentTooShort" };
-  const content = input.content.trim();
-  if (content.length < 5) return { ok: false, reason: "contentTooShort" };
-  if (content.length > 1000) return { ok: false, reason: "contentTooLong" };
-  if (!Array.isArray(input.photos)) return { ok: false, reason: "invalidPhotos" };
-  if (input.photos.length > 5) return { ok: false, reason: "tooManyPhotos" };
-  if (!input.photos.every((photo) => typeof photo === "string")) {
-    return { ok: false, reason: "invalidPhotos" };
-  }
-  return { ok: true, value: { rating, content, photos: input.photos } };
+async function loadReviewInputPolicy() {
+  const { mkdtempSync, writeFileSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const ts = await import("typescript");
+  const source = read("lib/reviews/review-input-policy.ts");
+  const js = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const dir = mkdtempSync(join(tmpdir(), "review-policy-"));
+  const out = join(dir, "review-input-policy.mjs");
+  writeFileSync(out, js);
+  return import(out);
 }
 
-test("후기 입력 정책은 별점/내용/사진 경계를 실행 검증한다", () => {
+test("후기 입력 정책은 운영 validator로 별점/내용/사진 경계를 실행 검증한다", async () => {
+  const { validateReviewInput } = await loadReviewInputPolicy();
   assert.equal(
     validateReviewInput({ rating: 0, content: "12345", photos: [] }).reason,
     "invalidRating",
@@ -34,6 +33,8 @@ test("후기 입력 정책은 별점/내용/사진 경계를 실행 검증한다
     validateReviewInput({ rating: 4.5, content: "12345", photos: [] }).reason,
     "invalidRating",
   );
+  assert.equal(validateReviewInput({ rating: Number.NaN, content: "12345", photos: [] }).reason, "invalidRating");
+  assert.equal(validateReviewInput({ rating: Infinity, content: "12345", photos: [] }).reason, "invalidRating");
   assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: [] }).ok, true);
   assert.equal(
     validateReviewInput({ rating: 5, content: "1234", photos: [] }).reason,
@@ -54,6 +55,26 @@ test("후기 입력 정책은 별점/내용/사진 경계를 실행 검증한다
       .reason,
     "tooManyPhotos",
   );
+  assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: "1" }).reason, "invalidPhotos");
+  assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: null }).reason, "invalidPhotos");
+  assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: ["1", 2] }).reason, "invalidPhotos");
+});
+
+test("후기 수정 입력 정책은 전달된 필드만 운영 validator로 검증한다", async () => {
+  const { validateReviewPatchInput, reviewInputMessage } = await loadReviewInputPolicy();
+
+  assert.deepEqual(validateReviewPatchInput({}), { ok: true, value: {} });
+  assert.deepEqual(validateReviewPatchInput({ rating: 4 }), { ok: true, value: { rating: 4 } });
+  assert.deepEqual(validateReviewPatchInput({ content: "12345" }), { ok: true, value: { content: "12345" } });
+  assert.deepEqual(validateReviewPatchInput({ photos: [] }), { ok: true, value: { photos: [] } });
+  assert.equal(validateReviewPatchInput({ rating: null }).reason, "invalidRating");
+  assert.equal(validateReviewPatchInput({ content: null }).reason, "contentTooShort");
+  assert.equal(validateReviewPatchInput({ photos: null }).reason, "invalidPhotos");
+  assert.deepEqual(validateReviewPatchInput({ status: "hidden" }), { ok: true, value: {} });
+  assert.equal("content" in validateReviewPatchInput({ rating: 4 }).value, false);
+  assert.equal("rating" in validateReviewPatchInput({ content: "12345" }).value, false);
+  assert.equal("photos" in validateReviewPatchInput({ content: "12345" }).value, false);
+  assert.equal(reviewInputMessage("invalidPhotos"), "사진 형식이 올바르지 않습니다.");
 });
 
 test("hidden all은 관리자만 허용하고 mask/default 정책을 분리한다", () => {
@@ -116,7 +137,7 @@ test("helpful은 hidden/본인 후기를 차단한다", () => {
 test("cursor와 후기 작성 로그인 정책을 방어한다", () => {
   const listSource = read("app/api/reviews/route.ts");
   assert.match(listSource, /invalidCursor/);
-  assert.match(listSource, /ObjectId\.isValid\(String\(after\.id\)\)/);
+  assert.match(listSource, /ObjectId\.isValid\(String\(parsed\.id \?\? ""\)\)/);
   assert.match(listSource, /Number\.isFinite\(value\)/);
 
   const writeSource = read("app/reviews/write/page.tsx");

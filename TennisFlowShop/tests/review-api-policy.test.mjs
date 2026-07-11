@@ -212,3 +212,43 @@ test("후기 surface fallback context와 상세 UI 문구 계약", () => {
   assert.ok(!racketClient.includes(`/reviews/write?productId=${"${racketId}"}`));
   assert.ok(productClient.includes("reviewSummary"));
 });
+
+test("후기 PATCH 정책 계약: partial validator와 사진 whitelist를 유지한다", () => {
+  const patchRoute = read("app/api/reviews/[id]/route.ts");
+
+  assert.ok(!patchRoute.includes("수정 유지"));
+  assert.ok(!patchRoute.includes("rawBody.rating ?? 1"));
+  assert.ok(!patchRoute.includes("rawBody.photos ?? []"));
+  assert.ok(patchRoute.includes("validateReviewPatchInput(rawBody)"));
+  assert.ok(patchRoute.includes('if ("content" in inputValidation.value) body.content'));
+  assert.ok(patchRoute.includes('if ("rating" in inputValidation.value) body.rating'));
+  assert.ok(patchRoute.includes('if ("photos" in inputValidation.value) body.photos'));
+  assert.ok(patchRoute.includes("body.status") && patchRoute.includes("body.visibility"));
+  assert.ok(patchRoute.includes("isAllowedHttpUrl"));
+  assert.ok(patchRoute.includes('reason: "invalidPhotos"'));
+});
+
+test("후기 POST와 cursor 정책 계약: photos 타입과 cursor 필수 필드를 엄격 검증한다", () => {
+  const postRoute = read("app/api/reviews/route.ts");
+
+  assert.ok(postRoute.includes('const photosInput = "photos" in body ? body.photos : []'));
+  assert.ok(!postRoute.includes("Array.isArray(body.photos) ? body.photos : []"));
+  assert.ok(postRoute.includes('if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))'));
+  assert.ok(postRoute.includes('ObjectId.isValid(String(parsed.id ?? ""))'));
+  assert.ok(postRoute.includes('sort === "latest"'));
+  assert.ok(postRoute.includes("parsed.createdAt"));
+  assert.ok(postRoute.includes('sort === "helpful" && !isValidCursorNumber(parsed.helpfulCount)'));
+  assert.ok(postRoute.includes('sort === "rating" && !isValidCursorNumber(parsed.rating)'));
+});
+
+test("CI 계약: test-contract job에서 review-security를 public surface 다음에 실행한다", () => {
+  const ci = read("../.github/workflows/ci.yml");
+  const packageJson = read("package.json");
+
+  assert.ok(packageJson.includes('"test:review-security"'));
+  assert.ok(ci.includes("test-contract:"));
+  assert.ok(ci.includes("Test public review surface"));
+  assert.ok(ci.includes("Test review security and integrity"));
+  assert.ok(ci.includes("pnpm test:review-security"));
+  assert.ok(ci.indexOf("Test public review surface") < ci.indexOf("Test review security and integrity"));
+});
