@@ -1,5 +1,6 @@
 import Image from "next/image";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
+import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -47,16 +48,20 @@ export default function ProductReviewCard({
               {review.user?.charAt(0) || "U"}
             </div>
             <div className="min-w-0">
-              <div className="break-words font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
-                {review.type === "service"
-                  ? "상품·교체서비스 후기"
-                  : review.status === "hidden"
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <span className="break-words font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
+                  {review.status === "hidden"
                     ? review.ownedByMe
-                      ? `${review.user ?? "내 리뷰"} (비공개)`
+                      ? `${review.user ?? "내 후기"} (비공개)`
                       : review.adminView
                         ? `${review.user ?? "사용자"} (비공개)`
-                        : "비공개 리뷰"
+                        : "비공개 후기"
                     : (review.user ?? "익명")}
+                </span>
+                <ReviewContextBadge
+                  reviewContext={review.reviewContext}
+                  contextLabel={review.contextLabel}
+                />
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <ProductReviewRatingStars rating={review.rating} />
@@ -73,7 +78,7 @@ export default function ProductReviewCard({
                 <button
                   type="button"
                   className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted/50 hover:text-foreground transition-colors"
-                  aria-label="내 리뷰 관리"
+                  aria-label="내 후기 관리"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
@@ -149,11 +154,11 @@ export default function ProductReviewCard({
                     type="button"
                     onClick={() => onOpenPhoto(i)}
                     className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border transition-colors hover:border-foreground/40 sm:h-20 sm:w-20"
-                    aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                    aria-label={`후기 사진 ${i + 1} 크게 보기`}
                   >
                     <Image
                       src={src || "/placeholder.svg"}
-                      alt={`리뷰 사진 ${i + 1}`}
+                      alt={`후기 사진 ${i + 1}`}
                       fill
                       className="object-cover"
                     />

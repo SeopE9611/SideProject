@@ -21,6 +21,7 @@ import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
+import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -105,7 +106,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
   const images: string[] = Array.isArray(product?.images) ? product.images : [];
   const reviews: any[] = Array.isArray(product?.reviews) ? product.reviews : [];
-  const reviewsLen = reviews.length;
+  const reviewSummary = normalizeReviewSummary(product?.reviewSummary);
+  const averageRating = reviewSummary.average;
+  const reviewCount = reviewSummary.count;
   const productShippingFee = normalizeItemShippingFee(product?.shippingFee);
   const productShippingLabel =
     productShippingFee > 0 ? `${productShippingFee.toLocaleString()}원 배송비` : "무료배송";
@@ -261,7 +264,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     activeTab,
     productId: String(product._id),
     baseReviews: product.reviews,
-    reviewsLen,
+    reviewsLen: reviews.length,
     user,
     isAdmin,
     fetcher,
@@ -407,13 +410,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
       router.replace(`?${params.toString()}`, { scroll: false });
       router.refresh();
 
-      showSuccessToast("리뷰를 수정했어요.");
+      showSuccessToast("후기를 수정했어요.");
       closeEdit();
     } catch (err: any) {
       // 실패 시 원복(간단히 재검증)
       if (isMine(editing)) await mutateMyReview();
       else if (isAdmin) await mutateAdminReviews();
-      showErrorToast(err?.message || "리뷰 수정에 실패했습니다.");
+      showErrorToast(err?.message || "후기 수정에 실패했습니다.");
     } finally {
       setBusyReviewId(null);
     }
@@ -487,7 +490,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const handleDeleteReview = async (review: any) => {
-    if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
+    if (!confirm("이 후기를 삭제하시겠습니까?")) return;
 
     setBusyReviewId(String(review._id));
     try {
@@ -818,11 +821,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
   }, [images, product?.name, product?.price, productBrandLabel, productId]);
 
-  const averageRating =
-    reviewsLen > 0
-      ? reviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) /
-        reviewsLen
-      : 0;
   const merchandisingBadges = getProductDetailBadges(product);
 
   return (
@@ -906,7 +904,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         ))}
                       </div>
                       <span className="whitespace-nowrap text-ui-body-sm text-muted-foreground sm:text-ui-body">
-                        {averageRating.toFixed(1)} ({reviewsLen}개 리뷰)
+                        {averageRating.toFixed(1)} ({reviewCount}개 후기)
                       </span>
                     </div>
                   </div>
@@ -1316,7 +1314,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
                   <span className="sm:hidden">리뷰</span>
-                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({reviewsLen})</span>
+                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({reviewCount})</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
@@ -1410,16 +1408,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <ProductDetailRelatedProductsSection
           HorizontalProducts={HorizontalProducts}
           relatedSectionRef={relatedSectionRef}
-          relatedProducts={relatedFiltered.map((rp: any): HItem => ({
-            _id: String(rp._id),
-            name: rp.name,
-            price: Number(rp.price ?? 0),
-            images: rp.images ?? [],
-            brand: displayBrandLabel(rp.brand) || rp.brand,
-            href: `/products/${rp._id}`,
-            merchandisingBadges: getProductDetailBadges(rp),
-            inventory: rp.inventory,
-          }))}
+          relatedProducts={relatedFiltered.map(
+            (rp: any): HItem => ({
+              _id: String(rp._id),
+              name: rp.name,
+              price: Number(rp.price ?? 0),
+              images: rp.images ?? [],
+              brand: displayBrandLabel(rp.brand) || rp.brand,
+              href: `/products/${rp._id}`,
+              merchandisingBadges: getProductDetailBadges(rp),
+              inventory: rp.inventory,
+            }),
+          )}
           loadingRelated={loadingRelated}
         >
           <RecentViewedItems currentType="product" currentId={productId} />

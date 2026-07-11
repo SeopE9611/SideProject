@@ -27,7 +27,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   // page.tsx와 route.ts가 같은 helper를 공유해도 되는 이유:
   // - 둘 다 서버에서 실행되고, 최종 데이터 원천은 동일한 MongoDB 조회 로직이다.
   // - route는 HTTP 응답 포맷만 담당하고, 실제 데이터 구성은 helper로 일원화한다.
-  const payloadDoc = await getRacketDetailPayload(id, currentUserId);
+  const payloadDoc = await getRacketDetailPayload(id, { userId: currentUserId });
 
   if (!payloadDoc) {
     return NextResponse.json(

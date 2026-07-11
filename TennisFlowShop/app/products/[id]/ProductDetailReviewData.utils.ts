@@ -31,7 +31,7 @@ export function buildProductReviewCta({
 
   const productReviewCtaLabel = reviewEligibility?.targetLabel
     ? `${reviewEligibility.targetLabel} 작성`
-    : "리뷰 작성하기";
+    : "후기 작성";
 
   const productReviewHelper = reviewEligibility?.targetLabel
     ? `${reviewEligibility.targetLabel}를 작성할 수 있습니다.`
@@ -62,13 +62,11 @@ export function mergeProductDetailReviews({
   myReview,
   isAdmin,
   adminReviews,
-  linkedReviewData,
 }: {
   baseReviews: any[];
   myReview: any;
   isAdmin: boolean;
   adminReviews: any[] | undefined;
-  linkedReviewData: any;
 }) {
   const base = Array.isArray(baseReviews) ? baseReviews : [];
   let next = base;
@@ -107,21 +105,6 @@ export function mergeProductDetailReviews({
         adminView: true,
       };
     });
-  }
-
-  if (Array.isArray(linkedReviewData?.items)) {
-    const existingIds = new Set(next.map((r: any) => String(r._id)));
-    const linked = linkedReviewData.items
-      .filter((r: any) => !existingIds.has(String(r._id)))
-      .map((r: any) => ({
-        ...r,
-        user: r.userName ?? "익명",
-        date: typeof r.createdAt === "string" ? r.createdAt.slice(0, 10) : "",
-        serviceContextLabel: r.serviceContextLabel,
-        reviewContext: r.reviewContext,
-        contextLabel: r.contextLabel,
-      }));
-    next = [...next, ...linked];
   }
 
   return next;

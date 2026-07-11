@@ -146,7 +146,8 @@ export async function POST(req: Request) {
     }
     const rentalIdObj = new ObjectId(rentalIdStr);
     const rental = await db.collection("rental_orders").findOne({ _id: rentalIdObj, userId });
-    if (!rental) return NextResponse.json({ message: "rentalNotFound", reason: "notFound" }, { status: 404 });
+    if (!rental)
+      return NextResponse.json({ message: "rentalNotFound", reason: "notFound" }, { status: 404 });
     const rentalTarget = await resolveRentalReviewTarget(db, userId, rentalIdStr);
     const rentalCanonicalTarget = rentalTarget?.targetBundle?.targets?.[0] ?? null;
     const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget);
@@ -154,10 +155,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "already", reason: "already" }, { status: 409 });
     }
     if (rentalBlockReason) {
-      return NextResponse.json({ message: rentalBlockReason, reason: rentalBlockReason }, { status: rentalBlockReason === "notFound" ? 404 : 403 });
+      return NextResponse.json(
+        { message: rentalBlockReason, reason: rentalBlockReason },
+        { status: rentalBlockReason === "notFound" ? 404 : 403 },
+      );
     }
     if (!isRentalReviewEligible(rental)) {
-      return NextResponse.json({ message: "notConfirmed", reason: "notConfirmed" }, { status: 403 });
+      return NextResponse.json(
+        { message: "notConfirmed", reason: "notConfirmed" },
+        { status: 403 },
+      );
     }
     const already = await db.collection("reviews").findOne({
       userId,
@@ -173,11 +180,17 @@ export async function POST(req: Request) {
       reviewContext: rentalTarget?.reviewContext ?? "rental",
       contextLabel: rentalTarget?.contextLabel ?? getReviewContextLabel("rental"),
       rentalId: rentalIdObj,
-      serviceApplicationId: rentalTarget?.serviceApplicationId && ObjectId.isValid(rentalTarget.serviceApplicationId)
-        ? new ObjectId(rentalTarget.serviceApplicationId)
-        : undefined,
+      serviceApplicationId:
+        rentalTarget?.serviceApplicationId && ObjectId.isValid(rentalTarget.serviceApplicationId)
+          ? new ObjectId(rentalTarget.serviceApplicationId)
+          : undefined,
       relatedProductIds: rentalTarget?.relatedProductIds ?? [],
-      racketId: rental.racketId && ObjectId.isValid(String(rental.racketId)) ? new ObjectId(String(rental.racketId)) : undefined,
+      relatedRacketIds:
+        rentalTarget?.relatedRacketIds ?? (rental.racketId ? [String(rental.racketId)] : []),
+      racketId:
+        rental.racketId && ObjectId.isValid(String(rental.racketId))
+          ? new ObjectId(String(rental.racketId))
+          : undefined,
       rating,
       content,
       photos: photosClean,
@@ -210,17 +223,34 @@ export async function POST(req: Request) {
       "items.productId": { $in: [productIdStr, productIdObj] },
     });
     if (!bought) return NextResponse.json({ message: "notPurchased" }, { status: 403 });
-    const orderTarget = await resolveOrderReviewTarget(db, userId, String(orderIdObj), productIdStr);
-    const orderCanonicalTarget = orderTarget?.targetBundle?.targets?.find((target: any) => target.primaryProductId === productIdStr) ?? orderTarget?.targetBundle?.nextTarget ?? orderTarget?.targetBundle?.targets?.[0] ?? null;
+    const orderTarget = await resolveOrderReviewTarget(
+      db,
+      userId,
+      String(orderIdObj),
+      productIdStr,
+    );
+    const orderCanonicalTarget =
+      orderTarget?.targetBundle?.targets?.find(
+        (target: any) => target.primaryProductId === productIdStr,
+      ) ??
+      orderTarget?.targetBundle?.nextTarget ??
+      orderTarget?.targetBundle?.targets?.[0] ??
+      null;
     const orderBlockReason = getReviewSubmissionBlockReason(orderCanonicalTarget);
     if (orderBlockReason === "already") {
       return NextResponse.json({ message: "already", reason: "already" }, { status: 409 });
     }
     if (orderBlockReason) {
-      return NextResponse.json({ message: orderBlockReason, reason: orderBlockReason }, { status: orderBlockReason === "notFound" ? 404 : 403 });
+      return NextResponse.json(
+        { message: orderBlockReason, reason: orderBlockReason },
+        { status: orderBlockReason === "notFound" ? 404 : 403 },
+      );
     }
     if (!isOrderReviewEligible(bought)) {
-      return NextResponse.json({ message: "notConfirmed", reason: "notConfirmed" }, { status: 403 });
+      return NextResponse.json(
+        { message: "notConfirmed", reason: "notConfirmed" },
+        { status: 403 },
+      );
     }
 
     // 중복 작성 방지 (주문 단위): 같은 주문 + 같은 상품 + 같은 유저
@@ -237,7 +267,11 @@ export async function POST(req: Request) {
     if (orderTarget?.reviewContext === "product_stringing" && orderTarget.serviceApplicationId) {
       dupFilter.$or = [
         { orderId: { $in: [orderIdObj, orderIdRaw] }, productId: { $in: productCandidates } },
-        { serviceApplicationId: { $in: [new ObjectId(orderTarget.serviceApplicationId), orderTarget.serviceApplicationId] } },
+        {
+          serviceApplicationId: {
+            $in: [new ObjectId(orderTarget.serviceApplicationId), orderTarget.serviceApplicationId],
+          },
+        },
       ];
       delete dupFilter.orderId;
       delete dupFilter.productId;
@@ -252,10 +286,14 @@ export async function POST(req: Request) {
       reviewType: "product",
       reviewContext: orderTarget?.reviewContext ?? "product",
       contextLabel: orderTarget?.contextLabel ?? getReviewContextLabel("product"),
-      serviceApplicationId: orderTarget?.serviceApplicationId && ObjectId.isValid(orderTarget.serviceApplicationId)
-        ? new ObjectId(orderTarget.serviceApplicationId)
-        : undefined,
-      relatedProductIds: orderTarget?.relatedProductIds ?? (orderTarget?.reviewContext === "product_stringing" ? [productIdObj] : undefined),
+      serviceApplicationId:
+        orderTarget?.serviceApplicationId && ObjectId.isValid(orderTarget.serviceApplicationId)
+          ? new ObjectId(orderTarget.serviceApplicationId)
+          : undefined,
+      relatedProductIds:
+        orderTarget?.relatedProductIds ??
+        (orderTarget?.reviewContext === "product_stringing" ? [productIdObj] : undefined),
+      relatedRacketIds: orderTarget?.relatedRacketIds ?? [],
       rating,
       content,
       photos: photosClean,
@@ -317,7 +355,15 @@ export async function POST(req: Request) {
     const app = await db.collection("stringing_applications").findOne(
       { _id: appIdObj },
       {
-        projection: { userId: 1, orderId: 1, rentalId: 1, userConfirmedAt: 1, status: 1, stringDetails: 1, stringItems: 1 },
+        projection: {
+          userId: 1,
+          orderId: 1,
+          rentalId: 1,
+          userConfirmedAt: 1,
+          status: 1,
+          stringDetails: 1,
+          stringItems: 1,
+        },
       },
     );
     if (!app || String(app.userId) !== String(userId)) {
@@ -330,14 +376,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "already", reason: "already" }, { status: 409 });
     }
     if (appBlockReason === "coveredByIntegratedReview") {
-      return NextResponse.json({ message: "coveredByIntegratedReview", reason: "coveredByIntegratedReview" }, { status: 409 });
+      return NextResponse.json(
+        { message: "coveredByIntegratedReview", reason: "coveredByIntegratedReview" },
+        { status: 409 },
+      );
     }
     if (appBlockReason) {
-      return NextResponse.json({ message: appBlockReason, reason: appBlockReason }, { status: appBlockReason === "notFound" ? 404 : 403 });
+      return NextResponse.json(
+        { message: appBlockReason, reason: appBlockReason },
+        { status: appBlockReason === "notFound" ? 404 : 403 },
+      );
     }
     if (!isStandaloneStringingReviewEligible(app)) {
       const fallbackReason = !app.userConfirmedAt ? "notConfirmed" : "notCompleted";
-      return NextResponse.json({ message: fallbackReason, reason: fallbackReason }, { status: 403 });
+      return NextResponse.json(
+        { message: fallbackReason, reason: fallbackReason },
+        { status: 403 },
+      );
     }
 
     // 신청서 단위 중복 작성 방지
@@ -357,6 +412,7 @@ export async function POST(req: Request) {
       contextLabel: getReviewContextLabel("standalone_stringing"),
       serviceApplicationId: appIdObj,
       relatedProductIds: appTarget?.relatedProductIds ?? [],
+      relatedRacketIds: appTarget?.relatedRacketIds ?? [],
       rating,
       content,
       photos: photosClean,
@@ -470,6 +526,46 @@ export async function GET(req: Request) {
   }
   if (productFilterCandidates && type === "product") {
     match.productId = { $in: productFilterCandidates };
+  }
+  if (productFilterCandidates && type !== "product") {
+    const linkedApplications = await db
+      .collection("stringing_applications")
+      .find(
+        {
+          $or: [
+            { "stringDetails.stringItems.productId": { $in: productFilterCandidates } },
+            { "stringDetails.stringItems.stringProductId": { $in: productFilterCandidates } },
+            { "stringDetails.racketLines.stringProductId": { $in: productFilterCandidates } },
+            { "stringDetails.racketLines.productId": { $in: productFilterCandidates } },
+            { "stringDetails.lines.productId": { $in: productFilterCandidates } },
+            { "stringDetails.lines.stringProductId": { $in: productFilterCandidates } },
+            { "stringItems.productId": { $in: productFilterCandidates } },
+            { "stringItems.stringProductId": { $in: productFilterCandidates } },
+          ],
+        },
+        { projection: { _id: 1 } },
+      )
+      .toArray();
+    const legacyApplicationCandidates = linkedApplications.flatMap((app: any) => {
+      const value = String(app?._id ?? "");
+      return ObjectId.isValid(value) ? [new ObjectId(value), value] : [value];
+    });
+    const productTargetMatch = [
+      { productId: { $in: productFilterCandidates } },
+      { relatedProductIds: { $in: productFilterCandidates } },
+      ...(legacyApplicationCandidates.length
+        ? [
+            { serviceApplicationId: { $in: legacyApplicationCandidates } },
+            { applicationId: { $in: legacyApplicationCandidates } },
+          ]
+        : []),
+    ];
+    if (match.$or) {
+      match.$and = [{ $or: match.$or }, { $or: productTargetMatch }];
+      delete match.$or;
+    } else {
+      match.$or = productTargetMatch;
+    }
   }
   if (rating) match.rating = Number(rating);
   if (hasPhoto) match.$expr = { $gt: [{ $size: { $ifNull: ["$photos", []] } }, 0] };
@@ -688,7 +784,13 @@ export async function GET(req: Request) {
             $addFields: {
               rentalTargetName: {
                 $trim: {
-                  input: { $concat: [{ $ifNull: ["$rental.brand", ""] }, " ", { $ifNull: ["$rental.model", ""] }] },
+                  input: {
+                    $concat: [
+                      { $ifNull: ["$rental.brand", ""] },
+                      " ",
+                      { $ifNull: ["$rental.model", ""] },
+                    ],
+                  },
                 },
               },
               rentalTitle: "라켓 대여 후기",
@@ -858,7 +960,10 @@ export async function GET(req: Request) {
                 ],
               },
               serviceContextLabel: {
-                $ifNull: ["$contextLabel", { $cond: [{ $eq: ["$service", "stringing"] }, "교체서비스 후기", "서비스 후기"] }],
+                $ifNull: [
+                  "$contextLabel",
+                  { $cond: [{ $eq: ["$service", "stringing"] }, "교체서비스 후기", "서비스 후기"] },
+                ],
               },
             },
           },
@@ -922,22 +1027,7 @@ export async function GET(req: Request) {
     pipeline.push({ $addFields: { votedByMe: false } });
   }
 
-  let rows = await db.collection("reviews").aggregate(pipeline).toArray();
-
-  if (productFilterCandidates && type !== "product") {
-    const wanted = new Set(productFilterCandidates.map((v) => String(v)));
-    rows = rows.filter((row: any) => {
-      const matchesProductId = row.productId && wanted.has(String(row.productId));
-      const relatedIds = Array.isArray(row.relatedProductIds) ? row.relatedProductIds : [];
-      const matchesRelatedProductId = relatedIds.some((pid: any) => wanted.has(String(pid)));
-      const matchesLegacyServiceProductId = Array.isArray(row.__serviceProductIds)
-        ? row.__serviceProductIds.some((pid: any) => wanted.has(String(pid)))
-        : false;
-
-      if (row.type === "product") return matchesProductId || matchesRelatedProductId;
-      return matchesRelatedProductId || matchesLegacyServiceProductId;
-    });
-  }
+  const rows = await db.collection("reviews").aggregate(pipeline).toArray();
 
   // nextCursor 생성
   let nextCursor: string | null = null;
@@ -979,14 +1069,21 @@ export async function GET(req: Request) {
     delete row.__racketImages;
     if (row.type === "rental" && row.rentalTargetName) {
       const parts = String(row.rentalTargetName).trim().split(/\s+/);
-      if (parts.length > 1) row.rentalTargetName = `${racketBrandLabel(parts[0])} ${parts.slice(1).join(" ")}`.trim();
+      if (parts.length > 1)
+        row.rentalTargetName = `${racketBrandLabel(parts[0])} ${parts.slice(1).join(" ")}`.trim();
     }
 
     if (!row.reviewContext) {
-      row.reviewContext = row.type === "rental" ? "rental" : row.type === "service" ? "standalone_stringing" : "product";
+      row.reviewContext =
+        row.type === "rental"
+          ? "rental"
+          : row.type === "service"
+            ? "standalone_stringing"
+            : "product";
     }
     if (!row.contextLabel) row.contextLabel = getReviewContextLabel(row.reviewContext);
-    if (!row.serviceContextLabel && row.type === "service") row.serviceContextLabel = row.contextLabel;
+    if (!row.serviceContextLabel && row.type === "service")
+      row.serviceContextLabel = row.contextLabel;
     delete row.__serviceProductIds;
   }
 

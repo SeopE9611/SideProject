@@ -362,7 +362,7 @@ export async function resolveStringingApplicationReviewTarget(db: any, userId: O
   const bundle = await resolveApplicationReviewTargetBundle(db, userId, applicationId);
   const target = bundle?.nextTarget ?? bundle?.targets[0] ?? null;
   if (!target) return null;
-  return { application: { _id: new ObjectId(applicationId) }, reviewContext: target.reviewContext, contextLabel: target.contextLabel, relatedProductIds: objectIds(target.relatedProductIds), orderId: target.orderId ?? target.coveredBySubjectId, rentalId: target.rentalId ?? (target.coveredBySubjectType === "rental" ? target.coveredBySubjectId : null), coveredBySubjectType: target.coveredBySubjectType ?? null, coveredBySubjectId: target.coveredBySubjectId ?? null, targetBundle: bundle, ineligibleReason: target.ineligibleReason ?? (target.subjectType !== "application" ? "coveredByIntegratedReview" : null) };
+  return { application: { _id: new ObjectId(applicationId) }, reviewContext: target.reviewContext, contextLabel: target.contextLabel, relatedProductIds: objectIds(target.relatedProductIds), relatedRacketIds: target.relatedRacketIds, orderId: target.orderId ?? target.coveredBySubjectId, rentalId: target.rentalId ?? (target.coveredBySubjectType === "rental" ? target.coveredBySubjectId : null), coveredBySubjectType: target.coveredBySubjectType ?? null, coveredBySubjectId: target.coveredBySubjectId ?? null, targetBundle: bundle, ineligibleReason: target.ineligibleReason ?? (target.subjectType !== "application" ? "coveredByIntegratedReview" : null) };
 }
 export async function resolveRentalReviewTarget(db: any, userId: ObjectId, rentalId: string) {
   const bundle = await resolveRentalReviewTargetBundle(db, userId, rentalId);

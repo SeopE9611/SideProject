@@ -49,12 +49,6 @@ export function useProductDetailReviews({
     { revalidateOnFocus: false },
   );
 
-  const { data: linkedReviewData } = useSWR(
-    activeTab === "reviews" ? `/api/reviews?type=all&productId=${productId}&limit=20` : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
-
   const {
     productReviewHref,
     productReviewCtaLabel,
@@ -74,9 +68,8 @@ export function useProductDetailReviews({
         myReview,
         isAdmin,
         adminReviews,
-        linkedReviewData,
       }),
-    [baseReviews, myReview, isAdmin, adminReviews, linkedReviewData],
+    [baseReviews, myReview, isAdmin, adminReviews],
   );
 
   return {

@@ -46,7 +46,7 @@ export function ProductDetailReviewsHeader({
           <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
         </div>
         <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
-          고객 리뷰
+          고객 후기
         </h3>
       </div>
       <div className="flex min-w-0 flex-col items-start gap-1 sm:items-end">
@@ -88,7 +88,7 @@ export function ProductDetailReviewsEmptyState({
         <Star className="h-6 w-6 text-foreground sm:h-7 sm:w-7" />
       </div>
       <h3 className="text-ui-card-title-lg sm:text-ui-section-title font-semibold text-foreground mb-2">
-        아직 리뷰가 없습니다
+        아직 등록된 후기가 없습니다
       </h3>
       <p className="mb-6 text-ui-body text-muted-foreground sm:text-ui-card-title-lg">
         {productReviewHelper}

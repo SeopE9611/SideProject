@@ -5,6 +5,7 @@ import ProductDetailQnaTab from "@/app/products/[id]/ProductDetailQnaTab";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
+import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
   usedBadgeMeta,
 } from "@/lib/badge-style";
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
+import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
@@ -124,6 +126,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   // 리뷰 탭 표시를 위한 데이터
   // - racket API에서 reviews/reviewSummary를 함께 내려주도록 되어 있어야 함
   const baseReviews = Array.isArray(racket?.reviews) ? racket.reviews : [];
+  const reviewSummary = normalizeReviewSummary(racket?.reviewSummary);
+  const reviewCount = reviewSummary.count;
+  const averageRating = reviewSummary.average;
   const reviewsLen = baseReviews.length;
 
   const fetcher = async (url: string) => {
@@ -229,14 +234,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     return next;
   }, [baseReviews, myReview, isAdmin, adminReviews]);
 
-  const reviewCount = mergedReviews.length;
   const qnas = qnaData?.items ?? [];
   const qnaTotal = qnaData?.total ?? 0;
-  const averageRating =
-    reviewCount > 0
-      ? mergedReviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) /
-        reviewCount
-      : 0;
 
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
@@ -342,12 +341,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       router.replace(`?${params.toString()}`, { scroll: false });
       router.refresh();
 
-      showSuccessToast("리뷰를 수정했어요.");
+      showSuccessToast("후기를 수정했어요.");
       closeEdit();
     } catch (err: any) {
       if (isMine(editing)) await mutateMyReview?.();
       else if (isAdmin) await mutateAdminReviews?.();
-      showErrorToast(err?.message || "리뷰 수정에 실패했습니다.");
+      showErrorToast(err?.message || "후기 수정에 실패했습니다.");
     } finally {
       setBusyReviewId(null);
     }
@@ -610,7 +609,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     ))}
                   </div>
                   <span className="whitespace-nowrap text-ui-body-sm text-muted-foreground sm:text-ui-body">
-                    {averageRating.toFixed(1)} ({reviewCount}개 리뷰)
+                    {averageRating.toFixed(1)} ({reviewCount}개 후기)
                   </span>
                 </div>
               }
@@ -935,7 +934,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         <Star className="h-4 w-4 sm:h-6 sm:w-6" />
                       </div>
                       <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
-                        고객 리뷰
+                        고객 후기
                       </h3>
                     </div>
 
@@ -944,12 +943,15 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       variant="outline"
                       className="h-9 shrink-0 border border-border bg-secondary text-ui-label text-foreground shadow-sm hover:bg-secondary/80 sm:h-10 sm:text-ui-body-sm"
                     >
-                      <Link href={`/reviews/write?productId=${racketId}`}>
+                      <Link href="/mypage?tab=orders">
                         <Pencil className="mr-1.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
-                        리뷰 작성하기
+                        이용내역에서 후기 작성
                       </Link>
                     </Button>
                   </div>
+                  <p className="break-keep text-ui-body-sm text-muted-foreground">
+                    구매확정 또는 대여확정된 이용내역에서 후기를 작성할 수 있어요.
+                  </p>
 
                   {mergedReviews.length > 0 ? (
                     <div className="space-y-4 sm:space-y-6">
@@ -970,10 +972,15 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                     <div className="min-w-0 break-words font-semibold text-foreground sm:truncate">
                                       {review?.status === "hidden"
                                         ? review?.ownedByMe
-                                          ? `${review?.user ?? "내 리뷰"} (비공개)`
-                                          : "비공개 리뷰"
+                                          ? `${review?.user ?? "내 후기"} (비공개)`
+                                          : "비공개 후기"
                                         : (review?.user ?? "익명")}
                                     </div>
+
+                                    <ReviewContextBadge
+                                      reviewContext={review?.reviewContext}
+                                      contextLabel={review?.contextLabel}
+                                    />
 
                                     {review?.status === "hidden" && (
                                       <Badge variant="outline" className="shrink-0 text-ui-label">
@@ -1141,7 +1148,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 });
                                                 router.refresh();
 
-                                                showSuccessToast("리뷰를 삭제했어요.");
+                                                showSuccessToast("후기를 삭제했어요.");
                                               } catch (err: any) {
                                                 showErrorToast(
                                                   err?.message || "리뷰 삭제에 실패했습니다.",
