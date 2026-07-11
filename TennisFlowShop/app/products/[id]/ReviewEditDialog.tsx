@@ -32,6 +32,8 @@ type Props = {
   onClose: () => void;
   onSubmit: () => void;
   busy?: boolean;
+  uploadingPhotos?: boolean;
+  onUploadingPhotosChange?: (uploading: boolean) => void;
   onChangeForm: Dispatch<SetStateAction<EditForm>>;
   onChangeHoverRating: Dispatch<SetStateAction<number | null>>;
 };
@@ -45,10 +47,12 @@ export default function ReviewEditDialog({
   onChangeForm,
   onChangeHoverRating,
   busy = false,
+  uploadingPhotos = false,
+  onUploadingPhotosChange,
 }: Props) {
   const isValid = validateReviewInput(editForm).ok;
   return (
-    <Dialog open={open} onOpenChange={(v) => (v ? undefined : onClose())}>
+    <Dialog open={open} onOpenChange={(v) => (v || uploadingPhotos ? undefined : onClose())}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>후기 수정</DialogTitle>
@@ -123,6 +127,7 @@ export default function ReviewEditDialog({
                 onChange={(arr) => onChangeForm((s) => ({ ...s, photos: arr }))}
                 max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
+                onUploadingChange={onUploadingPhotosChange}
               />
               <PhotosReorderGrid
                 value={editForm.photos}
@@ -137,6 +142,8 @@ export default function ReviewEditDialog({
             type="button"
             className="px-4 py-2 rounded-md border text-ui-body-sm"
             onClick={onClose}
+            disabled={busy || uploadingPhotos}
+            aria-disabled={busy || uploadingPhotos}
           >
             취소
           </button>
@@ -144,10 +151,10 @@ export default function ReviewEditDialog({
             type="button"
             className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
             onClick={onSubmit}
-            disabled={busy || !isValid}
-            aria-disabled={busy || !isValid}
+            disabled={busy || uploadingPhotos || !isValid}
+            aria-disabled={busy || uploadingPhotos || !isValid}
           >
-            저장
+            {busy ? "저장 중…" : uploadingPhotos ? "사진 업로드 중…" : "저장"}
           </button>
         </DialogFooter>
       </DialogContent>

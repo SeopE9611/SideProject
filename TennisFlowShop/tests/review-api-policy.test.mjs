@@ -252,3 +252,44 @@ test("CI 계약: test-contract job에서 review-security를 public surface 다�
   assert.ok(ci.includes("pnpm test:review-security"));
   assert.ok(ci.indexOf("Test public review surface") < ci.indexOf("Test review security and integrity"));
 });
+
+
+test("후기 POST body 계약: 일반 JSON 객체만 허용하고 검증 이후 필드에 접근한다", () => {
+  const postRoute = read("app/api/reviews/route.ts");
+
+  assert.ok(postRoute.includes("function isPlainRequestBody"));
+  assert.ok(postRoute.includes("!Array.isArray(value)"));
+  assert.ok(postRoute.includes('reason: "invalidBody"'));
+  assert.ok(postRoute.includes('message: "잘못된 후기 요청입니다."'));
+  assert.ok(
+    postRoute.indexOf("if (!isPlainRequestBody(body))") < postRoute.indexOf("const orderIdRaw = body.orderId"),
+  );
+  assert.ok(
+    postRoute.indexOf("if (!isPlainRequestBody(body))") <
+      postRoute.indexOf('const photosInput = "photos" in body ? body.photos : []'),
+  );
+});
+
+test("후기 수정 UI 계약: 사진 업로드 중 저장과 닫기를 차단하고 상태를 초기화한다", () => {
+  const productDialog = read("app/products/[id]/ReviewEditDialog.tsx");
+  const productClient = read("app/products/[id]/ProductDetailClient.tsx");
+  const racketDialog = read("app/rackets/[id]/_components/ReviewEditDialog.tsx");
+  const racketClient = read("app/rackets/[id]/_components/RacketDetailClient.tsx");
+  const mypage = read("app/mypage/tabs/ReviewList.tsx");
+
+  for (const source of [productDialog, racketDialog, mypage]) {
+    assert.ok(source.includes("onUploadingChange"));
+    assert.ok(source.includes("uploadingPhotos") || source.includes("uploadingEditPhotos"));
+  }
+  for (const source of [productDialog, racketDialog]) {
+    assert.ok(source.includes("disabled={busy || uploadingPhotos || !isValid}"));
+    assert.ok(source.includes("onUploadingPhotosChange"));
+  }
+  for (const source of [productClient, racketClient, mypage]) {
+    assert.ok(source.includes("사진 업로드가 끝난 후 저장해 주세요."));
+    assert.ok(source.includes("setUploadingEditPhotos(false)"));
+  }
+  assert.ok(mypage.includes("disabled={saving || uploadingEditPhotos"));
+  assert.ok(productClient.includes("uploadingPhotos={uploadingEditPhotos}"));
+  assert.ok(racketClient.includes("uploadingPhotos={uploadingEditPhotos}"));
+});

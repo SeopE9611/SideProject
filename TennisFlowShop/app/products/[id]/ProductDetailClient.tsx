@@ -322,6 +322,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [busyReviewId, setBusyReviewId] = useState<string | null>(null);
+  const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
 
   // 이미지 뷰어(확대) 전용 상태
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -341,6 +342,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const openEdit = (review: any) => {
+    setUploadingEditPhotos(false);
     setEditing(review);
     setEditForm({
       rating: typeof review.rating === "number" ? review.rating : "",
@@ -351,12 +353,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const closeEdit = () => {
+    setUploadingEditPhotos(false);
     setEditOpen(false);
     setEditing(null);
   };
 
   const submitEdit = async () => {
     if (!editing?._id) return;
+    if (uploadingEditPhotos) {
+      showErrorToast("사진 업로드가 끝난 후 저장해 주세요.");
+      return;
+    }
     const inputValidation = validateReviewInput(editForm);
     if (!inputValidation.ok) {
       showErrorToast(reviewInputMessage(inputValidation.reason));
@@ -1445,6 +1452,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
               onClose={closeEdit}
               onSubmit={submitEdit}
               busy={busyReviewId === String(editing?._id ?? "")}
+              uploadingPhotos={uploadingEditPhotos}
+              onUploadingPhotosChange={setUploadingEditPhotos}
               onChangeForm={setEditForm}
               onChangeHoverRating={setHoverRating}
             />
