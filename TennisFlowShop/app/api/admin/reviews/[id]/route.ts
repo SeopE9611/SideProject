@@ -8,8 +8,8 @@ import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { shapeAdminReview } from "@/lib/reviews/admin-review-shape";
 import { buildResolvedReviewContextExpression } from "@/lib/reviews/review-context.server";
+import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 
-type DbAny = any;
 const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
 const ALLOWED_PATH_PREFIXES = ["/storage/v1/object/public/tennis-images/"];
 const isAllowedHttpUrl = (v: unknown): v is string => {
@@ -25,30 +25,6 @@ const isAllowedHttpUrl = (v: unknown): v is string => {
     return false;
   }
 };
-
-async function updateProductRatingSummary(db: DbAny, productId: ObjectId) {
-  const agg = await db
-    .collection("reviews")
-    .aggregate([
-      { $match: { status: "visible", isDeleted: { $ne: true }, productId } },
-      { $group: { _id: null, avg: { $avg: "$rating" }, cnt: { $sum: 1 } } },
-    ])
-    .next();
-  if (agg)
-    await db.collection("products").updateOne(
-      { _id: productId },
-      {
-        $set: {
-          ratingAvg: Math.round(agg.avg * 10) / 10,
-          ratingCount: agg.cnt,
-        },
-      },
-    );
-  else
-    await db
-      .collection("products")
-      .updateOne({ _id: productId }, { $set: { ratingAvg: 0, ratingCount: 0 } });
-}
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
@@ -134,7 +110,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const _id = new ObjectId(id);
   const doc = await db
     .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const $set: any = { updatedAt: new Date() };
@@ -150,8 +126,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ message: "no changes" }, { status: 400 });
 
   await db.collection("reviews").updateOne({ _id }, { $set });
-  if (doc.productId && (body.rating !== undefined || body.status || body.visibility))
-    await updateProductRatingSummary(db, doc.productId);
+  if (body.rating !== undefined || body.status || body.visibility)
+    await refreshReviewSummaryCachesForReviewSafely(db, doc, "PATCH /api/admin/reviews/[id]");
 
   await appendAdminAudit(
     guard.db,
@@ -159,7 +135,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       type: "admin.reviews.patch",
       actorId: guard.admin._id,
       targetId: _id,
-      message: "리뷰 정보 수정",
+      message: "후기 정보 수정",
       diff: { fields: Object.keys($set) },
     },
     req,
@@ -180,7 +156,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const _id = new ObjectId(id);
   const doc = await db
     .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   await db
@@ -214,14 +190,14 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
     console.error("[admin/reviews] deductPoints failed (delete)", e);
   }
 
-  if (doc.productId) await updateProductRatingSummary(db, doc.productId);
+  await refreshReviewSummaryCachesForReviewSafely(db, doc, "DELETE /api/admin/reviews/[id]");
   await appendAdminAudit(
     guard.db,
     {
       type: "admin.reviews.delete",
       actorId: guard.admin._id,
       targetId: _id,
-      message: "리뷰 삭제 처리",
+      message: "후기 삭제 처리",
     },
     req,
   );

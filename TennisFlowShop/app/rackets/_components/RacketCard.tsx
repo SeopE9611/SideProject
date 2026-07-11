@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, Eye, ShoppingCart } from "lucide-react";
+import { Briefcase, Eye, ShoppingCart, Star } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
@@ -44,6 +44,10 @@ type RacketItem = {
     deposit: number;
     fee: { d7: number; d15: number; d30: number };
   };
+  ratingAvg?: number;
+  ratingAverage?: number;
+  ratingCount?: number;
+  reviewCount?: number;
   marketing?: {
     isFeatured?: boolean;
     isNew?: boolean;
@@ -184,6 +188,15 @@ const RacketCard = React.memo(
         : "대여 불가 상태입니다"
       : undefined;
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
+    const ratingAvg = Number(racket.ratingAvg ?? racket.ratingAverage ?? 0);
+    const ratingCount = Number(racket.ratingCount ?? racket.reviewCount ?? 0);
+    const ratingBadge = (
+      <div className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-ui-label text-muted-foreground">
+        <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
+        <span className="tabular-nums text-foreground">{Number.isFinite(ratingAvg) ? ratingAvg.toFixed(1) : "0.0"}</span>
+        <span className="tabular-nums">({Number.isFinite(ratingCount) ? Math.max(0, ratingCount) : 0})</span>
+      </div>
+    );
     const buyLabel = isApplyFlow ? "스트링 선택" : "스트링 선택 후 구매";
     const salePrice = getEffectiveRacketPrice(racket);
     const discountRate = getRacketDiscountRate(racket);
@@ -377,6 +390,7 @@ const RacketCard = React.memo(
                   </h3>
                 </Link>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
+                  {ratingBadge}
                   <ConditionBadge state={racket.condition} />
                   <RacketAvailBadge {...availability} />
                   {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
@@ -440,6 +454,7 @@ const RacketCard = React.memo(
           </Link>
 
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {ratingBadge}
             <ConditionBadge state={racket.condition} />
             <RacketAvailBadge {...availability} />
             {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
@@ -465,7 +480,11 @@ const RacketCard = React.memo(
     prev.racket.marketing?.isNew === next.racket.marketing?.isNew &&
     prev.racket.marketing?.isSale === next.racket.marketing?.isSale &&
     prev.racket.marketing?.salePrice === next.racket.marketing?.salePrice &&
-    prev.racket.price === next.racket.price,
+    prev.racket.price === next.racket.price &&
+    prev.racket.ratingAvg === next.racket.ratingAvg &&
+    prev.racket.ratingAverage === next.racket.ratingAverage &&
+    prev.racket.ratingCount === next.racket.ratingCount &&
+    prev.racket.reviewCount === next.racket.reviewCount,
 );
 
 export default RacketCard;

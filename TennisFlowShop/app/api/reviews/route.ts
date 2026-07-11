@@ -4,6 +4,7 @@ import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
 import { buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
+import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import {
   getReviewSubmissionBlockReason,
@@ -21,7 +22,6 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-type DbAny = any;
 
 /** ---- 이미지 화이트리스트 ----
  * 호스트/경로를 여기에 등록합니다.
@@ -64,49 +64,6 @@ const isAllowedHttpUrl = (v: unknown): v is string => {
     return false;
   }
 };
-
-// 상품 별점/리뷰수 집계 후 products 업데이트
-async function updateProductRatingSummary(db: DbAny, productIdObj: ObjectId, productIdStr: string) {
-  const col = db.collection("reviews");
-
-  const cursor = col.aggregate([
-    {
-      $match: {
-        status: "visible",
-        $or: [{ productId: productIdObj }, { productId: productIdStr }],
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        avg: { $avg: "$rating" },
-        cnt: { $sum: 1 },
-        last: { $max: "$createdAt" },
-      },
-    },
-  ]);
-
-  const agg = await cursor.next();
-  const products = db.collection("products");
-
-  if (agg) {
-    await products.updateOne(
-      { _id: productIdObj },
-      {
-        $set: {
-          ratingAvg: Math.round(agg.avg * 10) / 10,
-          ratingCount: agg.cnt,
-          lastReviewAt: agg.last,
-        },
-      },
-    );
-  } else {
-    await products.updateOne(
-      { _id: productIdObj },
-      { $set: { ratingAvg: 0, ratingCount: 0 }, $unset: { lastReviewAt: "" } },
-    );
-  }
-}
 
 export async function POST(req: Request) {
   const token = (await cookies()).get("accessToken")?.value;
@@ -246,7 +203,7 @@ export async function POST(req: Request) {
 
     const now = new Date();
     try {
-      await db.collection("reviews").insertOne({
+      const reviewDoc: any = {
         userId,
         reviewType: "rental",
         reviewContext: rentalTarget?.reviewContext ?? "rental",
@@ -272,7 +229,9 @@ export async function POST(req: Request) {
         createdAt: now,
         updatedAt: now,
         isDeleted: false,
-      });
+      };
+      const insertResult = await db.collection("reviews").insertOne(reviewDoc);
+      await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: insertResult.insertedId }, "POST /api/reviews");
     } catch (error) {
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
@@ -420,7 +379,7 @@ export async function POST(req: Request) {
       }
     }
 
-    await updateProductRatingSummary(db, productIdObj, productIdStr);
+    await refreshReviewSummaryCachesForReviewSafely(db, { ...doc, _id: reviewId }, "POST /api/reviews");
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
@@ -493,8 +452,9 @@ export async function POST(req: Request) {
 
     const now = new Date();
     let insertRes;
+    let reviewDoc: any;
     try {
-      insertRes = await db.collection("reviews").insertOne({
+      reviewDoc = {
         userId,
         service: "stringing",
         reviewType: "service",
@@ -512,7 +472,9 @@ export async function POST(req: Request) {
         createdAt: now,
         updatedAt: now,
         isDeleted: false,
-      });
+      };
+      insertRes = await db.collection("reviews").insertOne(reviewDoc);
+      await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: insertRes.insertedId }, "POST /api/reviews");
     } catch (error) {
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;

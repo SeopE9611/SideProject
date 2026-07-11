@@ -58,6 +58,10 @@ type RacketItem = {
     deposit: number;
     fee: { d7: number; d15: number; d30: number };
   };
+  ratingAvg?: number;
+  ratingAverage?: number;
+  ratingCount?: number;
+  reviewCount?: number;
 };
 
 // withTotal=1 응답은 페이지별 목록과 필터 조건 기준 전체 개수를 포함한다.
@@ -655,7 +659,7 @@ export default function FilterableRacketList({
                       <SelectContent className="dark:border-border dark:bg-card">
                         <SelectItem value="latest">최신순</SelectItem>
                         <SelectItem value="sales-desc">구매 많은순</SelectItem>
-                        <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
+                        <SelectItem value="reviews-desc">후기 많은순</SelectItem>
                         <SelectItem value="price-low">가격 낮은순</SelectItem>
                         <SelectItem value="price-high">가격 높은순</SelectItem>
                       </SelectContent>

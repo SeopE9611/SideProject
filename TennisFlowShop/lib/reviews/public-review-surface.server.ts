@@ -248,6 +248,34 @@ export async function buildPublicReviewSurfaceTargetMatch(
   return $or.length ? { $or } : null;
 }
 
+export function buildPublicReviewSummaryStages() {
+  return [
+    { $match: { status: "visible" } },
+    { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } },
+  ];
+}
+
+export async function getPublicReviewSummary(
+  db: Db,
+  target: PublicReviewSurfaceTarget,
+): Promise<PublicReviewSummary> {
+  const targetMatch = await buildPublicReviewSurfaceTargetMatch(db, target);
+  if (!targetMatch) return { average: 0, count: 0 };
+
+  const [summaryRow] = await db
+    .collection("reviews")
+    .aggregate([
+      { $match: { isDeleted: { $ne: true }, ...targetMatch } },
+      ...buildPublicReviewSummaryStages(),
+    ])
+    .toArray();
+
+  return {
+    average: summaryRow?.average ? Number(Number(summaryRow.average).toFixed(2)) : 0,
+    count: Number(summaryRow?.count ?? 0),
+  };
+}
+
 export async function getPublicReviewSurface(
   db: Db,
   params: {
@@ -302,10 +330,7 @@ export async function getPublicReviewSurface(
               },
             },
           ],
-          summary: [
-            { $match: { status: "visible" } },
-            { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } },
-          ],
+          summary: buildPublicReviewSummaryStages(),
         },
       },
     ])

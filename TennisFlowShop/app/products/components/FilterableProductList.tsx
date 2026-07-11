@@ -897,7 +897,7 @@ export default function FilterableProductList({
                       </SelectTrigger>
                       <SelectContent className="border-border dark:bg-card">
                         <SelectItem value="latest">최신순</SelectItem>
-                        <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
+                        <SelectItem value="reviews-desc">후기 많은순</SelectItem>
                         <SelectItem value="price-low">가격 낮은순</SelectItem>
                         <SelectItem value="price-high">가격 높은순</SelectItem>
                       </SelectContent>

@@ -5,8 +5,8 @@ import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { deductPoints } from "@/lib/points.service";
 import { validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
+import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 
-type DbAny = any;
 
 /** ---- 이미지 화이트리스트 ---- */
 const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
@@ -28,30 +28,6 @@ const isAllowedHttpUrl = (v: unknown): v is string => {
 };
 
 // 상품 별점/리뷰수 집계 보정 (status:'visible'만 집계)
-async function updateProductRatingSummary(db: DbAny, productId: ObjectId) {
-  const col = db.collection("reviews");
-  const cursor = col.aggregate([
-    { $match: { status: "visible", isDeleted: { $ne: true }, productId } },
-    { $group: { _id: null, avg: { $avg: "$rating" }, cnt: { $sum: 1 } } },
-  ]);
-  const agg = await cursor.next();
-  const products = db.collection("products");
-  if (agg) {
-    await products.updateOne(
-      { _id: productId },
-      {
-        $set: {
-          ratingAvg: Math.round(agg.avg * 10) / 10,
-          ratingCount: agg.cnt,
-        },
-      },
-    );
-  } else {
-    await products.updateOne({ _id: productId }, { $set: { ratingAvg: 0, ratingCount: 0 } });
-  }
-}
-
-// 수정: 내용/별점/공개여부/사진
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
@@ -79,7 +55,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .collection("reviews")
     .findOne(
       { _id, isDeleted: { $ne: true } },
-      { projection: { userId: 1, productId: 1, status: 1 } },
+      { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } },
     );
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -167,8 +143,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   // 상품 집계 갱신
   // visibility로 status가 바뀐 경우도 집계에 영향(visible만 집계)
-  if (doc.productId && (body.rating !== undefined || body.status || body.visibility)) {
-    await updateProductRatingSummary(db, doc.productId);
+  if (body.rating !== undefined || body.status || body.visibility) {
+    await refreshReviewSummaryCachesForReviewSafely(db, doc, "PATCH /api/reviews/[id]");
   }
 
   return NextResponse.json({ ok: true });
@@ -199,7 +175,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
 
   const doc = await db
     .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
@@ -243,7 +219,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     console.error("[reviews] deductPoints failed (delete)", e);
   }
 
-  if (doc.productId) await updateProductRatingSummary(db, doc.productId);
+  await refreshReviewSummaryCachesForReviewSafely(db, doc, "DELETE /api/reviews/[id]");
 
   return NextResponse.json({ ok: true });
 }
