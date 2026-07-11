@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { REVIEW_CONTENT_MAX_LENGTH, REVIEW_CONTENT_MIN_LENGTH, REVIEW_RATING_MIN } from "@/lib/reviews/review-input-policy";
 import type { CanonicalReviewTarget, ReviewContext, ReviewSubjectType } from "@/lib/reviews/review-target";
 import { getReviewContextLabel } from "@/lib/reviews/review-target";
 import { buildReviewSubmissionPayload, canonicalHrefForTarget, getRequiredTargetError, getReviewDestination, getReviewPostFailureState } from "@/lib/reviews/review-write";
@@ -94,14 +95,11 @@ export default function ReviewWritePage() {
   const sp = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const rawGuestMode = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
-  const guestOrderMode = rawGuestMode === "off" || rawGuestMode === "legacy" || rawGuestMode === "on" ? rawGuestMode : "legacy";
-  const allowGuestCheckout = guestOrderMode === "on";
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [eligibility, setEligibility] = useState<EligibilityPayload | null>(null);
   const [state, setState] = useState<EligState>("loading");
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [content, setContent] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -113,13 +111,14 @@ export default function ReviewWritePage() {
     const qs = sp.toString();
     return qs ? `/reviews/write?${qs}` : "/reviews/write";
   }, [sp]);
-  const blockedByLoginGate = !allowGuestCheckout && authChecked && !isAuthenticated;
+  const blockedByLoginGate = authChecked && !isAuthenticated;
   const canonicalTarget = eligibility?.nextTarget ?? eligibility?.target ?? null;
   const targetError = getRequiredTargetError(canonicalTarget);
   const reviewDestination = canonicalTarget ? getReviewDestination(canonicalTarget) : null;
   const hasValidCanonicalTarget = Boolean(canonicalTarget && canonicalTarget.eligible && !canonicalTarget.reviewed && !targetError);
+  const invalidForm = rating < REVIEW_RATING_MIN || content.trim().length < REVIEW_CONTENT_MIN_LENGTH;
   const locked = state !== "ok" || !hasValidCanonicalTarget || isSubmitting;
-  const isDirty = useMemo(() => rating !== 5 || content.trim().length > 0 || photos.length > 0, [rating, content, photos.length]);
+  const isDirty = useMemo(() => rating !== 0 || content.trim().length > 0 || photos.length > 0, [rating, content, photos.length]);
 
   useUnsavedChangesGuard(isDirty && !isSubmitting);
   useBackNavigationGuard(isDirty && !isSubmitting);
@@ -129,11 +128,6 @@ export default function ReviewWritePage() {
   };
 
   useEffect(() => {
-    if (allowGuestCheckout) {
-      setAuthChecked(true);
-      setIsAuthenticated(true);
-      return;
-    }
     let cancelled = false;
     (async () => {
       try {
@@ -149,7 +143,7 @@ export default function ReviewWritePage() {
     return () => {
       cancelled = true;
     };
-  }, [allowGuestCheckout]);
+  }, []);
 
   useEffect(() => {
     if (typeof document !== "undefined" && document.cookie.includes("__e2e=1") && photos.length === 0) {
@@ -158,7 +152,7 @@ export default function ReviewWritePage() {
   }, [photos.length]);
 
   useEffect(() => {
-    if (!allowGuestCheckout && !authChecked) return;
+    if (!authChecked) return;
     if (blockedByLoginGate) return;
     const qs = new URLSearchParams();
     for (const key of ["reviewContext", "orderId", "productId", "applicationId", "rentalId", "service"]) {
@@ -196,7 +190,7 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [allowGuestCheckout, authChecked, blockedByLoginGate, sp]);
+  }, [authChecked, blockedByLoginGate, sp]);
 
   useEffect(() => {
     if (!canonicalTarget || canonicalRewriteDone.current || isDirty || isSubmitting) return;
@@ -218,7 +212,15 @@ export default function ReviewWritePage() {
 
   const onSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault?.();
-    if (locked || !canonicalTarget) return;
+    if (locked || invalidForm || !canonicalTarget) return;
+    if (rating < REVIEW_RATING_MIN) {
+      showErrorToast("별점은 1점부터 5점까지 선택해 주세요.");
+      return;
+    }
+    if (content.trim().length < REVIEW_CONTENT_MIN_LENGTH) {
+      showErrorToast("후기 내용은 5자 이상 입력해 주세요.");
+      return;
+    }
     const error = getRequiredTargetError(canonicalTarget);
     if (error) {
       setState("invalid");
@@ -259,7 +261,7 @@ export default function ReviewWritePage() {
   const reviewPlaceholder = canonicalTarget?.reviewContext === "rental" || canonicalTarget?.reviewContext === "rental_stringing" ? "대여 라켓의 사용감과 대여 경험을 적어주세요." : canonicalTarget?.reviewContext === "standalone_stringing" || canonicalTarget?.reviewContext === "product_stringing" ? "상품 사용감과 교체서비스 경험을 함께 적어주세요." : "상품의 사용감과 만족도를 적어주세요.";
   const badge = state === "loading" ? "검증 중…" : state === "ok" ? "작성 가능" : state === "already" ? "이미 작성한 대상입니다" : state === "unauthorized" ? "로그인이 필요합니다" : state === "error" ? "오류" : "작성할 수 없어요";
 
-  if (!allowGuestCheckout && !authChecked) {
+  if (!authChecked) {
     return (
       <div className="min-h-screen bg-background">
         <PublicPageHero eyebrow="후기 작성" title="후기 작성" description="구매·서비스·대여 경험을 다른 사용자에게 공유해 주세요." />
@@ -293,12 +295,12 @@ export default function ReviewWritePage() {
                 {state === "invalid" && !canonicalTarget && <EmptyState title="작성할 후기를 찾을 수 없어요" description="구매확정 또는 이용확정이 완료된 내역에서 후기를 작성할 수 있습니다." action={<Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(() => router.replace("/mypage?tab=orders"))} className="w-full sm:w-auto">마이페이지에서 확인</Button>} />}
 
                 <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">별점</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">이용 경험에 가까운 점수를 선택하세요.</p></div><div className="rounded-2xl border border-border bg-muted/20 px-4 py-5 shadow-sm"><Stars value={rating} onChange={setRating} disabled={locked} /><div className="mt-3 text-center text-ui-body-sm font-medium text-foreground">{rating}점</div></div></section>
-                <section className="space-y-3"><div className="flex items-end justify-between gap-3"><Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label><span className="text-ui-label text-muted-foreground tabular-nums">{content.length} / 1000자</span></div><Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={reviewPlaceholder} className="min-h-[180px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring" disabled={locked} /></section>
+                <section className="space-y-3"><div className="flex items-end justify-between gap-3"><Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label><span className="text-ui-label text-muted-foreground tabular-nums">{content.length} / {REVIEW_CONTENT_MAX_LENGTH}자</span></div><Textarea value={content} onChange={(e) => setContent(e.target.value)} maxLength={REVIEW_CONTENT_MAX_LENGTH} placeholder={reviewPlaceholder} className="min-h-[180px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring" disabled={locked} /></section>
                 <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} previewMode="queue" /><PhotosReorderGrid value={photos} onChange={setPhotos} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
-                <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end"><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto">{reviewDestination?.label ?? "후기 관리로 이동"}</Button><Button data-cy="submit-review" type="submit" disabled={locked || isUploading} aria-disabled={locked || isUploading} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto">{isUploading ? "이미지 업로드 중..." : "후기 등록"}</Button></div>
+                <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end"><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto">{reviewDestination?.label ?? "후기 관리로 이동"}</Button><Button data-cy="submit-review" type="submit" disabled={locked || invalidForm || isUploading} aria-disabled={locked || invalidForm || isUploading} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto">{isUploading ? "이미지 업로드 중..." : "후기 등록"}</Button></div>
               </form>
             </SummaryCard>
-            <PublicSurface className="space-y-2 lg:sticky lg:top-24" padding="md"><h2 className="text-ui-body-sm font-semibold text-foreground">등록 전 확인</h2><ul className="space-y-1 text-ui-body-sm text-muted-foreground"><li>• 실제 사용 경험을 중심으로 작성해주세요.</li><li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li><li>• 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.</li></ul></PublicSurface>
+            <PublicSurface className="space-y-2 lg:sticky lg:top-24" padding="md"><h2 className="text-ui-body-sm font-semibold text-foreground">등록 전 확인</h2><ul className="space-y-1 text-ui-body-sm text-muted-foreground"><li>• 실제 사용 경험을 중심으로 작성해주세요.</li><li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li><li>• 하나의 후기 대상에는 한 번만 후기를 작성할 수 있습니다.</li></ul></PublicSurface>
           </div>
         </div>
       </SiteContainer>

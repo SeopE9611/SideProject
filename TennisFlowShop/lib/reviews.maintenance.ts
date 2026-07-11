@@ -100,6 +100,21 @@ export async function ensureReviewIndexes(db: Db) {
     },
   );
 
+  // 신정책 유니크 인덱스: (userId, rentalId) — 대여/대여+교체서비스 리뷰 1회
+  await ensureIndex(
+    db,
+    "reviews",
+    { userId: 1, rentalId: 1 },
+    {
+      name: "user_rental_unique",
+      unique: true,
+      partialFilterExpression: {
+        rentalId: { $exists: true },
+        isDeleted: false,
+      },
+    },
+  );
+
   // 조회/정렬용 인덱스(중복이면 ensureIndex가 스킵)
   await ensureIndex(db, "reviews", { userId: 1, createdAt: -1 }, { name: "user_createdAt" });
   await ensureIndex(

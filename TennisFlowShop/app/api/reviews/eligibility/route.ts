@@ -1,6 +1,12 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
-import { getReviewSubmissionBlockReason, isOrderReviewEligible, isOrderServiceReviewOnly, isRentalReviewEligible, isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import {
+  getReviewSubmissionBlockReason,
+  isOrderReviewEligible,
+  isOrderServiceReviewOnly,
+  isRentalReviewEligible,
+  isStringingReviewBlockedStatus,
+} from "@/lib/reviews/review-policy";
 import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import type { CanonicalReviewTarget, ReviewTargetBundle } from "@/lib/reviews/review-target";
 import {
@@ -14,13 +20,33 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 const isRentalReviewBlockedStatus = (status: unknown) =>
-  ["created", "pending", "paid", "out", "canceled", "cancelled", "취소", "대여중", "준비중", "수령전"].includes(
-    String(status ?? "").trim().toLowerCase(),
+  [
+    "created",
+    "pending",
+    "paid",
+    "out",
+    "canceled",
+    "cancelled",
+    "취소",
+    "대여중",
+    "준비중",
+    "수령전",
+  ].includes(
+    String(status ?? "")
+      .trim()
+      .toLowerCase(),
   );
 
 function pickBundleTarget(bundle?: ReviewTargetBundle | null, preferredProductId?: string | null) {
   if (!bundle) return null;
-  return (preferredProductId ? bundle.targets.find((target) => target.primaryProductId === preferredProductId) : null) ?? bundle.nextTarget ?? bundle.targets[0] ?? null;
+  return (
+    (preferredProductId
+      ? bundle.targets.find((target) => target.primaryProductId === preferredProductId)
+      : null) ??
+    bundle.nextTarget ??
+    bundle.targets[0] ??
+    null
+  );
 }
 
 function eligibilityPayload(params: {
@@ -56,65 +82,6 @@ function eligibilityPayload(params: {
     coveredBySubjectId: target?.coveredBySubjectId ?? null,
     redirectHref: params.redirectHref ?? null,
   };
-}
-
-async function findReviewableStringingApplicationForProduct(
-  db: any,
-  userId: ObjectId,
-  productId: string,
-) {
-  const productIdObj = new ObjectId(productId);
-  const orders = await db
-    .collection("orders")
-    .find({
-      userId,
-      "items.productId": { $in: [productIdObj, productId] },
-      $or: [{ userConfirmedAt: { $exists: true, $ne: null } }, { status: "구매확정" }],
-    })
-    .project({ _id: 1 })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  const orderIds = orders.flatMap((o: any) => [o._id, String(o._id)]);
-  const apps = await db
-    .collection("stringing_applications")
-    .find({
-      userId,
-      userConfirmedAt: { $exists: true, $ne: null },
-      $or: [
-        { orderId: { $in: orderIds } },
-        {
-          "stringDetails.stringItems.productId": {
-            $in: [productIdObj, productId],
-          },
-        },
-        {
-          "stringDetails.racketLines.stringProductId": {
-            $in: [productIdObj, productId],
-          },
-        },
-      ],
-    })
-    .project({ _id: 1, status: 1, stringDetails: 1, createdAt: 1 })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  const reviewed = await db
-    .collection("reviews")
-    .find({
-      userId,
-      service: "stringing",
-      serviceApplicationId: { $in: apps.map((a: any) => a._id) },
-      isDeleted: { $ne: true },
-    })
-    .project({ serviceApplicationId: 1 })
-    .toArray();
-  const reviewedSet = new Set(reviewed.map((r: any) => String(r.serviceApplicationId)));
-  return (
-    apps.find(
-      (a: any) => !isStringingReviewBlockedStatus(a.status) && !reviewedSet.has(String(a._id)),
-    ) ?? null
-  );
 }
 
 export async function GET(req: Request) {
@@ -163,13 +130,27 @@ export async function GET(req: Request) {
     const rentalTarget = await resolveRentalReviewTarget(db, userId, rentalId);
     if (isRentalReviewBlockedStatus(rental.status)) {
       return NextResponse.json(
-        eligibilityPayload({ eligible: false, reason: "invalidStatus", bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId }),
+        eligibilityPayload({
+          eligible: false,
+          reason: "invalidStatus",
+          bundle: rentalTarget?.targetBundle,
+          subjectType: "rental",
+          subjectId: rentalId,
+          suggestedRentalId: rentalId,
+        }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
     if (!isRentalReviewEligible(rental)) {
       return NextResponse.json(
-        eligibilityPayload({ eligible: false, reason: "notConfirmed", bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId }),
+        eligibilityPayload({
+          eligible: false,
+          reason: "notConfirmed",
+          bundle: rentalTarget?.targetBundle,
+          subjectType: "rental",
+          subjectId: rentalId,
+          suggestedRentalId: rentalId,
+        }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -180,12 +161,27 @@ export async function GET(req: Request) {
     });
     if (already) {
       return NextResponse.json(
-        eligibilityPayload({ eligible: false, reason: "already", bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId }),
+        eligibilityPayload({
+          eligible: false,
+          reason: "already",
+          bundle: rentalTarget?.targetBundle,
+          subjectType: "rental",
+          subjectId: rentalId,
+          suggestedRentalId: rentalId,
+        }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
     return NextResponse.json(
-      eligibilityPayload({ eligible: true, reason: null, bundle: rentalTarget?.targetBundle, subjectType: "rental", subjectId: rentalId, suggestedRentalId: rentalId, suggestedApplicationId: rentalTarget?.serviceApplicationId ?? null }),
+      eligibilityPayload({
+        eligible: true,
+        reason: null,
+        bundle: rentalTarget?.targetBundle,
+        subjectType: "rental",
+        subjectId: rentalId,
+        suggestedRentalId: rentalId,
+        suggestedApplicationId: rentalTarget?.serviceApplicationId ?? null,
+      }),
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -239,8 +235,18 @@ export async function GET(req: Request) {
           isDeleted: { $ne: true },
           $or: [
             { orderId: { $in: [orderIdObj, orderId] }, reviewContext: "product_stringing" },
-            ...(orderTarget.serviceApplicationId && ObjectId.isValid(orderTarget.serviceApplicationId)
-              ? [{ serviceApplicationId: { $in: [new ObjectId(orderTarget.serviceApplicationId), orderTarget.serviceApplicationId] } }]
+            ...(orderTarget.serviceApplicationId &&
+            ObjectId.isValid(orderTarget.serviceApplicationId)
+              ? [
+                  {
+                    serviceApplicationId: {
+                      $in: [
+                        new ObjectId(orderTarget.serviceApplicationId),
+                        orderTarget.serviceApplicationId,
+                      ],
+                    },
+                  },
+                ]
               : []),
           ],
         });
@@ -269,12 +275,30 @@ export async function GET(req: Request) {
       });
       if (already)
         return NextResponse.json(
-          eligibilityPayload({ eligible: false, reason: "already", bundle: orderTarget?.targetBundle, target: pickBundleTarget(orderTarget?.targetBundle, productId), subjectType: "order", subjectId: orderId, suggestedOrderId: orderId, suggestedProductId: productId }),
+          eligibilityPayload({
+            eligible: false,
+            reason: "already",
+            bundle: orderTarget?.targetBundle,
+            target: pickBundleTarget(orderTarget?.targetBundle, productId),
+            subjectType: "order",
+            subjectId: orderId,
+            suggestedOrderId: orderId,
+            suggestedProductId: productId,
+          }),
           { headers: { "Cache-Control": "no-store" } },
         );
 
       return NextResponse.json(
-        eligibilityPayload({ eligible: true, reason: null, bundle: orderTarget?.targetBundle, target: pickBundleTarget(orderTarget?.targetBundle, productId), subjectType: "order", subjectId: orderId, suggestedOrderId: orderId, suggestedProductId: productId }),
+        eligibilityPayload({
+          eligible: true,
+          reason: null,
+          bundle: orderTarget?.targetBundle,
+          target: pickBundleTarget(orderTarget?.targetBundle, productId),
+          subjectType: "order",
+          subjectId: orderId,
+          suggestedOrderId: orderId,
+          suggestedProductId: productId,
+        }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -331,7 +355,12 @@ export async function GET(req: Request) {
         ({ order, serviceOnly }) => serviceOnly && !reviewedSet.has(String(order._id)),
       )?.order;
       if (integratedOrder) {
-        const target = await resolveOrderReviewTarget(db, userId, String(integratedOrder._id), productId);
+        const target = await resolveOrderReviewTarget(
+          db,
+          userId,
+          String(integratedOrder._id),
+          productId,
+        );
         return NextResponse.json(
           eligibilityPayload({
             eligible: true,
@@ -347,21 +376,29 @@ export async function GET(req: Request) {
           { headers: { "Cache-Control": "no-store" } },
         );
       }
-      const serviceApp = await findReviewableStringingApplicationForProduct(db, userId, productId);
       return NextResponse.json(
-        {
-          eligible: false,
-          reason: "already",
-          suggestedApplicationId: serviceApp ? String(serviceApp._id) : null,
-          targetLabel: serviceApp ? "스트링·교체서비스 후기" : undefined,
-        },
+        { eligible: false, reason: "already" },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
 
-    const candidateTarget = await resolveOrderReviewTarget(db, userId, String(candidate._id), productId);
+    const candidateTarget = await resolveOrderReviewTarget(
+      db,
+      userId,
+      String(candidate._id),
+      productId,
+    );
     return NextResponse.json(
-      eligibilityPayload({ eligible: true, reason: null, bundle: candidateTarget?.targetBundle, target: pickBundleTarget(candidateTarget?.targetBundle, productId), subjectType: "order", subjectId: String(candidate._id), suggestedOrderId: String(candidate._id), suggestedProductId: productId }),
+      eligibilityPayload({
+        eligible: true,
+        reason: null,
+        bundle: candidateTarget?.targetBundle,
+        target: pickBundleTarget(candidateTarget?.targetBundle, productId),
+        subjectType: "order",
+        subjectId: String(candidate._id),
+        suggestedOrderId: String(candidate._id),
+        suggestedProductId: productId,
+      }),
       { headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -422,7 +459,11 @@ export async function GET(req: Request) {
       .find({
         userId,
         orderId: orderIdObj,
-        productId: { $in: productIds.map((pid) => new ObjectId(pid)) },
+        productId: {
+          $in: productIds.flatMap((pid) =>
+            ObjectId.isValid(pid) ? [new ObjectId(pid), pid] : [pid],
+          ),
+        },
         isDeleted: { $ne: true },
       })
       .project({ productId: 1 })
@@ -498,12 +539,23 @@ export async function GET(req: Request) {
                   })
                 : undefined,
           }),
-          { status: blockReason === "notFound" ? 404 : 200, headers: { "Cache-Control": "no-store" } },
+          {
+            status: blockReason === "notFound" ? 404 : 200,
+            headers: { "Cache-Control": "no-store" },
+          },
         );
       }
 
       return NextResponse.json(
-        eligibilityPayload({ eligible: true, reason: null, bundle, target: bundle?.nextTarget ?? target, subjectType: "application", subjectId: applicationId, suggestedApplicationId: applicationId }),
+        eligibilityPayload({
+          eligible: true,
+          reason: null,
+          bundle,
+          target: bundle?.nextTarget ?? target,
+          subjectType: "application",
+          subjectId: applicationId,
+          suggestedApplicationId: applicationId,
+        }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -519,7 +571,18 @@ export async function GET(req: Request) {
             { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] },
           ],
         },
-        { projection: { _id: 1, createdAt: 1, desiredDateTime: 1, status: 1, orderId: 1, rentalId: 1, userConfirmedAt: 1, stringDetails: 1 } },
+        {
+          projection: {
+            _id: 1,
+            createdAt: 1,
+            desiredDateTime: 1,
+            status: 1,
+            orderId: 1,
+            rentalId: 1,
+            userConfirmedAt: 1,
+            stringDetails: 1,
+          },
+        },
       )
       .sort({ createdAt: -1 })
       .toArray();
@@ -533,16 +596,37 @@ export async function GET(req: Request) {
 
     const appIds = myApps.map((app) => String(app._id));
     const [referencingOrder, referencingRental, bundlesByApplicationId] = await Promise.all([
-      db.collection("orders").find({ userId, stringingApplicationId: { $in: appIds.flatMap((id) => [id, new ObjectId(id)]) } }).project({ _id: 1, stringingApplicationId: 1 }).toArray(),
-      db.collection("rental_orders").find({ userId, stringingApplicationId: { $in: appIds.flatMap((id) => [id, new ObjectId(id)]) } }).project({ _id: 1, stringingApplicationId: 1 }).toArray(),
+      db
+        .collection("orders")
+        .find({
+          userId,
+          stringingApplicationId: { $in: appIds.flatMap((id) => [id, new ObjectId(id)]) },
+        })
+        .project({ _id: 1, stringingApplicationId: 1 })
+        .toArray(),
+      db
+        .collection("rental_orders")
+        .find({
+          userId,
+          stringingApplicationId: { $in: appIds.flatMap((id) => [id, new ObjectId(id)]) },
+        })
+        .project({ _id: 1, stringingApplicationId: 1 })
+        .toArray(),
       resolveApplicationReviewTargetBundlesBatch(db, userId, myApps),
     ]);
-    const reverseLinkedIds = new Set([...referencingOrder, ...referencingRental].map((doc: any) => String(doc.stringingApplicationId)));
+    const reverseLinkedIds = new Set(
+      [...referencingOrder, ...referencingRental].map((doc: any) =>
+        String(doc.stringingApplicationId),
+      ),
+    );
     const candidate = myApps.find((app: any) => {
-      if (reverseLinkedIds.has(String(app._id)) || isStringingReviewBlockedStatus(app.status)) return false;
+      if (reverseLinkedIds.has(String(app._id)) || isStringingReviewBlockedStatus(app.status))
+        return false;
       const bundle = bundlesByApplicationId.get(String(app._id));
       const target = bundle?.nextTarget ?? null;
-      return target?.reviewContext === "standalone_stringing" && target.eligible && !target.reviewed;
+      return (
+        target?.reviewContext === "standalone_stringing" && target.eligible && !target.reviewed
+      );
     });
 
     if (!candidate) {

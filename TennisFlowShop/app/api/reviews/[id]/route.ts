@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { deductPoints } from "@/lib/points.service";
-import { z } from "zod";
+import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 
 type DbAny = any;
 
@@ -92,14 +92,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   if (!isOwner && !isAdmin) return NextResponse.json({ message: "forbidden" }, { status: 403 });
 
-  const PatchSchema = z.object({
-    content: z.string().trim().min(5, "내용은 5자 이상").max(2000, "2000자 이내").optional(),
-    rating: z.number().int().min(1).max(5).optional(),
-    status: z.enum(["visible", "hidden"]).optional(),
-    visibility: z.enum(["public", "private"]).optional(),
-    photos: z.array(z.string()).max(5).optional(),
-  });
-
   // 깨진 JSON이면 throw → 500 방지
   let raw: unknown;
   try {
@@ -108,15 +100,39 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ message: "invalid_json" }, { status: 400 });
   }
 
-  // zod parse(throw) 대신 safeParse로 400 응답 정리
-  const parsed = PatchSchema.safeParse(raw);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { message: "validation_error", details: parsed.error.issues },
-      { status: 400 },
-    );
+  const rawBody = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const body: {
+    content?: string;
+    rating?: number;
+    status?: "visible" | "hidden";
+    visibility?: "public" | "private";
+    photos?: string[];
+  } = {};
+  if (typeof rawBody.status === "string" && ["visible", "hidden"].includes(rawBody.status)) {
+    body.status = rawBody.status as "visible" | "hidden";
   }
-  const body = parsed.data;
+  if (
+    typeof rawBody.visibility === "string" &&
+    ["public", "private"].includes(rawBody.visibility)
+  ) {
+    body.visibility = rawBody.visibility as "public" | "private";
+  }
+  if ("content" in rawBody || "rating" in rawBody || "photos" in rawBody) {
+    const inputValidation = validateReviewInput({
+      rating: rawBody.rating ?? 1,
+      content: rawBody.content ?? "수정 유지",
+      photos: rawBody.photos ?? [],
+    });
+    if (!inputValidation.ok) {
+      return NextResponse.json(
+        { ok: false, reason: inputValidation.reason, message: inputValidation.reason },
+        { status: 400 },
+      );
+    }
+    if ("content" in rawBody) body.content = inputValidation.value.content;
+    if ("rating" in rawBody) body.rating = inputValidation.value.rating;
+    if ("photos" in rawBody) body.photos = inputValidation.value.photos;
+  }
 
   // visibility만 보낸 케이스도 변경으로 인정해야 함(기존: no changes로 막힐 수 있음)
   if (
@@ -132,14 +148,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const $set: any = { updatedAt: new Date() };
 
   if (typeof body.content === "string") $set.content = body.content.trim();
-  if (typeof body.rating === "number") $set.rating = Math.max(1, Math.min(5, body.rating));
+  if (typeof body.rating === "number") $set.rating = body.rating;
   if (body.status === "visible" || body.status === "hidden") $set.status = body.status;
   if (body.visibility) {
     $set.status = body.visibility === "public" ? "visible" : "hidden";
   }
   if (Array.isArray(body.photos)) {
     const cleanedList = body.photos.filter(isAllowedHttpUrl).map((s: string) => s.trim());
-    $set.photos = Array.from(new Set<string>(cleanedList)).slice(0, 5);
+    if (cleanedList.length !== body.photos.length) {
+      return NextResponse.json(
+        { ok: false, reason: "invalidPhotos", message: "invalidPhotos" },
+        { status: 400 },
+      );
+    }
+    $set.photos = Array.from(new Set<string>(cleanedList));
   }
 
   if (Object.keys($set).length === 1)

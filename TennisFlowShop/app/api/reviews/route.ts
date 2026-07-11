@@ -10,6 +10,7 @@ import {
   isRentalReviewEligible,
   isStandaloneStringingReviewEligible,
 } from "@/lib/reviews/review-policy";
+import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import { getReviewContextLabel } from "@/lib/reviews/review-target";
 import {
   resolveOrderReviewTarget,
@@ -28,6 +29,21 @@ type DbAny = any;
  */
 const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
 const ALLOWED_PATH_PREFIXES = ["/storage/v1/object/public/tennis-images/"];
+
+function isDuplicateKeyError(error: unknown): boolean {
+  return Boolean(
+    error &&
+    typeof error === "object" &&
+    ("code" in error ? (error as { code?: unknown }).code === 11000 : false),
+  );
+}
+
+function duplicateReviewResponse() {
+  return NextResponse.json(
+    { ok: false, reason: "already", message: "이미 이 대상의 후기를 작성했습니다." },
+    { status: 409 },
+  );
+}
 
 /** http/https + 화이트리스트(host, path) 체크 */
 const isAllowedHttpUrl = (v: unknown): v is string => {
@@ -127,17 +143,30 @@ export async function POST(req: Request) {
     userName = user?.name ?? null;
   } catch {}
 
-  const rating = Number(body.rating);
-  const content = String(body.content ?? "").trim();
+  const inputValidation = validateReviewInput({
+    rating: body.rating,
+    content: body.content,
+    photos: Array.isArray(body.photos) ? body.photos : [],
+  });
+  if (!inputValidation.ok) {
+    return NextResponse.json(
+      { ok: false, reason: inputValidation.reason, message: inputValidation.reason },
+      { status: 400 },
+    );
+  }
+  const { rating, content } = inputValidation.value;
 
   // 사진 정제 (화이트리스트)
-  const photosInput = Array.isArray(body.photos) ? body.photos : [];
-  const cleanedList = photosInput.filter(isAllowedHttpUrl).map((s: string) => s.trim());
-  const photosClean = Array.from(new Set<string>(cleanedList)).slice(0, 5);
-
-  if (!rating || rating < 1 || rating > 5)
-    return NextResponse.json({ message: "invalid rating" }, { status: 400 });
-  if (!content) return NextResponse.json({ message: "empty content" }, { status: 400 });
+  const cleanedList = inputValidation.value.photos
+    .filter(isAllowedHttpUrl)
+    .map((s: string) => s.trim());
+  if (cleanedList.length !== inputValidation.value.photos.length) {
+    return NextResponse.json(
+      { ok: false, reason: "invalidPhotos", message: "invalidPhotos" },
+      { status: 400 },
+    );
+  }
+  const photosClean = Array.from(new Set<string>(cleanedList));
 
   // 라켓 대여 리뷰
   if (body.rentalId) {
@@ -172,35 +201,41 @@ export async function POST(req: Request) {
       rentalId: { $in: [rentalIdObj, rentalIdStr] },
       isDeleted: { $ne: true },
     });
-    if (already) return NextResponse.json({ message: "already" }, { status: 409 });
+    if (already) return duplicateReviewResponse();
 
     const now = new Date();
-    await db.collection("reviews").insertOne({
-      userId,
-      reviewType: "rental",
-      reviewContext: rentalTarget?.reviewContext ?? "rental",
-      contextLabel: rentalTarget?.contextLabel ?? getReviewContextLabel("rental"),
-      rentalId: rentalIdObj,
-      serviceApplicationId:
-        rentalTarget?.serviceApplicationId && ObjectId.isValid(rentalTarget.serviceApplicationId)
-          ? new ObjectId(rentalTarget.serviceApplicationId)
-          : undefined,
-      relatedProductIds: rentalTarget?.relatedProductIds ?? [],
-      relatedRacketIds:
-        rentalTarget?.relatedRacketIds ?? (rental.racketId ? [String(rental.racketId)] : []),
-      racketId:
-        rental.racketId && ObjectId.isValid(String(rental.racketId))
-          ? new ObjectId(String(rental.racketId))
-          : undefined,
-      rating,
-      content,
-      photos: photosClean,
-      status: "visible",
-      helpfulCount: 0,
-      userName,
-      createdAt: now,
-      updatedAt: now,
-    });
+    try {
+      await db.collection("reviews").insertOne({
+        userId,
+        reviewType: "rental",
+        reviewContext: rentalTarget?.reviewContext ?? "rental",
+        contextLabel: rentalTarget?.contextLabel ?? getReviewContextLabel("rental"),
+        rentalId: rentalIdObj,
+        serviceApplicationId:
+          rentalTarget?.serviceApplicationId && ObjectId.isValid(rentalTarget.serviceApplicationId)
+            ? new ObjectId(rentalTarget.serviceApplicationId)
+            : undefined,
+        relatedProductIds: rentalTarget?.relatedProductIds ?? [],
+        relatedRacketIds:
+          rentalTarget?.relatedRacketIds ?? (rental.racketId ? [String(rental.racketId)] : []),
+        racketId:
+          rental.racketId && ObjectId.isValid(String(rental.racketId))
+            ? new ObjectId(String(rental.racketId))
+            : undefined,
+        rating,
+        content,
+        photos: photosClean,
+        status: "visible",
+        helpfulCount: 0,
+        userName,
+        createdAt: now,
+        updatedAt: now,
+        isDeleted: false,
+      });
+    } catch (error) {
+      if (isDuplicateKeyError(error)) return duplicateReviewResponse();
+      throw error;
+    }
     // TODO: 라켓 대여 리뷰 포인트 정책이 정해지면 적립 로직을 연결합니다.
     return NextResponse.json({ ok: true }, { status: 201 });
   }
@@ -278,7 +313,7 @@ export async function POST(req: Request) {
       delete dupFilter.productId;
     }
     const already = await db.collection("reviews").findOne(dupFilter);
-    if (already) return NextResponse.json({ message: "already" }, { status: 409 });
+    if (already) return duplicateReviewResponse();
 
     const now = new Date();
     const doc: any = {
@@ -303,10 +338,17 @@ export async function POST(req: Request) {
       userName,
       createdAt: now,
       updatedAt: now,
+      isDeleted: false,
     };
     if (orderIdObj) doc.orderId = orderIdObj;
 
-    const insertRes = await db.collection("reviews").insertOne(doc);
+    let insertRes;
+    try {
+      insertRes = await db.collection("reviews").insertOne(doc);
+    } catch (error) {
+      if (isDuplicateKeyError(error)) return duplicateReviewResponse();
+      throw error;
+    }
     const reviewId = insertRes.insertedId;
 
     // 포인트 적립 (보수적 시작)
@@ -397,32 +439,43 @@ export async function POST(req: Request) {
     }
 
     // 신청서 단위 중복 작성 방지
+    const applicationIdCandidates = [appIdObj, appIdStr];
     const already = await db.collection("reviews").findOne({
       userId,
-      service: "stringing",
-      $or: [{ serviceApplicationId: appIdObj }, { serviceApplicationId: appIdStr }],
+      isDeleted: { $ne: true },
+      $or: [
+        { serviceApplicationId: { $in: applicationIdCandidates } },
+        { applicationId: { $in: applicationIdCandidates } },
+      ],
     });
-    if (already) return NextResponse.json({ message: "already" }, { status: 409 });
+    if (already) return duplicateReviewResponse();
 
     const now = new Date();
-    const insertRes = await db.collection("reviews").insertOne({
-      userId,
-      service: "stringing",
-      reviewType: "service",
-      reviewContext: "standalone_stringing",
-      contextLabel: getReviewContextLabel("standalone_stringing"),
-      serviceApplicationId: appIdObj,
-      relatedProductIds: appTarget?.relatedProductIds ?? [],
-      relatedRacketIds: appTarget?.relatedRacketIds ?? [],
-      rating,
-      content,
-      photos: photosClean,
-      status: "visible",
-      helpfulCount: 0,
-      userName,
-      createdAt: now,
-      updatedAt: now,
-    });
+    let insertRes;
+    try {
+      insertRes = await db.collection("reviews").insertOne({
+        userId,
+        service: "stringing",
+        reviewType: "service",
+        reviewContext: "standalone_stringing",
+        contextLabel: getReviewContextLabel("standalone_stringing"),
+        serviceApplicationId: appIdObj,
+        relatedProductIds: appTarget?.relatedProductIds ?? [],
+        relatedRacketIds: appTarget?.relatedRacketIds ?? [],
+        rating,
+        content,
+        photos: photosClean,
+        status: "visible",
+        helpfulCount: 0,
+        userName,
+        createdAt: now,
+        updatedAt: now,
+        isDeleted: false,
+      });
+    } catch (error) {
+      if (isDuplicateKeyError(error)) return duplicateReviewResponse();
+      throw error;
+    }
     const reviewId = insertRes.insertedId;
 
     // 포인트 적립 (보수적 시작)
@@ -508,6 +561,17 @@ export async function GET(req: Request) {
     productFilterId && ObjectId.isValid(productFilterId)
       ? [new ObjectId(productFilterId), productFilterId]
       : null;
+  if (withHidden === "all" && !isAdmin) {
+    return NextResponse.json(
+      {
+        ok: false,
+        reason: "forbiddenHiddenReviews",
+        message: "비공개 후기를 조회할 권한이 없습니다.",
+      },
+      { status: 403 },
+    );
+  }
+
   const needServiceJoin = type === "all" || type === "service" || Boolean(productFilterCandidates);
   const needRentalJoin = type === "all" || type === "rental";
 
@@ -558,12 +622,31 @@ export async function GET(req: Request) {
   if (cursorB64) {
     try {
       after = JSON.parse(Buffer.from(cursorB64, "base64").toString("utf-8"));
-    } catch {}
+    } catch {
+      return NextResponse.json(
+        { ok: false, reason: "invalidCursor", message: "잘못된 페이지 요청입니다." },
+        { status: 400 },
+      );
+    }
   }
+
+  const invalidCursorResponse = () =>
+    NextResponse.json(
+      { ok: false, reason: "invalidCursor", message: "잘못된 페이지 요청입니다." },
+      { status: 400 },
+    );
+  const isValidCursorNumber = (value: unknown) =>
+    typeof value === "number" && Number.isFinite(value);
 
   const cursorCond: any = {};
   if (after && after.id) {
-    if (sort === "helpful" && typeof after.helpfulCount === "number") {
+    if (!ObjectId.isValid(String(after.id))) return invalidCursorResponse();
+    if (sort === "helpful" && !isValidCursorNumber(after.helpfulCount))
+      return invalidCursorResponse();
+    if (sort === "rating" && !isValidCursorNumber(after.rating)) return invalidCursorResponse();
+    if (sort === "latest" && after.createdAt && Number.isNaN(new Date(after.createdAt).getTime()))
+      return invalidCursorResponse();
+    if (sort === "helpful") {
       cursorCond.$or = [
         { helpfulCount: { $lt: after.helpfulCount } },
         {
@@ -571,7 +654,7 @@ export async function GET(req: Request) {
           _id: { $lt: new ObjectId(after.id) },
         },
       ];
-    } else if (sort === "rating" && typeof after.rating === "number") {
+    } else if (sort === "rating") {
       cursorCond.$or = [
         { rating: { $lt: after.rating } },
         { rating: after.rating, _id: { $lt: new ObjectId(after.id) } },

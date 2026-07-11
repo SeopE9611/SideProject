@@ -642,6 +642,18 @@ const INDEX_SPECS = {
         },
       },
     },
+
+    {
+      name: "user_rental_unique",
+      keys: { userId: 1, rentalId: 1 },
+      options: {
+        unique: true,
+        partialFilterExpression: {
+          rentalId: { $exists: true },
+          isDeleted: false,
+        },
+      },
+    },
     {
       name: "user_createdAt",
       keys: { userId: 1, createdAt: -1 },
