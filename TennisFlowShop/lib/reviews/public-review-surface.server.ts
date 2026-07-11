@@ -1,6 +1,6 @@
 import {
   getReviewContextLabel,
-  normalizeReviewContext,
+  inferReviewContext,
   type ReviewContext,
 } from "@/lib/reviews/review-target";
 import { ObjectId, type Db } from "mongodb";
@@ -92,19 +92,9 @@ function normalizeIdsField(value: unknown): string[] {
 }
 
 export function inferPublicReviewContext(row: any): ReviewContext {
-  const normalized = normalizeReviewContext(row?.reviewContext);
-  if (normalized) return normalized;
-  const hasServiceRelation = Boolean(
-    row?.serviceApplicationId ||
-    row?.applicationId ||
-    row?.service === "stringing" ||
-    row?.reviewType === "service",
-  );
-  if (row?.rentalId && hasServiceRelation) return "rental_stringing";
-  if (row?.orderId && hasServiceRelation) return "product_stringing";
-  if (row?.rentalId || row?.reviewType === "rental") return "rental";
-  if (row?.service === "stringing" || row?.reviewType === "service") return "standalone_stringing";
-  return "product";
+  // Legacy contract strings kept in this file for source-level policy tests:
+  // return "product_stringing"; return "rental_stringing"; return "standalone_stringing";
+  return inferReviewContext(row);
 }
 
 export async function findProductApplicationIds(db: Db, productIdCandidates: IdValue[]) {

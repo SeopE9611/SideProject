@@ -9,12 +9,12 @@ import { Star } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "리뷰 관리",
+  title: "후기 관리",
 };
 
 const reviewGuideItems = [
   {
-    title: "리뷰 목록 관리",
+    title: "후기 목록 관리",
     description: "공개 상태, 상품 연결, 작성 내용을 목록에서 빠르게 확인합니다.",
   },
   {
@@ -22,8 +22,8 @@ const reviewGuideItems = [
     description: "데이터 정비성 작업은 영향 범위를 확인한 뒤 유지보수 탭에서 신중히 진행하세요.",
   },
   {
-    title: "신고/문제 리뷰 확인",
-    description: "문제가 있는 리뷰는 내용과 주문·상품 연결 정보를 먼저 점검한 뒤 조치합니다.",
+    title: "신고/문제 후기 확인",
+    description: "문제가 있는 후기는 내용과 주문·상품 연결 정보를 먼저 점검한 뒤 조치합니다.",
   },
 ];
 
@@ -31,10 +31,10 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-5 p-6">
       <AdminPageHeader
-        title="리뷰 관리"
-        description="상품 리뷰의 공개 상태, 연결 정보, 유지보수 작업을 한 곳에서 확인합니다."
-        helperText="일반 리뷰 관리는 목록 탭에서 처리하고, 데이터 정비성 작업은 유지보수 탭에서 신중히 진행하세요."
-        scope="범위: 상품·서비스 리뷰"
+        title="후기 관리"
+        description="상품, 교체서비스, 대여 후기를 한 곳에서 확인하고 공개 상태를 관리합니다."
+        helperText="일반 후기 관리는 목록 탭에서 처리하고, 데이터 정비성 작업은 유지보수 탭에서 신중히 진행하세요."
+        scope="범위: 상품·교체서비스·대여 후기"
         icon={Star}
       />
 

@@ -261,6 +261,9 @@ jobs:
       - name: Test review security and integrity
         run: pnpm test:review-security
 
+      - name: Test review management context
+        run: pnpm test:review-management
+
   # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
   test-e2e-admin-critical:
     runs-on: ubuntu-latest

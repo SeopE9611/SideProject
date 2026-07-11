@@ -77,6 +77,46 @@ export function getReviewContextLabel(context: unknown) {
   return REVIEW_CONTEXT_LABELS[normalized];
 }
 
+
+export type ReviewContextRecord = {
+  reviewContext?: unknown;
+  rentalId?: unknown;
+  orderId?: unknown;
+  serviceApplicationId?: unknown;
+  applicationId?: unknown;
+  service?: unknown;
+  reviewType?: unknown;
+  productId?: unknown;
+};
+
+export type ReviewManagementCategory = "product" | "stringing" | "rental";
+
+export function inferReviewContext(record: ReviewContextRecord): ReviewContext {
+  const normalized = normalizeReviewContext(record?.reviewContext);
+  if (normalized) return normalized;
+  const hasServiceRelation = Boolean(
+    record?.serviceApplicationId ||
+      record?.applicationId ||
+      record?.service === "stringing" ||
+      record?.reviewType === "service",
+  );
+  const hasRentalRelation = Boolean(record?.rentalId || record?.reviewType === "rental");
+  const hasOrderRelation = Boolean(record?.orderId);
+  if (hasRentalRelation && hasServiceRelation) return "rental_stringing";
+  if (hasOrderRelation && hasServiceRelation) return "product_stringing";
+  if (hasRentalRelation) return "rental";
+  if (hasServiceRelation) return "standalone_stringing";
+  return "product";
+}
+
+export function getReviewManagementCategory(
+  context: ReviewContext,
+): ReviewManagementCategory {
+  if (context === "standalone_stringing") return "stringing";
+  if (context === "rental" || context === "rental_stringing") return "rental";
+  return "product";
+}
+
 export function isIntegratedReviewContext(context: unknown) {
   return ["product_stringing", "rental_stringing"].includes(String(context ?? ""));
 }
