@@ -120,3 +120,11 @@ test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 �
   assert.ok(eligibility.includes("target: target ?? null"));
   assert.ok(eligibility.includes("const nextTarget = params.eligible ? target : null"));
 });
+
+test("후기 POST 문서는 canonical relatedRacketIds를 저장한다", () => {
+  const postRoute = read("app/api/reviews/route.ts");
+  assert.ok(postRoute.includes("relatedRacketIds:"));
+  assert.ok(postRoute.includes("rentalTarget?.relatedRacketIds"));
+  assert.ok(postRoute.includes("orderTarget?.relatedRacketIds ?? []"));
+  assert.ok(postRoute.includes("appTarget?.relatedRacketIds ?? []"));
+});

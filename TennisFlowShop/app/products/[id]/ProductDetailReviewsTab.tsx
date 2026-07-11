@@ -49,7 +49,7 @@ export default function ProductDetailReviewsTab({
 
             return (
               <ProductReviewCard
-                key={index}
+                key={String(review._id ?? index)}
                 review={review}
                 isBusy={busyReviewId === String(review._id)}
                 isMasked={isMasked}

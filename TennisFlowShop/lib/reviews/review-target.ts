@@ -61,10 +61,10 @@ export type ReviewTargetBundle = {
 
 const REVIEW_CONTEXT_LABELS: Record<ReviewContext, string> = {
   product: "상품 후기",
-  product_stringing: "스트링·교체서비스 후기",
+  product_stringing: "상품·교체서비스 후기",
   standalone_stringing: "교체서비스 후기",
   rental: "대여 후기",
-  rental_stringing: "대여·스트링 교체 후기",
+  rental_stringing: "대여·교체서비스 후기",
 };
 
 export function normalizeReviewContext(value: unknown): ReviewContext | null {
@@ -121,6 +121,7 @@ export function buildReviewWriteHref(target: ReviewWriteTarget) {
   const appId = target.applicationId ?? target.serviceApplicationId;
   if (appId) params.set("applicationId", String(appId));
   if (target.rentalId) params.set("rentalId", String(target.rentalId));
-  if (context === "standalone_stringing" && !params.has("service")) params.set("service", "stringing");
+  if (context === "standalone_stringing" && !params.has("service"))
+    params.set("service", "stringing");
   return `/reviews/write?${params.toString()}`;
 }
