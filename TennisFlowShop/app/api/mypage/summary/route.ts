@@ -12,6 +12,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import { calculateRacketCareStatus } from "@/lib/racket-care/calculate-care-status";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,7 @@ export async function GET() {
     orders,
     rentals,
     standaloneApps,
+    racketCareItems,
   ] = await Promise.all([
     db.collection("orders").countDocuments({ userId }),
     db.collection("stringing_applications").countDocuments({ userId, status: { $ne: "draft" } }),
@@ -126,6 +128,10 @@ export async function GET() {
           },
         },
       )
+      .toArray(),
+    db
+      .collection("racket_care_items")
+      .find({ userId }, { projection: { playFrequency: 1, lastStringingAt: 1 } })
       .toArray(),
   ]);
   const activityFlowCount = orders.length + rentals.length + standaloneApps.length;
@@ -299,11 +305,21 @@ export async function GET() {
     if (needsAction) todoApplicationCount += 1;
   }
 
+  const racketCareStatuses = (racketCareItems as any[]).map((item) =>
+    calculateRacketCareStatus({ playFrequency: item.playFrequency, lastStringingAt: item.lastStringingAt }),
+  );
+  const racketCareNearest = racketCareStatuses.sort((a, b) => a.daysRemaining - b.daysRemaining)[0] ?? null;
+
   return NextResponse.json({
     ordersCount,
     applicationsCount,
     activityFlowCount,
     academyActiveApplicationsCount,
     todoCount: todoOrderCount + todoRentalCount + todoApplicationCount,
+    racketCare: {
+      count: (racketCareItems as any[]).length,
+      nearestState: racketCareNearest?.state ?? null,
+      nearestDaysRemaining: racketCareNearest?.daysRemaining ?? null,
+    },
   });
 }

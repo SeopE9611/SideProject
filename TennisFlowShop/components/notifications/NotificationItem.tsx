@@ -13,6 +13,7 @@ const TYPE_LABEL: Record<string, string> = {
   system: "시스템",
   package_status: "패키지",
   stringing_status: "스트링",
+  racket_care: "라켓 케어",
 };
 
 function relativeTime(value: string) {

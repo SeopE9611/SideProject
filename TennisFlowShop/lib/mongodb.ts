@@ -10,6 +10,7 @@ import { ensureRentalIndexes } from "@/lib/rentals.indexes";
 import { ensureReviewIndexes } from "@/lib/reviews.maintenance";
 import { ensureRiskIndexes } from "@/lib/risk.indexes";
 import { ensureRevenueReportSnapshotIndexes } from "@/lib/revenueReportSnapshots.indexes";
+import { ensureRacketCareIndexes } from "@/lib/racket-care/indexes";
 import { ensureUsedRacketsIndexes } from "@/lib/usedRackets.indexes";
 import { ensureUserIndexes } from "@/lib/users.indexes";
 import { ensureOfflineIndexes } from "@/lib/offline/offline.repository";
@@ -82,6 +83,9 @@ declare global {
 
   // 월별 매출 리포트 스냅샷 인덱스 보장 상태
   var _revenueReportSnapshotIndexesReady: Promise<void> | null | undefined;
+
+  // 라켓 케어 컬렉션 인덱스 보장 상태
+  var _racketCareIndexesReady: Promise<void> | null | undefined;
   var _offlineIndexesReady: Promise<void> | null | undefined;
 
   // 런타임 인덱스 보장 실패 후 재시도 시각(반복 요청의 즉시 재시도 방지)
@@ -307,6 +311,16 @@ export async function getDb() {
   }
 
   // revenue_report_snapshots 인덱스 보장(1회)
+
+  // 라켓 케어 인덱스 보장(1회)
+  if (canStartRuntimeIndexEnsures && !global._racketCareIndexesReady) {
+    global._racketCareIndexesReady = ensureRacketCareIndexes(db).catch((e) => {
+      console.error("[racket-care] ensureRacketCareIndexes failed", e);
+      scheduleRuntimeIndexRetry();
+      global._racketCareIndexesReady = null;
+    });
+  }
+
   if (canStartRuntimeIndexEnsures && !global._revenueReportSnapshotIndexesReady) {
     global._revenueReportSnapshotIndexesReady = ensureRevenueReportSnapshotIndexes(db).catch(
       (e) => {
