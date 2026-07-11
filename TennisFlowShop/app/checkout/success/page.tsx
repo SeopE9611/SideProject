@@ -1,6 +1,7 @@
 import ContinueShoppingButton from "@/app/checkout/_components/ContinueShoppingButton";
 import BackButtonGuard from "@/app/checkout/success/_components/BackButtonGuard";
 import ClearCartOnMount from "@/app/checkout/success/_components/ClearCartOnMount";
+import RacketCareSuccessFeedback from "@/app/checkout/success/_components/RacketCareSuccessFeedback";
 import SetGuestOrderToken from "@/app/checkout/success/_components/SetGuestOrderToken";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { ResultState } from "@/components/public";
@@ -18,16 +19,16 @@ import { Separator } from "@/components/ui/separator";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { buildCheckoutSuccessLinks } from "@/lib/checkout-success-links";
 import { bankLabelMap } from "@/lib/constants";
-import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import clientPromise from "@/lib/mongodb";
-import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import {
   getOrderDeliveryInfoTitle,
   isVisitPickupOrder,
   shouldShowDeliveryOnlyFields,
 } from "@/lib/order-shipping";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatKoreanPhone } from "@/lib/phone";
+import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import {
   ArrowRight,
   CheckCircle,
@@ -42,7 +43,6 @@ import {
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import RacketCareSuccessFeedback from "@/app/checkout/success/_components/RacketCareSuccessFeedback";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
@@ -62,8 +62,12 @@ type PopulatedItem = {
 };
 
 type NumericLike = number | string | null | undefined;
+type OrderItemIdentifier = ObjectId | string | null;
+
 type OrderItemLike =
   | {
+      productId?: OrderItemIdentifier;
+      _id?: OrderItemIdentifier;
       name?: string;
       price?: NumericLike;
       quantity?: NumericLike;
@@ -629,7 +633,7 @@ export default async function CheckoutSuccessPage({
         <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
         <div className="min-h-full bg-background text-foreground">
           <SiteContainer variant="wide" className="py-8 md:py-12">
-        <ResultState
+            <ResultState
               status="success"
               icon={<CheckCircle className="h-6 w-6" />}
               title="주문이 완료되었습니다"
@@ -641,7 +645,10 @@ export default async function CheckoutSuccessPage({
               className="py-8 sm:py-10"
             />
             <div className="mx-auto mt-6 max-w-4xl">
-              <RacketCareSuccessFeedback enabled={withStringService} expectedProductIds={orderProductIds} />
+              <RacketCareSuccessFeedback
+                enabled={withStringService}
+                expectedProductIds={orderProductIds}
+              />
             </div>
           </SiteContainer>
 

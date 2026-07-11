@@ -1,8 +1,8 @@
-import { calculateRacketCareStatus } from "@/lib/racket-care/calculate-care-status";
-import { createUserNotification } from "@/lib/notifications/user-notification.service";
-import type { RacketCareItemDoc } from "@/lib/racket-care/types";
 import { getDb } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
+import { calculateRacketCareStatus } from "@/lib/racket-care/calculate-care-status";
+import type { RacketCareItemDoc } from "@/lib/racket-care/types";
+import { ObjectId, type Filter } from "mongodb";
 import { NextResponse } from "next/server";
 
 function getBearerToken(headers: Headers): string | null {
@@ -12,12 +12,26 @@ function getBearerToken(headers: Headers): string | null {
 }
 function validateCronSecret(req: Request): NextResponse | null {
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) return NextResponse.json({ ok: false, message: "cron secret is not configured" }, { status: 503 });
-  if (getBearerToken(req.headers) !== cronSecret) return NextResponse.json({ ok: false, message: "unauthorized" }, { status: 401 });
+  if (!cronSecret)
+    return NextResponse.json(
+      { ok: false, message: "cron secret is not configured" },
+      { status: 503 },
+    );
+  if (getBearerToken(req.headers) !== cronSecret)
+    return NextResponse.json({ ok: false, message: "unauthorized" }, { status: 401 });
   return null;
 }
-function ymd(iso: string) { return iso.slice(0, 10); }
-function koreanDate(iso: string) { return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(iso)); }
+function ymd(iso: string) {
+  return iso.slice(0, 10);
+}
+function koreanDate(iso: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Asia/Seoul",
+  }).format(new Date(iso));
+}
 
 export async function GET(req: Request) {
   const authError = validateCronSecret(req);
@@ -33,18 +47,41 @@ export async function GET(req: Request) {
   let failed = 0;
 
   while (true) {
-    const query = lastId ? { reminderEnabled: true, _id: { $gt: lastId } } : { reminderEnabled: true };
-    const batch = await db.collection<RacketCareItemDoc>("racket_care_items").find(query, { sort: { _id: 1 }, limit: batchSize }).toArray();
+    const query: Filter<RacketCareItemDoc> =
+      lastId === null
+        ? { reminderEnabled: true }
+        : {
+            reminderEnabled: true,
+            _id: { $gt: lastId },
+          };
+
+    const batch: RacketCareItemDoc[] = await db
+      .collection<RacketCareItemDoc>("racket_care_items")
+      .find(query, {
+        sort: { _id: 1 },
+        limit: batchSize,
+      })
+      .toArray();
+
     if (batch.length === 0) break;
+
     for (const item of batch) {
       checked += 1;
       lastId = item._id;
       try {
-        const status = calculateRacketCareStatus({ playFrequency: item.playFrequency, lastStringingAt: item.lastStringingAt, now });
+        const status = calculateRacketCareStatus({
+          playFrequency: item.playFrequency,
+          lastStringingAt: item.lastStringingAt,
+          now,
+        });
         if (new Date(status.nextRecommendedAt) > now) continue;
         due += 1;
         const dueDate = new Date(status.nextRecommendedAt);
-        if (item.reminderSentFor && ymd(item.reminderSentFor.toISOString()) === ymd(status.nextRecommendedAt)) continue;
+        if (
+          item.reminderSentFor &&
+          ymd(item.reminderSentFor.toISOString()) === ymd(status.nextRecommendedAt)
+        )
+          continue;
         const result = await createUserNotification(db, {
           userId: item.userId,
           type: "racket_care",
@@ -56,10 +93,12 @@ export async function GET(req: Request) {
           priority: "normal",
         });
         if (result.ok) {
-          await db.collection("racket_care_items").updateOne(
-            { _id: item._id, userId: item.userId },
-            { $set: { reminderSentFor: dueDate, updatedAt: new Date() } },
-          );
+          await db
+            .collection("racket_care_items")
+            .updateOne(
+              { _id: item._id, userId: item.userId },
+              { $set: { reminderSentFor: dueDate, updatedAt: new Date() } },
+            );
           if (result.duplicated) duplicated += 1;
           else notified += 1;
         } else {

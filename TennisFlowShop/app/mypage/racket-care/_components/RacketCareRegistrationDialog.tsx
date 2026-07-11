@@ -1,32 +1,305 @@
 "use client";
 
-import type { CareForm, CareItem, RacketCareImportCandidate } from "@/app/mypage/racket-care/_components/racket-care-client.types";
+import type {
+  CareForm,
+  CareItem,
+  RacketCareImportCandidate,
+} from "@/app/mypage/racket-care/_components/racket-care-client.types";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useEffect } from "react";
 
-const freqLabels: Record<string, string> = { monthly: "월 1~2회", weekly: "주 1회", biweekly_plus: "주 2~3회", heavy: "주 4회 이상" };
-const intervalByFreq: Record<string, number> = { monthly: 120, weekly: 90, biweekly_plus: 60, heavy: 30 };
-function localDateInputValue(date = new Date()) { const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, "0"); const d = String(date.getDate()).padStart(2, "0"); return `${y}-${m}-${d}`; }
-function dateLabel(value: string) { return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "short", day: "numeric" }).format(new Date(value)); }
-function previewDate(form: CareForm) { if (!form.lastStringingAt) return null; const base = new Date(`${form.lastStringingAt}T00:00:00`); if (Number.isNaN(base.getTime())) return null; base.setDate(base.getDate() + (intervalByFreq[form.playFrequency] ?? 90)); return dateLabel(base.toISOString()); }
+const freqLabels: Record<string, string> = {
+  monthly: "월 1~2회",
+  weekly: "주 1회",
+  biweekly_plus: "주 2~3회",
+  heavy: "주 4회 이상",
+};
+const intervalByFreq: Record<string, number> = {
+  monthly: 120,
+  weekly: 90,
+  biweekly_plus: 60,
+  heavy: 30,
+};
+function localDateInputValue(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+function dateLabel(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
+function previewDate(form: CareForm) {
+  if (!form.lastStringingAt) return null;
+  const base = new Date(`${form.lastStringingAt}T00:00:00`);
+  if (Number.isNaN(base.getTime())) return null;
+  base.setDate(base.getDate() + (intervalByFreq[form.playFrequency] ?? 90));
+  return dateLabel(base.toISOString());
+}
 
-function Field({ id, label, value, error, onChange }: { id: string; label: string; value: string; error?: string; onChange: (v:string)=>void }) {
-  return <div><Label htmlFor={id}>{label}</Label><Input id={id} value={value} onChange={(e)=>onChange(e.target.value)} aria-invalid={!!error}/>{error && <p className="mt-1 text-ui-label text-destructive">{error}</p>}</div>;
+function Field({
+  id,
+  label,
+  value,
+  error,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  error?: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={!!error}
+      />
+      {error && <p className="mt-1 text-ui-label text-destructive">{error}</p>}
+    </div>
+  );
 }
 
 export default function RacketCareRegistrationDialog(props: {
-  open: boolean; setOpen: (v: boolean) => void; step: number; setStep: (v: number) => void; mode: "import" | "manual"; setMode: (v: "import" | "manual") => void; editing: CareItem | null; form: CareForm; setForm: (v: CareForm) => void; errors: Record<string,string>; saving: boolean; save: () => void; importCandidates: RacketCareImportCandidate[]; emptyForm: () => CareForm; formFromCandidate: (candidate: RacketCareImportCandidate) => CareForm;
+  open: boolean;
+  setOpen: (v: boolean) => void;
+  step: number;
+  setStep: (v: number) => void;
+  mode: "import" | "manual";
+  setMode: (v: "import" | "manual") => void;
+  editing: CareItem | null;
+  form: CareForm;
+  setForm: (v: CareForm) => void;
+  errors: Record<string, string>;
+  saving: boolean;
+  save: () => void;
+  importCandidates: RacketCareImportCandidate[];
+  emptyForm: () => CareForm;
+  formFromCandidate: (candidate: RacketCareImportCandidate) => CareForm;
 }) {
-  const { open,setOpen,step,setStep,mode,setMode,editing,form,setForm,errors,saving,save,importCandidates,emptyForm,formFromCandidate } = props;
+  const {
+    open,
+    setOpen,
+    step,
+    setStep,
+    mode,
+    setMode,
+    editing,
+    form,
+    setForm,
+    errors,
+    saving,
+    save,
+    importCandidates,
+    emptyForm,
+    formFromCandidate,
+  } = props;
   const estimatedDate = previewDate(form);
   useEffect(() => {
     if (!open || step !== 2) return;
     const firstField = ["nickname", "brand", "model"].find((field) => errors[field]);
     if (firstField) document.getElementById(firstField)?.focus();
   }, [errors, open, step]);
-  return <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[min(720px,calc(100dvh-2rem))] overflow-y-auto"><DialogHeader><DialogTitle>{editing ? "라켓 정보 수정" : "라켓 등록"}</DialogTitle></DialogHeader>{!editing && step === 1 ? <div className="grid gap-3 bp-sm:grid-cols-2"><Button variant={mode === "import" ? "default" : "outline"} className="min-h-20" onClick={() => { setMode("import"); if (importCandidates[0]) setForm(formFromCandidate(importCandidates[0])); setStep(2); }}>기존 정보에서 가져오기</Button><Button variant={mode === "manual" ? "default" : "outline"} className="min-h-20" onClick={() => { setMode("manual"); setForm(emptyForm()); setStep(2); }}>직접 입력하기</Button></div> : null}{step === 2 ? <div className="space-y-4">{mode === "import" && importCandidates.length > 0 ? <div className="grid gap-2">{importCandidates.map((c) => <button key={c.id} className="rounded-xl border border-border p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setForm(formFromCandidate(c))}><span className="font-medium">{c.nickname}</span><span className="ml-2 text-ui-label text-muted-foreground">{c.sourceLabel}</span>{c.racket.brand && c.racket.model ? null : <span className="ml-2 text-ui-label text-amber-600">추가 정보 필요</span>}<p className="mt-1 text-ui-label text-muted-foreground">{c.lastStringingAt ? `최근 교체일 ${dateLabel(c.lastStringingAt)}` : "마지막 교체일을 입력하면 예상 교체일을 계산합니다."} · {c.stringSnapshot?.name || "스트링 정보 없음"}{c.stringSnapshot?.gauge ? ` · ${c.stringSnapshot.gauge}` : ""}{c.stringSnapshot?.tensionMain || c.stringSnapshot?.tensionCross ? ` · ${c.stringSnapshot?.tensionMain ?? "-"}/${c.stringSnapshot?.tensionCross ?? "-"}LB` : ""}</p></button>)}</div> : null}<Field id="nickname" label="라켓 별칭" value={form.nickname} error={errors.nickname} onChange={(v)=>setForm({...form,nickname:v})}/><Field id="brand" label="브랜드" value={form.brand} error={errors.brand} onChange={(v)=>setForm({...form,brand:v})}/><Field id="model" label="모델" value={form.model} error={errors.model} onChange={(v)=>setForm({...form,model:v})}/><Field id="stringName" label="최근 스트링명(선택)" value={form.stringName} onChange={(v)=>setForm({...form,stringName:v})}/><div className="grid gap-2 bp-sm:grid-cols-3"><Field id="gauge" label="게이지" value={form.gauge} onChange={(v)=>setForm({...form,gauge:v})}/><Field id="tensionMain" label="메인 텐션" value={form.tensionMain} onChange={(v)=>setForm({...form,tensionMain:v})}/><Field id="tensionCross" label="크로스 텐션" value={form.tensionCross} onChange={(v)=>setForm({...form,tensionCross:v})}/></div></div> : null}{step === 3 ? <div className="grid gap-3"><div><Label htmlFor="playFrequency">플레이 빈도</Label><select id="playFrequency" className="mt-1 h-11 w-full rounded-md border border-input bg-background px-3 text-ui-body-sm" value={form.playFrequency} onChange={(e)=>setForm({...form,playFrequency:e.target.value})}>{Object.entries(freqLabels).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>{errors.playFrequency && <p className="mt-1 text-ui-label text-destructive">{errors.playFrequency}</p>}</div><div><Label htmlFor="lastStringingAt">마지막 교체일</Label><Input id="lastStringingAt" type="date" max={localDateInputValue()} value={form.lastStringingAt} onChange={(e)=>setForm({...form,lastStringingAt:e.target.value})}/>{errors.lastStringingAt && <p className="mt-1 text-ui-label text-destructive">{errors.lastStringingAt}</p>}</div><div className="flex min-h-11 items-center gap-3"><Switch id="new-reminder" checked={form.reminderEnabled} onCheckedChange={(checked)=>setForm({...form,reminderEnabled:checked})}/><Label htmlFor="new-reminder">교체 알림 사용</Label></div><p className="rounded-xl bg-muted/40 p-3 text-ui-body-sm">{estimatedDate ? <>저장 전 예상 교체일: <span className="font-medium">{estimatedDate}</span></> : "마지막 교체일을 입력하면 예상 교체일을 계산합니다."}</p>{errors.form && <p className="text-ui-body-sm text-destructive">{errors.form}</p>}</div> : null}<DialogFooter className="sticky bottom-0 bg-background pt-3"><Button variant="outline" onClick={()=> step > (editing ? 2 : 1) ? setStep(step - 1) : setOpen(false)} disabled={saving}>{step > (editing ? 2 : 1) ? "이전" : "취소"}</Button>{step < 3 ? <Button onClick={()=>setStep(step + 1)}>다음</Button> : <Button onClick={save} disabled={saving}>{saving ? "저장 중..." : "저장"}</Button>}</DialogFooter></DialogContent></Dialog>;
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-h-[min(720px,calc(100dvh-2rem))] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{editing ? "라켓 정보 수정" : "라켓 등록"}</DialogTitle>
+        </DialogHeader>
+        {!editing && step === 1 ? (
+          <div className="grid gap-3 bp-sm:grid-cols-2">
+            <Button
+              variant={mode === "import" ? "default" : "outline"}
+              className="min-h-20"
+              onClick={() => {
+                setMode("import");
+                if (importCandidates[0]) setForm(formFromCandidate(importCandidates[0]));
+                setStep(2);
+              }}
+            >
+              기존 정보에서 가져오기
+            </Button>
+            <Button
+              variant={mode === "manual" ? "default" : "outline"}
+              className="min-h-20"
+              onClick={() => {
+                setMode("manual");
+                setForm(emptyForm());
+                setStep(2);
+              }}
+            >
+              직접 입력하기
+            </Button>
+          </div>
+        ) : null}
+        {step === 2 ? (
+          <div className="space-y-4">
+            {mode === "import" && importCandidates.length > 0 ? (
+              <div className="grid gap-2">
+                {importCandidates.map((c) => (
+                  <button
+                    key={c.id}
+                    className="rounded-xl border border-border p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => setForm(formFromCandidate(c))}
+                  >
+                    <span className="font-medium">{c.nickname}</span>
+                    <span className="ml-2 text-ui-label text-muted-foreground">
+                      {c.sourceLabel}
+                    </span>
+                    {c.racket.brand && c.racket.model ? null : (
+                      <span className="ml-2 text-ui-label text-warning">추가 정보 필요</span>
+                    )}
+                    <p className="mt-1 text-ui-label text-muted-foreground">
+                      {c.lastStringingAt
+                        ? `최근 교체일 ${dateLabel(c.lastStringingAt)}`
+                        : "마지막 교체일을 입력하면 예상 교체일을 계산합니다."}{" "}
+                      · {c.stringSnapshot?.name || "스트링 정보 없음"}
+                      {c.stringSnapshot?.gauge ? ` · ${c.stringSnapshot.gauge}` : ""}
+                      {c.stringSnapshot?.tensionMain || c.stringSnapshot?.tensionCross
+                        ? ` · ${c.stringSnapshot?.tensionMain ?? "-"}/${c.stringSnapshot?.tensionCross ?? "-"}LB`
+                        : ""}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <Field
+              id="nickname"
+              label="라켓 별칭"
+              value={form.nickname}
+              error={errors.nickname}
+              onChange={(v) => setForm({ ...form, nickname: v })}
+            />
+            <Field
+              id="brand"
+              label="브랜드"
+              value={form.brand}
+              error={errors.brand}
+              onChange={(v) => setForm({ ...form, brand: v })}
+            />
+            <Field
+              id="model"
+              label="모델"
+              value={form.model}
+              error={errors.model}
+              onChange={(v) => setForm({ ...form, model: v })}
+            />
+            <Field
+              id="stringName"
+              label="최근 스트링명(선택)"
+              value={form.stringName}
+              onChange={(v) => setForm({ ...form, stringName: v })}
+            />
+            <div className="grid gap-2 bp-sm:grid-cols-3">
+              <Field
+                id="gauge"
+                label="게이지"
+                value={form.gauge}
+                onChange={(v) => setForm({ ...form, gauge: v })}
+              />
+              <Field
+                id="tensionMain"
+                label="메인 텐션"
+                value={form.tensionMain}
+                onChange={(v) => setForm({ ...form, tensionMain: v })}
+              />
+              <Field
+                id="tensionCross"
+                label="크로스 텐션"
+                value={form.tensionCross}
+                onChange={(v) => setForm({ ...form, tensionCross: v })}
+              />
+            </div>
+          </div>
+        ) : null}
+        {step === 3 ? (
+          <div className="grid gap-3">
+            <div>
+              <Label htmlFor="playFrequency">플레이 빈도</Label>
+              <select
+                id="playFrequency"
+                className="mt-1 h-11 w-full rounded-md border border-input bg-background px-3 text-ui-body-sm"
+                value={form.playFrequency}
+                onChange={(e) => setForm({ ...form, playFrequency: e.target.value })}
+              >
+                {Object.entries(freqLabels).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+              {errors.playFrequency && (
+                <p className="mt-1 text-ui-label text-destructive">{errors.playFrequency}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="lastStringingAt">마지막 교체일</Label>
+              <Input
+                id="lastStringingAt"
+                type="date"
+                max={localDateInputValue()}
+                value={form.lastStringingAt}
+                onChange={(e) => setForm({ ...form, lastStringingAt: e.target.value })}
+              />
+              {errors.lastStringingAt && (
+                <p className="mt-1 text-ui-label text-destructive">{errors.lastStringingAt}</p>
+              )}
+            </div>
+            <div className="flex min-h-11 items-center gap-3">
+              <Switch
+                id="new-reminder"
+                checked={form.reminderEnabled}
+                onCheckedChange={(checked) => setForm({ ...form, reminderEnabled: checked })}
+              />
+              <Label htmlFor="new-reminder">교체 알림 사용</Label>
+            </div>
+            <p className="rounded-xl bg-muted/40 p-3 text-ui-body-sm">
+              {estimatedDate ? (
+                <>
+                  저장 전 예상 교체일: <span className="font-medium">{estimatedDate}</span>
+                </>
+              ) : (
+                "마지막 교체일을 입력하면 예상 교체일을 계산합니다."
+              )}
+            </p>
+            {errors.form && <p className="text-ui-body-sm text-destructive">{errors.form}</p>}
+          </div>
+        ) : null}
+        <DialogFooter className="sticky bottom-0 bg-background pt-3">
+          <Button
+            variant="outline"
+            onClick={() => (step > (editing ? 2 : 1) ? setStep(step - 1) : setOpen(false))}
+            disabled={saving}
+          >
+            {step > (editing ? 2 : 1) ? "이전" : "취소"}
+          </Button>
+          {step < 3 ? (
+            <Button onClick={() => setStep(step + 1)}>다음</Button>
+          ) : (
+            <Button onClick={save} disabled={saving}>
+              {saving ? "저장 중..." : "저장"}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

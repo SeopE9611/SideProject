@@ -1,9 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
-import dynamic from "next/dynamic";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,19 +23,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-import { Switch } from "@/components/ui/switch";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
+import { Switch } from "@/components/ui/switch";
 import { adminMutator } from "@/lib/admin/adminFetcher";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from "@/types/admin/reviews";
-import { ReviewContextBadge } from "@/components/reviews/ReviewContextBadge";
 import type { ReviewContext } from "@/lib/reviews/review-target";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from "@/types/admin/reviews";
 import {
   Award,
   Calendar,
@@ -51,7 +58,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 
 type Row = AdminReviewListItemDto;
 type Page = AdminReviewsListResponseDto;
@@ -485,16 +491,32 @@ export default function AdminReviewListClient() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={status} onValueChange={(v) => { setStatus(v as "all" | "visible" | "hidden"); setSize(1); }}>
-            <SelectTrigger className="h-9 w-32"><SelectValue placeholder="상태" /></SelectTrigger>
+          <Select
+            value={status}
+            onValueChange={(v) => {
+              setStatus(v as "all" | "visible" | "hidden");
+              setSize(1);
+            }}
+          >
+            <SelectTrigger className="h-9 w-32">
+              <SelectValue placeholder="상태" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">전체 상태</SelectItem>
               <SelectItem value="visible">공개</SelectItem>
               <SelectItem value="hidden">비공개</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={context} onValueChange={(v) => { setContext(v as "all" | ReviewContext); setSize(1); }}>
-            <SelectTrigger className="h-9 w-52"><SelectValue placeholder="후기 유형" /></SelectTrigger>
+          <Select
+            value={context}
+            onValueChange={(v) => {
+              setContext(v as "all" | ReviewContext);
+              setSize(1);
+            }}
+          >
+            <SelectTrigger className="h-9 w-52">
+              <SelectValue placeholder="후기 유형" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">전체 유형</SelectItem>
               <SelectItem value="product">상품 후기</SelectItem>
@@ -517,7 +539,10 @@ export default function AdminReviewListClient() {
             <Checkbox
               id="show-deleted"
               checked={showDeleted}
-              onCheckedChange={(v) => { setShowDeleted(!!v); setSize(1); }}
+              onCheckedChange={(v) => {
+                setShowDeleted(!!v);
+                setSize(1);
+              }}
               className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             <label htmlFor="show-deleted" className={adminTypography.caption}>
@@ -729,7 +754,10 @@ export default function AdminReviewListClient() {
                   <div
                     className={`min-w-0 ${dim} flex items-center justify-center gap-3 whitespace-nowrap`}
                   >
-                    <ReviewContextBadge reviewContext={r.reviewContext} contextLabel={r.contextLabel} />
+                    <ReviewContextBadge
+                      reviewContext={r.reviewContext}
+                      contextLabel={r.contextLabel}
+                    />
                   </div>
 
                   {/* 공개 / 비공개*/}
@@ -880,7 +908,10 @@ export default function AdminReviewListClient() {
             <DialogTitle className={adminTypography.sectionTitle}>후기 상세</DialogTitle>
             {detail && (
               <div className="flex flex-wrap items-center gap-2">
-                <ReviewContextBadge reviewContext={detail.reviewContext} contextLabel={detail.contextLabel} />
+                <ReviewContextBadge
+                  reviewContext={detail.reviewContext}
+                  contextLabel={detail.contextLabel}
+                />
                 <Badge variant={detail.status === "visible" ? "default" : "secondary"}>
                   {detail.status === "visible" ? "공개" : "비공개"}
                 </Badge>
@@ -963,13 +994,64 @@ export default function AdminReviewListClient() {
                   <div className={adminTypography.caption}>후기 대상</div>
                   <div className={adminTypography.bodyStrong}>{detail.subject || "-"}</div>
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {detail.orderId && <a className="text-xs text-primary underline" href={`/admin/orders/${detail.orderId}`}>주문</a>}
-                    {detail.rentalId && <a className="text-xs text-primary underline" href={`/admin/rentals/${detail.rentalId}`}>대여</a>}
-                    {detail.serviceApplicationId && <a className="text-xs text-primary underline" href={`/admin/applications/stringing/${detail.serviceApplicationId}`}>신청서</a>}
-                    {detail.productId && <a className="text-xs text-primary underline" href={`/admin/products/${detail.productId}/edit`}>상품</a>}
-                    {detail.racketId && <a className="text-xs text-primary underline" href={`/admin/rackets/${detail.racketId}/edit`}>라켓</a>}
-                    {detail.relatedProductIds?.map((id) => <a key={`p-${id}`} className="text-xs text-primary underline" href={`/admin/products/${id}/edit`}>관련 상품</a>)}
-                    {detail.relatedRacketIds?.map((id) => <a key={`r-${id}`} className="text-xs text-primary underline" href={`/admin/rackets/${id}/edit`}>관련 라켓</a>)}
+                    {detail.orderId && (
+                      <a
+                        className="text-xs text-primary underline"
+                        href={`/admin/orders/${detail.orderId}`}
+                      >
+                        주문
+                      </a>
+                    )}
+                    {detail.rentalId && (
+                      <a
+                        className="text-xs text-primary underline"
+                        href={`/admin/rentals/${detail.rentalId}`}
+                      >
+                        대여
+                      </a>
+                    )}
+                    {detail.serviceApplicationId && (
+                      <a
+                        className="text-xs text-primary underline"
+                        href={`/admin/applications/stringing/${detail.serviceApplicationId}`}
+                      >
+                        신청서
+                      </a>
+                    )}
+                    {detail.productId && (
+                      <a
+                        className="text-xs text-primary underline"
+                        href={`/admin/products/${detail.productId}/edit`}
+                      >
+                        상품
+                      </a>
+                    )}
+                    {detail.racketId && (
+                      <a
+                        className="text-xs text-primary underline"
+                        href={`/admin/rackets/${detail.racketId}/edit`}
+                      >
+                        라켓
+                      </a>
+                    )}
+                    {detail.relatedProductIds?.map((id) => (
+                      <a
+                        key={`p-${id}`}
+                        className="text-xs text-primary underline"
+                        href={`/admin/products/${id}/edit`}
+                      >
+                        관련 상품
+                      </a>
+                    ))}
+                    {detail.relatedRacketIds?.map((id) => (
+                      <a
+                        key={`r-${id}`}
+                        className="text-xs text-primary underline"
+                        href={`/admin/rackets/${id}/edit`}
+                      >
+                        관련 라켓
+                      </a>
+                    ))}
                   </div>
                 </div>
                 <div className="space-y-1">

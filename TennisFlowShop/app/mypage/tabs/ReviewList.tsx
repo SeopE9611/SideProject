@@ -1,15 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
+import AsyncState from "@/components/system/AsyncState";
+import { StackedCardListSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import AsyncState from "@/components/system/AsyncState";
-import { StackedCardListSkeleton } from "@/components/system/loading";
 import {
   Dialog,
   DialogContent,
@@ -26,17 +26,17 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   REVIEW_CONTENT_MAX_LENGTH,
   REVIEW_MAX_PHOTOS,
   reviewInputMessage,
   validateReviewInput,
 } from "@/lib/reviews/review-input-policy";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Star, Trash2 } from "lucide-react";
-import { ReviewContextBadge } from "@/components/reviews/ReviewContextBadge";
 import type { ReviewContext, ReviewManagementCategory } from "@/lib/reviews/review-target";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Star, Trash2 } from "lucide-react";
 
 const PhotosUploader = dynamic(() => import("@/components/reviews/PhotosUploader"), {
   loading: () => null,
@@ -153,12 +153,19 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   const [categoryFilter, setCategoryFilter] = useState<"all" | ReviewManagementCategory>("all");
 
   // 내 후기 목록 불러오기 (커서 기반 SWR)
-  const getKey = useCallback((pageIdx: number, prev: ApiMineResponse | null) => {
-    if (prev && !prev.nextCursor) return null;
-    const p = new URLSearchParams({ limit: "10", status: statusFilter, category: categoryFilter });
-    if (pageIdx && prev?.nextCursor) p.set("cursor", prev.nextCursor);
-    return `/api/reviews/mine?${p.toString()}`;
-  }, [statusFilter, categoryFilter]);
+  const getKey = useCallback(
+    (pageIdx: number, prev: ApiMineResponse | null) => {
+      if (prev && !prev.nextCursor) return null;
+      const p = new URLSearchParams({
+        limit: "10",
+        status: statusFilter,
+        category: categoryFilter,
+      });
+      if (pageIdx && prev?.nextCursor) p.set("cursor", prev.nextCursor);
+      return `/api/reviews/mine?${p.toString()}`;
+    },
+    [statusFilter, categoryFilter],
+  );
 
   const { data, size, setSize, isValidating, mutate, error } = useSWRInfinite<ApiMineResponse>(
     getKey,
@@ -284,19 +291,22 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     // 낙관적 업데이트: 변경된 필드만 반영
     await mutate((pages?: ApiMineResponse[]) => {
       if (!pages) return pages;
-      return pages.map((p): ApiMineResponse => ({
-        ...p,
-        items: p.items.map((a): ApiMineItem =>
-          a._id !== editing._id
-            ? a
-            : {
-                ...a,
-                ...(payload.content !== undefined ? { content: payload.content } : {}),
-                ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
-                ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
-              },
-        ),
-      }));
+      return pages.map(
+        (p): ApiMineResponse => ({
+          ...p,
+          items: p.items.map(
+            (a): ApiMineItem =>
+              a._id !== editing._id
+                ? a
+                : {
+                    ...a,
+                    ...(payload.content !== undefined ? { content: payload.content } : {}),
+                    ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
+                    ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
+                  },
+          ),
+        }),
+      );
     }, false);
 
     try {
@@ -313,7 +323,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         resJson = await res.json();
       } catch {}
       if (!res.ok) {
-        throw new Error(resJson?.reason ? reviewInputMessage(resJson.reason) : resJson?.message || "후기 수정 실패");
+        throw new Error(
+          resJson?.reason
+            ? reviewInputMessage(resJson.reason)
+            : resJson?.message || "후기 수정 실패",
+        );
       }
 
       showSuccessToast("후기가 수정되었습니다.");
@@ -325,7 +339,17 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     } finally {
       setSaving(false);
     }
-  }, [data, editing, editContent, editRating, editPhotos, uploadingEditPhotos, originalEdit, mutate, closeEdit]);
+  }, [
+    data,
+    editing,
+    editContent,
+    editRating,
+    editPhotos,
+    uploadingEditPhotos,
+    originalEdit,
+    mutate,
+    closeEdit,
+  ]);
 
   // 공개/비공개 토글
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -445,7 +469,13 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       ) : null}
       {/* 필터 */}
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as "all" | "visible" | "hidden"); setSize(1); }}>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v as "all" | "visible" | "hidden");
+            setSize(1);
+          }}
+        >
           <SelectTrigger className="h-9 w-full sm:w-36">
             <SelectValue placeholder="상태" />
           </SelectTrigger>
@@ -456,7 +486,13 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           </SelectContent>
         </Select>
 
-        <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v as "all" | ReviewManagementCategory); setSize(1); }}>
+        <Select
+          value={categoryFilter}
+          onValueChange={(v) => {
+            setCategoryFilter(v as "all" | ReviewManagementCategory);
+            setSize(1);
+          }}
+        >
           <SelectTrigger className="h-9 w-full sm:w-36">
             <SelectValue placeholder="유형" />
           </SelectTrigger>
@@ -601,7 +637,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                   <span>{(it.createdAt || "").slice(0, 10)}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <ReviewContextBadge reviewContext={it.reviewContext} contextLabel={it.contextLabel} />
+                  <ReviewContextBadge
+                    reviewContext={it.reviewContext}
+                    contextLabel={it.contextLabel}
+                  />
                   {it.detailHref ? (
                     <Button asChild size="sm" variant="outline">
                       <a href={it.detailHref}>거래 상세보기</a>
@@ -660,7 +699,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       ) : null}
 
       {/* 수정 다이얼로그 */}
-      <Dialog open={!!editing} onOpenChange={(open) => !open && !uploadingEditPhotos && closeEdit()}>
+      <Dialog
+        open={!!editing}
+        onOpenChange={(open) => !open && !uploadingEditPhotos && closeEdit()}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>후기 수정</DialogTitle>
@@ -703,7 +745,27 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             <Button variant="ghost" onClick={closeEdit} disabled={saving || uploadingEditPhotos}>
               취소
             </Button>
-            <Button onClick={submitEdit} disabled={saving || uploadingEditPhotos || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok} aria-disabled={saving || uploadingEditPhotos || !validateReviewInput({ rating: editRating, content: editContent, photos: editPhotos }).ok}>
+            <Button
+              onClick={submitEdit}
+              disabled={
+                saving ||
+                uploadingEditPhotos ||
+                !validateReviewInput({
+                  rating: editRating,
+                  content: editContent,
+                  photos: editPhotos,
+                }).ok
+              }
+              aria-disabled={
+                saving ||
+                uploadingEditPhotos ||
+                !validateReviewInput({
+                  rating: editRating,
+                  content: editContent,
+                  photos: editPhotos,
+                }).ok
+              }
+            >
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" /> 저장 중…
