@@ -8,6 +8,7 @@ import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 import type { HomePreviewData } from "@/lib/home/home-preview";
 import {
@@ -31,6 +32,7 @@ import {
   SlidersHorizontal,
   Ticket,
   Wrench,
+  Activity,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -596,6 +598,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
   const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
+  const [racketCarePreview, setRacketCarePreview] = useState<{ state: "guest" | "empty" | "ready"; item?: { nickname: string; stringName: string | null; nextRecommendedAt: string; lifeScore: number } }>({ state: "guest" });
+  useEffect(() => {
+    let ignore = false;
+    fetch("/api/users/me/racket-care", { credentials: "include" }).then(async (res) => {
+      if (ignore) return;
+      if (res.status === 401) { setRacketCarePreview({ state: "guest" }); return; }
+      if (!res.ok) return;
+      const data: unknown = await res.json();
+      const items = data && typeof data === "object" && Array.isArray((data as { items?: unknown[] }).items) ? (data as { items: Array<Record<string, unknown>> }).items : [];
+      if (items.length === 0) { setRacketCarePreview({ state: "empty" }); return; }
+      const sorted = [...items].sort((a, b) => Number((a.careStatus as { daysRemaining?: number } | undefined)?.daysRemaining ?? 9999) - Number((b.careStatus as { daysRemaining?: number } | undefined)?.daysRemaining ?? 9999));
+      const item = sorted[0];
+      const careStatus = item.careStatus as { nextRecommendedAt?: string; lifeScore?: number } | undefined;
+      const stringSnapshot = item.stringSnapshot as { name?: string | null } | null | undefined;
+      setRacketCarePreview({ state: "ready", item: { nickname: String(item.nickname ?? "내 라켓"), stringName: stringSnapshot?.name ?? null, nextRecommendedAt: String(careStatus?.nextRecommendedAt ?? ""), lifeScore: Number(careStatus?.lifeScore ?? 0) } });
+    }).catch(() => { if (!ignore) setRacketCarePreview({ state: "guest" }); });
+    return () => { ignore = true; };
+  }, []);
 
   // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
   return (
@@ -723,6 +743,27 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           </section>
         )}
       </SiteContainer>
+
+
+      <section className="py-8 bp-sm:py-10">
+        <SiteContainer>
+          <div className="grid gap-5 rounded-[2rem] border border-border bg-card p-5 shadow-sm bp-md:p-7 bp-lg:grid-cols-[1.1fr_0.9fr] bp-lg:items-center">
+            <div className="space-y-4">
+              <span className="inline-flex w-fit rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">라켓 케어 패스</span>
+              <h2 className="break-keep text-ui-section-title-lg font-semibold text-foreground">내 라켓의 다음 스트링 교체일을 놓치지 마세요</h2>
+              <p className="break-keep text-ui-body text-muted-foreground">마지막 교체일, 플레이 빈도, 완료된 교체 이력을 기반으로 상태 점수와 알림을 제공합니다.</p>
+              <div className="flex flex-wrap gap-2 text-ui-label text-muted-foreground"><span className="rounded-full bg-muted px-3 py-1">30초 등록</span><span className="rounded-full bg-muted px-3 py-1">기존 이력 활용</span><span className="rounded-full bg-muted px-3 py-1">무료 알림</span></div>
+              <Button asChild size="tall"><Link href={racketCarePreview.state === "guest" ? "/login?redirect=/mypage/racket-care" : "/mypage/racket-care"}>라켓 케어 시작하기</Link></Button>
+            </div>
+            <Card className="rounded-2xl border-border/80">
+              <CardContent className="space-y-3 p-5">
+                <div className="flex items-center gap-2 text-primary"><Activity className="h-5 w-5" /><span className="font-semibold">스트링 상태 점수</span></div>
+                {racketCarePreview.state === "ready" && racketCarePreview.item ? <><p className="text-ui-section-title font-semibold">{racketCarePreview.item.lifeScore}점</p><p className="break-words font-medium">{racketCarePreview.item.nickname}</p><p className="text-ui-body-sm text-muted-foreground">예상 교체일 {new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "short", day: "numeric" }).format(new Date(racketCarePreview.item.nextRecommendedAt))}</p><p className="break-words text-ui-body-sm text-muted-foreground">최근 스트링 {racketCarePreview.item.stringName || "미입력"}</p></> : <><p className="break-keep font-medium">등록하면 실제 상태 점수와 예상 교체일을 확인할 수 있어요.</p><p className="break-keep text-ui-body-sm text-muted-foreground">비로그인 또는 미등록 상태에서는 예시 점수 없이 기능만 안내합니다.</p></>}
+              </CardContent>
+            </Card>
+          </div>
+        </SiteContainer>
+      </section>
 
       {/* 빠른 액션 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">

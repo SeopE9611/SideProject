@@ -28,6 +28,12 @@ export type RacketCareStatus = {
   intervalDays: number;
   nextRecommendedAt: string;
   daysRemaining: number;
+  elapsedDays: number;
+  daysRemaining: number;
+  elapsedPercent: number;
+  lifeScore: number;
   progressPercent: number;
   state: RacketCareState;
+  reasonSummary: string;
+  reasonDetails: string[];
 };

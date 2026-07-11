@@ -10,14 +10,18 @@ import Link from "next/link";
 type StringRecommendResultCardProps = {
   result: RecommendedStringProduct;
   rank: number;
+  careItemId?: string | null;
 };
 
 export default function StringRecommendResultCard({
   result,
   rank,
+  careItemId,
 }: StringRecommendResultCardProps) {
   const { product } = result;
-  const productHref = `/products/${product.id}?from=apply`;
+  const productHref = careItemId
+    ? `/products/${product.id}?from=apply&source=racket-care&careItemId=${encodeURIComponent(careItemId)}`
+    : `/products/${product.id}?from=apply`;
   const regularPrice = Number(product.price ?? 0);
   const salePrice = Number(product.inventory?.salePrice ?? 0);
   const isSale = product.inventory?.isSale === true && salePrice > 0 && salePrice < regularPrice;

@@ -42,6 +42,7 @@ import {
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import RacketCareSuccessFeedback from "@/app/checkout/success/_components/RacketCareSuccessFeedback";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
@@ -625,7 +626,8 @@ export default async function CheckoutSuccessPage({
         <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
         <div className="min-h-full bg-background text-foreground">
           <SiteContainer variant="wide" className="py-8 md:py-12">
-            <ResultState
+            <RacketCareSuccessFeedback />
+        <ResultState
               status="success"
               icon={<CheckCircle className="h-6 w-6" />}
               title="주문이 완료되었습니다"

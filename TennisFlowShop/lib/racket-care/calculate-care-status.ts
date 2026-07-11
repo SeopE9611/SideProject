@@ -26,14 +26,30 @@ export function calculateRacketCareStatus(params: {
   const elapsedDays = Math.max(0, Math.floor((todayTime - lastTime) / DAY_MS));
   const daysRemaining = Math.ceil((nextTime - todayTime) / DAY_MS);
   const rawProgress = Math.round((elapsedDays / intervalDays) * 100);
-  const progressPercent = Math.max(0, Math.min(100, rawProgress));
+  const elapsedPercent = Math.max(0, Math.min(100, rawProgress));
+  const lifeScore = Math.max(0, Math.min(100, 100 - elapsedPercent));
   const state = daysRemaining <= 0 ? "due" : daysRemaining <= intervalDays * 0.2 ? "prepare" : "good";
+  const nextRecommendedAt = new Date(nextTime).toISOString();
+  const lastDate = params.lastStringingAt.toISOString().slice(0, 10);
+  const dueText = daysRemaining > 0 ? `예상 교체일까지 ${daysRemaining}일 남았습니다.` : daysRemaining === 0 ? "오늘이 예상 교체일입니다." : `예상 교체일이 ${Math.abs(daysRemaining)}일 지났습니다.`;
 
   return {
     intervalDays,
-    nextRecommendedAt: new Date(nextTime).toISOString(),
+    nextRecommendedAt,
+    elapsedDays,
     daysRemaining,
-    progressPercent,
+    elapsedPercent,
+    lifeScore,
+    progressPercent: elapsedPercent,
     state,
+    reasonSummary: `${intervalDays}일 권장 주기 중 ${elapsedDays}일이 지났습니다.`,
+    reasonDetails: [
+      `마지막 교체일: ${lastDate}`,
+      `선택한 플레이 빈도: ${params.playFrequency}`,
+      `적용된 권장 교체 주기: ${intervalDays}일`,
+      `현재까지 경과한 일수: ${elapsedDays}일`,
+      dueText,
+      "실제 마모는 타구 강도·스트링 소재·보관 환경에 따라 달라질 수 있습니다.",
+    ],
   };
 }

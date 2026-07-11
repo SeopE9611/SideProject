@@ -38,6 +38,7 @@ const answerLabels = {
 export default function StringRecommendClient() {
   const searchParams = useSearchParams();
   const initialFreq = searchParams.get("freq");
+  const rawCareItemId = searchParams.get("careItemId");
   const isValidInitialFreq = RECOMMEND_QUESTIONS.find((q) => q.id === "freq")?.options.some((option) => option.value === initialFreq);
   const [answers, setAnswers] = useState<StringRecommendAnswers>({
     ...initialAnswers,
@@ -48,6 +49,38 @@ export default function StringRecommendClient() {
   const [results, setResults] = useState<RecommendedStringProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [productsError, setProductsError] = useState<string | null>(null);
+  const [careItemId, setCareItemId] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    if (!rawCareItemId) {
+      setCareItemId(null);
+      return;
+    }
+    let ignore = false;
+    const verify = async () => {
+      const response = await fetch(`/api/users/me/racket-care/${rawCareItemId}`, { credentials: "include" });
+      if (!ignore) setCareItemId(response.ok ? rawCareItemId : null);
+    };
+    void verify();
+    return () => {
+      ignore = true;
+    };
+  }, [rawCareItemId]);
+
+
+  useEffect(() => {
+    if (!rawCareItemId) return;
+    let ignore = false;
+    fetch("/api/users/me/racket-care", { credentials: "include" }).then(async (res) => {
+      if (!res.ok || ignore) return;
+      const data: unknown = await res.json();
+      const profileLevel = data && typeof data === "object" ? String((data as { profileLevel?: unknown }).profileLevel ?? "") : "";
+      const levelOption = RECOMMEND_QUESTIONS.find((q) => q.id === "level")?.options.find((option) => option.value === profileLevel);
+      if (levelOption) setAnswers((prev) => prev.level ? prev : { ...prev, level: levelOption.value as StringRecommendAnswers["level"] });
+    }).catch(() => undefined);
+    return () => { ignore = true; };
+  }, [rawCareItemId]);
 
   useEffect(() => {
     let ignore = false;
@@ -223,7 +256,7 @@ export default function StringRecommendClient() {
       {hasSubmitted && results.length > 0 ? (
         <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
           {results.map((result, idx) => (
-            <StringRecommendResultCard key={result.product.id} result={result} rank={idx + 1} />
+            <StringRecommendResultCard key={result.product.id} result={result} rank={idx + 1} careItemId={careItemId} />
           ))}
         </div>
       ) : null}

@@ -14,17 +14,17 @@ export function isRacketCarePlayFrequency(value: unknown): value is RacketCarePl
   return VALID_FREQ.has(value as RacketCarePlayFrequency);
 }
 
-export function normalizeRacketCareInput(input: any, partial = false) {
+export function normalizeRacketCareInput(input: Record<string, unknown>, partial = false) {
   const errors: Record<string, string> = {};
-  const out: any = {};
+  const out: Partial<RacketCareItemDoc> & { racket?: { brand: string; model: string } } = {};
   if (!partial || "nickname" in input) {
     out.nickname = trimLimit(input?.nickname, 40);
     if (!out.nickname) errors.nickname = "라켓 별칭을 입력해 주세요.";
   }
   if (!partial || "racket" in input || "brand" in input) {
     out.racket = {
-      brand: trimLimit(input?.racket?.brand ?? input?.brand, 40),
-      model: trimLimit(input?.racket?.model ?? input?.model, 60),
+      brand: trimLimit(typeof input?.racket === "object" && input.racket ? (input.racket as Record<string, unknown>).brand : input?.brand, 40),
+      model: trimLimit(typeof input?.racket === "object" && input.racket ? (input.racket as Record<string, unknown>).model : input?.model, 60),
     };
     if (!out.racket.brand) errors.brand = "브랜드를 입력해 주세요.";
     if (!out.racket.model) errors.model = "모델명을 입력해 주세요.";
@@ -44,10 +44,10 @@ export function normalizeRacketCareInput(input: any, partial = false) {
   if ("reminderEnabled" in input) out.reminderEnabled = Boolean(input.reminderEnabled);
   if ("stringSnapshot" in input) {
     out.stringSnapshot = {
-      name: trimLimit(input.stringSnapshot?.name, 80) || null,
-      gauge: trimLimit(input.stringSnapshot?.gauge, 30) || null,
-      tensionMain: trimLimit(input.stringSnapshot?.tensionMain, 10) || null,
-      tensionCross: trimLimit(input.stringSnapshot?.tensionCross, 10) || null,
+      name: trimLimit(typeof input.stringSnapshot === "object" && input.stringSnapshot ? (input.stringSnapshot as Record<string, unknown>).name : null, 80) || null,
+      gauge: trimLimit(typeof input.stringSnapshot === "object" && input.stringSnapshot ? (input.stringSnapshot as Record<string, unknown>).gauge : null, 30) || null,
+      tensionMain: trimLimit(typeof input.stringSnapshot === "object" && input.stringSnapshot ? (input.stringSnapshot as Record<string, unknown>).tensionMain : null, 10) || null,
+      tensionCross: trimLimit(typeof input.stringSnapshot === "object" && input.stringSnapshot ? (input.stringSnapshot as Record<string, unknown>).tensionCross : null, 10) || null,
     };
   }
   return { value: out, errors };
@@ -72,21 +72,30 @@ export function serializeRacketCareItem(doc: RacketCareItemDoc, productAvailable
 }
 
 
-export function summarizeCompletedApplication(doc: any) {
+export function summarizeCompletedApplication(doc: Record<string, unknown> | null | undefined) {
   if (!doc || !isCompletedStringingApplicationStatus(doc.status)) return null;
-  const item = Array.isArray(doc.stringItems) ? doc.stringItems[0] : null;
-  const productIdRaw = item?.productId ?? doc.selectedString?.productId ?? doc.selectedStringProductId;
+  const stringItems = Array.isArray(doc.stringItems) ? doc.stringItems : [];
+  const item = stringItems[0] && typeof stringItems[0] === "object" ? stringItems[0] as Record<string, unknown> : null;
+  const stringDetails = doc.stringDetails && typeof doc.stringDetails === "object" ? doc.stringDetails as Record<string, unknown> : null;
+  const detailLines = Array.isArray(stringDetails?.lines) ? stringDetails.lines : [];
+  const firstLine = detailLines[0] && typeof detailLines[0] === "object" ? detailLines[0] as Record<string, unknown> : null;
+  const meta = doc.meta && typeof doc.meta === "object" ? doc.meta as Record<string, unknown> : null;
+  const selectedString = doc.selectedString && typeof doc.selectedString === "object" ? doc.selectedString as Record<string, unknown> : null;
+  const productIdRaw = item?.productId ?? selectedString?.productId ?? doc.selectedStringProductId;
   const productId = ObjectId.isValid(String(productIdRaw ?? "")) ? String(productIdRaw) : null;
-  const tensionMain = doc.tensionMain ?? doc.mountingInfo?.tensionMain ?? doc.lines?.[0]?.tensionMain ?? null;
-  const tensionCross = doc.tensionCross ?? doc.mountingInfo?.tensionCross ?? doc.lines?.[0]?.tensionCross ?? null;
+  const mountingInfo = doc.mountingInfo && typeof doc.mountingInfo === "object" ? doc.mountingInfo as Record<string, unknown> : null;
+  const lines = Array.isArray(doc.lines) ? doc.lines : [];
+  const firstLegacyLine = lines[0] && typeof lines[0] === "object" ? lines[0] as Record<string, unknown> : null;
+  const tensionMain = doc.tensionMain ?? mountingInfo?.tensionMain ?? firstLine?.tensionMain ?? firstLegacyLine?.tensionMain ?? null;
+  const tensionCross = doc.tensionCross ?? mountingInfo?.tensionCross ?? firstLine?.tensionCross ?? firstLegacyLine?.tensionCross ?? null;
   return {
     id: String(doc._id),
-    racketName: doc.racketType ?? doc.racket?.racketType ?? doc.lines?.[0]?.racketType ?? null,
+    racketName: doc.racketType ?? firstLine?.racketName ?? firstLine?.racketType ?? firstLegacyLine?.racketType ?? null,
     completedAt: (doc.updatedAt instanceof Date ? doc.updatedAt : doc.createdAt instanceof Date ? doc.createdAt : new Date()).toISOString(),
     productId,
     stringSnapshot: {
-      name: item?.name ?? doc.selectedStringName ?? doc.selectedString?.name ?? null,
-      gauge: doc.selectedGauge ?? doc.stringGauge ?? null,
+      name: item?.name ?? firstLine?.stringName ?? doc.selectedStringName ?? selectedString?.name ?? null,
+      gauge: firstLine?.gauge ?? doc.selectedGauge ?? meta?.selectedGauge ?? doc.stringGauge ?? null,
       tensionMain: tensionMain ? String(tensionMain) : null,
       tensionCross: tensionCross ? String(tensionCross) : null,
     },
@@ -94,9 +103,32 @@ export function summarizeCompletedApplication(doc: any) {
 }
 
 export async function findLatestCompletedApplication(db: Db, userId: ObjectId, racketName?: string) {
-  const filter: any = { userId, status: { $in: ["completed", "교체완료", "done", "work_done"] } };
+  const filter: Record<string, unknown> = { userId, status: { $in: ["completed", "교체완료", "done", "work_done"] } };
   const name = String(racketName ?? "").trim();
   if (name) filter.$or = [{ racketType: name }, { "racket.racketType": name }, { "lines.racketType": name }];
   const doc = await db.collection("stringing_applications").findOne(filter, { sort: { updatedAt: -1, createdAt: -1 } });
   return summarizeCompletedApplication(doc);
+}
+
+
+export type RacketCareImportCandidate = {
+  id: string;
+  source: "profile" | "application";
+  sourceLabel: string;
+  nickname: string;
+  racket: { brand: string; model: string };
+  playFrequency: RacketCarePlayFrequency;
+  lastStringingAt: string;
+  stringSnapshot: { name?: string | null; gauge?: string | null; tensionMain?: string | null; tensionCross?: string | null } | null;
+  latestCompletedApplication?: ReturnType<typeof summarizeCompletedApplication>;
+};
+
+export function dedupeImportCandidates(candidates: RacketCareImportCandidate[]) {
+  const seen = new Set<string>();
+  return candidates.filter((candidate) => {
+    const key = [candidate.source, candidate.latestCompletedApplication?.id ?? "profile", candidate.racket.brand, candidate.racket.model, candidate.stringSnapshot?.name ?? "", candidate.lastStringingAt.slice(0, 10)].join(":").toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
