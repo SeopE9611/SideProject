@@ -14,8 +14,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import type { CanonicalReviewTarget, ReviewContext, ReviewSubjectType, ReviewWriteTarget } from "@/lib/reviews/review-target";
-import { buildReviewWriteHref, getReviewContextLabel } from "@/lib/reviews/review-target";
+import type { CanonicalReviewTarget, ReviewContext, ReviewSubjectType } from "@/lib/reviews/review-target";
+import { getReviewContextLabel } from "@/lib/reviews/review-target";
+import { buildReviewSubmissionPayload, canonicalHrefForTarget, getRequiredTargetError, getReviewDestination } from "@/lib/reviews/review-write";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -52,64 +53,23 @@ type EligibilityPayload = {
   coveredBySubjectId?: string | null;
 };
 
-function canonicalHrefForTarget(target: CanonicalReviewTarget) {
-  return buildReviewWriteHref({
-    reviewContext: target.reviewContext,
-    orderId: target.orderId,
-    rentalId: target.rentalId,
-    productId: target.primaryProductId,
-    applicationId: target.primaryApplicationId,
-  } satisfies ReviewWriteTarget);
-}
-
-function getRequiredTargetError(target: CanonicalReviewTarget | null) {
-  if (!target) return "후기 대상을 확인할 수 없습니다.";
-  switch (target.reviewContext) {
-    case "product":
-      return target.orderId && target.primaryProductId ? null : "상품 후기 대상을 확인할 수 없습니다.";
-    case "product_stringing":
-      return target.orderId && target.primaryProductId ? null : "상품·교체서비스 후기 대상을 확인할 수 없습니다.";
-    case "standalone_stringing":
-      return target.primaryApplicationId || target.applicationIds[0] ? null : "교체서비스 후기 대상을 확인할 수 없습니다.";
-    case "rental":
-      return target.rentalId ? null : "대여 후기 대상을 확인할 수 없습니다.";
-    case "rental_stringing":
-      return target.rentalId ? null : "대여·스트링 교체 후기 대상을 확인할 수 없습니다.";
-  }
-}
-
-function buildReviewSubmissionPayload(target: CanonicalReviewTarget, form: { rating: number; content: string; photos: string[] }) {
-  const payload: Record<string, unknown> = { rating: form.rating, content: form.content, photos: form.photos, reviewContext: target.reviewContext };
-  switch (target.reviewContext) {
-    case "product":
-      payload.productId = target.primaryProductId;
-      payload.orderId = target.orderId;
-      break;
-    case "product_stringing":
-      payload.productId = target.primaryProductId;
-      payload.orderId = target.orderId;
-      payload.serviceApplicationId = target.primaryApplicationId;
-      break;
-    case "standalone_stringing":
-      payload.service = "stringing";
-      payload.serviceApplicationId = target.primaryApplicationId ?? target.applicationIds[0];
-      break;
-    case "rental":
-      payload.rentalId = target.rentalId;
-      break;
-    case "rental_stringing":
-      payload.rentalId = target.rentalId;
-      payload.serviceApplicationId = target.primaryApplicationId;
-      break;
-  }
-  return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined && value !== null));
-}
-
 function stateFromReason(data: EligibilityPayload): EligState {
   if (data.eligible) return data.nextTarget ?? data.target ? "ok" : "invalid";
   const reason = String(data.reason ?? "error");
   if (["already", "notPurchased", "noPurchase", "notConfirmed", "notCompleted", "invalidStatus", "coveredByIntegratedReview", "orderNotFound", "rentalNotFound", "notFound", "unauthorized", "invalid"].includes(reason)) return reason as EligState;
   return "invalid";
+}
+
+function stateFromPostFailure(status: number, reason: string): EligState | null {
+  if (status === 401) return "unauthorized";
+  if (status === 409 && reason === "already") return "already";
+  if (reason === "notPurchased" || reason === "noPurchase") return "notPurchased";
+  if (reason === "notConfirmed") return "notConfirmed";
+  if (reason === "notCompleted") return "notCompleted";
+  if (reason === "invalidStatus") return "invalidStatus";
+  if (reason === "coveredByIntegratedReview") return "coveredByIntegratedReview";
+  if (reason === "notFound" || reason === "invalid") return "invalid";
+  return null;
 }
 
 function stateMessage(state: EligState) {
@@ -168,6 +128,7 @@ export default function ReviewWritePage() {
   const blockedByLoginGate = !allowGuestCheckout && authChecked && !isAuthenticated;
   const canonicalTarget = eligibility?.nextTarget ?? eligibility?.target ?? null;
   const targetError = getRequiredTargetError(canonicalTarget);
+  const reviewDestination = canonicalTarget ? getReviewDestination(canonicalTarget) : null;
   const hasValidCanonicalTarget = Boolean(canonicalTarget && canonicalTarget.eligible && !canonicalTarget.reviewed && !targetError);
   const locked = state !== "ok" || !hasValidCanonicalTarget || isSubmitting;
   const isDirty = useMemo(() => rating !== 5 || content.trim().length > 0 || photos.length > 0, [rating, content, photos.length]);
@@ -264,9 +225,7 @@ export default function ReviewWritePage() {
   }, [state, targetError]);
 
   const goPrimary = () => {
-    const target = canonicalTarget;
-    if (target?.reviewContext === "product" && target.primaryProductId) router.replace(`/products/${target.primaryProductId}?tab=reviews`);
-    else router.replace("/mypage?tab=reviews");
+    router.replace(reviewDestination?.href ?? "/mypage?tab=reviews");
   };
 
   const onSubmit = async (e?: React.FormEvent) => {
@@ -283,17 +242,21 @@ export default function ReviewWritePage() {
       const r = await fetch("/api/reviews", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(buildReviewSubmissionPayload(canonicalTarget, { rating, content, photos })) });
       if (r.ok) {
         showSuccessToast("후기가 등록되었습니다.");
-        router.replace(canonicalTarget.reviewContext === "product" && canonicalTarget.primaryProductId ? `/products/${canonicalTarget.primaryProductId}?tab=reviews` : "/mypage?tab=reviews");
+        router.replace(getReviewDestination(canonicalTarget).href);
         return;
       }
-      if (r.status === 409) {
+      const data = (await r.json().catch(() => ({}))) as { reason?: unknown; message?: unknown };
+      const responseReason = String(data.reason ?? data.message ?? "");
+      const nextState = stateFromPostFailure(r.status, responseReason);
+      if (nextState === "already") {
         setState("already");
         showInfoToast("이미 이 대상의 후기를 작성했습니다.");
         return;
       }
-      if (r.status === 404) {
-        setState("notPurchased");
-        showInfoToast("구매/이용 이력이 있어야 후기를 작성할 수 있어요.");
+      if (nextState) {
+        setState(nextState);
+        if (nextState === "notPurchased") showInfoToast("구매/이용 이력이 있어야 후기를 작성할 수 있어요.");
+        else showInfoToast(stateMessage(nextState) ?? "후기 작성 상태를 확인해 주세요.");
         return;
       }
       showErrorToast("후기 등록에 실패했습니다.");
@@ -344,7 +307,7 @@ export default function ReviewWritePage() {
                 <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">별점</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">이용 경험에 가까운 점수를 선택하세요.</p></div><div className="rounded-2xl border border-border bg-muted/20 px-4 py-5 shadow-sm"><Stars value={rating} onChange={setRating} disabled={locked} /><div className="mt-3 text-center text-ui-body-sm font-medium text-foreground">{rating}점</div></div></section>
                 <section className="space-y-3"><div className="flex items-end justify-between gap-3"><Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label><span className="text-ui-label text-muted-foreground tabular-nums">{content.length} / 1000자</span></div><Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={reviewPlaceholder} className="min-h-[180px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring" disabled={locked} /></section>
                 <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} previewMode="queue" /><PhotosReorderGrid value={photos} onChange={setPhotos} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
-                <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end"><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto">후기 관리로 이동</Button><Button data-cy="submit-review" type="submit" disabled={locked || isUploading} aria-disabled={locked || isUploading} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto">{isUploading ? "이미지 업로드 중..." : "후기 등록"}</Button></div>
+                <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end"><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto">{reviewDestination?.label ?? "후기 관리로 이동"}</Button><Button data-cy="submit-review" type="submit" disabled={locked || isUploading} aria-disabled={locked || isUploading} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto">{isUploading ? "이미지 업로드 중..." : "후기 등록"}</Button></div>
               </form>
             </SummaryCard>
             <PublicSurface className="space-y-2 lg:sticky lg:top-24" padding="md"><h2 className="text-ui-body-sm font-semibold text-foreground">등록 전 확인</h2><ul className="space-y-1 text-ui-body-sm text-muted-foreground"><li>• 실제 사용 경험을 중심으로 작성해주세요.</li><li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li><li>• 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.</li></ul></PublicSurface>
