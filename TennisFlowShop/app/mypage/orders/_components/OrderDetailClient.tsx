@@ -11,7 +11,6 @@ import {
 } from "@/app/mypage/_lib/flow-display";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
-import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,7 @@ import { isOrderConfirmedStatus, isOrderDeliveredStatus } from "@/lib/status/flo
 import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { CheckCircle, ChevronDown, Clock, CreditCard, ShoppingCart, Truck } from "lucide-react";
+import { CheckCircle, ChevronDown, CreditCard, ShoppingCart, Truck } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -419,15 +418,21 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           .map((it: any) => [String(it.productId), Boolean(it.reviewed)])
       : [],
   );
+  const reviewTotal =
+    typeof reviewItemsData?.counts?.total === "number" ? reviewItemsData.counts.total : null;
   const reviewRemaining =
     typeof reviewItemsData?.counts?.remaining === "number" ? reviewItemsData.counts.remaining : null;
+  const reviewsReady =
+    !isReviewItemsLoading && reviewTotal !== null && reviewRemaining !== null;
+  const hasReviewTargets = reviewsReady && reviewTotal > 0;
+  const allReviewed = hasReviewTargets && reviewRemaining === 0;
   const nextReviewContext = reviewItemsData?.nextReviewContext ?? null;
   const nextReviewProductId = reviewItemsData?.nextProductId ?? null;
   const nextReviewApplicationId = reviewItemsData?.nextApplicationId ?? null;
   const isIntegratedProductStringingReview = nextReviewContext === "product_stringing";
-  const allReviewed = reviewRemaining === 0;
-  const firstUnreviewed = items.find((it) => reviewedMap.get(it.id) === false);
-  const reviewsReady = !isReviewItemsLoading && typeof reviewRemaining === "number";
+  const firstUnreviewed = reviewsReady
+    ? items.find((it) => reviewedMap.get(it.id) === false)
+    : undefined;
   // 편집 가능 상태: 배송 중/완료/환불/취소가 아니어야 함
   const nonEditableStatuses = ["배송중", "배송완료", "환불", "취소"];
   const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? "");
@@ -786,11 +791,18 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             ctaLabel: "후기 작성",
             ctaHref: integratedOrderReviewHref,
           }
-        : canShowProductReviewCTA && Boolean(firstUnreviewed)
+        : canShowProductReviewCTA && firstUnreviewed
           ? {
-              label: "후기 작성 가능",
+              label: firstUnreviewed.name
+                ? `${firstUnreviewed.name} 후기를 남겨주세요.`
+                : "상품 후기를 남겨주세요.",
+              description: "구매한 상품의 사용 경험을 작성할 수 있어요.",
               ctaLabel: "후기 작성",
-              ctaHref: `/reviews/write?productId=${firstUnreviewed?.id}&orderId=${orderDetail?._id}`,
+              ctaHref: buildReviewWriteHref({
+                reviewContext: "product",
+                orderId: orderDetail._id,
+                productId: firstUnreviewed.id,
+              }),
             }
           : null;
   const customerStatusLabel = getCustomerOrderStatusLabel(displayOrderStatusLabel);
@@ -1093,33 +1105,20 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           </div>
                         </div>
 
-                        {canShowProductReviewCTA ? (
+                        {canShowProductReviewCTA &&
+                        reviewsReady &&
+                        reviewedMap.get(item.id) === true ? (
                           <div className="mt-3">
-                            {reviewedMap.get(item.id) ? (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="secondary"
-                                className="w-full bp-sm:w-auto"
-                              >
-                                <Link href={`/products/${item.id}?tab=reviews`}>
-                                  후기 상세 보기
-                                </Link>
-                              </Button>
-                            ) : (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="outline"
-                                className="w-full bp-sm:w-auto"
-                              >
-                                <Link
-                                  href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
-                                >
-                                  후기 작성
-                                </Link>
-                              </Button>
-                            )}
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="secondary"
+                              className="w-full bp-sm:w-auto"
+                            >
+                              <Link href={`/products/${item.id}?tab=reviews`}>
+                                작성한 후기 보기
+                              </Link>
+                            </Button>
                           </div>
                         ) : null}
                       </div>
@@ -1705,77 +1704,28 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               </Card>
             ) : null}
 
-            <div id="reviews-cta" className="mt-4">
-                {allReviewed ? (
-                  <div className="flex flex-col gap-3 border-l-2 border-primary/50 bg-primary/10 px-3 py-3 dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
-                    <div className="flex items-center gap-3 text-primary">
-                      <CheckCircle className="h-6 w-6" />
-                      <div>
-                        <p className="mt-1 break-words font-semibold text-foreground">
-                          이 주문은 리뷰를 작성하였습니다.
-                        </p>
-                        <p className="text-ui-body-sm text-foreground">
-                          내가 작성한 리뷰를 확인할 수 있어요.
-                        </p>
-                      </div>
-                    </div>
-
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-sm:w-auto"
-                    >
-                      <Link href="/mypage?tab=reviews">리뷰 관리로 이동</Link>
-                    </Button>
+            {allReviewed ? (
+              <div
+                id="reviews-cta"
+                className="mt-4 flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/10 px-3 py-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4"
+              >
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle className="h-4 w-4 text-success" aria-hidden="true" />
+                  <div>
+                    <p className="text-ui-body-sm font-medium text-foreground">
+                      후기 작성 완료
+                    </p>
+                    <p className="text-ui-label text-muted-foreground">
+                      작성한 후기는 후기 관리에서 확인할 수 있어요.
+                    </p>
                   </div>
-                ) : (
-                  <div className="flex flex-col gap-3 border-l-2 border-warning/60 bg-warning/10 px-3 py-3 dark:bg-warning/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-6 w-6 text-warning" />
-                      <div>
-                        <p className="font-semibold text-warning">
-                          이 주문은 리뷰를 작성하지 않았습니다.
-                        </p>
-                        <p className="text-ui-body-sm text-warning">
-                          {isIntegratedProductStringingReview
-                            ? "스트링·교체서비스 후기를 남겨주세요."
-                            : "아래 ‘후기 작성’ 버튼을 눌러 상품 후기를 남겨주세요."}
-                        </p>
-                        <p className="text-ui-body-sm text-destructive">
-                          ※
-                          {isVisitPickup
-                            ? "상품을 구매 확정하면 [후기 작성] 버튼이 나타납니다."
-                            : "구매 확정 후 [후기 작성] 버튼이 나타납니다."}
-                        </p>
-                      </div>
-                    </div>
+                </div>
 
-                    {nextTodo?.ctaHref === integratedOrderReviewHref ||
-                    nextTodo?.ctaHref?.includes("/reviews/write") ? null : (
-                      <OrderReviewCTA
-                        orderId={orderDetail._id as string}
-                        reviewAllDone={allReviewed}
-                        unreviewedCount={reviewRemaining ?? 0}
-                        reviewNextTargetProductId={
-                          nextReviewProductId ?? firstUnreviewed?.id ?? null
-                        }
-                        reviewNextApplicationId={
-                          nextReviewApplicationId ?? reviewableStringingAppId ?? null
-                        }
-                        reviewContext={
-                          nextReviewContext ??
-                          (serviceLinkedOrder ? "product_stringing" : "product")
-                        }
-                        orderStatus={orderDetail.status}
-                        userConfirmedAt={orderDetail.userConfirmedAt ?? null}
-                        showOnlyWhenCompleted
-                        serviceLinkedOrder={serviceLinkedOrder}
-                        loading={!reviewsReady}
-                      />
-                    )}
-                  </div>
-                )}
+                <Button asChild size="sm" variant="outline" className="w-full bp-sm:w-auto">
+                  <Link href="/mypage?tab=reviews">작성한 후기 보기</Link>
+                </Button>
               </div>
+            ) : null}
           </aside>
         </div>
 
