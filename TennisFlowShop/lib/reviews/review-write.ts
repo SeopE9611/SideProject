@@ -3,6 +3,15 @@ import { buildReviewWriteHref } from "./review-target";
 
 export type ReviewSubmissionForm = { rating: number; content: string; photos: string[] };
 export type ReviewDestination = { href: string; label: string };
+export type ReviewPostFailureState =
+  | "already"
+  | "notPurchased"
+  | "notConfirmed"
+  | "notCompleted"
+  | "invalidStatus"
+  | "coveredByIntegratedReview"
+  | "unauthorized"
+  | "invalid";
 
 const REVIEW_MANAGEMENT_DESTINATION: ReviewDestination = {
   href: "/mypage?tab=reviews",
@@ -12,6 +21,10 @@ const REVIEW_MANAGEMENT_DESTINATION: ReviewDestination = {
 function cleanId(value: unknown) {
   const id = String(value ?? "").trim();
   return id || null;
+}
+
+function getTargetApplicationId(target: CanonicalReviewTarget) {
+  return cleanId(target.primaryApplicationId) ?? cleanId(target.applicationIds[0]);
 }
 
 function compactPayload(payload: Record<string, unknown>) {
@@ -28,7 +41,7 @@ export function canonicalHrefForTarget(target: CanonicalReviewTarget) {
     orderId: cleanId(target.orderId),
     rentalId: cleanId(target.rentalId),
     productId: cleanId(target.primaryProductId),
-    applicationId: cleanId(target.primaryApplicationId),
+    applicationId: getTargetApplicationId(target),
   } satisfies ReviewWriteTarget);
 }
 
@@ -44,7 +57,7 @@ export function getRequiredTargetError(target: CanonicalReviewTarget | null) {
         ? null
         : "상품·교체서비스 후기 대상을 확인할 수 없습니다.";
     case "standalone_stringing":
-      return cleanId(target.primaryApplicationId) || cleanId(target.applicationIds[0])
+      return getTargetApplicationId(target)
         ? null
         : "교체서비스 후기 대상을 확인할 수 없습니다.";
     case "rental":
@@ -72,22 +85,44 @@ export function buildReviewSubmissionPayload(
     case "product_stringing":
       payload.productId = cleanId(target.primaryProductId);
       payload.orderId = cleanId(target.orderId);
-      payload.serviceApplicationId = cleanId(target.primaryApplicationId);
+      payload.serviceApplicationId = getTargetApplicationId(target);
       break;
     case "standalone_stringing":
       payload.service = "stringing";
-      payload.serviceApplicationId =
-        cleanId(target.primaryApplicationId) ?? cleanId(target.applicationIds[0]);
+      payload.serviceApplicationId = getTargetApplicationId(target);
       break;
     case "rental":
       payload.rentalId = cleanId(target.rentalId);
       break;
     case "rental_stringing":
       payload.rentalId = cleanId(target.rentalId);
-      payload.serviceApplicationId = cleanId(target.primaryApplicationId);
+      payload.serviceApplicationId = getTargetApplicationId(target);
       break;
   }
   return compactPayload(payload);
+}
+
+export function getReviewPostFailureState(
+  status: number,
+  reason: unknown,
+): ReviewPostFailureState | null {
+  const normalizedReason = String(reason ?? "").trim();
+  if (status === 401) return "unauthorized";
+  if (status === 409 && normalizedReason === "already") return "already";
+  if (normalizedReason === "notPurchased" || normalizedReason === "noPurchase") return "notPurchased";
+  if (normalizedReason === "notConfirmed") return "notConfirmed";
+  if (normalizedReason === "notCompleted") return "notCompleted";
+  if (normalizedReason === "invalidStatus") return "invalidStatus";
+  if (normalizedReason === "coveredByIntegratedReview") return "coveredByIntegratedReview";
+  if (
+    normalizedReason === "notFound" ||
+    normalizedReason === "invalid" ||
+    normalizedReason === "orderNotFound" ||
+    normalizedReason === "rentalNotFound"
+  ) {
+    return "invalid";
+  }
+  return null;
 }
 
 export function getReviewDestination(target: CanonicalReviewTarget | null): ReviewDestination {

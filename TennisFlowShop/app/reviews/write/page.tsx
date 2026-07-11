@@ -16,7 +16,7 @@ import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import type { CanonicalReviewTarget, ReviewContext, ReviewSubjectType } from "@/lib/reviews/review-target";
 import { getReviewContextLabel } from "@/lib/reviews/review-target";
-import { buildReviewSubmissionPayload, canonicalHrefForTarget, getRequiredTargetError, getReviewDestination } from "@/lib/reviews/review-write";
+import { buildReviewSubmissionPayload, canonicalHrefForTarget, getRequiredTargetError, getReviewDestination, getReviewPostFailureState } from "@/lib/reviews/review-write";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -58,18 +58,6 @@ function stateFromReason(data: EligibilityPayload): EligState {
   const reason = String(data.reason ?? "error");
   if (["already", "notPurchased", "noPurchase", "notConfirmed", "notCompleted", "invalidStatus", "coveredByIntegratedReview", "orderNotFound", "rentalNotFound", "notFound", "unauthorized", "invalid"].includes(reason)) return reason as EligState;
   return "invalid";
-}
-
-function stateFromPostFailure(status: number, reason: string): EligState | null {
-  if (status === 401) return "unauthorized";
-  if (status === 409 && reason === "already") return "already";
-  if (reason === "notPurchased" || reason === "noPurchase") return "notPurchased";
-  if (reason === "notConfirmed") return "notConfirmed";
-  if (reason === "notCompleted") return "notCompleted";
-  if (reason === "invalidStatus") return "invalidStatus";
-  if (reason === "coveredByIntegratedReview") return "coveredByIntegratedReview";
-  if (reason === "notFound" || reason === "invalid") return "invalid";
-  return null;
 }
 
 function stateMessage(state: EligState) {
@@ -246,8 +234,8 @@ export default function ReviewWritePage() {
         return;
       }
       const data = (await r.json().catch(() => ({}))) as { reason?: unknown; message?: unknown };
-      const responseReason = String(data.reason ?? data.message ?? "");
-      const nextState = stateFromPostFailure(r.status, responseReason);
+      const responseReason = data.reason ?? data.message;
+      const nextState = getReviewPostFailureState(r.status, responseReason);
       if (nextState === "already") {
         setState("already");
         showInfoToast("이미 이 대상의 후기를 작성했습니다.");

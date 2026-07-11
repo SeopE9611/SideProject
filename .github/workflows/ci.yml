@@ -215,7 +215,7 @@ jobs:
       - name: Check admin API boundary (경계 규칙)
         run: pnpm check:admin-api-boundary
 
-  # 6) contract tests (권한/CSRF 계약 위반을 분리된 job으로 식별)
+  # 6) contract + review policy tests (권한/CSRF/후기 정책 계약 위반을 분리된 job으로 식별)
   test-contract:
     runs-on: ubuntu-latest
     needs: check-admin-api-boundary
@@ -245,6 +245,15 @@ jobs:
 
       - name: Test contract (권한/CSRF 계약)
         run: pnpm test:contract
+
+      - name: Test review target resolver
+        run: pnpm test:review-target
+
+      - name: Test review API policy
+        run: pnpm test:review-api-policy
+
+      - name: Test review write flow
+        run: pnpm test:review-write
 
   # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
   test-e2e-admin-critical:
