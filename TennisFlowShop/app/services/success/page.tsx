@@ -262,6 +262,7 @@ export default async function StringServiceSuccessPage(props: Props) {
   const productIds = stringTypes
     .filter((id: string) => id && id !== "custom" && ObjectId.isValid(id))
     .map((id: string) => new ObjectId(id));
+  const expectedRacketCareProductIds = productIds.map((id) => id.toString());
 
   let stringNames: string[] = [];
 
@@ -465,7 +466,6 @@ export default async function StringServiceSuccessPage(props: Props) {
           <div className="absolute inset-0 bg-overlay/10"></div>
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
-          <RacketCareSuccessFeedback />
         <ResultState
             status="success"
             title="신청이 완료되었습니다"
@@ -478,6 +478,9 @@ export default async function StringServiceSuccessPage(props: Props) {
               신청일: {createdAtLabel}
             </div>
           </ResultState>
+          <div className="relative mx-auto mt-6 max-w-4xl">
+            <RacketCareSuccessFeedback enabled={expectedRacketCareProductIds.length > 0} expectedProductIds={expectedRacketCareProductIds} />
+          </div>
         </div>
 
         <div className="container mx-auto px-4 py-8 md:py-16">

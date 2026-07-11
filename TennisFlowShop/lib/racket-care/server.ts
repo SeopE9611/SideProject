@@ -1,5 +1,5 @@
 import { calculateRacketCareStatus } from "@/lib/racket-care/calculate-care-status";
-import { isCompletedStringingApplicationStatus } from "@/lib/racket-care/application-status";
+import { COMPLETED_STRINGING_APPLICATION_STATUSES, isCompletedStringingApplicationStatus } from "@/lib/racket-care/application-status";
 import type { RacketCareItemDoc, RacketCarePlayFrequency } from "@/lib/racket-care/types";
 import { ObjectId, type Db } from "mongodb";
 
@@ -14,6 +14,11 @@ export function isRacketCarePlayFrequency(value: unknown): value is RacketCarePl
   return VALID_FREQ.has(value as RacketCarePlayFrequency);
 }
 
+type NormalizedRacketCareCreateInput = Pick<RacketCareItemDoc, "nickname" | "racket" | "playFrequency" | "lastStringingAt"> & Partial<Pick<RacketCareItemDoc, "reminderEnabled" | "stringSnapshot">>;
+type NormalizedRacketCarePatchInput = Partial<Pick<RacketCareItemDoc, "nickname" | "racket" | "playFrequency" | "lastStringingAt" | "reminderEnabled" | "stringSnapshot">>;
+
+export function normalizeRacketCareInput(input: Record<string, unknown>, partial: true): { value: NormalizedRacketCarePatchInput; errors: Record<string, string> };
+export function normalizeRacketCareInput(input: Record<string, unknown>, partial?: false): { value: NormalizedRacketCareCreateInput; errors: Record<string, string> };
 export function normalizeRacketCareInput(input: Record<string, unknown>, partial = false) {
   const errors: Record<string, string> = {};
   const out: Partial<RacketCareItemDoc> & { racket?: { brand: string; model: string } } = {};
@@ -50,6 +55,13 @@ export function normalizeRacketCareInput(input: Record<string, unknown>, partial
       tensionCross: trimLimit(typeof input.stringSnapshot === "object" && input.stringSnapshot ? (input.stringSnapshot as Record<string, unknown>).tensionCross : null, 10) || null,
     };
   }
+  if (!partial && !out.nickname) errors.nickname = errors.nickname ?? "라켓 별칭을 입력해 주세요.";
+  if (!partial && !out.racket) {
+    errors.brand = errors.brand ?? "브랜드를 입력해 주세요.";
+    errors.model = errors.model ?? "모델명을 입력해 주세요.";
+  }
+  if (!partial && !out.playFrequency) errors.playFrequency = errors.playFrequency ?? "플레이 빈도를 선택해 주세요.";
+  if (!partial && !out.lastStringingAt) errors.lastStringingAt = errors.lastStringingAt ?? "마지막 교체일을 입력해 주세요.";
   return { value: out, errors };
 }
 
@@ -88,10 +100,15 @@ export function summarizeCompletedApplication(doc: Record<string, unknown> | nul
   const firstLegacyLine = lines[0] && typeof lines[0] === "object" ? lines[0] as Record<string, unknown> : null;
   const tensionMain = doc.tensionMain ?? mountingInfo?.tensionMain ?? firstLine?.tensionMain ?? firstLegacyLine?.tensionMain ?? null;
   const tensionCross = doc.tensionCross ?? mountingInfo?.tensionCross ?? firstLine?.tensionCross ?? firstLegacyLine?.tensionCross ?? null;
+  const completedHistory = Array.isArray(doc.history)
+    ? doc.history.find((entry): entry is Record<string, unknown> => entry && typeof entry === "object" && isCompletedStringingApplicationStatus((entry as Record<string, unknown>).status))
+    : null;
+  const completedAtRaw = doc.completedAt ?? doc.completedDate ?? completedHistory?.date ?? doc.updatedAt ?? doc.createdAt;
+  const completedAt = completedAtRaw instanceof Date ? completedAtRaw : new Date(String(completedAtRaw ?? ""));
   return {
     id: String(doc._id),
     racketName: doc.racketType ?? firstLine?.racketName ?? firstLine?.racketType ?? firstLegacyLine?.racketType ?? null,
-    completedAt: (doc.updatedAt instanceof Date ? doc.updatedAt : doc.createdAt instanceof Date ? doc.createdAt : new Date()).toISOString(),
+    completedAt: Number.isNaN(completedAt.getTime()) ? null : completedAt.toISOString(),
     productId,
     stringSnapshot: {
       name: item?.name ?? firstLine?.stringName ?? doc.selectedStringName ?? selectedString?.name ?? null,
@@ -103,7 +120,7 @@ export function summarizeCompletedApplication(doc: Record<string, unknown> | nul
 }
 
 export async function findLatestCompletedApplication(db: Db, userId: ObjectId, racketName?: string) {
-  const filter: Record<string, unknown> = { userId, status: { $in: ["completed", "교체완료", "done", "work_done"] } };
+  const filter: Record<string, unknown> = { userId, status: { $in: COMPLETED_STRINGING_APPLICATION_STATUSES } };
   const name = String(racketName ?? "").trim();
   if (name) filter.$or = [{ racketType: name }, { "racket.racketType": name }, { "lines.racketType": name }];
   const doc = await db.collection("stringing_applications").findOne(filter, { sort: { updatedAt: -1, createdAt: -1 } });
@@ -118,7 +135,7 @@ export type RacketCareImportCandidate = {
   nickname: string;
   racket: { brand: string; model: string };
   playFrequency: RacketCarePlayFrequency;
-  lastStringingAt: string;
+  lastStringingAt: string | null;
   stringSnapshot: { name?: string | null; gauge?: string | null; tensionMain?: string | null; tensionCross?: string | null } | null;
   latestCompletedApplication?: ReturnType<typeof summarizeCompletedApplication>;
 };
@@ -126,7 +143,9 @@ export type RacketCareImportCandidate = {
 export function dedupeImportCandidates(candidates: RacketCareImportCandidate[]) {
   const seen = new Set<string>();
   return candidates.filter((candidate) => {
-    const key = [candidate.source, candidate.latestCompletedApplication?.id ?? "profile", candidate.racket.brand, candidate.racket.model, candidate.stringSnapshot?.name ?? "", candidate.lastStringingAt.slice(0, 10)].join(":").toLowerCase();
+    const key = candidate.latestCompletedApplication?.id
+      ? `application:${candidate.latestCompletedApplication.id}`
+      : ["profile", candidate.racket.brand, candidate.racket.model, candidate.stringSnapshot?.name ?? "", candidate.lastStringingAt?.slice(0, 10) ?? ""].join(":").toLowerCase();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

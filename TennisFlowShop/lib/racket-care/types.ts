@@ -27,7 +27,6 @@ export type RacketCareItemDoc = {
 export type RacketCareStatus = {
   intervalDays: number;
   nextRecommendedAt: string;
-  daysRemaining: number;
   elapsedDays: number;
   daysRemaining: number;
   elapsedPercent: number;

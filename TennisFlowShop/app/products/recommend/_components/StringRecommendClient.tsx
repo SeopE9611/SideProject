@@ -34,6 +34,13 @@ const answerLabels = {
   freq: "플레이 빈도",
   budget: "예산 성향",
 } as const;
+function ntrpToRecommendLevel(level: string): StringRecommendAnswers["level"] {
+  if (level === "1.0" || level === "1.5") return "beginner";
+  if (level === "2.0" || level === "2.5") return "novice";
+  if (level === "3.0" || level === "3.5") return "intermediate";
+  if (level === "4.0" || level === "4.5" || level === "5.0" || level === "pro") return "advanced";
+  return null;
+}
 
 export default function StringRecommendClient() {
   const searchParams = useSearchParams();
@@ -76,8 +83,8 @@ export default function StringRecommendClient() {
       if (!res.ok || ignore) return;
       const data: unknown = await res.json();
       const profileLevel = data && typeof data === "object" ? String((data as { profileLevel?: unknown }).profileLevel ?? "") : "";
-      const levelOption = RECOMMEND_QUESTIONS.find((q) => q.id === "level")?.options.find((option) => option.value === profileLevel);
-      if (levelOption) setAnswers((prev) => prev.level ? prev : { ...prev, level: levelOption.value as StringRecommendAnswers["level"] });
+      const mappedLevel = ntrpToRecommendLevel(profileLevel);
+      if (mappedLevel) setAnswers((prev) => prev.level ? prev : { ...prev, level: mappedLevel });
     }).catch(() => undefined);
     return () => { ignore = true; };
   }, [rawCareItemId]);

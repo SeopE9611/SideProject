@@ -32,7 +32,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const current = await db.collection<RacketCareItemDoc>("racket_care_items").findOne({ _id: ids.itemId, userId: ids.userId });
   if (!current) return NextResponse.json({ message: "라켓 정보를 찾을 수 없습니다." }, { status: 404 });
   const $set: Partial<RacketCareItemDoc> = { updatedAt: new Date() };
-  for (const key of ["nickname", "racket", "playFrequency", "lastStringingAt", "stringSnapshot", "reminderEnabled"] as const) if (key in value) $set[key] = value[key];
+  if (value.nickname !== undefined) $set.nickname = value.nickname;
+  if (value.racket !== undefined) $set.racket = value.racket;
+  if (value.playFrequency !== undefined) $set.playFrequency = value.playFrequency;
+  if (value.lastStringingAt !== undefined) $set.lastStringingAt = value.lastStringingAt;
+  if (value.stringSnapshot !== undefined) $set.stringSnapshot = value.stringSnapshot;
+  if (value.reminderEnabled !== undefined) $set.reminderEnabled = value.reminderEnabled;
   if (("reminderEnabled" in value && value.reminderEnabled && !current.reminderEnabled) || ("lastStringingAt" in value && value.lastStringingAt instanceof Date && value.lastStringingAt.getTime() !== current.lastStringingAt.getTime())) $set.reminderSentFor = null;
   const updated = await db.collection<RacketCareItemDoc>("racket_care_items").findOneAndUpdate({ _id: ids.itemId, userId: ids.userId }, { $set }, { returnDocument: "after" });
   return NextResponse.json({ item: serializeRacketCareItem(updated as RacketCareItemDoc) });

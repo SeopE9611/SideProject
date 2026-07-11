@@ -567,6 +567,9 @@ export default async function CheckoutSuccessPage({
           typeof it?.selectedColorHex === "string" ? it.selectedColorHex : undefined,
       };
     });
+    const orderProductIds = (order.items || [])
+      .map((it: OrderItemLike) => String(it?.productId ?? it?._id ?? ""))
+      .filter(Boolean);
 
     // 포인트/적용 전 금액 안전 추출(필드가 없을 수도 있으니 fallback)
     const originalTotal =
@@ -626,7 +629,6 @@ export default async function CheckoutSuccessPage({
         <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
         <div className="min-h-full bg-background text-foreground">
           <SiteContainer variant="wide" className="py-8 md:py-12">
-            <RacketCareSuccessFeedback />
         <ResultState
               status="success"
               icon={<CheckCircle className="h-6 w-6" />}
@@ -638,6 +640,9 @@ export default async function CheckoutSuccessPage({
               }
               className="py-8 sm:py-10"
             />
+            <div className="mx-auto mt-6 max-w-4xl">
+              <RacketCareSuccessFeedback enabled={withStringService} expectedProductIds={orderProductIds} />
+            </div>
           </SiteContainer>
 
           <SiteContainer variant="wide" className="py-8">
