@@ -15,9 +15,18 @@ function blockReason(target) {
 
 test("GET/POST 공통 canonical target 차단 순서: reviewed를 eligible보다 먼저 처리한다", () => {
   assert.equal(blockReason({ eligible: true, reviewed: true }), "already");
-  assert.equal(blockReason({ eligible: false, reviewed: true, ineligibleReason: "coveredByIntegratedReview" }), "already");
-  assert.equal(blockReason({ eligible: false, reviewed: false, ineligibleReason: "notCompleted" }), "notCompleted");
-  assert.equal(blockReason({ eligible: false, reviewed: false, ineligibleReason: null }), "notConfirmed");
+  assert.equal(
+    blockReason({ eligible: false, reviewed: true, ineligibleReason: "coveredByIntegratedReview" }),
+    "already",
+  );
+  assert.equal(
+    blockReason({ eligible: false, reviewed: false, ineligibleReason: "notCompleted" }),
+    "notCompleted",
+  );
+  assert.equal(
+    blockReason({ eligible: false, reviewed: false, ineligibleReason: null }),
+    "notConfirmed",
+  );
   assert.equal(blockReason({ eligible: true, reviewed: false }), null);
   assert.equal(blockReason(null), "notFound");
 });
@@ -28,13 +37,26 @@ test("후기 API 정책 계약: GET applicationId와 POST 등록이 같은 canon
   const policy = read("lib/reviews/review-policy.ts");
 
   assert.ok(policy.includes("export function getReviewSubmissionBlockReason"));
-  assert.ok(policy.indexOf('if (target.reviewed) return "already"') < policy.indexOf("if (!target.eligible)"));
+  assert.ok(
+    policy.indexOf('if (target.reviewed) return "already"') <
+      policy.indexOf("if (!target.eligible)"),
+  );
   assert.ok(eligibility.includes("const blockReason = getReviewSubmissionBlockReason(target)"));
   assert.ok(eligibility.includes('blockReason === "coveredByIntegratedReview"'));
   assert.ok(eligibility.includes("const nextTarget = params.eligible ? target : null"));
-  assert.ok(postRoute.includes("const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget)"));
-  assert.ok(postRoute.includes("const orderBlockReason = getReviewSubmissionBlockReason(orderCanonicalTarget)"));
-  assert.ok(postRoute.includes("const appBlockReason = getReviewSubmissionBlockReason(appCanonicalTarget)"));
+  assert.ok(
+    postRoute.includes(
+      "const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget)",
+    ),
+  );
+  assert.ok(
+    postRoute.includes(
+      "const orderBlockReason = getReviewSubmissionBlockReason(orderCanonicalTarget)",
+    ),
+  );
+  assert.ok(
+    postRoute.includes("const appBlockReason = getReviewSubmissionBlockReason(appCanonicalTarget)"),
+  );
 });
 
 test("후기 POST 정책 계약: 로컬 우회 조건 제거 및 공용 eligibility 정책을 사용한다", () => {
@@ -46,10 +68,20 @@ test("후기 POST 정책 계약: 로컬 우회 조건 제거 및 공용 eligibil
   assert.ok(!postRoute.includes("const isRentalReviewConfirmed"));
   assert.ok(!postRoute.includes('String(bought.status ?? "") !== "구매확정"'));
   assert.ok(postRoute.includes('appBlockReason === "coveredByIntegratedReview"'));
-  assert.ok(postRoute.includes('message: "coveredByIntegratedReview", reason: "coveredByIntegratedReview"'));
+  assert.ok(
+    postRoute.includes('message: "coveredByIntegratedReview", reason: "coveredByIntegratedReview"'),
+  );
   assert.ok(postRoute.includes('db.collection("reviews").findOne(dupFilter)'));
-  assert.ok(postRoute.includes('db.collection("reviews").findOne({\n      userId,\n      rentalId: { $in: [rentalIdObj, rentalIdStr] }'));
-  assert.ok(postRoute.includes('db.collection("reviews").findOne({\n      userId,\n      service: "stringing"'));
+  assert.ok(
+    postRoute.includes(
+      'db.collection("reviews").findOne({\n      userId,\n      rentalId: { $in: [rentalIdObj, rentalIdStr] }',
+    ),
+  );
+  assert.ok(
+    postRoute.includes(
+      'db.collection("reviews").findOne({\n      userId,\n      service: "stringing"',
+    ),
+  );
   assert.ok(postRoute.includes("REVIEW_REWARD_POINTS"));
   assert.ok(postRoute.includes("grantPoints"));
   assert.ok(postRoute.includes('type: "review_reward_product"'));
@@ -107,12 +139,22 @@ test("후기 작성 페이지 정책 계약: canonical target 고정과 대상 �
   assert.ok(reviewWritePolicy.includes("applicationId: getTargetApplicationId(target)"));
 
   assert.ok(reviewWrite.includes("eligibility?.nextTarget ?? eligibility?.target ?? null"));
-  assert.ok(reviewWrite.includes("const reviewDestination = canonicalTarget ? getReviewDestination(canonicalTarget) : null"));
+  assert.ok(
+    reviewWrite.includes(
+      "const reviewDestination = canonicalTarget ? getReviewDestination(canonicalTarget) : null",
+    ),
+  );
   assert.ok(reviewWrite.includes("router.replace(getReviewDestination(canonicalTarget).href)"));
-  assert.ok(reviewWrite.includes("router.replace(reviewDestination?.href ?? \"/mypage?tab=reviews\")"));
-  assert.ok(!reviewWrite.includes("reviewContext === \"product\" && canonicalTarget.primaryProductId"));
-  assert.ok(reviewWritePolicy.includes("target?.reviewContext === \"product_stringing\""));
-  assert.ok(reviewWritePolicy.includes("`/products/${cleanId(target.primaryProductId)}?tab=reviews`"));
+  assert.ok(
+    reviewWrite.includes('router.replace(reviewDestination?.href ?? "/mypage?tab=reviews")'),
+  );
+  assert.ok(
+    !reviewWrite.includes('reviewContext === "product" && canonicalTarget.primaryProductId'),
+  );
+  assert.ok(reviewWritePolicy.includes('target?.reviewContext === "product_stringing"'));
+  assert.ok(
+    reviewWritePolicy.includes("`/products/${cleanId(target.primaryProductId)}?tab=reviews`"),
+  );
 
   assert.ok(summary.includes("target.relatedItems"));
   assert.ok(summary.includes("TYPE_LABELS"));
@@ -127,4 +169,44 @@ test("후기 POST 문서는 canonical relatedRacketIds를 저장한다", () => {
   assert.ok(postRoute.includes("rentalTarget?.relatedRacketIds"));
   assert.ok(postRoute.includes("orderTarget?.relatedRacketIds ?? []"));
   assert.ok(postRoute.includes("appTarget?.relatedRacketIds ?? []"));
+});
+
+test("후기 surface/API 관계 계약: 상품 신청서 필드와 라켓 부모 관계를 공유한다", () => {
+  const surface = read("lib/reviews/public-review-surface.server.ts");
+  const postRoute = read("app/api/reviews/route.ts");
+  const targetServer = read("lib/reviews/review-target.server.ts");
+
+  assert.ok(surface.includes('"stringDetails.stringTypes"'));
+  assert.ok(surface.includes('"meta.stringProductId"'));
+  assert.ok(postRoute.includes("buildPublicReviewSurfaceTargetMatch"));
+  assert.ok(targetServer.includes("directStringTypeIds"));
+  assert.ok(targetServer.includes("app?.meta?.stringProductId"));
+
+  assert.ok(surface.includes("findRacketOrderIds"));
+  assert.ok(surface.includes("collectOrderRacketIds(row)"));
+  assert.ok(surface.includes("orderCandidates"));
+  assert.ok(surface.includes("rentalCandidates"));
+  assert.ok(surface.includes("applicationCandidates"));
+  assert.ok(surface.includes("orderId: { $in: orderIdCandidates }"));
+  assert.ok(surface.includes("rentalId: { $in: rentalIdCandidates }"));
+  assert.ok(surface.includes('reviewContext: "product_stringing"'));
+  assert.ok(!surface.includes("orderCandidates.length ? { orderId: { $in: orderCandidates } }"));
+});
+
+test("후기 surface fallback context와 상세 UI 문구 계약", () => {
+  const surface = read("lib/reviews/public-review-surface.server.ts");
+  const productClient = read("app/products/[id]/ProductDetailClient.tsx");
+  const racketClient = read("app/rackets/[id]/_components/RacketDetailClient.tsx");
+
+  assert.ok(surface.includes('return "product_stringing"'));
+  assert.ok(surface.includes('return "rental_stringing"'));
+  assert.ok(surface.includes("const hasServiceRelation"));
+  assert.ok(productClient.includes(">후기<"));
+  assert.ok(racketClient.includes("후기"));
+  assert.ok(!productClient.includes(">리뷰<"));
+  assert.ok(!racketClient.includes(">리뷰<"));
+  assert.ok(!productClient.includes("linkedReviewData"));
+  assert.ok(!productClient.includes("/api/reviews?type=all&productId"));
+  assert.ok(!racketClient.includes(`/reviews/write?productId=${"${racketId}"}`));
+  assert.ok(productClient.includes("reviewSummary"));
 });

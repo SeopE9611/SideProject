@@ -28,13 +28,13 @@ export default function ReviewPhotoViewerDialog({
       <DialogContent className="sm:max-w-4xl p-0 bg-background/90 text-foreground border border-border">
         {/* 접근성용 제목(시각적으로 숨김) */}
         <DialogHeader className="sr-only">
-          <DialogTitle>리뷰 사진 확대 보기</DialogTitle>
+          <DialogTitle>후기 사진 확대 보기</DialogTitle>
         </DialogHeader>
         <div className="relative w-full aspect-video">
           {images[index] && (
             <Image
               src={images[index] || "/placeholder.svg"}
-              alt={`리뷰 사진 확대 ${index + 1}`}
+              alt={`후기 사진 확대 ${index + 1}`}
               fill
               className="object-contain"
               priority

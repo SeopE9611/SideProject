@@ -4,6 +4,7 @@ import {
   type ReviewContext,
 } from "@/lib/reviews/review-target";
 import { ObjectId, type Db } from "mongodb";
+import { collectOrderRacketIds } from "./review-target.server";
 
 export type PublicReviewSurfaceTarget =
   | { type: "product"; id: string }
@@ -28,6 +29,7 @@ export type PublicReviewSurfaceItem = {
   productId?: string | null;
   racketId?: string | null;
   rentalId?: string | null;
+  orderId?: string | null;
   serviceApplicationId?: string | null;
   relatedProductIds?: string[];
   relatedRacketIds?: string[];
@@ -89,15 +91,23 @@ function normalizeIdsField(value: unknown): string[] {
   return Array.isArray(value) ? stringIds(value) : [];
 }
 
-function fallbackReviewContext(row: any): ReviewContext {
+export function inferPublicReviewContext(row: any): ReviewContext {
   const normalized = normalizeReviewContext(row?.reviewContext);
   if (normalized) return normalized;
+  const hasServiceRelation = Boolean(
+    row?.serviceApplicationId ||
+    row?.applicationId ||
+    row?.service === "stringing" ||
+    row?.reviewType === "service",
+  );
+  if (row?.rentalId && hasServiceRelation) return "rental_stringing";
+  if (row?.orderId && hasServiceRelation) return "product_stringing";
   if (row?.rentalId || row?.reviewType === "rental") return "rental";
-  if (row?.service === "stringing") return "standalone_stringing";
+  if (row?.service === "stringing" || row?.reviewType === "service") return "standalone_stringing";
   return "product";
 }
 
-async function findProductApplicationIds(db: Db, productIdCandidates: IdValue[]) {
+export async function findProductApplicationIds(db: Db, productIdCandidates: IdValue[]) {
   if (!productIdCandidates.length) return [];
   const productMatch = { $in: productIdCandidates };
   const rows = await db
@@ -105,6 +115,7 @@ async function findProductApplicationIds(db: Db, productIdCandidates: IdValue[])
     .find(
       {
         $or: [
+          { "stringDetails.stringTypes": productMatch },
           { "stringDetails.stringItems.productId": productMatch },
           { "stringDetails.stringItems.stringProductId": productMatch },
           { "stringDetails.racketLines.stringProductId": productMatch },
@@ -113,6 +124,7 @@ async function findProductApplicationIds(db: Db, productIdCandidates: IdValue[])
           { "stringDetails.lines.stringProductId": productMatch },
           { "stringItems.productId": productMatch },
           { "stringItems.stringProductId": productMatch },
+          { "meta.stringProductId": productMatch },
         ],
       },
       { projection: { _id: 1 } },
@@ -121,7 +133,7 @@ async function findProductApplicationIds(db: Db, productIdCandidates: IdValue[])
   return stringIds(rows.map((row) => row._id));
 }
 
-async function findRacketRentalIds(db: Db, racketIdCandidates: IdValue[]) {
+export async function findRacketRentalIds(db: Db, racketIdCandidates: IdValue[]) {
   if (!racketIdCandidates.length) return [];
   const rows = await db
     .collection("rental_orders")
@@ -138,24 +150,52 @@ async function findRacketRentalIds(db: Db, racketIdCandidates: IdValue[]) {
   return stringIds(rows.map((row) => row._id));
 }
 
-async function findRacketApplicationIds(db: Db, racketIdCandidates: IdValue[]) {
+export async function findRacketOrderIds(db: Db, racketIdCandidates: IdValue[]) {
   if (!racketIdCandidates.length) return [];
-  const racketMatch = { $in: racketIdCandidates };
   const rows = await db
-    .collection("stringing_applications")
+    .collection("orders")
     .find(
       {
         $or: [
-          { racketId: racketMatch },
-          { "racket._id": racketMatch },
-          { "stringDetails.lines.racketId": racketMatch },
-          { "stringDetails.racketLines.racketId": racketMatch },
-          { "stringDetails.lines.racket._id": racketMatch },
-          { "stringDetails.racketLines.racket._id": racketMatch },
+          { "items.racketId": { $in: racketIdCandidates } },
+          { "items.productId": { $in: racketIdCandidates } },
         ],
       },
-      { projection: { _id: 1 } },
+      { projection: { _id: 1, items: 1 } },
     )
+    .toArray();
+  const targetIds = new Set(racketIdCandidates.map(String));
+  return stringIds(
+    rows
+      .filter((row) => collectOrderRacketIds(row).some((id) => targetIds.has(String(id))))
+      .map((row) => row._id),
+  );
+}
+
+export async function findRacketApplicationIds(
+  db: Db,
+  racketIdCandidates: IdValue[],
+  orderIdCandidates: IdValue[] = [],
+  rentalIdCandidates: IdValue[] = [],
+) {
+  const or: Record<string, unknown>[] = [];
+  if (racketIdCandidates.length) {
+    const racketMatch = { $in: racketIdCandidates };
+    or.push(
+      { racketId: racketMatch },
+      { "racket._id": racketMatch },
+      { "stringDetails.lines.racketId": racketMatch },
+      { "stringDetails.racketLines.racketId": racketMatch },
+      { "stringDetails.lines.racket._id": racketMatch },
+      { "stringDetails.racketLines.racket._id": racketMatch },
+    );
+  }
+  if (orderIdCandidates.length) or.push({ orderId: { $in: orderIdCandidates } });
+  if (rentalIdCandidates.length) or.push({ rentalId: { $in: rentalIdCandidates } });
+  if (!or.length) return [];
+  const rows = await db
+    .collection("stringing_applications")
+    .find({ $or: or }, { projection: { _id: 1 } })
     .toArray();
   return stringIds(rows.map((row) => row._id));
 }
@@ -179,17 +219,41 @@ export async function buildPublicReviewSurfaceTargetMatch(
     return $or.length ? { $or } : null;
   }
 
-  const rentalIds = await findRacketRentalIds(db, targetCandidates);
-  const appIds = await findRacketApplicationIds(db, targetCandidates);
+  const [orderIds, rentalIds] = await Promise.all([
+    findRacketOrderIds(db, targetCandidates),
+    findRacketRentalIds(db, targetCandidates),
+  ]);
+  const orderCandidates = flattenIdCandidates(orderIds);
   const rentalCandidates = flattenIdCandidates(rentalIds);
-  const appCandidates = flattenIdCandidates(appIds);
+  const appIds = await findRacketApplicationIds(
+    db,
+    targetCandidates,
+    orderCandidates,
+    rentalCandidates,
+  );
+  const applicationCandidates = flattenIdCandidates(appIds);
+  const serviceOrderMatch = orderCandidates.length
+    ? {
+        $and: [
+          { orderId: { $in: orderCandidates } },
+          {
+            $or: [
+              { reviewContext: "product_stringing" },
+              { reviewType: "service" },
+              { service: "stringing" },
+            ],
+          },
+        ],
+      }
+    : null;
   const $or = compactOr([
     { productId: { $in: targetCandidates } },
     { racketId: { $in: targetCandidates } },
     { relatedRacketIds: { $in: targetCandidates } },
     rentalCandidates.length ? { rentalId: { $in: rentalCandidates } } : null,
-    appCandidates.length ? { serviceApplicationId: { $in: appCandidates } } : null,
-    appCandidates.length ? { applicationId: { $in: appCandidates } } : null,
+    serviceOrderMatch,
+    applicationCandidates.length ? { serviceApplicationId: { $in: applicationCandidates } } : null,
+    applicationCandidates.length ? { applicationId: { $in: applicationCandidates } } : null,
   ]);
   return $or.length ? { $or } : null;
 }
@@ -235,6 +299,7 @@ export async function getPublicReviewSurface(
                 productId: 1,
                 racketId: 1,
                 rentalId: 1,
+                orderId: 1,
                 serviceApplicationId: 1,
                 applicationId: 1,
                 relatedProductIds: 1,
@@ -262,7 +327,7 @@ export async function getPublicReviewSurface(
       viewerUserId && row?.userId && String(row.userId) === String(viewerUserId),
     );
     const masked = row?.status === "hidden" && !ownedByMe && !viewerIsAdmin;
-    const reviewContext = fallbackReviewContext(row);
+    const reviewContext = inferPublicReviewContext(row);
     return {
       _id: String(row._id),
       user: masked ? null : (row.userName ?? null),
@@ -282,6 +347,7 @@ export async function getPublicReviewSurface(
       productId: row.productId ? String(row.productId) : null,
       racketId: row.racketId ? String(row.racketId) : null,
       rentalId: row.rentalId ? String(row.rentalId) : null,
+      orderId: row.orderId ? String(row.orderId) : null,
       serviceApplicationId: row.serviceApplicationId
         ? String(row.serviceApplicationId)
         : row.applicationId
