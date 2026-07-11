@@ -43,7 +43,7 @@ export default function ReviewEditDialog({
     <Dialog open={open} onOpenChange={(v) => (v ? undefined : onClose())}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>리뷰 수정</DialogTitle>
+          <DialogTitle>후기 수정</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -102,7 +102,7 @@ export default function ReviewEditDialog({
               rows={6}
               value={editForm.content}
               onChange={(e) => onChangeForm((s) => ({ ...s, content: e.target.value }))}
-              placeholder="리뷰 내용을 입력하세요."
+              placeholder="후기 내용을 입력하세요."
             />
             <div className="mt-3">
               <Label>사진 (선택, 최대 5장)</Label>

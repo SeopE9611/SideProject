@@ -137,7 +137,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     return res.json();
   };
 
-  // 로그인 여부 (내 비공개 리뷰는 /api/reviews/self로 원문을 받아 병합)
+  // 로그인 여부 (내 비공개 후기는 /api/reviews/self로 원문을 받아 병합)
   const [user, setUser] = useState<any | null>(null);
   const [hasRequestedReviewUser, setHasRequestedReviewUser] = useState(false);
   const isReviewsTabActive = activeTab === "reviews";
@@ -194,7 +194,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const mergedReviews = useMemo(() => {
     let next = baseReviews;
 
-    // 내 리뷰 덮어쓰기 (있을 때만)
+    // 내 후기 덮어쓰기 (있을 때만)
     if (myReview && (myReview as any)._id) {
       const i = next.findIndex((r: any) => String(r._id) === String((myReview as any)._id));
       if (i !== -1) {
@@ -805,7 +805,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
                 >
                   <Star className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
-                  리뷰
+                  후기
                   <span className="ml-1 text-muted-foreground sm:ml-1.5">({reviewCount})</span>
                 </TabsTrigger>
                 <TabsTrigger
@@ -1021,7 +1021,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                     </DropdownMenuTrigger>
 
                                     <DropdownMenuContent align="end" className="w-44">
-                                      {/* 비공개/공개 토글: 내 리뷰 or 관리자 */}
+                                      {/* 비공개/공개 토글: 내 후기 or 관리자 */}
                                       <DropdownMenuItem
                                         onClick={async () => {
                                           if (!review?._id) return;
@@ -1110,7 +1110,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                         )}
                                       </DropdownMenuItem>
 
-                                      {/* 수정: 내 리뷰 or 관리자 */}
+                                      {/* 수정: 내 후기 or 관리자 */}
                                       <DropdownMenuItem onClick={() => openEdit(review)}>
                                         <Pencil className="mr-2 h-4 w-4" />
                                         수정하기
@@ -1151,7 +1151,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 showSuccessToast("후기를 삭제했어요.");
                                               } catch (err: any) {
                                                 showErrorToast(
-                                                  err?.message || "리뷰 삭제에 실패했습니다.",
+                                                  err?.message || "후기 삭제에 실패했습니다.",
                                                 );
                                               } finally {
                                                 setBusyReviewId(null);
@@ -1190,7 +1190,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                   >
                                     <Image
                                       src={src}
-                                      alt={`리뷰 이미지 ${i + 1}`}
+                                      alt={`후기 이미지 ${i + 1}`}
                                       fill
                                       className="object-cover"
                                     />
@@ -1218,7 +1218,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     </div>
                   ) : (
                     <div className="rounded-xl border border-border bg-muted/30 p-4 text-ui-body-sm text-muted-foreground sm:rounded-2xl sm:p-6">
-                      아직 등록된 리뷰가 없습니다.
+                      아직 등록된 후기가 없습니다.
                     </div>
                   )}
                 </div>
@@ -1239,7 +1239,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         <RecentViewedItems currentType="racket" currentId={racketId} />
       </SiteContainer>
 
-      {/* 모달성 리뷰 UI는 필요 시점에만 로드 */}
+      {/* 모달성 후기 UI는 필요 시점에만 로드 */}
       {viewerOpen ? (
         <ReviewImageViewerDialog
           open={viewerOpen}

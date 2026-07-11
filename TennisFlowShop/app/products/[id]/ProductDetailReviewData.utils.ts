@@ -71,7 +71,7 @@ export function mergeProductDetailReviews({
   const base = Array.isArray(baseReviews) ? baseReviews : [];
   let next = base;
 
-  // 내 리뷰 덮어쓰기 (있을 때만)
+  // 내 후기 덮어쓰기 (있을 때만)
   if (myReview && myReview._id) {
     const i = next.findIndex((r: any) => String(r._id) === String(myReview._id));
     if (i !== -1) {

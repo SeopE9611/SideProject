@@ -359,7 +359,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setBusyReviewId(String(editing._id));
     const { rating, content } = editForm;
 
-    // 낙관적 업데이트 (내 리뷰 vs 관리자-타인 구분)
+    // 낙관적 업데이트 (내 후기 vs 관리자-타인 구분)
     if (isMine(editing)) {
       mutateMyReview((prev: any) => {
         if (!prev?._id || String(prev._id) !== String(editing._id)) return prev;
@@ -1312,8 +1312,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
                 >
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-                  <span className="hidden sm:inline">리뷰</span>
-                  <span className="sm:hidden">리뷰</span>
+                  <span className="hidden sm:inline">후기</span>
+                  <span className="sm:hidden">후기</span>
                   <span className="ml-1 sm:ml-1.5 text-muted-foreground">({reviewCount})</span>
                 </TabsTrigger>
                 <TabsTrigger
@@ -1392,7 +1392,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </CardContent>
         </Card>
 
-        {/* 리뷰 전용 모달 UI는 필요 시점에만 로드 */}
+        {/* 후기 전용 모달 UI는 필요 시점에만 로드 */}
         {viewerOpen && (
           <ReviewPhotoViewerDialog
             open={viewerOpen}
@@ -1424,7 +1424,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         >
           <RecentViewedItems currentType="product" currentId={productId} />
 
-          {/* 리뷰 수정 다이얼로그도 열릴 때만 로드 */}
+          {/* 후기 수정 다이얼로그도 열릴 때만 로드 */}
           {editOpen && editing && (
             <ReviewEditDialog
               open={editOpen}

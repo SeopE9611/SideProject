@@ -2,6 +2,7 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
+import { buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
 import { grantPoints } from "@/lib/points.service";
 import {
   getReviewSubmissionBlockReason,
@@ -528,43 +529,18 @@ export async function GET(req: Request) {
     match.productId = { $in: productFilterCandidates };
   }
   if (productFilterCandidates && type !== "product") {
-    const linkedApplications = await db
-      .collection("stringing_applications")
-      .find(
-        {
-          $or: [
-            { "stringDetails.stringItems.productId": { $in: productFilterCandidates } },
-            { "stringDetails.stringItems.stringProductId": { $in: productFilterCandidates } },
-            { "stringDetails.racketLines.stringProductId": { $in: productFilterCandidates } },
-            { "stringDetails.racketLines.productId": { $in: productFilterCandidates } },
-            { "stringDetails.lines.productId": { $in: productFilterCandidates } },
-            { "stringDetails.lines.stringProductId": { $in: productFilterCandidates } },
-            { "stringItems.productId": { $in: productFilterCandidates } },
-            { "stringItems.stringProductId": { $in: productFilterCandidates } },
-          ],
-        },
-        { projection: { _id: 1 } },
-      )
-      .toArray();
-    const legacyApplicationCandidates = linkedApplications.flatMap((app: any) => {
-      const value = String(app?._id ?? "");
-      return ObjectId.isValid(value) ? [new ObjectId(value), value] : [value];
+    // 상품 관계 필드는 public surface helper와 공유합니다: stringDetails.stringTypes, meta.stringProductId
+    const productTargetMatch = await buildPublicReviewSurfaceTargetMatch(db, {
+      type: "product",
+      id: productFilterId!,
     });
-    const productTargetMatch = [
-      { productId: { $in: productFilterCandidates } },
-      { relatedProductIds: { $in: productFilterCandidates } },
-      ...(legacyApplicationCandidates.length
-        ? [
-            { serviceApplicationId: { $in: legacyApplicationCandidates } },
-            { applicationId: { $in: legacyApplicationCandidates } },
-          ]
-        : []),
-    ];
-    if (match.$or) {
-      match.$and = [{ $or: match.$or }, { $or: productTargetMatch }];
-      delete match.$or;
-    } else {
-      match.$or = productTargetMatch;
+    if (productTargetMatch) {
+      if (match.$or) {
+        match.$and = [{ $or: match.$or }, productTargetMatch];
+        delete match.$or;
+      } else {
+        Object.assign(match, productTargetMatch);
+      }
     }
   }
   if (rating) match.rating = Number(rating);
