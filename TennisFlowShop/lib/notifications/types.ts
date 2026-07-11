@@ -8,6 +8,7 @@ export type UserNotificationType =
   | "point_deducted"
   | "package_status"
   | "stringing_status"
+  | "racket_care"
   | "system";
 
 export type UserNotificationPriority = "low" | "normal" | "high";

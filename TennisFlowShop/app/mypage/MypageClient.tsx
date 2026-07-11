@@ -21,6 +21,7 @@ import {
   MessageSquare,
   ReceiptCent,
   Ticket,
+  Wrench,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -95,6 +96,7 @@ export default function MypageClient({ user }: Props) {
     activityFlowCount: number;
     academyActiveApplicationsCount: number;
     todoCount: number;
+    racketCare?: { count: number; nearestState: "good" | "prepare" | "due" | null; nearestDaysRemaining: number | null };
   }>("/api/mypage/summary", authenticatedSWRFetcher, {
     revalidateOnFocus: true,
   });
@@ -322,6 +324,32 @@ export default function MypageClient({ user }: Props) {
                     {hasTodoItems ? "확인하기" : "완료"}
                   </Badge>
                 </div>
+              </button>
+            </SummaryCard>
+
+            <SummaryCard
+              className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20"
+              contentClassName="p-4 bp-sm:p-5"
+            >
+              <button
+                type="button"
+                onClick={() => router.push("/mypage/racket-care")}
+                className="group flex min-h-24 w-full items-center gap-3 rounded-xl bg-muted/15 px-4 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <span className={pageTone.iconSurface}>
+                  <Wrench className="h-5 w-5 text-primary" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-ui-label font-semibold text-primary">라켓 케어</span>
+                  <span className="mt-1 block break-keep text-ui-body-sm font-medium text-foreground">
+                    {summaryLoading
+                      ? "불러오는 중"
+                      : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
+                  </span>
+                  <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">
+                    다음 스트링 교체 시점을 확인해보세요.
+                  </span>
+                </span>
               </button>
             </SummaryCard>
 

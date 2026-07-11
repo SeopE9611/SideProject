@@ -17,6 +17,7 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 const initialAnswers: StringRecommendAnswers = {
@@ -35,7 +36,13 @@ const answerLabels = {
 } as const;
 
 export default function StringRecommendClient() {
-  const [answers, setAnswers] = useState<StringRecommendAnswers>(initialAnswers);
+  const searchParams = useSearchParams();
+  const initialFreq = searchParams.get("freq");
+  const isValidInitialFreq = RECOMMEND_QUESTIONS.find((q) => q.id === "freq")?.options.some((option) => option.value === initialFreq);
+  const [answers, setAnswers] = useState<StringRecommendAnswers>({
+    ...initialAnswers,
+    freq: isValidInitialFreq ? (initialFreq as StringRecommendAnswers["freq"]) : null,
+  });
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [products, setProducts] = useState<RecommendableProduct[]>([]);
   const [results, setResults] = useState<RecommendedStringProduct[]>([]);
