@@ -1,5 +1,6 @@
 import type { CreateIndexesOptions, Db, IndexDirection } from "mongodb";
 import { ObjectId } from "mongodb";
+import { refreshReviewSummaryCachesForTargets, resolveAffectedReviewTargets } from "./reviews/review-summary-cache.server";
 
 type Keys = Record<string, IndexDirection>;
 
@@ -202,66 +203,99 @@ export async function dedupActiveReviews(db: Db) {
   return { duplicatedGroups: dups.length, softDeleted: affected };
 }
 
-export async function rebuildProductRatingSummary(db: any) {
-  const reviews = db.collection("reviews");
-  const products = db.collection("products");
+async function runLimited<T>(items: T[], limit: number, worker: (item: T) => Promise<void>) {
+  let index = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (index < items.length) {
+      const current = items[index++];
+      await worker(current);
+    }
+  });
+  await Promise.all(workers);
+}
 
-  // 1) 먼저 "고스트 값" 제거: 리뷰가 0개인 상품도 평점/리뷰수를 0으로 초기화
-  //    (목록 페이지는 products.ratingCount를 그대로 쓰기 때문에 이 단계가 필수)
-  await products.updateMany(
+export async function rebuildPublicReviewSummaryCaches(db: Db) {
+  const products = db.collection("products");
+  const rackets = db.collection("used_rackets");
+  const reviews = db.collection("reviews");
+
+  const [productsResetResult, racketsResetResult] = await Promise.all([
+    products.updateMany(
+      {
+        $or: [
+          { ratingCount: { $exists: true } },
+          { ratingAvg: { $exists: true } },
+          { ratingAverage: { $exists: true } },
+          { reviewSummaryUpdatedAt: { $exists: true } },
+        ],
+      },
+      { $set: { ratingAvg: 0, ratingAverage: 0, ratingCount: 0, reviewSummaryUpdatedAt: new Date() } },
+    ),
+    rackets.updateMany(
+      {
+        $or: [
+          { ratingCount: { $exists: true } },
+          { reviewCount: { $exists: true } },
+          { ratingAvg: { $exists: true } },
+          { ratingAverage: { $exists: true } },
+          { reviewSummaryUpdatedAt: { $exists: true } },
+        ],
+      },
+      { $set: { ratingAvg: 0, ratingAverage: 0, ratingCount: 0, reviewCount: 0, reviewSummaryUpdatedAt: new Date() } },
+    ),
+  ]);
+
+  const productIds = new Set<string>();
+  const racketIds = new Set<string>();
+  let reviewsScanned = 0;
+  const cursor = reviews.find(
+    { status: "visible", isDeleted: { $ne: true } },
     {
-      $or: [
-        { ratingCount: { $exists: true } },
-        { ratingAvg: { $exists: true } },
-        { ratingAverage: { $exists: true } },
-      ],
+      projection: {
+        productId: 1,
+        racketId: 1,
+        relatedProductIds: 1,
+        relatedRacketIds: 1,
+        orderId: 1,
+        rentalId: 1,
+        serviceApplicationId: 1,
+        applicationId: 1,
+        reviewContext: 1,
+        reviewType: 1,
+        service: 1,
+      },
     },
-    { $set: { ratingAvg: 0, ratingAverage: 0, ratingCount: 0 } },
   );
 
-  // 2) 공개(visible) + 삭제 아님 리뷰가 있는 상품만 다시 계산해서 덮어쓰기
-  const pidsRaw: any[] = await reviews.distinct("productId", {
-    productId: { $exists: true },
-    status: "visible",
-    isDeleted: { $ne: true },
-  });
-
-  const toObjectId = (v: any): ObjectId | null => {
-    if (!v) return null;
-    if (v instanceof ObjectId) return v;
-    const s = typeof v === "string" ? v : typeof v?.toString === "function" ? v.toString() : "";
-    if (!ObjectId.isValid(s)) return null;
-    return new ObjectId(s);
-  };
-
-  let touched = 0;
-  for (const raw of pidsRaw) {
-    const pid = toObjectId(raw);
-    if (!pid) continue;
-
-    const agg = await reviews
-      .aggregate([
-        {
-          $match: {
-            productId: pid,
-            status: "visible",
-            isDeleted: { $ne: true },
-          },
-        },
-        { $group: { _id: null, avg: { $avg: "$rating" }, cnt: { $sum: 1 } } },
-      ])
-      .next();
-
-    const avg = agg?.avg ? Math.round(agg.avg * 10) / 10 : 0;
-    const cnt = agg?.cnt ?? 0;
-
-    // products 목록은 ratingAvg를 우선 사용하고, 일부 코드는 ratingAverage도 fallback으로 쓰고 있어서 둘 다 세팅
-    await products.updateOne(
-      { _id: pid },
-      { $set: { ratingAvg: avg, ratingAverage: avg, ratingCount: cnt } },
-    );
-    touched += 1;
+  for await (const review of cursor) {
+    reviewsScanned += 1;
+    const targets = await resolveAffectedReviewTargets(db, review as Record<string, unknown>);
+    targets.productIds.forEach((id) => productIds.add(id));
+    targets.racketIds.forEach((id) => racketIds.add(id));
   }
 
-  return { productsTouched: touched, totalProducts: pidsRaw.length };
+  let productsUpdated = 0;
+  let racketsUpdated = 0;
+  await runLimited([...productIds], 6, async (productId) => {
+    const result = await refreshReviewSummaryCachesForTargets(db, { productIds: [productId], racketIds: [] });
+    productsUpdated += result.productsUpdated;
+  });
+  await runLimited([...racketIds], 6, async (racketId) => {
+    const result = await refreshReviewSummaryCachesForTargets(db, { productIds: [], racketIds: [racketId] });
+    racketsUpdated += result.racketsUpdated;
+  });
+
+  return {
+    productsReset: productsResetResult.modifiedCount,
+    racketsReset: racketsResetResult.modifiedCount,
+    productTargets: productIds.size,
+    racketTargets: racketIds.size,
+    productsUpdated,
+    racketsUpdated,
+    reviewsScanned,
+  };
+}
+
+export async function rebuildProductRatingSummary(db: Db) {
+  return rebuildPublicReviewSummaryCaches(db);
 }

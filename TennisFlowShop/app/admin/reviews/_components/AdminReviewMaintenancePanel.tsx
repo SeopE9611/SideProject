@@ -102,7 +102,7 @@ export default function AdminReviewMaintenancePanel() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Wrench className="h-5 w-5" />
-          리뷰 유지보수
+          후기 유지보수
         </CardTitle>
         <CardContent>
           <span className="font-bold text-foreground">
@@ -133,7 +133,7 @@ export default function AdminReviewMaintenancePanel() {
             ) : (
               <ListChecks className="mr-2 h-4 w-4" />
             )}
-            중복 리뷰 정리
+            중복 후기 정리
           </Button>
           <Button
             size="sm"
@@ -146,8 +146,11 @@ export default function AdminReviewMaintenancePanel() {
             ) : (
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
-            평점 재집계
+            후기 요약 재집계
           </Button>
+          <p className="basis-full text-ui-label text-muted-foreground">
+            상품과 라켓 목록의 후기 수·평점을 상세 페이지의 공개 통합 후기 기준으로 다시 계산합니다.
+          </p>
           <Button size="sm" onClick={() => run("all")} disabled={disabled} variant="default">
             {loading === "all" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -215,14 +218,14 @@ export default function AdminReviewMaintenancePanel() {
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <span className="font-medium">중복 리뷰 정리</span> — 동일 사용자·상품 조합에서 최신
+              <span className="font-medium">중복 후기 정리</span> — 동일 사용자·상품 조합에서 최신
               1개만 남기고 나머지는 소프트 삭제하여 중복을 제거합니다.
             </div>
           </div>
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <span className="font-medium">평점 재집계</span> — 각 상품의 리뷰 평점 평균과 개수를
+              <span className="font-medium">후기 요약 재집계</span> — 각 상품의 리뷰 평점 평균과 개수를
               다시 계산하여 상품 문서의 요약 필드를 갱신합니다.
             </div>
           </div>

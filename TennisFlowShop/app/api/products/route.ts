@@ -340,10 +340,17 @@ export async function GET(req: NextRequest) {
       ]),
     );
 
-    const items = itemsRaw.map((product) => ({
-      ...product,
-      _id: product._id.toString(),
-    }));
+    const items = itemsRaw.map((product) => {
+      const ratingAvgValue = Number(product.ratingAvg ?? product.ratingAverage);
+      const ratingCountValue = Number(product.ratingCount);
+      return {
+        ...product,
+        _id: product._id.toString(),
+        ratingAvg: Number.isFinite(ratingAvgValue) ? ratingAvgValue : 0,
+        ratingAverage: Number.isFinite(ratingAvgValue) ? ratingAvgValue : 0,
+        ratingCount: Number.isFinite(ratingCountValue) ? Math.max(0, ratingCountValue) : 0,
+      };
+    });
 
     const hasMore = skip + items.length < total;
 

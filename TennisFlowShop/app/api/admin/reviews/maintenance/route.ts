@@ -6,10 +6,9 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import {
   ensureReviewIndexes,
   dedupActiveReviews,
-  rebuildProductRatingSummary,
+  rebuildPublicReviewSummaryCaches,
 } from "@/lib/reviews.maintenance";
 
-type MaintAction = "createIndexes" | "dedup" | "rebuildSummary" | "all" | undefined;
 
 // 공통: 관리자 토큰 체크
 export async function POST(req: Request) {
@@ -63,7 +62,7 @@ export async function POST(req: Request) {
       result.dedup = await dedupActiveReviews(db);
     }
     if (!action || action === "rebuildSummary" || action === "all") {
-      result.rebuildSummary = await rebuildProductRatingSummary(db);
+      result.rebuildSummary = await rebuildPublicReviewSummaryCaches(db);
     }
 
     const dedupResult = result.dedup && typeof result.dedup === "object" ? result.dedup : {};
@@ -79,7 +78,7 @@ export async function POST(req: Request) {
       {
         type: "review.maintenance.run",
         actorId: guard.admin._id,
-        message: "리뷰 maintenance 실행",
+        message: "후기 maintenance 실행",
         diff: {
           targetType: "reviewMaintenance",
           targetScope: "reviews.maintenance",
@@ -103,6 +102,7 @@ export async function POST(req: Request) {
             dryRun: false,
             criteria: { lockKey: "reviews_maintenance" },
             resultKeys: Object.keys(result),
+            rebuildSummary: result.rebuildSummary ?? null,
           },
         },
       },

@@ -601,6 +601,9 @@ const ProductCard = React.memo(
   },
   (prev, next) =>
     prev.product._id === next.product._id &&
+    prev.product.ratingAvg === next.product.ratingAvg &&
+    prev.product.ratingAverage === next.product.ratingAverage &&
+    prev.product.ratingCount === next.product.ratingCount &&
     prev.viewMode === next.viewMode &&
     prev.brandLabel === next.brandLabel &&
     Boolean(prev.isApplyFlow) === Boolean(next.isApplyFlow),

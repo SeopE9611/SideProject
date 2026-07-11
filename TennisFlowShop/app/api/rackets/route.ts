@@ -141,8 +141,10 @@ export async function GET(req: Request) {
     images: 1,
     status: 1,
     rental: 1,
-    reviewCount: 1,
+    ratingAvg: 1,
+    ratingAverage: 1,
     ratingCount: 1,
+    reviewCount: 1,
     purchaseCount: 1,
     salesCount: 1,
     orderCount: 1,
@@ -168,6 +170,18 @@ export async function GET(req: Request) {
     const { _id, ...rest } = r;
     return {
       ...rest,
+      ratingAvg: Number.isFinite(Number((rest as any).ratingAvg ?? (rest as any).ratingAverage))
+        ? Number((rest as any).ratingAvg ?? (rest as any).ratingAverage)
+        : 0,
+      ratingAverage: Number.isFinite(Number((rest as any).ratingAvg ?? (rest as any).ratingAverage))
+        ? Number((rest as any).ratingAvg ?? (rest as any).ratingAverage)
+        : 0,
+      ratingCount: Number.isFinite(Number((rest as any).ratingCount))
+        ? Math.max(0, Number((rest as any).ratingCount))
+        : 0,
+      reviewCount: Number.isFinite(Number((rest as any).reviewCount ?? (rest as any).ratingCount))
+        ? Math.max(0, Number((rest as any).reviewCount ?? (rest as any).ratingCount))
+        : 0,
       marketing: normalizeRacketMarketing((rest as any).marketing),
       id: String(_id),
     };

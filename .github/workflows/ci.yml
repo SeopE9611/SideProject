@@ -264,6 +264,9 @@ jobs:
       - name: Test review management context
         run: pnpm test:review-management
 
+      - name: Test review summary cache
+        run: pnpm test:review-summary
+
   # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
   test-e2e-admin-critical:
     runs-on: ubuntu-latest
