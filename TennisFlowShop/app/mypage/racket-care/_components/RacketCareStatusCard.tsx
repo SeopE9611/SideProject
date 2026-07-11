@@ -1,0 +1,23 @@
+"use client";
+
+import type { CareItem } from "@/app/mypage/racket-care/_components/racket-care-client.types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { AlertCircle, Bell, CheckCircle2, Clock, Trash2 } from "lucide-react";
+import Link from "next/link";
+
+const freqLabels: Record<string, string> = { monthly: "월 1~2회", weekly: "주 1회", biweekly_plus: "주 2~3회", heavy: "주 4회 이상" };
+const stateMeta = { good: { label: "양호", icon: CheckCircle2 }, prepare: { label: "교체 준비", icon: Clock }, due: { label: "교체 권장", icon: AlertCircle } } as const;
+function dateLabel(value: string) { return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "short", day: "numeric" }).format(new Date(value)); }
+function dday(days: number) { if (days > 0) return `D-${days}`; if (days === 0) return "D-DAY"; return `${Math.abs(days)}일 지남`; }
+function displayReasonDetail(value: string) { return value.replace(/\bmonthly\b/g, "월 1~2회").replace(/\bweekly\b/g, "주 1회").replace(/\bbiweekly_plus\b/g, "주 2~3회").replace(/\bheavy\b/g, "주 4회 이상"); }
+
+export default function RacketCareStatusCard({ item, onEdit, onDelete, onToggle, toggling }: { item: CareItem; onEdit: () => void; onDelete: () => void; onToggle: (item: CareItem, checked: boolean) => void; toggling: boolean }) {
+  const meta = stateMeta[item.careStatus.state];
+  const Icon = meta.icon;
+  const href = `/products/recommend?from=racket-care&careItemId=${item.id}&freq=${item.playFrequency}`;
+  return <section id="racket-care-status"><Card className="rounded-2xl"><CardHeader><div className="flex items-start justify-between gap-3"><div><CardTitle className="break-words text-ui-card-title-lg">{item.nickname}</CardTitle><p className="break-words text-ui-body-sm text-muted-foreground">{item.racket.brand} {item.racket.model}</p></div><Badge variant={item.careStatus.state === "due" ? "destructive" : item.careStatus.state === "prepare" ? "brand" : "secondary"}><Icon className="mr-1 h-3.5 w-3.5" />{meta.label}</Badge></div></CardHeader><CardContent className="space-y-5"><div className="grid gap-4 bp-sm:grid-cols-[160px_1fr]"><div role="progressbar" aria-label={`스트링 상태 점수 ${item.careStatus.lifeScore}점`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={item.careStatus.lifeScore} className="grid aspect-square place-items-center rounded-full border border-border" style={{ background: `conic-gradient(hsl(var(--primary)) ${item.careStatus.lifeScore}%, hsl(var(--muted)) 0)` }}><div className="grid h-[72%] w-[72%] place-items-center rounded-full bg-card text-center"><span className="text-ui-section-title font-semibold">{item.careStatus.lifeScore}</span><span className="text-ui-label text-muted-foreground">상태 점수</span></div></div><div className="space-y-2 text-ui-body-sm"><p>예상 교체일: <span className="font-medium">{dateLabel(item.careStatus.nextRecommendedAt)}</span></p><p>D-day: <span className="font-medium">{dday(item.careStatus.daysRemaining)}</span></p><p>최근 스트링: <span className="font-medium break-words">{item.stringSnapshot?.name || "미입력"}</span>{item.stringSnapshot?.gauge ? ` / ${item.stringSnapshot.gauge}` : ""}{item.stringSnapshot?.tensionMain || item.stringSnapshot?.tensionCross ? ` / ${item.stringSnapshot?.tensionMain ?? "-"}-${item.stringSnapshot?.tensionCross ?? "-"}LB` : ""}</p><p>플레이 빈도: <span className="font-medium">{freqLabels[item.playFrequency] ?? item.playFrequency}</span></p></div></div><div className="rounded-xl border border-border bg-muted/30 p-4"><p className="font-medium">판단 근거</p><ul className="mt-2 list-disc space-y-1 pl-5 text-ui-body-sm text-muted-foreground">{item.careStatus.reasonDetails.map((r) => <li key={r} className="break-keep">{displayReasonDetail(r)}</li>)}</ul></div><div id="racket-care-reminder" className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border p-3"><Label htmlFor={`reminder-${item.id}`} className="flex items-center gap-2"><Bell className="h-4 w-4" />교체 알림 받기</Label><Switch id={`reminder-${item.id}`} checked={item.reminderEnabled} disabled={toggling} onCheckedChange={(checked) => onToggle(item, checked)} /></div><div className="flex flex-col gap-2 bp-sm:flex-row"><Button asChild className="min-h-11 flex-1"><Link href={href}>맞춤 스트링 추천받기</Link></Button><Button variant="outline" className="min-h-11" onClick={onEdit}>정보 수정</Button><Button variant="outline" className="min-h-11" onClick={onDelete}><Trash2 className="mr-2 h-4 w-4" />삭제</Button></div></CardContent></Card></section>;
+}

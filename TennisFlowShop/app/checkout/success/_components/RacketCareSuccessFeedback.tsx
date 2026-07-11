@@ -6,19 +6,30 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Handoff = { careItemId: string; productId?: string; createdAt?: string };
+const HANDOFF_TTL_MS = 30 * 60 * 1000;
 function isHandoff(value: unknown): value is Handoff {
-  return Boolean(value && typeof value === "object" && typeof (value as { careItemId?: unknown }).careItemId === "string");
+  const handoff = value as { careItemId?: unknown; createdAt?: unknown } | null;
+  if (!handoff || typeof handoff !== "object" || typeof handoff.careItemId !== "string" || typeof handoff.createdAt !== "string") return false;
+  const createdAt = new Date(handoff.createdAt).getTime();
+  return Number.isFinite(createdAt) && Date.now() - createdAt <= HANDOFF_TTL_MS;
 }
-export default function RacketCareSuccessFeedback() {
+export default function RacketCareSuccessFeedback({ enabled = true, expectedProductIds }: { enabled?: boolean; expectedProductIds?: string[] }) {
   const [handoff, setHandoff] = useState<Handoff | null>(null);
   useEffect(() => {
+    if (!enabled) {
+      sessionStorage.removeItem("racket-care-handoff");
+      return;
+    }
     const raw = sessionStorage.getItem("racket-care-handoff");
     if (!raw) return;
     try {
       const parsed: unknown = JSON.parse(raw);
-      if (isHandoff(parsed)) setHandoff(parsed);
-    } catch {}
-  }, []);
+      if (isHandoff(parsed) && (!parsed.productId || !expectedProductIds || expectedProductIds.includes(parsed.productId))) setHandoff(parsed);
+      else sessionStorage.removeItem("racket-care-handoff");
+    } catch {
+      sessionStorage.removeItem("racket-care-handoff");
+    }
+  }, [enabled, expectedProductIds]);
   useEffect(() => {
     if (handoff) sessionStorage.removeItem("racket-care-handoff");
   }, [handoff]);

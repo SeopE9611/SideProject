@@ -6,7 +6,7 @@ export type RacketCareImportCandidate = {
   nickname: string;
   racket: { brand: string; model: string };
   playFrequency: string;
-  lastStringingAt: string;
+  lastStringingAt: string | null;
   stringSnapshot: { name?: string | null; gauge?: string | null; tensionMain?: string | null; tensionCross?: string | null } | null;
   latestCompletedApplication?: { id: string } | null;
 };

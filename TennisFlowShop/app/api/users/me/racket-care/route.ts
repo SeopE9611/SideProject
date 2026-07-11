@@ -1,5 +1,6 @@
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
+import { COMPLETED_STRINGING_APPLICATION_STATUSES } from "@/lib/racket-care/application-status";
 import { dedupeImportCandidates, findLatestCompletedApplication, normalizeRacketCareInput, RACKET_CARE_MAX_ITEMS, serializeRacketCareItem, summarizeCompletedApplication, type RacketCareImportCandidate } from "@/lib/racket-care/server";
 import type { RacketCareItemDoc } from "@/lib/racket-care/types";
 import { ObjectId } from "mongodb";
@@ -52,7 +53,7 @@ export async function GET() {
       nickname: model || brand || "내 라켓",
       racket: { brand, model },
       playFrequency: "weekly",
-      lastStringingAt: latestCompletedApplication?.completedAt ?? new Date().toISOString(),
+      lastStringingAt: latestCompletedApplication?.completedAt ?? null,
       stringSnapshot: latestCompletedApplication?.stringSnapshot ?? {
         name: profileStringName || null,
         gauge: String(profileString?.gauge ?? "") || null,
@@ -63,7 +64,10 @@ export async function GET() {
     });
   }
 
-  const recentApplications = await db.collection("stringing_applications").find({ userId }, { sort: { updatedAt: -1, createdAt: -1 }, limit: 30 }).toArray();
+  const recentApplications = await db.collection("stringing_applications").find(
+    { userId, status: { $in: COMPLETED_STRINGING_APPLICATION_STATUSES } },
+    { sort: { updatedAt: -1, createdAt: -1 }, limit: 30 },
+  ).toArray();
   for (const app of recentApplications) {
     const imported = summarizeCompletedApplication(app);
     if (!imported) continue;
