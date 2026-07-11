@@ -2,15 +2,15 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
-import { buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
 import { grantPoints } from "@/lib/points.service";
+import { buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
+import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import {
   getReviewSubmissionBlockReason,
   isOrderReviewEligible,
   isRentalReviewEligible,
   isStandaloneStringingReviewEligible,
 } from "@/lib/reviews/review-policy";
-import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import { getReviewContextLabel } from "@/lib/reviews/review-target";
 import {
   resolveOrderReviewTarget,
@@ -38,9 +38,7 @@ function isDuplicateKeyError(error: unknown): boolean {
   );
 }
 
-function isPlainRequestBody(
-  value: unknown,
-): value is Record<string, unknown> {
+function isPlainRequestBody(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
@@ -143,9 +141,39 @@ export async function POST(req: Request) {
   // orderId는 쿼리나 바디 어느 쪽으로 와도 받게 처리
   const url = new URL(req.url);
   const queryOrderId = url.searchParams.get("orderId");
-  const orderIdRaw = body.orderId ?? queryOrderId ?? null;
-  const orderIdObj = orderIdRaw && ObjectId.isValid(orderIdRaw) ? new ObjectId(orderIdRaw) : null;
+  const bodyOrderId = body.orderId;
 
+  if (bodyOrderId !== undefined && bodyOrderId !== null && typeof bodyOrderId !== "string") {
+    return NextResponse.json(
+      {
+        ok: false,
+        reason: "invalidOrderId",
+        message: "주문 정보가 올바르지 않습니다.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const normalizedBodyOrderId =
+    typeof bodyOrderId === "string" && bodyOrderId.trim() ? bodyOrderId.trim() : null;
+
+  const normalizedQueryOrderId =
+    typeof queryOrderId === "string" && queryOrderId.trim() ? queryOrderId.trim() : null;
+
+  const orderIdRaw = normalizedBodyOrderId ?? normalizedQueryOrderId;
+
+  if (orderIdRaw && !ObjectId.isValid(orderIdRaw)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        reason: "invalidOrderId",
+        message: "주문 정보가 올바르지 않습니다.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const orderIdObj = orderIdRaw ? new ObjectId(orderIdRaw) : null;
   const userId = new ObjectId(subStr);
 
   // 유저 이름 스냅샷
