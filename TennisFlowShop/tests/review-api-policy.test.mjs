@@ -1,6 +1,6 @@
-import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import test from "node:test";
 
 function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -178,7 +178,7 @@ test("후기 POST 문서는 canonical relatedRacketIds를 저장한다", () => {
   const postRoute = read("app/api/reviews/route.ts");
   assert.ok(postRoute.includes("relatedRacketIds:"));
   assert.ok(postRoute.includes("rentalTarget?.relatedRacketIds"));
-  assert.ok(postRoute.includes("orderTarget?.relatedRacketIds ?? []"));
+  assert.ok(postRoute.includes("orderCanonicalTarget.relatedRacketIds ?? []"));
   assert.ok(postRoute.includes("appTarget?.relatedRacketIds ?? []"));
 });
 
@@ -242,7 +242,9 @@ test("후기 POST와 cursor 정책 계약: photos 타입과 cursor 필수 필드
 
   assert.ok(postRoute.includes('const photosInput = "photos" in body ? body.photos : []'));
   assert.ok(!postRoute.includes("Array.isArray(body.photos) ? body.photos : []"));
-  assert.ok(postRoute.includes('if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))'));
+  assert.ok(
+    postRoute.includes('if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))'),
+  );
   assert.ok(postRoute.includes('ObjectId.isValid(String(parsed.id ?? ""))'));
   assert.ok(postRoute.includes('sort === "latest"'));
   assert.ok(postRoute.includes("parsed.createdAt"));
@@ -259,9 +261,10 @@ test("CI 계약: test-contract job에서 review-security를 public surface 다�
   assert.ok(ci.includes("Test public review surface"));
   assert.ok(ci.includes("Test review security and integrity"));
   assert.ok(ci.includes("pnpm test:review-security"));
-  assert.ok(ci.indexOf("Test public review surface") < ci.indexOf("Test review security and integrity"));
+  assert.ok(
+    ci.indexOf("Test public review surface") < ci.indexOf("Test review security and integrity"),
+  );
 });
-
 
 test("후기 POST body 계약: 일반 JSON 객체만 허용하고 검증 이후 필드에 접근한다", () => {
   const postRoute = read("app/api/reviews/route.ts");
