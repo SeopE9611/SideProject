@@ -44,6 +44,7 @@ export default function KakaoInquiryWidget() {
   const pathname = usePathname();
   const isMypageRoute = pathname === "/mypage" || pathname.startsWith("/mypage/");
   const isReviewsIndexRoute = pathname === "/reviews";
+  const isReviewWriteRoute = pathname === "/reviews/write";
   const authHiddenPrefixes = [
     "/login",
     "/forgot-password",
@@ -93,7 +94,7 @@ export default function KakaoInquiryWidget() {
     (!isMypageRoute && !canShowGuide && !canShowInquiry && !canShowBug);
   const hideOnFinderTouch = pathname === "/rackets/finder";
   const hideOnCartMobile = pathname === "/cart";
-  const useReviewsCompactLauncher = isReviewsIndexRoute;
+  const useReviewsCompactLauncher = isReviewsIndexRoute || isReviewWriteRoute;
 
   useEffect(() => {
     // 숨김 상태로 전환되면 패널은 닫아줌(UX + 상태 정리)

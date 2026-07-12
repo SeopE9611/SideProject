@@ -44,32 +44,47 @@ export default function ReviewTargetSummary({ target }: { target: CanonicalRevie
               : "아래 대상으로 후기가 등록됩니다."}
         </p>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {fallbackItems.map((item, index) => {
-          const type = item.type;
-          const label = TYPE_LABELS[type];
-          const displayName = item.name?.trim() || fallbackName(type);
-          const idSuffix = shortId(item.id);
-          return (
-            <article key={`${type}-${item.id ?? index}`} className="flex min-w-0 gap-3 rounded-2xl border border-border bg-muted/30 p-3">
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border bg-background">
-                {item.imageUrl ? (
-                  <NextImage src={item.imageUrl} alt={displayName} fill sizes="56px" className="object-cover" />
-                ) : (
-                  <div aria-hidden="true" className="grid h-full w-full place-items-center text-ui-label font-semibold text-muted-foreground">
-                    {label.slice(0, 2)}
+      <div className="rounded-panel border border-border bg-card p-3 shadow-soft">
+        <div className="flex flex-col gap-2 bp-lg:flex-row bp-lg:flex-wrap">
+          {fallbackItems.map((item, index) => {
+            const type = item.type;
+            const label = TYPE_LABELS[type];
+            const displayName = item.name?.trim() || fallbackName(type);
+            return (
+              <div key={`${type}-${item.id ?? index}`} className="flex min-w-0 flex-1 flex-col bp-lg:min-w-[220px] bp-lg:max-w-[calc(50%-0.25rem)]">
+                <article className="flex min-w-0 gap-3 rounded-control border border-border bg-background p-3">
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-muted bp-lg:h-14 bp-lg:w-14">
+                    {item.imageUrl ? (
+                      <NextImage src={item.imageUrl} alt={displayName} fill sizes="64px" className="object-cover" />
+                    ) : (
+                      <div aria-hidden="true" className="grid h-full w-full place-items-center text-ui-label font-semibold text-muted-foreground">
+                        {label.slice(0, 2)}
+                      </div>
+                    )}
                   </div>
-                )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-caption font-medium text-muted-foreground">{label}</p>
+                    <p className="mt-0.5 line-clamp-2 break-words text-ui-body-sm font-semibold text-foreground">{displayName}</p>
+                    {item.optionLabel && <p className="mt-1 line-clamp-2 break-words text-ui-label text-muted-foreground">{item.optionLabel}</p>}
+                  </div>
+                </article>
+                {index < fallbackItems.length - 1 && <div aria-hidden="true" className="flex h-5 items-center justify-center text-muted-foreground bp-lg:h-auto bp-lg:flex-1"><span className="bp-lg:hidden">↓</span><span className="hidden bp-lg:inline">→</span></div>}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-ui-caption font-medium text-muted-foreground">{label}</p>
-                <p className="mt-0.5 line-clamp-2 break-words text-ui-body-sm font-medium text-foreground">{displayName}</p>
-                {item.optionLabel && <p className="mt-1 line-clamp-2 break-words text-ui-label text-muted-foreground">{item.optionLabel}</p>}
-                {idSuffix && <p className="mt-1 text-ui-caption text-muted-foreground">식별번호 끝 {idSuffix}</p>}
-              </div>
-            </article>
-          );
-        })}
+            );
+          })}
+        </div>
+        {fallbackItems.some((item) => shortId(item.id)) && (
+          <details className="mt-3 rounded-control border border-border bg-muted/30 px-3 py-2 text-ui-label text-muted-foreground">
+            <summary className="cursor-pointer font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">상세 정보</summary>
+            <p className="mt-2">지원 문의 시 대상을 확인하기 위한 보조 정보입니다.</p>
+            <ul className="mt-2 space-y-1">
+              {fallbackItems.map((item, index) => {
+                const idSuffix = shortId(item.id);
+                return idSuffix ? <li key={`${item.type}-id-${item.id ?? index}`}>{TYPE_LABELS[item.type]} 식별번호 끝 {idSuffix}</li> : null;
+              })}
+            </ul>
+          </details>
+        )}
       </div>
     </section>
   );

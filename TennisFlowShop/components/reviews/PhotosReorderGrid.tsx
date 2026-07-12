@@ -1,5 +1,5 @@
 "use client";
-import { X } from "lucide-react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useRef } from "react";
 
 /**
@@ -15,6 +15,8 @@ export default function PhotosReorderGrid({
   className,
   columns = 5,
   onRemove,
+  mobileControls = false,
+  responsiveColumns = false,
 }: {
   value: string[];
   onChange: (next: string[]) => void;
@@ -22,6 +24,8 @@ export default function PhotosReorderGrid({
   className?: string;
   columns?: 4 | 5;
   onRemove?: (url: string) => void;
+  mobileControls?: boolean;
+  responsiveColumns?: boolean;
 }) {
   const dragFrom = useRef<number | null>(null);
   if (!Array.isArray(value) || value.length === 0) return null;
@@ -41,7 +45,12 @@ export default function PhotosReorderGrid({
     return arr;
   };
 
-  const colsClass = columns === 4 ? "grid-cols-4" : "grid-cols-5";
+  const moveItem = (fromIdx: number, toIdx: number) => {
+    if (disabled || toIdx < 0 || toIdx >= value.length) return;
+    onChange(reorder(value, fromIdx, toIdx));
+  };
+
+  const colsClass = responsiveColumns ? "grid-cols-3 bp-sm:grid-cols-5" : columns === 4 ? "grid-cols-4" : "grid-cols-5";
 
   return (
     <ul className={`grid ${colsClass} gap-2 mt-2 ${className ?? ""}`} data-cy="photos-grid">
@@ -77,18 +86,18 @@ export default function PhotosReorderGrid({
             className="h-full w-full object-cover select-none pointer-events-none"
             draggable={false}
           />
-          <span className="absolute top-1 left-1 text-ui-micro px-1.5 py-0.5 rounded bg-overlay/60 text-foreground">
+          <span className="absolute top-1 left-1 text-ui-micro px-1.5 py-0.5 rounded bg-overlay/65 text-surface-inverse-foreground">
             {idx + 1}
           </span>
           {!disabled && (
-            <span className="absolute bottom-1 right-1 text-ui-micro px-1 py-0.5 rounded bg-card/80 text-foreground shadow">
+            <span className="absolute bottom-1 right-1 text-ui-micro px-1 py-0.5 rounded bg-overlay/65 text-surface-inverse-foreground">
               드래그
             </span>
           )}
           {!disabled && (
             <button
               type="button"
-              aria-label="사진 삭제"
+              aria-label={`사진 ${idx + 1} 삭제`}
               title="삭제"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
@@ -96,10 +105,16 @@ export default function PhotosReorderGrid({
                 e.stopPropagation();
                 removeAt(idx);
               }}
-              className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-1 right-1 inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:opacity-0 bp-md:group-hover:opacity-100"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </button>
+          )}
+          {mobileControls && !disabled && (
+            <div className="absolute inset-x-1 bottom-1 flex justify-between gap-1 bp-md:hidden">
+              <button type="button" aria-label={`사진 ${idx + 1}를 왼쪽으로 이동`} disabled={idx === 0} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveItem(idx, idx - 1); }} className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft className="h-3.5 w-3.5" /></button>
+              <button type="button" aria-label={`사진 ${idx + 1}를 오른쪽으로 이동`} disabled={idx === value.length - 1} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveItem(idx, idx + 1); }} className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowRight className="h-3.5 w-3.5" /></button>
+            </div>
           )}
         </li>
       ))}
