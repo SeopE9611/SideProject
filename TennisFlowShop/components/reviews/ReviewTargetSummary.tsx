@@ -45,13 +45,13 @@ export default function ReviewTargetSummary({ target }: { target: CanonicalRevie
         </p>
       </div>
       <div className="rounded-panel border border-border bg-card p-3 shadow-soft">
-        <div className="flex flex-col gap-2 bp-lg:flex-row bp-lg:flex-wrap">
+        <div className="flex flex-col gap-2">
           {fallbackItems.map((item, index) => {
             const type = item.type;
             const label = TYPE_LABELS[type];
             const displayName = item.name?.trim() || fallbackName(type);
             return (
-              <div key={`${type}-${item.id ?? index}`} className="flex min-w-0 flex-1 flex-col bp-lg:min-w-[220px] bp-lg:max-w-[calc(50%-0.25rem)]">
+              <div key={`${type}-${item.id ?? index}`} className="flex min-w-0 flex-col">
                 <article className="flex min-w-0 gap-3 rounded-control border border-border bg-background p-3">
                   <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-muted bp-lg:h-14 bp-lg:w-14">
                     {item.imageUrl ? (
@@ -68,7 +68,7 @@ export default function ReviewTargetSummary({ target }: { target: CanonicalRevie
                     {item.optionLabel && <p className="mt-1 line-clamp-2 break-words text-ui-label text-muted-foreground">{item.optionLabel}</p>}
                   </div>
                 </article>
-                {index < fallbackItems.length - 1 && <div aria-hidden="true" className="flex h-5 items-center justify-center text-muted-foreground bp-lg:h-auto bp-lg:flex-1"><span className="bp-lg:hidden">↓</span><span className="hidden bp-lg:inline">→</span></div>}
+                {index < fallbackItems.length - 1 ? <div aria-hidden="true" className="flex h-5 items-center justify-center text-muted-foreground">↓</div> : null}
               </div>
             );
           })}

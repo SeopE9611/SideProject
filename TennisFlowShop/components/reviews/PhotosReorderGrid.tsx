@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useRef } from "react";
 
@@ -90,7 +91,7 @@ export default function PhotosReorderGrid({
             {idx + 1}
           </span>
           {!disabled && (
-            <span className="absolute bottom-1 right-1 text-ui-micro px-1 py-0.5 rounded bg-overlay/65 text-surface-inverse-foreground">
+            <span className={cn("absolute bottom-1 right-1 text-ui-micro px-1 py-0.5 rounded bg-overlay/65 text-surface-inverse-foreground", mobileControls && "hidden bp-md:inline-flex")}>
               드래그
             </span>
           )}
