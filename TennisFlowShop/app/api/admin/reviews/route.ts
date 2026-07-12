@@ -43,7 +43,7 @@ export async function GET(req: Request) {
   const col = db.collection("reviews");
   const match: Record<string, unknown> = { isDeleted: { $ne: true } };
   if (parsed.withDeleted === "1" || parsed.withDeleted === "true") delete match.isDeleted;
-  if (parsed.status !== "all") match.status = parsed.status;
+  if (parsed.status !== "all") match.moderationStatus = parsed.status;
   if (parsed.q) match.content = { $regex: parsed.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
 
   const basePipeline: Record<string, unknown>[] = [

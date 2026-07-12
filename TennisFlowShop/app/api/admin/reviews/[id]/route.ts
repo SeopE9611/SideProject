@@ -11,22 +11,7 @@ import { shapeAdminReview } from "@/lib/reviews/admin-review-shape";
 import { buildResolvedReviewContextExpression } from "@/lib/reviews/review-context.server";
 import { reviewInputMessage, validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
-
-const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
-const ALLOWED_PATH_PREFIXES = ["/storage/v1/object/public/tennis-images/"];
-const isAllowedHttpUrl = (v: unknown): v is string => {
-  if (typeof v !== "string") return false;
-  try {
-    const { protocol, hostname, pathname } = new URL(v);
-    return (
-      (protocol === "https:" || protocol === "http:") &&
-      ALLOWED_HOSTS.has(hostname) &&
-      ALLOWED_PATH_PREFIXES.some((p) => pathname.startsWith(p))
-    );
-  } catch {
-    return false;
-  }
-};
+import { diffRemovedReviewPhotos, isAllowedReviewPhotoUrl, removeReviewPhotosBestEffort } from "@/lib/reviews/review-photo-storage.server";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
@@ -76,7 +61,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       { status: 400 },
     );
   }
-  if ("photos" in rawBody && !inputValidation.value.photos?.every(isAllowedHttpUrl)) {
+  if ("photos" in rawBody && !inputValidation.value.photos?.every(isAllowedReviewPhotoUrl)) {
     return NextResponse.json(
       { message: reviewInputMessage("invalidPhotos"), reason: "invalidPhotos" },
       { status: 400 },
@@ -84,6 +69,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
   const AdminStateSchema = z.object({
     status: z.enum(["visible", "hidden"]).optional(),
+    moderationStatus: z.enum(["visible", "hidden"]).optional(),
     visibility: z.enum(["public", "private"]).optional(),
   });
   const parsed = AdminStateSchema.safeParse(rawBody);
@@ -98,6 +84,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     !("content" in body) &&
     !("rating" in body) &&
     !("status" in body) &&
+    !("moderationStatus" in body) &&
     !("visibility" in body) &&
     !("photos" in body)
   ) {
@@ -108,20 +95,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const _id = new ObjectId(id);
   const doc = await db
     .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } });
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1, moderationStatus: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const $set: any = { updatedAt: new Date() };
   if (typeof body.content === "string") $set.content = body.content.trim();
   if (typeof body.rating === "number") $set.rating = Math.max(1, Math.min(5, body.rating));
-  if (body.status === "visible" || body.status === "hidden") $set.status = body.status;
-  if (body.visibility) $set.status = body.visibility === "public" ? "visible" : "hidden";
+  const moderationStatus = body.moderationStatus ?? body.status ?? (body.visibility === "public" ? "visible" : body.visibility === "private" ? "hidden" : undefined);
+  if (moderationStatus === "hidden") {
+    $set.moderationStatus = "hidden";
+    $set.moderatedAt = new Date();
+    $set.moderatedBy = guard.admin._id;
+  } else if (moderationStatus === "visible") {
+    $set.moderationStatus = "visible";
+    $set.moderatedAt = null;
+    $set.moderatedBy = null;
+  }
   if (Array.isArray(body.photos)) $set.photos = Array.from(new Set<string>(body.photos.map((s) => s.trim())));
   if (Object.keys($set).length === 1)
     return NextResponse.json({ message: "no changes" }, { status: 400 });
 
   await db.collection("reviews").updateOne({ _id }, { $set });
-  if (body.rating !== undefined || body.status || body.visibility)
+  if (Array.isArray($set.photos)) {
+    await removeReviewPhotosBestEffort(diffRemovedReviewPhotos(doc.photos, $set.photos), "PATCH /api/admin/reviews/[id]");
+  }
+  if (body.rating !== undefined || moderationStatus)
     await refreshReviewSummaryCachesForReviewSafely(db, doc, "PATCH /api/admin/reviews/[id]");
 
   await appendAdminAudit(
@@ -151,7 +149,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const _id = new ObjectId(id);
   const doc = await db
     .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } });
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   await db
@@ -186,6 +184,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   }
 
   await refreshReviewSummaryCachesForReviewSafely(db, doc, "DELETE /api/admin/reviews/[id]");
+  await removeReviewPhotosBestEffort(Array.isArray(doc.photos) ? doc.photos : [], "DELETE /api/admin/reviews/[id]");
   await appendAdminAudit(
     guard.db,
     {

@@ -21,6 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   Eye,
   EyeOff,
@@ -100,16 +101,22 @@ export default function ReviewCard({
     const { rating, content } = editForm;
     try {
       setBusy(true);
-      const res = await fetch(`/api/reviews/${item._id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rating: rating === "" ? undefined : Number(rating),
-          content,
-          photos: editForm.photos,
-        }),
+      const patchBody = JSON.stringify({
+        rating: rating === "" ? undefined : Number(rating),
+        content,
+        photos: editForm.photos,
       });
+      const res = isAdmin && !item.ownedByMe
+        ? await adminMutator(`/api/admin/reviews/${item._id}`, {
+            method: "PATCH",
+            body: patchBody,
+          }).then(() => ({ ok: true }))
+        : await fetch(`/api/reviews/${item._id}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: patchBody,
+          });
       if (!res.ok) throw new Error("수정 실패");
       showSuccessToast("리뷰를 수정했어요.");
       onMutate?.(); // 리스트 재검증
@@ -161,9 +168,7 @@ export default function ReviewCard({
         ]
           .filter(Boolean)
           .join(" · ")
-      : item.type === "service" && item.serviceApplicationId
-        ? `신청번호 ${item.serviceApplicationId}`
-        : null;
+      : null;
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
@@ -310,12 +315,17 @@ export default function ReviewCard({
                       try {
                         setBusy(true);
                         const next = item.status === "visible" ? "hidden" : "visible";
-                        const res = await fetch(`/api/reviews/${item._id}`, {
-                          method: "PATCH",
-                          credentials: "include",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ status: next }),
-                        });
+                        const res = isAdmin && !item.ownedByMe
+                          ? await adminMutator(`/api/admin/reviews/${item._id}`, {
+                              method: "PATCH",
+                              body: JSON.stringify({ status: next }),
+                            }).then(() => ({ ok: true }))
+                          : await fetch(`/api/reviews/${item._id}`, {
+                              method: "PATCH",
+                              credentials: "include",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ status: next }),
+                            });
                         if (!res.ok) throw new Error("상태 변경 실패");
                         showSuccessToast(
                           next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
@@ -360,10 +370,14 @@ export default function ReviewCard({
                       if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
                       try {
                         setBusy(true);
-                        const res = await fetch(`/api/reviews/${item._id}`, {
-                          method: "DELETE",
-                          credentials: "include",
-                        });
+                        const res = isAdmin && !item.ownedByMe
+                          ? await adminMutator(`/api/admin/reviews/${item._id}`, {
+                              method: "DELETE",
+                            }).then(() => ({ ok: true }))
+                          : await fetch(`/api/reviews/${item._id}`, {
+                              method: "DELETE",
+                              credentials: "include",
+                            });
                         if (!res.ok) throw new Error("삭제 실패");
                         showSuccessToast("삭제했습니다.");
                         onMutate?.(); // 리스트 재검증

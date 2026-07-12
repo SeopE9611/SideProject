@@ -19,6 +19,7 @@ type Props = {
   onChange: (next: Photo[]) => void;
   max?: number;
   onUploadingChange?: (uploading: boolean) => void;
+  disabled?: boolean;
   /**
    * 미리보기 표시 방식
    * - 'all'  : 업로드 중(큐) + 완료된 사진(value) 모두 표시 (기본)
@@ -33,6 +34,7 @@ export default function PhotosUploader({
   onChange,
   max = 5,
   onUploadingChange,
+  disabled = false,
   previewMode = "all",
 }: Props) {
   // Supabase Storage key는 ':' 같은 특수문자를 허용하지 않아 React useId() 값을 경로에 쓰면
@@ -48,8 +50,12 @@ export default function PhotosUploader({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const queueIdPrefix = queueIdPrefixRef.current!;
   const queueIdRef = useRef(0);
+  const queueRef = useRef<QueueItem[]>([]);
+  const sessionUploadedUrlsRef = useRef(new Set<string>());
 
   // previewMode에 따라 어떤 미리보기를 보여줄지 결정
   const showQueue = previewMode !== "none";
@@ -59,8 +65,12 @@ export default function PhotosUploader({
 
   const totalCount = (value?.length ?? 0) + queue.length;
   const hasRoom = totalCount < max;
+  const uploadBlocked = disabled || isUploading;
 
-  const onPick = () => inputRef.current?.click();
+  const onPick = () => {
+    if (uploadBlocked || !hasRoom) return;
+    inputRef.current?.click();
+  };
 
   //timeout 가드 (resolve/reject 안 되어도 ms 지나면 null로 돌아오게)
   const withTimeout = async <T,>(p: Promise<T>, ms = 45000): Promise<T | null> => {
@@ -77,6 +87,7 @@ export default function PhotosUploader({
   };
 
   const uploadOne = async (file: File): Promise<string | null> => {
+    if (disabled) return null;
     const ext = file.name.split(".").pop() || "jpg";
     const path = sanitizeStorageKey(
       `${FOLDER}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`,
@@ -109,12 +120,26 @@ export default function PhotosUploader({
     }
 
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    return data?.publicUrl ?? null;
+    const publicUrl = data?.publicUrl ?? null;
+    if (publicUrl) sessionUploadedUrlsRef.current.add(publicUrl);
+    return publicUrl;
+  };
+
+  const storagePathFromReviewUrl = (url: string) => {
+    try {
+      const { pathname } = new URL(url);
+      const prefix = `/storage/v1/object/public/${BUCKET}/`;
+      const path = decodeURIComponent(pathname.slice(prefix.length));
+      return pathname.startsWith(prefix) && path.startsWith(`${FOLDER}/`) ? path : null;
+    } catch {
+      return null;
+    }
   };
 
   const handleFiles = async (files: FileList | null) => {
+    if (disabled || isUploading) return;
     if (!files?.length) return;
-    if (!navigator.onLine) {
+    if (!isOnline) {
       showErrorToast("오프라인 상태예요. 네트워크 연결 후 다시 시도해 주세요.");
       return;
     }
@@ -127,7 +152,9 @@ export default function PhotosUploader({
     onUploadingChange?.(true);
 
     try {
+      const uploadedUrls: string[] = [];
       for (const f of list) {
+        if (disabled) break;
         if (!f.type.startsWith("image/")) continue;
         if (f.size > 10 * 1024 * 1024) {
           // 10MB 제한
@@ -147,8 +174,12 @@ export default function PhotosUploader({
         setQueue((q) => q.filter((it) => it.id !== id));
         URL.revokeObjectURL(objectUrl);
 
-        // 성공 시 부모 상태 반영
-        if (publicUrl) onChange([...(value || []), publicUrl]);
+        if (publicUrl && !uploadedUrls.includes(publicUrl) && !(value ?? []).includes(publicUrl)) {
+          uploadedUrls.push(publicUrl);
+        }
+      }
+      if (uploadedUrls.length > 0) {
+        onChange(Array.from(new Set([...(value ?? []), ...uploadedUrls])).slice(0, max));
       }
     } finally {
       setIsUploading(false);
@@ -157,15 +188,47 @@ export default function PhotosUploader({
   };
 
   const removeAt = (idx: number) => {
+    if (disabled) return;
     const next = [...(value || [])];
-    next.splice(idx, 1);
+    const [removed] = next.splice(idx, 1);
+    if (removed && sessionUploadedUrlsRef.current.has(removed)) {
+      const path = storagePathFromReviewUrl(removed);
+      if (path) {
+        sessionUploadedUrlsRef.current.delete(removed);
+        supabase.storage.from(BUCKET).remove([path]).then(({ error }) => {
+          if (error) console.error("[PhotosUploader] cleanup failed", error);
+        });
+      }
+    }
     onChange(next);
   };
 
   // 컴포넌트 unmount 시 남아있을 수 있는 objectURL 정리
   useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+
+  useEffect(() => {
+    const syncOnlineState = () => {
+      setIsOnline(window.navigator.onLine);
+    };
+
+    setMounted(true);
+    syncOnlineState();
+
+    window.addEventListener("online", syncOnlineState);
+    window.addEventListener("offline", syncOnlineState);
+
     return () => {
-      queue.forEach((q) => URL.revokeObjectURL(q.url));
+      window.removeEventListener("online", syncOnlineState);
+      window.removeEventListener("offline", syncOnlineState);
+    };
+  }, []);
+
+  // 컴포넌트 unmount 시 남아있을 수 있는 objectURL 정리
+  useEffect(() => {
+    return () => {
+      queueRef.current.forEach((q) => URL.revokeObjectURL(q.url));
       setQueue([]);
     };
   }, []);
@@ -173,7 +236,7 @@ export default function PhotosUploader({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || isUploading}>
+        <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || uploadBlocked}>
           <ImagePlus className="h-4 w-4 mr-2" />
           이미지 추가 ({totalCount}/{max})
         </Button>
@@ -187,7 +250,16 @@ export default function PhotosUploader({
             handleFiles(e.target.files);
             e.currentTarget.value = ""; // 같은 파일 재선택 허용
           }}
-          disabled={isUploading}
+          disabled={uploadBlocked}
+          onDrop={(e) => {
+            if (uploadBlocked) {
+              e.preventDefault();
+              return;
+            }
+          }}
+          onPaste={(e) => {
+            if (uploadBlocked) e.preventDefault();
+          }}
         />
         {isUploading && (
           <span className="inline-flex items-center text-ui-label text-muted-foreground">
@@ -237,6 +309,7 @@ export default function PhotosUploader({
                 <button
                   type="button"
                   onClick={() => removeAt(i)}
+                  disabled={disabled}
                   className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                   aria-label="삭제"
                   title="삭제"
@@ -249,7 +322,7 @@ export default function PhotosUploader({
       )}
 
       {/* 네트워크 경고(옵션): 오프라인이면 즉시 표시 */}
-      {!navigator.onLine && (
+      {mounted && !isOnline && (
         <div className="flex items-center gap-1 text-ui-label text-primary">
           <AlertCircle className="w-3 h-3" />
           오프라인 상태예요. 연결 후 다시 시도해 주세요.

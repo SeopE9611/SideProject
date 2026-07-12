@@ -146,12 +146,6 @@ export default function ReviewWritePage() {
   }, []);
 
   useEffect(() => {
-    if (typeof document !== "undefined" && document.cookie.includes("__e2e=1") && photos.length === 0) {
-      setPhotos(["https://picsum.photos/id/10/200/200", "https://picsum.photos/id/11/200/200", "https://picsum.photos/id/12/200/200"]);
-    }
-  }, [photos.length]);
-
-  useEffect(() => {
     if (!authChecked) return;
     if (blockedByLoginGate) return;
     const qs = new URLSearchParams();
@@ -288,7 +282,7 @@ export default function ReviewWritePage() {
             <SummaryCard title="후기를 남겨주세요" description="별점, 이용 경험, 사진을 입력해 후기를 등록해 주세요.">
               <form onSubmit={onSubmit} className="space-y-6">
                 {state !== "ok" && (
-                  <ResultState status={state === "error" || state === "unauthorized" ? "error" : "info"} title="후기 작성 상태를 확인해 주세요" description={stateMessage(state) ?? undefined} className="rounded-2xl border border-border bg-muted/30 px-4 py-8">
+                  <ResultState status={state === "error" || state === "unauthorized" ? "error" : "info"} title={state === "already" ? "이미 작성한 대상입니다." : "후기 작성 상태를 확인해 주세요"} description={stateMessage(state) ?? undefined} className="rounded-2xl border border-border bg-muted/30 px-4 py-8">
                     {state === "coveredByIntegratedReview" && eligibility?.redirectHref && <Button type="button" variant="outline" onClick={() => router.replace(eligibility.redirectHref!)} className="mt-3">통합 후기 작성으로 이동</Button>}
                   </ResultState>
                 )}
@@ -296,7 +290,7 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">별점</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">이용 경험에 가까운 점수를 선택하세요.</p></div><div className="rounded-2xl border border-border bg-muted/20 px-4 py-5 shadow-sm"><Stars value={rating} onChange={setRating} disabled={locked} /><div className="mt-3 text-center text-ui-body-sm font-medium text-foreground">{rating}점</div></div></section>
                 <section className="space-y-3"><div className="flex items-end justify-between gap-3"><Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label><span className="text-ui-label text-muted-foreground tabular-nums">{content.length} / {REVIEW_CONTENT_MAX_LENGTH}자</span></div><Textarea value={content} onChange={(e) => setContent(e.target.value)} maxLength={REVIEW_CONTENT_MAX_LENGTH} placeholder={reviewPlaceholder} className="min-h-[180px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring" disabled={locked} /></section>
-                <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} previewMode="queue" /><PhotosReorderGrid value={photos} onChange={setPhotos} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
+                <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} previewMode="queue" disabled={locked || isUploading} /><PhotosReorderGrid value={photos} onChange={setPhotos} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
                 <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end"><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto">{reviewDestination?.label ?? "후기 관리로 이동"}</Button><Button data-cy="submit-review" type="submit" disabled={locked || invalidForm || isUploading} aria-disabled={locked || invalidForm || isUploading} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto">{isUploading ? "이미지 업로드 중..." : "후기 등록"}</Button></div>
               </form>
             </SummaryCard>

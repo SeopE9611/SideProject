@@ -28,11 +28,6 @@ export type PublicReviewSurfaceItem = {
   contextLabel: string;
   productId?: string | null;
   racketId?: string | null;
-  rentalId?: string | null;
-  orderId?: string | null;
-  serviceApplicationId?: string | null;
-  relatedProductIds?: string[];
-  relatedRacketIds?: string[];
   productName?: string | null;
   productImage?: string | null;
   serviceTargetName?: string | null;
@@ -85,10 +80,6 @@ function normalizeDate(value: unknown): string | null {
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   if (typeof value === "string" && value) return value.slice(0, 10);
   return null;
-}
-
-function normalizeIdsField(value: unknown): string[] {
-  return Array.isArray(value) ? stringIds(value) : [];
 }
 
 export function inferPublicReviewContext(row: any): ReviewContext {
@@ -250,7 +241,7 @@ export async function buildPublicReviewSurfaceTargetMatch(
 
 export function buildPublicReviewSummaryStages() {
   return [
-    { $match: { status: "visible" } },
+    { $match: { status: "visible", moderationStatus: { $ne: "hidden" } } },
     { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } },
   ];
 }
@@ -265,7 +256,7 @@ export async function getPublicReviewSummary(
   const [summaryRow] = await db
     .collection("reviews")
     .aggregate([
-      { $match: { isDeleted: { $ne: true }, ...targetMatch } },
+      { $match: { isDeleted: { $ne: true }, deletedAt: null, ...targetMatch } },
       ...buildPublicReviewSummaryStages(),
     ])
     .toArray();
@@ -294,11 +285,11 @@ export async function getPublicReviewSurface(
   const [result] = await db
     .collection("reviews")
     .aggregate([
-      { $match: { isDeleted: { $ne: true }, ...targetMatch } },
+      { $match: { isDeleted: { $ne: true }, deletedAt: null, ...targetMatch } },
       {
         $facet: {
           items: [
-            { $match: { status: { $in: ["visible", "hidden"] } } },
+            { $match: { status: "visible", moderationStatus: { $ne: "hidden" } } },
             { $sort: { createdAt: -1, _id: -1 } },
             { $limit: limit },
             {
@@ -316,12 +307,6 @@ export async function getPublicReviewSurface(
                 contextLabel: 1,
                 productId: 1,
                 racketId: 1,
-                rentalId: 1,
-                orderId: 1,
-                serviceApplicationId: 1,
-                applicationId: 1,
-                relatedProductIds: 1,
-                relatedRacketIds: 1,
                 productName: 1,
                 productImage: 1,
                 serviceTargetName: 1,
@@ -341,7 +326,7 @@ export async function getPublicReviewSurface(
     const ownedByMe = Boolean(
       viewerUserId && row?.userId && String(row.userId) === String(viewerUserId),
     );
-    const masked = row?.status === "hidden" && !ownedByMe && !viewerIsAdmin;
+    const masked = false;
     const reviewContext = inferPublicReviewContext(row);
     return {
       _id: String(row._id),
@@ -361,15 +346,6 @@ export async function getPublicReviewSurface(
       contextLabel: row.contextLabel || getReviewContextLabel(reviewContext),
       productId: row.productId ? String(row.productId) : null,
       racketId: row.racketId ? String(row.racketId) : null,
-      rentalId: row.rentalId ? String(row.rentalId) : null,
-      orderId: row.orderId ? String(row.orderId) : null,
-      serviceApplicationId: row.serviceApplicationId
-        ? String(row.serviceApplicationId)
-        : row.applicationId
-          ? String(row.applicationId)
-          : null,
-      relatedProductIds: normalizeIdsField(row.relatedProductIds),
-      relatedRacketIds: normalizeIdsField(row.relatedRacketIds),
       productName: row.productName ?? null,
       productImage: row.productImage ?? null,
       serviceTargetName: row.serviceTargetName ?? null,

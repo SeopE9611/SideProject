@@ -43,7 +43,7 @@ export function shapeAdminReview(row: Record<string, unknown>, contentLimit?: nu
     category: getReviewManagementCategory(reviewContext),
     subject: buildAdminReviewSubject(row, reviewContext),
     rating: Number(row.rating ?? 0),
-    status: row.status === "hidden" ? "hidden" : "visible",
+    status: row.moderationStatus === "hidden" ? "hidden" : "visible",
     content: typeof contentLimit === "number" ? content.slice(0, contentLimit) : content,
     createdAt: new Date(String(row.createdAt ?? new Date())).toISOString(),
     userEmail: pickString(row.userEmail, row.resolvedUserEmail) ?? undefined,

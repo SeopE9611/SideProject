@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { stringBrandLabel } from "@/lib/constants";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
@@ -402,16 +403,25 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
 
     try {
-      const res = await fetch(`/api/reviews/${editing._id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rating,
-          content,
-          photos: editForm.photos,
-        }),
+      const patchBody = JSON.stringify({
+        rating,
+        content,
+        photos: editForm.photos,
       });
+      const res = isAdmin && !isMine(editing)
+        ? { ok: true }
+        : await fetch(`/api/reviews/${editing._id}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: patchBody,
+          });
+      if (isAdmin && !isMine(editing)) {
+        await adminMutator(`/api/admin/reviews/${editing._id}`, {
+          method: "PATCH",
+          body: patchBody,
+        });
+      }
       if (!res.ok) {
         let err: any = null;
         try {
@@ -474,16 +484,24 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     // 서버 반영
     try {
-      const res = await fetch(`/api/reviews/${review._id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: next,
-        }),
-      });
+      const res = isAdmin && !isMine(review)
+        ? { ok: true }
+        : await fetch(`/api/reviews/${review._id}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: next,
+            }),
+          });
+      if (isAdmin && !isMine(review)) {
+        await adminMutator(`/api/admin/reviews/${review._id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: next }),
+        });
+      }
       if (!res.ok) throw new Error("상태 변경 실패");
 
       // 재검증
@@ -514,10 +532,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     setBusyReviewId(String(review._id));
     try {
-      const res = await fetch(`/api/reviews/${review._id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const res = isAdmin && !isMine(review)
+        ? { ok: true }
+        : await fetch(`/api/reviews/${review._id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+      if (isAdmin && !isMine(review)) {
+        await adminMutator(`/api/admin/reviews/${review._id}`, { method: "DELETE" });
+      }
       if (!res.ok) throw new Error("삭제 실패");
 
       // 재검증
