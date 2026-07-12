@@ -149,7 +149,7 @@ export default function RacketCareRegistrationDialog(props: {
       <DialogContent className="grid max-h-[min(720px,calc(100dvh-2rem))] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden" onEscapeKeyDown={(event) => { if (saving) event.preventDefault(); }} onPointerDownOutside={(event) => { if (saving) event.preventDefault(); }}>
         <DialogHeader>
           <DialogTitle>{editing ? "라켓 정보 수정" : "라켓 등록"}</DialogTitle>
-          <div className="mt-3 grid gap-2 bp-sm:grid-cols-3">
+          <div className={`mt-3 grid gap-2 ${editing ? "bp-sm:grid-cols-2" : "bp-sm:grid-cols-3"}`}>
             {visibleSteps.map(({ actualStep, label }, index) => {
               const number = index + 1;
               const complete = step > actualStep;
@@ -207,7 +207,7 @@ export default function RacketCareRegistrationDialog(props: {
                 </div>
                 {editing.lastApplicationId && historyLinkIntent === "keep" ? <Badge variant="success">현재 완료된 교체 이력과 연결되어 있습니다.</Badge> : null}
                 {historyLinkIntent === "replace" ? <Badge variant="info">선택한 완료 이력으로 교체일과 스트링 정보가 변경됩니다.</Badge> : null}
-                {historyLinkIntent === "clear" ? <Badge variant="warning">직접 입력한 값으로 저장하면 기존 완료 이력 연결이 해제됩니다.</Badge> : null}
+                {historyLinkIntent === "clear" ? (editing.lastApplicationId ? <Badge variant="warning">직접 입력한 값으로 저장하면 기존 완료 이력 연결이 해제됩니다.</Badge> : <Badge variant="secondary">직접 입력한 값으로 저장됩니다.</Badge>) : null}
                 {errors.latestCompletedApplicationId ? <p className="text-ui-label text-destructive">{errors.latestCompletedApplicationId}</p> : null}
                 {editImportCandidates.length > 0 ? (
                   <div className="grid gap-2">
