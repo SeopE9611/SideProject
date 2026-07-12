@@ -45,7 +45,15 @@
 - CTA 그룹은 모바일에서 1열을 기본으로 합니다.
 - 긴 한국어 문구는 줄바꿈을 허용하고, 의미가 잘리지 않도록 `break-keep`만 과도하게 강제하지 않습니다.
 
-## 7. 단계별 적용 로드맵
+## 7. 타이포그래피 렌더링 정책
+
+- `font-brand-display`는 40px 이상 Hero/Display 전용으로 사용합니다. 대형 상태 점수 숫자에는 사용할 수 있지만, `letter-spacing: -0.04em` 특성 때문에 카드 제목, 버튼, 폼, 본문에는 사용하지 않습니다.
+- `font-brand-heading`은 20px 이상의 짧은 브랜드 섹션 제목에 사용합니다. `letter-spacing: -0.015em`을 적용하며, 긴 본문이나 라켓명·날짜·D-day 같은 데이터값에는 사용하지 않습니다.
+- 기본 본문 서체인 Spoqa Han Sans Neo는 19px 이하 카드 제목, 본문, 버튼, Badge, 입력 폼, 라켓명, 날짜, D-day 등 실사용 데이터에 사용합니다. 작은 한글 문장과 정보값은 기본 서체에서 `font-weight: 700` 수준으로 위계를 만듭니다.
+- `text-brand-outline`은 40px 이상의 Hero 한 줄 또는 짧은 구절에만 허용합니다. 전체 제목에 광범위하게 적용하지 않고, 버튼·본문·카드 제목에는 사용하지 않습니다. Stroke는 `clamp(1px, 0.025em, 2px)` 범위로 제한합니다.
+- 작은 글자에 `font-brand-display`를 사용하거나 본문에 과도한 negative tracking을 적용하지 않습니다. font smoothing 해킹, transform을 이용한 텍스트 렌더링 보정, 스크린샷 축소본만 기준으로 한 선명도 판정은 금지합니다.
+
+## 8. 단계별 적용 로드맵
 
 - PR 1 기반: 토큰, Tailwind 매핑, primitive variant, 정책 문서만 준비합니다.
 - PR 2 라켓 케어: 라켓 케어 페이지에 Hero, 상태 카드, 부유 정보 카드 패턴을 적용합니다.

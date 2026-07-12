@@ -298,12 +298,31 @@ body {
     sans-serif;
   font-weight: 700;
   letter-spacing: -0.04em;
+  font-synthesis: none;
+}
+
+.font-brand-heading {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-synthesis: none;
 }
 
 .text-brand-outline {
   color: hsl(var(--outline-text));
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0.04em hsl(var(--outline-text));
+  -webkit-text-stroke-width: clamp(1px, 0.025em, 2px);
+  -webkit-text-stroke-color: hsl(var(--outline-text));
   paint-order: stroke fill;
 }
 
