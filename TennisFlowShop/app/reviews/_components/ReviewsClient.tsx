@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/public";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Loader2, X, MessageSquareText, RefreshCw, SlidersHorizontal } from "lucide-react";
 import ReviewCard from "./ReviewCard";
 import ReviewSkeleton from "./ReviewSkeleton";
@@ -72,6 +72,10 @@ export default function ReviewsClient() {
   const [sort, setSort] = useState<SortKey>("latest");
   const [rating, setRating] = useState<RatingFilter>("all");
   const [hasPhoto, setHasPhoto] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [draftSort, setDraftSort] = useState<SortKey>(sort);
+  const [draftRating, setDraftRating] = useState<RatingFilter>(rating);
+  const [draftHasPhoto, setDraftHasPhoto] = useState(hasPhoto);
 
   const getKey = useCallback((pageIndex: number, prev: any) => {
     if (prev && !prev.nextCursor) return null;
@@ -112,6 +116,26 @@ export default function ReviewsClient() {
     mutate([], { revalidate: true });
   };
 
+  const openMobileFilters = () => {
+    setDraftSort(sort);
+    setDraftRating(rating);
+    setDraftHasPhoto(hasPhoto);
+    setMobileFilterOpen(true);
+  };
+
+  const resetDraftFilters = () => {
+    setDraftSort("latest");
+    setDraftRating("all");
+    setDraftHasPhoto(false);
+  };
+
+  const applyMobileFilters = () => {
+    setSort(draftSort);
+    setRating(draftRating);
+    setHasPhoto(draftHasPhoto);
+    setMobileFilterOpen(false);
+  };
+
   return (
     <div className="space-y-5 bp-md:space-y-6">
       <Card variant="feature" className="rounded-panel">
@@ -142,17 +166,17 @@ export default function ReviewsClient() {
           </div>
 
           <div className="grid grid-cols-[1fr_auto] gap-2 bp-md:hidden">
-            <Button variant="outline" className="min-h-11 justify-start rounded-control">{sortLabels[sort]}</Button>
-            <Sheet>
-              <SheetTrigger asChild><Button variant="outline" className="min-h-11 rounded-control" aria-label={`필터 열기, 활성 필터 ${activeFilterCount}개`}><SlidersHorizontal className="h-4 w-4" />필터 {activeFilterCount ? activeFilterCount : ""}</Button></SheetTrigger>
+            <Button type="button" variant="outline" className="min-h-11 justify-start rounded-control" onClick={openMobileFilters} aria-label={`정렬 변경, 현재 ${sortLabels[sort]}`}>{sortLabels[sort]}</Button>
+            <Button type="button" variant="outline" className="min-h-11 rounded-control" onClick={openMobileFilters} aria-label={`필터 열기, 활성 필터 ${activeFilterCount}개`}><SlidersHorizontal className="h-4 w-4" />필터 {activeFilterCount ? activeFilterCount : ""}</Button>
+            <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
               <SheetContent side="bottom" className="rounded-t-panel pb-[calc(env(safe-area-inset-bottom)+1.5rem)]" data-kakao-widget-hide="1">
                 <SheetHeader className="pr-8 text-left"><SheetTitle>후기 필터</SheetTitle><SheetDescription>정렬, 별점, 사진 포함 조건을 선택해 후기를 좁혀보세요.</SheetDescription></SheetHeader>
                 <div className="grid gap-5 py-5">
-                  <div className="grid gap-2"><label className="text-ui-label font-semibold text-foreground">정렬</label><Select value={sort} onValueChange={(v) => setSort(v as SortKey)}><SelectTrigger className="min-h-11 rounded-control"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="latest">최신순</SelectItem><SelectItem value="helpful">도움돼요 많은순</SelectItem><SelectItem value="rating">평점 높은순</SelectItem></SelectContent></Select></div>
-                  <div className="grid gap-2"><label className="text-ui-label font-semibold text-foreground">별점</label><Select value={rating} onValueChange={(v) => setRating(v as RatingFilter)}><SelectTrigger className="min-h-11 rounded-control"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">전체 별점</SelectItem><SelectItem value="5">★ 5점만</SelectItem><SelectItem value="4">★ 4점만</SelectItem><SelectItem value="3">★ 3점만</SelectItem><SelectItem value="2">★ 2점만</SelectItem><SelectItem value="1">★ 1점만</SelectItem></SelectContent></Select></div>
-                  <label className="flex min-h-11 items-center gap-3 rounded-control border border-border p-3 text-ui-body-sm font-medium"><Checkbox checked={hasPhoto} onCheckedChange={(v) => setHasPhoto(Boolean(v))} />사진 포함 후기만 보기</label>
+                  <div className="grid gap-2"><label className="text-ui-label font-semibold text-foreground">정렬</label><Select value={draftSort} onValueChange={(v) => setDraftSort(v as SortKey)}><SelectTrigger className="min-h-11 rounded-control"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="latest">최신순</SelectItem><SelectItem value="helpful">도움돼요 많은순</SelectItem><SelectItem value="rating">평점 높은순</SelectItem></SelectContent></Select></div>
+                  <div className="grid gap-2"><label className="text-ui-label font-semibold text-foreground">별점</label><Select value={draftRating} onValueChange={(v) => setDraftRating(v as RatingFilter)}><SelectTrigger className="min-h-11 rounded-control"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">전체 별점</SelectItem><SelectItem value="5">★ 5점만</SelectItem><SelectItem value="4">★ 4점만</SelectItem><SelectItem value="3">★ 3점만</SelectItem><SelectItem value="2">★ 2점만</SelectItem><SelectItem value="1">★ 1점만</SelectItem></SelectContent></Select></div>
+                  <label className="flex min-h-11 items-center gap-3 rounded-control border border-border p-3 text-ui-body-sm font-medium"><Checkbox checked={draftHasPhoto} onCheckedChange={(v) => setDraftHasPhoto(Boolean(v))} />사진 포함 후기만 보기</label>
                 </div>
-                <SheetFooter className="gap-2 sm:space-x-0"><Button variant="outline" onClick={resetFilters}>필터 초기화</Button><SheetClose asChild><Button variant="highlight">결과 보기</Button></SheetClose></SheetFooter>
+                <SheetFooter className="gap-2 sm:space-x-0"><Button type="button" variant="outline" onClick={resetDraftFilters}>필터 초기화</Button><Button type="button" variant="highlight" onClick={applyMobileFilters}>결과 보기</Button></SheetFooter>
               </SheetContent>
             </Sheet>
           </div>

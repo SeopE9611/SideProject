@@ -27,7 +27,7 @@ export default function ReviewHubHero() {
               <Link href="/mypage?tab=orders&scope=todo">작성 가능한 후기 확인</Link>
             </Button>
             <Button asChild variant="outline" wrap="responsive" className="min-h-11">
-              <Link href="/reviews/write">후기 작성 기준</Link>
+              <Link href="/mypage?tab=reviews">내 후기 관리</Link>
             </Button>
           </div>
         </div>
