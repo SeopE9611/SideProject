@@ -8,6 +8,7 @@ import {
   buildPublicReviewSurfaceTargetMatch,
 } from "@/lib/reviews/public-review-surface.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { appendMatchCondition } from "@/lib/reviews/review-query-match";
 import { isAllowedReviewPhotoUrl } from "@/lib/reviews/review-photo-storage.server";
 import {
   markReviewPhotoUploadSessionCommittedBestEffort,
@@ -717,19 +718,14 @@ export async function GET(req: Request) {
   if (type === "service") match.service = { $exists: true };
   if (type === "rental") {
     const rentalTypeMatch = { $or: [{ reviewType: "rental" }, { rentalId: { $exists: true } }] };
-    if (match.$or) {
-      match.$and = [{ $or: match.$or }, rentalTypeMatch];
-      delete match.$or;
-    } else {
-      match.$or = rentalTypeMatch.$or;
-    }
+    appendMatchCondition(match, rentalTypeMatch);
   }
   if (productFilterCandidates && type === "product") {
     const productTargetMatch = await buildPublicReviewSurfaceTargetMatch(db, {
       type: "product",
       id: productFilterId!,
     });
-    if (productTargetMatch) Object.assign(match, productTargetMatch);
+    if (productTargetMatch) appendMatchCondition(match, productTargetMatch);
   }
   if (productFilterCandidates && type !== "product") {
     // 상품 관계 필드는 public surface helper와 공유합니다: stringDetails.stringTypes, meta.stringProductId
@@ -738,12 +734,7 @@ export async function GET(req: Request) {
       id: productFilterId!,
     });
     if (productTargetMatch) {
-      if (match.$or) {
-        match.$and = [{ $or: match.$or }, productTargetMatch];
-        delete match.$or;
-      } else {
-        Object.assign(match, productTargetMatch);
-      }
+      appendMatchCondition(match, productTargetMatch);
     }
   }
   if (rating) match.rating = Number(rating);

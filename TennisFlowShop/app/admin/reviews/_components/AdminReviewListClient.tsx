@@ -302,19 +302,20 @@ export default function AdminReviewListClient() {
     }
   };
 
-  // 선택 공개/비공개 (일괄) — 낙관적 업데이트 + 실패 시 롤백
+  // 선택 공개/비공개 (일괄) — 부분 성공 시 서버 상태를 기준으로 재검증
   const doBulkUpdateStatus = async (next: "visible" | "hidden") => {
     if (!selected.length) return;
 
+    const targetIds = [...selected];
+
     // 낙관적 업데이트: 현재 페이지들에서 선택된 항목들의 status만 먼저 바꿔 그림
-    const snapshot = data;
     await mutate(
       (pages?: Page[]) =>
         pages
           ? pages.map((p) => ({
               ...p,
               items: p.items.map((r) =>
-                selected.includes(r._id)
+                targetIds.includes(r._id)
                   ? {
                       ...r,
                       status: next,
@@ -331,31 +332,53 @@ export default function AdminReviewListClient() {
 
     // 실제 서버 PATCH — 5개씩 동시 처리(서버 부하 방지)
     const CHUNK = 5;
-    try {
-      for (let i = 0; i < selected.length; i += CHUNK) {
-        const part = selected.slice(i, i + CHUNK);
-        await Promise.all(
-          part.map(async (id) => {
-            await adminMutator(`/api/admin/reviews/${id}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ moderationStatus: next }),
-            });
+    const failedIds: string[] = [];
+
+    for (let i = 0; i < targetIds.length; i += CHUNK) {
+      const part = targetIds.slice(i, i + CHUNK);
+      const results = await Promise.allSettled(
+        part.map((id) =>
+          adminMutator(`/api/admin/reviews/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ moderationStatus: next }),
           }),
-        );
+        ),
+      );
+
+      for (const [index, result] of results.entries()) {
+        if (result.status === "rejected") failedIds.push(part[index]);
       }
-      setSelected([]);
+    }
+
+    try {
       await mutate();
+    } catch (revalidateError) {
+      console.error(
+        "[admin-reviews] failed to revalidate after bulk moderation update",
+        revalidateError,
+      );
+    }
+
+    if (failedIds.length === 0) {
+      setSelected([]);
       showSuccessToast(
         next === "hidden"
           ? "선택 항목을 비공개로 변경했습니다."
           : "선택 항목을 공개로 변경했습니다.",
       );
-    } catch (e) {
-      // 3) 실패 시 롤백
-      await mutate(() => snapshot, false);
-      showErrorToast("일부 항목 상태 변경에 실패했습니다.");
+      return;
     }
+
+    if (failedIds.length === targetIds.length) {
+      // 전부 실패한 경우에는 기존 선택을 유지해 관리자가 같은 작업을 다시 시도할 수 있게 합니다.
+      showErrorToast("선택 항목 상태 변경에 실패했습니다.");
+      return;
+    }
+
+    // 일부 실패 시에는 실패 항목만 선택 상태로 유지하고, 성공 항목은 재검증된 목록에 맡깁니다.
+    setSelected(failedIds);
+    showErrorToast(`선택한 ${targetIds.length}개 중 ${failedIds.length}개 처리에 실패했습니다.`);
   };
 
   // ---- 공개/비공개 토글(낙관적) ----
@@ -388,16 +411,25 @@ export default function AdminReviewListClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ moderationStatus: next }),
       });
-      await mutate();
-      showSuccessToast(
-        next === "hidden" ? "후기를 비공개로 변경했습니다." : "후기를 공개로 변경했습니다.",
-      );
-      return next;
     } catch {
       await mutate(() => snapshot, false);
       showErrorToast("상태 변경 실패");
       return null;
     }
+
+    try {
+      await mutate();
+    } catch (revalidateError) {
+      console.error(
+        "[admin-reviews] failed to revalidate after moderation update",
+        revalidateError,
+      );
+    }
+
+    showSuccessToast(
+      next === "hidden" ? "후기를 비공개로 변경했습니다." : "후기를 공개로 변경했습니다.",
+    );
+    return next;
   };
 
   // --- 카드 밀도 토글 ----
