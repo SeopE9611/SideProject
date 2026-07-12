@@ -24,13 +24,18 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const previewRating = hoverRating ?? value;
   return (
-    <div className={`flex justify-center gap-1 ${disabled ? "pointer-events-none opacity-60" : ""}`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" aria-label={`${n}점`} className={`text-ui-page-title-lg transition-all duration-200 ${value >= n ? "scale-110 text-warning" : "text-foreground"} hover:scale-125 hover:text-warning`} onClick={() => onChange?.(n)}>
-          ★
-        </button>
-      ))}
+    <div role="radiogroup" aria-label="별점 선택" className={`flex justify-center gap-1 ${disabled ? "pointer-events-none opacity-60" : ""}`}>
+      {[1, 2, 3, 4, 5].map((n) => {
+        const filled = previewRating >= n;
+        return (
+          <button key={n} type="button" role="radio" aria-checked={value === n} aria-label={`${n}점`} disabled={disabled} className={`text-ui-page-title-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${filled ? "scale-110 text-warning" : "text-muted-foreground"} hover:scale-125 hover:text-warning`} onMouseEnter={() => setHoverRating(n)} onMouseLeave={() => setHoverRating(null)} onFocus={() => setHoverRating(n)} onBlur={() => setHoverRating(null)} onClick={() => onChange?.(n)}>
+            {filled ? "★" : "☆"}
+          </button>
+        );
+      })}
     </div>
   );
 }

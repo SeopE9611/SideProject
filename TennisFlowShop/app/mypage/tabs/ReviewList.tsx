@@ -342,9 +342,13 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         );
       }
 
-      showSuccessToast("후기가 수정되었습니다.");
       editPhotoSession.markCommitted();
-      await mutate();
+      try {
+        await mutate();
+      } catch (revalidateError) {
+        console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+      }
+      showSuccessToast("후기가 수정되었습니다.");
       closeEdit();
     } catch (e: any) {
       editPhotoSession.markSaveFailed();
@@ -391,10 +395,14 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           body: JSON.stringify({ status: nextStatus }),
         });
         if (!res.ok) throw new Error("상태 변경에 실패했습니다.");
+        try {
+          await mutate();
+        } catch (revalidateError) {
+          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+        }
         showSuccessToast(
           nextStatus === "visible" ? "후기가 공개되었습니다." : "후기가 비공개로 전환되었습니다.",
         );
-        await mutate();
       } catch (e: any) {
         await mutate(() => snapshot, false);
         showErrorToast(e.message || "상태 변경 중 오류가 발생했습니다.");
@@ -423,6 +431,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           credentials: "include",
         });
         if (!res.ok) throw new Error("삭제 실패");
+        try {
+          await mutate();
+        } catch (revalidateError) {
+          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+        }
         showSuccessToast("후기가 삭제되었습니다.");
       } catch (e: any) {
         await mutate(() => snapshot, false);

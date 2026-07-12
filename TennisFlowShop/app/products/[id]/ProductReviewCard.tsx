@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Eye, EyeOff, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { ProductReviewRatingStars } from "./ProductDetailReviewParts";
+import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 
 type ProductReviewCardProps = {
   review: any;
@@ -32,6 +33,7 @@ export default function ProductReviewCard({
   onDelete,
   onOpenPhoto,
 }: ProductReviewCardProps) {
+  const { managedStatus } = getReviewManagedVisibilityStatus(review, Boolean(review.adminView));
   return (
     <Card className="rounded-xl border border-border bg-card shadow-none sm:rounded-2xl">
       <CardContent className="relative p-4 sm:p-6">
@@ -93,7 +95,7 @@ export default function ProductReviewCard({
                   }}
                   className="cursor-pointer"
                 >
-                  {review.status === "visible" ? (
+                  {managedStatus === "visible" ? (
                     <>
                       <EyeOff className="mr-2 h-4 w-4" />
                       비공개로 전환

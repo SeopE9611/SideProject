@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/public";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, X, MessageSquareText, Target } from "lucide-react";
+import { Loader2, X, MessageSquareText, Target, RefreshCw } from "lucide-react";
 import ReviewCard from "./ReviewCard";
 import ReviewSkeleton from "./ReviewSkeleton";
 import { getAuxiliaryMetaBadgeSpec } from "@/lib/badge-style";
@@ -45,7 +45,27 @@ type Item = {
   votedByMe?: boolean;
 };
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+const getReviewListErrorMessage = (status: number, payload: unknown) => {
+  if (payload && typeof payload === "object" && "message" in payload) {
+    const message = (payload as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  return status >= 500
+    ? "서버 오류로 후기를 불러오지 못했습니다."
+    : "후기를 불러오지 못했습니다.";
+};
+
+const fetcher = async (url: string) => {
+  const response = await fetch(url, { credentials: "include" });
+  if (!response.ok) {
+    let payload: unknown = null;
+    try {
+      payload = await response.json();
+    } catch {}
+    throw new Error(getReviewListErrorMessage(response.status, payload));
+  }
+  return response.json();
+};
 
 export default function ReviewsClient() {
   const searchParams = useSearchParams();
@@ -101,7 +121,7 @@ export default function ReviewsClient() {
         setIsLoggedIn(false);
       });
   }, []);
-  const { data, size, setSize, isValidating, mutate } = useSWRInfinite(getKey, fetcher, {
+  const { data, size, setSize, isValidating, mutate, error } = useSWRInfinite(getKey, fetcher, {
     revalidateFirstPage: false,
     persistSize: true,
   });
@@ -113,6 +133,8 @@ export default function ReviewsClient() {
   );
   const hasMore = useMemo(() => (data ? Boolean(data[data.length - 1]?.nextCursor) : true), [data]);
   const isFirstLoading = !data && isValidating;
+  const isInitialError = !data && Boolean(error);
+  const isLoadMoreError = Boolean(data?.length && error);
 
   /* 필터 요약 칩 표시용 텍스트 */
   const summary = [
@@ -245,7 +267,19 @@ export default function ReviewsClient() {
       {/* Results area */}
       {!isFirstLoading && (
         <>
-          {items.length > 0 ? (
+          {isInitialError ? (
+            <EmptyState
+              icon={<MessageSquareText className="h-8 w-8" />}
+              title="후기를 불러오지 못했습니다"
+              description={error?.message || "잠시 후 다시 시도해 주세요."}
+              action={
+                <Button variant="outline" onClick={() => mutate()} className="rounded-full">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  다시 시도
+                </Button>
+              }
+            />
+          ) : items.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
               {items.map((it) => (
                 <ReviewCard
@@ -260,14 +294,23 @@ export default function ReviewsClient() {
           ) : (
             <EmptyState
               icon={<MessageSquareText className="h-8 w-8" />}
-              title="리뷰가 없습니다"
-              description="조건에 맞는 리뷰를 찾을 수 없습니다."
+              title="조건에 맞는 리뷰가 없습니다"
+              description="필터를 초기화하거나 다른 조건으로 다시 시도해 주세요."
             />
           )}
 
           {/* Load more button */}
+          {isLoadMoreError && (
+            <div className="flex justify-center pt-4">
+              <Button variant="outline" onClick={() => mutate()} className="rounded-full">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                다시 시도
+              </Button>
+            </div>
+          )}
+
           <div className="flex justify-center pt-4">
-            {hasMore ? (
+            {!isInitialError && hasMore ? (
               <Button
                 onClick={() => setSize(size + 1)}
                 disabled={isValidating}
@@ -284,11 +327,11 @@ export default function ReviewsClient() {
                   "더 보기"
                 )}
               </Button>
-            ) : (
+            ) : !isInitialError && items.length > 0 && !isValidating ? (
               <div className="text-ui-body-sm text-muted-foreground py-6 text-center">
                 마지막 페이지입니다
               </div>
-            )}
+            ) : null}
           </div>
         </>
       )}
