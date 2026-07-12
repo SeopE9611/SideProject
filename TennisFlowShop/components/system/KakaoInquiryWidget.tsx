@@ -13,6 +13,15 @@ declare global {
   }
 }
 
+
+const guideLinks = [
+  { label: "스트링 교체 신청하기", href: "/services/apply" },
+  { label: "새 스트링 고르고 장착 신청", href: "/products?from=apply" },
+  { label: "라켓 구매/대여 + 장착", href: "/rackets?from=apply" },
+  { label: "아카데미 신청", href: "/academy" },
+  { label: "주문/신청 상태 확인", href: "/mypage" },
+] as const;
+
 function normalizeChannelPublicId(raw: string) {
   // 실수 방지:
   // - "_uxjpH" (정상)
@@ -53,6 +62,8 @@ export default function KakaoInquiryWidget() {
   const bugTriggerRef = useRef<HTMLButtonElement | null>(null);
   const inquiryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const guidePanelRef = useRef<HTMLDivElement | null>(null);
+  const reviewsCompactTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const reviewsCompactPanelRef = useRef<HTMLDivElement | null>(null);
   const bugPanelRef = useRef<HTMLDivElement | null>(null);
   const inquiryPanelRef = useRef<HTMLDivElement | null>(null);
 
@@ -222,18 +233,15 @@ export default function KakaoInquiryWidget() {
       const target = e.target as Node | null;
       if (!target) return;
 
-      const activePanelEl =
-        panel === "guide"
-          ? guidePanelRef.current
-          : panel === "bug"
-            ? bugPanelRef.current
-            : inquiryPanelRef.current;
-      const activeTriggerEl =
-        panel === "guide"
-          ? guideTriggerRef.current
-          : panel === "bug"
-            ? bugTriggerRef.current
-            : inquiryTriggerRef.current;
+      if (panel === "guide") {
+        const guidePanels = [guidePanelRef.current, reviewsCompactPanelRef.current];
+        const guideTriggers = [guideTriggerRef.current, reviewsCompactTriggerRef.current];
+        if (guidePanels.some((element) => element?.contains(target))) return;
+        if (guideTriggers.some((element) => element?.contains(target))) return;
+      }
+
+      const activePanelEl = panel === "bug" ? bugPanelRef.current : panel === "inquiry" ? inquiryPanelRef.current : null;
+      const activeTriggerEl = panel === "bug" ? bugTriggerRef.current : panel === "inquiry" ? inquiryTriggerRef.current : null;
 
       // 패널 내부 클릭 or 트리거 버튼 클릭이면 유지
       if (activePanelEl?.contains(target)) return;
@@ -281,7 +289,7 @@ export default function KakaoInquiryWidget() {
         "fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4",
         hideOnFinderTouch && "hidden bp-lg:block",
         hideOnCartMobile && "hidden bp-lg:block",
-        useReviewsCompactLauncher && "bottom-[calc(env(safe-area-inset-bottom)+0.75rem)]",
+        useReviewsCompactLauncher && "bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-lg:bottom-4",
       )}
       style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
     >
@@ -297,7 +305,7 @@ export default function KakaoInquiryWidget() {
                   : "opacity-0 translate-y-2 pointer-events-none",
               ].join(" ")}
             >
-              <div ref={guidePanelRef} className="relative">
+              <div ref={reviewsCompactPanelRef} id="reviews-compact-inquiry-panel" className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] rounded-panel border-border shadow-float">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                     <CardTitle className="text-ui-body-sm font-semibold">무엇을 도와드릴까요?</CardTitle>
@@ -305,18 +313,30 @@ export default function KakaoInquiryWidget() {
                       <X className="h-4 w-4" />
                     </button>
                   </CardHeader>
-                  <CardContent className="grid gap-2">
-                    <Link href="/services/apply" className="min-h-11 rounded-control border border-border bg-card px-3 py-2 text-ui-body-sm font-semibold hover:bg-muted" onClick={() => setPanel(null)}>스트링 교체 신청하기</Link>
-                    {canShowBug ? <button type="button" onClick={openBugChat} className="min-h-11 rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted">버그 제보</button> : null}
-                    {canShowInquiry ? <button type="button" onClick={openKakaoChat} className="min-h-11 rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted">카카오톡 문의</button> : null}
+                  <CardContent className="max-h-[min(70vh,520px)] space-y-4 overflow-y-auto">
+                    <div className="space-y-2">
+                      <p className="text-ui-label font-semibold text-muted-foreground">빠른 이동</p>
+                      {guideLinks.map(({ label, href }) => (
+                        <Link key={href} href={href} className="flex min-h-11 items-center rounded-control border border-border bg-card px-3 py-2 text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setPanel(null)}>{label}</Link>
+                      ))}
+                    </div>
+                    {(canShowBug || canShowInquiry) ? (
+                      <div className="space-y-2 border-t border-border pt-4">
+                        <p className="text-ui-label font-semibold text-muted-foreground">지원</p>
+                        {canShowBug ? <button type="button" onClick={openBugChat} className="min-h-11 w-full rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">버그 제보</button> : null}
+                        {canShowInquiry ? <button type="button" onClick={openKakaoChat} className="min-h-11 w-full rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">카카오톡 문의</button> : null}
+                      </div>
+                    ) : null}
                   </CardContent>
                 </Card>
               </div>
             </div>
             <button
               type="button"
-              ref={guideTriggerRef}
+              ref={reviewsCompactTriggerRef}
               aria-label="후기 페이지 문의 메뉴 열기"
+              aria-expanded={panel === "guide"}
+              aria-controls="reviews-compact-inquiry-panel"
               onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
               className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 text-ui-body-sm font-semibold text-primary-foreground shadow-float hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
@@ -326,8 +346,8 @@ export default function KakaoInquiryWidget() {
           </div>
         ) : null}
         {/* ---------------- 목적 선택 ---------------- */}
-        {!isMypageRoute && !useReviewsCompactLauncher ? (
-          <div className="relative">
+        {!isMypageRoute ? (
+          <div className={cn("relative", useReviewsCompactLauncher && "hidden bp-lg:block")}>
             <div
               className={[
                 "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
@@ -358,13 +378,7 @@ export default function KakaoInquiryWidget() {
                       원하는 목적을 선택하면 필요한 단계로 바로 이동할 수 있어요.
                     </p>
                     <div className="grid gap-2">
-                      {[
-                        ["스트링 교체 신청하기", "/services/apply", ""],
-                        ["새 스트링 고르고 장착 신청", "/products?from=apply", ""],
-                        ["라켓 구매/대여 + 장착", "/rackets?from=apply", ""],
-                        ["아카데미 신청", "/academy", ""],
-                        ["주문/신청 상태 확인", "/mypage"],
-                      ].map(([label, href, description]) => (
+                      {guideLinks.map(({ label, href }) => (
                         <Link
                           key={href}
                           href={href}
@@ -372,11 +386,6 @@ export default function KakaoInquiryWidget() {
                           onClick={() => setPanel(null)}
                         >
                           <span className="block whitespace-nowrap text-foreground">{label}</span>
-                          {description ? (
-                            <span className="mt-0.5 block text-ui-label font-normal text-muted-foreground">
-                              {description}
-                            </span>
-                          ) : null}
                         </Link>
                       ))}
                     </div>
@@ -412,8 +421,8 @@ export default function KakaoInquiryWidget() {
         ) : null}
 
         {/* ---------------- 버그 제보 ---------------- */}
-        {canShowBug && !isMypageRoute && !useReviewsCompactLauncher ? (
-          <div className="relative">
+        {canShowBug && !isMypageRoute ? (
+          <div className={cn("relative", useReviewsCompactLauncher && "hidden bp-lg:block")}>
             <div
               className={[
                 "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
@@ -505,8 +514,8 @@ export default function KakaoInquiryWidget() {
         ) : null}
 
         {/* ---------------- 카카오 문의 ---------------- */}
-        {canShowInquiry && !useReviewsCompactLauncher ? (
-          <div className="relative">
+        {canShowInquiry ? (
+          <div className={cn("relative", useReviewsCompactLauncher && "hidden bp-lg:block")}>
             <div
               className={[
                 "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
