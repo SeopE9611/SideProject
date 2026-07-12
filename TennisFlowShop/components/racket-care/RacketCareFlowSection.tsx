@@ -6,8 +6,8 @@ import { useState } from "react";
 const flowSteps = [
   { title: "라켓 등록", copy: "프로필·완료 교체 이력을 가져오거나 직접 입력해 최대 5개 라켓을 관리합니다.", bullets: ["프로필·완료 교체 이력 가져오기", "직접 입력 지원", "최대 5개 관리"] },
   { title: "상태 진단", copy: "마지막 교체일과 플레이 빈도로 예상 교체일, D-day, 판단 근거를 확인합니다.", bullets: ["마지막 교체일", "플레이 빈도", "예상 교체일과 판단 근거"] },
-  { title: "맞춤 추천", copy: "기존 스트링 추천 엔진으로 이동하되 선택한 라켓 문맥과 빈도를 유지합니다.", bullets: ["추천 엔진 재사용", "추천 조건 변경 가능", "선택 라켓 문맥 유지"] },
-  { title: "교체 신청", copy: "상품 상세에서 기존 교체서비스 신청 흐름으로 연결하고 완료 후 라켓 케어로 돌아옵니다.", bullets: ["상품 상세", "기존 교체서비스 신청", "신청 완료 후 복귀"] },
+  { title: "맞춤 추천", copy: "등록한 라켓과 플레이 빈도를 바탕으로 조건에 맞는 스트링을 추천받습니다.", bullets: ["라켓 정보 반영", "플레이 빈도 반영", "추천 조건 직접 조정"] },
+  { title: "교체 신청", copy: "추천 결과에서 상품을 확인하고 교체서비스 신청까지 자연스럽게 이어집니다.", bullets: ["추천 상품 확인", "교체서비스 신청", "완료 후 관리 화면 복귀"] },
 ] as const;
 
 function CheckMark() { return <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-highlight text-brand-highlight-foreground text-ui-micro">✓</span>; }
