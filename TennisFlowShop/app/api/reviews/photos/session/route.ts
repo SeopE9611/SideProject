@@ -1,5 +1,6 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import { getReviewPhotoUploadSessionCollection } from "@/lib/reviews/review-photo-upload-session.server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
@@ -30,11 +31,13 @@ export async function POST() {
   const uploadSessionId = createUploadSessionId();
   const db = await getDb();
 
-  await db.collection("review_photo_upload_sessions").insertOne({
+  await getReviewPhotoUploadSessionCollection(db).insertOne({
     _id: uploadSessionId,
     userId: new ObjectId(sub),
+    status: "active",
     createdAt: now,
     expiresAt: new Date(now.getTime() + SESSION_TTL_MS),
+    committingAt: null,
     committedAt: null,
   });
 

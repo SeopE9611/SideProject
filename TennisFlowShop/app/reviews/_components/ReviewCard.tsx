@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminMutator } from "@/lib/admin/adminFetcher";
+import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
 import {
   Eye,
   EyeOff,
@@ -85,9 +86,19 @@ export default function ReviewCard({
     photos: Array.isArray(item.photos) ? item.photos : [],
   });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const editPhotoSession = useReviewPhotoUploadSession();
 
-  const openEdit = () => setEditOpen(true);
-  const closeEdit = () => setEditOpen(false);
+  const openEdit = () => {
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
+    void editPhotoSession.startSession();
+    setEditOpen(true);
+  };
+  const closeEdit = () => {
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
+    setEditOpen(false);
+  };
 
   // 확대 뷰어
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -105,19 +116,24 @@ export default function ReviewCard({
         rating: rating === "" ? undefined : Number(rating),
         content,
         photos: editForm.photos,
+        uploadSessionId: editPhotoSession.uploadSessionId,
       });
-      const res = isAdmin && !item.ownedByMe
-        ? await adminMutator(`/api/admin/reviews/${item._id}`, {
-            method: "PATCH",
-            body: patchBody,
-          }).then(() => ({ ok: true }))
-        : await fetch(`/api/reviews/${item._id}`, {
-            method: "PATCH",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: patchBody,
-          });
-      if (!res.ok) throw new Error("수정 실패");
+      editPhotoSession.markSaving();
+      if (isAdmin && !item.ownedByMe) {
+        await adminMutator(`/api/admin/reviews/${item._id}`, {
+          method: "PATCH",
+          body: patchBody,
+        });
+      } else {
+        const res = await fetch(`/api/reviews/${item._id}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: patchBody,
+        });
+        if (!res.ok) throw new Error("수정 실패");
+      }
+      editPhotoSession.markCommitted();
       showSuccessToast("리뷰를 수정했어요.");
       onMutate?.(); // 리스트 재검증
       closeEdit();
@@ -315,18 +331,20 @@ export default function ReviewCard({
                       try {
                         setBusy(true);
                         const next = item.status === "visible" ? "hidden" : "visible";
-                        const res = isAdmin && !item.ownedByMe
-                          ? await adminMutator(`/api/admin/reviews/${item._id}`, {
-                              method: "PATCH",
-                              body: JSON.stringify({ status: next }),
-                            }).then(() => ({ ok: true }))
-                          : await fetch(`/api/reviews/${item._id}`, {
-                              method: "PATCH",
-                              credentials: "include",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ status: next }),
-                            });
-                        if (!res.ok) throw new Error("상태 변경 실패");
+                        if (isAdmin && !item.ownedByMe) {
+                          await adminMutator(`/api/admin/reviews/${item._id}`, {
+                            method: "PATCH",
+                            body: JSON.stringify({ moderationStatus: next }),
+                          });
+                        } else {
+                          const res = await fetch(`/api/reviews/${item._id}`, {
+                            method: "PATCH",
+                            credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ status: next }),
+                          });
+                          if (!res.ok) throw new Error("상태 변경 실패");
+                        }
                         showSuccessToast(
                           next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
                         );
@@ -370,15 +388,15 @@ export default function ReviewCard({
                       if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
                       try {
                         setBusy(true);
-                        const res = isAdmin && !item.ownedByMe
-                          ? await adminMutator(`/api/admin/reviews/${item._id}`, {
-                              method: "DELETE",
-                            }).then(() => ({ ok: true }))
-                          : await fetch(`/api/reviews/${item._id}`, {
-                              method: "DELETE",
-                              credentials: "include",
-                            });
-                        if (!res.ok) throw new Error("삭제 실패");
+                        if (isAdmin && !item.ownedByMe) {
+                          await adminMutator(`/api/admin/reviews/${item._id}`, { method: "DELETE" });
+                        } else {
+                          const res = await fetch(`/api/reviews/${item._id}`, {
+                            method: "DELETE",
+                            credentials: "include",
+                          });
+                          if (!res.ok) throw new Error("삭제 실패");
+                        }
                         showSuccessToast("삭제했습니다.");
                         onMutate?.(); // 리스트 재검증
                         setBusy(false);
@@ -577,6 +595,10 @@ export default function ReviewCard({
                   onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))}
                   max={5}
                   previewMode="queue"
+                  uploadSessionId={editPhotoSession.uploadSessionId}
+                  onUploaded={editPhotoSession.registerUploadedUrls}
+                  onRemove={editPhotoSession.removeUploadedUrl}
+                  disabled={busy || !editPhotoSession.uploadSessionId}
                 />
 
                 <PhotosReorderGrid

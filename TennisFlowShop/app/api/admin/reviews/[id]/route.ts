@@ -12,6 +12,11 @@ import { buildResolvedReviewContextExpression } from "@/lib/reviews/review-conte
 import { reviewInputMessage, validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { diffRemovedReviewPhotos, isAllowedReviewPhotoUrl, removeReviewPhotosBestEffort } from "@/lib/reviews/review-photo-storage.server";
+import {
+  markReviewPhotoUploadSessionCommitted,
+  rollbackReviewPhotoUploadSessionClaim,
+  validateAndClaimReviewPhotoUploadSession,
+} from "@/lib/reviews/review-photo-upload-session.server";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
@@ -78,7 +83,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       { message: "validation_error", details: parsed.error.issues },
       { status: 400 },
     );
-  const body = { ...inputValidation.value, ...parsed.data };
+  const body = {
+    ...inputValidation.value,
+    ...parsed.data,
+    uploadSessionId: typeof rawBody.uploadSessionId === "string" ? rawBody.uploadSessionId : null,
+  };
 
   if (
     !("content" in body) &&
@@ -111,11 +120,35 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     $set.moderatedAt = null;
     $set.moderatedBy = null;
   }
-  if (Array.isArray(body.photos)) $set.photos = Array.from(new Set<string>(body.photos.map((s) => s.trim())));
+  if (Array.isArray(body.photos)) {
+    $set.photos = Array.from(new Set<string>(body.photos.map((s) => s.trim())));
+    const previousPhotos = Array.isArray(doc.photos) ? doc.photos.map(String) : [];
+    const addedPhotos = $set.photos.filter((url: string) => !previousPhotos.includes(url));
+    if (addedPhotos.length > 0) {
+      const sessionValidation = await validateAndClaimReviewPhotoUploadSession({
+        db,
+        userId: guard.admin._id,
+        uploadSessionId: body.uploadSessionId,
+        urls: addedPhotos,
+      });
+      if (!sessionValidation.ok) {
+        return NextResponse.json(
+          { ok: false, reason: sessionValidation.reason, message: sessionValidation.reason },
+          { status: sessionValidation.reason === "uploadSessionForbidden" ? 403 : 400 },
+        );
+      }
+    }
+  }
   if (Object.keys($set).length === 1)
     return NextResponse.json({ message: "no changes" }, { status: 400 });
 
-  await db.collection("reviews").updateOne({ _id }, { $set });
+  try {
+    await db.collection("reviews").updateOne({ _id }, { $set });
+  } catch (error) {
+    await rollbackReviewPhotoUploadSessionClaim(db, guard.admin._id, body.uploadSessionId);
+    throw error;
+  }
+  await markReviewPhotoUploadSessionCommitted(db, guard.admin._id, body.uploadSessionId);
   if (Array.isArray($set.photos)) {
     await removeReviewPhotosBestEffort(diffRemovedReviewPhotos(doc.photos, $set.photos), "PATCH /api/admin/reviews/[id]");
   }

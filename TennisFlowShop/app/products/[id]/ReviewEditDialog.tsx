@@ -34,6 +34,9 @@ type Props = {
   busy?: boolean;
   uploadingPhotos?: boolean;
   onUploadingPhotosChange?: (uploading: boolean) => void;
+  uploadSessionId: string | null;
+  onUploaded: (urls: string[], uploadSessionId: string) => void;
+  onRemove: (url: string, uploadSessionId: string) => void;
   onChangeForm: Dispatch<SetStateAction<EditForm>>;
   onChangeHoverRating: Dispatch<SetStateAction<number | null>>;
 };
@@ -49,6 +52,9 @@ export default function ReviewEditDialog({
   busy = false,
   uploadingPhotos = false,
   onUploadingPhotosChange,
+  uploadSessionId,
+  onUploaded,
+  onRemove,
 }: Props) {
   const isValid = validateReviewInput(editForm).ok;
   return (
@@ -128,6 +134,10 @@ export default function ReviewEditDialog({
                 max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
                 onUploadingChange={onUploadingPhotosChange}
+                uploadSessionId={uploadSessionId}
+                onUploaded={onUploaded}
+                onRemove={onRemove}
+                disabled={busy || uploadingPhotos || !uploadSessionId}
               />
               <PhotosReorderGrid
                 value={editForm.photos}

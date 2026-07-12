@@ -30,6 +30,7 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -254,6 +255,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [busyReviewId, setBusyReviewId] = useState<string | null>(null);
   const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
+  const editPhotoSession = useReviewPhotoUploadSession();
 
   // 이미지 뷰어(확대) 전용 상태
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -272,6 +274,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const openEdit = (review: any) => {
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
+    void editPhotoSession.startSession();
     setUploadingEditPhotos(false);
     setEditing(review);
     setEditForm({
@@ -283,6 +288,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   };
 
   const closeEdit = () => {
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
     setUploadingEditPhotos(false);
     setEditOpen(false);
     setEditing(null);
@@ -333,10 +340,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     }
 
     try {
+      editPhotoSession.markSaving();
       const patchBody = JSON.stringify({
         rating,
         content,
         photos: editForm.photos,
+        uploadSessionId: editPhotoSession.uploadSessionId,
       });
       if (isAdmin && !isMine(editing)) {
         await adminMutator(`/api/admin/reviews/${editing._id}`, {
@@ -1087,25 +1096,25 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                           }
 
                                           try {
-                                            const res = isAdmin && !isMine(review)
-                                              ? { ok: true }
-                                              : await fetch(`/api/reviews/${review._id}`, {
-                                                  method: "PATCH",
-                                                  credentials: "include",
-                                                  headers: {
-                                                    "Content-Type": "application/json",
-                                                  },
-                                                  body: JSON.stringify({
-                                                    status: nextStatus,
-                                                  }),
-                                                });
+                                            let res: Response | null = null;
                                             if (isAdmin && !isMine(review)) {
                                               await adminMutator(`/api/admin/reviews/${review._id}`, {
                                                 method: "PATCH",
-                                                body: JSON.stringify({ status: nextStatus }),
+                                                body: JSON.stringify({ moderationStatus: nextStatus }),
+                                              });
+                                            } else {
+                                              res = await fetch(`/api/reviews/${review._id}`, {
+                                                method: "PATCH",
+                                                credentials: "include",
+                                                headers: {
+                                                  "Content-Type": "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                  status: nextStatus,
+                                                }),
                                               });
                                             }
-                                            if (!res.ok) throw new Error("상태 변경 실패");
+                                            if (res && !res.ok) throw new Error("상태 변경 실패");
 
                                             // 탭 유지 + 서버 리프레시
                                             const params = new URLSearchParams(
@@ -1165,13 +1174,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                                               setBusyReviewId(String(review._id));
                                               try {
-                                                const res = await adminMutator(
+                                                await adminMutator(
                                                   `/api/admin/reviews/${review._id}`,
                                                   {
                                                     method: "DELETE",
                                                   },
-                                                ).then(() => ({ ok: true }));
-                                                if (!res.ok) throw new Error("삭제 실패");
+                                                );
 
                                                 // 재검증 + 탭 유지
                                                 await mutateAdminReviews?.();
@@ -1300,6 +1308,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
           onUploadingPhotosChange={setUploadingEditPhotos}
           onClose={closeEdit}
           onSubmit={submitEdit}
+          uploadSessionId={editPhotoSession.uploadSessionId}
+          onUploaded={editPhotoSession.registerUploadedUrls}
+          onRemove={editPhotoSession.removeUploadedUrl}
         />
       ) : null}
     </div>

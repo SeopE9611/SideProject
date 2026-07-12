@@ -25,6 +25,7 @@ import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -325,6 +326,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [busyReviewId, setBusyReviewId] = useState<string | null>(null);
   const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
+  const editPhotoSession = useReviewPhotoUploadSession();
 
   // 이미지 뷰어(확대) 전용 상태
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -344,6 +346,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const openEdit = (review: any) => {
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
+    void editPhotoSession.startSession();
     setUploadingEditPhotos(false);
     setEditing(review);
     setEditForm({
@@ -355,6 +360,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const closeEdit = () => {
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
     setUploadingEditPhotos(false);
     setEditOpen(false);
     setEditing(null);
@@ -403,10 +410,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
 
     try {
+      editPhotoSession.markSaving();
       const patchBody = JSON.stringify({
         rating,
         content,
         photos: editForm.photos,
+        uploadSessionId: editPhotoSession.uploadSessionId,
       });
       if (isAdmin && !isMine(editing)) {
         await adminMutator(`/api/admin/reviews/${editing._id}`, {
@@ -484,25 +493,24 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     // 서버 반영
     try {
-      const res = isAdmin && !isMine(review)
-        ? { ok: true }
-        : await fetch(`/api/reviews/${review._id}`, {
-            method: "PATCH",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              status: next,
-            }),
-          });
       if (isAdmin && !isMine(review)) {
         await adminMutator(`/api/admin/reviews/${review._id}`, {
           method: "PATCH",
-          body: JSON.stringify({ status: next }),
+          body: JSON.stringify({ moderationStatus: next }),
         });
+      } else {
+        const res = await fetch(`/api/reviews/${review._id}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: next,
+          }),
+        });
+        if (!res.ok) throw new Error("상태 변경 실패");
       }
-      if (!res.ok) throw new Error("상태 변경 실패");
 
       // 재검증
       if (isMine(review)) await mutateMyReview();
@@ -532,16 +540,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     setBusyReviewId(String(review._id));
     try {
-      const res = isAdmin && !isMine(review)
-        ? { ok: true }
-        : await fetch(`/api/reviews/${review._id}`, {
-            method: "DELETE",
-            credentials: "include",
-          });
       if (isAdmin && !isMine(review)) {
         await adminMutator(`/api/admin/reviews/${review._id}`, { method: "DELETE" });
+      } else {
+        const res = await fetch(`/api/reviews/${review._id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("삭제 실패");
       }
-      if (!res.ok) throw new Error("삭제 실패");
 
       // 재검증
       if (isMine(review)) await mutateMyReview();
@@ -1485,6 +1492,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
               onUploadingPhotosChange={setUploadingEditPhotos}
               onChangeForm={setEditForm}
               onChangeHoverRating={setHoverRating}
+              uploadSessionId={editPhotoSession.uploadSessionId}
+              onUploaded={editPhotoSession.registerUploadedUrls}
+              onRemove={editPhotoSession.removeUploadedUrl}
             />
           )}
         </ProductDetailRelatedProductsSection>

@@ -77,6 +77,12 @@ async function ensureIndex(
 }
 
 export async function ensureReviewIndexes(db: Db) {
+  await ensureIndex(
+    db,
+    "review_photo_upload_sessions",
+    { expiresAt: 1 },
+    { name: "review_photo_upload_sessions_ttl", expireAfterSeconds: 0 },
+  );
   const duplicates = await inspectActiveReviewDuplicates(db);
   if (duplicates.totalGroups > 0) {
     const error = new Error("duplicateReviewsDetected") as Error & { details?: unknown };

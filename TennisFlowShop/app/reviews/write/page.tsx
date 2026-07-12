@@ -111,6 +111,7 @@ export default function ReviewWritePage() {
   const uploadSessionIdRef = useRef<string | null>(null);
   const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
   const committedRef = useRef(false);
+  const savingRef = useRef(false);
 
   const nextUrl = useMemo(() => {
     const qs = sp.toString();
@@ -254,9 +255,11 @@ export default function ReviewWritePage() {
       return;
     }
     setIsSubmitting(true);
+    savingRef.current = true;
     try {
-      const r = await fetch("/api/reviews", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(buildReviewSubmissionPayload(canonicalTarget, { rating, content, photos })) });
+      const r = await fetch("/api/reviews", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...buildReviewSubmissionPayload(canonicalTarget, { rating, content, photos }), uploadSessionId }) });
       if (r.ok) {
+        savingRef.current = false;
         committedRef.current = true;
         sessionUploadedUrlsRef.current.clear();
         showSuccessToast("후기가 등록되었습니다.");

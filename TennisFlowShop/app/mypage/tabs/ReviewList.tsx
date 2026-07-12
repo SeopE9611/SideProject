@@ -314,7 +314,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       payload.content = trimmed;
     }
     if (changedRating) payload.rating = editRating;
-    if (changedPhotos) payload.photos = editPhotos;
+    if (changedPhotos) {
+      payload.photos = editPhotos;
+      payload.uploadSessionId = editUploadSessionId;
+    }
 
     // 변경사항이 없으면 종료
     if (Object.keys(payload).length === 0) {

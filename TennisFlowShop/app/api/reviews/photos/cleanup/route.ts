@@ -1,5 +1,6 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import { getReviewPhotoUploadSessionCollection } from "@/lib/reviews/review-photo-upload-session.server";
 import {
   extractReviewPhotoSessionObject,
   removeReviewPhotoStoragePathsBestEffort,
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
   if (!urls.length) return NextResponse.json({ ok: true });
 
   const db = await getDb();
-  const session = await db.collection("review_photo_upload_sessions").findOne({ _id: uploadSessionId });
+  const session = await getReviewPhotoUploadSessionCollection(db).findOne({ _id: uploadSessionId });
   if (!session) {
     return NextResponse.json({ ok: false, reason: "uploadSessionNotFound" }, { status: 404 });
   }
@@ -45,6 +46,9 @@ export async function POST(req: Request) {
   }
   if (!(session.expiresAt instanceof Date) || session.expiresAt.getTime() <= Date.now()) {
     return NextResponse.json({ ok: false, reason: "uploadSessionExpired" }, { status: 400 });
+  }
+  if (session.status !== "active") {
+    return NextResponse.json({ ok: false, reason: "uploadSessionInvalidState" }, { status: 409 });
   }
 
   const validItems = urls

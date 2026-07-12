@@ -29,6 +29,9 @@ type Props = {
   busy: boolean;
   uploadingPhotos?: boolean;
   onUploadingPhotosChange?: (uploading: boolean) => void;
+  uploadSessionId: string | null;
+  onUploaded: (urls: string[], uploadSessionId: string) => void;
+  onRemove: (url: string, uploadSessionId: string) => void;
   onClose: () => void;
   onSubmit: () => void;
 };
@@ -43,6 +46,9 @@ export default function ReviewEditDialog({
   busy,
   uploadingPhotos = false,
   onUploadingPhotosChange,
+  uploadSessionId,
+  onUploaded,
+  onRemove,
   onClose,
   onSubmit,
 }: Props) {
@@ -105,6 +111,10 @@ export default function ReviewEditDialog({
               onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
               max={REVIEW_MAX_PHOTOS}
               onUploadingChange={onUploadingPhotosChange}
+              uploadSessionId={uploadSessionId}
+              onUploaded={onUploaded}
+              onRemove={onRemove}
+              disabled={busy || uploadingPhotos || !uploadSessionId}
             />
             <PhotosReorderGrid
               value={editForm.photos}
