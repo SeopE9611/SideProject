@@ -451,10 +451,9 @@ export async function POST(req: Request) {
     if (already) return duplicateReviewResponse();
 
     const now = new Date();
-    let insertRes;
-    let reviewDoc: any;
+    let reviewId: ObjectId;
     try {
-      reviewDoc = {
+      const reviewDoc = {
         userId,
         service: "stringing",
         reviewType: "service",
@@ -473,17 +472,17 @@ export async function POST(req: Request) {
         updatedAt: now,
         isDeleted: false,
       };
-      insertRes = await db.collection("reviews").insertOne(reviewDoc);
-      await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: insertRes.insertedId }, "POST /api/reviews");
+      const insertRes = await db.collection("reviews").insertOne(reviewDoc);
+      reviewId = insertRes.insertedId;
+      await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: reviewId }, "POST /api/reviews");
     } catch (error) {
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
-    const reviewId = insertRes.insertedId;
 
     // 포인트 적립 (보수적 시작)
     // - 결제완료 주문이 연결된 신청서만 적립
-    const appOrderId = (app as any)?.orderId;
+    const appOrderId = app?.orderId;
     if (appOrderId && ObjectId.isValid(String(appOrderId))) {
       const paidOrder = await db.collection("orders").findOne(
         {
@@ -533,7 +532,7 @@ export async function GET(req: Request) {
   let isAdmin = false;
   if (token) {
     // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500 방지 (비로그인 취급)
-    let payload: any = null;
+    let payload: { sub?: unknown; role?: unknown; isAdmin?: unknown; roles?: unknown } | null = null;
     try {
       payload = verifyAccessToken(token);
     } catch {
@@ -544,10 +543,10 @@ export async function GET(req: Request) {
       currentUserId = new ObjectId(subStr);
     }
     isAdmin =
-      (payload as any)?.role === "admin" ||
-      (payload as any)?.role === "ADMIN" ||
-      (payload as any)?.isAdmin === true ||
-      (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes("admin"));
+      payload?.role === "admin" ||
+      payload?.role === "ADMIN" ||
+      payload?.isAdmin === true ||
+      (Array.isArray(payload?.roles) && payload.roles.includes("admin"));
   }
 
   const url = new URL(req.url);
@@ -1112,7 +1111,7 @@ export async function GET(req: Request) {
   }
 
   // 응답 직전에 라켓 브랜드 라벨 보정
-  for (const row of rows as any[]) {
+  for (const row of rows) {
     const kind = row?.productKind;
     const brandRaw = row?.__racketBrand;
     const modelRaw = row?.__racketModel;
