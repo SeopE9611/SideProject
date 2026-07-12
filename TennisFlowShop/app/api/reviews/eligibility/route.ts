@@ -398,55 +398,58 @@ export async function GET(req: Request) {
       );
     }
 
-    const productIds: string[] = (Array.isArray(order.items) ? order.items : [])
-      .map((it: any) => (it.productId ? String(it.productId) : null))
-      .filter((v: any): v is string => !!v);
-
-    if (!productIds.length) {
+    const bundle = orderTarget?.targetBundle ?? null;
+    if (!bundle || !Array.isArray(bundle.targets) || !bundle.targets.length) {
       return NextResponse.json(
-        { eligible: false, reason: "noPurchase" },
+        { eligible: false, reason: "notFound" },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
 
-    const orderIdCandidates = ObjectId.isValid(orderId)
-      ? [new ObjectId(orderId), orderId]
-      : [orderId];
-    const reviewed = await db
-      .collection("reviews")
-      .find({
-        userId,
-        $or: [{ orderId: { $in: orderIdCandidates } }, { "target.orderId": { $in: orderIdCandidates } }],
-        productId: {
-          $in: productIds.flatMap((pid) =>
-            ObjectId.isValid(pid) ? [new ObjectId(pid), pid] : [pid],
-          ),
-        },
-        isDeleted: { $ne: true },
-      })
-      .project({ productId: 1 })
-      .toArray();
-    const reviewedSet = new Set(reviewed.map((r) => String(r.productId)));
-
-    const candidatePid = productIds.find((pid) => !reviewedSet.has(pid));
-    if (!candidatePid) {
+    const availableTarget =
+      bundle.targets.find((target) => getReviewSubmissionBlockReason(target) === null) ?? null;
+    if (availableTarget) {
       return NextResponse.json(
-        { eligible: false, reason: "already" },
+        eligibilityPayload({
+          eligible: true,
+          reason: null,
+          bundle,
+          target: availableTarget,
+          subjectType: "order",
+          subjectId: orderId,
+          suggestedProductId:
+            availableTarget.primaryProductId ?? availableTarget.primaryRacketId ?? null,
+          suggestedApplicationId: availableTarget.primaryApplicationId ?? null,
+          suggestedOrderId: String(orderIdObj),
+        }),
         { headers: { "Cache-Control": "no-store" } },
       );
     }
 
-    const target = pickBundleTarget(orderTarget?.targetBundle, candidatePid);
-    const blockReason = getReviewSubmissionBlockReason(target);
+    const blockReasons = bundle.targets.map((target) => getReviewSubmissionBlockReason(target));
+    const blockReason =
+      blockReasons.includes("already")
+        ? "already"
+        : blockReasons.includes("coveredByIntegratedReview")
+          ? "coveredByIntegratedReview"
+          : blockReasons.includes("notConfirmed")
+            ? "notConfirmed"
+            : blockReasons.includes("notCompleted")
+              ? "notCompleted"
+              : blockReasons.includes("invalidStatus")
+                ? "invalidStatus"
+                : "notFound";
+    const target = bundle.targets[0] ?? null;
     return NextResponse.json(
       eligibilityPayload({
-        eligible: !blockReason,
+        eligible: false,
         reason: blockReason,
-        bundle: orderTarget?.targetBundle,
+        bundle,
         target,
         subjectType: "order",
         subjectId: orderId,
-        suggestedProductId: candidatePid,
+        suggestedProductId: target?.primaryProductId ?? target?.primaryRacketId ?? null,
+        suggestedApplicationId: target?.primaryApplicationId ?? null,
         suggestedOrderId: String(orderIdObj),
       }),
       { headers: { "Cache-Control": "no-store" } },

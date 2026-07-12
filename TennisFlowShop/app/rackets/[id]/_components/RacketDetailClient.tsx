@@ -338,26 +338,26 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         content,
         photos: editForm.photos,
       });
-      const res = isAdmin && !isMine(editing)
-        ? { ok: true }
-        : await fetch(`/api/reviews/${editing._id}`, {
+      if (isAdmin && !isMine(editing)) {
+        await adminMutator(`/api/admin/reviews/${editing._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: patchBody,
+        });
+      } else {
+        const res = await fetch(`/api/reviews/${editing._id}`, {
             method: "PATCH",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: patchBody,
           });
-      if (isAdmin && !isMine(editing)) {
-        await adminMutator(`/api/admin/reviews/${editing._id}`, {
-          method: "PATCH",
-          body: patchBody,
-        });
-      }
-      if (!res.ok) {
-        let err: any = null;
-        try {
-          err = await res.json();
-        } catch {}
-        throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+        if (!res.ok) {
+          let err: any = null;
+          try {
+            err = await res.json();
+          } catch {}
+          throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+        }
       }
 
       // 재검증
