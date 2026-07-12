@@ -16,7 +16,27 @@ type ActiveSection = (typeof anchors)[number]["id"] | null;
 
 export default function RacketCareMobileNav({ item }: { item: CareItem }) {
   const [active, setActive] = useState<ActiveSection>(null);
+  const [showNav, setShowNav] = useState(false);
   const recommendHref = `/products/recommend?from=racket-care&careItemId=${item.id}&freq=${item.playFrequency}`;
+  useEffect(() => {
+    const hero = document.getElementById("racket-care-hero");
+
+    if (!hero || !("IntersectionObserver" in window)) {
+      setShowNav(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      setShowNav(!entry.isIntersecting);
+    }, { threshold: 0 });
+
+    observer.observe(hero);
+
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     const sections = anchors.map((anchor) => document.querySelector(anchor.href)).filter((section): section is Element => Boolean(section));
     if (sections.length === 0 || !("IntersectionObserver" in window)) return;
@@ -36,6 +56,8 @@ export default function RacketCareMobileNav({ item }: { item: CareItem }) {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     target?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
   };
+
+  if (!showNav) return null;
 
   return <div data-bottom-sticky="1" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.6rem+env(safe-area-inset-bottom))] bp-lg:hidden"><nav className="pointer-events-auto rounded-panel border border-border bg-card/90 p-1.5 shadow-float backdrop-blur" aria-label="라켓 케어 바로가기"><div className="grid grid-cols-4 gap-1 text-ui-label">{anchors.slice(0, 2).map((anchor) => { const Icon = anchor.icon; return <a key={anchor.id} className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center data-[active=true]:bg-brand-highlight-muted data-[active=true]:text-brand-highlight-foreground dark:data-[active=true]:text-brand-highlight" href={anchor.href} onClick={scrollTo(anchor.href, anchor.id)} data-active={active === anchor.id} aria-current={active === anchor.id ? "location" : undefined}><Icon className="h-4 w-4" /><span>{anchor.label}</span></a>; })}<Link className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center" href={recommendHref}><Sparkles className="h-4 w-4" /><span>맞춤 추천</span></Link>{anchors.slice(2).map((anchor) => { const Icon = anchor.icon; return <a key={anchor.id} className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center data-[active=true]:bg-brand-highlight-muted data-[active=true]:text-brand-highlight-foreground dark:data-[active=true]:text-brand-highlight" href={anchor.href} onClick={scrollTo(anchor.href, anchor.id)} data-active={active === anchor.id} aria-current={active === anchor.id ? "location" : undefined}><Icon className="h-4 w-4" /><span>{anchor.label}</span></a>; })}</div></nav></div>;
 }
