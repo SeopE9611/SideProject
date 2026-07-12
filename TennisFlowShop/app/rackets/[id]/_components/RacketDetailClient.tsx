@@ -1,12 +1,12 @@
 "use client";
 
-import { CompareRacketItem, useRacketCompareStore } from "@/app/store/racketCompareStore";
 import ProductDetailQnaTab from "@/app/products/[id]/ProductDetailQnaTab";
+import { CompareRacketItem, useRacketCompareStore } from "@/app/store/racketCompareStore";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { SummaryCard } from "@/components/public/SummaryCard";
+import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
-import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,19 +18,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   merchandisingImageBadgeClass,
   merchandisingImageBadgeVariant,
   usedBadgeMeta,
 } from "@/lib/badge-style";
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
-import { adminMutator } from "@/lib/admin/adminFetcher";
-import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
-import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -341,52 +341,87 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
     try {
       editPhotoSession.markSaving();
-      const patchBody = JSON.stringify({
-        rating,
-        content,
-        photos: editForm.photos,
-        uploadSessionId: editPhotoSession.uploadSessionId,
-      });
-      if (isAdmin && !isMine(editing)) {
-        await adminMutator(`/api/admin/reviews/${editing._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: patchBody,
+
+      try {
+        const patchBody = JSON.stringify({
+          rating,
+          content,
+          photos: editForm.photos,
+          uploadSessionId: editPhotoSession.uploadSessionId,
         });
-      } else {
-        const res = await fetch(`/api/reviews/${editing._id}`, {
+
+        if (isAdmin && !isMine(editing)) {
+          await adminMutator(`/api/admin/reviews/${editing._id}`, {
             method: "PATCH",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: patchBody,
           });
-        if (!res.ok) {
-          let err: any = null;
-          try {
-            err = await res.json();
-          } catch {}
-          throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+        } else {
+          const res = await fetch(`/api/reviews/${editing._id}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: patchBody,
+          });
+
+          if (!res.ok) {
+            let err: any = null;
+
+            try {
+              err = await res.json();
+            } catch {}
+
+            throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+          }
         }
+      } catch (err: any) {
+        editPhotoSession.markSaveFailed();
+
+        try {
+          if (isMine(editing)) {
+            await mutateMyReview?.();
+          } else if (isAdmin) {
+            await mutateAdminReviews?.();
+          }
+        } catch (revalidateError) {
+          console.error(
+            "[reviews] failed to revalidate racket review after save failure",
+            revalidateError,
+          );
+        }
+
+        showErrorToast(err?.message || "후기 수정에 실패했습니다.");
+
+        return;
       }
 
-      // 재검증
-      if (isMine(editing)) await mutateMyReview?.();
-      else if (isAdmin) await mutateAdminReviews?.();
+      // 서버 PATCH 성공을 먼저 확정합니다.
+      editPhotoSession.markCommitted();
 
-      // 탭 유지 + 서버컴포넌트 리프레시
+      try {
+        if (isMine(editing)) {
+          await mutateMyReview?.();
+        } else if (isAdmin) {
+          await mutateAdminReviews?.();
+        }
+      } catch (revalidateError) {
+        console.error("[reviews] failed to revalidate racket review after save", revalidateError);
+      }
+
       const params = new URLSearchParams(searchParams.toString());
       params.set("tab", "reviews");
-      router.replace(`?${params.toString()}`, { scroll: false });
+
+      router.replace(`?${params.toString()}`, {
+        scroll: false,
+      });
       router.refresh();
 
-      editPhotoSession.markCommitted();
       showSuccessToast("후기를 수정했어요.");
       closeEdit();
-    } catch (err: any) {
-      editPhotoSession.markSaveFailed();
-      if (isMine(editing)) await mutateMyReview?.();
-      else if (isAdmin) await mutateAdminReviews?.();
-      showErrorToast(err?.message || "후기 수정에 실패했습니다.");
     } finally {
       setBusyReviewId(null);
     }
@@ -1068,9 +1103,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                                           const isAdminModeration = isAdmin && !isMine(review);
                                           const currentStatus = isAdminModeration
-                                            ? review?.moderationStatus === "hidden" ? "hidden" : "visible"
-                                            : review?.status === "hidden" ? "hidden" : "visible";
-                                          const nextStatus = currentStatus === "hidden" ? "visible" : "hidden";
+                                            ? review?.moderationStatus === "hidden"
+                                              ? "hidden"
+                                              : "visible"
+                                            : review?.status === "hidden"
+                                              ? "hidden"
+                                              : "visible";
+                                          const nextStatus =
+                                            currentStatus === "hidden" ? "visible" : "hidden";
                                           setBusyReviewId(String(review._id));
 
                                           // 낙관적 업데이트
@@ -1096,7 +1136,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                       status: nextStatus,
                                                       moderationStatus: nextStatus,
                                                       effectiveStatus:
-                                                        review?.authorStatus === "visible" && nextStatus === "visible"
+                                                        review?.authorStatus === "visible" &&
+                                                        nextStatus === "visible"
                                                           ? "visible"
                                                           : "hidden",
                                                     }
@@ -1108,10 +1149,15 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                           try {
                                             let res: Response | null = null;
                                             if (isAdmin && !isMine(review)) {
-                                              await adminMutator(`/api/admin/reviews/${review._id}`, {
-                                                method: "PATCH",
-                                                body: JSON.stringify({ moderationStatus: nextStatus }),
-                                              });
+                                              await adminMutator(
+                                                `/api/admin/reviews/${review._id}`,
+                                                {
+                                                  method: "PATCH",
+                                                  body: JSON.stringify({
+                                                    moderationStatus: nextStatus,
+                                                  }),
+                                                },
+                                              );
                                             } else {
                                               res = await fetch(`/api/reviews/${review._id}`, {
                                                 method: "PATCH",

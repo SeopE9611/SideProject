@@ -1,22 +1,26 @@
-import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { getDb } from "@/lib/mongodb";
 import { deductPoints } from "@/lib/points.service";
-import { z } from "zod";
-import { requireAdmin } from "@/lib/admin.guard";
-import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { buildAdminReviewRelationStages } from "@/lib/reviews/admin-review-relations.server";
 import { shapeAdminReview } from "@/lib/reviews/admin-review-shape";
 import { buildResolvedReviewContextExpression } from "@/lib/reviews/review-context.server";
 import { reviewInputMessage, validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
-import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
-import { diffRemovedReviewPhotos, isAllowedReviewPhotoUrl, removeReviewPhotosBestEffort } from "@/lib/reviews/review-photo-storage.server";
+import {
+  diffRemovedReviewPhotos,
+  isAllowedReviewPhotoUrl,
+  removeReviewPhotosBestEffort,
+} from "@/lib/reviews/review-photo-storage.server";
 import {
   markReviewPhotoUploadSessionCommittedBestEffort,
   rollbackReviewPhotoUploadSessionClaimBestEffort,
   validateAndClaimReviewPhotoUploadSession,
 } from "@/lib/reviews/review-photo-upload-session.server";
+import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
+import { ObjectId } from "mongodb";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
@@ -102,15 +106,41 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const db = await getDb();
   const _id = new ObjectId(id);
-  const doc = await db
-    .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1, moderationStatus: 1 } });
+  const doc = await db.collection("reviews").findOne(
+    { _id, isDeleted: { $ne: true } },
+    {
+      projection: {
+        userId: 1,
+        productId: 1,
+        racketId: 1,
+        relatedProductIds: 1,
+        relatedRacketIds: 1,
+        orderId: 1,
+        rentalId: 1,
+        serviceApplicationId: 1,
+        applicationId: 1,
+        reviewContext: 1,
+        reviewType: 1,
+        service: 1,
+        status: 1,
+        photos: 1,
+        moderationStatus: 1,
+      },
+    },
+  );
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const $set: any = { updatedAt: new Date() };
   if (typeof body.content === "string") $set.content = body.content.trim();
   if (typeof body.rating === "number") $set.rating = Math.max(1, Math.min(5, body.rating));
-  const moderationStatus = body.moderationStatus ?? body.status ?? (body.visibility === "public" ? "visible" : body.visibility === "private" ? "hidden" : undefined);
+  const moderationStatus =
+    body.moderationStatus ??
+    body.status ??
+    (body.visibility === "public"
+      ? "visible"
+      : body.visibility === "private"
+        ? "hidden"
+        : undefined);
   if (moderationStatus === "hidden") {
     $set.moderationStatus = "hidden";
     $set.moderatedAt = new Date();
@@ -120,6 +150,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     $set.moderatedAt = null;
     $set.moderatedBy = null;
   }
+  let sessionClaimed = false;
   if (Array.isArray(body.photos)) {
     $set.photos = Array.from(new Set<string>(body.photos.map((s) => s.trim())));
     const previousPhotos = Array.isArray(doc.photos) ? doc.photos.map(String) : [];
@@ -137,6 +168,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           { status: sessionValidation.reason === "uploadSessionForbidden" ? 403 : 400 },
         );
       }
+      sessionClaimed = true;
     }
   }
   if (Object.keys($set).length === 1)
@@ -145,12 +177,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     await db.collection("reviews").updateOne({ _id }, { $set });
   } catch (error) {
-    await rollbackReviewPhotoUploadSessionClaimBestEffort(db, guard.admin._id, body.uploadSessionId, "PATCH /api/admin/reviews/[id]");
+    if (sessionClaimed) {
+      await rollbackReviewPhotoUploadSessionClaimBestEffort(
+        db,
+        guard.admin._id,
+        body.uploadSessionId,
+        "PATCH /api/admin/reviews/[id]",
+      );
+    }
+
     throw error;
   }
-  await markReviewPhotoUploadSessionCommittedBestEffort(db, guard.admin._id, body.uploadSessionId, "PATCH /api/admin/reviews/[id]");
+
+  if (sessionClaimed) {
+    await markReviewPhotoUploadSessionCommittedBestEffort(
+      db,
+      guard.admin._id,
+      body.uploadSessionId,
+      "PATCH /api/admin/reviews/[id]",
+    );
+  }
   if (Array.isArray($set.photos)) {
-    await removeReviewPhotosBestEffort(diffRemovedReviewPhotos(doc.photos, $set.photos), "PATCH /api/admin/reviews/[id]");
+    await removeReviewPhotosBestEffort(
+      diffRemovedReviewPhotos(doc.photos, $set.photos),
+      "PATCH /api/admin/reviews/[id]",
+    );
   }
   if (body.rating !== undefined || moderationStatus)
     await refreshReviewSummaryCachesForReviewSafely(db, doc, "PATCH /api/admin/reviews/[id]");
@@ -180,9 +231,27 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
 
   const db = await getDb();
   const _id = new ObjectId(id);
-  const doc = await db
-    .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1 } });
+  const doc = await db.collection("reviews").findOne(
+    { _id, isDeleted: { $ne: true } },
+    {
+      projection: {
+        userId: 1,
+        productId: 1,
+        racketId: 1,
+        relatedProductIds: 1,
+        relatedRacketIds: 1,
+        orderId: 1,
+        rentalId: 1,
+        serviceApplicationId: 1,
+        applicationId: 1,
+        reviewContext: 1,
+        reviewType: 1,
+        service: 1,
+        status: 1,
+        photos: 1,
+      },
+    },
+  );
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   await db
@@ -217,7 +286,10 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   }
 
   await refreshReviewSummaryCachesForReviewSafely(db, doc, "DELETE /api/admin/reviews/[id]");
-  await removeReviewPhotosBestEffort(Array.isArray(doc.photos) ? doc.photos : [], "DELETE /api/admin/reviews/[id]");
+  await removeReviewPhotosBestEffort(
+    Array.isArray(doc.photos) ? doc.photos : [],
+    "DELETE /api/admin/reviews/[id]",
+  );
   await appendAdminAudit(
     guard.db,
     {

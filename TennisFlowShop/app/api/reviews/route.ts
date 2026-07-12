@@ -3,15 +3,17 @@ import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
-import { buildPublicReviewMatch, buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
-import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
+import {
+  buildPublicReviewMatch,
+  buildPublicReviewSurfaceTargetMatch,
+} from "@/lib/reviews/public-review-surface.server";
+import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import { isAllowedReviewPhotoUrl } from "@/lib/reviews/review-photo-storage.server";
 import {
   markReviewPhotoUploadSessionCommittedBestEffort,
   rollbackReviewPhotoUploadSessionClaimBestEffort,
   validateAndClaimReviewPhotoUploadSession,
 } from "@/lib/reviews/review-photo-upload-session.server";
-import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import {
   findRequestedCanonicalTarget,
   getCanonicalTargetItemId,
@@ -20,6 +22,7 @@ import {
   isRentalReviewEligible,
   isStandaloneStringingReviewEligible,
 } from "@/lib/reviews/review-policy";
+import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { getReviewContextLabel } from "@/lib/reviews/review-target";
 import {
   resolveOrderReviewTarget,
@@ -29,7 +32,6 @@ import {
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
 
 function isDuplicateKeyError(error: unknown): boolean {
   return Boolean(
@@ -246,16 +248,31 @@ export async function POST(req: Request) {
       };
       const insertResult = await db.collection("reviews").insertOne(reviewDoc);
       reviewPersisted = true;
-      await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: insertResult.insertedId }, "POST /api/reviews");
+      await refreshReviewSummaryCachesForReviewSafely(
+        db,
+        { ...reviewDoc, _id: insertResult.insertedId },
+        "POST /api/reviews",
+      );
     } catch (error) {
       if (sessionClaimed && !reviewPersisted) {
-        await rollbackReviewPhotoUploadSessionClaimBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+        await rollbackReviewPhotoUploadSessionClaimBestEffort(
+          db,
+          userId,
+          uploadSessionId,
+          "POST /api/reviews",
+        );
       }
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
-    await markReviewPhotoUploadSessionCommittedBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
-    // TODO: 라켓 대여 리뷰 포인트 정책이 정해지면 적립 로직을 연결합니다.
+    if (sessionClaimed) {
+      await markReviewPhotoUploadSessionCommittedBestEffort(
+        db,
+        userId,
+        uploadSessionId,
+        "POST /api/reviews",
+      );
+    }
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
@@ -289,7 +306,11 @@ export async function POST(req: Request) {
       productIdStr,
     );
     const canonicalItemId = getCanonicalTargetItemId(orderCanonicalTarget);
-    if (!orderCanonicalTarget || !canonicalItemId || !findRequestedCanonicalTarget(orderTarget?.targetBundle, productIdStr)) {
+    if (
+      !orderCanonicalTarget ||
+      !canonicalItemId ||
+      !findRequestedCanonicalTarget(orderTarget?.targetBundle, productIdStr)
+    ) {
       return NextResponse.json(
         {
           ok: false,
@@ -328,12 +349,18 @@ export async function POST(req: Request) {
     if (orderIdObj) {
       dupFilter.orderId = { $in: [orderIdObj, orderIdRaw] };
     }
-    if (orderCanonicalTarget?.reviewContext === "product_stringing" && orderCanonicalTarget.primaryApplicationId) {
+    if (
+      orderCanonicalTarget?.reviewContext === "product_stringing" &&
+      orderCanonicalTarget.primaryApplicationId
+    ) {
       dupFilter.$or = [
         { orderId: { $in: [orderIdObj, orderIdRaw] }, productId: { $in: productCandidates } },
         {
           serviceApplicationId: {
-            $in: [new ObjectId(orderCanonicalTarget.primaryApplicationId), orderCanonicalTarget.primaryApplicationId],
+            $in: [
+              new ObjectId(orderCanonicalTarget.primaryApplicationId),
+              orderCanonicalTarget.primaryApplicationId,
+            ],
           },
         },
       ];
@@ -353,14 +380,16 @@ export async function POST(req: Request) {
       userId,
       productId: canonicalProductIdObj,
       racketId:
-        orderCanonicalTarget.primaryRacketId && ObjectId.isValid(orderCanonicalTarget.primaryRacketId)
+        orderCanonicalTarget.primaryRacketId &&
+        ObjectId.isValid(orderCanonicalTarget.primaryRacketId)
           ? new ObjectId(orderCanonicalTarget.primaryRacketId)
           : undefined,
       reviewType: "product",
       reviewContext: orderCanonicalTarget.reviewContext,
       contextLabel: orderCanonicalTarget.contextLabel ?? getReviewContextLabel("product"),
       serviceApplicationId:
-        orderCanonicalTarget.primaryApplicationId && ObjectId.isValid(orderCanonicalTarget.primaryApplicationId)
+        orderCanonicalTarget.primaryApplicationId &&
+        ObjectId.isValid(orderCanonicalTarget.primaryApplicationId)
           ? new ObjectId(orderCanonicalTarget.primaryApplicationId)
           : undefined,
       relatedProductIds: orderCanonicalTarget.relatedProductIds ?? [],
@@ -383,7 +412,12 @@ export async function POST(req: Request) {
       reviewPersisted = true;
     } catch (error) {
       if (sessionClaimed && !reviewPersisted) {
-        await rollbackReviewPhotoUploadSessionClaimBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+        await rollbackReviewPhotoUploadSessionClaimBestEffort(
+          db,
+          userId,
+          uploadSessionId,
+          "POST /api/reviews",
+        );
       }
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
@@ -418,8 +452,19 @@ export async function POST(req: Request) {
       }
     }
 
-    await refreshReviewSummaryCachesForReviewSafely(db, { ...doc, _id: reviewId }, "POST /api/reviews");
-    await markReviewPhotoUploadSessionCommittedBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+    await refreshReviewSummaryCachesForReviewSafely(
+      db,
+      { ...doc, _id: reviewId },
+      "POST /api/reviews",
+    );
+    if (sessionClaimed) {
+      await markReviewPhotoUploadSessionCommittedBestEffort(
+        db,
+        userId,
+        uploadSessionId,
+        "POST /api/reviews",
+      );
+    }
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
@@ -520,10 +565,19 @@ export async function POST(req: Request) {
       const insertRes = await db.collection("reviews").insertOne(reviewDoc);
       reviewId = insertRes.insertedId;
       reviewPersisted = true;
-      await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: reviewId }, "POST /api/reviews");
+      await refreshReviewSummaryCachesForReviewSafely(
+        db,
+        { ...reviewDoc, _id: reviewId },
+        "POST /api/reviews",
+      );
     } catch (error) {
       if (sessionClaimed && !reviewPersisted) {
-        await rollbackReviewPhotoUploadSessionClaimBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+        await rollbackReviewPhotoUploadSessionClaimBestEffort(
+          db,
+          userId,
+          uploadSessionId,
+          "POST /api/reviews",
+        );
       }
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
@@ -558,7 +612,14 @@ export async function POST(req: Request) {
       }
     }
 
-    await markReviewPhotoUploadSessionCommittedBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+    if (sessionClaimed) {
+      await markReviewPhotoUploadSessionCommittedBestEffort(
+        db,
+        userId,
+        uploadSessionId,
+        "POST /api/reviews",
+      );
+    }
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
@@ -582,7 +643,8 @@ export async function GET(req: Request) {
   let isAdmin = false;
   if (token) {
     // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500 방지 (비로그인 취급)
-    let payload: { sub?: unknown; role?: unknown; isAdmin?: unknown; roles?: unknown } | null = null;
+    let payload: { sub?: unknown; role?: unknown; isAdmin?: unknown; roles?: unknown } | null =
+      null;
     try {
       payload = verifyAccessToken(token);
     } catch {
@@ -643,7 +705,10 @@ export async function GET(req: Request) {
     match.$or = [{ reviewType: "rental" }, { rentalId: { $exists: true } }];
   }
   if (productFilterCandidates && type === "product") {
-    const productTargetMatch = await buildPublicReviewSurfaceTargetMatch(db, { type: "product", id: productFilterId! });
+    const productTargetMatch = await buildPublicReviewSurfaceTargetMatch(db, {
+      type: "product",
+      id: productFilterId!,
+    });
     if (productTargetMatch) Object.assign(match, productTargetMatch);
   }
   if (productFilterCandidates && type !== "product") {

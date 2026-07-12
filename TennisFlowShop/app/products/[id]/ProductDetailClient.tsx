@@ -7,7 +7,7 @@ import type { HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PrimaryCTAGroup } from "@/components/public";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -16,16 +16,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { stringBrandLabel } from "@/lib/constants";
 import { adminMutator } from "@/lib/admin/adminFetcher";
+import { stringBrandLabel } from "@/lib/constants";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
-import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
-import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -47,35 +47,15 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import ProductDetailImageGallery from "./ProductDetailImageGallery";
-import ProductDetailRecommendationSection from "./ProductDetailRecommendationSection";
-import type { DetailTab } from "./ProductDetailClient.types";
-import {
-  buildSelectedColorPayload,
-  buildWishlistOptionPayload,
-  getWishlistOptionState,
-} from "./ProductDetailOptionPayload.utils";
 import { buildProductDetailCartItem } from "./ProductDetailCartItem.utils";
 import {
   getProductDetailBuyNowCheckoutTarget,
   getProductDetailBuyNowWithServiceCheckoutTarget,
 } from "./ProductDetailCheckoutTarget.utils";
 import { getProductDetailStockLimitErrorMessage } from "./ProductDetailCheckoutValidation.utils";
-import { getProductDetailLoginRedirectTarget } from "./ProductDetailLoginTarget.utils";
-import ProductDetailQnaTab from "./ProductDetailQnaTab";
-import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
-import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
-import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
-import {
-  buildProductDetailDisplaySpec,
-  buildProductDetailHybridDisplay,
-} from "./ProductDetailDisplaySpec.utils";
-import { isAdminUser } from "./ProductDetailReviewData.utils";
-import { useProductDetailQna } from "./useProductDetailQna";
-import { useProductDetailRelatedProducts } from "./useProductDetailRelatedProducts";
-import { useProductDetailReviews } from "./useProductDetailReviews";
+import type { DetailTab } from "./ProductDetailClient.types";
 import {
   getColorLabel,
   getGuestOrderModeClient,
@@ -84,7 +64,27 @@ import {
   isTruthyBadgeField,
   normalizeGaugeDisplayLabel,
 } from "./ProductDetailClient.utils";
+import {
+  buildProductDetailDisplaySpec,
+  buildProductDetailHybridDisplay,
+} from "./ProductDetailDisplaySpec.utils";
+import ProductDetailImageGallery from "./ProductDetailImageGallery";
+import { getProductDetailLoginRedirectTarget } from "./ProductDetailLoginTarget.utils";
+import {
+  buildSelectedColorPayload,
+  buildWishlistOptionPayload,
+  getWishlistOptionState,
+} from "./ProductDetailOptionPayload.utils";
+import ProductDetailQnaTab from "./ProductDetailQnaTab";
+import ProductDetailRecommendationSection from "./ProductDetailRecommendationSection";
+import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
+import { isAdminUser } from "./ProductDetailReviewData.utils";
+import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
+import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
 import { useProductDetailOptions } from "./useProductDetailOptions";
+import { useProductDetailQna } from "./useProductDetailQna";
+import { useProductDetailRelatedProducts } from "./useProductDetailRelatedProducts";
+import { useProductDetailReviews } from "./useProductDetailReviews";
 
 const HorizontalProducts = dynamic(() => import("@/components/HorizontalProducts"), {
   loading: () => null,
@@ -230,7 +230,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + mountingFee;
   const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
-  const careItemId = searchParams.get("source") === "racket-care" ? searchParams.get("careItemId") : null;
+  const careItemId =
+    searchParams.get("source") === "racket-care" ? searchParams.get("careItemId") : null;
   const serviceCtaLabel = "교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
   const isStandalonePausedMountableString =
@@ -411,53 +412,84 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     try {
       editPhotoSession.markSaving();
-      const patchBody = JSON.stringify({
-        rating,
-        content,
-        photos: editForm.photos,
-        uploadSessionId: editPhotoSession.uploadSessionId,
-      });
-      if (isAdmin && !isMine(editing)) {
-        await adminMutator(`/api/admin/reviews/${editing._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: patchBody,
+
+      try {
+        const patchBody = JSON.stringify({
+          rating,
+          content,
+          photos: editForm.photos,
+          uploadSessionId: editPhotoSession.uploadSessionId,
         });
-      } else {
-        const res = await fetch(`/api/reviews/${editing._id}`, {
+
+        if (isAdmin && !isMine(editing)) {
+          await adminMutator(`/api/admin/reviews/${editing._id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: patchBody,
+          });
+        } else {
+          const res = await fetch(`/api/reviews/${editing._id}`, {
             method: "PATCH",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: patchBody,
           });
-        if (!res.ok) {
-          let err: any = null;
-          try {
-            err = await res.json();
-          } catch {}
-          throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+
+          if (!res.ok) {
+            let err: any = null;
+
+            try {
+              err = await res.json();
+            } catch {}
+
+            throw new Error(err?.reason ? reviewInputMessage(err.reason) : "수정 실패");
+          }
         }
+      } catch (err: any) {
+        editPhotoSession.markSaveFailed();
+
+        try {
+          if (isMine(editing)) {
+            await mutateMyReview();
+          } else if (isAdmin) {
+            await mutateAdminReviews();
+          }
+        } catch (revalidateError) {
+          console.error(
+            "[reviews] failed to revalidate product review after save failure",
+            revalidateError,
+          );
+        }
+
+        showErrorToast(err?.message || "후기 수정에 실패했습니다.");
+
+        return;
       }
 
-      // 서버 진실로 재검증
-      if (isMine(editing)) await mutateMyReview();
-      else if (isAdmin) await mutateAdminReviews();
+      // 여기까지 왔으면 서버 PATCH는 성공한 상태입니다.
+      editPhotoSession.markCommitted();
 
-      // 서버컴포넌트 리프레시 + 탭 유지
+      // 저장 이후 화면 재검증 실패는 저장 실패로 취급하지 않습니다.
+      try {
+        if (isMine(editing)) {
+          await mutateMyReview();
+        } else if (isAdmin) {
+          await mutateAdminReviews();
+        }
+      } catch (revalidateError) {
+        console.error("[reviews] failed to revalidate product review after save", revalidateError);
+      }
+
       const params = new URLSearchParams(searchParams.toString());
       params.set("tab", "reviews");
-      router.replace(`?${params.toString()}`, { scroll: false });
+
+      router.replace(`?${params.toString()}`, {
+        scroll: false,
+      });
       router.refresh();
 
-      editPhotoSession.markCommitted();
       showSuccessToast("후기를 수정했어요.");
       closeEdit();
-    } catch (err: any) {
-      editPhotoSession.markSaveFailed();
-      // 실패 시 원복(간단히 재검증)
-      if (isMine(editing)) await mutateMyReview();
-      else if (isAdmin) await mutateAdminReviews();
-      showErrorToast(err?.message || "후기 수정에 실패했습니다.");
     } finally {
       setBusyReviewId(null);
     }
@@ -467,8 +499,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setBusyReviewId(String(review._id));
     const isAdminModeration = isAdmin && !isMine(review);
     const currentStatus = isAdminModeration
-      ? review.moderationStatus === "hidden" ? "hidden" : "visible"
-      : review.status === "hidden" ? "hidden" : "visible";
+      ? review.moderationStatus === "hidden"
+        ? "hidden"
+        : "visible"
+      : review.status === "hidden"
+        ? "hidden"
+        : "visible";
     const next = currentStatus === "visible" ? "hidden" : "visible";
 
     // 낙관적 업데이트
@@ -491,7 +527,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 ...r,
                 status: next,
                 moderationStatus: next,
-                effectiveStatus: review.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
+                effectiveStatus:
+                  review.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
                 masked: false,
               }
             : r,
@@ -790,7 +827,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const mountingFee = typeof product.mountingFee === "number" ? product.mountingFee : 0;
 
     if (careItemId) {
-      sessionStorage.setItem("racket-care-handoff", JSON.stringify({ careItemId, productId: String(product._id), createdAt: new Date().toISOString() }));
+      sessionStorage.setItem(
+        "racket-care-handoff",
+        JSON.stringify({
+          careItemId,
+          productId: String(product._id),
+          createdAt: new Date().toISOString(),
+        }),
+      );
     }
 
     const target = getProductDetailBuyNowWithServiceCheckoutTarget({

@@ -1,17 +1,21 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { ObjectId } from "mongodb";
-import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { getDb } from "@/lib/mongodb";
 import { deductPoints } from "@/lib/points.service";
 import { validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
-import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
-import { diffRemovedReviewPhotos, isAllowedReviewPhotoUrl, removeReviewPhotosBestEffort } from "@/lib/reviews/review-photo-storage.server";
+import {
+  diffRemovedReviewPhotos,
+  isAllowedReviewPhotoUrl,
+  removeReviewPhotosBestEffort,
+} from "@/lib/reviews/review-photo-storage.server";
 import {
   markReviewPhotoUploadSessionCommittedBestEffort,
   rollbackReviewPhotoUploadSessionClaimBestEffort,
   validateAndClaimReviewPhotoUploadSession,
 } from "@/lib/reviews/review-photo-upload-session.server";
+import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 // 상품 별점/리뷰수 집계 보정 (status:'visible'만 집계)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -35,12 +39,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const _id = new ObjectId(id);
 
   const me = new ObjectId(subStr);
-  const doc = await db
-    .collection("reviews")
-    .findOne(
-      { _id, isDeleted: { $ne: true } },
-      { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1, moderationStatus: 1 } },
-    );
+  const doc = await db.collection("reviews").findOne(
+    { _id, isDeleted: { $ne: true } },
+    {
+      projection: {
+        userId: 1,
+        productId: 1,
+        racketId: 1,
+        relatedProductIds: 1,
+        relatedRacketIds: 1,
+        orderId: 1,
+        rentalId: 1,
+        serviceApplicationId: 1,
+        applicationId: 1,
+        reviewContext: 1,
+        reviewType: 1,
+        service: 1,
+        status: 1,
+        photos: 1,
+        moderationStatus: 1,
+      },
+    },
+  );
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
@@ -63,7 +83,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     photos?: string[];
     uploadSessionId?: string | null;
   } = {};
-  body.uploadSessionId = typeof rawBody.uploadSessionId === "string" ? rawBody.uploadSessionId : null;
+  body.uploadSessionId =
+    typeof rawBody.uploadSessionId === "string" ? rawBody.uploadSessionId : null;
   if (typeof rawBody.status === "string" && ["visible", "hidden"].includes(rawBody.status)) {
     body.status = rawBody.status as "visible" | "hidden";
   }
@@ -105,6 +126,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.visibility) {
     $set.status = body.visibility === "public" ? "visible" : "hidden";
   }
+  let sessionClaimed = false;
   if (Array.isArray(body.photos)) {
     const cleanedList = body.photos.filter(isAllowedReviewPhotoUrl).map((s: string) => s.trim());
     if (cleanedList.length !== body.photos.length) {
@@ -129,6 +151,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           { status: sessionValidation.reason === "uploadSessionForbidden" ? 403 : 400 },
         );
       }
+      sessionClaimed = true;
     }
   }
 
@@ -138,12 +161,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     await db.collection("reviews").updateOne({ _id }, { $set });
   } catch (error) {
-    await rollbackReviewPhotoUploadSessionClaimBestEffort(db, me, body.uploadSessionId, "PATCH /api/reviews/[id]");
+    if (sessionClaimed) {
+      await rollbackReviewPhotoUploadSessionClaimBestEffort(
+        db,
+        me,
+        body.uploadSessionId,
+        "PATCH /api/reviews/[id]",
+      );
+    }
+
     throw error;
   }
-  await markReviewPhotoUploadSessionCommittedBestEffort(db, me, body.uploadSessionId, "PATCH /api/reviews/[id]");
+
+  if (sessionClaimed) {
+    await markReviewPhotoUploadSessionCommittedBestEffort(
+      db,
+      me,
+      body.uploadSessionId,
+      "PATCH /api/reviews/[id]",
+    );
+  }
   if (Array.isArray($set.photos)) {
-    await removeReviewPhotosBestEffort(diffRemovedReviewPhotos(doc.photos, $set.photos), "PATCH /api/reviews/[id]");
+    await removeReviewPhotosBestEffort(
+      diffRemovedReviewPhotos(doc.photos, $set.photos),
+      "PATCH /api/reviews/[id]",
+    );
   }
 
   // 상품 집계 갱신
@@ -178,9 +220,27 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   const _id = new ObjectId(id);
   const me = new ObjectId(subStr);
 
-  const doc = await db
-    .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1 } });
+  const doc = await db.collection("reviews").findOne(
+    { _id, isDeleted: { $ne: true } },
+    {
+      projection: {
+        userId: 1,
+        productId: 1,
+        racketId: 1,
+        relatedProductIds: 1,
+        relatedRacketIds: 1,
+        orderId: 1,
+        rentalId: 1,
+        serviceApplicationId: 1,
+        applicationId: 1,
+        reviewContext: 1,
+        reviewType: 1,
+        service: 1,
+        status: 1,
+        photos: 1,
+      },
+    },
+  );
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
@@ -224,7 +284,10 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   await refreshReviewSummaryCachesForReviewSafely(db, doc, "DELETE /api/reviews/[id]");
-  await removeReviewPhotosBestEffort(Array.isArray(doc.photos) ? doc.photos : [], "DELETE /api/reviews/[id]");
+  await removeReviewPhotosBestEffort(
+    Array.isArray(doc.photos) ? doc.photos : [],
+    "DELETE /api/reviews/[id]",
+  );
 
   return NextResponse.json({ ok: true });
 }
