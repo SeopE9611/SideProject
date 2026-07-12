@@ -2,8 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const API_ROOT = new URL("../app/api", import.meta.url).pathname;
+const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
+const API_ROOT = join(REPO_ROOT, "app", "api");
+
+function toPosixPath(value) {
+  return value.replaceAll("\\", "/");
+}
 
 function walk(dir) {
   const entries = readdirSync(dir);
@@ -33,13 +39,15 @@ function needsCsrf(routeSource) {
 
 test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(401/403/200)을 강제한다", () => {
   const files = walk(API_ROOT)
-    .filter((f) => f.includes("/admin/"))
-    .map((f) => ({
-      fullPath: f,
-      relPath: relative(new URL("..", import.meta.url).pathname, f),
-      src: read(f),
+    .map((fullPath) => ({
+      fullPath,
+      relPath: toPosixPath(relative(REPO_ROOT, fullPath)),
+      src: read(fullPath),
     }))
-    .filter(({ src }) => hasMutationMethod(src));
+    .filter(
+      ({ relPath, src }) =>
+        relPath.startsWith("app/api/admin/") && hasMutationMethod(src),
+    );
 
   assert.ok(files.length > 0, "관리자 변경성 API 라우트가 발견되어야 합니다.");
 
@@ -98,7 +106,6 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
 });
 
 test("패키지 주문 관리자 라우트는 requireAdmin 표준 경로만 사용한다", () => {
-  const repoRoot = new URL("..", import.meta.url).pathname;
   const targets = [
     "app/api/admin/package-orders/route.ts",
     "app/api/admin/package-orders/[id]/route.ts",
@@ -108,7 +115,7 @@ test("패키지 주문 관리자 라우트는 requireAdmin 표준 경로만 사�
   ];
 
   for (const relPath of targets) {
-    const fullPath = join(repoRoot, relPath);
+    const fullPath = join(REPO_ROOT, relPath);
     const src = read(fullPath);
 
     assert.ok(
