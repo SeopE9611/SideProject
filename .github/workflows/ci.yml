@@ -241,30 +241,38 @@ jobs:
           cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
+        id: install
         run: pnpm install --frozen-lockfile
 
-      - name: Test contract (권한/CSRF 계약)
+      - name: Test contract (권한/CSRF/후기/표시 계약)
         run: pnpm test:contract
 
       - name: Test review target resolver
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-target
 
       - name: Test review API policy
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-api-policy
 
       - name: Test review write flow
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-write
 
       - name: Test public review surface
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-surface
 
       - name: Test review security and integrity
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-security
 
       - name: Test review management context
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-management
 
       - name: Test review summary cache
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-summary
 
   # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
@@ -455,24 +463,47 @@ jobs:
           E2E_NOTICE_CONFLICT_RESULT: ${{ needs.test-e2e-notice-conflict-retry.result }}
         run: |
           failures=""
+          blocked=""
           for item in \
             "lint=${LINT_RESULT}" \
             "typecheck=${TYPECHECK_RESULT}" \
             "build=${BUILD_RESULT}" \
             "check_admin_any_gate=${ANY_GATE_RESULT}" \
             "check_admin_api_boundary=${BOUNDARY_RESULT}" \
-            "test_contract=${CONTRACT_RESULT}" \
-            "test_e2e_admin_critical=${E2E_ADMIN_RESULT}" \
-            "test_e2e_notice_conflict_retry=${E2E_NOTICE_CONFLICT_RESULT}"; do
+            "test_contract=${CONTRACT_RESULT}"; do
             name="${item%%=*}"
             result="${item#*=}"
             if [ "${result}" != "success" ]; then
-              failures="${failures}\n- ${name} => ${result}"
+              failures="${failures}\n- primary: ${name} => ${result}"
             fi
           done
 
-          if [ -n "${failures}" ]; then
-            echo "[NO-GO] 배포 전 필수 체크리스트 실패:${failures}"
+          if [ "${CONTRACT_RESULT}" != "success" ]; then
+            if [ "${E2E_ADMIN_RESULT}" = "skipped" ]; then
+              blocked="${blocked}\n- blocked: test_e2e_admin_critical => skipped because test_contract failed"
+            elif [ "${E2E_ADMIN_RESULT}" != "success" ]; then
+              failures="${failures}\n- primary: test_e2e_admin_critical => ${E2E_ADMIN_RESULT}"
+            fi
+
+            if [ "${E2E_NOTICE_CONFLICT_RESULT}" = "skipped" ]; then
+              blocked="${blocked}\n- blocked: test_e2e_notice_conflict_retry => skipped because test_contract failed"
+            elif [ "${E2E_NOTICE_CONFLICT_RESULT}" != "success" ]; then
+              failures="${failures}\n- primary: test_e2e_notice_conflict_retry => ${E2E_NOTICE_CONFLICT_RESULT}"
+            fi
+          else
+            for item in \
+              "test_e2e_admin_critical=${E2E_ADMIN_RESULT}" \
+              "test_e2e_notice_conflict_retry=${E2E_NOTICE_CONFLICT_RESULT}"; do
+              name="${item%%=*}"
+              result="${item#*=}"
+              if [ "${result}" != "success" ]; then
+                failures="${failures}\n- primary: ${name} => ${result}"
+              fi
+            done
+          fi
+
+          if [ -n "${failures}${blocked}" ]; then
+            echo "[NO-GO] 배포 전 필수 체크리스트 실패:${failures}${blocked}"
             exit 1
           fi
 
