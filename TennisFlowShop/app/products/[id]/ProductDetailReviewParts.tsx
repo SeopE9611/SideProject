@@ -26,7 +26,7 @@ export function ProductReviewRatingStars({ rating }: ProductReviewRatingStarsPro
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
-          className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (rating || 5) ? "text-warning fill-current" : "fill-muted text-muted"}`}
+          className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (rating ?? 0) ? "text-warning fill-current" : "fill-transparent text-muted-foreground stroke-current"}`}
         />
       ))}
     </div>

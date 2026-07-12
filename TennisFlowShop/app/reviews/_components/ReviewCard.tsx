@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
+import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import {
   Eye,
   EyeOff,
@@ -39,7 +40,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const ReviewPhotoDialog = dynamic(() => import("@/app/reviews/_components/ReviewPhotoDialog"), {
   loading: () => null,
@@ -73,6 +74,7 @@ export default function ReviewCard({
   const [count, setCount] = useState<number>(item.helpfulCount ?? 0);
   const [open, setOpen] = useState(false); // 사진 Dialog
   const [busy, setBusy] = useState(false); // 카드 액션 로딩(토글/수정/삭제)
+  const { isAdminModeration, managedStatus, nextStatus } = getReviewManagedVisibilityStatus(item, isAdmin);
 
   // 수정
   const [editOpen, setEditOpen] = useState(false);
@@ -140,8 +142,12 @@ export default function ReviewCard({
         if (!res.ok) throw new Error("수정 실패");
       }
       editPhotoSession.markCommitted();
+      try {
+        await onMutate?.(); // 리스트 재검증
+      } catch (revalidateError) {
+        console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+      }
       showSuccessToast("리뷰를 수정했어요.");
-      onMutate?.(); // 리스트 재검증
       closeEdit();
       setBusy(false);
     } catch (e: any) {
@@ -197,24 +203,19 @@ export default function ReviewCard({
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
   const reqSeqRef = useRef(0); // 보낸 요청 시퀀스
   const abortRef = useRef<AbortController | null>(null); // 이전 요청 취소용
-  const nextIntentRef = useRef<boolean | null>(null); // 마지막 의도(켜둘지/꺼둘지)
+  const helpfulEligible = !item.ownedByMe && !isMasked && item.effectiveStatus !== "hidden";
 
-  // 낙관적 업데이트 적용 도우미
-  const applyOptimistic = (desired: boolean) => {
-    setVoted(desired);
-    setCount((c) => {
-      if (desired && !voted) return c + 1;
-      if (!desired && voted) return Math.max(0, c - 1);
-      return c; // 이미 그 상태면 변화 없음
-    });
-  };
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
   // 실제 요청 전송(멱등 desired 사용)
-  const sendIntent = async (desired: boolean) => {
+  const sendIntent = async (desired: boolean, previousVotedByMe: boolean, previousHelpfulCount: number) => {
     setPending(true);
     const mySeq = ++reqSeqRef.current;
 
-    // 이전 요청 있으면 취소 -? 뒤늦게 오는 응답이 상태를 덮지 않게
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
@@ -228,33 +229,24 @@ export default function ReviewCard({
           signal: ac.signal,
         },
       );
-      const j = await res.json();
+      const j = await res.json().catch(() => null);
 
-      // 오래된 응답이면 무시
       if (mySeq !== reqSeqRef.current) return;
 
-      if (!res.ok) throw new Error(j?.reason || "error");
+      if (!res.ok) throw new Error(j?.message || j?.reason || "도움돼요 처리에 실패했습니다.");
 
-      // 서버 "정답"으로 동기화
-      setVoted(Boolean(j.voted));
-      setCount(j.helpfulCount ?? 0);
+      setVoted(Boolean(j?.voted));
+      setCount(Math.max(0, Number(j?.helpfulCount ?? 0)));
     } catch (e: any) {
-      if (e?.name === "AbortError") return; // 취소는 조용히 무시
-      // 실패 시: 멱등 의도가 있으니 롤백 대신 화면을 현재 상태로 유지
-      // (원하면 여기서 토스트 추가 가능)
+      if (e?.name === "AbortError") return;
+      if (mySeq === reqSeqRef.current) {
+        setVoted(previousVotedByMe);
+        setCount(previousHelpfulCount);
+        showErrorToast(e?.message || "도움돼요 처리에 실패했습니다.");
+      }
     } finally {
-      // 최신 요청일 때만 pending 해제
       if (mySeq === reqSeqRef.current) {
         setPending(false);
-
-        // 큐에 "마지막 의도"가 남아 있고, 현재 상태와 다르면 한 번 더 보냄
-        const queued = nextIntentRef.current;
-        nextIntentRef.current = null;
-        if (queued !== null && queued !== voted) {
-          // 낙관적 반영 후 재요청
-          applyOptimistic(queued);
-          void sendIntent(queued);
-        }
       }
     }
   };
@@ -266,16 +258,15 @@ export default function ReviewCard({
       return;
     }
 
-    const desired = !voted;
-    // 이미 요청 중이면 "마지막 의도"만 갈아치우고 return
-    if (pending) {
-      nextIntentRef.current = desired;
-      return;
-    }
+    if (!helpfulEligible) return;
+    if (pending) return;
 
-    nextIntentRef.current = null; // 새로운 트랜잭션 시작
-    applyOptimistic(desired);
-    void sendIntent(desired);
+    const previousVotedByMe = Boolean(voted);
+    const previousHelpfulCount = count;
+    const desired = !previousVotedByMe;
+    setVoted(desired);
+    setCount(Math.max(0, previousHelpfulCount + (desired ? 1 : -1)));
+    void sendIntent(desired, previousVotedByMe, previousHelpfulCount);
   };
 
   return (
@@ -337,29 +328,28 @@ export default function ReviewCard({
                       e.stopPropagation();
                       try {
                         setBusy(true);
-                        const isAdminModeration = isAdmin && !item.ownedByMe;
-                        const currentStatus = isAdminModeration
-                          ? item.moderationStatus === "hidden" ? "hidden" : "visible"
-                          : item.status === "hidden" ? "hidden" : "visible";
-                        const next = currentStatus === "visible" ? "hidden" : "visible";
-                        if (isAdmin && !item.ownedByMe) {
+                        if (isAdminModeration) {
                           await adminMutator(`/api/admin/reviews/${item._id}`, {
                             method: "PATCH",
-                            body: JSON.stringify({ moderationStatus: next }),
+                            body: JSON.stringify({ moderationStatus: nextStatus }),
                           });
                         } else {
                           const res = await fetch(`/api/reviews/${item._id}`, {
                             method: "PATCH",
                             credentials: "include",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ status: next }),
+                            body: JSON.stringify({ status: nextStatus }),
                           });
                           if (!res.ok) throw new Error("상태 변경 실패");
                         }
+                        try {
+                          await onMutate?.(); // 리스트 재검증
+                        } catch (revalidateError) {
+                          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+                        }
                         showSuccessToast(
-                          next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
+                          nextStatus === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
                         );
-                        onMutate?.(); // 리스트 재검증
                       } catch (err: any) {
                         showErrorToast(err?.message || "상태 변경 중 오류");
                       } finally {
@@ -368,7 +358,7 @@ export default function ReviewCard({
                     }}
                     className="cursor-pointer"
                   >
-                    {item.status === "visible" ? (
+                    {managedStatus === "visible" ? (
                       <>
                         <EyeOff className="mr-2 h-4 w-4" />
                         비공개로 전환
@@ -408,8 +398,12 @@ export default function ReviewCard({
                           });
                           if (!res.ok) throw new Error("삭제 실패");
                         }
+                        try {
+                          await onMutate?.(); // 리스트 재검증
+                        } catch (revalidateError) {
+                          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+                        }
                         showSuccessToast("삭제했습니다.");
-                        onMutate?.(); // 리스트 재검증
                         setBusy(false);
                       } catch (err: any) {
                         setBusy(false);
@@ -506,17 +500,17 @@ export default function ReviewCard({
             size="sm"
             variant={voted ? "default" : "secondary"}
             onClick={onHelpful}
-            disabled={pending}
+            disabled={pending || !helpfulEligible}
             className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl px-4 font-medium sm:w-auto"
             aria-pressed={voted}
-            aria-label={`도움돼요 ${count ? `(${count})` : ""}`}
+            aria-label={item.ownedByMe ? "내 후기에는 도움돼요를 누를 수 없습니다." : `도움돼요 ${count ? `(${count})` : ""}`}
           >
             {pending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <ThumbsUp className="h-4 w-4 mr-2" />
             )}
-            도움돼요 {count ? `(${count})` : ""}
+            {item.ownedByMe ? "내 후기" : `도움돼요 ${count ? `(${count})` : ""}`}
           </Button>
 
           {/* 날짜 */}
@@ -579,7 +573,7 @@ export default function ReviewCard({
                       onClick={() => setEditForm((s) => ({ ...s, rating: i }))}
                     >
                       <Star
-                        className={`h-6 w-6 ${filled ? "text-warning fill-current stroke-current" : "stroke-muted-foreground"}`}
+                        className={`h-6 w-6 ${filled ? "text-warning fill-current stroke-current" : "fill-transparent text-muted-foreground stroke-current"}`}
                       />
                     </button>
                   );

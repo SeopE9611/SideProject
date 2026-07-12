@@ -25,6 +25,7 @@ import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
+import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -497,15 +498,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const handleToggleReviewVisibility = async (review: any) => {
     setBusyReviewId(String(review._id));
-    const isAdminModeration = isAdmin && !isMine(review);
-    const currentStatus = isAdminModeration
-      ? review.moderationStatus === "hidden"
-        ? "hidden"
-        : "visible"
-      : review.status === "hidden"
-        ? "hidden"
-        : "visible";
-    const next = currentStatus === "visible" ? "hidden" : "visible";
+    const { isAdminModeration, nextStatus } = getReviewManagedVisibilityStatus(
+      { ...review, ownedByMe: isMine(review) },
+      isAdmin,
+    );
 
     // 낙관적 업데이트
     if (isMine(review)) {
@@ -513,7 +509,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
         return {
           ...prev,
-          status: next,
+          status: nextStatus,
           ownedByMe: true,
           masked: false,
         };
@@ -525,10 +521,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
           String(r._id) === String(review._id)
             ? {
                 ...r,
-                status: next,
-                moderationStatus: next,
+                moderationStatus: nextStatus,
                 effectiveStatus:
-                  review.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
+                  review.authorStatus === "visible" && nextStatus === "visible" ? "visible" : "hidden",
                 masked: false,
               }
             : r,
@@ -541,7 +536,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       if (isAdmin && !isMine(review)) {
         await adminMutator(`/api/admin/reviews/${review._id}`, {
           method: "PATCH",
-          body: JSON.stringify({ moderationStatus: next }),
+          body: JSON.stringify({ moderationStatus: nextStatus }),
         });
       } else {
         const res = await fetch(`/api/reviews/${review._id}`, {
@@ -551,15 +546,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            status: next,
+            status: nextStatus,
           }),
         });
         if (!res.ok) throw new Error("상태 변경 실패");
       }
 
-      // 재검증
-      if (isMine(review)) await mutateMyReview();
-      else if (isAdmin) await mutateAdminReviews();
+      // 재검증은 상태 변경 성공과 분리합니다.
+      try {
+        if (isMine(review)) await mutateMyReview();
+        else if (isAdmin) await mutateAdminReviews();
+      } catch (revalidateError) {
+        console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+      }
 
       // 탭 유지 + 서버컴포넌트 리프레시
       const params = new URLSearchParams(searchParams.toString());
@@ -569,7 +568,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       });
       router.refresh();
 
-      showSuccessToast(next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
+      showSuccessToast(nextStatus === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
     } catch (err: any) {
       // 실패 시 되돌리기(재검증)
       if (isMine(review)) await mutateMyReview();
@@ -595,9 +594,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
         if (!res.ok) throw new Error("삭제 실패");
       }
 
-      // 재검증
-      if (isMine(review)) await mutateMyReview();
-      else if (isAdmin) await mutateAdminReviews();
+      // 재검증은 삭제 성공과 분리합니다.
+      try {
+        if (isMine(review)) await mutateMyReview();
+        else if (isAdmin) await mutateAdminReviews();
+      } catch (revalidateError) {
+        console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+      }
 
       // 탭 유지 + 서버컴포넌트 리프레시
       const params = new URLSearchParams(searchParams.toString());
@@ -609,9 +612,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
       showSuccessToast("삭제했습니다.");
     } catch (err: any) {
-      // 실패 시 복구(재검증으로 복원)
-      if (isMine(review)) await mutateMyReview();
-      else if (isAdmin) await mutateAdminReviews();
       showErrorToast(err?.message || "삭제 중 오류");
     } finally {
       setBusyReviewId(null);

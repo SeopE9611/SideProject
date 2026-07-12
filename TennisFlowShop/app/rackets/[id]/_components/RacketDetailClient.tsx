@@ -30,6 +30,7 @@ import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
+import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -1145,16 +1146,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                         onClick={async () => {
                                           if (!review?._id) return;
 
-                                          const isAdminModeration = isAdmin && !isMine(review);
-                                          const currentStatus = isAdminModeration
-                                            ? review?.moderationStatus === "hidden"
-                                              ? "hidden"
-                                              : "visible"
-                                            : review?.status === "hidden"
-                                              ? "hidden"
-                                              : "visible";
-                                          const nextStatus =
-                                            currentStatus === "hidden" ? "visible" : "hidden";
+                                          const { isAdminModeration, nextStatus } =
+                                            getReviewManagedVisibilityStatus(
+                                              { ...review, ownedByMe: isMine(review) },
+                                              isAdmin,
+                                            );
                                           setBusyReviewId(String(review._id));
 
                                           // 낙관적 업데이트
@@ -1177,7 +1173,6 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 String(r._id) === String(review._id)
                                                   ? {
                                                       ...r,
-                                                      status: nextStatus,
                                                       moderationStatus: nextStatus,
                                                       effectiveStatus:
                                                         review?.authorStatus === "visible" &&
@@ -1216,6 +1211,13 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                             }
                                             if (res && !res.ok) throw new Error("상태 변경 실패");
 
+                                            try {
+                                              if (isMine(review)) await mutateMyReview?.();
+                                              else if (isAdmin) await mutateAdminReviews?.();
+                                            } catch (revalidateError) {
+                                              console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+                                            }
+
                                             // 탭 유지 + 서버 리프레시
                                             const params = new URLSearchParams(
                                               searchParams.toString(),
@@ -1232,9 +1234,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 : "공개로 전환했어요.",
                                             );
                                           } catch (err: any) {
-                                            // 롤백(재검증)
-                                            if (isMine(review)) await mutateMyReview?.();
-                                            else if (isAdmin) await mutateAdminReviews?.();
+                                            try {
+                                              if (isMine(review)) await mutateMyReview?.();
+                                              else if (isAdmin) await mutateAdminReviews?.();
+                                            } catch (revalidateError) {
+                                              console.error("[reviews] failed to revalidate after failed mutation", revalidateError);
+                                            }
                                             showErrorToast(
                                               err?.message || "상태 변경에 실패했습니다.",
                                             );
@@ -1243,7 +1248,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                           }
                                         }}
                                       >
-                                        {review?.status === "hidden" ? (
+                                        {getReviewManagedVisibilityStatus(
+                                          { ...review, ownedByMe: isMine(review) },
+                                          isAdmin,
+                                        ).managedStatus === "hidden" ? (
                                           <>
                                             <Eye className="mr-2 h-4 w-4" />
                                             공개로 전환
@@ -1281,8 +1289,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                   },
                                                 );
 
-                                                // 재검증 + 탭 유지
-                                                await mutateAdminReviews?.();
+                                                try {
+                                                  await mutateAdminReviews?.();
+                                                } catch (revalidateError) {
+                                                  console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+                                                }
+                                                // 탭 유지
                                                 const params = new URLSearchParams(
                                                   searchParams.toString(),
                                                 );

@@ -102,7 +102,7 @@ export default function ReviewEditDialog({
                     onClick={() => onChangeForm((s) => ({ ...s, rating: i }))}
                   >
                     <Star
-                      className={`h-6 w-6 ${filled ? "text-warning fill-current stroke-current" : "stroke-muted-foreground"}`}
+                      className={`h-6 w-6 ${filled ? "text-warning fill-current stroke-current" : "fill-transparent text-muted-foreground stroke-current"}`}
                     />
                   </button>
                 );

@@ -82,7 +82,7 @@ export default function ReviewEditDialog({
                     aria-label={`별점 ${score}점`}
                   >
                     <Star
-                      className={`h-5 w-5 ${active ? "text-primary fill-primary" : "text-muted-foreground/40"}`}
+                      className={`h-5 w-5 ${active ? "text-warning fill-current stroke-current" : "fill-transparent text-muted-foreground stroke-current"}`}
                     />
                   </button>
                 );
