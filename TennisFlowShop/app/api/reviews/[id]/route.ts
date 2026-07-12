@@ -6,26 +6,7 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { deductPoints } from "@/lib/points.service";
 import { validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
-
-
-/** ---- 이미지 화이트리스트 ---- */
-const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
-const ALLOWED_PATH_PREFIXES = ["/storage/v1/object/public/tennis-images/"];
-
-const isAllowedHttpUrl = (v: unknown): v is string => {
-  if (typeof v !== "string") return false;
-  try {
-    const { protocol, hostname, pathname } = new URL(v);
-    const okProto = protocol === "https:" || protocol === "http:";
-    const okHost = ALLOWED_HOSTS.size ? ALLOWED_HOSTS.has(hostname) : true;
-    const okPath = ALLOWED_PATH_PREFIXES.length
-      ? ALLOWED_PATH_PREFIXES.some((p) => pathname.startsWith(p))
-      : true;
-    return okProto && okHost && okPath;
-  } catch {
-    return false;
-  }
-};
+import { diffRemovedReviewPhotos, isAllowedReviewPhotoUrl, removeReviewPhotosBestEffort } from "@/lib/reviews/review-photo-storage.server";
 
 // 상품 별점/리뷰수 집계 보정 (status:'visible'만 집계)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -49,24 +30,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const _id = new ObjectId(id);
 
   const me = new ObjectId(subStr);
-  const role = payload?.role;
-
   const doc = await db
     .collection("reviews")
     .findOne(
       { _id, isDeleted: { $ne: true } },
-      { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } },
+      { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1, moderationStatus: 1 } },
     );
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
-  const isAdmin =
-    role === "admin" ||
-    role === "ADMIN" ||
-    (payload as any)?.isAdmin === true ||
-    (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes("admin"));
-
-  if (!isOwner && !isAdmin) return NextResponse.json({ message: "forbidden" }, { status: 403 });
+  if (!isOwner) return NextResponse.json({ message: "forbidden" }, { status: 403 });
 
   // 깨진 JSON이면 throw → 500 방지
   let raw: unknown;
@@ -126,7 +99,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     $set.status = body.visibility === "public" ? "visible" : "hidden";
   }
   if (Array.isArray(body.photos)) {
-    const cleanedList = body.photos.filter(isAllowedHttpUrl).map((s: string) => s.trim());
+    const cleanedList = body.photos.filter(isAllowedReviewPhotoUrl).map((s: string) => s.trim());
     if (cleanedList.length !== body.photos.length) {
       return NextResponse.json(
         { ok: false, reason: "invalidPhotos", message: "invalidPhotos" },
@@ -140,6 +113,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ message: "no changes" }, { status: 400 });
 
   await db.collection("reviews").updateOne({ _id }, { $set });
+  if (Array.isArray($set.photos)) {
+    await removeReviewPhotosBestEffort(diffRemovedReviewPhotos(doc.photos, $set.photos), "PATCH /api/reviews/[id]");
+  }
 
   // 상품 집계 갱신
   // visibility로 status가 바뀐 경우도 집계에 영향(visible만 집계)
@@ -175,12 +151,11 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
 
   const doc = await db
     .collection("reviews")
-    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1 } });
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, racketId: 1, relatedProductIds: 1, relatedRacketIds: 1, orderId: 1, rentalId: 1, serviceApplicationId: 1, applicationId: 1, reviewContext: 1, reviewType: 1, service: 1, status: 1, photos: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
-  const isAdmin = payload?.role === "admin";
-  if (!isOwner && !isAdmin) return NextResponse.json({ message: "forbidden" }, { status: 403 });
+  if (!isOwner) return NextResponse.json({ message: "forbidden" }, { status: 403 });
 
   await db
     .collection("reviews")
@@ -220,6 +195,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   await refreshReviewSummaryCachesForReviewSafely(db, doc, "DELETE /api/reviews/[id]");
+  await removeReviewPhotosBestEffort(Array.isArray(doc.photos) ? doc.photos : [], "DELETE /api/reviews/[id]");
 
   return NextResponse.json({ ok: true });
 }
@@ -264,12 +240,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const me = subStr;
   const isOwner = String(review.userId) === me;
-  const isAdmin =
-    payload?.role === "admin" ||
-    payload?.role === "ADMIN" ||
-    (payload as any)?.isAdmin === true ||
-    (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes("admin"));
-  if (!isOwner && !isAdmin) return NextResponse.json({ message: "forbidden" }, { status: 403 });
+  if (!isOwner) return NextResponse.json({ message: "forbidden" }, { status: 403 });
 
   const user = await db
     .collection("users")

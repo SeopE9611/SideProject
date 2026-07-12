@@ -5,6 +5,7 @@ import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
 import { buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
+import { isAllowedReviewPhotoUrl } from "@/lib/reviews/review-photo-storage.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import {
   findRequestedCanonicalTarget,
@@ -25,13 +26,6 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 
-/** ---- 이미지 화이트리스트 ----
- * 호스트/경로를 여기에 등록합니다.
- * 필요 시 여러 항목 추가 가능.
- */
-const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
-const ALLOWED_PATH_PREFIXES = ["/storage/v1/object/public/tennis-images/"];
-
 function isDuplicateKeyError(error: unknown): boolean {
   return Boolean(
     error &&
@@ -50,22 +44,6 @@ function duplicateReviewResponse() {
     { status: 409 },
   );
 }
-
-/** http/https + 화이트리스트(host, path) 체크 */
-const isAllowedHttpUrl = (v: unknown): v is string => {
-  if (typeof v !== "string") return false;
-  try {
-    const { protocol, hostname, pathname } = new URL(v);
-    const okProto = protocol === "https:" || protocol === "http:";
-    const okHost = ALLOWED_HOSTS.size ? ALLOWED_HOSTS.has(hostname) : true;
-    const okPath = ALLOWED_PATH_PREFIXES.length
-      ? ALLOWED_PATH_PREFIXES.some((p) => pathname.startsWith(p))
-      : true;
-    return okProto && okHost && okPath;
-  } catch {
-    return false;
-  }
-};
 
 export async function POST(req: Request) {
   const token = (await cookies()).get("accessToken")?.value;
@@ -158,7 +136,7 @@ export async function POST(req: Request) {
 
   // 사진 정제 (화이트리스트)
   const cleanedList = inputValidation.value.photos
-    .filter(isAllowedHttpUrl)
+    .filter(isAllowedReviewPhotoUrl)
     .map((s: string) => s.trim());
   if (cleanedList.length !== inputValidation.value.photos.length) {
     return NextResponse.json(
@@ -272,7 +250,7 @@ export async function POST(req: Request) {
       productIdStr,
     );
     const canonicalItemId = getCanonicalTargetItemId(orderCanonicalTarget);
-    if (!orderCanonicalTarget || !canonicalItemId || canonicalItemId !== productIdStr) {
+    if (!orderCanonicalTarget || !canonicalItemId || !findRequestedCanonicalTarget(orderTarget?.targetBundle, productIdStr)) {
       return NextResponse.json(
         {
           ok: false,

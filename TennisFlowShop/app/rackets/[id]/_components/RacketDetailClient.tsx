@@ -24,6 +24,7 @@ import {
   usedBadgeMeta,
 } from "@/lib/badge-style";
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
@@ -332,16 +333,25 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     }
 
     try {
-      const res = await fetch(`/api/reviews/${editing._id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rating,
-          content,
-          photos: editForm.photos,
-        }),
+      const patchBody = JSON.stringify({
+        rating,
+        content,
+        photos: editForm.photos,
       });
+      const res = isAdmin && !isMine(editing)
+        ? { ok: true }
+        : await fetch(`/api/reviews/${editing._id}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: patchBody,
+          });
+      if (isAdmin && !isMine(editing)) {
+        await adminMutator(`/api/admin/reviews/${editing._id}`, {
+          method: "PATCH",
+          body: patchBody,
+        });
+      }
       if (!res.ok) {
         let err: any = null;
         try {
@@ -1077,16 +1087,24 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                           }
 
                                           try {
-                                            const res = await fetch(`/api/reviews/${review._id}`, {
-                                              method: "PATCH",
-                                              credentials: "include",
-                                              headers: {
-                                                "Content-Type": "application/json",
-                                              },
-                                              body: JSON.stringify({
-                                                status: nextStatus,
-                                              }),
-                                            });
+                                            const res = isAdmin && !isMine(review)
+                                              ? { ok: true }
+                                              : await fetch(`/api/reviews/${review._id}`, {
+                                                  method: "PATCH",
+                                                  credentials: "include",
+                                                  headers: {
+                                                    "Content-Type": "application/json",
+                                                  },
+                                                  body: JSON.stringify({
+                                                    status: nextStatus,
+                                                  }),
+                                                });
+                                            if (isAdmin && !isMine(review)) {
+                                              await adminMutator(`/api/admin/reviews/${review._id}`, {
+                                                method: "PATCH",
+                                                body: JSON.stringify({ status: nextStatus }),
+                                              });
+                                            }
                                             if (!res.ok) throw new Error("상태 변경 실패");
 
                                             // 탭 유지 + 서버 리프레시
@@ -1147,13 +1165,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                                               setBusyReviewId(String(review._id));
                                               try {
-                                                const res = await fetch(
-                                                  `/api/reviews/${review._id}`,
+                                                const res = await adminMutator(
+                                                  `/api/admin/reviews/${review._id}`,
                                                   {
                                                     method: "DELETE",
-                                                    credentials: "include",
                                                   },
-                                                );
+                                                ).then(() => ({ ok: true }));
                                                 if (!res.ok) throw new Error("삭제 실패");
 
                                                 // 재검증 + 탭 유지

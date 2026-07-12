@@ -148,17 +148,15 @@ export async function GET(req: Request) {
         { headers: { "Cache-Control": "no-store" } },
       );
     }
-    const already = await db.collection("reviews").findOne({
-      userId,
-      rentalId: { $in: [rentalIdObj, rentalId] },
-      isDeleted: { $ne: true },
-    });
-    if (already) {
+    const rentalCanonicalTarget = rentalTarget?.targetBundle?.targets?.[0] ?? null;
+    const rentalBlockReason = getReviewSubmissionBlockReason(rentalCanonicalTarget);
+    if (rentalBlockReason) {
       return NextResponse.json(
         eligibilityPayload({
           eligible: false,
-          reason: "already",
+          reason: rentalBlockReason,
           bundle: rentalTarget?.targetBundle,
+          target: rentalCanonicalTarget,
           subjectType: "rental",
           subjectId: rentalId,
           suggestedRentalId: rentalId,
@@ -240,30 +238,11 @@ export async function GET(req: Request) {
         );
       }
       if (orderTarget?.reviewContext === "product_stringing") {
-        const already = await db.collection("reviews").findOne({
-          userId,
-          isDeleted: { $ne: true },
-          $or: [
-            { orderId: { $in: [orderIdObj, orderId] }, reviewContext: "product_stringing" },
-            ...(orderTarget.serviceApplicationId &&
-            ObjectId.isValid(orderTarget.serviceApplicationId)
-              ? [
-                  {
-                    serviceApplicationId: {
-                      $in: [
-                        new ObjectId(orderTarget.serviceApplicationId),
-                        orderTarget.serviceApplicationId,
-                      ],
-                    },
-                  },
-                ]
-              : []),
-          ],
-        });
+        const blockReason = getReviewSubmissionBlockReason(requestedTarget);
         return NextResponse.json(
           eligibilityPayload({
-            eligible: !already,
-            reason: already ? "already" : null,
+            eligible: !blockReason,
+            reason: blockReason,
             bundle: orderTarget?.targetBundle,
             target: requestedTarget,
             subjectType: "order",
@@ -276,18 +255,12 @@ export async function GET(req: Request) {
         );
       }
 
-      // 해당 (user, product, order)로 이미 작성했는지
-      const already = await db.collection("reviews").findOne({
-        userId,
-        productId: productIdObj,
-        orderId: orderIdObj,
-        isDeleted: { $ne: true },
-      });
-      if (already)
+      const blockReason = getReviewSubmissionBlockReason(requestedTarget);
+      if (blockReason)
         return NextResponse.json(
           eligibilityPayload({
             eligible: false,
-            reason: "already",
+            reason: blockReason,
             bundle: orderTarget?.targetBundle,
             target: requestedTarget,
             subjectType: "order",
@@ -371,12 +344,14 @@ export async function GET(req: Request) {
           String(integratedOrder._id),
           productId,
         );
+        const targetItem = pickBundleTarget(target?.targetBundle, productId);
+        const blockReason = getReviewSubmissionBlockReason(targetItem);
         return NextResponse.json(
           eligibilityPayload({
-            eligible: true,
-            reason: null,
+            eligible: !blockReason,
+            reason: blockReason,
             bundle: target?.targetBundle,
-            target: pickBundleTarget(target?.targetBundle, productId),
+            target: targetItem,
             subjectType: "order",
             subjectId: String(integratedOrder._id),
             suggestedOrderId: String(integratedOrder._id),
@@ -398,12 +373,14 @@ export async function GET(req: Request) {
       String(candidate._id),
       productId,
     );
+    const targetItem = pickBundleTarget(candidateTarget?.targetBundle, productId);
+    const blockReason = getReviewSubmissionBlockReason(targetItem);
     return NextResponse.json(
       eligibilityPayload({
-        eligible: true,
-        reason: null,
+        eligible: !blockReason,
+        reason: blockReason,
         bundle: candidateTarget?.targetBundle,
-        target: pickBundleTarget(candidateTarget?.targetBundle, productId),
+        target: targetItem,
         subjectType: "order",
         subjectId: String(candidate._id),
         suggestedOrderId: String(candidate._id),
@@ -437,12 +414,14 @@ export async function GET(req: Request) {
     }
     const orderTarget = await resolveOrderReviewTarget(db, userId, orderId);
     if (orderTarget?.reviewContext === "product_stringing") {
+      const targetItem = pickBundleTarget(orderTarget?.targetBundle);
+      const blockReason = getReviewSubmissionBlockReason(targetItem);
       return NextResponse.json(
         eligibilityPayload({
-          eligible: true,
-          reason: null,
+          eligible: !blockReason,
+          reason: blockReason,
           bundle: orderTarget?.targetBundle,
-          target: pickBundleTarget(orderTarget?.targetBundle),
+          target: targetItem,
           subjectType: "order",
           subjectId: orderId,
           suggestedProductId: orderTarget.productId,

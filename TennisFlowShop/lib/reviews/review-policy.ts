@@ -106,7 +106,9 @@ export function targetMatchesRequestedItem(
   if (!target || !requested) return false;
   return (
     cleanCanonicalId(target.primaryProductId) === requested ||
-    cleanCanonicalId(target.primaryRacketId) === requested
+    cleanCanonicalId(target.primaryRacketId) === requested ||
+    (target.relatedProductIds ?? []).some((id) => cleanCanonicalId(id) === requested) ||
+    (target.relatedRacketIds ?? []).some((id) => cleanCanonicalId(id) === requested)
   );
 }
 
