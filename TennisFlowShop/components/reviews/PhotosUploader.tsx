@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast } from "@/lib/toast";
-import { AlertCircle, ImagePlus, Loader2, X } from "lucide-react";
+import { AlertCircle, ImagePlus, Loader2, UploadCloud, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -30,6 +30,7 @@ type Props = {
    * - 'none' : 업로드 버튼만 표시 (미리보기 전부 숨김)
    */
   previewMode?: "all" | "queue" | "none";
+  variant?: "button" | "dropzone";
 };
 
 export default function PhotosUploader({
@@ -42,6 +43,7 @@ export default function PhotosUploader({
   uploadSessionId,
   disabled = false,
   previewMode = "all",
+  variant = "button",
 }: Props) {
   // Supabase Storage key는 ':' 같은 특수문자를 허용하지 않아 React useId() 값을 경로에 쓰면
   // 400 Invalid key가 발생 -> 안전한 문자(영문/숫자/_, -)만으로 prefix를 생성.
@@ -58,6 +60,7 @@ export default function PhotosUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [isDragActive, setIsDragActive] = useState(false);
   const queueIdPrefix = queueIdPrefixRef.current!;
   const queueIdRef = useRef(0);
   const queueRef = useRef<QueueItem[]>([]);
@@ -224,13 +227,35 @@ export default function PhotosUploader({
     };
   }, []);
 
+  const picker = variant === "dropzone" ? (
+    <div
+      role="button"
+      tabIndex={uploadBlocked || !hasRoom ? -1 : 0}
+      aria-disabled={uploadBlocked || !hasRoom}
+      onClick={onPick}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(); } }}
+      onDragEnter={(e) => { e.preventDefault(); if (!uploadBlocked && hasRoom) setIsDragActive(true); }}
+      onDragOver={(e) => { e.preventDefault(); }}
+      onDragLeave={(e) => { e.preventDefault(); setIsDragActive(false); }}
+      onDrop={(e) => { e.preventDefault(); setIsDragActive(false); if (!uploadBlocked && hasRoom) void handleFiles(e.dataTransfer.files); }}
+      onPaste={(e) => { if (!uploadBlocked && hasRoom) void handleFiles(e.clipboardData.files); }}
+      className={`flex min-h-36 flex-col items-center justify-center rounded-panel border border-dashed p-5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isDragActive ? "border-brand-highlight bg-brand-highlight-muted" : "border-border bg-background"} ${uploadBlocked || !hasRoom ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+    >
+      {isUploading ? <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /> : <UploadCloud className="h-7 w-7 text-muted-foreground" />}
+      <p className="mt-2 text-ui-body-sm font-semibold text-foreground">{isUploading ? "사진을 업로드하고 있어요" : "사진을 끌어오거나 눌러서 추가"}</p>
+      <p className="mt-1 text-ui-label text-muted-foreground">남은 업로드 {Math.max(0, max - totalCount)}장 · 10MB 이하 이미지</p>
+    </div>
+  ) : (
+    <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || uploadBlocked}>
+      <ImagePlus className="h-4 w-4 mr-2" />
+      이미지 추가 ({totalCount}/{max})
+    </Button>
+  );
+
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || uploadBlocked}>
-          <ImagePlus className="h-4 w-4 mr-2" />
-          이미지 추가 ({totalCount}/{max})
-        </Button>
+      <div className={variant === "dropzone" ? "space-y-2" : "flex items-center gap-2"}>
+        {picker}
         <input
           ref={inputRef}
           type="file"
@@ -276,9 +301,9 @@ export default function PhotosUploader({
                   height={160}
                   className="object-cover w-full h-24"
                 />
-                <div className="absolute inset-0 bg-overlay/35 flex items-center justify-center">
+                <div className="absolute inset-0 bg-overlay/45 flex items-center justify-center">
                   <Loader2
-                    className="h-5 w-5 animate-spin text-foreground"
+                    className="h-5 w-5 animate-spin text-surface-inverse-foreground"
                     aria-label="업로드 중"
                   />
                 </div>
@@ -301,7 +326,7 @@ export default function PhotosUploader({
                   type="button"
                   onClick={() => removeAt(i)}
                   disabled={disabled}
-                  className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/65 text-surface-inverse-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                   aria-label="삭제"
                   title="삭제"
                 >
