@@ -123,8 +123,11 @@ export default function RacketCareRegistrationDialog(props: {
     if (firstField) document.getElementById(firstField)?.focus();
   }, [errors, open, step]);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-h-[min(720px,calc(100dvh-2rem))] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(nextOpen) => {
+      if (!nextOpen && saving) return;
+      setOpen(nextOpen);
+    }}>
+      <DialogContent className="max-h-[min(720px,calc(100dvh-2rem))] overflow-y-auto" onEscapeKeyDown={(event) => { if (saving) event.preventDefault(); }} onPointerDownOutside={(event) => { if (saving) event.preventDefault(); }}>
         <DialogHeader>
           <DialogTitle>{editing ? "라켓 정보 수정" : "라켓 등록"}</DialogTitle>
           <div className="mt-3 grid gap-2 bp-sm:grid-cols-3">
@@ -157,7 +160,7 @@ export default function RacketCareRegistrationDialog(props: {
                 setStep(2);
               }}
             >
-              <span><span className="block font-semibold">기존 정보에서 가져오기</span><span className="mt-1 block text-ui-label text-muted-foreground">{importCandidates.length > 0 ? "프로필과 완료 이력을 활용합니다." : "가져올 정보가 없습니다."}</span></span>
+              <span><span className="block font-semibold">기존 정보에서 가져오기</span><span className="mt-1 block text-ui-label opacity-70">{importCandidates.length > 0 ? "프로필과 완료 이력을 활용합니다." : "가져올 정보가 없습니다."}</span></span>
             </Button>
             <Button
               variant={mode === "manual" ? "highlight" : "outline"}
@@ -169,7 +172,7 @@ export default function RacketCareRegistrationDialog(props: {
                 setStep(2);
               }}
             >
-              <span><span className="block font-semibold">직접 입력하기</span><span className="mt-1 block text-ui-label text-muted-foreground">라켓과 관리 기준을 직접 작성합니다.</span></span>
+              <span><span className="block font-semibold">직접 입력하기</span><span className="mt-1 block text-ui-label opacity-70">라켓과 관리 기준을 직접 작성합니다.</span></span>
             </Button>
           </div>
         ) : null}
