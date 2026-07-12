@@ -14,6 +14,7 @@ import type {
 } from "@/app/products/recommend/_types";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -34,6 +35,13 @@ const answerLabels = {
   freq: "플레이 빈도",
   budget: "예산 성향",
 } as const;
+const freqLabels: Record<string, string> = { monthly: "월 1~2회", weekly: "주 1회", biweekly_plus: "주 2~3회", heavy: "주 4회 이상" };
+type CareContext = {
+  nickname: string;
+  racket: { brand?: string | null; model?: string | null };
+  playFrequency: string;
+  stringSnapshot: { name?: string | null; gauge?: string | null; tensionMain?: string | null; tensionCross?: string | null } | null;
+};
 function ntrpToRecommendLevel(level: string): StringRecommendAnswers["level"] {
   if (level === "1.0" || level === "1.5") return "beginner";
   if (level === "2.0" || level === "2.5") return "novice";
@@ -57,17 +65,24 @@ export default function StringRecommendClient() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [productsError, setProductsError] = useState<string | null>(null);
   const [careItemId, setCareItemId] = useState<string | null>(null);
+  const [careContext, setCareContext] = useState<CareContext | null>(null);
 
 
   useEffect(() => {
     if (!rawCareItemId) {
       setCareItemId(null);
+      setCareContext(null);
       return;
     }
     let ignore = false;
     const verify = async () => {
       const response = await fetch(`/api/users/me/racket-care/${rawCareItemId}`, { credentials: "include" });
-      if (!ignore) setCareItemId(response.ok ? rawCareItemId : null);
+      const data: unknown = response.ok ? await response.json().catch(() => null) : null;
+      const item = data && typeof data === "object" ? (data as { item?: CareContext }).item : null;
+      if (!ignore) {
+        setCareItemId(response.ok ? rawCareItemId : null);
+        setCareContext(item ?? null);
+      }
     };
     void verify();
     return () => {
@@ -148,6 +163,20 @@ export default function StringRecommendClient() {
       }),
     [answers],
   );
+  const careSummary = useMemo(() => {
+    if (!careContext) return [];
+    const racketName = [careContext.racket?.brand, careContext.racket?.model].map((value) => String(value ?? "").trim()).filter(Boolean).join(" ");
+    const tension = careContext.stringSnapshot?.tensionMain || careContext.stringSnapshot?.tensionCross
+      ? `${careContext.stringSnapshot?.tensionMain ?? "-"} / ${careContext.stringSnapshot?.tensionCross ?? "-"}LB`
+      : "";
+    return [
+      { label: "라켓", value: racketName || careContext.nickname },
+      { label: "플레이 빈도", value: freqLabels[careContext.playFrequency] ?? careContext.playFrequency },
+      { label: "최근 스트링", value: careContext.stringSnapshot?.name ?? "" },
+      { label: "게이지", value: careContext.stringSnapshot?.gauge ?? "" },
+      { label: "텐션", value: tension },
+    ].filter((item) => item.value);
+  }, [careContext]);
 
   function handleSelect(id: RecommendQuestionId, value: string) {
     setAnswers((prev) => ({
@@ -176,17 +205,31 @@ export default function StringRecommendClient() {
     <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7">
       <PublicSurface variant="muted" padding="lg" className="rounded-2xl">
         <SectionHeader
-          title="스트링 추천 도우미"
+          eyebrow={<Badge variant="signal">RACKET CARE STRING MATCH</Badge>}
+          title={careContext ? "내 라켓에 맞는 스트링 추천" : "스트링 추천 도우미"}
           description={
             <div className="space-y-2 break-keep leading-relaxed">
-              <p>간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 안내해드릴게요.</p>
+              <p>
+                {careContext
+                  ? "라켓 케어에 등록한 정보와 플레이 빈도를 바탕으로 스트링 선택 부담을 줄여드릴게요."
+                  : "간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 안내해드릴게요."}
+              </p>
               <p className="text-ui-body-sm">
-                추천 결과는 선택을 돕기 위한 참고 정보이며, 실제 텐션과 세팅은 라켓 상태와 사용
+                최근 교체 이력과 텐션 정보가 있다면 함께 참고하며, 실제 세팅은 라켓 상태와 사용
                 습관에 따라 달라질 수 있어요.
               </p>
             </div>
           }
         />
+        {careSummary.length > 0 ? (
+          <div className="mt-5 flex flex-wrap gap-2 rounded-xl border border-border/80 bg-card/70 p-3">
+            {careSummary.map((item) => (
+              <Badge key={item.label} variant="outline" wrap="normal" className="bg-background/80">
+                {item.label}: {item.value}
+              </Badge>
+            ))}
+          </div>
+        ) : null}
       </PublicSurface>
       <Card className="sticky top-16 z-30 rounded-2xl border border-border/80 bg-card/95 shadow-sm backdrop-blur md:top-20">
         <CardContent className="p-3.5 sm:p-4 md:p-5">
@@ -243,7 +286,7 @@ export default function StringRecommendClient() {
       {hasSubmitted ? (
         <Card className="rounded-2xl border-primary/30 bg-muted/30">
           <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-4">
-            <CardTitle className="break-keep text-ui-section-title">선택한 조건</CardTitle>
+            <CardTitle className="break-keep text-ui-section-title">추천에 반영한 조건</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 p-5 pt-0 text-ui-body-sm sm:p-6 sm:pt-0">
             {selectedSummary.map((item) => (
@@ -271,7 +314,7 @@ export default function StringRecommendClient() {
         <Card className="rounded-2xl">
           <CardContent className="p-5 sm:p-6">
             <p className="break-keep text-ui-body-sm text-muted-foreground">
-              조건에 맞는 추천 상품을 찾지 못했어요.
+              지금 조건에 딱 맞는 추천 상품을 찾지 못했어요. 조건을 조금 바꾸거나 전체 스트링을 확인해보세요.
             </p>
             <Button asChild variant="outline" className="mt-3 w-full sm:w-auto" type="button">
               <Link href="/products?from=apply">전체 스트링 보기</Link>

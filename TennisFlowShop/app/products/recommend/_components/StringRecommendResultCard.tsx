@@ -31,9 +31,14 @@ export default function StringRecommendResultCard({
   const primaryGauge = product.gauge || product.gaugeOptions?.[0];
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden rounded-2xl border-border/80">
+    <Card className="flex h-full flex-col overflow-hidden rounded-2xl border-border/80 bg-card shadow-soft">
       <CardHeader className="space-y-3 p-4 sm:p-5">
-        <Badge className="w-fit shrink-0">TOP {rank}</Badge>
+        <div className="flex items-center justify-between gap-2">
+          <Badge variant={rank === 1 ? "signal" : "secondary"} className="shrink-0">추천 {rank}순위</Badge>
+          {careItemId ? (
+            <span className="break-keep text-ui-label text-muted-foreground">라켓 케어 기준</span>
+          ) : null}
+        </div>
         <div className="relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-muted">
           {product.image ? (
             <Image src={product.image} alt={product.name} fill className="object-cover" />
@@ -85,16 +90,19 @@ export default function StringRecommendResultCard({
             </Badge>
           ))}
         </div>
-        <ul className="list-disc space-y-1 pl-5 text-ui-body-sm leading-relaxed text-muted-foreground">
-          {result.reasons.map((reason) => (
-            <li key={reason} className="break-keep">
-              {reason}
-            </li>
-          ))}
-        </ul>
+        <div className="rounded-xl border border-border bg-muted/30 p-3">
+          <p className="break-keep text-ui-body-sm font-medium">왜 이 스트링을 추천하나요?</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-ui-body-sm leading-relaxed text-muted-foreground">
+            {result.reasons.map((reason) => (
+              <li key={reason} className="break-keep">
+                {reason}
+              </li>
+            ))}
+          </ul>
+        </div>
         {result.matchSummary && result.matchSummary.length > 0 ? (
           <div className="rounded-xl border border-border bg-background p-3 text-ui-body-sm leading-relaxed">
-            <p className="break-keep font-medium">추천 기준</p>
+            <p className="break-keep font-medium">반영된 선택</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {result.matchSummary.map((item) => (
                 <Badge
@@ -122,7 +130,7 @@ export default function StringRecommendResultCard({
         <div className="mt-1 w-full space-y-2">
           <Button asChild className="min-h-10 w-full overflow-hidden whitespace-nowrap">
             <Link href={productHref}>
-              <span className="min-w-0 truncate">교체서비스 신청하기</span>
+              <span className="min-w-0 truncate">이 스트링으로 교체 신청하기</span>
             </Link>
           </Button>
           <Button
@@ -136,7 +144,7 @@ export default function StringRecommendResultCard({
           </Button>
         </div>
         <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
-          상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서 진행할 수 있어요.
+          상세 페이지에서 재고와 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서 진행할 수 있어요.
         </p>
       </CardFooter>
     </Card>
