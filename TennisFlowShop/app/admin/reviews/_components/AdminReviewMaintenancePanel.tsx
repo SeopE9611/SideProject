@@ -225,8 +225,8 @@ export default function AdminReviewMaintenancePanel() {
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <span className="font-medium">후기 요약 재집계</span> — 각 상품의 리뷰 평점 평균과 개수를
-              다시 계산하여 상품 문서의 요약 필드를 갱신합니다.
+              <span className="font-medium">후기 요약 재집계</span> — 상품과 라켓의 공개 후기 평점·개수를 다시 계산하여
+              목록용 후기 요약 캐시를 갱신합니다.
             </div>
           </div>
         </div>

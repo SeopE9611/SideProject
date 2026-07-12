@@ -75,7 +75,7 @@ function useRacketAvailability(id: string) {
   const qty = Number(data?.quantity ?? 1);
   const count = Number(data?.count ?? 0);
 
-  const availRaw = (data as any)?.available;
+  const availRaw = data?.available;
   const avail = Number.isFinite(availRaw)
     ? Math.max(0, Number(availRaw))
     : Math.max(0, qty - count);
@@ -189,10 +189,10 @@ const RacketCard = React.memo(
       : undefined;
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
     const ratingAvg = Number(racket.ratingAvg ?? racket.ratingAverage ?? 0);
-    const ratingCount = Number(racket.ratingCount ?? racket.reviewCount ?? 0);
+    const ratingCount = Number(racket.reviewCount ?? racket.ratingCount ?? 0);
     const ratingBadge = (
       <div className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-ui-label text-muted-foreground">
-        <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
+        <Star className="h-3.5 w-3.5 shrink-0 fill-current text-warning" />
         <span className="tabular-nums text-foreground">{Number.isFinite(ratingAvg) ? ratingAvg.toFixed(1) : "0.0"}</span>
         <span className="tabular-nums">({Number.isFinite(ratingCount) ? Math.max(0, ratingCount) : 0})</span>
       </div>

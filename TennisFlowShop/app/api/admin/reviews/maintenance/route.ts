@@ -70,9 +70,11 @@ export async function POST(req: Request) {
       result.rebuildSummary && typeof result.rebuildSummary === "object"
         ? result.rebuildSummary
         : {};
-    const affectedCount =
-      Number((dedupResult as any).affectedCount ?? 0) +
-      Number((rebuildResult as any).affectedCount ?? 0);
+    const dedupAffectedCount = Number((dedupResult as any).softDeleted ?? (dedupResult as any).affectedCount ?? 0);
+    const rebuildAffectedCount =
+      Number((rebuildResult as any).productsUpdated ?? 0) +
+      Number((rebuildResult as any).racketsUpdated ?? 0);
+    const affectedCount = dedupAffectedCount + rebuildAffectedCount;
     await appendAdminAudit(
       guard.db,
       {
@@ -103,6 +105,11 @@ export async function POST(req: Request) {
             criteria: { lockKey: "reviews_maintenance" },
             resultKeys: Object.keys(result),
             rebuildSummary: result.rebuildSummary ?? null,
+            productsUpdated: Number((rebuildResult as any).productsUpdated ?? 0),
+            racketsUpdated: Number((rebuildResult as any).racketsUpdated ?? 0),
+            productTargets: Number((rebuildResult as any).productTargets ?? 0),
+            racketTargets: Number((rebuildResult as any).racketTargets ?? 0),
+            reviewsScanned: Number((rebuildResult as any).reviewsScanned ?? 0),
           },
         },
       },
@@ -159,7 +166,7 @@ export async function DELETE(req: Request) {
     {
       type: "review.maintenance.delete",
       actorId: guard.admin._id,
-      message: "리뷰 maintenance 락 강제 해제",
+      message: "후기 maintenance 락 강제 해제",
       diff: {
         targetType: "reviewMaintenance",
         targetScope: "reviews.maintenance",

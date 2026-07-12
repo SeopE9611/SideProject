@@ -168,21 +168,22 @@ export async function GET(req: Request) {
   // _id는 제거하고 id만 내려주기(깔끔)
   const items = docs.map((r: any) => {
     const { _id, ...rest } = r;
+    const parsedRatingAverage = Number(rest.ratingAvg ?? rest.ratingAverage ?? 0);
+    const normalizedRatingAverage = Number.isFinite(parsedRatingAverage)
+      ? Math.max(0, parsedRatingAverage)
+      : 0;
+    const parsedReviewCount = Number(rest.reviewCount ?? rest.ratingCount ?? 0);
+    const normalizedReviewCount = Number.isFinite(parsedReviewCount)
+      ? Math.max(0, Math.trunc(parsedReviewCount))
+      : 0;
+
     return {
       ...rest,
-      ratingAvg: Number.isFinite(Number((rest as any).ratingAvg ?? (rest as any).ratingAverage))
-        ? Number((rest as any).ratingAvg ?? (rest as any).ratingAverage)
-        : 0,
-      ratingAverage: Number.isFinite(Number((rest as any).ratingAvg ?? (rest as any).ratingAverage))
-        ? Number((rest as any).ratingAvg ?? (rest as any).ratingAverage)
-        : 0,
-      ratingCount: Number.isFinite(Number((rest as any).ratingCount))
-        ? Math.max(0, Number((rest as any).ratingCount))
-        : 0,
-      reviewCount: Number.isFinite(Number((rest as any).reviewCount ?? (rest as any).ratingCount))
-        ? Math.max(0, Number((rest as any).reviewCount ?? (rest as any).ratingCount))
-        : 0,
-      marketing: normalizeRacketMarketing((rest as any).marketing),
+      ratingAvg: normalizedRatingAverage,
+      ratingAverage: normalizedRatingAverage,
+      ratingCount: normalizedReviewCount,
+      reviewCount: normalizedReviewCount,
+      marketing: normalizeRacketMarketing(rest.marketing),
       id: String(_id),
     };
   });
