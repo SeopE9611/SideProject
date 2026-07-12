@@ -1,6 +1,7 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
 import {
+  findRequestedCanonicalTarget,
   getReviewSubmissionBlockReason,
   isOrderReviewEligible,
   isOrderServiceReviewOnly,
@@ -39,14 +40,7 @@ const isRentalReviewBlockedStatus = (status: unknown) =>
 
 function pickBundleTarget(bundle?: ReviewTargetBundle | null, preferredProductId?: string | null) {
   if (!bundle) return null;
-  return (
-    (preferredProductId
-      ? bundle.targets.find((target) => target.primaryProductId === preferredProductId)
-      : null) ??
-    bundle.nextTarget ??
-    bundle.targets[0] ??
-    null
-  );
+  return findRequestedCanonicalTarget(bundle, preferredProductId);
 }
 
 function eligibilityPayload(params: {
@@ -229,6 +223,22 @@ export async function GET(req: Request) {
         );
       }
       const orderTarget = await resolveOrderReviewTarget(db, userId, orderId, productId);
+      const requestedTarget = pickBundleTarget(orderTarget?.targetBundle, productId);
+      if (!requestedTarget) {
+        return NextResponse.json(
+          eligibilityPayload({
+            eligible: false,
+            reason: "targetMismatch",
+            bundle: null,
+            target: null,
+            subjectType: "order",
+            subjectId: orderId,
+            suggestedOrderId: orderId,
+            suggestedProductId: productId,
+          }),
+          { status: 409, headers: { "Cache-Control": "no-store" } },
+        );
+      }
       if (orderTarget?.reviewContext === "product_stringing") {
         const already = await db.collection("reviews").findOne({
           userId,
@@ -255,7 +265,7 @@ export async function GET(req: Request) {
             eligible: !already,
             reason: already ? "already" : null,
             bundle: orderTarget?.targetBundle,
-            target: pickBundleTarget(orderTarget?.targetBundle, productId),
+            target: requestedTarget,
             subjectType: "order",
             subjectId: orderId,
             suggestedOrderId: orderId,
@@ -279,7 +289,7 @@ export async function GET(req: Request) {
             eligible: false,
             reason: "already",
             bundle: orderTarget?.targetBundle,
-            target: pickBundleTarget(orderTarget?.targetBundle, productId),
+            target: requestedTarget,
             subjectType: "order",
             subjectId: orderId,
             suggestedOrderId: orderId,
@@ -293,7 +303,7 @@ export async function GET(req: Request) {
           eligible: true,
           reason: null,
           bundle: orderTarget?.targetBundle,
-          target: pickBundleTarget(orderTarget?.targetBundle, productId),
+          target: requestedTarget,
           subjectType: "order",
           subjectId: orderId,
           suggestedOrderId: orderId,

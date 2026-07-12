@@ -17,6 +17,7 @@ for (const name of ["review-target", "review-policy", "review-target.server"]) {
   fs.writeFileSync(path.join(tmp, `${name}.js`), out);
 }
 const resolver = await importFileModule(path.join(tmp, "review-target.server.js"));
+const policy = await importFileModule(path.join(tmp, "review-policy.js"));
 const { ObjectId } = await importFileModule(path.join(tmp, "node_modules", "mongodb", "index.js"));
 const id = (n) => String(n).padStart(24, "0");
 const userId = new ObjectId(id(999));
@@ -50,6 +51,29 @@ test("A/B 일반 상품 target과 주문 item 순서를 유지한다", async () 
   const db = makeDb({ orders: [], stringing_applications: [], reviews: [], products: [prod(1), prod(2)] });
   const b = (await resolver.resolveOrderReviewTargetBundlesBatch(db, userId, [order(1, [{ productId: new ObjectId(id(1)) }, { productId: new ObjectId(id(2)) }])])).get(id(1));
   assert.equal(b.targets.length, 2); assert.deepEqual(b.targets.map(t => t.primaryProductId), [id(1), id(2)]); assert.equal(b.counts.total, 2);
+});
+
+test("명시 itemId target 선택은 primary exact match만 허용하고 nextTarget fallback하지 않는다", () => {
+  const bundle = resolver.makeBundle("order", id(10), [
+    { targetKey: "a", subjectType: "order", subjectId: id(10), reviewContext: "product", contextLabel: "상품 후기", eligible: true, reviewed: false, applicationIds: [], primaryProductId: id(11), relatedProductIds: [id(11), id(13)], relatedRacketIds: [] },
+    { targetKey: "b", subjectType: "order", subjectId: id(10), reviewContext: "product", contextLabel: "상품 후기", eligible: true, reviewed: false, applicationIds: [], primaryProductId: id(12), relatedProductIds: [id(12)], relatedRacketIds: [] },
+  ]);
+  assert.equal(policy.findRequestedCanonicalTarget(bundle, id(11)).primaryProductId, id(11));
+  assert.equal(policy.findRequestedCanonicalTarget(bundle, id(12)).primaryProductId, id(12));
+  assert.equal(policy.findRequestedCanonicalTarget(bundle, id(13)), null);
+});
+
+test("일반 라켓 구매 item은 product context 안에 라켓 canonical metadata를 포함한다", async () => {
+  const racketId = id(21);
+  const db = makeDb({ orders: [], stringing_applications: [], reviews: [], products: [], used_rackets: [prod(21, { brand: "head", model: "Speed" })] });
+  const b = (await resolver.resolveOrderReviewTargetBundlesBatch(db, userId, [order(20, [{ kind: "racket", productId: new ObjectId(racketId) }])])).get(id(20));
+  assert.equal(b.targets.length, 1);
+  assert.equal(b.targets[0].reviewContext, "product");
+  assert.equal(b.targets[0].primaryProductId, racketId);
+  assert.equal(b.targets[0].primaryRacketId, racketId);
+  assert.deepEqual(b.targets[0].relatedProductIds, []);
+  assert.deepEqual(b.targets[0].relatedRacketIds, [racketId]);
+  assert.equal(b.targets[0].relatedItems[0].type, "racket");
 });
 
 test("C/D/E 스트링 구매와 복수 신청서는 주문당 통합 target 1개이며 createdAt 순서를 유지한다", async () => {

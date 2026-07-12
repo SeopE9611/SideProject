@@ -79,7 +79,8 @@ export function buildReviewSubmissionPayload(
   };
   switch (target.reviewContext) {
     case "product":
-      payload.productId = cleanId(target.primaryProductId);
+      payload.productId = cleanId(target.primaryProductId) ?? cleanId(target.primaryRacketId);
+      if (cleanId(target.primaryRacketId)) payload.racketId = cleanId(target.primaryRacketId);
       payload.orderId = cleanId(target.orderId);
       break;
     case "product_stringing":
@@ -126,6 +127,12 @@ export function getReviewPostFailureState(
 }
 
 export function getReviewDestination(target: CanonicalReviewTarget | null): ReviewDestination {
+  if (target?.reviewContext === "product" && cleanId(target.primaryRacketId)) {
+    return {
+      href: `/rackets/${cleanId(target.primaryRacketId)}?tab=reviews`,
+      label: "라켓 후기 보기",
+    };
+  }
   if (
     (target?.reviewContext === "product" || target?.reviewContext === "product_stringing") &&
     cleanId(target.primaryProductId)

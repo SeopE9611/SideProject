@@ -1,5 +1,6 @@
 import type { CreateIndexesOptions, Db, IndexDirection } from "mongodb";
 import { ObjectId } from "mongodb";
+import { inspectActiveReviewDuplicates } from "./reviews/review-duplicate-diagnostics.server";
 import { refreshReviewSummaryCachesForTargets, resolveAffectedReviewTargets } from "./reviews/review-summary-cache.server";
 
 type Keys = Record<string, IndexDirection>;
@@ -24,16 +25,38 @@ async function ensureIndex(
     // already exists -> 무시
   }
 
-  // 동일 키 인덱스 있는지 확인 (이름 달라도 OK)
-  let existingKeyMatch = false;
+  let existingDefinitionMatch = false;
   try {
     const keySig = JSON.stringify(keys);
     const existing = await col.listIndexes().toArray();
-    existingKeyMatch = existing.some((ix: any) => JSON.stringify(ix.key) === keySig);
+    const sameName = options.name ? existing.find((ix: any) => ix.name === options.name) : null;
+    const sameKey = existing.find((ix: any) => JSON.stringify(ix.key) === keySig);
+    const candidate = sameName ?? sameKey;
+    if (candidate) {
+      const expectedPartial = JSON.stringify(options.partialFilterExpression ?? null);
+      const actualPartial = JSON.stringify(candidate.partialFilterExpression ?? null);
+      existingDefinitionMatch =
+        JSON.stringify(candidate.key) === keySig &&
+        Boolean(candidate.unique) === Boolean(options.unique) &&
+        Boolean(candidate.sparse) === Boolean(options.sparse) &&
+        actualPartial === expectedPartial;
+      if (!existingDefinitionMatch) {
+        const error = new Error("indexDefinitionMismatch") as Error & { details?: unknown };
+        error.details = {
+          reason: "indexDefinitionMismatch",
+          collection: collectionName,
+          indexName: options.name ?? candidate.name,
+          expected: { key: keys, unique: Boolean(options.unique), sparse: Boolean(options.sparse), partialFilterExpression: options.partialFilterExpression ?? null },
+          actual: { key: candidate.key, unique: Boolean(candidate.unique), sparse: Boolean(candidate.sparse), partialFilterExpression: candidate.partialFilterExpression ?? null },
+        };
+        throw error;
+      }
+    }
   } catch (e: any) {
     // ns not exist (26) 등 -> 바로 생성 단계로 진행
+    if (e?.message === "indexDefinitionMismatch") throw e;
   }
-  if (existingKeyMatch) return;
+  if (existingDefinitionMatch) return;
 
   // 생성 (이름 충돌/기존 다른 이름 인덱스는 무시)
   try {
@@ -54,6 +77,20 @@ async function ensureIndex(
 }
 
 export async function ensureReviewIndexes(db: Db) {
+  const duplicates = await inspectActiveReviewDuplicates(db);
+  if (duplicates.totalGroups > 0) {
+    const error = new Error("duplicateReviewsDetected") as Error & { details?: unknown };
+    error.details = {
+      reason: "duplicateReviewsDetected",
+      duplicates: {
+        product: duplicates.productGroups.length,
+        rental: duplicates.rentalGroups.length,
+        service: duplicates.serviceGroups.length,
+      },
+      message: "중복 후기를 먼저 확인해 주세요.",
+    };
+    throw error;
+  }
   // reviews 컬렉션 문서에 isDeleted가 없거나 null이면 false로 정규화
   await db
     .collection("reviews")
@@ -61,13 +98,6 @@ export async function ensureReviewIndexes(db: Db) {
       { $or: [{ isDeleted: { $exists: false } }, { isDeleted: null }] },
       { $set: { isDeleted: false } },
     );
-
-  // 레거시 유니크 인덱스 제거: (userId, productId) — 구형 정책
-  try {
-    await db.collection("reviews").dropIndex("uniq_user_product_active_review");
-  } catch (_) {
-    // 존재하지 않으면 무시
-  }
 
   // 신정책 유니크 인덱스: (userId, productId, orderId) — 주문 단위 리뷰 1회
   await ensureIndex(

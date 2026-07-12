@@ -6,8 +6,10 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { buildAdminReviewRelationStages } from "@/lib/reviews/admin-review-relations.server";
 import { shapeAdminReview } from "@/lib/reviews/admin-review-shape";
 import { buildResolvedReviewContextExpression } from "@/lib/reviews/review-context.server";
+import { reviewInputMessage, validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 
 const ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
@@ -40,24 +42,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     .aggregate([
       { $match: { _id } },
       { $addFields: { resolvedReviewContext: buildResolvedReviewContextExpression() } },
-      { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "_user" } },
-      { $lookup: { from: "products", localField: "productId", foreignField: "_id", as: "_product" } },
-      { $lookup: { from: "used_rackets", localField: "productId", foreignField: "_id", as: "_racket" } },
-      { $lookup: { from: "rental_orders", localField: "rentalId", foreignField: "_id", as: "_rental" } },
-      { $lookup: { from: "stringing_applications", localField: "serviceApplicationId", foreignField: "_id", as: "_application" } },
-      {
-        $addFields: {
-          resolvedUserEmail: { $ifNull: ["$userEmail", { $arrayElemAt: ["$_user.email", 0] }] },
-          resolvedUserName: { $ifNull: [{ $arrayElemAt: ["$_user.name", 0] }, ""] },
-          productName: { $ifNull: [{ $arrayElemAt: ["$_product.name", 0] }, { $arrayElemAt: ["$_product.title", 0] }] },
-          racketBrand: { $arrayElemAt: ["$_racket.brand", 0] },
-          racketModel: { $arrayElemAt: ["$_racket.model", 0] },
-          rentalBrand: { $arrayElemAt: ["$_rental.brand", 0] },
-          rentalModel: { $arrayElemAt: ["$_rental.model", 0] },
-          stringName: { $arrayElemAt: ["$_application.stringDetails.stringItems.name", 0] },
-          isDeleted: { $toBool: { $ifNull: ["$isDeleted", false] } },
-        },
-      },
+      ...buildAdminReviewRelationStages(),
     ])
     .toArray();
   if (!rows[0]) return NextResponse.json({ message: "not found" }, { status: 404 });
@@ -74,27 +59,40 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
-  const PatchSchema = z.object({
-    content: z.string().trim().min(5).max(2000).optional(),
-    rating: z.number().int().min(1).max(5).optional(),
-    status: z.enum(["visible", "hidden"]).optional(),
-    visibility: z.enum(["public", "private"]).optional(),
-    photos: z.array(z.string()).max(5).optional(),
-  });
-
   let raw: unknown;
   try {
     raw = await req.json();
   } catch {
     return NextResponse.json({ message: "invalid_json" }, { status: 400 });
   }
-  const parsed = PatchSchema.safeParse(raw);
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return NextResponse.json({ message: "validation_error" }, { status: 400 });
+  }
+  const rawBody = raw as Record<string, unknown>;
+  const inputValidation = validateReviewPatchInput(rawBody);
+  if (!inputValidation.ok) {
+    return NextResponse.json(
+      { message: reviewInputMessage(inputValidation.reason), reason: inputValidation.reason },
+      { status: 400 },
+    );
+  }
+  if ("photos" in rawBody && !inputValidation.value.photos?.every(isAllowedHttpUrl)) {
+    return NextResponse.json(
+      { message: reviewInputMessage("invalidPhotos"), reason: "invalidPhotos" },
+      { status: 400 },
+    );
+  }
+  const AdminStateSchema = z.object({
+    status: z.enum(["visible", "hidden"]).optional(),
+    visibility: z.enum(["public", "private"]).optional(),
+  });
+  const parsed = AdminStateSchema.safeParse(rawBody);
   if (!parsed.success)
     return NextResponse.json(
       { message: "validation_error", details: parsed.error.issues },
       { status: 400 },
     );
-  const body = parsed.data;
+  const body = { ...inputValidation.value, ...parsed.data };
 
   if (
     !("content" in body) &&
@@ -118,10 +116,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (typeof body.rating === "number") $set.rating = Math.max(1, Math.min(5, body.rating));
   if (body.status === "visible" || body.status === "hidden") $set.status = body.status;
   if (body.visibility) $set.status = body.visibility === "public" ? "visible" : "hidden";
-  if (Array.isArray(body.photos))
-    $set.photos = Array.from(
-      new Set<string>(body.photos.filter(isAllowedHttpUrl).map((s) => s.trim())),
-    ).slice(0, 5);
+  if (Array.isArray(body.photos)) $set.photos = Array.from(new Set<string>(body.photos.map((s) => s.trim())));
   if (Object.keys($set).length === 1)
     return NextResponse.json({ message: "no changes" }, { status: 400 });
 

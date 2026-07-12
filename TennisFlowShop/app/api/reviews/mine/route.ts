@@ -45,19 +45,21 @@ export async function GET(req: Request) {
   if (cursorB64) {
     try {
       const c = JSON.parse(Buffer.from(cursorB64, "base64").toString("utf-8"));
+      if (!c || typeof c !== "object" || Array.isArray(c)) throw new Error("invalidCursor");
       const createdAt = new Date(String(c?.createdAt ?? ""));
       const idStr = String(c?.id ?? "");
-      // 커서 값이 깨졌을 때(Invalid Date / 잘못된 id)는 무시하고 첫 페이지로 처리
-      if (Number.isFinite(createdAt.getTime()) && ObjectId.isValid(idStr)) {
-        cursorMatch = {
-          $or: [
-            { createdAt: { $lt: createdAt } },
-            { createdAt, _id: { $lt: new ObjectId(idStr) } },
-          ],
-        };
-      }
+      if (!Number.isFinite(createdAt.getTime()) || !ObjectId.isValid(idStr)) throw new Error("invalidCursor");
+      cursorMatch = {
+        $or: [
+          { createdAt: { $lt: createdAt } },
+          { createdAt, _id: { $lt: new ObjectId(idStr) } },
+        ],
+      };
     } catch {
-      /* ignore */
+      return NextResponse.json(
+        { ok: false, reason: "invalidCursor", message: "후기 목록 커서가 올바르지 않습니다." },
+        { status: 400 },
+      );
     }
   }
 
@@ -153,6 +155,33 @@ export async function GET(req: Request) {
         },
       },
       { $unwind: { path: "$rental", preserveNullAndEmptyArrays: true } },
+      {
+        $addFields: {
+          rentalRacketIdObj: {
+            $cond: [
+              { $eq: [{ $type: "$rental.racketId" }, "objectId"] },
+              "$rental.racketId",
+              {
+                $cond: [
+                  { $and: [{ $eq: [{ $type: "$rental.racketId" }, "string"] }, { $regexMatch: { input: "$rental.racketId", regex: /^[0-9a-fA-F]{24}$/ } }] },
+                  { $toObjectId: "$rental.racketId" },
+                  null,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "used_rackets",
+          localField: "rentalRacketIdObj",
+          foreignField: "_id",
+          as: "rentalRacket",
+          pipeline: [{ $project: { brand: 1, model: 1, thumbnail: 1, images: 1 } }],
+        },
+      },
+      { $unwind: { path: "$rentalRacket", preserveNullAndEmptyArrays: true } },
 
       // 서비스(스트링) 메타: 신청서에서 교체한 스트링 상품명 가져오기
       // - serviceApplicationId가 ObjectId/문자열 둘 다 올 수 있어 방어적으로 ObjectId로 정규화
@@ -276,6 +305,8 @@ export async function GET(req: Request) {
           __racketImages: "$racket.images",
           __rentalBrand: "$rental.brand",
           __rentalModel: "$rental.model",
+          __rentalRacketBrand: "$rentalRacket.brand",
+          __rentalRacketModel: "$rentalRacket.model",
 
           reviewContext: "$resolvedReviewContext",
           contextLabel: 1,
@@ -339,7 +370,13 @@ export async function GET(req: Request) {
                     },
                   ],
                 },
-                null,
+                {
+                  $cond: [
+                    { $in: ["$resolvedReviewContext", ["rental", "rental_stringing"]] },
+                    { $ifNull: ["$rentalRacket.thumbnail", { $arrayElemAt: ["$rentalRacket.images", 0] }] },
+                    null,
+                  ],
+                },
               ],
             },
           },
@@ -382,8 +419,10 @@ export async function GET(req: Request) {
       else if (row.productId) row.target.detailHref = row?.__racketModel ? `/rackets/${row.productId}?tab=reviews` : `/products/${row.productId}?tab=reviews`;
       if ((reviewContext === "rental" || reviewContext === "rental_stringing") && (!row.target.name || row.target.name === "상품" || row.target.name === "교체서비스")) row.target.name = "라켓 대여";
     }
-    if ((reviewContext === "rental" || reviewContext === "rental_stringing") && row?.__rentalModel) {
-      row.target.name = `${racketBrandLabel(String(row.__rentalBrand ?? "").trim())} ${String(row.__rentalModel).trim()}`.trim();
+    const rentalBrand = row?.__rentalRacketBrand ?? row?.__rentalBrand;
+    const rentalModel = row?.__rentalRacketModel ?? row?.__rentalModel;
+    if ((reviewContext === "rental" || reviewContext === "rental_stringing") && rentalModel) {
+      row.target.name = `${racketBrandLabel(String(rentalBrand ?? "").trim())} ${String(rentalModel).trim()}`.trim();
     }
     const brand = row?.__racketBrand;
     const model = row?.__racketModel;
@@ -415,6 +454,8 @@ export async function GET(req: Request) {
     delete row.__racketImages;
     delete row.__rentalBrand;
     delete row.__rentalModel;
+    delete row.__rentalRacketBrand;
+    delete row.__rentalRacketModel;
 
     return row;
   });

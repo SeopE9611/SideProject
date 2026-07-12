@@ -61,6 +61,9 @@ export default function AdminReviewMaintenancePanel() {
       const json = await adminMutator<{
         ok?: boolean;
         error?: string;
+        reason?: string;
+        message?: string;
+        duplicates?: { product?: number; rental?: number; service?: number };
         result?: unknown;
       }>("/api/admin/reviews/maintenance", {
         method: "POST",
@@ -68,7 +71,23 @@ export default function AdminReviewMaintenancePanel() {
         body: JSON.stringify({ action }),
       });
 
-      if (!json?.ok) throw new Error(json?.error || "실행 실패");
+      if (!json?.ok) {
+        if (json?.reason === "duplicateReviewsDetected") {
+          throw new Error(
+            [
+              "중복 후기가 발견되어 전체 유지보수를 중단했습니다.",
+              `상품 후기 중복 그룹: ${json.duplicates?.product ?? 0}`,
+              `대여 후기 중복 그룹: ${json.duplicates?.rental ?? 0}`,
+              `교체서비스 후기 중복 그룹: ${json.duplicates?.service ?? 0}`,
+              "먼저 중복 진단 결과를 확인한 뒤 별도 정리해 주세요.",
+            ].join("\n"),
+          );
+        }
+        if (json?.reason === "indexDefinitionMismatch") {
+          throw new Error("후기 인덱스 정의가 현재 정책과 다릅니다. 자동으로 삭제하거나 교체하지 않았습니다.");
+        }
+        throw new Error(json?.message || json?.error || "실행 실패");
+      }
 
       setLastResult(json.result);
       setLastRunAt(new Date().toLocaleString("ko-KR"));

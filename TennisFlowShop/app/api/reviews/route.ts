@@ -7,6 +7,8 @@ import { buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import {
+  findRequestedCanonicalTarget,
+  getCanonicalTargetItemId,
   getReviewSubmissionBlockReason,
   isOrderReviewEligible,
   isRentalReviewEligible,
@@ -265,13 +267,21 @@ export async function POST(req: Request) {
       String(orderIdObj),
       productIdStr,
     );
-    const orderCanonicalTarget =
-      orderTarget?.targetBundle?.targets?.find(
-        (target: any) => target.primaryProductId === productIdStr,
-      ) ??
-      orderTarget?.targetBundle?.nextTarget ??
-      orderTarget?.targetBundle?.targets?.[0] ??
-      null;
+    const orderCanonicalTarget = findRequestedCanonicalTarget(
+      orderTarget?.targetBundle,
+      productIdStr,
+    );
+    const canonicalItemId = getCanonicalTargetItemId(orderCanonicalTarget);
+    if (!orderCanonicalTarget || !canonicalItemId || canonicalItemId !== productIdStr) {
+      return NextResponse.json(
+        {
+          ok: false,
+          reason: "targetMismatch",
+          message: "후기 대상이 올바르지 않습니다.",
+        },
+        { status: 409 },
+      );
+    }
     const orderBlockReason = getReviewSubmissionBlockReason(orderCanonicalTarget);
     if (orderBlockReason === "already") {
       return NextResponse.json({ message: "already", reason: "already" }, { status: 409 });
@@ -290,7 +300,8 @@ export async function POST(req: Request) {
     }
 
     // 중복 작성 방지 (주문 단위): 같은 주문 + 같은 상품 + 같은 유저
-    const productCandidates = [productIdObj, productIdStr];
+    const canonicalProductIdObj = new ObjectId(canonicalItemId);
+    const productCandidates = [canonicalProductIdObj, canonicalItemId];
     const dupFilter: any = {
       userId,
       isDeleted: { $ne: true },
@@ -300,12 +311,12 @@ export async function POST(req: Request) {
     if (orderIdObj) {
       dupFilter.orderId = { $in: [orderIdObj, orderIdRaw] };
     }
-    if (orderTarget?.reviewContext === "product_stringing" && orderTarget.serviceApplicationId) {
+    if (orderCanonicalTarget?.reviewContext === "product_stringing" && orderCanonicalTarget.primaryApplicationId) {
       dupFilter.$or = [
         { orderId: { $in: [orderIdObj, orderIdRaw] }, productId: { $in: productCandidates } },
         {
           serviceApplicationId: {
-            $in: [new ObjectId(orderTarget.serviceApplicationId), orderTarget.serviceApplicationId],
+            $in: [new ObjectId(orderCanonicalTarget.primaryApplicationId), orderCanonicalTarget.primaryApplicationId],
           },
         },
       ];
@@ -318,18 +329,20 @@ export async function POST(req: Request) {
     const now = new Date();
     const doc: any = {
       userId,
-      productId: productIdObj,
-      reviewType: "product",
-      reviewContext: orderTarget?.reviewContext ?? "product",
-      contextLabel: orderTarget?.contextLabel ?? getReviewContextLabel("product"),
-      serviceApplicationId:
-        orderTarget?.serviceApplicationId && ObjectId.isValid(orderTarget.serviceApplicationId)
-          ? new ObjectId(orderTarget.serviceApplicationId)
+      productId: canonicalProductIdObj,
+      racketId:
+        orderCanonicalTarget.primaryRacketId && ObjectId.isValid(orderCanonicalTarget.primaryRacketId)
+          ? new ObjectId(orderCanonicalTarget.primaryRacketId)
           : undefined,
-      relatedProductIds:
-        orderTarget?.relatedProductIds ??
-        (orderTarget?.reviewContext === "product_stringing" ? [productIdObj] : undefined),
-      relatedRacketIds: orderTarget?.relatedRacketIds ?? [],
+      reviewType: "product",
+      reviewContext: orderCanonicalTarget.reviewContext,
+      contextLabel: orderCanonicalTarget.contextLabel ?? getReviewContextLabel("product"),
+      serviceApplicationId:
+        orderCanonicalTarget.primaryApplicationId && ObjectId.isValid(orderCanonicalTarget.primaryApplicationId)
+          ? new ObjectId(orderCanonicalTarget.primaryApplicationId)
+          : undefined,
+      relatedProductIds: orderCanonicalTarget.relatedProductIds ?? [],
+      relatedRacketIds: orderCanonicalTarget.relatedRacketIds ?? [],
       rating,
       content,
       photos: photosClean,
