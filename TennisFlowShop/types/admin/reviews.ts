@@ -20,6 +20,9 @@ export interface AdminReviewListItemDto {
   subject: string;
   rating: number;
   status: AdminReviewStatus;
+  authorStatus: AdminReviewStatus;
+  moderationStatus: AdminReviewStatus;
+  effectiveStatus: AdminReviewStatus;
   content: string;
   createdAt: string;
   userEmail?: string;

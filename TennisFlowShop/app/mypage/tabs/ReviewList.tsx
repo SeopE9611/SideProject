@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 import AsyncState from "@/components/system/AsyncState";
@@ -218,6 +218,20 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     rating: number;
     photos: string[];
   } | null>(null);
+  const editSessionUploadedUrlsRef = useRef<Set<string>>(new Set());
+
+  const cleanupEditSessionPhotos = useCallback((urls?: string[]) => {
+    const targets = urls ?? Array.from(editSessionUploadedUrlsRef.current);
+    if (!targets.length) return;
+    targets.forEach((url) => editSessionUploadedUrlsRef.current.delete(url));
+    fetch("/api/reviews/photos/cleanup", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls: targets }),
+      keepalive: true,
+    }).catch(() => {});
+  }, []);
 
   const openEdit = useCallback((it: UiItem) => {
     setUploadingEditPhotos(false);
@@ -233,13 +247,14 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   }, []);
 
   const closeEdit = useCallback(() => {
+    cleanupEditSessionPhotos();
     setEditing(null);
     setEditContent("");
     setEditRating(5);
     setEditPhotos([]);
     setUploadingEditPhotos(false);
     setOriginalEdit(null);
-  }, []);
+  }, [cleanupEditSessionPhotos]);
 
   // 수정 저장
   const submitEdit = useCallback(async () => {
@@ -331,6 +346,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       }
 
       showSuccessToast("후기가 수정되었습니다.");
+      editSessionUploadedUrlsRef.current.clear();
       await mutate();
       closeEdit();
     } catch (e: any) {
@@ -736,9 +752,16 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 onChange={setEditPhotos}
                 max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
+                onUploaded={(urls) => urls.forEach((url) => editSessionUploadedUrlsRef.current.add(url))}
                 onUploadingChange={setUploadingEditPhotos}
               />
-              <PhotosReorderGrid value={editPhotos} onChange={setEditPhotos} />
+              <PhotosReorderGrid
+                value={editPhotos}
+                onChange={setEditPhotos}
+                onRemove={(url) =>
+                  editSessionUploadedUrlsRef.current.has(url) && cleanupEditSessionPhotos([url])
+                }
+              />
             </div>
           </div>
 

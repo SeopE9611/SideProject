@@ -46,6 +46,15 @@ export function idCandidates(value: string): IdValue[] {
   return ObjectId.isValid(trimmed) ? [new ObjectId(trimmed), trimmed] : [trimmed];
 }
 
+export function buildPublicReviewMatch(includeAuthorHidden = false) {
+  return {
+    isDeleted: { $ne: true },
+    deletedAt: null,
+    ...(includeAuthorHidden ? {} : { status: "visible" }),
+    moderationStatus: { $ne: "hidden" },
+  };
+}
+
 function stringIds(values: unknown[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -193,7 +202,9 @@ export async function buildPublicReviewSurfaceTargetMatch(
     const appCandidates = flattenIdCandidates(appIds);
     const $or = compactOr([
       { productId: { $in: targetCandidates } },
+      { "target.productId": { $in: targetCandidates } },
       { relatedProductIds: { $in: targetCandidates } },
+      { "target.relatedProductIds": { $in: targetCandidates } },
       appCandidates.length ? { serviceApplicationId: { $in: appCandidates } } : null,
       appCandidates.length ? { applicationId: { $in: appCandidates } } : null,
     ]);
@@ -229,8 +240,11 @@ export async function buildPublicReviewSurfaceTargetMatch(
     : null;
   const $or = compactOr([
     { productId: { $in: targetCandidates } },
+    { "target.productId": { $in: targetCandidates } },
     { racketId: { $in: targetCandidates } },
+    { "target.racketId": { $in: targetCandidates } },
     { relatedRacketIds: { $in: targetCandidates } },
+    { "target.relatedRacketIds": { $in: targetCandidates } },
     rentalCandidates.length ? { rentalId: { $in: rentalCandidates } } : null,
     serviceOrderMatch,
     applicationCandidates.length ? { serviceApplicationId: { $in: applicationCandidates } } : null,
@@ -256,7 +270,7 @@ export async function getPublicReviewSummary(
   const [summaryRow] = await db
     .collection("reviews")
     .aggregate([
-      { $match: { isDeleted: { $ne: true }, deletedAt: null, ...targetMatch } },
+      { $match: { ...buildPublicReviewMatch(), ...targetMatch } },
       ...buildPublicReviewSummaryStages(),
     ])
     .toArray();
@@ -285,11 +299,10 @@ export async function getPublicReviewSurface(
   const [result] = await db
     .collection("reviews")
     .aggregate([
-      { $match: { isDeleted: { $ne: true }, deletedAt: null, ...targetMatch } },
+      { $match: { ...buildPublicReviewMatch(), ...targetMatch } },
       {
         $facet: {
           items: [
-            { $match: { status: "visible", moderationStatus: { $ne: "hidden" } } },
             { $sort: { createdAt: -1, _id: -1 } },
             { $limit: limit },
             {

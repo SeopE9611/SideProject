@@ -4,9 +4,9 @@ import {
   findRequestedCanonicalTarget,
   getReviewSubmissionBlockReason,
   isOrderReviewEligible,
-  isOrderServiceReviewOnly,
   isRentalReviewEligible,
   isStringingReviewBlockedStatus,
+  type ReviewSubmissionBlockReason,
 } from "@/lib/reviews/review-policy";
 import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import type { CanonicalReviewTarget, ReviewTargetBundle } from "@/lib/reviews/review-target";
@@ -310,80 +310,46 @@ export async function GET(req: Request) {
       );
     }
 
-    // 해당 상품으로 이미 리뷰한 주문 목록
-    const reviewed = await db
-      .collection("reviews")
-      .find({
-        userId,
-        productId: productIdObj,
-        orderId: { $exists: true },
-        isDeleted: { $ne: true },
-      })
-      .project({ orderId: 1 })
-      .toArray();
-    const reviewedSet = new Set(reviewed.map((r) => String(r.orderId)));
-
-    // 아직 리뷰 안 쓴 최신 주문 pick
-    const orderEligibility = await Promise.all(
-      myOrders.map(async (order) => ({
-        order,
-        serviceOnly: await isOrderServiceReviewOnly(db, order),
-      })),
-    );
-    const candidate = orderEligibility.find(
-      ({ order, serviceOnly }) => !serviceOnly && !reviewedSet.has(String(order._id)),
-    )?.order;
-    if (!candidate) {
-      const integratedOrder = orderEligibility.find(
-        ({ order, serviceOnly }) => serviceOnly && !reviewedSet.has(String(order._id)),
-      )?.order;
-      if (integratedOrder) {
-        const target = await resolveOrderReviewTarget(
-          db,
-          userId,
-          String(integratedOrder._id),
-          productId,
-        );
-        const targetItem = pickBundleTarget(target?.targetBundle, productId);
-        const blockReason = getReviewSubmissionBlockReason(targetItem);
+    let fallback: { order: any; target: any; targetItem: CanonicalReviewTarget | null; blockReason: ReviewSubmissionBlockReason } | null = null;
+    for (const order of myOrders) {
+      const target = await resolveOrderReviewTarget(db, userId, String(order._id), productId);
+      const targetItem = pickBundleTarget(target?.targetBundle, productId);
+      const blockReason = getReviewSubmissionBlockReason(targetItem);
+      if (!blockReason) {
         return NextResponse.json(
           eligibilityPayload({
-            eligible: !blockReason,
-            reason: blockReason,
+            eligible: true,
+            reason: null,
             bundle: target?.targetBundle,
             target: targetItem,
             subjectType: "order",
-            subjectId: String(integratedOrder._id),
-            suggestedOrderId: String(integratedOrder._id),
+            subjectId: String(order._id),
+            suggestedOrderId: String(order._id),
             suggestedProductId: target?.productId ?? productId,
             suggestedApplicationId: target?.serviceApplicationId ?? null,
           }),
           { headers: { "Cache-Control": "no-store" } },
         );
       }
+      if (!fallback || fallback.blockReason === "already") {
+        fallback = { order, target, targetItem, blockReason };
+      }
+    }
+    if (!fallback) {
       return NextResponse.json(
         { eligible: false, reason: "already" },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
-
-    const candidateTarget = await resolveOrderReviewTarget(
-      db,
-      userId,
-      String(candidate._id),
-      productId,
-    );
-    const targetItem = pickBundleTarget(candidateTarget?.targetBundle, productId);
-    const blockReason = getReviewSubmissionBlockReason(targetItem);
     return NextResponse.json(
       eligibilityPayload({
-        eligible: !blockReason,
-        reason: blockReason,
-        bundle: candidateTarget?.targetBundle,
-        target: targetItem,
+        eligible: false,
+        reason: fallback.blockReason,
+        bundle: fallback.target?.targetBundle,
+        target: fallback.targetItem,
         subjectType: "order",
-        subjectId: String(candidate._id),
-        suggestedOrderId: String(candidate._id),
+        subjectId: String(fallback.order._id),
+        suggestedOrderId: String(fallback.order._id),
         suggestedProductId: productId,
       }),
       { headers: { "Cache-Control": "no-store" } },
@@ -443,11 +409,14 @@ export async function GET(req: Request) {
       );
     }
 
+    const orderIdCandidates = ObjectId.isValid(orderId)
+      ? [new ObjectId(orderId), orderId]
+      : [orderId];
     const reviewed = await db
       .collection("reviews")
       .find({
         userId,
-        orderId: orderIdObj,
+        $or: [{ orderId: { $in: orderIdCandidates } }, { "target.orderId": { $in: orderIdCandidates } }],
         productId: {
           $in: productIds.flatMap((pid) =>
             ObjectId.isValid(pid) ? [new ObjectId(pid), pid] : [pid],
@@ -467,12 +436,14 @@ export async function GET(req: Request) {
       );
     }
 
+    const target = pickBundleTarget(orderTarget?.targetBundle, candidatePid);
+    const blockReason = getReviewSubmissionBlockReason(target);
     return NextResponse.json(
       eligibilityPayload({
-        eligible: true,
-        reason: null,
+        eligible: !blockReason,
+        reason: blockReason,
         bundle: orderTarget?.targetBundle,
-        target: pickBundleTarget(orderTarget?.targetBundle, candidatePid),
+        target,
         subjectType: "order",
         subjectId: orderId,
         suggestedProductId: candidatePid,
