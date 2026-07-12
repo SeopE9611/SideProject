@@ -67,7 +67,7 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
                     <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="10" strokeDasharray="78 100" pathLength="100" strokeLinecap="round" />
                   </svg>
                   <div className="relative grid h-[72%] w-[72%] place-items-center rounded-full bg-card text-center">
-                    <span className="text-ui-display font-bold tracking-[-0.01em]">78</span>
+                    <span className="font-brand-display text-ui-display">78</span>
                     <span className="text-ui-label text-muted-foreground">SAMPLE LIFE</span>
                   </div>
                 </div>

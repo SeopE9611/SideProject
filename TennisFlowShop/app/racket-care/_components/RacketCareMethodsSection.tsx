@@ -28,7 +28,7 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
       <div className="grid gap-4 bp-lg:grid-cols-[0.35fr_0.75fr_0.55fr] bp-lg:items-end">
         <div><span className="grid h-10 w-10 place-items-center rounded-full bg-brand-highlight text-brand-highlight-foreground text-ui-label font-semibold">00</span><p className="mt-3 text-ui-kicker text-muted-foreground">EASY START</p></div>
         <h2 className="break-keep font-brand-heading text-ui-section-title bp-lg:text-[3rem] bp-lg:leading-[1.05]">내 기록에 맞는 방법으로<br />빠르게 시작하세요.</h2>
-        <p className="break-keep text-ui-body-sm text-muted-foreground">라켓 케어의 실제 등록과 관리는 로그인 후 이용할 수 있습니다.</p>
+        <p className="break-keep text-ui-body-sm text-muted-foreground">프로필과 완료 이력을 활용하거나 필요한 정보를 직접 입력해 시작할 수 있습니다.</p>
       </div>
       <div className="grid gap-4 bp-md:grid-cols-2">
         {methods.map((method) => (
@@ -49,7 +49,7 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
         ))}
       </div>
       <div className="flex flex-col gap-3 rounded-panel border border-border bg-card p-5 shadow-soft bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-        <p className="break-keep text-ui-body-sm text-muted-foreground">라켓 케어의 실제 등록과 관리는 로그인 후 이용할 수 있습니다.</p>
+        <p className="break-keep text-ui-body-sm text-muted-foreground">실제 라켓 등록과 관리는 내 라켓 관리 화면에서 이용할 수 있습니다.</p>
         <Button asChild variant="highlight" wrap="responsive">
           <Link href={primaryHref}>{primaryLabel}</Link>
         </Button>
