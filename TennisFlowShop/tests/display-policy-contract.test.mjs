@@ -1,6 +1,6 @@
-import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import test from "node:test";
 
 function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -151,9 +151,7 @@ test("표시 계약: 주문/패키지/개인결제 화면은 raw 상태와 결�
   assert.ok(!privatePaymentsClient.includes("{item.paymentStatus}"));
   assert.ok(packageList.includes("{paymentLabel}"));
   assert.ok(!packageList.includes("{pkg.paymentStatus}"));
-  assert.ok(
-    packageDetail.includes("{getPackagePaymentDisplayLabel(data.paymentStatus)}"),
-  );
+  assert.ok(packageDetail.includes("{getPackagePaymentDisplayLabel(data.paymentStatus)}"));
   assert.ok(stringingHistory.includes("getCommonApplicationStatusLabel(log.status)"));
   assert.ok(!stringingHistory.includes("{log.status}"));
   assert.ok(userActivity.includes("getCommonOrderStatusLabel(o?.status)"));
@@ -213,6 +211,20 @@ test("마이페이지 거래 카드 계약: 상태 배지와 액션 배치를 �
   assert.ok(
     transactionFlowList.includes("setCancelApplicationDialogId(applicationActionTarget.id)"),
   );
-  assertSourceIncludes(transactionFlowList, ">상세 보기<", "거래 카드 상세 보기 액션 문구를 유지해야 합니다.");
+  const detailActionStart = transactionFlowList.indexOf("const detailAction: CardAction");
+  const detailActionEnd = transactionFlowList.indexOf("const buildCanonicalReviewAction");
+
+  assert.ok(
+    detailActionStart >= 0 && detailActionEnd > detailActionStart,
+    "거래 카드 상세 보기 액션 소스 범위를 찾을 수 있어야 합니다.",
+  );
+
+  const detailActionSource = transactionFlowList.slice(detailActionStart, detailActionEnd);
+
+  assert.match(
+    detailActionSource,
+    />\s*상세 보기(?:\s|<)/,
+    "거래 카드 상세 보기 액션 문구를 유지해야 합니다.",
+  );
   assert.ok(transactionFlowList.includes("md:hidden"));
 });
