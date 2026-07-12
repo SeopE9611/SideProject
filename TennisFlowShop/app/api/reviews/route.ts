@@ -692,7 +692,21 @@ export async function GET(req: Request) {
   // match 조건 구성
   const match: any = isAdmin
     ? { isDeleted: { $ne: true } }
-    : buildPublicReviewMatch(withHidden === "mask");
+    : withHidden === "mask"
+      ? {
+          isDeleted: { $ne: true },
+          deletedAt: null,
+          status: { $in: ["visible", "hidden"] },
+          ...(currentUserId
+            ? {
+                $or: [
+                  { moderationStatus: { $ne: "hidden" } },
+                  { userId: currentUserId },
+                ],
+              }
+            : { moderationStatus: { $ne: "hidden" } }),
+        }
+      : buildPublicReviewMatch(false);
   // 관리자 + withDeleted=1 이면 삭제 포함
   if (isAdmin && (withDeleted === "1" || withDeleted === "true")) {
     delete match.isDeleted;
@@ -702,7 +716,13 @@ export async function GET(req: Request) {
   if (type === "product") match.productId = { $exists: true };
   if (type === "service") match.service = { $exists: true };
   if (type === "rental") {
-    match.$or = [{ reviewType: "rental" }, { rentalId: { $exists: true } }];
+    const rentalTypeMatch = { $or: [{ reviewType: "rental" }, { rentalId: { $exists: true } }] };
+    if (match.$or) {
+      match.$and = [{ $or: match.$or }, rentalTypeMatch];
+      delete match.$or;
+    } else {
+      match.$or = rentalTypeMatch.$or;
+    }
   }
   if (productFilterCandidates && type === "product") {
     const productTargetMatch = await buildPublicReviewSurfaceTargetMatch(db, {
@@ -874,13 +894,38 @@ export async function GET(req: Request) {
     createdAt: 1,
     votedByMe: 1,
     status: 1,
+    authorStatus: {
+      $cond: [{ $eq: ["$status", "hidden"] }, "hidden", "visible"],
+    },
+    moderationStatus: {
+      $cond: [{ $eq: ["$moderationStatus", "hidden"] }, "hidden", "visible"],
+    },
+    effectiveStatus: {
+      $cond: [
+        {
+          $and: [
+            { $ne: ["$status", "hidden"] },
+            { $ne: ["$moderationStatus", "hidden"] },
+          ],
+        },
+        "visible",
+        "hidden",
+      ],
+    },
     isMine: 1,
   };
 
   project.status = 1;
   project.ownedByMe = 1;
+  project.adminView = 1;
   if (withHidden === "mask") {
-    const hiddenCond = { $eq: ["$status", "hidden"] };
+    const hiddenCond = {
+      $and: [
+        { $eq: ["$status", "hidden"] },
+        { $ne: ["$isMine", true] },
+        { $eq: [isAdmin, false] },
+      ],
+    };
     project.userName = { $cond: [hiddenCond, null, "$userName"] };
     project.content = { $cond: [hiddenCond, null, "$content"] };
     project.photos = { $cond: [hiddenCond, [], { $ifNull: ["$photos", []] }] };

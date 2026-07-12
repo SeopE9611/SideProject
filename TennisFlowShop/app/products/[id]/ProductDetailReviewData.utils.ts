@@ -62,6 +62,38 @@ export function isMineReview(review: any, myReview: any): boolean {
   );
 }
 
+function reviewTime(value: any): number {
+  const date = value?.createdAt ?? value?.date;
+  const time = date ? new Date(date).getTime() : 0;
+  return Number.isFinite(time) ? time : 0;
+}
+
+function sortReviewsByCreatedAt(items: any[]) {
+  return [...items].sort((a, b) => {
+    const byDate = reviewTime(b) - reviewTime(a);
+    if (byDate !== 0) return byDate;
+    return String(b?._id ?? "").localeCompare(String(a?._id ?? ""));
+  });
+}
+
+function upsertReviewById(
+  items: any[],
+  review: any,
+  mapReview: (current: any | undefined, review: any) => any,
+) {
+  const id = String(review?._id ?? "");
+  if (!id) return items;
+
+  const index = items.findIndex((item) => String(item?._id ?? "") === id);
+  if (index === -1) {
+    return [mapReview(undefined, review), ...items];
+  }
+
+  const next = [...items];
+  next[index] = mapReview(next[index], review);
+  return next;
+}
+
 export function mergeProductDetailReviews({
   baseReviews,
   myReview,
@@ -76,41 +108,58 @@ export function mergeProductDetailReviews({
   const base = Array.isArray(baseReviews) ? baseReviews : [];
   let next = base;
 
-  // 내 후기 덮어쓰기 (있을 때만)
   if (myReview && myReview._id) {
-    const i = next.findIndex((r: any) => String(r._id) === String(myReview._id));
-    if (i !== -1) {
-      next = [...next];
-      next[i] = {
-        ...next[i],
-        user: myReview.userName ?? next[i].user, // UI에서 쓰는 user 필드 보강
-        content: myReview.content,
-        photos: myReview.photos ?? [],
-        masked: false, // 본인 뷰는 언마스크
-        ownedByMe: true,
-        status: myReview.status, // hidden/visible 그대로 유지
-      };
+    next = upsertReviewById(next, myReview, (current, review) => ({
+      ...(current ?? {}),
+      _id: review._id,
+      user: review.userName ?? current?.user ?? null,
+      userName: review.userName ?? current?.userName ?? null,
+      rating: review.rating ?? current?.rating ?? 0,
+      content: review.content,
+      photos: review.photos ?? [],
+      createdAt: review.createdAt ?? current?.createdAt ?? null,
+      date: review.date ?? current?.date ?? review.createdAt ?? null,
+      status: review.status === "hidden" ? "hidden" : "visible",
+      authorStatus: review.authorStatus ?? (review.status === "hidden" ? "hidden" : "visible"),
+      moderationStatus: review.moderationStatus ?? current?.moderationStatus ?? "visible",
+      effectiveStatus:
+        review.effectiveStatus ??
+        ((review.authorStatus ?? review.status) === "visible" &&
+        (review.moderationStatus ?? current?.moderationStatus) !== "hidden"
+          ? "visible"
+          : "hidden"),
+      masked: false,
+      ownedByMe: true,
+    }));
+  }
+
+  if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
+    for (const raw of adminReviews) {
+      next = upsertReviewById(next, raw, (current, review) => ({
+        ...(current ?? {}),
+        _id: review._id,
+        user: review.userName ?? current?.user ?? null,
+        userName: review.userName ?? current?.userName ?? null,
+        rating: review.rating ?? current?.rating ?? 0,
+        content: review.content,
+        photos: review.photos ?? [],
+        createdAt: review.createdAt ?? current?.createdAt ?? null,
+        date: review.date ?? current?.date ?? review.createdAt ?? null,
+        status: review.status === "hidden" ? "hidden" : "visible",
+        authorStatus: review.authorStatus ?? (review.status === "hidden" ? "hidden" : "visible"),
+        moderationStatus: review.moderationStatus ?? current?.moderationStatus ?? "visible",
+        effectiveStatus:
+          review.effectiveStatus ??
+          ((review.authorStatus ?? review.status) === "visible" && review.moderationStatus !== "hidden"
+            ? "visible"
+            : "hidden"),
+        masked: false,
+        adminView: true,
+      }));
     }
   }
 
-  // 관리자면 표시 중인 항목 범위에서 원문으로 덮어쓰기
-  if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
-    const map = new Map(adminReviews.map((r: any) => [String(r._id), r]));
-    next = next.map((r: any) => {
-      const raw = map.get(String(r._id));
-      if (!raw) return r;
-      return {
-        ...r,
-        // admin API의 필드를 화면 필드로 매핑
-        user: raw.userName ?? r.user,
-        content: raw.content,
-        photos: raw.photos ?? [],
-        status: raw.status,
-        masked: false, // 관리자 뷰는 언마스크
-        adminView: true,
-      };
-    });
-  }
+  next = sortReviewsByCreatedAt(next);
 
   return next;
 }

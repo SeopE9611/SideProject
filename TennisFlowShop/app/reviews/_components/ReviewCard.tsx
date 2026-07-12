@@ -319,7 +319,7 @@ export default function ReviewCard({
           </div>
 
           <div className="flex items-center gap-2">
-            {(item.ownedByMe || isAdmin) && (
+            {(item.ownedByMe || isAdmin) && !isMasked && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button

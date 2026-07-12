@@ -57,10 +57,13 @@ test("명시 itemId target 선택은 primary exact match만 허용하고 nextTar
   const bundle = resolver.makeBundle("order", id(10), [
     { targetKey: "a", subjectType: "order", subjectId: id(10), reviewContext: "product", contextLabel: "상품 후기", eligible: true, reviewed: false, applicationIds: [], primaryProductId: id(11), relatedProductIds: [id(11), id(13)], relatedRacketIds: [] },
     { targetKey: "b", subjectType: "order", subjectId: id(10), reviewContext: "product", contextLabel: "상품 후기", eligible: true, reviewed: false, applicationIds: [], primaryProductId: id(12), relatedProductIds: [id(12)], relatedRacketIds: [] },
+    { targetKey: "c", subjectType: "order", subjectId: id(10), reviewContext: "product", contextLabel: "라켓 후기", eligible: true, reviewed: false, applicationIds: [], primaryRacketId: id(14), relatedProductIds: [], relatedRacketIds: [id(15)] },
   ]);
   assert.equal(policy.findRequestedCanonicalTarget(bundle, id(11)).primaryProductId, id(11));
   assert.equal(policy.findRequestedCanonicalTarget(bundle, id(12)).primaryProductId, id(12));
+  assert.equal(policy.findRequestedCanonicalTarget(bundle, id(14)).primaryRacketId, id(14));
   assert.equal(policy.findRequestedCanonicalTarget(bundle, id(13)), null);
+  assert.equal(policy.findRequestedCanonicalTarget(bundle, id(15)), null);
 });
 
 test("일반 라켓 구매 item은 product context 안에 라켓 canonical metadata를 포함한다", async () => {
