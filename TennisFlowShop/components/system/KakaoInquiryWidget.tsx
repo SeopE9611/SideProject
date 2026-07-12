@@ -34,6 +34,7 @@ function normalizeChannelPublicId(raw: string) {
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
   const isMypageRoute = pathname === "/mypage" || pathname.startsWith("/mypage/");
+  const isReviewsIndexRoute = pathname === "/reviews";
   const authHiddenPrefixes = [
     "/login",
     "/forgot-password",
@@ -81,6 +82,7 @@ export default function KakaoInquiryWidget() {
     (!isMypageRoute && !canShowGuide && !canShowInquiry && !canShowBug);
   const hideOnFinderTouch = pathname === "/rackets/finder";
   const hideOnCartMobile = pathname === "/cart";
+  const useReviewsCompactLauncher = isReviewsIndexRoute;
 
   useEffect(() => {
     // 숨김 상태로 전환되면 패널은 닫아줌(UX + 상태 정리)
@@ -279,12 +281,52 @@ export default function KakaoInquiryWidget() {
         "fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4",
         hideOnFinderTouch && "hidden bp-lg:block",
         hideOnCartMobile && "hidden bp-lg:block",
+        useReviewsCompactLauncher && "bottom-[calc(env(safe-area-inset-bottom)+0.75rem)]",
       )}
       style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
     >
       <div className="flex flex-col items-end gap-2 bp-sm:gap-3">
+        {useReviewsCompactLauncher ? (
+          <div className="relative bp-lg:hidden">
+            <div
+              className={[
+                "absolute right-0 bottom-[58px]",
+                "transition-all duration-150",
+                panel === "guide"
+                  ? "opacity-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 translate-y-2 pointer-events-none",
+              ].join(" ")}
+            >
+              <div ref={guidePanelRef} className="relative">
+                <Card className="relative w-[min(320px,calc(100vw-2rem))] rounded-panel border-border shadow-float">
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                    <CardTitle className="text-ui-body-sm font-semibold">무엇을 도와드릴까요?</CardTitle>
+                    <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
+                      <X className="h-4 w-4" />
+                    </button>
+                  </CardHeader>
+                  <CardContent className="grid gap-2">
+                    <Link href="/services/apply" className="min-h-11 rounded-control border border-border bg-card px-3 py-2 text-ui-body-sm font-semibold hover:bg-muted" onClick={() => setPanel(null)}>스트링 교체 신청하기</Link>
+                    {canShowBug ? <button type="button" onClick={openBugChat} className="min-h-11 rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted">버그 제보</button> : null}
+                    {canShowInquiry ? <button type="button" onClick={openKakaoChat} className="min-h-11 rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted">카카오톡 문의</button> : null}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+            <button
+              type="button"
+              ref={guideTriggerRef}
+              aria-label="후기 페이지 문의 메뉴 열기"
+              onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 text-ui-body-sm font-semibold text-primary-foreground shadow-float hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+              <MessageCircle className="h-4 w-4" />
+              문의
+            </button>
+          </div>
+        ) : null}
         {/* ---------------- 목적 선택 ---------------- */}
-        {!isMypageRoute ? (
+        {!isMypageRoute && !useReviewsCompactLauncher ? (
           <div className="relative">
             <div
               className={[
@@ -370,7 +412,7 @@ export default function KakaoInquiryWidget() {
         ) : null}
 
         {/* ---------------- 버그 제보 ---------------- */}
-        {canShowBug && !isMypageRoute ? (
+        {canShowBug && !isMypageRoute && !useReviewsCompactLauncher ? (
           <div className="relative">
             <div
               className={[
@@ -463,7 +505,7 @@ export default function KakaoInquiryWidget() {
         ) : null}
 
         {/* ---------------- 카카오 문의 ---------------- */}
-        {canShowInquiry ? (
+        {canShowInquiry && !useReviewsCompactLauncher ? (
           <div className="relative">
             <div
               className={[

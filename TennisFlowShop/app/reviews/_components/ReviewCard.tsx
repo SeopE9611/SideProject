@@ -2,6 +2,8 @@
 
 import { getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
+import ReviewPhotoStrip from "@/components/reviews/ReviewPhotoStrip";
+import ReviewRatingDisplay from "@/components/reviews/ReviewRatingDisplay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,19 +29,18 @@ import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-s
 import {
   Eye,
   EyeOff,
-  ImageIcon,
   Loader2,
   MoreHorizontal,
   Package,
   Pencil,
   Briefcase,
   Star,
+  ShieldCheck,
   ThumbsUp,
   Trash2,
   Wrench,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const ReviewPhotoDialog = dynamic(() => import("@/app/reviews/_components/ReviewPhotoDialog"), {
@@ -189,6 +190,7 @@ export default function ReviewCard({
         ? "대여 후기"
         : "교체서비스 후기");
   const TypeIcon = item.type === "product" ? Package : item.type === "rental" ? Briefcase : Wrench;
+  const ShieldCheckIcon = ShieldCheck;
   const targetMeta =
     item.type === "rental"
       ? [
@@ -272,84 +274,70 @@ export default function ReviewCard({
   return (
     <Card
       variant="interactive"
-      className="group overflow-hidden rounded-2xl border-border bg-card shadow-sm"
+      className="group overflow-hidden rounded-panel border-border bg-card shadow-sm hover:border-brand-highlight/35 hover:shadow-soft"
     >
-      {/* Tennis court line accent */}
-      <div className="h-1 bg-secondary" />
-
-      <CardContent className="relative space-y-4 p-4 md:p-5">
+      <CardContent className="relative space-y-4 p-4 bp-md:p-5">
         {busy && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-card/80">
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-panel bg-card/80">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <span className="ml-2 text-ui-body-sm text-primary">변경 중...</span>
           </div>
         )}
 
-        {/* Header with badges and date */}
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 space-y-2">
-            <Badge
-              variant={item.type === "product" ? "info" : item.type === "rental" ? "success" : "neutral"}
-              className="gap-1.5 rounded-full px-2.5 py-1 font-medium"
-            >
-              <TypeIcon className="h-3.5 w-3.5" />
-              {typeLabel}
-            </Badge>
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="signal" className="gap-1.5 px-2.5 py-1">
+                <ShieldCheckIcon className="h-3.5 w-3.5" />
+                구매·이용 인증
+              </Badge>
+              <Badge variant="outline" className="gap-1.5 px-2.5 py-1">
+                <TypeIcon className="h-3.5 w-3.5" />
+                {typeLabel}
+              </Badge>
+            </div>
             {!!headerTitle && (
               <div className="min-w-0">
-                <p className="line-clamp-2 break-words text-ui-body font-semibold text-foreground">
+                <p className="line-clamp-2 break-words text-ui-card-title font-semibold text-foreground">
                   {headerTitle}
                 </p>
-                {targetMeta && (
-                  <p className="mt-1 line-clamp-1 break-words text-ui-label text-muted-foreground">
-                    {targetMeta}
-                  </p>
-                )}
+                {targetMeta && <p className="mt-1 line-clamp-1 break-words text-ui-label text-muted-foreground">{targetMeta}</p>}
               </div>
             )}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-ui-body-sm">
+              <span className="font-medium text-muted-foreground">{displayName}</span>
+              <span aria-hidden="true" className="text-muted-foreground">·</span>
+              <ReviewRatingDisplay rating={item.rating ?? 0} />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-start gap-2">
+            <time className="whitespace-nowrap pt-1 text-ui-label text-muted-foreground tabular-nums">{fmt(item.createdAt)}</time>
             {(item.ownedByMe || isAdmin) && !isMasked && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-control hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label="리뷰 관리"
                   >
                     <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
-                  {/* 공개/비공개 토글 */}
                   <DropdownMenuItem
                     onClick={async (e) => {
                       e.stopPropagation();
                       try {
                         setBusy(true);
                         if (isAdminModeration) {
-                          await adminMutator(`/api/admin/reviews/${item._id}`, {
-                            method: "PATCH",
-                            body: JSON.stringify({ moderationStatus: nextStatus }),
-                          });
+                          await adminMutator(`/api/admin/reviews/${item._id}`, { method: "PATCH", body: JSON.stringify({ moderationStatus: nextStatus }) });
                         } else {
-                          const res = await fetch(`/api/reviews/${item._id}`, {
-                            method: "PATCH",
-                            credentials: "include",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ status: nextStatus }),
-                          });
+                          const res = await fetch(`/api/reviews/${item._id}`, { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: nextStatus }) });
                           if (!res.ok) throw new Error("상태 변경 실패");
                         }
-                        try {
-                          await onMutate?.(); // 리스트 재검증
-                        } catch (revalidateError) {
-                          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
-                        }
-                        showSuccessToast(
-                          nextStatus === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
-                        );
+                        try { await onMutate?.(); } catch (revalidateError) { console.error("[reviews] failed to revalidate after successful mutation", revalidateError); }
+                        showSuccessToast(nextStatus === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
                       } catch (err: any) {
                         showErrorToast(err?.message || "상태 변경 중 오류");
                       } finally {
@@ -358,51 +346,23 @@ export default function ReviewCard({
                     }}
                     className="cursor-pointer"
                   >
-                    {managedStatus === "visible" ? (
-                      <>
-                        <EyeOff className="mr-2 h-4 w-4" />
-                        비공개로 전환
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="mr-2 h-4 w-4" />
-                        공개로 전환
-                      </>
-                    )}
+                    {managedStatus === "visible" ? <><EyeOff className="mr-2 h-4 w-4" />비공개로 전환</> : <><Eye className="mr-2 h-4 w-4" />공개로 전환</>}
                   </DropdownMenuItem>
-
-                  {/* 수정 */}
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEdit();
-                    }}
-                  >
-                    <Pencil className="mr-2 h-4 w-4" />
-                    수정
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(); }}>
+                    <Pencil className="mr-2 h-4 w-4" />수정
                   </DropdownMenuItem>
-
-                  {/* 삭제 */}
                   <DropdownMenuItem
                     onClick={async (e) => {
                       e.stopPropagation();
                       if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
                       try {
                         setBusy(true);
-                        if (isAdmin && !item.ownedByMe) {
-                          await adminMutator(`/api/admin/reviews/${item._id}`, { method: "DELETE" });
-                        } else {
-                          const res = await fetch(`/api/reviews/${item._id}`, {
-                            method: "DELETE",
-                            credentials: "include",
-                          });
+                        if (isAdmin && !item.ownedByMe) await adminMutator(`/api/admin/reviews/${item._id}`, { method: "DELETE" });
+                        else {
+                          const res = await fetch(`/api/reviews/${item._id}`, { method: "DELETE", credentials: "include" });
                           if (!res.ok) throw new Error("삭제 실패");
                         }
-                        try {
-                          await onMutate?.(); // 리스트 재검증
-                        } catch (revalidateError) {
-                          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
-                        }
+                        try { await onMutate?.(); } catch (revalidateError) { console.error("[reviews] failed to revalidate after successful mutation", revalidateError); }
                         showSuccessToast("삭제했습니다.");
                         setBusy(false);
                       } catch (err: any) {
@@ -412,8 +372,7 @@ export default function ReviewCard({
                     }}
                     className="cursor-pointer text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    삭제
+                    <Trash2 className="mr-2 h-4 w-4" />삭제
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -421,102 +380,28 @@ export default function ReviewCard({
           </div>
         </div>
 
-        {/* Author info with tennis styling */}
-        <div className="flex items-center gap-2 text-ui-label">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
-            <span className="font-semibold text-ui-micro">
-              {displayName.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <span className="font-medium text-muted-foreground">{displayName}</span>
-        </div>
-
-        {/* Rating with tennis court styling */}
-        <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-3">
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                className={`h-4 w-4 ${i < (item.rating ?? 0) ? "text-warning fill-current" : "text-muted-foreground"}`}
-              />
-            ))}
-          </div>
-          <span className="ml-1 text-ui-body-sm font-semibold text-foreground">
-            {item.rating}/5
-          </span>
-        </div>
-
-        {/* Content */}
-        {isMasked ? (
-          <MaskedBlock className="mt-1" />
-        ) : (
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
-            <p className="whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-foreground">
-              {item.content}
-            </p>
-          </div>
+        {isMasked ? <MaskedBlock className="mt-1" /> : (
+          <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-foreground">{item.content}</p>
         )}
 
-        {/* Photo thumbnails */}
-        {Array.isArray(item.photos) && item.photos.length > 0 && (
-          <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="inline-flex items-center gap-2 text-ui-label font-medium text-muted-foreground">
-              <ImageIcon className="h-4 w-4 text-primary" />
-              사진 {item.photos.length}장
-            </span>
-
-            <div className="flex flex-wrap gap-2">
-              {item.photos.slice(0, 4).map((src: string, idx: number) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    setViewerIndex(idx);
-                    setOpen(true);
-                  }}
-                  className="relative h-12 w-12 overflow-hidden rounded-xl border border-border/60 bg-muted transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring"
-                  aria-label={`리뷰 사진 ${idx + 1} 크게 보기`}
-                >
-                  <Image
-                    src={src || "/placeholder.svg"}
-                    alt={`photo-${idx}`}
-                    fill
-                    className="object-cover"
-                  />
-                  {idx === 3 && item.photos.length > 4 && (
-                    <div className="absolute inset-0 bg-overlay/60 text-foreground text-ui-micro font-semibold flex items-center justify-center">
-                      +{item.photos.length - 3}
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+        {!isMasked && Array.isArray(item.photos) && item.photos.length > 0 && (
+          <ReviewPhotoStrip photos={item.photos} onOpen={(idx) => { setViewerIndex(idx); setOpen(true); }} />
         )}
 
-        {/* Helpful + Date (우측 정렬) */}
-        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center">
+        <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
           <Button
             size="sm"
-            variant={voted ? "default" : "secondary"}
+            variant={voted ? "secondary" : "outline"}
             onClick={onHelpful}
             disabled={pending || !helpfulEligible}
-            className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl px-4 font-medium sm:w-auto"
+            className="min-h-9 rounded-control px-4 font-medium data-[voted=true]:bg-brand-highlight-muted data-[voted=true]:text-brand-highlight-foreground dark:data-[voted=true]:text-brand-highlight"
+            data-voted={voted}
             aria-pressed={voted}
             aria-label={item.ownedByMe ? "내 후기에는 도움돼요를 누를 수 없습니다." : `도움돼요 ${count ? `(${count})` : ""}`}
           >
-            {pending ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <ThumbsUp className="h-4 w-4 mr-2" />
-            )}
+            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ThumbsUp className="mr-2 h-4 w-4 transition-transform duration-150 data-[voted=true]:scale-110 motion-reduce:transition-none" data-voted={voted} />}
             {item.ownedByMe ? "내 후기" : `도움돼요 ${count ? `(${count})` : ""}`}
           </Button>
-
-          {/* 날짜 */}
-          <time className="whitespace-nowrap rounded-full border border-border/60 bg-secondary px-2 py-1 text-ui-label font-medium text-muted-foreground sm:ml-auto shrink-0 tabular-nums">
-            {fmt(item.createdAt)}
-          </time>
         </div>
       </CardContent>
 
