@@ -78,6 +78,34 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
+function racketReviewTime(value: any): number {
+  const date = value?.createdAt ?? value?.date;
+  const time = date ? new Date(date).getTime() : 0;
+  return Number.isFinite(time) ? time : 0;
+}
+
+function sortRacketReviewsByCreatedAt(items: any[]) {
+  return [...items].sort((a, b) => {
+    const byDate = racketReviewTime(b) - racketReviewTime(a);
+    if (byDate !== 0) return byDate;
+    return String(b?._id ?? "").localeCompare(String(a?._id ?? ""));
+  });
+}
+
+function upsertRacketReviewById(
+  items: any[],
+  review: any,
+  mapReview: (current: any | undefined, review: any) => any,
+) {
+  const id = String(review?._id ?? "");
+  if (!id) return items;
+  const index = items.findIndex((item) => String(item?._id ?? "") === id);
+  if (index === -1) return [mapReview(undefined, review), ...items];
+  const next = [...items];
+  next[index] = mapReview(next[index], review);
+  return next;
+}
+
 export default function RacketDetailClient({ racket, stock }: RacketDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -197,42 +225,58 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const mergedReviews = useMemo(() => {
     let next = baseReviews;
 
-    // 내 후기 덮어쓰기 (있을 때만)
     if (myReview && (myReview as any)._id) {
-      const i = next.findIndex((r: any) => String(r._id) === String((myReview as any)._id));
-      if (i !== -1) {
-        next = [...next];
-        next[i] = {
-          ...next[i],
-          user: (myReview as any).userName ?? next[i].user,
-          rating: (myReview as any).rating ?? next[i].rating,
-          content: (myReview as any).content,
-          photos: (myReview as any).photos ?? [],
+      next = upsertRacketReviewById(next, myReview, (current, review) => ({
+        ...(current ?? {}),
+        _id: review._id,
+        user: review.userName ?? current?.user ?? null,
+        userName: review.userName ?? current?.userName ?? null,
+        rating: review.rating ?? current?.rating ?? 0,
+        content: review.content,
+        photos: review.photos ?? [],
+        createdAt: review.createdAt ?? current?.createdAt ?? null,
+        date: review.date ?? current?.date ?? review.createdAt ?? null,
+        masked: false,
+        ownedByMe: true,
+        status: review.status === "hidden" ? "hidden" : "visible",
+        authorStatus: review.authorStatus ?? (review.status === "hidden" ? "hidden" : "visible"),
+        moderationStatus: review.moderationStatus ?? current?.moderationStatus ?? "visible",
+        effectiveStatus:
+          review.effectiveStatus ??
+          ((review.authorStatus ?? review.status) === "visible" &&
+          (review.moderationStatus ?? current?.moderationStatus) !== "hidden"
+            ? "visible"
+            : "hidden"),
+      }));
+    }
+
+    if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
+      for (const raw of adminReviews as any[]) {
+        next = upsertRacketReviewById(next, raw, (current, review) => ({
+          ...(current ?? {}),
+          _id: review._id,
+          user: review.userName ?? current?.user ?? null,
+          userName: review.userName ?? current?.userName ?? null,
+          rating: review.rating ?? current?.rating ?? 0,
+          content: review.content,
+          photos: review.photos ?? [],
+          createdAt: review.createdAt ?? current?.createdAt ?? null,
+          date: review.date ?? current?.date ?? review.createdAt ?? null,
+          status: review.status === "hidden" ? "hidden" : "visible",
+          authorStatus: review.authorStatus ?? (review.status === "hidden" ? "hidden" : "visible"),
+          moderationStatus: review.moderationStatus ?? current?.moderationStatus ?? "visible",
+          effectiveStatus:
+            review.effectiveStatus ??
+            ((review.authorStatus ?? review.status) === "visible" && review.moderationStatus !== "hidden"
+              ? "visible"
+              : "hidden"),
           masked: false,
-          ownedByMe: true,
-          status: (myReview as any).status,
-        };
+          adminView: true,
+        }));
       }
     }
 
-    // 관리자면 표시 중인 항목 범위에서 원문으로 덮어쓰기
-    if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
-      const map = new Map((adminReviews as any[]).map((r: any) => [String(r._id), r]));
-      next = next.map((r: any) => {
-        const raw = map.get(String(r._id));
-        if (!raw) return r;
-        return {
-          ...r,
-          user: raw.userName ?? r.user,
-          rating: raw.rating ?? r.rating,
-          content: raw.content,
-          photos: raw.photos ?? [],
-          status: raw.status,
-          masked: false,
-          adminView: true,
-        };
-      });
-    }
+    next = sortRacketReviewsByCreatedAt(next);
 
     return next;
   }, [baseReviews, myReview, isAdmin, adminReviews]);

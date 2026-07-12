@@ -230,33 +230,32 @@ test("getPublicReviewSurface는 facet summary와 items를 분리하고 hidden을
   assert.equal(result.summary.average, 4.2);
   assert.equal(result.items[0].content, null);
   assert.deepEqual(result.items[0].photos, []);
+  assert.equal(result.items[0].userName, null);
   assert.equal(result.items[0].masked, true);
+  assert.equal(result.items[0].authorStatus, "hidden");
+  assert.equal(result.items[0].moderationStatus, "visible");
+  assert.equal(result.items[0].effectiveStatus, "hidden");
   const ownDb = makeDb({
     stringing_applications: [],
     reviews: [{ items: [{ ...items[0], userId: viewer }], summary: [] }],
   });
-  assert.equal(
-    (
-      await surface.getPublicReviewSurface(ownDb, {
-        target: { type: "product", id: String(oid("16")) },
-        viewerUserId: viewer,
-      })
-    ).items[0].masked,
-    false,
-  );
+  const ownResult = await surface.getPublicReviewSurface(ownDb, {
+    target: { type: "product", id: String(oid("16")) },
+    viewerUserId: viewer,
+  });
+  assert.equal(ownResult.items[0].masked, false);
+  assert.equal(ownResult.items[0].content, "secret");
+  assert.deepEqual(ownResult.items[0].photos, ["p"]);
   const adminDb = makeDb({
     stringing_applications: [],
     reviews: [{ items: [items[0]], summary: [] }],
   });
-  assert.equal(
-    (
-      await surface.getPublicReviewSurface(adminDb, {
-        target: { type: "product", id: String(oid("16")) },
-        viewerIsAdmin: true,
-      })
-    ).items[0].masked,
-    false,
-  );
+  const adminResult = await surface.getPublicReviewSurface(adminDb, {
+    target: { type: "product", id: String(oid("16")) },
+    viewerIsAdmin: true,
+  });
+  assert.equal(adminResult.items[0].masked, false);
+  assert.equal(adminResult.items[0].content, "secret");
 });
 
 test("aggregate pipeline은 target match → facet items status/sort/limit 및 summary visible/group 순서다", async () => {
@@ -266,10 +265,14 @@ test("aggregate pipeline은 target match → facet items status/sort/limit 및 s
   assert.deepEqual(pipeline[0].$match.isDeleted, { $ne: true });
   assert.ok(pipeline[0].$match.$or);
   const facet = pipeline[1].$facet;
-  assert.deepEqual(facet.items[0], { $match: { status: { $in: ["visible", "hidden"] } } });
+  assert.deepEqual(facet.items[0], {
+    $match: { status: { $in: ["visible", "hidden"] }, moderationStatus: { $ne: "hidden" } },
+  });
   assert.deepEqual(facet.items[1], { $sort: { createdAt: -1, _id: -1 } });
   assert.deepEqual(facet.items[2], { $limit: 10 });
-  assert.deepEqual(facet.summary[0], { $match: { status: "visible" } });
+  assert.deepEqual(facet.summary[0], {
+    $match: { status: "visible", moderationStatus: { $ne: "hidden" } },
+  });
   assert.deepEqual(facet.summary[1], {
     $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } },
   });

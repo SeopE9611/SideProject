@@ -359,7 +359,7 @@ export default function AdminReviewListClient() {
   };
 
   // ---- 공개/비공개 토글(낙관적) ----
-  const toggleVisible = async (it: Row) => {
+  const toggleVisible = async (it: Row): Promise<"visible" | "hidden" | null> => {
     const next = it.moderationStatus === "visible" ? "hidden" : "visible";
     const snapshot = data;
     await mutate(
@@ -392,9 +392,11 @@ export default function AdminReviewListClient() {
       showSuccessToast(
         next === "hidden" ? "후기를 비공개로 변경했습니다." : "후기를 공개로 변경했습니다.",
       );
+      return next;
     } catch {
       await mutate(() => snapshot, false);
       showErrorToast("상태 변경 실패");
+      return null;
     }
   };
 
@@ -1111,18 +1113,22 @@ export default function AdminReviewListClient() {
                 variant="outline"
                 onClick={async () => {
                   if (!detail) return;
-                  await toggleVisible(detail);
+                  const next = await toggleVisible(detail);
+                  if (!next) return;
                   setDetail((d) =>
                     d
                       ? {
                           ...d,
-                          status: d.status === "visible" ? "hidden" : "visible",
+                          status: next,
+                          moderationStatus: next,
+                          effectiveStatus:
+                            d.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
                         }
                       : d,
                   );
                 }}
               >
-                {detail?.status === "visible" ? (
+                {detail?.moderationStatus === "visible" ? (
                   <>
                     <EyeOff className="h-4 w-4 mr-1" /> 비공개
                   </>

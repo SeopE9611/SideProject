@@ -20,6 +20,9 @@ export type PublicReviewSurfaceItem = {
   content: string | null;
   photos: string[];
   status: "visible" | "hidden";
+  authorStatus?: "visible" | "hidden";
+  moderationStatus?: "visible" | "hidden";
+  effectiveStatus?: "visible" | "hidden";
   masked: boolean;
   ownedByMe: boolean;
   adminView?: boolean;
@@ -299,10 +302,24 @@ export async function getPublicReviewSurface(
   const [result] = await db
     .collection("reviews")
     .aggregate([
-      { $match: { ...buildPublicReviewMatch(), ...targetMatch } },
+      { $match: { isDeleted: { $ne: true }, deletedAt: null, ...targetMatch } },
       {
         $facet: {
           items: [
+            { $match: viewerIsAdmin
+              ? { status: { $in: ["visible", "hidden"] } }
+              : viewerUserId
+                ? {
+                    status: { $in: ["visible", "hidden"] },
+                    $or: [
+                      { moderationStatus: { $ne: "hidden" } },
+                      { userId: viewerUserId },
+                    ],
+                  }
+                : {
+                    status: { $in: ["visible", "hidden"] },
+                    moderationStatus: { $ne: "hidden" },
+                  } },
             { $sort: { createdAt: -1, _id: -1 } },
             { $limit: limit },
             {
@@ -315,6 +332,7 @@ export async function getPublicReviewSurface(
                 content: 1,
                 photos: 1,
                 status: 1,
+                moderationStatus: 1,
                 reviewType: 1,
                 reviewContext: 1,
                 contextLabel: 1,
@@ -339,7 +357,11 @@ export async function getPublicReviewSurface(
     const ownedByMe = Boolean(
       viewerUserId && row?.userId && String(row.userId) === String(viewerUserId),
     );
-    const masked = false;
+    const authorHidden = row.status === "hidden";
+    const masked = authorHidden && !ownedByMe && !viewerIsAdmin;
+    const authorStatus = authorHidden ? "hidden" : "visible";
+    const moderationStatus = row.moderationStatus === "hidden" ? "hidden" : "visible";
+    const effectiveStatus = authorStatus === "visible" && moderationStatus === "visible" ? "visible" : "hidden";
     const reviewContext = inferPublicReviewContext(row);
     return {
       _id: String(row._id),
@@ -350,7 +372,10 @@ export async function getPublicReviewSurface(
       createdAt: row.createdAt ?? null,
       content: masked ? null : (row.content ?? null),
       photos: masked ? [] : Array.isArray(row.photos) ? row.photos : [],
-      status: row.status === "hidden" ? "hidden" : "visible",
+      status: authorStatus,
+      authorStatus,
+      moderationStatus,
+      effectiveStatus,
       masked,
       ownedByMe,
       adminView: viewerIsAdmin,

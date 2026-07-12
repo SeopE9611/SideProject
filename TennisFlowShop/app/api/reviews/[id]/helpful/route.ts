@@ -41,10 +41,10 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   // 리뷰 존재 검증(삭제/미존재 리뷰에 투표 로그가 남는 데이터 오염 방지)
   const exists = await reviews.findOne(
     { _id: reviewId, isDeleted: { $ne: true } },
-    { projection: { _id: 1, userId: 1, status: 1 } },
+    { projection: { _id: 1, userId: 1, status: 1, moderationStatus: 1 } },
   );
   if (!exists) return NextResponse.json({ ok: false, reason: "notFound" }, { status: 404 });
-  if (exists.status !== "visible") {
+  if (exists.status !== "visible" || exists.moderationStatus === "hidden") {
     return NextResponse.json({ ok: false, reason: "reviewNotVisible" }, { status: 403 });
   }
   if (String(exists.userId) === String(userId)) {

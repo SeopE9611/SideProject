@@ -233,7 +233,7 @@ test("후기 PATCH 정책 계약: partial validator와 사진 whitelist를 유�
   assert.ok(patchRoute.includes('if ("rating" in inputValidation.value) body.rating'));
   assert.ok(patchRoute.includes('if ("photos" in inputValidation.value) body.photos'));
   assert.ok(patchRoute.includes("body.status") && patchRoute.includes("body.visibility"));
-  assert.ok(patchRoute.includes("isAllowedHttpUrl"));
+  assert.ok(patchRoute.includes("isAllowedReviewPhotoUrl"));
   assert.ok(patchRoute.includes('reason: "invalidPhotos"'));
 });
 
@@ -250,6 +250,16 @@ test("후기 POST와 cursor 정책 계약: photos 타입과 cursor 필수 필드
   assert.ok(postRoute.includes("parsed.createdAt"));
   assert.ok(postRoute.includes('sort === "helpful" && !isValidCursorNumber(parsed.helpfulCount)'));
   assert.ok(postRoute.includes('sort === "rating" && !isValidCursorNumber(parsed.rating)'));
+});
+
+test("helpful API는 실제 공개 후기만 허용하고 관리자 숨김을 차단한다", () => {
+  const helpfulRoute = read("app/api/reviews/[id]/helpful/route.ts");
+
+  assert.ok(helpfulRoute.includes("moderationStatus: 1"));
+  assert.ok(helpfulRoute.includes('exists.status !== "visible" || exists.moderationStatus === "hidden"'));
+  assert.ok(helpfulRoute.includes('reason: "reviewNotVisible"'));
+  assert.ok(helpfulRoute.includes('reason: "ownReview"'));
+  assert.ok(helpfulRoute.includes('reason: "notFound"'));
 });
 
 test("CI 계약: test-contract job에서 review-security를 public surface 다음에 실행한다", () => {

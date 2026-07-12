@@ -83,7 +83,7 @@ test("후기 대상 통합 계약: 서비스 연결 주문/대여는 통합 revi
     transactionFlowList.includes("!applicationActionTarget.orderId") &&
       transactionFlowList.includes("!applicationActionTarget.rentalId"),
   );
-  assert.ok(eligibility.includes('reviewContext: "product_stringing"'));
+  assert.ok(eligibility.includes('reviewContext === "product_stringing"'));
   assert.ok(!eligibility.includes('reason: "serviceLinkedOrder"'));
   assert.ok(!reviewsRoute.includes('message: "serviceLinkedOrder"'));
   assert.ok(!reviewItems.includes("status: 403") || !reviewItems.includes("serviceLinkedOrder"));
