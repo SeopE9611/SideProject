@@ -5,7 +5,9 @@ import type {
   CareItem,
   RacketCareImportCandidate,
 } from "@/app/mypage/racket-care/_components/racket-care-client.types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Check } from "lucide-react";
 import { useEffect } from "react";
 
 const freqLabels: Record<string, string> = {
@@ -113,6 +116,7 @@ export default function RacketCareRegistrationDialog(props: {
     formFromCandidate,
   } = props;
   const estimatedDate = previewDate(form);
+  const steps = ["등록 방식", "라켓 정보", "관리 기준"];
   useEffect(() => {
     if (!open || step !== 2) return;
     const firstField = ["nickname", "brand", "model"].find((field) => errors[field]);
@@ -123,30 +127,49 @@ export default function RacketCareRegistrationDialog(props: {
       <DialogContent className="max-h-[min(720px,calc(100dvh-2rem))] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? "라켓 정보 수정" : "라켓 등록"}</DialogTitle>
+          <div className="mt-3 grid gap-2 bp-sm:grid-cols-3">
+            {steps.map((label, index) => {
+              const number = index + 1;
+              const complete = step > number;
+              return (
+                <div key={label} className="rounded-control border border-border bg-card p-3 data-[active=true]:border-brand-highlight data-[active=true]:bg-brand-highlight-muted" data-active={step === number}>
+                  <span className="flex items-center gap-2 text-ui-label text-muted-foreground">
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-muted text-ui-micro data-[active=true]:bg-brand-highlight data-[active=true]:text-brand-highlight-foreground" data-active={step === number}>
+                      {complete ? <Check className="h-3 w-3" /> : String(number).padStart(2, "0")}
+                    </span>
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </DialogHeader>
         {!editing && step === 1 ? (
           <div className="grid gap-3 bp-sm:grid-cols-2">
             <Button
-              variant={mode === "import" ? "default" : "outline"}
-              className="min-h-20"
+              variant={mode === "import" ? "highlight" : "outline"}
+              wrap="responsive"
+              disabled={importCandidates.length === 0}
+              className="min-h-24 justify-start rounded-panel p-4 text-left"
               onClick={() => {
                 setMode("import");
                 if (importCandidates[0]) setForm(formFromCandidate(importCandidates[0]));
                 setStep(2);
               }}
             >
-              기존 정보에서 가져오기
+              <span><span className="block font-semibold">기존 정보에서 가져오기</span><span className="mt-1 block text-ui-label text-muted-foreground">{importCandidates.length > 0 ? "프로필과 완료 이력을 활용합니다." : "가져올 정보가 없습니다."}</span></span>
             </Button>
             <Button
-              variant={mode === "manual" ? "default" : "outline"}
-              className="min-h-20"
+              variant={mode === "manual" ? "highlight" : "outline"}
+              wrap="responsive"
+              className="min-h-24 justify-start rounded-panel p-4 text-left"
               onClick={() => {
                 setMode("manual");
                 setForm(emptyForm());
                 setStep(2);
               }}
             >
-              직접 입력하기
+              <span><span className="block font-semibold">직접 입력하기</span><span className="mt-1 block text-ui-label text-muted-foreground">라켓과 관리 기준을 직접 작성합니다.</span></span>
             </Button>
           </div>
         ) : null}
@@ -157,7 +180,8 @@ export default function RacketCareRegistrationDialog(props: {
                 {importCandidates.map((c) => (
                   <button
                     key={c.id}
-                    className="rounded-xl border border-border p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-control border border-border p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[active=true]:border-brand-highlight data-[active=true]:bg-brand-highlight-muted"
+                    data-active={form.latestCompletedApplicationId === (c.latestCompletedApplication?.id ?? "") && form.nickname === c.nickname}
                     onClick={() => setForm(formFromCandidate(c))}
                   >
                     <span className="font-medium">{c.nickname}</span>
@@ -165,7 +189,7 @@ export default function RacketCareRegistrationDialog(props: {
                       {c.sourceLabel}
                     </span>
                     {c.racket.brand && c.racket.model ? null : (
-                      <span className="ml-2 text-ui-label text-warning">추가 정보 필요</span>
+                      <Badge variant="warning" className="ml-2">추가 정보 필요</Badge>
                     )}
                     <p className="mt-1 text-ui-label text-muted-foreground">
                       {c.lastStringingAt
@@ -271,7 +295,7 @@ export default function RacketCareRegistrationDialog(props: {
               />
               <Label htmlFor="new-reminder">교체 알림 사용</Label>
             </div>
-            <p className="rounded-xl bg-muted/40 p-3 text-ui-body-sm">
+            <Card className="rounded-control border-brand-highlight/30 bg-brand-highlight-muted"><CardContent className="p-3 text-ui-body-sm">
               {estimatedDate ? (
                 <>
                   저장 전 예상 교체일: <span className="font-medium">{estimatedDate}</span>
@@ -279,11 +303,11 @@ export default function RacketCareRegistrationDialog(props: {
               ) : (
                 "마지막 교체일을 입력하면 예상 교체일을 계산합니다."
               )}
-            </p>
+            </CardContent></Card>
             {errors.form && <p className="text-ui-body-sm text-destructive">{errors.form}</p>}
           </div>
         ) : null}
-        <DialogFooter className="sticky bottom-0 bg-background pt-3">
+        <DialogFooter className="sticky bottom-0 bg-background pt-3 pb-[env(safe-area-inset-bottom)]">
           <Button
             variant="outline"
             onClick={() => (step > (editing ? 2 : 1) ? setStep(step - 1) : setOpen(false))}
@@ -292,9 +316,9 @@ export default function RacketCareRegistrationDialog(props: {
             {step > (editing ? 2 : 1) ? "이전" : "취소"}
           </Button>
           {step < 3 ? (
-            <Button onClick={() => setStep(step + 1)}>다음</Button>
+            <Button variant="highlight" wrap="responsive" onClick={() => setStep(step + 1)}>다음</Button>
           ) : (
-            <Button onClick={save} disabled={saving}>
+            <Button variant="highlight" wrap="responsive" onClick={save} disabled={saving}>
               {saving ? "저장 중..." : "저장"}
             </Button>
           )}
