@@ -753,7 +753,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <h2 className="break-keep text-ui-section-title-lg font-semibold text-foreground">내 라켓의 다음 스트링 교체일을 놓치지 마세요</h2>
               <p className="break-keep text-ui-body text-muted-foreground">마지막 교체일, 플레이 빈도, 완료된 교체 이력을 기반으로 상태 점수와 알림을 제공합니다.</p>
               <div className="flex flex-wrap gap-2 text-ui-label text-muted-foreground"><span className="rounded-full bg-muted px-3 py-1">30초 등록</span><span className="rounded-full bg-muted px-3 py-1">기존 이력 활용</span><span className="rounded-full bg-muted px-3 py-1">무료 알림</span></div>
-              <Button asChild size="tall" disabled={racketCarePreview.state === "loading"}><Link href={racketCarePreview.state === "guest" ? "/login?redirectTo=%2Fmypage%2Fracket-care" : "/mypage/racket-care"}>라켓 케어 시작하기</Link></Button>
+              <Button asChild size="tall"><Link href="/racket-care">라켓 케어 알아보기</Link></Button>
             </div>
             <Card className="rounded-2xl border-border/80">
               <CardContent className="space-y-3 p-5">
