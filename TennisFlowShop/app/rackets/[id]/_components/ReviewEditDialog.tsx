@@ -119,6 +119,11 @@ export default function ReviewEditDialog({
             <PhotosReorderGrid
               value={editForm.photos}
               onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
+              disabled={busy || uploadingPhotos}
+              onRemove={(url) => {
+                if (!uploadSessionId) return;
+                void onRemove(url, uploadSessionId);
+              }}
             />
           </div>
 

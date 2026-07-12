@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { REVIEW_CONTENT_MAX_LENGTH, REVIEW_CONTENT_MIN_LENGTH, REVIEW_RATING_MIN } from "@/lib/reviews/review-input-policy";
-import { cleanupReviewSessionPhotos } from "@/lib/reviews/review-photo-cleanup.client";
+import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
 import type { CanonicalReviewTarget, ReviewContext, ReviewSubjectType } from "@/lib/reviews/review-target";
 import { getReviewContextLabel } from "@/lib/reviews/review-target";
 import { buildReviewSubmissionPayload, canonicalHrefForTarget, getRequiredTargetError, getReviewDestination, getReviewPostFailureState } from "@/lib/reviews/review-write";
@@ -107,11 +107,7 @@ export default function ReviewWritePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toastLocked = useRef(false);
   const canonicalRewriteDone = useRef(false);
-  const [uploadSessionId, setUploadSessionId] = useState<string | null>(null);
-  const uploadSessionIdRef = useRef<string | null>(null);
-  const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
-  const committedRef = useRef(false);
-  const savingRef = useRef(false);
+  const photoSession = useReviewPhotoUploadSession();
 
   const nextUrl = useMemo(() => {
     const qs = sp.toString();
@@ -132,13 +128,6 @@ export default function ReviewWritePage() {
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty || isSubmitting || typeof window === "undefined" || window.confirm(UNSAVED_CHANGES_MESSAGE)) go();
   };
-  const cleanupSessionPhotos = useCallback((urls?: string[]) => {
-    const targets = urls ?? Array.from(sessionUploadedUrlsRef.current);
-    if (!targets.length) return;
-    targets.forEach((url) => sessionUploadedUrlsRef.current.delete(url));
-    cleanupReviewSessionPhotos({ uploadSessionId: uploadSessionIdRef.current, urls: targets });
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -158,24 +147,9 @@ export default function ReviewWritePage() {
   }, []);
 
   useEffect(() => {
-    if (!authChecked || !isAuthenticated || uploadSessionIdRef.current) return;
-    let cancelled = false;
-    (async () => {
-      const res = await fetch("/api/reviews/photos/session", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      }).catch(() => null);
-      const json = await res?.json().catch(() => null);
-      if (!cancelled && res?.ok && typeof json?.uploadSessionId === "string") {
-        uploadSessionIdRef.current = json.uploadSessionId;
-        setUploadSessionId(json.uploadSessionId);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [authChecked, isAuthenticated]);
+    if (!authChecked || !isAuthenticated) return;
+    void photoSession.startSession();
+  }, [authChecked, isAuthenticated, photoSession.startSession]);
 
   useEffect(() => {
     if (!authChecked) return;
@@ -233,7 +207,8 @@ export default function ReviewWritePage() {
   }, [state, targetError]);
 
   const goPrimary = () => {
-    if (!committedRef.current) cleanupSessionPhotos();
+    void photoSession.cleanupUncommittedPhotos();
+    photoSession.resetSession();
     router.replace(reviewDestination?.href ?? "/mypage?tab=reviews");
   };
 
@@ -255,13 +230,11 @@ export default function ReviewWritePage() {
       return;
     }
     setIsSubmitting(true);
-    savingRef.current = true;
+    photoSession.markSaving();
     try {
-      const r = await fetch("/api/reviews", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...buildReviewSubmissionPayload(canonicalTarget, { rating, content, photos }), uploadSessionId }) });
+      const r = await fetch("/api/reviews", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...buildReviewSubmissionPayload(canonicalTarget, { rating, content, photos }), uploadSessionId: photoSession.uploadSessionId }) });
       if (r.ok) {
-        savingRef.current = false;
-        committedRef.current = true;
-        sessionUploadedUrlsRef.current.clear();
+        photoSession.markCommitted();
         showSuccessToast("후기가 등록되었습니다.");
         router.replace(getReviewDestination(canonicalTarget).href);
         return;
@@ -270,29 +243,28 @@ export default function ReviewWritePage() {
       const responseReason = data.reason ?? data.message;
       const nextState = getReviewPostFailureState(r.status, responseReason);
       if (nextState === "already") {
+        photoSession.markSaveFailed();
         setState("already");
         showInfoToast("이미 이 대상의 후기를 작성했습니다.");
         return;
       }
       if (nextState) {
+        photoSession.markSaveFailed();
         setState(nextState);
         if (nextState === "notPurchased") showInfoToast("구매/이용 이력이 있어야 후기를 작성할 수 있어요.");
         else showInfoToast(stateMessage(nextState) ?? "후기 작성 상태를 확인해 주세요.");
         return;
       }
+      photoSession.markSaveFailed();
       showErrorToast("후기 등록에 실패했습니다.");
     } catch {
+      photoSession.markSaveFailed();
       showErrorToast("네트워크 오류로 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (!committedRef.current) cleanupSessionPhotos();
-    };
-  }, [cleanupSessionPhotos]);
 
   const title = canonicalTarget ? getReviewContextLabel(canonicalTarget.reviewContext) : eligibility?.targetLabel ?? "후기 대상";
   const reviewPlaceholder = canonicalTarget?.reviewContext === "rental" || canonicalTarget?.reviewContext === "rental_stringing" ? "대여 라켓의 사용감과 대여 경험을 적어주세요." : canonicalTarget?.reviewContext === "standalone_stringing" || canonicalTarget?.reviewContext === "product_stringing" ? "상품 사용감과 교체서비스 경험을 함께 적어주세요." : "상품의 사용감과 만족도를 적어주세요.";
@@ -310,7 +282,7 @@ export default function ReviewWritePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PublicPageHero eyebrow="후기 작성" title="후기 작성" description="구매·서비스·대여 경험을 다른 사용자에게 공유해 주세요." actions={<><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(() => { cleanupSessionPhotos(); router.replace("/reviews"); })} className="w-full sm:w-auto">후기 목록</Button><Button type="button" variant="secondary" onClick={() => confirmLeaveIfDirty(() => { cleanupSessionPhotos(); router.replace("/mypage?tab=orders"); })} className="w-full sm:w-auto">마이페이지</Button></>} />
+      <PublicPageHero eyebrow="후기 작성" title="후기 작성" description="구매·서비스·대여 경험을 다른 사용자에게 공유해 주세요." actions={<><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(() => { void photoSession.cleanupUncommittedPhotos(); photoSession.resetSession(); router.replace("/reviews"); })} className="w-full sm:w-auto">후기 목록</Button><Button type="button" variant="secondary" onClick={() => confirmLeaveIfDirty(() => { void photoSession.cleanupUncommittedPhotos(); photoSession.resetSession(); router.replace("/mypage?tab=orders"); })} className="w-full sm:w-auto">마이페이지</Button></>} />
       <SiteContainer className="py-6 md:py-8">
         <div className="mx-auto max-w-6xl space-y-5">
           <PublicSurface className="space-y-4" padding="md">
@@ -333,7 +305,7 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">별점</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">이용 경험에 가까운 점수를 선택하세요.</p></div><div className="rounded-2xl border border-border bg-muted/20 px-4 py-5 shadow-sm"><Stars value={rating} onChange={setRating} disabled={locked} /><div className="mt-3 text-center text-ui-body-sm font-medium text-foreground">{rating}점</div></div></section>
                 <section className="space-y-3"><div className="flex items-end justify-between gap-3"><Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label><span className="text-ui-label text-muted-foreground tabular-nums">{content.length} / {REVIEW_CONTENT_MAX_LENGTH}자</span></div><Textarea value={content} onChange={(e) => setContent(e.target.value)} maxLength={REVIEW_CONTENT_MAX_LENGTH} placeholder={reviewPlaceholder} className="min-h-[180px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring" disabled={locked} /></section>
-                <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} onUploaded={(urls) => urls.forEach((url) => sessionUploadedUrlsRef.current.add(url))} onRemove={(url) => cleanupSessionPhotos([url])} uploadSessionId={uploadSessionId} previewMode="queue" disabled={locked || isUploading || !uploadSessionId} /><PhotosReorderGrid value={photos} onChange={setPhotos} onRemove={(url) => sessionUploadedUrlsRef.current.has(url) && cleanupSessionPhotos([url])} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
+                <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} onUploaded={photoSession.registerUploadedUrls} onRemove={photoSession.removeUploadedUrl} uploadSessionId={photoSession.uploadSessionId} previewMode="queue" disabled={locked || isUploading || !photoSession.uploadSessionId} /><PhotosReorderGrid value={photos} onChange={setPhotos} onRemove={(url) => { const sessionId = photoSession.uploadSessionId; if (sessionId) void photoSession.removeUploadedUrl(url, sessionId); }} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
                 <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end"><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto">{reviewDestination?.label ?? "후기 관리로 이동"}</Button><Button data-cy="submit-review" type="submit" disabled={locked || invalidForm || isUploading} aria-disabled={locked || invalidForm || isUploading} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto">{isUploading ? "이미지 업로드 중..." : "후기 등록"}</Button></div>
               </form>
             </SummaryCard>

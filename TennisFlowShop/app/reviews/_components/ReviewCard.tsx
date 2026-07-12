@@ -86,6 +86,7 @@ export default function ReviewCard({
     photos: Array.isArray(item.photos) ? item.photos : [],
   });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
   const editPhotoSession = useReviewPhotoUploadSession();
 
   const openEdit = () => {
@@ -95,6 +96,7 @@ export default function ReviewCard({
     setEditOpen(true);
   };
   const closeEdit = () => {
+    if (uploadingEditPhotos) return;
     void editPhotoSession.cleanupUncommittedPhotos();
     editPhotoSession.resetSession();
     setEditOpen(false);
@@ -109,6 +111,10 @@ export default function ReviewCard({
   };
 
   const submitEdit = async () => {
+    if (uploadingEditPhotos) {
+      showErrorToast("사진 업로드가 끝난 후 저장해 주세요.");
+      return;
+    }
     const { rating, content } = editForm;
     try {
       setBusy(true);
@@ -139,6 +145,7 @@ export default function ReviewCard({
       closeEdit();
       setBusy(false);
     } catch (e: any) {
+      editPhotoSession.markSaveFailed();
       setBusy(false);
       showErrorToast(e?.message || "리뷰 수정에 실패했습니다.");
     }
@@ -330,7 +337,11 @@ export default function ReviewCard({
                       e.stopPropagation();
                       try {
                         setBusy(true);
-                        const next = item.status === "visible" ? "hidden" : "visible";
+                        const isAdminModeration = isAdmin && !item.ownedByMe;
+                        const currentStatus = isAdminModeration
+                          ? item.moderationStatus === "hidden" ? "hidden" : "visible"
+                          : item.status === "hidden" ? "hidden" : "visible";
+                        const next = currentStatus === "visible" ? "hidden" : "visible";
                         if (isAdmin && !item.ownedByMe) {
                           await adminMutator(`/api/admin/reviews/${item._id}`, {
                             method: "PATCH",
@@ -598,12 +609,18 @@ export default function ReviewCard({
                   uploadSessionId={editPhotoSession.uploadSessionId}
                   onUploaded={editPhotoSession.registerUploadedUrls}
                   onRemove={editPhotoSession.removeUploadedUrl}
-                  disabled={busy || !editPhotoSession.uploadSessionId}
+                  onUploadingChange={setUploadingEditPhotos}
+                  disabled={busy || uploadingEditPhotos || !editPhotoSession.uploadSessionId}
                 />
 
                 <PhotosReorderGrid
                   value={editForm.photos}
                   onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))}
+                  disabled={busy || uploadingEditPhotos}
+                  onRemove={(url) => {
+                    const sessionId = editPhotoSession.uploadSessionId;
+                    if (sessionId) void editPhotoSession.removeUploadedUrl(url, sessionId);
+                  }}
                 />
               </div>
             </div>
@@ -614,6 +631,7 @@ export default function ReviewCard({
               type="button"
               className="px-4 py-2 rounded-md border text-ui-body-sm"
               onClick={closeEdit}
+              disabled={busy || uploadingEditPhotos}
             >
               취소
             </button>
@@ -621,8 +639,9 @@ export default function ReviewCard({
               type="button"
               className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
               onClick={submitEdit}
+              disabled={busy || uploadingEditPhotos || editForm.rating === "" || String(editForm.content ?? "").trim().length < 5}
             >
-              저장
+              {uploadingEditPhotos ? "사진 업로드 중…" : "저장"}
             </button>
           </DialogFooter>
         </DialogContent>
