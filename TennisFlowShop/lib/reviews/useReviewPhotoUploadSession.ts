@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cleanupReviewSessionPhotos } from "@/lib/reviews/review-photo-cleanup.client";
 
@@ -29,11 +29,12 @@ export function useReviewPhotoUploadSession(): ReviewPhotoUploadSessionControlle
   const creatingPromiseRef = useRef<Promise<string | null> | null>(null);
 
   const cleanupUncommittedPhotos = useCallback(async () => {
-    const currentSessionId = uploadSessionIdRef.current;
-    if (!currentSessionId || savingRef.current || committedRef.current) return;
+    const sessionId = uploadSessionIdRef.current;
+    if (!sessionId || savingRef.current || committedRef.current) return;
     const urls = Array.from(uploadedUrlsRef.current);
+    if (!urls.length) return;
     uploadedUrlsRef.current.clear();
-    await cleanupReviewSessionPhotos({ uploadSessionId: currentSessionId, urls });
+    await cleanupReviewSessionPhotos({ uploadSessionId: sessionId, urls });
   }, []);
 
   const resetSession = useCallback(() => {
@@ -94,6 +95,7 @@ export function useReviewPhotoUploadSession(): ReviewPhotoUploadSessionControlle
 
   const markSaveFailed = useCallback(() => {
     savingRef.current = false;
+    committedRef.current = false;
   }, []);
 
   const markCommitted = useCallback(() => {
@@ -101,6 +103,12 @@ export function useReviewPhotoUploadSession(): ReviewPhotoUploadSessionControlle
     committedRef.current = true;
     uploadedUrlsRef.current.clear();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      void cleanupUncommittedPhotos();
+    };
+  }, [cleanupUncommittedPhotos]);
 
   return {
     uploadSessionId,

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 import AsyncState from "@/components/system/AsyncState";
@@ -34,7 +34,7 @@ import {
   reviewInputMessage,
   validateReviewInput,
 } from "@/lib/reviews/review-input-policy";
-import { cleanupReviewSessionPhotos } from "@/lib/reviews/review-photo-cleanup.client";
+import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
 import type { ReviewContext, ReviewManagementCategory } from "@/lib/reviews/review-target";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Star, Trash2 } from "lucide-react";
@@ -219,35 +219,13 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     rating: number;
     photos: string[];
   } | null>(null);
-  const [editUploadSessionId, setEditUploadSessionId] = useState<string | null>(null);
-  const editUploadSessionIdRef = useRef<string | null>(null);
-  const editSessionUploadedUrlsRef = useRef<Set<string>>(new Set());
-
-  const cleanupEditSessionPhotos = useCallback((urls?: string[]) => {
-    const targets = urls ?? Array.from(editSessionUploadedUrlsRef.current);
-    if (!targets.length) return;
-    targets.forEach((url) => editSessionUploadedUrlsRef.current.delete(url));
-    cleanupReviewSessionPhotos({ uploadSessionId: editUploadSessionIdRef.current, urls: targets });
-  }, []);
+  const editPhotoSession = useReviewPhotoUploadSession();
 
   const openEdit = useCallback((it: UiItem) => {
     setUploadingEditPhotos(false);
-    cleanupEditSessionPhotos();
-    editUploadSessionIdRef.current = null;
-    setEditUploadSessionId(null);
-    fetch("/api/reviews/photos/session", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json().then((json) => ({ ok: res.ok, json })).catch(() => ({ ok: false, json: null })))
-      .then(({ ok, json }) => {
-        if (ok && typeof json?.uploadSessionId === "string") {
-          editUploadSessionIdRef.current = json.uploadSessionId;
-          setEditUploadSessionId(json.uploadSessionId);
-        }
-      })
-      .catch(() => {});
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
+    void editPhotoSession.startSession();
     setEditing(it);
     setEditContent(it.content);
     setEditRating(it.rating);
@@ -257,25 +235,18 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       rating: it.rating,
       photos: it.photos || [],
     }); // ★ 추가
-  }, [cleanupEditSessionPhotos]);
+  }, [editPhotoSession]);
 
   const closeEdit = useCallback(() => {
-    cleanupEditSessionPhotos();
+    void editPhotoSession.cleanupUncommittedPhotos();
+    editPhotoSession.resetSession();
     setEditing(null);
     setEditContent("");
     setEditRating(5);
     setEditPhotos([]);
     setUploadingEditPhotos(false);
     setOriginalEdit(null);
-    editUploadSessionIdRef.current = null;
-    setEditUploadSessionId(null);
-  }, [cleanupEditSessionPhotos]);
-
-  useEffect(() => {
-    return () => {
-      cleanupEditSessionPhotos();
-    };
-  }, [cleanupEditSessionPhotos]);
+  }, [editPhotoSession]);
 
   // 수정 저장
   const submitEdit = useCallback(async () => {
@@ -296,6 +267,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     // 스냅샷(롤백용)
     const snapshot = data;
     setSaving(true);
+    editPhotoSession.markSaving();
     // 변경된 필드만 payload에 담기
     const payload: Record<string, any> = {};
     const changedContent = !originalEdit || editContent !== originalEdit.content;
@@ -308,6 +280,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       const trimmed = (editContent || "").trim();
       if (trimmed.length < 5) {
         showErrorToast("내용은 5자 이상 입력해주세요.");
+        editPhotoSession.markSaveFailed();
         setSaving(false);
         return;
       }
@@ -316,7 +289,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     if (changedRating) payload.rating = editRating;
     if (changedPhotos) {
       payload.photos = editPhotos;
-      payload.uploadSessionId = editUploadSessionId;
+      payload.uploadSessionId = editPhotoSession.uploadSessionId;
     }
 
     // 변경사항이 없으면 종료
@@ -370,12 +343,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       }
 
       showSuccessToast("후기가 수정되었습니다.");
-      editSessionUploadedUrlsRef.current.clear();
-      editUploadSessionIdRef.current = null;
-      setEditUploadSessionId(null);
+      editPhotoSession.markCommitted();
       await mutate();
       closeEdit();
     } catch (e: any) {
+      editPhotoSession.markSaveFailed();
       await mutate(() => snapshot, false);
       showErrorToast(e.message || "수정 중 오류가 발생했습니다.");
     } finally {
@@ -391,6 +363,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     originalEdit,
     mutate,
     closeEdit,
+    editPhotoSession,
   ]);
 
   // 공개/비공개 토글
@@ -778,18 +751,19 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 onChange={setEditPhotos}
                 max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
-                onUploaded={(urls) => urls.forEach((url) => editSessionUploadedUrlsRef.current.add(url))}
-                onRemove={(url) => cleanupEditSessionPhotos([url])}
-                uploadSessionId={editUploadSessionId}
+                onUploaded={editPhotoSession.registerUploadedUrls}
+                onRemove={editPhotoSession.removeUploadedUrl}
+                uploadSessionId={editPhotoSession.uploadSessionId}
                 onUploadingChange={setUploadingEditPhotos}
-                disabled={!editUploadSessionId}
+                disabled={!editPhotoSession.uploadSessionId}
               />
               <PhotosReorderGrid
                 value={editPhotos}
                 onChange={setEditPhotos}
-                onRemove={(url) =>
-                  editSessionUploadedUrlsRef.current.has(url) && cleanupEditSessionPhotos([url])
-                }
+                onRemove={(url) => {
+                  const sessionId = editPhotoSession.uploadSessionId;
+                  if (sessionId) void editPhotoSession.removeUploadedUrl(url, sessionId);
+                }}
               />
             </div>
           </div>

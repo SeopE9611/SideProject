@@ -379,9 +379,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       router.replace(`?${params.toString()}`, { scroll: false });
       router.refresh();
 
+      editPhotoSession.markCommitted();
       showSuccessToast("후기를 수정했어요.");
       closeEdit();
     } catch (err: any) {
+      editPhotoSession.markSaveFailed();
       if (isMine(editing)) await mutateMyReview?.();
       else if (isAdmin) await mutateAdminReviews?.();
       showErrorToast(err?.message || "후기 수정에 실패했습니다.");
@@ -1064,8 +1066,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                         onClick={async () => {
                                           if (!review?._id) return;
 
-                                          const nextStatus =
-                                            review?.status === "hidden" ? "visible" : "hidden";
+                                          const isAdminModeration = isAdmin && !isMine(review);
+                                          const currentStatus = isAdminModeration
+                                            ? review?.moderationStatus === "hidden" ? "hidden" : "visible"
+                                            : review?.status === "hidden" ? "hidden" : "visible";
+                                          const nextStatus = currentStatus === "hidden" ? "visible" : "hidden";
                                           setBusyReviewId(String(review._id));
 
                                           // 낙관적 업데이트
@@ -1089,6 +1094,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                   ? {
                                                       ...r,
                                                       status: nextStatus,
+                                                      moderationStatus: nextStatus,
+                                                      effectiveStatus:
+                                                        review?.authorStatus === "visible" && nextStatus === "visible"
+                                                          ? "visible"
+                                                          : "hidden",
                                                     }
                                                   : r,
                                               );

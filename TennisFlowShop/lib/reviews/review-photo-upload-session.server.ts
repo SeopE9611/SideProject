@@ -74,10 +74,50 @@ export async function markReviewPhotoUploadSessionCommitted(db: Db, userId: Obje
   );
 }
 
+export async function markReviewPhotoUploadSessionCommittedBestEffort(
+  db: Db,
+  userId: ObjectId,
+  uploadSessionId: string | null | undefined,
+  source: string,
+): Promise<void> {
+  if (!uploadSessionId) return;
+  try {
+    const result = await getReviewPhotoUploadSessionCollection(db).updateOne(
+      { _id: uploadSessionId, userId, status: "committing" },
+      { $set: { status: "committed", committedAt: new Date() } },
+    );
+    if (result.matchedCount !== 1) {
+      console.warn(`[review-photo-session] commit not matched: ${source}`);
+    }
+  } catch (error) {
+    console.error(`[review-photo-session] commit failed: ${source}`, error);
+  }
+}
+
 export async function rollbackReviewPhotoUploadSessionClaim(db: Db, userId: ObjectId, uploadSessionId: string | null | undefined) {
   if (!uploadSessionId) return;
   await getReviewPhotoUploadSessionCollection(db).updateOne(
     { _id: uploadSessionId, userId, status: "committing" },
     { $set: { status: "active", committingAt: null } },
   );
+}
+
+export async function rollbackReviewPhotoUploadSessionClaimBestEffort(
+  db: Db,
+  userId: ObjectId,
+  uploadSessionId: string | null | undefined,
+  source: string,
+): Promise<void> {
+  if (!uploadSessionId) return;
+  try {
+    const result = await getReviewPhotoUploadSessionCollection(db).updateOne(
+      { _id: uploadSessionId, userId, status: "committing" },
+      { $set: { status: "active", committingAt: null } },
+    );
+    if (result.matchedCount !== 1) {
+      console.warn(`[review-photo-session] rollback not matched: ${source}`);
+    }
+  } catch (error) {
+    console.error(`[review-photo-session] rollback failed: ${source}`, error);
+  }
 }

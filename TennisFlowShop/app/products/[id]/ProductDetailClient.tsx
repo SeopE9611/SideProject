@@ -449,9 +449,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
       router.replace(`?${params.toString()}`, { scroll: false });
       router.refresh();
 
+      editPhotoSession.markCommitted();
       showSuccessToast("후기를 수정했어요.");
       closeEdit();
     } catch (err: any) {
+      editPhotoSession.markSaveFailed();
       // 실패 시 원복(간단히 재검증)
       if (isMine(editing)) await mutateMyReview();
       else if (isAdmin) await mutateAdminReviews();
@@ -463,7 +465,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const handleToggleReviewVisibility = async (review: any) => {
     setBusyReviewId(String(review._id));
-    const next = review.status === "visible" ? "hidden" : "visible";
+    const isAdminModeration = isAdmin && !isMine(review);
+    const currentStatus = isAdminModeration
+      ? review.moderationStatus === "hidden" ? "hidden" : "visible"
+      : review.status === "hidden" ? "hidden" : "visible";
+    const next = currentStatus === "visible" ? "hidden" : "visible";
 
     // 낙관적 업데이트
     if (isMine(review)) {
@@ -484,6 +490,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
             ? {
                 ...r,
                 status: next,
+                moderationStatus: next,
+                effectiveStatus: review.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
                 masked: false,
               }
             : r,

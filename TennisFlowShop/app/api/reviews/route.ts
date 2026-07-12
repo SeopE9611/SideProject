@@ -7,8 +7,8 @@ import { buildPublicReviewMatch, buildPublicReviewSurfaceTargetMatch } from "@/l
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { isAllowedReviewPhotoUrl } from "@/lib/reviews/review-photo-storage.server";
 import {
-  markReviewPhotoUploadSessionCommitted,
-  rollbackReviewPhotoUploadSessionClaim,
+  markReviewPhotoUploadSessionCommittedBestEffort,
+  rollbackReviewPhotoUploadSessionClaimBestEffort,
   validateAndClaimReviewPhotoUploadSession,
 } from "@/lib/reviews/review-photo-upload-session.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
@@ -151,7 +151,12 @@ export async function POST(req: Request) {
   }
   const photosClean = Array.from(new Set<string>(cleanedList));
   const uploadSessionId = typeof body.uploadSessionId === "string" ? body.uploadSessionId : null;
-  if (photosClean.length > 0) {
+
+  let sessionClaimed = false;
+  let reviewPersisted = false;
+
+  const claimPhotoSession = async () => {
+    if (photosClean.length === 0) return { ok: true as const };
     const sessionValidation = await validateAndClaimReviewPhotoUploadSession({
       db,
       userId,
@@ -159,12 +164,16 @@ export async function POST(req: Request) {
       urls: photosClean,
     });
     if (!sessionValidation.ok) {
-      return NextResponse.json(
-        { ok: false, reason: sessionValidation.reason, message: sessionValidation.reason },
-        { status: sessionValidation.reason === "uploadSessionForbidden" ? 403 : 400 },
-      );
+      return {
+        ok: false as const,
+        response: NextResponse.json(
+          { ok: false, reason: sessionValidation.reason, message: sessionValidation.reason },
+          { status: sessionValidation.reason === "uploadSessionForbidden" ? 403 : 400 },
+        ),
+      };
     }
-  }
+    return { ok: true as const };
+  };
 
   // 라켓 대여 리뷰
   if (body.rentalId) {
@@ -201,6 +210,11 @@ export async function POST(req: Request) {
     });
     if (already) return duplicateReviewResponse();
 
+    const sessionValidation = await claimPhotoSession();
+    if (!sessionValidation.ok) return sessionValidation.response;
+    sessionClaimed = photosClean.length > 0;
+    reviewPersisted = false;
+
     const now = new Date();
     try {
       const reviewDoc: any = {
@@ -231,13 +245,16 @@ export async function POST(req: Request) {
         isDeleted: false,
       };
       const insertResult = await db.collection("reviews").insertOne(reviewDoc);
+      reviewPersisted = true;
       await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: insertResult.insertedId }, "POST /api/reviews");
     } catch (error) {
-      await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
+      if (sessionClaimed && !reviewPersisted) {
+        await rollbackReviewPhotoUploadSessionClaimBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+      }
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
-    await markReviewPhotoUploadSessionCommitted(db, userId, uploadSessionId);
+    await markReviewPhotoUploadSessionCommittedBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
     // TODO: 라켓 대여 리뷰 포인트 정책이 정해지면 적립 로직을 연결합니다.
     return NextResponse.json({ ok: true }, { status: 201 });
   }
@@ -326,6 +343,11 @@ export async function POST(req: Request) {
     const already = await db.collection("reviews").findOne(dupFilter);
     if (already) return duplicateReviewResponse();
 
+    const sessionValidation = await claimPhotoSession();
+    if (!sessionValidation.ok) return sessionValidation.response;
+    sessionClaimed = photosClean.length > 0;
+    reviewPersisted = false;
+
     const now = new Date();
     const doc: any = {
       userId,
@@ -358,8 +380,11 @@ export async function POST(req: Request) {
     let insertRes;
     try {
       insertRes = await db.collection("reviews").insertOne(doc);
+      reviewPersisted = true;
     } catch (error) {
-      await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
+      if (sessionClaimed && !reviewPersisted) {
+        await rollbackReviewPhotoUploadSessionClaimBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+      }
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
@@ -394,7 +419,7 @@ export async function POST(req: Request) {
     }
 
     await refreshReviewSummaryCachesForReviewSafely(db, { ...doc, _id: reviewId }, "POST /api/reviews");
-    await markReviewPhotoUploadSessionCommitted(db, userId, uploadSessionId);
+    await markReviewPhotoUploadSessionCommittedBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
@@ -465,6 +490,11 @@ export async function POST(req: Request) {
     });
     if (already) return duplicateReviewResponse();
 
+    const sessionValidation = await claimPhotoSession();
+    if (!sessionValidation.ok) return sessionValidation.response;
+    sessionClaimed = photosClean.length > 0;
+    reviewPersisted = false;
+
     const now = new Date();
     let reviewId: ObjectId;
     try {
@@ -489,9 +519,12 @@ export async function POST(req: Request) {
       };
       const insertRes = await db.collection("reviews").insertOne(reviewDoc);
       reviewId = insertRes.insertedId;
+      reviewPersisted = true;
       await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: reviewId }, "POST /api/reviews");
     } catch (error) {
-      await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
+      if (sessionClaimed && !reviewPersisted) {
+        await rollbackReviewPhotoUploadSessionClaimBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
+      }
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
@@ -525,11 +558,10 @@ export async function POST(req: Request) {
       }
     }
 
-    await markReviewPhotoUploadSessionCommitted(db, userId, uploadSessionId);
+    await markReviewPhotoUploadSessionCommittedBestEffort(db, userId, uploadSessionId, "POST /api/reviews");
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
-  if (photosClean.length > 0) await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
   return NextResponse.json({ message: "bad request" }, { status: 400 });
 }
 

@@ -8,8 +8,8 @@ import { validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { diffRemovedReviewPhotos, isAllowedReviewPhotoUrl, removeReviewPhotosBestEffort } from "@/lib/reviews/review-photo-storage.server";
 import {
-  markReviewPhotoUploadSessionCommitted,
-  rollbackReviewPhotoUploadSessionClaim,
+  markReviewPhotoUploadSessionCommittedBestEffort,
+  rollbackReviewPhotoUploadSessionClaimBestEffort,
   validateAndClaimReviewPhotoUploadSession,
 } from "@/lib/reviews/review-photo-upload-session.server";
 
@@ -138,10 +138,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     await db.collection("reviews").updateOne({ _id }, { $set });
   } catch (error) {
-    await rollbackReviewPhotoUploadSessionClaim(db, me, body.uploadSessionId);
+    await rollbackReviewPhotoUploadSessionClaimBestEffort(db, me, body.uploadSessionId, "PATCH /api/reviews/[id]");
     throw error;
   }
-  await markReviewPhotoUploadSessionCommitted(db, me, body.uploadSessionId);
+  await markReviewPhotoUploadSessionCommittedBestEffort(db, me, body.uploadSessionId, "PATCH /api/reviews/[id]");
   if (Array.isArray($set.photos)) {
     await removeReviewPhotosBestEffort(diffRemovedReviewPhotos(doc.photos, $set.photos), "PATCH /api/reviews/[id]");
   }
