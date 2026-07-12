@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import ts from "typescript";
+import { importFileModule } from "./helpers/import-file-module.mjs";
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "review-target-"));
 fs.mkdirSync(path.join(tmp, "node_modules", "mongodb"), { recursive: true });
@@ -15,8 +16,8 @@ for (const name of ["review-target", "review-policy", "review-target.server"]) {
   const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText;
   fs.writeFileSync(path.join(tmp, `${name}.js`), out);
 }
-const resolver = await import(path.join(tmp, "review-target.server.js"));
-const { ObjectId } = await import(path.join(tmp, "node_modules", "mongodb", "index.js"));
+const resolver = await importFileModule(path.join(tmp, "review-target.server.js"));
+const { ObjectId } = await importFileModule(path.join(tmp, "node_modules", "mongodb", "index.js"));
 const id = (n) => String(n).padStart(24, "0");
 const userId = new ObjectId(id(999));
 

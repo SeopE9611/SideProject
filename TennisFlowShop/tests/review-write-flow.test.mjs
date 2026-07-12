@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import ts from "typescript";
+import { importFileModule } from "./helpers/import-file-module.mjs";
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "review-write-"));
 for (const name of ["review-target", "review-write"]) {
@@ -18,14 +19,14 @@ for (const name of ["review-target", "review-write"]) {
   fs.writeFileSync(path.join(tmp, `${name}.js`), out);
 }
 
-const { buildReviewWriteHref } = await import(path.join(tmp, "review-target.js"));
+const { buildReviewWriteHref } = await importFileModule(path.join(tmp, "review-target.js"));
 const {
   buildReviewSubmissionPayload,
   canonicalHrefForTarget,
   getRequiredTargetError,
   getReviewDestination,
   getReviewPostFailureState,
-} = await import(path.join(tmp, "review-write.js"));
+} = await importFileModule(path.join(tmp, "review-write.js"));
 
 const id = (n) => String(n).padStart(24, "0");
 const form = { rating: 5, content: "좋아요", photos: ["https://example.com/a.jpg"] };
