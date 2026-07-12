@@ -19,7 +19,9 @@ type Props = {
   onChange: (next: Photo[]) => void;
   max?: number;
   onUploadingChange?: (uploading: boolean) => void;
-  onUploaded?: (urls: string[]) => void;
+  onUploaded?: (urls: string[], uploadSessionId: string) => void;
+  onRemove?: (url: string) => void;
+  uploadSessionId?: string | null;
   disabled?: boolean;
   /**
    * 미리보기 표시 방식
@@ -36,6 +38,8 @@ export default function PhotosUploader({
   max = 5,
   onUploadingChange,
   onUploaded,
+  onRemove,
+  uploadSessionId,
   disabled = false,
   previewMode = "all",
 }: Props) {
@@ -67,7 +71,7 @@ export default function PhotosUploader({
 
   const totalCount = (value?.length ?? 0) + queue.length;
   const hasRoom = totalCount < max;
-  const uploadBlocked = disabled || isUploading;
+  const uploadBlocked = disabled || isUploading || !uploadSessionId;
 
   const onPick = () => {
     if (uploadBlocked || !hasRoom) return;
@@ -89,10 +93,10 @@ export default function PhotosUploader({
   };
 
   const uploadOne = async (file: File): Promise<string | null> => {
-    if (disabled) return null;
+    if (disabled || !uploadSessionId) return null;
     const ext = file.name.split(".").pop() || "jpg";
     const path = sanitizeStorageKey(
-      `${FOLDER}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`,
+      `${FOLDER}/sessions/${uploadSessionId}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`,
     );
 
     const res = await withTimeout(
@@ -127,19 +131,8 @@ export default function PhotosUploader({
     return publicUrl;
   };
 
-  const storagePathFromReviewUrl = (url: string) => {
-    try {
-      const { pathname } = new URL(url);
-      const prefix = `/storage/v1/object/public/${BUCKET}/`;
-      const path = decodeURIComponent(pathname.slice(prefix.length));
-      return pathname.startsWith(prefix) && path.startsWith(`${FOLDER}/`) ? path : null;
-    } catch {
-      return null;
-    }
-  };
-
   const handleFiles = async (files: FileList | null) => {
-    if (disabled || isUploading) return;
+    if (disabled || isUploading || !uploadSessionId) return;
     if (!files?.length) return;
     if (!isOnline) {
       showErrorToast("오프라인 상태예요. 네트워크 연결 후 다시 시도해 주세요.");
@@ -181,7 +174,7 @@ export default function PhotosUploader({
         }
       }
       if (uploadedUrls.length > 0) {
-        onUploaded?.(uploadedUrls);
+        onUploaded?.(uploadedUrls, uploadSessionId);
         onChange(Array.from(new Set([...(value ?? []), ...uploadedUrls])).slice(0, max));
       }
     } finally {
@@ -195,13 +188,8 @@ export default function PhotosUploader({
     const next = [...(value || [])];
     const [removed] = next.splice(idx, 1);
     if (removed && sessionUploadedUrlsRef.current.has(removed)) {
-      const path = storagePathFromReviewUrl(removed);
-      if (path) {
-        sessionUploadedUrlsRef.current.delete(removed);
-        supabase.storage.from(BUCKET).remove([path]).then(({ error }) => {
-          if (error) console.error("[PhotosUploader] cleanup failed", error);
-        });
-      }
+      sessionUploadedUrlsRef.current.delete(removed);
+      onRemove?.(removed);
     }
     onChange(next);
   };

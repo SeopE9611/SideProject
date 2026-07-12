@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 
 const REVIEW_PHOTO_BUCKET = "tennis-images";
 const REVIEW_PHOTO_PREFIX = "reviews/";
+export const REVIEW_PHOTO_SESSION_PREFIX = "reviews/sessions/";
 const ALLOWED_HOSTS = new Set(["cwzpxxahtayoyqqskmnt.supabase.co"]);
 const ALLOWED_PATH_PREFIX = `/storage/v1/object/public/${REVIEW_PHOTO_BUCKET}/`;
 
@@ -30,6 +31,24 @@ export function extractReviewPhotoStorageObject(value: unknown) {
   return { bucket: REVIEW_PHOTO_BUCKET, path: objectPath };
 }
 
+export function extractReviewPhotoSessionObject(value: unknown, uploadSessionId: string) {
+  const object = extractReviewPhotoStorageObject(value);
+  const prefix = `${REVIEW_PHOTO_SESSION_PREFIX}${uploadSessionId}/`;
+  if (!object || !object.path.startsWith(prefix)) return null;
+  return object;
+}
+
+export async function removeReviewPhotoStoragePathsBestEffort(paths: string[], logContext: string) {
+  const uniquePaths = Array.from(new Set(paths));
+  if (!uniquePaths.length) return;
+  try {
+    const { error } = await supabaseAdmin.storage.from(REVIEW_PHOTO_BUCKET).remove(uniquePaths);
+    if (error) console.error(`[reviews] storage cleanup failed (${logContext})`, error);
+  } catch (error) {
+    console.error(`[reviews] storage cleanup failed (${logContext})`, error);
+  }
+}
+
 export async function removeReviewPhotosBestEffort(urls: unknown[], logContext: string) {
   const paths = Array.from(
     new Set(
@@ -41,8 +60,7 @@ export async function removeReviewPhotosBestEffort(urls: unknown[], logContext: 
   );
   if (!paths.length) return;
   try {
-    const { error } = await supabaseAdmin.storage.from(REVIEW_PHOTO_BUCKET).remove(paths);
-    if (error) console.error(`[reviews] storage cleanup failed (${logContext})`, error);
+    await removeReviewPhotoStoragePathsBestEffort(paths, logContext);
   } catch (error) {
     console.error(`[reviews] storage cleanup failed (${logContext})`, error);
   }

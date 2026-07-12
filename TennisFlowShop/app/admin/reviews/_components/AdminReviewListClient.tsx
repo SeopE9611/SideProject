@@ -313,7 +313,17 @@ export default function AdminReviewListClient() {
         pages
           ? pages.map((p) => ({
               ...p,
-              items: p.items.map((r) => (selected.includes(r._id) ? { ...r, status: next } : r)),
+              items: p.items.map((r) =>
+                selected.includes(r._id)
+                  ? {
+                      ...r,
+                      status: next,
+                      moderationStatus: next,
+                      effectiveStatus:
+                        r.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
+                    }
+                  : r,
+              ),
             }))
           : pages,
       false,
@@ -329,12 +339,13 @@ export default function AdminReviewListClient() {
             await adminMutator(`/api/admin/reviews/${id}`, {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: next }),
+              body: JSON.stringify({ moderationStatus: next }),
             });
           }),
         );
       }
       setSelected([]);
+      await mutate();
       showSuccessToast(
         next === "hidden"
           ? "선택 항목을 비공개로 변경했습니다."
@@ -349,14 +360,24 @@ export default function AdminReviewListClient() {
 
   // ---- 공개/비공개 토글(낙관적) ----
   const toggleVisible = async (it: Row) => {
-    const next = it.status === "visible" ? "hidden" : "visible";
+    const next = it.moderationStatus === "visible" ? "hidden" : "visible";
     const snapshot = data;
     await mutate(
       (pages?: Page[]) =>
         pages
           ? pages.map((p) => ({
               ...p,
-              items: p.items.map((r) => (r._id === it._id ? { ...r, status: next } : r)),
+              items: p.items.map((r) =>
+                r._id === it._id
+                  ? {
+                      ...r,
+                      status: next,
+                      moderationStatus: next,
+                      effectiveStatus:
+                        r.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
+                    }
+                  : r,
+              ),
             }))
           : pages,
       false,
@@ -365,8 +386,9 @@ export default function AdminReviewListClient() {
       await adminMutator(`/api/admin/reviews/${it._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: next }),
+        body: JSON.stringify({ moderationStatus: next }),
       });
+      await mutate();
       showSuccessToast(
         next === "hidden" ? "후기를 비공개로 변경했습니다." : "후기를 공개로 변경했습니다.",
       );

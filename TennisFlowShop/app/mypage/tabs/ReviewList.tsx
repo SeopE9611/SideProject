@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 import AsyncState from "@/components/system/AsyncState";
@@ -34,6 +34,7 @@ import {
   reviewInputMessage,
   validateReviewInput,
 } from "@/lib/reviews/review-input-policy";
+import { cleanupReviewSessionPhotos } from "@/lib/reviews/review-photo-cleanup.client";
 import type { ReviewContext, ReviewManagementCategory } from "@/lib/reviews/review-target";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Star, Trash2 } from "lucide-react";
@@ -218,23 +219,35 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     rating: number;
     photos: string[];
   } | null>(null);
+  const [editUploadSessionId, setEditUploadSessionId] = useState<string | null>(null);
+  const editUploadSessionIdRef = useRef<string | null>(null);
   const editSessionUploadedUrlsRef = useRef<Set<string>>(new Set());
 
   const cleanupEditSessionPhotos = useCallback((urls?: string[]) => {
     const targets = urls ?? Array.from(editSessionUploadedUrlsRef.current);
     if (!targets.length) return;
     targets.forEach((url) => editSessionUploadedUrlsRef.current.delete(url));
-    fetch("/api/reviews/photos/cleanup", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls: targets }),
-      keepalive: true,
-    }).catch(() => {});
+    cleanupReviewSessionPhotos({ uploadSessionId: editUploadSessionIdRef.current, urls: targets });
   }, []);
 
   const openEdit = useCallback((it: UiItem) => {
     setUploadingEditPhotos(false);
+    cleanupEditSessionPhotos();
+    editUploadSessionIdRef.current = null;
+    setEditUploadSessionId(null);
+    fetch("/api/reviews/photos/session", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json().then((json) => ({ ok: res.ok, json })).catch(() => ({ ok: false, json: null })))
+      .then(({ ok, json }) => {
+        if (ok && typeof json?.uploadSessionId === "string") {
+          editUploadSessionIdRef.current = json.uploadSessionId;
+          setEditUploadSessionId(json.uploadSessionId);
+        }
+      })
+      .catch(() => {});
     setEditing(it);
     setEditContent(it.content);
     setEditRating(it.rating);
@@ -244,7 +257,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       rating: it.rating,
       photos: it.photos || [],
     }); // ★ 추가
-  }, []);
+  }, [cleanupEditSessionPhotos]);
 
   const closeEdit = useCallback(() => {
     cleanupEditSessionPhotos();
@@ -254,6 +267,14 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     setEditPhotos([]);
     setUploadingEditPhotos(false);
     setOriginalEdit(null);
+    editUploadSessionIdRef.current = null;
+    setEditUploadSessionId(null);
+  }, [cleanupEditSessionPhotos]);
+
+  useEffect(() => {
+    return () => {
+      cleanupEditSessionPhotos();
+    };
   }, [cleanupEditSessionPhotos]);
 
   // 수정 저장
@@ -347,6 +368,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
       showSuccessToast("후기가 수정되었습니다.");
       editSessionUploadedUrlsRef.current.clear();
+      editUploadSessionIdRef.current = null;
+      setEditUploadSessionId(null);
       await mutate();
       closeEdit();
     } catch (e: any) {
@@ -753,7 +776,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 max={REVIEW_MAX_PHOTOS}
                 previewMode="queue"
                 onUploaded={(urls) => urls.forEach((url) => editSessionUploadedUrlsRef.current.add(url))}
+                onRemove={(url) => cleanupEditSessionPhotos([url])}
+                uploadSessionId={editUploadSessionId}
                 onUploadingChange={setUploadingEditPhotos}
+                disabled={!editUploadSessionId}
               />
               <PhotosReorderGrid
                 value={editPhotos}
