@@ -16,6 +16,7 @@ export type CareItem = {
   racket: { brand: string; model: string };
   playFrequency: string;
   lastStringingAt: string;
+  lastApplicationId: string | null;
   lastStringProductId: string | null;
   stringSnapshot: { name?: string | null; gauge?: string | null; tensionMain?: string | null; tensionCross?: string | null } | null;
   reminderEnabled: boolean;
@@ -26,4 +27,5 @@ export type RacketCareResponse = { items: CareItem[]; importCandidates: RacketCa
 export type CareForm = { nickname: string; brand: string; model: string; playFrequency: string; lastStringingAt: string; reminderEnabled: boolean; stringName: string; gauge: string; tensionMain: string; tensionCross: string; latestCompletedApplicationId: string };
 
 export type CreateMode = "import" | "manual";
+export type RacketCareHistoryLinkIntent = "keep" | "replace" | "clear";
 export type StartCreateOptions = { mode?: CreateMode; skipMethodStep?: boolean };
