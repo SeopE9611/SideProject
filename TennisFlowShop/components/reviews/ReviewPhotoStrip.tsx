@@ -16,7 +16,7 @@ export default function ReviewPhotoStrip({ photos, onOpen }: { photos: string[];
             aria-label={`후기 사진 ${index + 1} 크게 보기`}
           >
             <Image src={src || "/placeholder.svg"} alt={`후기 사진 ${index + 1}`} fill className="object-cover" />
-            {showOverlay ? <span className="absolute inset-0 grid place-items-center bg-overlay/60 text-ui-body font-semibold text-primary-foreground">+{remaining}</span> : null}
+            {showOverlay ? <span className="absolute inset-0 grid place-items-center bg-overlay/60 text-ui-body font-semibold text-surface-inverse-foreground">+{remaining}</span> : null}
           </button>
         );
       })}
