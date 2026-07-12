@@ -23,9 +23,9 @@ import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-p
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
-import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -497,16 +497,31 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const handleToggleReviewVisibility = async (review: any) => {
-    setBusyReviewId(String(review._id));
+    const reviewOwnedByMe = isMine(review);
+
     const { isAdminModeration, nextStatus } = getReviewManagedVisibilityStatus(
-      { ...review, ownedByMe: isMine(review) },
+      {
+        ...review,
+        ownedByMe: reviewOwnedByMe,
+      },
       isAdmin,
     );
 
-    // 낙관적 업데이트
-    if (isMine(review)) {
-      mutateMyReview((prev: any) => {
-        if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+    let myReviewSnapshot: any = undefined;
+    let adminReviewsSnapshot: any[] | undefined = undefined;
+
+    setBusyReviewId(String(review._id));
+
+    // 서버 요청 전에 현재 SWR 데이터를 저장하고
+    // 화면에는 다음 상태를 낙관적으로 반영합니다.
+    if (reviewOwnedByMe) {
+      await mutateMyReview((prev: any) => {
+        myReviewSnapshot = prev;
+
+        if (!prev?._id || String(prev._id) !== String(review._id)) {
+          return prev;
+        }
+
         return {
           ...prev,
           status: nextStatus,
@@ -514,66 +529,108 @@ export default function ProductDetailClient({ product }: { product: any }) {
           masked: false,
         };
       }, false);
-    } else if (isAdmin) {
-      mutateAdminReviews((prev: any[] | undefined) => {
-        if (!Array.isArray(prev)) return prev;
-        return prev.map((r) =>
-          String(r._id) === String(review._id)
+    } else if (isAdminModeration) {
+      await mutateAdminReviews((prev: any[] | undefined) => {
+        adminReviewsSnapshot = prev;
+
+        if (!Array.isArray(prev)) {
+          return prev;
+        }
+
+        return prev.map((item) =>
+          String(item._id) === String(review._id)
             ? {
-                ...r,
+                ...item,
                 moderationStatus: nextStatus,
                 effectiveStatus:
-                  review.authorStatus === "visible" && nextStatus === "visible" ? "visible" : "hidden",
+                  review.authorStatus === "visible" && nextStatus === "visible"
+                    ? "visible"
+                    : "hidden",
                 masked: false,
               }
-            : r,
+            : item,
         );
       }, false);
     }
 
-    // 서버 반영
     try {
-      if (isAdmin && !isMine(review)) {
-        await adminMutator(`/api/admin/reviews/${review._id}`, {
-          method: "PATCH",
-          body: JSON.stringify({ moderationStatus: nextStatus }),
-        });
-      } else {
-        const res = await fetch(`/api/reviews/${review._id}`, {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            status: nextStatus,
-          }),
-        });
-        if (!res.ok) throw new Error("상태 변경 실패");
+      try {
+        if (isAdminModeration) {
+          await adminMutator(`/api/admin/reviews/${review._id}`, {
+            method: "PATCH",
+            body: JSON.stringify({
+              moderationStatus: nextStatus,
+            }),
+          });
+        } else {
+          const response = await fetch(`/api/reviews/${review._id}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: nextStatus,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("상태 변경 실패");
+          }
+        }
+      } catch (error: any) {
+        // 서버 요청 자체가 실패하면 네트워크 재검증에
+        // 의존하지 않고 저장해 둔 로컬 snapshot을 즉시 복원합니다.
+        try {
+          if (reviewOwnedByMe) {
+            await mutateMyReview(myReviewSnapshot, false);
+          } else if (isAdminModeration) {
+            await mutateAdminReviews(adminReviewsSnapshot, false);
+          }
+        } catch (rollbackError) {
+          console.error("[reviews] failed to restore product review snapshot", rollbackError);
+        }
+
+        showErrorToast(error?.message || "상태 변경 중 오류가 발생했습니다.");
+
+        // 응답 유실 등으로 서버에는 반영됐을 가능성에 대비해
+        // snapshot 복원 후 서버 상태 재검증을 best effort로 시도합니다.
+        try {
+          if (reviewOwnedByMe) {
+            await mutateMyReview();
+          } else if (isAdminModeration) {
+            await mutateAdminReviews();
+          }
+        } catch (revalidateError) {
+          console.error(
+            "[reviews] failed to revalidate product review after failed mutation",
+            revalidateError,
+          );
+        }
+
+        return;
       }
 
-      // 재검증은 상태 변경 성공과 분리합니다.
+      // 서버 변경 성공 후의 재검증 실패는 작업 실패가 아닙니다.
       try {
-        if (isMine(review)) await mutateMyReview();
-        else if (isAdmin) await mutateAdminReviews();
+        if (reviewOwnedByMe) {
+          await mutateMyReview();
+        } else if (isAdminModeration) {
+          await mutateAdminReviews();
+        }
       } catch (revalidateError) {
         console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
       }
 
-      // 탭 유지 + 서버컴포넌트 리프레시
       const params = new URLSearchParams(searchParams.toString());
       params.set("tab", "reviews");
+
       router.replace(`?${params.toString()}`, {
         scroll: false,
       });
       router.refresh();
 
       showSuccessToast(nextStatus === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
-    } catch (err: any) {
-      // 실패 시 되돌리기(재검증)
-      if (isMine(review)) await mutateMyReview();
-      else if (isAdmin) await mutateAdminReviews();
-      showErrorToast(err?.message || "상태 변경 중 오류");
     } finally {
       setBusyReviewId(null);
     }

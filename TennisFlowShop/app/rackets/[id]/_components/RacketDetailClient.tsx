@@ -28,9 +28,9 @@ import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/const
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-input-policy";
+import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
-import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -268,7 +268,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
           moderationStatus: review.moderationStatus ?? current?.moderationStatus ?? "visible",
           effectiveStatus:
             review.effectiveStatus ??
-            ((review.authorStatus ?? review.status) === "visible" && review.moderationStatus !== "hidden"
+            ((review.authorStatus ?? review.status) === "visible" &&
+            review.moderationStatus !== "hidden"
               ? "visible"
               : "hidden"),
           masked: false,
@@ -1146,16 +1147,27 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                         onClick={async () => {
                                           if (!review?._id) return;
 
+                                          const reviewOwnedByMe = isMine(review);
+
                                           const { isAdminModeration, nextStatus } =
                                             getReviewManagedVisibilityStatus(
-                                              { ...review, ownedByMe: isMine(review) },
+                                              {
+                                                ...review,
+                                                ownedByMe: reviewOwnedByMe,
+                                              },
                                               isAdmin,
                                             );
+
+                                          // 낙관적 변경 전 현재 SWR 데이터 보관
+                                          const myReviewSnapshot = myReview;
+
+                                          const adminReviewsSnapshot = adminReviews;
+
                                           setBusyReviewId(String(review._id));
 
                                           // 낙관적 업데이트
-                                          if (isMine(review)) {
-                                            mutateMyReview?.((prev: any) => {
+                                          if (reviewOwnedByMe) {
+                                            await mutateMyReview?.((prev: any) => {
                                               if (
                                                 !prev?._id ||
                                                 String(prev._id) !== String(review._id)
@@ -1166,28 +1178,31 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 status: nextStatus,
                                               };
                                             }, false);
-                                          } else if (isAdmin) {
-                                            mutateAdminReviews?.((prev: any[] | undefined) => {
-                                              if (!Array.isArray(prev)) return prev;
-                                              return prev.map((r) =>
-                                                String(r._id) === String(review._id)
-                                                  ? {
-                                                      ...r,
-                                                      moderationStatus: nextStatus,
-                                                      effectiveStatus:
-                                                        review?.authorStatus === "visible" &&
-                                                        nextStatus === "visible"
-                                                          ? "visible"
-                                                          : "hidden",
-                                                    }
-                                                  : r,
-                                              );
-                                            }, false);
+                                          } else if (isAdminModeration) {
+                                            await mutateAdminReviews?.(
+                                              (prev: any[] | undefined) => {
+                                                if (!Array.isArray(prev)) return prev;
+                                                return prev.map((r) =>
+                                                  String(r._id) === String(review._id)
+                                                    ? {
+                                                        ...r,
+                                                        moderationStatus: nextStatus,
+                                                        effectiveStatus:
+                                                          review?.authorStatus === "visible" &&
+                                                          nextStatus === "visible"
+                                                            ? "visible"
+                                                            : "hidden",
+                                                      }
+                                                    : r,
+                                                );
+                                              },
+                                              false,
+                                            );
                                           }
 
                                           try {
                                             let res: Response | null = null;
-                                            if (isAdmin && !isMine(review)) {
+                                            if (isAdminModeration) {
                                               await adminMutator(
                                                 `/api/admin/reviews/${review._id}`,
                                                 {
@@ -1212,10 +1227,16 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                             if (res && !res.ok) throw new Error("상태 변경 실패");
 
                                             try {
-                                              if (isMine(review)) await mutateMyReview?.();
-                                              else if (isAdmin) await mutateAdminReviews?.();
+                                              if (reviewOwnedByMe) {
+                                                await mutateMyReview?.();
+                                              } else if (isAdminModeration) {
+                                                await mutateAdminReviews?.();
+                                              }
                                             } catch (revalidateError) {
-                                              console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+                                              console.error(
+                                                "[reviews] failed to revalidate after successful mutation",
+                                                revalidateError,
+                                              );
                                             }
 
                                             // 탭 유지 + 서버 리프레시
@@ -1234,15 +1255,41 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 : "공개로 전환했어요.",
                                             );
                                           } catch (err: any) {
+                                            // PATCH 실패 시 서버 재조회에 의존하지 않고
+                                            // 낙관적 변경 전 snapshot을 즉시 복원합니다.
                                             try {
-                                              if (isMine(review)) await mutateMyReview?.();
-                                              else if (isAdmin) await mutateAdminReviews?.();
-                                            } catch (revalidateError) {
-                                              console.error("[reviews] failed to revalidate after failed mutation", revalidateError);
+                                              if (reviewOwnedByMe) {
+                                                await mutateMyReview?.(myReviewSnapshot, false);
+                                              } else if (isAdminModeration) {
+                                                await mutateAdminReviews?.(
+                                                  adminReviewsSnapshot,
+                                                  false,
+                                                );
+                                              }
+                                            } catch (rollbackError) {
+                                              console.error(
+                                                "[reviews] failed to restore racket review snapshot",
+                                                rollbackError,
+                                              );
                                             }
+
                                             showErrorToast(
                                               err?.message || "상태 변경에 실패했습니다.",
                                             );
+
+                                            // 요청 응답만 유실됐을 가능성에 대비한 보조 재검증
+                                            try {
+                                              if (reviewOwnedByMe) {
+                                                await mutateMyReview?.();
+                                              } else if (isAdminModeration) {
+                                                await mutateAdminReviews?.();
+                                              }
+                                            } catch (revalidateError) {
+                                              console.error(
+                                                "[reviews] failed to revalidate racket review after failed mutation",
+                                                revalidateError,
+                                              );
+                                            }
                                           } finally {
                                             setBusyReviewId(null);
                                           }
@@ -1292,7 +1339,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 try {
                                                   await mutateAdminReviews?.();
                                                 } catch (revalidateError) {
-                                                  console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+                                                  console.error(
+                                                    "[reviews] failed to revalidate after successful mutation",
+                                                    revalidateError,
+                                                  );
                                                 }
                                                 // 탭 유지
                                                 const params = new URLSearchParams(
