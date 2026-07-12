@@ -8,19 +8,35 @@ export const REVIEW_CONTEXT_VALUES: ReviewContext[] = [
   "rental_stringing",
 ];
 
-function fieldExists(path: string) {
-  return { $ne: [{ $ifNull: [path, null] }, null] };
+function fieldHasValue(path: string) {
+  return {
+    $let: {
+      vars: { value: path, valueType: { $type: path } },
+      in: {
+        $switch: {
+          branches: [
+            { case: { $in: ["$$valueType", ["missing", "null"]] }, then: false },
+            {
+              case: { $eq: ["$$valueType", "string"] },
+              then: { $gt: [{ $strLenCP: { $trim: { input: "$$value" } } }, 0] },
+            },
+          ],
+          default: true,
+        },
+      },
+    },
+  };
 }
 
 export function buildResolvedReviewContextExpression() {
   const hasRentalRelation = {
-    $or: [fieldExists("$rentalId"), { $eq: ["$reviewType", "rental"] }],
+    $or: [fieldHasValue("$rentalId"), { $eq: ["$reviewType", "rental"] }],
   };
-  const hasOrderRelation = fieldExists("$orderId");
+  const hasOrderRelation = fieldHasValue("$orderId");
   const hasServiceRelation = {
     $or: [
-      fieldExists("$serviceApplicationId"),
-      fieldExists("$applicationId"),
+      fieldHasValue("$serviceApplicationId"),
+      fieldHasValue("$applicationId"),
       { $eq: ["$service", "stringing"] },
       { $eq: ["$reviewType", "service"] },
     ],

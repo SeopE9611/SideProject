@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { shapeAdminReview } from "@/lib/reviews/admin-review-shape";
+import { buildAdminReviewRelationStages } from "@/lib/reviews/admin-review-relations.server";
 import { buildResolvedReviewContextExpression } from "@/lib/reviews/review-context.server";
 import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from "@/types/admin/reviews";
 
@@ -51,30 +52,7 @@ export async function GET(req: Request) {
     ...(parsed.context === "all" ? [] : [{ $match: { resolvedReviewContext: parsed.context } }]),
   ];
 
-  const lookups: Record<string, unknown>[] = [
-    { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "_user" } },
-    { $lookup: { from: "products", localField: "productId", foreignField: "_id", as: "_product" } },
-    { $lookup: { from: "used_rackets", localField: "productId", foreignField: "_id", as: "_racket" } },
-    { $lookup: { from: "rental_orders", localField: "rentalId", foreignField: "_id", as: "_rental" } },
-    { $lookup: { from: "stringing_applications", localField: "serviceApplicationId", foreignField: "_id", as: "_application" } },
-    {
-      $addFields: {
-        resolvedUserEmail: { $ifNull: ["$userEmail", { $arrayElemAt: ["$_user.email", 0] }] },
-        resolvedUserName: { $ifNull: [{ $arrayElemAt: ["$_user.name", 0] }, ""] },
-        productName: { $ifNull: [{ $arrayElemAt: ["$_product.name", 0] }, { $arrayElemAt: ["$_product.title", 0] }] },
-        racketBrand: { $arrayElemAt: ["$_racket.brand", 0] },
-        racketModel: { $arrayElemAt: ["$_racket.model", 0] },
-        rentalBrand: { $arrayElemAt: ["$_rental.brand", 0] },
-        rentalModel: { $arrayElemAt: ["$_rental.model", 0] },
-        stringName: { $arrayElemAt: ["$_application.stringDetails.stringItems.name", 0] },
-        content: { $cond: [{ $eq: [{ $type: "$content" }, "string"] }, "$content", ""] },
-        createdAt: { $ifNull: ["$createdAt", "$$NOW"] },
-        helpfulCount: { $ifNull: ["$helpfulCount", 0] },
-        photosPreview: { $slice: [{ $ifNull: ["$photos", []] }, 4] },
-        isDeleted: { $toBool: { $ifNull: ["$isDeleted", false] } },
-      },
-    },
-  ];
+  const lookups = buildAdminReviewRelationStages();
 
   const [items, totalRows] = await Promise.all([
     col.aggregate([...basePipeline, { $sort: { createdAt: -1 } }, { $skip: (parsed.page - 1) * parsed.limit }, { $limit: parsed.limit }, ...lookups]).toArray(),

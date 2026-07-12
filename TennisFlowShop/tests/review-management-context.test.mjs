@@ -40,6 +40,12 @@ const cases = [
   [{ reviewType: "rental" }, "rental"],
   [{ service: "stringing" }, "standalone_stringing"],
   [{ reviewType: "service" }, "standalone_stringing"],
+  [{ rentalId: "" }, "product"],
+  [{ rentalId: "   " }, "product"],
+  [{ applicationId: "" }, "product"],
+  [{ orderId: "", service: "stringing" }, "standalone_stringing"],
+  [{ rentalId: "000000000000000000000001" }, "rental"],
+  [{ serviceApplicationId: "000000000000000000000002" }, "standalone_stringing"],
   [{}, "product"],
 ];
 
@@ -78,6 +84,8 @@ test("Mongo resolved context expression 계약을 유지한다", () => {
   assert.equal(expr.$switch.branches[3].then, "rental");
   assert.equal(expr.$switch.branches[4].then, "standalone_stringing");
   assert.equal(expr.$switch.default, "product");
+  assert.ok(JSON.stringify(expr).includes("$trim"));
+  assert.ok(JSON.stringify(expr).includes("$strLenCP"));
 });
 
 test("관리 API/UI와 마이페이지 API/UI가 context 관리 계약을 포함한다", () => {

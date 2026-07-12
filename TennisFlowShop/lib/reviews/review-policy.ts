@@ -1,4 +1,5 @@
 import { isOrderConfirmedStatus, isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
+import type { CanonicalReviewTarget, ReviewTargetBundle } from "./review-target";
 
 type OrderLike = {
   _id?: unknown;
@@ -84,6 +85,41 @@ export function getReviewSubmissionBlockReason(
     return (target.ineligibleReason as ReviewSubmissionBlockReason) ?? "notConfirmed";
   }
   return null;
+}
+
+function cleanCanonicalId(value: unknown) {
+  const id = String(value ?? "").trim();
+  return id || null;
+}
+
+export function getCanonicalTargetItemId(
+  target: CanonicalReviewTarget | null | undefined,
+): string | null {
+  return cleanCanonicalId(target?.primaryProductId) ?? cleanCanonicalId(target?.primaryRacketId);
+}
+
+export function targetMatchesRequestedItem(
+  target: CanonicalReviewTarget | null | undefined,
+  requestedItemId?: unknown,
+): boolean {
+  const requested = cleanCanonicalId(requestedItemId);
+  if (!target || !requested) return false;
+  return (
+    cleanCanonicalId(target.primaryProductId) === requested ||
+    cleanCanonicalId(target.primaryRacketId) === requested
+  );
+}
+
+export function findRequestedCanonicalTarget(
+  bundle: ReviewTargetBundle | null | undefined,
+  requestedItemId?: unknown,
+): CanonicalReviewTarget | null {
+  if (!bundle) return null;
+  const requested = cleanCanonicalId(requestedItemId);
+  if (requested) {
+    return bundle.targets.find((target) => targetMatchesRequestedItem(target, requested)) ?? null;
+  }
+  return bundle.nextTarget ?? bundle.targets.find((target) => target.eligible && !target.reviewed) ?? bundle.targets[0] ?? null;
 }
 
 export function getStandaloneStringingIneligibleReason(app: any) {

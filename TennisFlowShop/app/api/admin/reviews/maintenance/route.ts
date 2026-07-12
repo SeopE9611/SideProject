@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       await ensureReviewIndexes(db);
       result.createIndexes = "ok";
     }
-    if (!action || action === "dedup" || action === "all") {
+    if (action === "dedup") {
       result.dedup = await dedupActiveReviews(db);
     }
     if (!action || action === "rebuildSummary" || action === "all") {
@@ -118,6 +118,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, result });
   } catch (e: any) {
+    if (e?.details?.reason === "duplicateReviewsDetected") {
+      return NextResponse.json({ ok: false, ...e.details }, { status: 409 });
+    }
+    if (e?.details?.reason === "indexDefinitionMismatch") {
+      return NextResponse.json({ ok: false, ...e.details }, { status: 409 });
+    }
     return NextResponse.json({ ok: false, error: e?.message ?? "unknown" }, { status: 500 });
   } finally {
     // 3) 락 해제

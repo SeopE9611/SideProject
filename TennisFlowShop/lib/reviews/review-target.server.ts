@@ -405,7 +405,9 @@ export function buildOrderReviewTargetBundleFromLoadedData(
       ),
     );
   } else {
+    const racketIds = new Set(collectOrderRacketIds(order));
     for (const productId of collectOrderProductIds(order)) {
+      const isRacketProduct = racketIds.has(productId);
       targets.push(
         withStatus(
           ctx,
@@ -418,10 +420,13 @@ export function buildOrderReviewTargetBundleFromLoadedData(
             orderId: subjectId,
             rentalId: null,
             applicationIds: [],
-            relatedProductIds: [productId],
-            relatedRacketIds: [],
+            relatedProductIds: isRacketProduct ? [] : [productId],
+            relatedRacketIds: isRacketProduct ? [productId] : [],
             primaryProductId: productId,
-            relatedItems: [buildProductItem(ctx, productId, order)],
+            primaryRacketId: isRacketProduct ? productId : null,
+            relatedItems: [
+              isRacketProduct ? buildRacketItem(ctx, productId, order) : buildProductItem(ctx, productId, order),
+            ],
           }),
         ),
       );

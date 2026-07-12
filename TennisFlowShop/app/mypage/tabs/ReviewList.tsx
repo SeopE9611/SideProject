@@ -438,6 +438,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
     return base;
   }, [swrItems, reviews]);
+  const hasActiveFilter = statusFilter !== "all" || categoryFilter !== "all";
 
   // 에러 카드
   if (error) {
@@ -658,10 +659,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               <Star className="h-6 w-6 text-warning" />
             </div>
             <h3 className="mb-2 text-ui-card-title-lg font-semibold text-foreground">
-              {swrItems.length > 0 ? "조건에 맞는 후기가 없습니다" : "작성한 후기가 없습니다"}
+              {hasActiveFilter ? "조건에 맞는 후기가 없습니다" : "작성한 후기가 없습니다"}
             </h3>
             <p className="mb-4 md:mb-6 text-muted-foreground">
-              {swrItems.length > 0
+              {hasActiveFilter
                 ? "필터 조건을 변경해서 다른 후기를 확인해 보세요."
                 : "구매하신 상품이나 서비스에 대한 후기를 남겨주세요!"}
             </p>

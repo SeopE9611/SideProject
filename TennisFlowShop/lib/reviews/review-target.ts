@@ -91,17 +91,23 @@ export type ReviewContextRecord = {
 
 export type ReviewManagementCategory = "product" | "stringing" | "rental";
 
+function hasReviewRelationValue(value: unknown) {
+  if (value == null) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  return true;
+}
+
 export function inferReviewContext(record: ReviewContextRecord): ReviewContext {
   const normalized = normalizeReviewContext(record?.reviewContext);
   if (normalized) return normalized;
   const hasServiceRelation = Boolean(
-    record?.serviceApplicationId ||
-      record?.applicationId ||
+    hasReviewRelationValue(record?.serviceApplicationId) ||
+      hasReviewRelationValue(record?.applicationId) ||
       record?.service === "stringing" ||
       record?.reviewType === "service",
   );
-  const hasRentalRelation = Boolean(record?.rentalId || record?.reviewType === "rental");
-  const hasOrderRelation = Boolean(record?.orderId);
+  const hasRentalRelation = Boolean(hasReviewRelationValue(record?.rentalId) || record?.reviewType === "rental");
+  const hasOrderRelation = hasReviewRelationValue(record?.orderId);
   if (hasRentalRelation && hasServiceRelation) return "rental_stringing";
   if (hasOrderRelation && hasServiceRelation) return "product_stringing";
   if (hasRentalRelation) return "rental";
