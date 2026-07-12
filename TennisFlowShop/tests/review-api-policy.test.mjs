@@ -6,6 +6,15 @@ function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
+function assertSourceOrder(source, first, second) {
+  const firstIndex = source.indexOf(first);
+  const secondIndex = source.indexOf(second);
+
+  assert.notEqual(firstIndex, -1, `missing source token: ${first}`);
+  assert.notEqual(secondIndex, -1, `missing source token: ${second}`);
+  assert.ok(firstIndex < secondIndex, `${first} must appear before ${second}`);
+}
+
 function blockReason(target) {
   if (!target) return "notFound";
   if (target.reviewed) return "already";
@@ -200,9 +209,9 @@ test("후기 surface fallback context와 상세 UI 문구 계약", () => {
   const productClient = read("app/products/[id]/ProductDetailClient.tsx");
   const racketClient = read("app/rackets/[id]/_components/RacketDetailClient.tsx");
 
-  assert.ok(surface.includes('return "product_stringing"'));
-  assert.ok(surface.includes('return "rental_stringing"'));
-  assert.ok(surface.includes("const hasServiceRelation"));
+  assert.ok(surface.includes("inferReviewContext"));
+  assert.match(surface, /import\s+\{[\s\S]*inferReviewContext[\s\S]*\}\s+from/);
+  assert.match(surface, /return\s+inferReviewContext\(row\)/);
   assert.ok(productClient.includes(">후기<"));
   assert.ok(racketClient.includes("후기"));
   assert.ok(!productClient.includes(">리뷰<"));
@@ -261,12 +270,15 @@ test("후기 POST body 계약: 일반 JSON 객체만 허용하고 검증 이후 
   assert.ok(postRoute.includes("!Array.isArray(value)"));
   assert.ok(postRoute.includes('reason: "invalidBody"'));
   assert.ok(postRoute.includes('message: "잘못된 후기 요청입니다."'));
-  assert.ok(
-    postRoute.indexOf("if (!isPlainRequestBody(body))") < postRoute.indexOf("const orderIdRaw = body.orderId"),
+  assertSourceOrder(
+    postRoute,
+    "if (!isPlainRequestBody(body))",
+    "const bodyOrderId = body.orderId",
   );
-  assert.ok(
-    postRoute.indexOf("if (!isPlainRequestBody(body))") <
-      postRoute.indexOf('const photosInput = "photos" in body ? body.photos : []'),
+  assertSourceOrder(
+    postRoute,
+    "if (!isPlainRequestBody(body))",
+    'const photosInput = "photos" in body ? body.photos : []',
   );
 });
 

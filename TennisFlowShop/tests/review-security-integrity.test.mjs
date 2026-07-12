@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { importFileModule } from "./helpers/import-file-module.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -16,7 +17,7 @@ async function loadReviewInputPolicy() {
   const dir = mkdtempSync(join(tmpdir(), "review-policy-"));
   const out = join(dir, "review-input-policy.mjs");
   writeFileSync(out, js);
-  return import(out);
+  return importFileModule(out);
 }
 
 test("후기 입력 정책은 운영 validator로 별점/내용/사진 경계를 실행 검증한다", async () => {
