@@ -6,6 +6,11 @@ import { grantPoints } from "@/lib/points.service";
 import { buildPublicReviewMatch, buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { isAllowedReviewPhotoUrl } from "@/lib/reviews/review-photo-storage.server";
+import {
+  markReviewPhotoUploadSessionCommitted,
+  rollbackReviewPhotoUploadSessionClaim,
+  validateAndClaimReviewPhotoUploadSession,
+} from "@/lib/reviews/review-photo-upload-session.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
 import {
   findRequestedCanonicalTarget,
@@ -145,6 +150,21 @@ export async function POST(req: Request) {
     );
   }
   const photosClean = Array.from(new Set<string>(cleanedList));
+  const uploadSessionId = typeof body.uploadSessionId === "string" ? body.uploadSessionId : null;
+  if (photosClean.length > 0) {
+    const sessionValidation = await validateAndClaimReviewPhotoUploadSession({
+      db,
+      userId,
+      uploadSessionId,
+      urls: photosClean,
+    });
+    if (!sessionValidation.ok) {
+      return NextResponse.json(
+        { ok: false, reason: sessionValidation.reason, message: sessionValidation.reason },
+        { status: sessionValidation.reason === "uploadSessionForbidden" ? 403 : 400 },
+      );
+    }
+  }
 
   // 라켓 대여 리뷰
   if (body.rentalId) {
@@ -213,9 +233,11 @@ export async function POST(req: Request) {
       const insertResult = await db.collection("reviews").insertOne(reviewDoc);
       await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: insertResult.insertedId }, "POST /api/reviews");
     } catch (error) {
+      await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
+    await markReviewPhotoUploadSessionCommitted(db, userId, uploadSessionId);
     // TODO: 라켓 대여 리뷰 포인트 정책이 정해지면 적립 로직을 연결합니다.
     return NextResponse.json({ ok: true }, { status: 201 });
   }
@@ -337,6 +359,7 @@ export async function POST(req: Request) {
     try {
       insertRes = await db.collection("reviews").insertOne(doc);
     } catch (error) {
+      await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
@@ -371,6 +394,7 @@ export async function POST(req: Request) {
     }
 
     await refreshReviewSummaryCachesForReviewSafely(db, { ...doc, _id: reviewId }, "POST /api/reviews");
+    await markReviewPhotoUploadSessionCommitted(db, userId, uploadSessionId);
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
@@ -467,6 +491,7 @@ export async function POST(req: Request) {
       reviewId = insertRes.insertedId;
       await refreshReviewSummaryCachesForReviewSafely(db, { ...reviewDoc, _id: reviewId }, "POST /api/reviews");
     } catch (error) {
+      await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
       if (isDuplicateKeyError(error)) return duplicateReviewResponse();
       throw error;
     }
@@ -500,9 +525,11 @@ export async function POST(req: Request) {
       }
     }
 
+    await markReviewPhotoUploadSessionCommitted(db, userId, uploadSessionId);
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
+  if (photosClean.length > 0) await rollbackReviewPhotoUploadSessionClaim(db, userId, uploadSessionId);
   return NextResponse.json({ message: "bad request" }, { status: 400 });
 }
 

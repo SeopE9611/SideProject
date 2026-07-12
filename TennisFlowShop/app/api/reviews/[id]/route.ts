@@ -7,6 +7,11 @@ import { deductPoints } from "@/lib/points.service";
 import { validateReviewPatchInput } from "@/lib/reviews/review-input-policy";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { diffRemovedReviewPhotos, isAllowedReviewPhotoUrl, removeReviewPhotosBestEffort } from "@/lib/reviews/review-photo-storage.server";
+import {
+  markReviewPhotoUploadSessionCommitted,
+  rollbackReviewPhotoUploadSessionClaim,
+  validateAndClaimReviewPhotoUploadSession,
+} from "@/lib/reviews/review-photo-upload-session.server";
 
 // 상품 별점/리뷰수 집계 보정 (status:'visible'만 집계)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -56,7 +61,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     status?: "visible" | "hidden";
     visibility?: "public" | "private";
     photos?: string[];
+    uploadSessionId?: string | null;
   } = {};
+  body.uploadSessionId = typeof rawBody.uploadSessionId === "string" ? rawBody.uploadSessionId : null;
   if (typeof rawBody.status === "string" && ["visible", "hidden"].includes(rawBody.status)) {
     body.status = rawBody.status as "visible" | "hidden";
   }
@@ -107,12 +114,34 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       );
     }
     $set.photos = Array.from(new Set<string>(cleanedList));
+    const previousPhotos = Array.isArray(doc.photos) ? doc.photos.map(String) : [];
+    const addedPhotos = $set.photos.filter((url: string) => !previousPhotos.includes(url));
+    if (addedPhotos.length > 0) {
+      const sessionValidation = await validateAndClaimReviewPhotoUploadSession({
+        db,
+        userId: me,
+        uploadSessionId: body.uploadSessionId,
+        urls: addedPhotos,
+      });
+      if (!sessionValidation.ok) {
+        return NextResponse.json(
+          { ok: false, reason: sessionValidation.reason, message: sessionValidation.reason },
+          { status: sessionValidation.reason === "uploadSessionForbidden" ? 403 : 400 },
+        );
+      }
+    }
   }
 
   if (Object.keys($set).length === 1)
     return NextResponse.json({ message: "no changes" }, { status: 400 });
 
-  await db.collection("reviews").updateOne({ _id }, { $set });
+  try {
+    await db.collection("reviews").updateOne({ _id }, { $set });
+  } catch (error) {
+    await rollbackReviewPhotoUploadSessionClaim(db, me, body.uploadSessionId);
+    throw error;
+  }
+  await markReviewPhotoUploadSessionCommitted(db, me, body.uploadSessionId);
   if (Array.isArray($set.photos)) {
     await removeReviewPhotosBestEffort(diffRemovedReviewPhotos(doc.photos, $set.photos), "PATCH /api/reviews/[id]");
   }

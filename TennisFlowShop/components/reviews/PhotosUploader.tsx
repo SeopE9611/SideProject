@@ -19,9 +19,9 @@ type Props = {
   onChange: (next: Photo[]) => void;
   max?: number;
   onUploadingChange?: (uploading: boolean) => void;
-  onUploaded?: (urls: string[], uploadSessionId: string) => void;
-  onRemove?: (url: string) => void;
-  uploadSessionId?: string | null;
+  uploadSessionId: string | null;
+  onUploaded: (urls: string[], uploadSessionId: string) => void;
+  onRemove: (url: string, uploadSessionId: string) => void;
   disabled?: boolean;
   /**
    * 미리보기 표시 방식
@@ -108,7 +108,7 @@ export default function PhotosUploader({
       45000, // 45초
     );
 
-    const err = (res as any)?.error;
+    const err = res?.error;
     if (!res || err) {
       console.error("[PhotosUploader] upload failed", {
         bucket: BUCKET,
@@ -174,7 +174,7 @@ export default function PhotosUploader({
         }
       }
       if (uploadedUrls.length > 0) {
-        onUploaded?.(uploadedUrls, uploadSessionId);
+        onUploaded(uploadedUrls, uploadSessionId);
         onChange(Array.from(new Set([...(value ?? []), ...uploadedUrls])).slice(0, max));
       }
     } finally {
@@ -184,12 +184,12 @@ export default function PhotosUploader({
   };
 
   const removeAt = (idx: number) => {
-    if (disabled) return;
+    if (disabled || !uploadSessionId) return;
     const next = [...(value || [])];
     const [removed] = next.splice(idx, 1);
     if (removed && sessionUploadedUrlsRef.current.has(removed)) {
       sessionUploadedUrlsRef.current.delete(removed);
-      onRemove?.(removed);
+      onRemove(removed, uploadSessionId);
     }
     onChange(next);
   };
