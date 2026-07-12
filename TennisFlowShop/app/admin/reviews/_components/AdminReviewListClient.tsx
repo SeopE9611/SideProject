@@ -502,9 +502,9 @@ export default function AdminReviewListClient() {
               <SelectValue placeholder="상태" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체 상태</SelectItem>
-              <SelectItem value="visible">공개</SelectItem>
-              <SelectItem value="hidden">비공개</SelectItem>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="visible">관리자 공개</SelectItem>
+              <SelectItem value="hidden">관리자 숨김</SelectItem>
             </SelectContent>
           </Select>
           <Select
@@ -591,7 +591,7 @@ export default function AdminReviewListClient() {
             <div className={adminDataTable.headCenter}>평점 / 도움돼요</div>
             <div className={adminDataTable.headRight}>작성일</div>
             <div className={adminDataTable.headCenter}>후기 유형</div>
-            <div className={adminDataTable.headCenter}>공개 / 비공개</div>
+            <div className={adminDataTable.headCenter}>관리자 검수</div>
             <div className={adminDataTable.actionHead}>관리</div>
           </div>
 
@@ -766,12 +766,12 @@ export default function AdminReviewListClient() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <span className="hidden xl:inline text-[12px] text-muted-foreground">
-                      {r.status === "visible" ? "공개" : "비공개"}
+                      {r.moderationStatus === "visible" ? "관리자 공개" : "관리자 숨김"}
                     </span>
                     {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
                     <div className="h-6 flex items-center">
                       <Switch
-                        checked={r.status === "visible"}
+                        checked={r.moderationStatus === "visible"}
                         onCheckedChange={() => toggleVisible(r)}
                       />
                     </div>
@@ -912,8 +912,14 @@ export default function AdminReviewListClient() {
                   reviewContext={detail.reviewContext}
                   contextLabel={detail.contextLabel}
                 />
-                <Badge variant={detail.status === "visible" ? "default" : "secondary"}>
-                  {detail.status === "visible" ? "공개" : "비공개"}
+                <Badge variant={detail.authorStatus === "visible" ? "default" : "secondary"}>
+                  작성자 설정: {detail.authorStatus === "visible" ? "공개" : "비공개"}
+                </Badge>
+                <Badge variant={detail.moderationStatus === "visible" ? "default" : "secondary"}>
+                  관리자 검수: {detail.moderationStatus === "visible" ? "공개" : "숨김"}
+                </Badge>
+                <Badge variant={detail.effectiveStatus === "visible" ? "default" : "secondary"}>
+                  실제 노출: {detail.effectiveStatus === "visible" ? "공개" : "비공개"}
                 </Badge>
                 {(() => {
                   const dt = safeSplitDate(detail.createdAt);

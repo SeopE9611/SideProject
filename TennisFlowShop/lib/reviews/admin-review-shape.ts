@@ -36,6 +36,9 @@ export function shapeAdminReview(row: Record<string, unknown>, contentLimit?: nu
   const reviewContext = inferReviewContext({ ...row, reviewContext: row.resolvedReviewContext ?? row.reviewContext });
   const content = typeof row.content === "string" ? row.content : "";
   const serviceApplicationId = asString(row.serviceApplicationId) ?? asString(row.applicationId);
+  const authorStatus = row.status === "hidden" ? "hidden" : "visible";
+  const moderationStatus = row.moderationStatus === "hidden" ? "hidden" : "visible";
+  const effectiveStatus = authorStatus === "visible" && moderationStatus === "visible" ? "visible" : "hidden";
   return {
     _id: String(row._id),
     reviewContext,
@@ -43,7 +46,10 @@ export function shapeAdminReview(row: Record<string, unknown>, contentLimit?: nu
     category: getReviewManagementCategory(reviewContext),
     subject: buildAdminReviewSubject(row, reviewContext),
     rating: Number(row.rating ?? 0),
-    status: row.moderationStatus === "hidden" ? "hidden" : "visible",
+    status: moderationStatus,
+    authorStatus,
+    moderationStatus,
+    effectiveStatus,
     content: typeof contentLimit === "number" ? content.slice(0, contentLimit) : content,
     createdAt: new Date(String(row.createdAt ?? new Date())).toISOString(),
     userEmail: pickString(row.userEmail, row.resolvedUserEmail) ?? undefined,

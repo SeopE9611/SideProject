@@ -30,7 +30,12 @@ export async function GET(req: Request) {
       .find(
         {
           isDeleted: { $ne: true },
-          $or: [{ productId: { $in: candidates } }, { "target.productId": { $in: candidates } }],
+          $or: [
+            { productId: { $in: candidates } },
+            { "target.productId": { $in: candidates } },
+            { relatedProductIds: { $in: candidates } },
+            { "target.relatedProductIds": { $in: candidates } },
+          ],
         },
         {
           projection: {

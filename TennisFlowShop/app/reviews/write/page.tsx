@@ -106,6 +106,8 @@ export default function ReviewWritePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toastLocked = useRef(false);
   const canonicalRewriteDone = useRef(false);
+  const sessionUploadedUrlsRef = useRef<Set<string>>(new Set());
+  const committedRef = useRef(false);
 
   const nextUrl = useMemo(() => {
     const qs = sp.toString();
@@ -125,6 +127,18 @@ export default function ReviewWritePage() {
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty || isSubmitting || typeof window === "undefined" || window.confirm(UNSAVED_CHANGES_MESSAGE)) go();
+  };
+  const cleanupSessionPhotos = (urls?: string[]) => {
+    const targets = urls ?? Array.from(sessionUploadedUrlsRef.current);
+    if (!targets.length) return;
+    targets.forEach((url) => sessionUploadedUrlsRef.current.delete(url));
+    fetch("/api/reviews/photos/cleanup", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls: targets }),
+      keepalive: true,
+    }).catch(() => {});
   };
 
   useEffect(() => {
@@ -225,6 +239,8 @@ export default function ReviewWritePage() {
     try {
       const r = await fetch("/api/reviews", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(buildReviewSubmissionPayload(canonicalTarget, { rating, content, photos })) });
       if (r.ok) {
+        committedRef.current = true;
+        sessionUploadedUrlsRef.current.clear();
         showSuccessToast("후기가 등록되었습니다.");
         router.replace(getReviewDestination(canonicalTarget).href);
         return;
@@ -250,6 +266,12 @@ export default function ReviewWritePage() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (!committedRef.current) cleanupSessionPhotos();
+    };
+  }, []);
 
   const title = canonicalTarget ? getReviewContextLabel(canonicalTarget.reviewContext) : eligibility?.targetLabel ?? "후기 대상";
   const reviewPlaceholder = canonicalTarget?.reviewContext === "rental" || canonicalTarget?.reviewContext === "rental_stringing" ? "대여 라켓의 사용감과 대여 경험을 적어주세요." : canonicalTarget?.reviewContext === "standalone_stringing" || canonicalTarget?.reviewContext === "product_stringing" ? "상품 사용감과 교체서비스 경험을 함께 적어주세요." : "상품의 사용감과 만족도를 적어주세요.";
@@ -290,7 +312,7 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">별점</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">이용 경험에 가까운 점수를 선택하세요.</p></div><div className="rounded-2xl border border-border bg-muted/20 px-4 py-5 shadow-sm"><Stars value={rating} onChange={setRating} disabled={locked} /><div className="mt-3 text-center text-ui-body-sm font-medium text-foreground">{rating}점</div></div></section>
                 <section className="space-y-3"><div className="flex items-end justify-between gap-3"><Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label><span className="text-ui-label text-muted-foreground tabular-nums">{content.length} / {REVIEW_CONTENT_MAX_LENGTH}자</span></div><Textarea value={content} onChange={(e) => setContent(e.target.value)} maxLength={REVIEW_CONTENT_MAX_LENGTH} placeholder={reviewPlaceholder} className="min-h-[180px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring" disabled={locked} /></section>
-                <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} previewMode="queue" disabled={locked || isUploading} /><PhotosReorderGrid value={photos} onChange={setPhotos} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
+                <section className="space-y-3"><div><Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label><p className="mt-1 text-ui-body-sm text-muted-foreground">선택 사항이며 최대 5장까지 등록할 수 있습니다.</p></div><div className="rounded-2xl border border-dashed border-border bg-background p-4"><PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} onUploaded={(urls) => urls.forEach((url) => sessionUploadedUrlsRef.current.add(url))} previewMode="queue" disabled={locked || isUploading} /><PhotosReorderGrid value={photos} onChange={setPhotos} onRemove={(url) => sessionUploadedUrlsRef.current.has(url) && cleanupSessionPhotos([url])} disabled={locked || isUploading} />{isUploading && <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>}</div></section>
                 <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end"><Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto">{reviewDestination?.label ?? "후기 관리로 이동"}</Button><Button data-cy="submit-review" type="submit" disabled={locked || invalidForm || isUploading} aria-disabled={locked || invalidForm || isUploading} className="h-11 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto">{isUploading ? "이미지 업로드 중..." : "후기 등록"}</Button></div>
               </form>
             </SummaryCard>

@@ -3,7 +3,7 @@ import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
-import { buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
+import { buildPublicReviewMatch, buildPublicReviewSurfaceTargetMatch } from "@/lib/reviews/public-review-surface.server";
 import { refreshReviewSummaryCachesForReviewSafely } from "@/lib/reviews/review-summary-cache.server";
 import { isAllowedReviewPhotoUrl } from "@/lib/reviews/review-photo-storage.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
@@ -569,21 +569,23 @@ export async function GET(req: Request) {
   const needRentalJoin = type === "all" || type === "rental";
 
   // match 조건 구성
-  const match: any = {};
-  // 공개 기본: 소프트 삭제 제외
-  match.isDeleted = { $ne: true };
+  const match: any = isAdmin
+    ? { isDeleted: { $ne: true } }
+    : buildPublicReviewMatch(withHidden === "mask");
   // 관리자 + withDeleted=1 이면 삭제 포함
   if (isAdmin && (withDeleted === "1" || withDeleted === "true")) {
     delete match.isDeleted;
   }
-  if (withHidden !== "mask" && withHidden !== "all") match.status = "visible";
+  if (!isAdmin && withHidden !== "mask") match.status = "visible";
+  if (isAdmin && withHidden !== "mask" && withHidden !== "all") match.status = "visible";
   if (type === "product") match.productId = { $exists: true };
   if (type === "service") match.service = { $exists: true };
   if (type === "rental") {
     match.$or = [{ reviewType: "rental" }, { rentalId: { $exists: true } }];
   }
   if (productFilterCandidates && type === "product") {
-    match.productId = { $in: productFilterCandidates };
+    const productTargetMatch = await buildPublicReviewSurfaceTargetMatch(db, { type: "product", id: productFilterId! });
+    if (productTargetMatch) Object.assign(match, productTargetMatch);
   }
   if (productFilterCandidates && type !== "product") {
     // 상품 관계 필드는 public surface helper와 공유합니다: stringDetails.stringTypes, meta.stringProductId
@@ -683,7 +685,6 @@ export async function GET(req: Request) {
     },
     productId: 1,
     reviewType: 1,
-    rentalId: 1,
     rentalTitle: 1,
     rentalTargetName: 1,
     rentalStatus: "$rental.status",
@@ -738,13 +739,11 @@ export async function GET(req: Request) {
     __racketModel: "$racket.model",
     __racketImages: "$racket.images",
     service: 1,
-    serviceApplicationId: 1,
     serviceTitle: 1,
     serviceTargetName: 1,
     serviceContextLabel: 1,
     reviewContext: 1,
     contextLabel: 1,
-    relatedProductIds: 1,
     __serviceProductIds: 1,
     rating: 1,
     helpfulCount: 1,
@@ -757,9 +756,7 @@ export async function GET(req: Request) {
   project.status = 1;
   project.ownedByMe = 1;
   if (withHidden === "mask") {
-    const hiddenCond = {
-      $and: [{ $eq: ["$status", "hidden"] }, { $not: [{ $or: ["$ownedByMe", "$adminView"] }] }],
-    };
+    const hiddenCond = { $eq: ["$status", "hidden"] };
     project.userName = { $cond: [hiddenCond, null, "$userName"] };
     project.content = { $cond: [hiddenCond, null, "$content"] };
     project.photos = { $cond: [hiddenCond, [], { $ifNull: ["$photos", []] }] };

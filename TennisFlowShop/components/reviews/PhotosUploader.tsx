@@ -19,6 +19,7 @@ type Props = {
   onChange: (next: Photo[]) => void;
   max?: number;
   onUploadingChange?: (uploading: boolean) => void;
+  onUploaded?: (urls: string[]) => void;
   disabled?: boolean;
   /**
    * 미리보기 표시 방식
@@ -34,6 +35,7 @@ export default function PhotosUploader({
   onChange,
   max = 5,
   onUploadingChange,
+  onUploaded,
   disabled = false,
   previewMode = "all",
 }: Props) {
@@ -179,6 +181,7 @@ export default function PhotosUploader({
         }
       }
       if (uploadedUrls.length > 0) {
+        onUploaded?.(uploadedUrls);
         onChange(Array.from(new Set([...(value ?? []), ...uploadedUrls])).slice(0, max));
       }
     } finally {

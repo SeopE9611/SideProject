@@ -53,6 +53,8 @@ export async function GET(req: Request) {
       $or: [
         { productId: { $in: productIdCandidates } },
         { "target.productId": { $in: productIdCandidates } },
+        { relatedProductIds: { $in: productIdCandidates } },
+        { "target.relatedProductIds": { $in: productIdCandidates } },
       ],
     };
     if (orderIdCandidates.length) {

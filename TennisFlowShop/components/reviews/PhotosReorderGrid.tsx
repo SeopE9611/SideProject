@@ -14,12 +14,14 @@ export default function PhotosReorderGrid({
   disabled,
   className,
   columns = 5,
+  onRemove,
 }: {
   value: string[];
   onChange: (next: string[]) => void;
   disabled?: boolean;
   className?: string;
   columns?: 4 | 5;
+  onRemove?: (url: string) => void;
 }) {
   const dragFrom = useRef<number | null>(null);
   if (!Array.isArray(value) || value.length === 0) return null;
@@ -27,6 +29,8 @@ export default function PhotosReorderGrid({
   // 업로더에서 완료 썸네일을 숨기는 경우(=아래 그리드만 남기는 UX),
   // 사용자가 사진을 삭제할 수 있도록 그리드에서도 삭제 버튼을 제공한다.
   const removeAt = (idx: number) => {
+    const removed = value[idx];
+    if (removed) onRemove?.(removed);
     onChange(value.filter((_, i) => i !== idx));
   };
 
