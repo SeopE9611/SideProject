@@ -7,6 +7,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
@@ -165,21 +166,21 @@ const HOME_HERO_SLIDES = [
 ];
 
 const surfaceCardInteractiveClass =
-  "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
+  "rounded-control border border-border/80 bg-card shadow-sm transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-ring/30";
 const promoBannerClass =
-  "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
+  "group relative block h-24 overflow-hidden rounded-panel border border-border/80 bg-card shadow-sm transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring/30 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
 const surfaceIconWrapClass =
-  "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
+  "flex items-center justify-center rounded-control border border-border/70 bg-brand-highlight-muted text-foreground transition-[background-color,color,border-color,opacity] duration-300";
 const processStepSurfaceClass =
-  "group flex flex-col items-start rounded-2xl border border-border/60 bg-background p-4 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/25 hover:shadow-md bp-sm:p-5";
+  "group flex flex-col items-start rounded-control border border-border/80 bg-card p-4 text-left transition-[background-color,color,border-color,opacity] duration-300 bp-sm:p-5";
 const brandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
 const getBrandTabClass = (isActive: boolean) =>
   cn(
-    "shrink-0 whitespace-nowrap rounded-xl border px-5 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,box-shadow,opacity] duration-300 bp-sm:px-6 bp-sm:py-3 bp-sm:text-ui-body bp-md:px-7",
+    "min-h-11 shrink-0 whitespace-nowrap rounded-control border px-5 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,opacity] duration-300 bp-sm:px-6 bp-sm:py-3 bp-sm:text-ui-body bp-md:px-7",
     isActive
-      ? "border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary"
-      : "border-border/60 bg-card text-foreground hover:border-border hover:shadow-md",
+      ? "border-foreground/30 bg-brand-highlight-muted text-foreground ring-1 ring-brand-highlight/30"
+      : "border-border/80 bg-card text-foreground hover:border-foreground/20 hover:bg-muted/30",
   );
 
 const SITUATIONS = [
@@ -619,7 +620,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
   // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
   return (
-    <div>
+    <div className="bg-background">
       <SignupBonusPromoPopup
         promo={signupPromo}
         onPrimaryClick={() => {
@@ -630,24 +631,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       {/* 상단 통합 랜딩 히어로 + 히어로 하단 배너 */}
       <SiteContainer variant="wide" className="px-0">
         <section className="mx-3 pt-3 bp-sm:mx-4 bp-sm:pt-4 bp-md:mx-6 bp-md:pt-6 bp-lg:mx-0">
-          <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-card shadow-sm">
+          <div className="overflow-hidden rounded-hero border border-surface-inverse-foreground/15 bg-surface-inverse text-surface-inverse-foreground shadow-soft">
             <div className="grid gap-0 bp-lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] bp-lg:items-stretch">
               <div className="flex flex-col p-5 bp-sm:p-8 bp-md:p-10">
-                <span className="inline-flex w-fit rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">
+                <Badge variant="signal_solid" className="w-fit">
                   Dokkaebi Tennis Stringing & Gear
-                </span>
-                <h1 className="mt-4 max-w-3xl break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:mt-5 bp-md:text-ui-page-title-lg">
+                </Badge>
+                <h1 className="mt-4 max-w-3xl break-keep font-brand-heading text-ui-page-title font-semibold tracking-tight text-surface-inverse-foreground bp-sm:mt-5 bp-md:text-ui-page-title-lg bp-lg:font-brand-display">
                   내 라켓에 맞는 스트링 교체와 테니스 용품을{" "}
-                  <span className="whitespace-nowrap">한 번에</span>
+                  <span className="text-brand-highlight">한 번에</span>
                 </h1>
-                <p className="mt-4 max-w-2xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
+                <p className="mt-4 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">
                   스트링 선택부터 교체 접수, 패키지 이용까지 도깨비테니스에서 편하게 시작하세요.
                 </p>
                 <div className="mt-6 grid gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:gap-3">
-                  <Button asChild size="tall">
+                  <Button asChild variant="highlight" size="tall" wrap="responsive">
                     <Link href="/services/apply">교체서비스 신청</Link>
                   </Button>
-                  <Button asChild size="tall" variant="outline">
+                  <Button asChild variant="inverse" size="tall" wrap="responsive">
                     <Link href="/products">스트링 둘러보기</Link>
                   </Button>
                 </div>
@@ -655,16 +656,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   {["방문·택배 접수", "스트링/텐션 선택", "패키지 이용 가능"].map((point) => (
                     <span
                       key={point}
-                      className="rounded-full border border-border/60 bg-muted/20 px-3 py-1.5 text-ui-label font-semibold text-muted-foreground"
+                      className="rounded-control border border-surface-inverse-foreground/15 px-3 py-1.5 text-ui-label font-semibold text-surface-inverse-muted"
                     >
                       {point}
                     </span>
                   ))}
                 </div>
               </div>
-              <div className="border-t border-border/60 bg-muted/20 p-3 bp-sm:p-4 bp-lg:border-l bp-lg:border-t-0">
-                <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm">
-                  <div className="[&>section>div]:mx-0 [&>section>div]:rounded-[1.5rem]">
+              <div className="border-t border-surface-inverse-foreground/15 p-3 bp-sm:p-4 bp-lg:border-l bp-lg:border-t-0">
+                <div className="overflow-hidden rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse">
+                  <div className="[&>section>div]:mx-0 [&>section>div]:rounded-panel">
                     <HeroSlider
                       slides={HOME_HERO_SLIDES}
                       slideClassName="h-[200px] bp-sm:h-[230px] bp-md-only:h-[320px] bp-lg:h-[360px]"
@@ -691,11 +692,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                           <img
                             src={b.img}
                             alt={b.alt ?? title}
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             loading="lazy"
                             decoding="async"
                           />
-                          <div className="absolute inset-0 bg-background/50" />
+                          <div className="absolute inset-0 bg-card/70" />
                         </>
                       ) : (
                         <div className="absolute inset-0 bg-muted/30" />
@@ -745,23 +746,23 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </SiteContainer>
 
 
-      <section className="py-8 bp-sm:py-10">
+      <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="grid gap-5 rounded-[2rem] border border-border bg-card p-5 shadow-sm bp-md:p-7 bp-lg:grid-cols-[1.1fr_0.9fr] bp-lg:items-center">
+          <Card variant="feature" className="grid gap-5 rounded-panel p-5 bp-md:p-7 bp-lg:grid-cols-[1.1fr_0.9fr] bp-lg:items-center">
             <div className="space-y-4">
-              <span className="inline-flex w-fit rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">라켓 케어 패스</span>
+              <Badge variant="signal" className="w-fit">라켓 케어 패스</Badge>
               <h2 className="break-keep text-ui-section-title-lg font-semibold text-foreground">내 라켓의 다음 스트링 교체일을 놓치지 마세요</h2>
               <p className="break-keep text-ui-body text-muted-foreground">마지막 교체일, 플레이 빈도, 완료된 교체 이력을 기반으로 상태 점수와 알림을 제공합니다.</p>
               <div className="flex flex-wrap gap-2 text-ui-label text-muted-foreground"><span className="rounded-full bg-muted px-3 py-1">30초 등록</span><span className="rounded-full bg-muted px-3 py-1">기존 이력 활용</span><span className="rounded-full bg-muted px-3 py-1">무료 알림</span></div>
-              <Button asChild size="tall"><Link href="/racket-care">라켓 케어 알아보기</Link></Button>
+              <Button asChild size="tall" variant="outline" wrap="responsive"><Link href="/racket-care">라켓 케어 알아보기</Link></Button>
             </div>
-            <Card className="rounded-2xl border-border/80">
+            <Card variant="floating" className="rounded-panel border-border/80">
               <CardContent className="space-y-3 p-5">
-                <div className="flex items-center gap-2 text-primary"><Activity className="h-5 w-5" /><span className="font-semibold">스트링 상태 점수</span></div>
+                <div className="flex items-center gap-2 text-foreground"><Activity className="h-5 w-5 text-brand-highlight" /><span className="font-semibold">스트링 상태 점수</span></div>
                 {racketCarePreview.state === "ready" && racketCarePreview.item ? <><p className="text-ui-section-title font-semibold">{racketCarePreview.item.lifeScore}점</p><p className="break-words font-medium">{racketCarePreview.item.nickname}</p><p className="text-ui-body-sm text-muted-foreground">예상 교체일 {new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "short", day: "numeric" }).format(new Date(racketCarePreview.item.nextRecommendedAt))}</p><p className="break-words text-ui-body-sm text-muted-foreground">최근 스트링 {racketCarePreview.item.stringName || "미입력"}</p></> : <><p className="break-keep font-medium">등록하면 실제 상태 점수와 예상 교체일을 확인할 수 있어요.</p><p className="break-keep text-ui-body-sm text-muted-foreground">비로그인 또는 미등록 상태에서는 예시 점수 없이 기능만 안내합니다.</p></>}
               </CardContent>
             </Card>
-          </div>
+          </Card>
         </SiteContainer>
       </section>
 
@@ -769,6 +770,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
+            variant="brand"
             eyebrow="처음 오셨다면 여기서 시작하세요"
             title="지금 어떤 도움이 필요하세요?"
             description="자주 찾는 메뉴를 카드에서 바로 선택할 수 있어요."
@@ -785,16 +787,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   key={situation.key}
                   href={situation.href}
                   className={cn(
-                    "group flex min-h-36 flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-40",
+                    "group flex min-h-36 flex-col justify-between rounded-panel border border-border/80 bg-card p-5 shadow-sm transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-40",
                     isPrimary
-                      ? "border-primary/30 bg-primary/5 ring-1 ring-primary/10"
+                      ? "border-foreground/20 ring-1 ring-brand-highlight/30"
                       : "hover:bg-muted/20",
                   )}
                 >
                   <span
                     className={cn(
-                      "flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground",
-                      isPrimary && "border-primary/25 bg-primary/10 text-primary",
+                      "flex h-12 w-12 items-center justify-center rounded-control border border-border/70 bg-secondary text-foreground transition-[background-color,color,border-color,opacity] duration-300 ",
+                      isPrimary && "border-brand-highlight/30 bg-brand-highlight-muted text-foreground",
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -807,7 +809,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       {situation.description}
                     </span>
                   </span>
-                  <span className="mt-auto inline-flex items-center gap-1 pt-5 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary">
+                  <span className="mt-auto inline-flex items-center gap-1 pt-5 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-foreground">
                     {isPrimary ? "교체서비스 신청하기" : "바로가기"}
                     <ChevronRight className="h-3.5 w-3.5" />
                   </span>
@@ -821,14 +823,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       {/* 서비스 플로우 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <PublicSurface padding="lg" className="bp-md:p-10">
+          <PublicSurface variant="feature" padding="lg" className="bp-md:p-10">
             <SectionHeader
+              variant="brand"
               title="스트링 교체 프로세스"
               description="접수부터 수령까지 필요한 단계만 간단히 안내해 드려요."
               align="center"
               className="mb-8 bp-sm:mb-10"
             />
-            <div className="mb-5 overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm bp-sm:mb-6 bp-md:mb-8">
+            <div className="mb-5 overflow-hidden rounded-panel border border-border/80 bg-card bp-sm:mb-6 bp-md:mb-8">
               <img
                 src="/images/home/home-stringing-setup-clean.webp"
                 alt="테니스 라켓과 스트링 교체 도구"
@@ -843,7 +846,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <ClipboardList className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground">
+                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-semibold text-brand-highlight-foreground">
                     1
                   </div>
                 </div>
@@ -859,7 +862,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <SlidersHorizontal className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground">
+                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-semibold text-brand-highlight-foreground">
                     2
                   </div>
                 </div>
@@ -876,7 +879,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <Wrench className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground">
+                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-semibold text-brand-highlight-foreground">
                     3
                   </div>
                 </div>
@@ -893,7 +896,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <PackageCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground">
+                  <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-semibold text-brand-highlight-foreground">
                     4
                   </div>
                 </div>
@@ -911,6 +914,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
+            variant="brand"
             title="이용 안내"
             description="운영 소식은 간단히 확인하고, 필요한 안내 메뉴로 이동하세요."
             align="center"
@@ -934,7 +938,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   "group flex min-h-24 items-center gap-4 p-5",
                 )}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-border/70 bg-secondary text-foreground">
                   <ReceiptText className="h-5 w-5" />
                 </div>
                 <p className="break-keep text-ui-card-title font-semibold text-foreground">
@@ -948,7 +952,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   "group flex min-h-24 items-center gap-4 p-5",
                 )}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-border/70 bg-secondary text-foreground">
                   <Info className="h-5 w-5" />
                 </div>
                 <p className="break-keep text-ui-card-title font-semibold text-foreground">
@@ -962,7 +966,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   "group flex min-h-24 items-center gap-4 p-5",
                 )}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-border/70 bg-secondary text-foreground">
                   <Headset className="h-5 w-5" />
                 </div>
                 <p className="break-keep text-ui-card-title font-semibold text-foreground">
@@ -976,7 +980,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   "group flex min-h-24 items-center gap-4 p-5",
                 )}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-border/70 bg-secondary text-foreground">
                   <MessageSquareQuote className="h-5 w-5" />
                 </div>
                 <p className="break-keep text-ui-card-title font-semibold text-foreground">
@@ -992,6 +996,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <SectionHeader
+            variant="brand"
             eyebrow="Recommended Strings"
             title="추천 스트링"
             description="교체서비스와 함께 선택하기 좋은 인기 스트링을 브랜드별로 둘러보세요."
@@ -999,11 +1004,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             className="mb-8 bp-sm:mb-10"
           />
           <PublicSurface
-            variant="muted"
+            variant="feature"
             padding="sm"
-            className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
+            className="mb-8 border-border/80 bp-sm:mb-10"
           >
-            <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-background shadow-sm bp-sm:mb-5">
+            <div className="mb-4 overflow-hidden rounded-panel border border-border/80 bg-card bp-sm:mb-5">
               <img
                 src="/images/home/home-string-product-showcase.webp"
                 alt="테니스 스트링 상품 쇼케이스"
@@ -1036,13 +1041,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <Link
                   key={title}
                   href={href}
-                  className="group min-w-[12.5rem] rounded-2xl border border-border/60 bg-background/80 p-3 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-w-0 bp-sm:p-4"
+                  className="group min-w-[12.5rem] rounded-control border border-border/80 bg-card p-3 transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-w-0 bp-sm:p-4"
                 >
                   <p className="text-ui-card-title font-semibold text-foreground">{title}</p>
                   <p className="mt-1 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mt-1.5 bp-sm:text-ui-body-sm">
                     {description}
                   </p>
-                  <span className="mt-2 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary bp-sm:mt-3">
+                  <span className="mt-2 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-foreground bp-sm:mt-3">
                     {cta}
                     <ChevronRight className="h-3.5 w-3.5" />
                   </span>
@@ -1052,6 +1057,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <div className="flex justify-center">
               <div ref={stringBrandRailRef} className={brandRailClass}>
                 <button
+                  type="button"
+                  aria-pressed={activeStringBrand === "all"}
                   onClick={() => setActiveStringBrand("all")}
                   className={getBrandTabClass(activeStringBrand === "all")}
                 >
@@ -1060,6 +1067,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 {STRING_BRANDS.map((b) => (
                   <button
                     key={b.value}
+                    type="button"
+                    aria-pressed={activeStringBrand === b.value}
                     onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
                     className={getBrandTabClass(activeStringBrand === b.value)}
                   >
@@ -1074,6 +1083,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           </PublicSurface>
 
           <HorizontalProducts
+            variant="home"
             title="스트링"
             subtitle={
               activeStringBrand === "all"
@@ -1126,6 +1136,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <SectionHeader
+            variant="brand"
             eyebrow="Pre-owned Rackets"
             title="도깨비 인증 중고 라켓"
             description="검수된 중고 라켓을 구매·대여하고 스트링 교체까지 이어서 이용해보세요."
@@ -1133,11 +1144,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             className="mb-8 bp-sm:mb-10"
           />
           <PublicSurface
-            variant="muted"
+            variant="feature"
             padding="sm"
-            className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
+            className="mb-8 border-border/80 bp-sm:mb-10"
           >
-            <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-background shadow-sm bp-sm:mb-5">
+            <div className="mb-4 overflow-hidden rounded-panel border border-border/80 bg-card bp-sm:mb-5">
               <img
                 src="/images/home/home-racket-section-showcase.webp"
                 alt="도깨비 인증 중고 라켓 쇼케이스"
@@ -1149,6 +1160,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <div className="flex justify-center">
               <div ref={racketBrandRailRef} className={brandRailClass}>
                 <button
+                  type="button"
+                  aria-pressed={activeBrand === "all"}
                   onClick={() => setActiveBrand("all")}
                   className={getBrandTabClass(activeBrand === "all")}
                 >
@@ -1157,6 +1170,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 {RACKET_BRANDS.map((b) => (
                   <button
                     key={b.value}
+                    type="button"
+                    aria-pressed={activeBrand === b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
                     className={getBrandTabClass(activeBrand === b.value)}
                   >
@@ -1173,7 +1188,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           !usedRacketsLoading &&
           !usedRacketsError &&
           usedRacketsItems.length === 0 ? (
-            <PublicSurface variant="muted" className="border-border/60 bg-muted/20 text-center">
+            <PublicSurface variant="feature" className="border-border/80 text-center">
               <p className="text-ui-section-title font-semibold text-foreground">
                 {activeBrand === "all"
                   ? "검수된 중고 라켓을 준비 중입니다."
@@ -1187,6 +1202,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             </PublicSurface>
           ) : (
             <HorizontalProducts
+              variant="home"
               title="중고 라켓"
               subtitle={
                 activeBrand === "all"

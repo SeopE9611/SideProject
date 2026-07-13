@@ -26,6 +26,12 @@ const placeholderSurfaceClass =
 const moreCardSurfaceClass =
   "group flex h-full items-center justify-center rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
 const subtlePanelClass = "rounded-xl border border-border/60 bg-secondary/40";
+const homeProductCardSurfaceClass =
+  "group block h-full rounded-panel border border-border/80 bg-card p-3 shadow-sm transition-[border-color,background-color] duration-200 hover:border-foreground/20 bp-sm:p-4 bp-md:p-5";
+const homePlaceholderSurfaceClass =
+  "h-full rounded-panel border border-border/80 bg-card p-3 shadow-sm bp-sm:p-4 bp-md:p-5";
+const homeMoreCardSurfaceClass =
+  "group flex h-full items-center justify-center rounded-panel border border-border/80 bg-card p-3 shadow-sm transition-[border-color,background-color] duration-200 hover:border-foreground/20 hover:bg-muted/30 bp-sm:p-4 bp-md:p-5";
 const normalizeImageSrc = (src?: string) => {
   const imageSrc = src || "/placeholder.svg";
   return imageSrc.startsWith("http") || imageSrc.startsWith("/") ? imageSrc : `/${imageSrc}`;
@@ -73,6 +79,7 @@ type Props = {
   emptyDescription?: string;
   errorTitle?: string;
   errorDescription?: string;
+  variant?: "default" | "home";
 };
 
 export default function HorizontalProducts({
@@ -92,6 +99,7 @@ export default function HorizontalProducts({
   emptyDescription,
   errorTitle,
   errorDescription,
+  variant = "default",
 }: Props) {
   // 한 화면에 몇 장 보여줄지(2/3/4장 고정)
   const [itemsPerPage, setItemsPerPage] = useState(4);
@@ -117,6 +125,7 @@ export default function HorizontalProducts({
       }
     };
 
+    update();
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
@@ -239,6 +248,20 @@ export default function HorizontalProducts({
     else emblaApi.scrollNext();
   };
 
+  const isHomeVariant = variant === "home";
+  const cardSurfaceClass = isHomeVariant ? homeProductCardSurfaceClass : productCardSurfaceClass;
+  const placeholderCardSurfaceClass = isHomeVariant ? homePlaceholderSurfaceClass : placeholderSurfaceClass;
+  const moreSurfaceClass = isHomeVariant ? homeMoreCardSurfaceClass : moreCardSurfaceClass;
+  const stateCardClass = isHomeVariant
+    ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center shadow-sm bp-sm:p-4 bp-md:p-5"
+    : "flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-background p-4 text-center shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7";
+  const errorCardClass = isHomeVariant
+    ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center text-foreground shadow-sm bp-sm:p-4 bp-md:p-5"
+    : "flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center text-foreground shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7";
+  const imageSurfaceClass = isHomeVariant
+    ? "relative mb-3 aspect-square overflow-hidden rounded-control border border-border/70 bg-muted/30 bp-sm:mb-4 bp-md:mb-5"
+    : "relative mb-4 aspect-square overflow-hidden rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-5 bp-md:mb-6";
+
   const ItemCard = ({ p }: { p: HItem }) =>
     (() => {
       const regularPrice = Number(p.price ?? 0);
@@ -260,14 +283,14 @@ export default function HorizontalProducts({
           ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
           : 0;
       return (
-        <Link key={p._id} href={p.href ?? `/products/${p._id}`} className={productCardSurfaceClass}>
-          <div className="relative mb-4 aspect-square overflow-hidden rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-5 bp-md:mb-6">
+        <Link key={p._id} href={p.href ?? `/products/${p._id}`} className={cardSurfaceClass}>
+          <div className={imageSurfaceClass}>
             {p.images?.[0] ? (
               <Image
                 src={normalizeImageSrc(p.images[0])}
                 alt={p.name}
                 fill
-                className="object-contain p-3 transition-transform duration-500 group-hover:scale-105 bp-sm:p-4 bp-md:p-5"
+                className={cn("object-contain p-3 bp-sm:p-4 bp-md:p-5", !isHomeVariant && "transition-transform duration-500 group-hover:scale-105")}
                 sizes="(max-width: 767px) calc((100vw - 36px) / 2), (max-width: 1199px) calc((100vw - 88px) / 3), 282px"
               />
             ) : (
@@ -327,7 +350,7 @@ export default function HorizontalProducts({
     })();
 
   const PlaceholderCard = () => (
-    <div className={`${placeholderSurfaceClass} flex flex-col items-center justify-center`}>
+    <div className={`${placeholderCardSurfaceClass} flex flex-col items-center justify-center`}>
       <div
         className={cn(
           "relative mb-3 aspect-square w-full rounded-xl flex items-center justify-center",
@@ -349,7 +372,7 @@ export default function HorizontalProducts({
   );
 
   const SkeletonCard = () => (
-    <div className="h-full animate-pulse rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7">
+    <div className={cn("h-full animate-pulse", isHomeVariant ? "rounded-panel border border-border/80 bg-card p-3 shadow-sm bp-sm:p-4 bp-md:p-5" : "rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7")}>
       <div className="relative mb-3 aspect-square rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-4 bp-md:mb-5" />
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
         <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-muted/60 dark:bg-card/60" />
@@ -360,7 +383,7 @@ export default function HorizontalProducts({
   );
 
   const MoreCard = () => (
-    <Link href={moreHref} className={moreCardSurfaceClass}>
+    <Link href={moreHref} className={moreSurfaceClass}>
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 rounded-full border border-border/60 bg-secondary mx-auto flex items-center justify-center transition-all duration-300 group-hover:shadow-sm">
           <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-foreground" />
@@ -376,7 +399,7 @@ export default function HorizontalProducts({
   );
 
   const EmptyCard = () => (
-    <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-background p-4 text-center shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7">
+    <div className={stateCardClass}>
       <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-secondary border border-border/60 text-foreground flex items-center justify-center mb-3">
         <Inbox className="h-6 w-6 text-foreground" />
       </div>
@@ -390,7 +413,7 @@ export default function HorizontalProducts({
   );
 
   const ErrorCard = () => (
-    <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center text-foreground shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7">
+    <div className={errorCardClass}>
       <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-secondary bp-sm:h-16 bp-sm:w-16">
         <AlertTriangle className="h-6 w-6 text-destructive" />
       </div>
@@ -493,7 +516,7 @@ export default function HorizontalProducts({
                   size="icon"
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
-                  className="h-9 w-9 rounded-full bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12"
+                  className={cn("h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12", isHomeVariant ? "rounded-control" : "rounded-full")}
                   onClick={() => scrollByPage("left")}
                 >
                   <ChevronLeft className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
@@ -504,7 +527,7 @@ export default function HorizontalProducts({
                   size="icon"
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
-                  className="h-9 w-9 rounded-full bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12"
+                  className={cn("h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12", isHomeVariant ? "rounded-control" : "rounded-full")}
                   onClick={() => scrollByPage("right")}
                 >
                   <ChevronRight className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
