@@ -81,7 +81,7 @@ function MobileBrandGrid({
               key={b.name}
               variant="outline"
               className={cn(
-                "relative z-0 h-9 min-w-0 justify-center rounded-lg border-border bg-transparent px-2 text-ui-label hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "relative z-0 h-10 min-w-0 justify-center rounded-control border-border bg-transparent px-2 text-ui-label hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               )}
               onClick={() => onPick(b.href)}
             >
@@ -104,11 +104,21 @@ function MobileBrandGrid({
   );
 }
 
-const mobileMenuItemClass =
-  "group w-full min-h-11 min-w-0 justify-between rounded-control px-3 py-2.5 text-ui-body-sm font-medium text-foreground/85 hover:text-foreground hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+const mobileMenuItemClass = (active = false) =>
+  cn(
+    "group relative z-0 min-h-11 w-full min-w-0 justify-between rounded-control px-3 py-2.5 text-ui-body-sm transition-[background-color,color,border-color,box-shadow,opacity] before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:rounded-full before:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    active
+      ? "bg-muted/60 font-semibold text-foreground before:bg-brand-highlight"
+      : "font-medium text-foreground/85 hover:bg-muted/40 hover:text-foreground",
+  );
 const mobileNestedGroupClass = "mt-1 pl-1";
 const mobileNestedTriggerClass =
-  "min-h-10 min-w-0 px-3 py-2 text-ui-body-sm font-medium text-foreground/75 hover:text-foreground rounded-control hover:bg-muted/40";
+  "min-h-11 min-w-0 px-3 py-2 text-ui-body-sm font-medium text-foreground/75 hover:text-foreground rounded-control hover:bg-muted/40";
+const mobileAccordionTriggerClass = (active = false) =>
+  cn(
+    "group relative z-0 rounded-lg px-3 py-2.5 transition-[background-color,color,border-color,box-shadow,opacity] before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:rounded-full before:bg-transparent hover:bg-muted/40 hover:no-underline",
+    active ? "font-semibold text-foreground before:bg-brand-highlight" : "text-foreground/85",
+  );
 const mobileMenuGroupClass = "mt-1.5 pt-0";
 const mobileGroupTitleClass = "min-w-0 break-keep whitespace-normal text-foreground";
 
@@ -397,6 +407,23 @@ const Header = () => {
     ],
   };
 
+  const isMobileRouteActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    return pathname === href || pathname?.startsWith(`${href}/`);
+  };
+
+  const stringsGroupActive =
+    isMobileRouteActive(NAV_LINKS.strings.root) ||
+    isMobileRouteActive("/services/apply") ||
+    isMobileRouteActive("/services/packages") ||
+    NAV_LINKS.services.some((it) => isMobileRouteActive(it.href));
+  const racketsGroupActive = isMobileRouteActive(NAV_LINKS.rackets.root);
+  const boardsGroupActive = NAV_LINKS.boards.some((it) => isMobileRouteActive(it.href));
+  const supportGroupActive = NAV_LINKS.support.some((it) => isMobileRouteActive(it.href));
+
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
   useEffect(() => {
     const setVar = () => {
@@ -663,7 +690,7 @@ const Header = () => {
                   <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-ui-label font-medium text-muted-foreground">
                     <button
                       type="button"
-                      className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="쪽지함으로 이동"
                       onClick={() => {
                         setOpen(false);
@@ -680,7 +707,7 @@ const Header = () => {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="장바구니로 이동"
                       onClick={() => {
                         setOpen(false);
@@ -705,7 +732,7 @@ const Header = () => {
               <AccordionItem value="strings" className="border-none">
                 <AccordionTrigger
                   value="strings"
-                  className="py-2.5 px-3 rounded-lg hover:bg-muted/40 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                  className={mobileAccordionTriggerClass(stringsGroupActive)}
                 >
                   <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -717,7 +744,8 @@ const Header = () => {
                 <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass}
+                    className={mobileMenuItemClass(isMobileRouteActive(NAV_LINKS.strings.root))}
+                    aria-current={isMobileRouteActive(NAV_LINKS.strings.root) ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.strings.root);
@@ -754,13 +782,14 @@ const Header = () => {
 
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass}
+                    className={mobileMenuItemClass(isMobileRouteActive("/services/apply"))}
+                    aria-current={isMobileRouteActive("/services/apply") ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/apply");
                     }}
                   >
-                    <span className="min-w-0 truncate font-medium text-primary">
+                    <span className="min-w-0 truncate">
                       교체서비스 시작하기
                     </span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
@@ -781,7 +810,8 @@ const Header = () => {
                               <Button
                                 key={it.name}
                                 variant="ghost"
-                                className="w-full min-w-0 justify-between rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground/75 hover:text-foreground hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity]"
+                                className={mobileMenuItemClass(isMobileRouteActive(it.href))}
+                                aria-current={isMobileRouteActive(it.href) ? "page" : undefined}
                                 onClick={() => {
                                   setOpen(false);
                                   router.push(it.href);
@@ -799,7 +829,8 @@ const Header = () => {
 
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass}
+                    className={mobileMenuItemClass(isMobileRouteActive("/services/packages"))}
+                    aria-current={isMobileRouteActive("/services/packages") ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/packages");
@@ -814,7 +845,8 @@ const Header = () => {
               <div className={mobileMenuGroupClass}>
                 <Button
                   variant="ghost"
-                  className="group w-full min-w-0 justify-between rounded-lg px-3 py-2.5 text-ui-card-title font-semibold text-foreground hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className={mobileMenuItemClass(isMobileRouteActive(NAV_LINKS.academy.href))}
+                  aria-current={isMobileRouteActive(NAV_LINKS.academy.href) ? "page" : undefined}
                   onClick={() => {
                     setOpen(false);
                     router.push(NAV_LINKS.academy.href);
@@ -831,7 +863,7 @@ const Header = () => {
               <AccordionItem value="rackets" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger
                   value="rackets"
-                  className="py-2.5 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                  className={mobileAccordionTriggerClass(racketsGroupActive)}
                 >
                   <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -843,7 +875,8 @@ const Header = () => {
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass}
+                    className={mobileMenuItemClass(isMobileRouteActive(NAV_LINKS.rackets.root))}
+                    aria-current={isMobileRouteActive(NAV_LINKS.rackets.root) ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.rackets.root);
@@ -884,7 +917,7 @@ const Header = () => {
               <AccordionItem value="boards" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger
                   value="boards"
-                  className="py-2.5 px-3 rounded-lg hover:bg-muted/40 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                  className={mobileAccordionTriggerClass(boardsGroupActive)}
                 >
                   <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -898,7 +931,8 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-ui-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity]"
+                      className={mobileMenuItemClass(isMobileRouteActive(it.href))}
+                      aria-current={isMobileRouteActive(it.href) ? "page" : undefined}
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
@@ -915,7 +949,7 @@ const Header = () => {
               <AccordionItem value="support" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger
                   value="support"
-                  className="py-2.5 px-3 rounded-lg hover:bg-muted/40 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                  className={mobileAccordionTriggerClass(supportGroupActive)}
                 >
                   <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -929,7 +963,8 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-ui-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity]"
+                      className={mobileMenuItemClass(isMobileRouteActive(it.href))}
+                      aria-current={isMobileRouteActive(it.href) ? "page" : undefined}
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);

@@ -81,7 +81,7 @@ export default function SearchPreview({
           className={
             isChrome
               ? "absolute z-50 mt-2 max-h-80 w-full overflow-y-auto rounded-panel border border-border/80 bg-card shadow-float transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
-              : "absolute z-50 mt-2 w-full bg-card border border-border shadow-md rounded-2xl max-h-80 overflow-y-auto transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+              : "absolute z-50 mt-2 w-full max-h-80 overflow-y-auto rounded-2xl border border-border bg-card shadow-lg transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
           }
         >
           {results.length > 0 ? (
@@ -108,7 +108,11 @@ export default function SearchPreview({
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-14 h-14 object-cover rounded-xl"
+                      className={
+                        isChrome
+                          ? "h-14 w-14 rounded-xl object-cover"
+                          : "h-14 w-14 rounded-xl object-cover shadow"
+                      }
                     />
                   ) : (
                     <div className="w-14 h-14 bg-muted rounded-xl" />
