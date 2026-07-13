@@ -36,7 +36,7 @@ export default function StringRecommendResultCard({
         <div className="flex items-center justify-between gap-2">
           <Badge variant={rank === 1 ? "signal" : "secondary"} className="shrink-0">추천 {rank}순위</Badge>
           {careItemId ? (
-            <span className="break-keep text-ui-label text-muted-foreground">라켓 케어 기준</span>
+            <span className="break-keep text-ui-label text-muted-foreground">라켓 케어에서 시작</span>
           ) : null}
         </div>
         <div className="relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-muted">
@@ -127,19 +127,10 @@ export default function StringRecommendResultCard({
         </div>
       </CardContent>
       <CardFooter className="flex-col items-start gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
-        <div className="mt-1 w-full space-y-2">
+        <div className="mt-1 w-full">
           <Button asChild className="min-h-10 w-full overflow-hidden whitespace-nowrap">
             <Link href={productHref}>
-              <span className="min-w-0 truncate">이 스트링으로 교체 신청하기</span>
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="min-h-10 w-full overflow-hidden whitespace-nowrap"
-          >
-            <Link href={productHref}>
-              <span className="min-w-0 truncate">상세 보기</span>
+              <span className="min-w-0 truncate">이 스트링으로 교체서비스 이어가기</span>
             </Link>
           </Button>
         </div>

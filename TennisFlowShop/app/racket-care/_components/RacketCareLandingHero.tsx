@@ -46,12 +46,12 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
           <Card variant="feature" className="relative mx-auto max-w-md rounded-panel shadow-float">
             <CardContent className="p-5 bp-sm:p-6">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <p className="text-ui-kicker text-muted-foreground">DEMO · SAMPLE DASHBOARD</p>
                   <h2 className="mt-2 break-keep text-ui-card-title-lg font-bold tracking-[-0.01em]">예시 라켓 관리 화면</h2>
                   <p className="text-ui-label text-muted-foreground">실제 사용자 데이터가 아닌 고정 샘플입니다.</p>
                 </div>
-                <Badge variant="warning" wrap="normal">교체 준비</Badge>
+                <Badge variant="warning" wrap="nowrap" className="shrink-0">교체 준비</Badge>
               </div>
               <div className="mx-auto mt-6 grid w-full max-w-[230px] place-items-center">
                 <div
