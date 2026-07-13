@@ -126,7 +126,6 @@ export default function HorizontalProducts({
     };
 
     update();
-    update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
@@ -250,7 +249,9 @@ export default function HorizontalProducts({
 
   const isHomeVariant = variant === "home";
   const cardSurfaceClass = isHomeVariant ? homeProductCardSurfaceClass : productCardSurfaceClass;
-  const placeholderCardSurfaceClass = isHomeVariant ? homePlaceholderSurfaceClass : placeholderSurfaceClass;
+  const placeholderCardSurfaceClass = isHomeVariant
+    ? homePlaceholderSurfaceClass
+    : placeholderSurfaceClass;
   const moreSurfaceClass = isHomeVariant ? homeMoreCardSurfaceClass : moreCardSurfaceClass;
   const stateCardClass = isHomeVariant
     ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center shadow-sm bp-sm:p-4 bp-md:p-5"
@@ -290,7 +291,10 @@ export default function HorizontalProducts({
                 src={normalizeImageSrc(p.images[0])}
                 alt={p.name}
                 fill
-                className={cn("object-contain p-3 bp-sm:p-4 bp-md:p-5", !isHomeVariant && "transition-transform duration-500 group-hover:scale-105")}
+                className={cn(
+                  "object-contain p-3 bp-sm:p-4 bp-md:p-5",
+                  !isHomeVariant && "transition-transform duration-500 group-hover:scale-105",
+                )}
                 sizes="(max-width: 767px) calc((100vw - 36px) / 2), (max-width: 1199px) calc((100vw - 88px) / 3), 282px"
               />
             ) : (
@@ -372,7 +376,14 @@ export default function HorizontalProducts({
   );
 
   const SkeletonCard = () => (
-    <div className={cn("h-full animate-pulse", isHomeVariant ? "rounded-panel border border-border/80 bg-card p-3 shadow-sm bp-sm:p-4 bp-md:p-5" : "rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7")}>
+    <div
+      className={cn(
+        "h-full animate-pulse",
+        isHomeVariant
+          ? "rounded-panel border border-border/80 bg-card p-3 shadow-sm bp-sm:p-4 bp-md:p-5"
+          : "rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7",
+      )}
+    >
       <div className="relative mb-3 aspect-square rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-4 bp-md:mb-5" />
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
         <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-muted/60 dark:bg-card/60" />
@@ -516,7 +527,10 @@ export default function HorizontalProducts({
                   size="icon"
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
-                  className={cn("h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12", isHomeVariant ? "rounded-control" : "rounded-full")}
+                  className={cn(
+                    "h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12",
+                    isHomeVariant ? "rounded-control" : "rounded-full",
+                  )}
                   onClick={() => scrollByPage("left")}
                 >
                   <ChevronLeft className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
@@ -527,7 +541,10 @@ export default function HorizontalProducts({
                   size="icon"
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
-                  className={cn("h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12", isHomeVariant ? "rounded-control" : "rounded-full")}
+                  className={cn(
+                    "h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12",
+                    isHomeVariant ? "rounded-control" : "rounded-full",
+                  )}
                   onClick={() => scrollByPage("right")}
                 >
                   <ChevronRight className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
