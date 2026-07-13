@@ -38,7 +38,7 @@ export function NotificationBell({
       variant="ghost"
       size="icon"
       className={cn(
-        "relative shrink-0 rounded-full hover:bg-secondary focus-visible:ring-2 ring-ring",
+        "relative shrink-0 rounded-control hover:bg-muted focus-visible:ring-2 ring-ring",
         mode === "desktop"
           ? "h-10 w-10 p-0"
           : mode === "mobileCard"
@@ -64,7 +64,7 @@ export function NotificationBell({
         variant="ghost"
         size="icon"
         className={cn(
-          "relative h-9 w-9 shrink-0 rounded-full p-0 hover:bg-secondary focus-visible:ring-2 ring-ring",
+          "relative h-9 w-9 shrink-0 rounded-control p-0 hover:bg-muted focus-visible:ring-2 ring-ring",
           className,
         )}
         aria-label={unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"}

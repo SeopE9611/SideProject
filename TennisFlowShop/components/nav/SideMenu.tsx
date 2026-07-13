@@ -51,12 +51,11 @@ export default function SideMenu() {
   const linkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-lg px-3 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
-      "hover:bg-primary/10 dark:hover:bg-primary/20",
-      "hover:shadow-sm hover:z-10",
+      "group relative z-0 block rounded-control border border-transparent px-3 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,box-shadow,opacity] duration-200 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-transparent",
+      "hover:bg-muted/40",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
-        ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20"
+        ? "border-border bg-muted/60 text-foreground font-semibold before:bg-brand-highlight"
         : "text-foreground/75 hover:text-foreground",
     );
   };
@@ -64,39 +63,37 @@ export default function SideMenu() {
   const brandLinkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-md px-3 py-2 text-ui-label font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
-      "hover:bg-muted",
-      "hover:shadow-sm hover:z-10",
+      "group relative z-0 block rounded-control px-3 py-2 text-ui-label font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+      "hover:bg-muted/40",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
-        ? "bg-muted text-foreground font-medium shadow-sm"
+        ? "bg-muted/50 text-foreground font-semibold"
         : "text-foreground/75 hover:text-foreground",
     );
   };
 
-  const subMenuContentClass = "ml-2 border-l border-border/70 pb-2 pl-3 pt-1 space-y-0.5";
+  const subMenuContentClass = "ml-2 border-l border-border/60 pb-2 pl-3 pt-1 space-y-0.5";
 
   const nestedGroupClass = "mt-1.5 pl-1.5";
 
   const nestedTriggerClass =
-    "px-3 py-2 text-ui-label font-medium whitespace-nowrap text-foreground/70 hover:text-foreground rounded-lg hover:bg-muted";
+    "min-h-10 px-3 py-2 text-ui-label font-medium whitespace-nowrap text-foreground/70 hover:text-foreground rounded-control hover:bg-muted/40";
 
   const topLevelLinkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-lg px-3 py-3 text-ui-card-title-lg font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
-      "hover:bg-primary/10 dark:hover:bg-primary/20",
-      "hover:shadow-sm hover:z-10",
+      "group relative z-0 block rounded-control border border-transparent px-3 py-3 text-ui-card-title-lg font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-200 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-transparent",
+      "hover:bg-muted/50",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
-        ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20"
+        ? "border-border bg-muted/60 text-foreground font-semibold before:bg-brand-highlight"
         : "text-foreground hover:text-foreground",
     );
   };
 
   return (
     <aside
-      className="hidden bp-lg:block fixed left-0 z-30 h-[calc(100vh-var(--header-h,4rem))] w-72 bp-lg:w-72 xl:w-80 border-r border-border bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-hidden"
+      className="hidden bp-lg:block fixed left-0 z-30 h-[calc(100vh-var(--header-h,4rem))] w-72 bp-lg:w-72 xl:w-80 border-r border-border/80 bg-card overflow-hidden"
       style={{ top: "var(--header-h, 4rem)" }}
       aria-label="사이드 내비게이션"
     >
@@ -106,7 +103,7 @@ export default function SideMenu() {
           <AccordionItem value="strings" className="border-none">
             <AccordionTrigger
               value="strings"
-              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+              className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -204,7 +201,7 @@ export default function SideMenu() {
           <AccordionItem value="rackets" className="border-none">
             <AccordionTrigger
               value="rackets"
-              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+              className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -263,7 +260,7 @@ export default function SideMenu() {
           <AccordionItem value="boards" className="border-none">
             <AccordionTrigger
               value="boards"
-              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+              className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -288,7 +285,7 @@ export default function SideMenu() {
           <AccordionItem value="support" className="border-none">
             <AccordionTrigger
               value="support"
-              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+              className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
