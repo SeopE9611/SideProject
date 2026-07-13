@@ -243,17 +243,45 @@ export default function StringRecommendClient() {
           </div>
         ) : null}
       </PublicSurface>
-      <Card className="sticky top-16 z-30 rounded-2xl border border-border/80 bg-card/95 shadow-sm backdrop-blur md:top-20">
+      <Card className="sticky top-16 z-30 rounded-panel border border-border bg-card/95 shadow-soft backdrop-blur md:top-20">
         <CardContent className="p-3.5 sm:p-4 md:p-5">
-          <p className="break-keep text-ui-body-sm text-muted-foreground">
-            {RECOMMEND_QUESTIONS.length}개 중 {answeredCount}개 답변 완료
-          </p>
-          <div className="mt-2 h-2 w-full rounded-full bg-muted">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-ui-kicker text-muted-foreground">
+                RECOMMENDATION PROGRESS
+              </p>
+              <p className="mt-1 break-keep text-ui-body-sm font-medium text-foreground">
+                {isComplete
+                  ? "모든 조건을 선택했어요."
+                  : `${RECOMMEND_QUESTIONS.length}개 중 ${answeredCount}개 답변 완료`}
+              </p>
+            </div>
+            <Badge
+              variant={isComplete ? "signal_solid" : "signal"}
+              className="shrink-0 tabular-nums"
+            >
+              {answeredCount}/{RECOMMEND_QUESTIONS.length}
+            </Badge>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="스트링 추천 질문 답변 진행률"
+            aria-valuemin={0}
+            aria-valuemax={RECOMMEND_QUESTIONS.length}
+            aria-valuenow={answeredCount}
+            aria-valuetext={`${RECOMMEND_QUESTIONS.length}개 중 ${answeredCount}개 답변 완료`}
+            className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted"
+          >
             <div
-              className="h-2 rounded-full bg-primary transition-all"
+              className="h-full rounded-full bg-brand-highlight transition-[width] duration-300 motion-reduce:transition-none"
               style={{ width: `${progress}%` }}
             />
           </div>
+          <p className="mt-2 break-keep text-ui-label text-muted-foreground">
+            {isComplete
+              ? "추천 결과 보기 버튼을 눌러 맞춤 결과를 확인해보세요."
+              : "각 질문에서 하나의 답변을 선택해 주세요."}
+          </p>
         </CardContent>
       </Card>
       <div className="space-y-4">
