@@ -1,7 +1,7 @@
 "use client";
 import AsyncState from "@/components/system/AsyncState";
 import type { HomePreviewNotice } from "@/lib/home/home-preview";
-import { Bell, ChevronRight, Megaphone } from "lucide-react";
+import { ChevronRight, Megaphone } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -28,11 +28,11 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
   const hasError = Boolean(error) || (data && !data.ok);
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+    <div className="flex h-full flex-col rounded-panel border border-border/80 bg-card shadow-soft overflow-hidden">
       {/* Card Header */}
-      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 bp-sm:px-6 py-4 bp-sm:py-5">
+      <div className="flex items-center justify-between border-b border-border/70 bg-card px-5 bp-sm:px-6 py-4 bp-sm:py-5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-control border border-border/70 bg-brand-highlight-muted text-foreground">
             <Megaphone className="h-4 w-4" />
           </div>
           <h2 className="text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
@@ -40,7 +40,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
           </h2>
         </div>
         <Link
-          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-ui-label font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
+          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-ui-label font-medium text-foreground transition-colors hover:bg-muted/40"
           href="/board/notice"
         >
           더보기
@@ -77,16 +77,16 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
             {items.map((p, idx) => (
               <Link
                 key={p._id ?? `${p.createdAt}-${idx}`}
-                className="group flex items-center justify-between gap-3 rounded-xl px-3 bp-sm:px-4 py-3 bp-sm:py-3.5 transition-colors hover:bg-muted/60"
+                className="group flex items-center justify-between gap-3 rounded-xl px-3 bp-sm:px-4 py-3 bp-sm:py-3.5 transition-colors hover:bg-muted/40"
                 href={p._id ? `/board/notice/${p._id}` : "/board/notice"}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                  <span className="hidden bp-sm:inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-primary/40" />
-                  <span className="min-w-0 flex-1 truncate text-ui-body-sm text-foreground/90 transition-colors group-hover:text-foreground bp-sm:text-ui-body">
+                  <span className="hidden bp-sm:inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-brand-highlight" />
+                  <span className="min-w-0 flex-1 truncate text-ui-body-sm text-foreground transition-colors bp-sm:text-ui-body">
                     {p.title}
                   </span>
                 </div>
-                <span className="shrink-0 text-ui-label tabular-nums text-foreground/75">
+                <span className="shrink-0 text-ui-label tabular-nums text-muted-foreground">
                   {new Date(p.createdAt).toLocaleDateString("ko-KR", {
                     month: "short",
                     day: "numeric",
