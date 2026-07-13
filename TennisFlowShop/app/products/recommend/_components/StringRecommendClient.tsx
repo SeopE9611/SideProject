@@ -205,29 +205,41 @@ export default function StringRecommendClient() {
     <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7">
       <PublicSurface variant="muted" padding="lg" className="rounded-2xl">
         <SectionHeader
-          eyebrow={<Badge variant="signal">RACKET CARE STRING MATCH</Badge>}
-          title={careContext ? "내 라켓에 맞는 스트링 추천" : "스트링 추천 도우미"}
+          eyebrow={
+            careContext ? (
+              <Badge variant="signal">RACKET CARE STRING MATCH</Badge>
+            ) : (
+              <Badge variant="secondary">STRING RECOMMENDATION</Badge>
+            )
+          }
+          title={careContext ? "내 플레이에 맞는 스트링 추천" : "스트링 추천 도우미"}
           description={
             <div className="space-y-2 break-keep leading-relaxed">
               <p>
                 {careContext
-                  ? "라켓 케어에 등록한 정보와 플레이 빈도를 바탕으로 스트링 선택 부담을 줄여드릴게요."
+                  ? "라켓 케어에서 확인한 플레이 빈도와 아래 질문에 답한 내용을 바탕으로 스트링을 추천해드려요."
                   : "간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 안내해드릴게요."}
               </p>
               <p className="text-ui-body-sm">
-                최근 교체 이력과 텐션 정보가 있다면 함께 참고하며, 실제 세팅은 라켓 상태와 사용
-                습관에 따라 달라질 수 있어요.
+                {careContext
+                  ? "등록된 라켓과 최근 스트링·텐션 정보는 비교를 위한 참고 정보이며, 추천 결과는 아래에서 선택한 조건을 기준으로 계산됩니다."
+                  : "추천 결과는 선택을 돕기 위한 참고 정보이며, 실제 텐션과 세팅은 라켓 상태와 사용 습관에 따라 달라질 수 있어요."}
               </p>
             </div>
           }
         />
         {careSummary.length > 0 ? (
-          <div className="mt-5 flex flex-wrap gap-2 rounded-xl border border-border/80 bg-card/70 p-3">
-            {careSummary.map((item) => (
-              <Badge key={item.label} variant="outline" wrap="normal" className="bg-background/80">
-                {item.label}: {item.value}
-              </Badge>
-            ))}
+          <div className="mt-5 rounded-xl border border-border/80 bg-card/70 p-3">
+            <p className="mb-2 text-ui-label font-medium text-muted-foreground">
+              라켓 케어 참고 정보
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {careSummary.map((item) => (
+                <Badge key={item.label} variant="outline" wrap="normal" className="bg-background/80">
+                  {item.label}: {item.value}
+                </Badge>
+              ))}
+            </div>
           </div>
         ) : null}
       </PublicSurface>
