@@ -24,7 +24,7 @@ export function UserNav() {
   if (loading) {
     return (
       <div
-        className="flex h-9 w-[72px] items-center rounded-md px-2 xl:w-[96px] 2xl:w-[120px]"
+        className="flex h-10 w-[72px] items-center rounded-control px-2 xl:w-[96px] 2xl:w-[120px]"
         aria-live="polite"
         aria-busy="true"
       >
@@ -39,6 +39,7 @@ export function UserNav() {
       <Button
         variant="ghost"
         size="icon"
+        className="h-10 w-10 rounded-control hover:bg-muted focus-visible:ring-2 ring-ring"
         onClick={() => {
           const redirectTo =
             typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
@@ -61,7 +62,7 @@ export function UserNav() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground px-2 py-1.5 rounded-md transition min-w-0">
+        <div className="flex h-10 min-w-0 cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <div className="flex items-center gap-1 min-w-0">
             <span
               className="text-ui-body-sm min-w-0 grow max-w-[140px] sm:max-w-[180px] md:max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis"

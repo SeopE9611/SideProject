@@ -7,15 +7,18 @@ export default function SearchPreview({
   placeholder = "상품 검색...",
   className = "",
   onSelect,
+  variant = "default",
 }: {
   placeholder?: string;
   className?: string;
   onSelect?: () => void;
+  variant?: "default" | "chrome";
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isChrome = variant === "chrome";
 
   useEffect(() => {
     if (!query.trim()) {
@@ -64,13 +67,23 @@ export default function SearchPreview({
             if (results.length >= 0) setIsOpen(true);
           }}
           placeholder={placeholder}
-          className="w-full pl-12 rounded-2xl border border-border bg-card shadow-md text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-border transition-colors"
+          className={
+            isChrome
+              ? "w-full rounded-control border border-border/80 bg-card pl-12 text-foreground shadow-none placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-ring"
+              : "w-full pl-12 rounded-2xl border border-border bg-card shadow-md text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-border transition-colors"
+          }
         />
       </div>
 
       {/* 결과창 */}
       {isOpen && query.trim() && (
-        <div className="absolute z-50 mt-2 w-full bg-card border border-border shadow-lg rounded-2xl max-h-80 overflow-y-auto transition-[background-color,color,border-color,box-shadow,opacity] duration-200">
+        <div
+          className={
+            isChrome
+              ? "absolute z-50 mt-2 max-h-80 w-full overflow-y-auto rounded-panel border border-border/80 bg-card shadow-float transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+              : "absolute z-50 mt-2 w-full bg-card border border-border shadow-md rounded-2xl max-h-80 overflow-y-auto transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+          }
+        >
           {results.length > 0 ? (
             results.map((item) => {
               // type 에 따라 이동 경로 분기
@@ -81,7 +94,11 @@ export default function SearchPreview({
                 <Link
                   key={item._id}
                   href={href}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-secondary hover:text-foreground transition-colors duration-200 group"
+                  className={
+                    isChrome
+                      ? "group flex items-center gap-4 px-4 py-3 transition-colors duration-200 hover:bg-muted/50 hover:text-foreground"
+                      : "flex items-center gap-4 px-4 py-3 hover:bg-secondary hover:text-foreground transition-colors duration-200 group"
+                  }
                   onClick={() => {
                     setIsOpen(false);
                     onSelect?.(); // 바깥(=Header Sheet)에게 "선택됨" 알림
@@ -91,7 +108,7 @@ export default function SearchPreview({
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-14 h-14 object-cover rounded-xl shadow"
+                      className="w-14 h-14 object-cover rounded-xl"
                     />
                   ) : (
                     <div className="w-14 h-14 bg-muted rounded-xl" />
