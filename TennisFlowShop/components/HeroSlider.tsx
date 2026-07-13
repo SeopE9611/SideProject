@@ -79,18 +79,20 @@ export default function HeroSlider({
 
       {/* 좌우 네비게이션 */}
       <button
+        type="button"
         onClick={scrollPrev}
-        className="absolute left-4 bp-md:left-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-control border border-border bg-card shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 hover:bg-secondary"
+        className="absolute left-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-control border border-border/80 bg-card text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:left-5"
         aria-label="이전 배너"
       >
-        <ChevronLeft className="h-5 w-5" />
+        <ChevronLeft aria-hidden="true" className="h-5 w-5" />
       </button>
       <button
+        type="button"
         onClick={scrollNext}
-        className="absolute right-4 bp-md:right-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-control border border-border bg-card shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 hover:bg-secondary"
+        className="absolute right-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-control border border-border/80 bg-card text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:right-5"
         aria-label="다음 배너"
       >
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight aria-hidden="true" className="h-5 w-5" />
       </button>
     </section>
   );

@@ -27,11 +27,11 @@ const moreCardSurfaceClass =
   "group flex h-full items-center justify-center rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
 const subtlePanelClass = "rounded-xl border border-border/60 bg-secondary/40";
 const homeProductCardSurfaceClass =
-  "group block h-full rounded-panel border border-border/80 bg-card p-3 shadow-sm transition-[border-color,background-color] duration-200 hover:border-foreground/20 bp-sm:p-4 bp-md:p-5";
+  "group block h-full rounded-panel border border-border/80 bg-card p-3 shadow-none transition-[border-color,background-color] duration-200 hover:border-foreground/20 hover:bg-muted/20 bp-sm:p-4 bp-md:p-5";
 const homePlaceholderSurfaceClass =
-  "h-full rounded-panel border border-border/80 bg-card p-3 shadow-sm bp-sm:p-4 bp-md:p-5";
+  "h-full rounded-panel border border-border/80 bg-card p-3 shadow-none bp-sm:p-4 bp-md:p-5";
 const homeMoreCardSurfaceClass =
-  "group flex h-full items-center justify-center rounded-panel border border-border/80 bg-card p-3 shadow-sm transition-[border-color,background-color] duration-200 hover:border-foreground/20 hover:bg-muted/30 bp-sm:p-4 bp-md:p-5";
+  "group flex h-full items-center justify-center rounded-panel border border-border/80 bg-card p-3 shadow-none transition-[border-color,background-color] duration-200 hover:border-foreground/20 hover:bg-muted/30 bp-sm:p-4 bp-md:p-5";
 const normalizeImageSrc = (src?: string) => {
   const imageSrc = src || "/placeholder.svg";
   return imageSrc.startsWith("http") || imageSrc.startsWith("/") ? imageSrc : `/${imageSrc}`;
@@ -254,10 +254,10 @@ export default function HorizontalProducts({
     : placeholderSurfaceClass;
   const moreSurfaceClass = isHomeVariant ? homeMoreCardSurfaceClass : moreCardSurfaceClass;
   const stateCardClass = isHomeVariant
-    ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center shadow-sm bp-sm:p-4 bp-md:p-5"
+    ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center shadow-none bp-sm:p-4 bp-md:p-5"
     : "flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-background p-4 text-center shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7";
   const errorCardClass = isHomeVariant
-    ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center text-foreground shadow-sm bp-sm:p-4 bp-md:p-5"
+    ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center text-foreground shadow-none bp-sm:p-4 bp-md:p-5"
     : "flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center text-foreground shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7";
   const imageSurfaceClass = isHomeVariant
     ? "relative mb-3 aspect-square overflow-hidden rounded-control border border-border/70 bg-muted/30 bp-sm:mb-4 bp-md:mb-5"
@@ -380,7 +380,7 @@ export default function HorizontalProducts({
       className={cn(
         "h-full animate-pulse",
         isHomeVariant
-          ? "rounded-panel border border-border/80 bg-card p-3 shadow-sm bp-sm:p-4 bp-md:p-5"
+          ? "rounded-panel border border-border/80 bg-card p-3 shadow-none bp-sm:p-4 bp-md:p-5"
           : "rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7",
       )}
     >
