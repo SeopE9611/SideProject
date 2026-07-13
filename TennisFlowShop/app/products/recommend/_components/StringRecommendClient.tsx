@@ -305,9 +305,10 @@ export default function StringRecommendClient() {
           {productsError}
         </div>
       ) : null}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 rounded-panel border border-border bg-card p-4 shadow-soft sm:flex-row sm:items-center">
         <Button
           type="button"
+          variant="highlight"
           onClick={handleSubmit}
           disabled={!isComplete || isLoadingProducts || !!productsError}
           className="min-h-10 w-full break-keep whitespace-normal sm:w-auto sm:min-w-44"
