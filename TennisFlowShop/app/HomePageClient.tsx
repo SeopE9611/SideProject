@@ -166,13 +166,13 @@ const HOME_HERO_SLIDES = [
 ];
 
 const surfaceCardInteractiveClass =
-  "rounded-control border border-border/80 bg-card shadow-sm transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-ring/30";
+  "rounded-control border border-border/70 bg-card shadow-none transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-ring/30";
 const promoBannerClass =
   "group relative block h-24 overflow-hidden rounded-panel border border-border/80 bg-card shadow-sm transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring/30 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
 const surfaceIconWrapClass =
-  "flex items-center justify-center rounded-control border border-border/70 bg-brand-highlight-muted text-foreground transition-[background-color,color,border-color,opacity] duration-300";
+  "flex items-center justify-center rounded-control border border-border/60 bg-muted/40 text-foreground transition-[background-color,color,border-color,opacity] duration-300";
 const processStepSurfaceClass =
-  "group flex flex-col items-start rounded-control border border-border/80 bg-card p-4 text-left transition-[background-color,color,border-color,opacity] duration-300 bp-sm:p-5";
+  "group flex flex-col items-start rounded-control border border-border/60 bg-muted/20 p-4 text-left transition-[background-color,color,border-color,opacity] duration-300 bp-sm:p-5";
 const brandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
 const getBrandTabClass = (isActive: boolean) =>
@@ -746,9 +746,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </SiteContainer>
 
 
-      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section className="py-8 bp-sm:py-10 bp-md:py-14">
         <SiteContainer>
-          <Card variant="feature" className="grid gap-5 rounded-panel p-5 bp-md:p-7 bp-lg:grid-cols-[1.1fr_0.9fr] bp-lg:items-center">
+          <Card variant="feature" className="grid gap-5 rounded-panel p-5 shadow-sm bp-md:p-7 bp-lg:grid-cols-[1.1fr_0.9fr] bp-lg:items-center">
             <div className="space-y-4">
               <Badge variant="signal" className="w-fit">라켓 케어 패스</Badge>
               <h2 className="break-keep text-ui-section-title-lg font-semibold text-foreground">내 라켓의 다음 스트링 교체일을 놓치지 마세요</h2>
@@ -756,7 +756,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <div className="flex flex-wrap gap-2 text-ui-label text-muted-foreground"><span className="rounded-full bg-muted px-3 py-1">30초 등록</span><span className="rounded-full bg-muted px-3 py-1">기존 이력 활용</span><span className="rounded-full bg-muted px-3 py-1">무료 알림</span></div>
               <Button asChild size="tall" variant="outline" wrap="responsive"><Link href="/racket-care">라켓 케어 알아보기</Link></Button>
             </div>
-            <Card variant="floating" className="rounded-panel border-border/80">
+            <Card variant="floating" className="rounded-panel border-border/70 bg-muted/20 shadow-none">
               <CardContent className="space-y-3 p-5">
                 <div className="flex items-center gap-2 text-foreground"><Activity className="h-5 w-5 text-brand-highlight" /><span className="font-semibold">스트링 상태 점수</span></div>
                 {racketCarePreview.state === "ready" && racketCarePreview.item ? <><p className="text-ui-section-title font-semibold">{racketCarePreview.item.lifeScore}점</p><p className="break-words font-medium">{racketCarePreview.item.nickname}</p><p className="text-ui-body-sm text-muted-foreground">예상 교체일 {new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "short", day: "numeric" }).format(new Date(racketCarePreview.item.nextRecommendedAt))}</p><p className="break-words text-ui-body-sm text-muted-foreground">최근 스트링 {racketCarePreview.item.stringName || "미입력"}</p></> : <><p className="break-keep font-medium">등록하면 실제 상태 점수와 예상 교체일을 확인할 수 있어요.</p><p className="break-keep text-ui-body-sm text-muted-foreground">비로그인 또는 미등록 상태에서는 예시 점수 없이 기능만 안내합니다.</p></>}
@@ -767,7 +767,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 빠른 액션 */}
-      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section className="py-8 bp-sm:py-10 bp-md:py-14">
         <SiteContainer>
           <SectionHeader
             variant="brand"
@@ -821,9 +821,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 서비스 플로우 */}
-      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section className="py-8 bp-sm:py-10 bp-md:py-14">
         <SiteContainer>
-          <PublicSurface variant="feature" padding="lg" className="bp-md:p-10">
+          <PublicSurface variant="feature" padding="lg" className="border-border/80 bg-card shadow-sm bp-md:p-10">
             <SectionHeader
               variant="brand"
               title="스트링 교체 프로세스"
@@ -831,7 +831,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               align="center"
               className="mb-8 bp-sm:mb-10"
             />
-            <div className="mb-5 overflow-hidden rounded-panel border border-border/80 bg-card bp-sm:mb-6 bp-md:mb-8">
+            <div className="mb-5 overflow-hidden rounded-panel border border-border/60 bg-muted/20 bp-sm:mb-6 bp-md:mb-8">
               <img
                 src="/images/home/home-stringing-setup-clean.webp"
                 alt="테니스 라켓과 스트링 교체 도구"
@@ -911,7 +911,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 이용 안내 섹션 */}
-      <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section ref={communitySectionRef} className="py-8 bp-sm:py-10 bp-md:py-14">
         <SiteContainer>
           <SectionHeader
             variant="brand"
@@ -993,7 +993,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 스트링 섹션 */}
-      <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
+      <section ref={stringsSectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
             variant="brand"
@@ -1006,9 +1006,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <PublicSurface
             variant="feature"
             padding="sm"
-            className="mb-8 border-border/80 bp-sm:mb-10"
+            className="mb-8 border-border/80 bg-card shadow-sm bp-sm:mb-10"
           >
-            <div className="mb-4 overflow-hidden rounded-panel border border-border/80 bg-card bp-sm:mb-5">
+            <div className="mb-4 overflow-hidden rounded-panel border border-border/60 bg-muted/20 bp-sm:mb-5">
               <img
                 src="/images/home/home-string-product-showcase.webp"
                 alt="테니스 스트링 상품 쇼케이스"
@@ -1041,7 +1041,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <Link
                   key={title}
                   href={href}
-                  className="group min-w-[12.5rem] rounded-control border border-border/80 bg-card p-3 transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-w-0 bp-sm:p-4"
+                  className="group min-w-[12.5rem] rounded-control border border-border/60 bg-muted/20 p-3 transition-[background-color,color,border-color,opacity] duration-300 hover:border-foreground/20 hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-w-0 bp-sm:p-4"
                 >
                   <p className="text-ui-card-title font-semibold text-foreground">{title}</p>
                   <p className="mt-1 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mt-1.5 bp-sm:text-ui-body-sm">
@@ -1133,7 +1133,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 중고 라켓 섹션 */}
-      <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
+      <section ref={racketsSectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
             variant="brand"
@@ -1146,9 +1146,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <PublicSurface
             variant="feature"
             padding="sm"
-            className="mb-8 border-border/80 bp-sm:mb-10"
+            className="mb-8 border-border/80 bg-card shadow-sm bp-sm:mb-10"
           >
-            <div className="mb-4 overflow-hidden rounded-panel border border-border/80 bg-card bp-sm:mb-5">
+            <div className="mb-4 overflow-hidden rounded-panel border border-border/60 bg-muted/20 bp-sm:mb-5">
               <img
                 src="/images/home/home-racket-section-showcase.webp"
                 alt="도깨비 인증 중고 라켓 쇼케이스"
@@ -1188,7 +1188,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           !usedRacketsLoading &&
           !usedRacketsError &&
           usedRacketsItems.length === 0 ? (
-            <PublicSurface variant="feature" className="border-border/80 text-center">
+            <PublicSurface variant="feature" className="border-border/80 text-center shadow-none">
               <p className="text-ui-section-title font-semibold text-foreground">
                 {activeBrand === "all"
                   ? "검수된 중고 라켓을 준비 중입니다."

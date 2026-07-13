@@ -28,7 +28,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
   const hasError = Boolean(error) || (data && !data.ok);
 
   return (
-    <div className="flex h-full flex-col rounded-panel border border-border/80 bg-card shadow-soft overflow-hidden">
+    <div className="flex h-full flex-col rounded-panel border border-border/80 bg-card shadow-sm overflow-hidden">
       {/* Card Header */}
       <div className="flex items-center justify-between border-b border-border/70 bg-card px-5 bp-sm:px-6 py-4 bp-sm:py-5">
         <div className="flex items-center gap-2.5">
