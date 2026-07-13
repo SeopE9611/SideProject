@@ -10,7 +10,6 @@ import {
   Train,
   Truck,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 const Footer = () => {
@@ -73,23 +72,37 @@ const Footer = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <Link href="/terms" className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Link
+                  href="/terms"
+                  className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
                   이용약관
                 </Link>
-                <Link href="/privacy" className="inline-flex min-h-9 items-center py-1.5 font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Link
+                  href="/privacy"
+                  className="inline-flex min-h-9 items-center py-1.5 font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
                   개인정보처리방침
                 </Link>
-                <Link href="/board/qna" className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Link
+                  href="/board/qna"
+                  className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
                   Q&amp;A 문의
                 </Link>
                 {guestOrderMode === "on" ? (
-                  <Link href="/order-lookup" className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <Link
+                    href="/order-lookup"
+                    className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
                     주문조회
                   </Link>
                 ) : null}
               </div>
 
-              <p className="text-ui-label text-surface-inverse-muted">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
+              <p className="text-ui-label text-surface-inverse-muted">
+                &copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.
+              </p>
             </div>
           </SiteContainer>
         </div>
@@ -120,7 +133,9 @@ const Footer = () => {
 
                     <div className="flex items-center gap-2.5 text-ui-body-sm text-surface-inverse-foreground">
                       <Mail className="h-4 w-4 shrink-0 text-brand-highlight" />
-                      <span className="break-all text-surface-inverse-foreground">korgis5813@naver.com</span>
+                      <span className="break-all text-surface-inverse-foreground">
+                        korgis5813@naver.com
+                      </span>
                     </div>
 
                     <div className="flex items-start gap-2.5 text-ui-body-sm text-surface-inverse-foreground">
@@ -143,22 +158,28 @@ const Footer = () => {
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
                       <p>
-                        <span className="font-medium text-surface-inverse-foreground">작업 완료 시</span> 당일
-                        발송됩니다.
+                        <span className="font-medium text-surface-inverse-foreground">
+                          작업 완료 시
+                        </span>{" "}
+                        당일 발송됩니다.
                       </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
                       <p>
-                        <span className="font-medium text-surface-inverse-foreground">영업일 기준</span> 순차
-                        처리됩니다.
+                        <span className="font-medium text-surface-inverse-foreground">
+                          영업일 기준
+                        </span>{" "}
+                        순차 처리됩니다.
                       </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
                       <p>
-                        <span className="font-medium text-surface-inverse-foreground">작업량에 따라</span> 일정이
-                        변동될 수 있습니다.
+                        <span className="font-medium text-surface-inverse-foreground">
+                          작업량에 따라
+                        </span>{" "}
+                        일정이 변동될 수 있습니다.
                       </p>
                     </li>
                   </ul>
@@ -171,7 +192,9 @@ const Footer = () => {
                   </h3>
                   <div className="w-full space-y-3">
                     <div className="space-y-1.5 border-l border-brand-highlight/35 pl-3">
-                      <p className="text-ui-body-sm font-semibold text-surface-inverse-foreground">도깨비테니스</p>
+                      <p className="text-ui-body-sm font-semibold text-surface-inverse-foreground">
+                        도깨비테니스
+                      </p>
                       <p className="text-ui-body-sm text-surface-inverse-foreground">
                         서울 동작구 노량진로 22 B1
                       </p>
@@ -232,9 +255,20 @@ const Footer = () => {
                         {Icon ? (
                           <Icon className="h-4 w-4 shrink-0 text-brand-highlight" />
                         ) : (
-                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-brand-highlight-muted text-ui-micro font-semibold text-brand-highlight">
-                            B
-                          </span>
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-4 w-4 shrink-0 text-brand-highlight"
+                          >
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+
+                            <path d="M9 7v10" />
+                            <path d="M9 11h3a3 3 0 0 1 3 3v0a3 3 0 0 1-3 3H9" />
+                          </svg>
                         )}
                         <span>{name}</span>
                       </Link>
@@ -300,35 +334,6 @@ const Footer = () => {
                     &copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.
                   </p>
                 </div>
-
-                <Link
-                  href="/"
-                  className="group flex shrink-0 items-center gap-4 self-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:self-center"
-                  aria-label="도깨비테니스 홈으로 이동"
-                >
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-panel bg-background p-1 bp-sm:h-16 bp-sm:w-16">
-                    <Image
-                      src="/brand/symbol-light.png"
-                      alt=""
-                      aria-hidden="true"
-                      fill
-                      className="object-contain dark:hidden"
-                    />
-                    <Image
-                      src="/brand/symbol-dark.png"
-                      alt=""
-                      aria-hidden="true"
-                      fill
-                      className="hidden object-contain dark:block"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5 text-left">
-                    <div className="font-brand-bold text-ui-section-title font-semibold tracking-normal text-surface-inverse-foreground">
-                      도깨비테니스
-                    </div>
-                  </div>
-                </Link>
               </div>
             </SiteContainer>
           </div>
