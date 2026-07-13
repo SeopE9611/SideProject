@@ -23,12 +23,12 @@ export default function GlobalError({
   return (
     <html lang="ko">
       <body className="m-0 flex min-h-screen items-center justify-center bg-background p-3 text-foreground bp-sm:p-6 bp-md:p-16">
-        <Card className="relative w-full max-w-2xl overflow-hidden border border-border bg-card shadow-md">
+        <Card variant="feature" className="w-full max-w-2xl overflow-hidden rounded-panel">
           <div className="h-1.5 w-full bg-destructive" />
 
           <CardContent className="p-6 bp-sm:p-8">
-            <div className="mb-6 grid h-14 w-14 place-content-center rounded-2xl bg-destructive text-destructive-foreground">
-              <AlertTriangle className="h-7 w-7" />
+            <div className="mb-6 grid h-14 w-14 place-content-center rounded-control border border-destructive/30 bg-destructive/10 text-destructive">
+              <AlertTriangle className="h-7 w-7" aria-hidden="true" />
             </div>
 
             <h1 className="mb-2 text-ui-page-title font-semibold tracking-normal">
@@ -51,24 +51,22 @@ export default function GlobalError({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-wrap gap-3 px-6 pb-6 bp-sm:px-8 bp-sm:pb-8">
-            <Button
-              type="button"
-              onClick={() => reset()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <RefreshCw className="h-4 w-4" />
-              다시 시도
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => (window.location.href = "/")}
-              className="border-border bg-background text-foreground hover:bg-muted"
-            >
-              <Home className="h-4 w-4" />
-              홈으로 이동
-            </Button>
+          <CardFooter className="px-6 pb-6 bp-sm:px-8 bp-sm:pb-8">
+            <div className="grid w-full gap-3 bp-sm:flex bp-sm:flex-wrap">
+              <Button type="button" onClick={() => reset()} wrap="responsive">
+                <RefreshCw className="h-4 w-4" />
+                다시 시도
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => (window.location.href = "/")}
+                wrap="responsive"
+              >
+                <Home className="h-4 w-4" />
+                홈으로 이동
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       </body>
