@@ -407,7 +407,9 @@ const Header = () => {
     ],
   };
 
-  const isMobileRouteActive = (href: string) => {
+  const isMobileRouteCurrent = (href: string) => pathname === href;
+
+  const isMobileSectionActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
     }
@@ -416,13 +418,12 @@ const Header = () => {
   };
 
   const stringsGroupActive =
-    isMobileRouteActive(NAV_LINKS.strings.root) ||
-    isMobileRouteActive("/services/apply") ||
-    isMobileRouteActive("/services/packages") ||
-    NAV_LINKS.services.some((it) => isMobileRouteActive(it.href));
-  const racketsGroupActive = isMobileRouteActive(NAV_LINKS.rackets.root);
-  const boardsGroupActive = NAV_LINKS.boards.some((it) => isMobileRouteActive(it.href));
-  const supportGroupActive = NAV_LINKS.support.some((it) => isMobileRouteActive(it.href));
+    isMobileSectionActive(NAV_LINKS.strings.root) || isMobileSectionActive("/services");
+  const racketsGroupActive = isMobileSectionActive(NAV_LINKS.rackets.root);
+  const boardsGroupActive = NAV_LINKS.boards.some((it) => isMobileSectionActive(it.href));
+  const supportGroupActive = NAV_LINKS.support.some((it) => isMobileSectionActive(it.href));
+  const academyCurrent = isMobileRouteCurrent(NAV_LINKS.academy.href);
+  const academySectionActive = isMobileSectionActive(NAV_LINKS.academy.href);
 
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
   useEffect(() => {
@@ -744,8 +745,8 @@ const Header = () => {
                 <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass(isMobileRouteActive(NAV_LINKS.strings.root))}
-                    aria-current={isMobileRouteActive(NAV_LINKS.strings.root) ? "page" : undefined}
+                    className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.strings.root))}
+                    aria-current={isMobileRouteCurrent(NAV_LINKS.strings.root) ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.strings.root);
@@ -782,8 +783,8 @@ const Header = () => {
 
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass(isMobileRouteActive("/services/apply"))}
-                    aria-current={isMobileRouteActive("/services/apply") ? "page" : undefined}
+                    className={mobileMenuItemClass(isMobileRouteCurrent("/services/apply"))}
+                    aria-current={isMobileRouteCurrent("/services/apply") ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/apply");
@@ -810,8 +811,8 @@ const Header = () => {
                               <Button
                                 key={it.name}
                                 variant="ghost"
-                                className={mobileMenuItemClass(isMobileRouteActive(it.href))}
-                                aria-current={isMobileRouteActive(it.href) ? "page" : undefined}
+                                className={mobileMenuItemClass(isMobileRouteCurrent(it.href))}
+                                aria-current={isMobileRouteCurrent(it.href) ? "page" : undefined}
                                 onClick={() => {
                                   setOpen(false);
                                   router.push(it.href);
@@ -829,8 +830,8 @@ const Header = () => {
 
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass(isMobileRouteActive("/services/packages"))}
-                    aria-current={isMobileRouteActive("/services/packages") ? "page" : undefined}
+                    className={mobileMenuItemClass(isMobileRouteCurrent("/services/packages"))}
+                    aria-current={isMobileRouteCurrent("/services/packages") ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/packages");
@@ -845,8 +846,8 @@ const Header = () => {
               <div className={mobileMenuGroupClass}>
                 <Button
                   variant="ghost"
-                  className={mobileMenuItemClass(isMobileRouteActive(NAV_LINKS.academy.href))}
-                  aria-current={isMobileRouteActive(NAV_LINKS.academy.href) ? "page" : undefined}
+                  className={mobileMenuItemClass(academySectionActive)}
+                  aria-current={academyCurrent ? "page" : undefined}
                   onClick={() => {
                     setOpen(false);
                     router.push(NAV_LINKS.academy.href);
@@ -875,8 +876,8 @@ const Header = () => {
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass(isMobileRouteActive(NAV_LINKS.rackets.root))}
-                    aria-current={isMobileRouteActive(NAV_LINKS.rackets.root) ? "page" : undefined}
+                    className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.rackets.root))}
+                    aria-current={isMobileRouteCurrent(NAV_LINKS.rackets.root) ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.rackets.root);
@@ -931,8 +932,8 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className={mobileMenuItemClass(isMobileRouteActive(it.href))}
-                      aria-current={isMobileRouteActive(it.href) ? "page" : undefined}
+                      className={mobileMenuItemClass(isMobileRouteCurrent(it.href))}
+                      aria-current={isMobileRouteCurrent(it.href) ? "page" : undefined}
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
@@ -963,8 +964,8 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className={mobileMenuItemClass(isMobileRouteActive(it.href))}
-                      aria-current={isMobileRouteActive(it.href) ? "page" : undefined}
+                      className={mobileMenuItemClass(isMobileRouteCurrent(it.href))}
+                      aria-current={isMobileRouteCurrent(it.href) ? "page" : undefined}
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
