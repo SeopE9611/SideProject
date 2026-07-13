@@ -66,30 +66,30 @@ const Footer = () => {
       <div className="block bp-md:hidden">
         <div className="py-5">
           <SiteContainer variant="wide">
-            <div className="space-y-3 text-ui-label text-surface-inverse-muted">
+            <div className="space-y-3 text-ui-body-sm text-surface-inverse-muted">
               <div className="space-y-1">
-                <p className="font-medium text-surface-inverse-foreground">도깨비테니스</p>
+                <p className="font-semibold text-surface-inverse-foreground">도깨비테니스</p>
                 <p className="break-keep">고객센터 010-5218-5248 · 평일 10:00 - 22:00</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <Link href="/terms" className="inline-flex min-h-9 items-center py-1.5 hover:text-brand-highlight">
+                <Link href="/terms" className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   이용약관
                 </Link>
-                <Link href="/privacy" className="inline-flex min-h-9 items-center py-1.5 font-medium text-surface-inverse-foreground hover:text-brand-highlight">
+                <Link href="/privacy" className="inline-flex min-h-9 items-center py-1.5 font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   개인정보처리방침
                 </Link>
-                <Link href="/board/qna" className="inline-flex min-h-9 items-center py-1.5 hover:text-brand-highlight">
+                <Link href="/board/qna" className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   Q&amp;A 문의
                 </Link>
                 {guestOrderMode === "on" ? (
-                  <Link href="/order-lookup" className="inline-flex min-h-9 items-center py-1.5 hover:text-brand-highlight">
+                  <Link href="/order-lookup" className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     주문조회
                   </Link>
                 ) : null}
               </div>
 
-              <p>&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
+              <p className="text-ui-label text-surface-inverse-muted">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
             </div>
           </SiteContainer>
         </div>
@@ -97,8 +97,6 @@ const Footer = () => {
 
       {/* 태블릿/데스크탑용 기존 full footer */}
       <div className="hidden bp-md:block">
-        <div className="pointer-events-none absolute inset-0 bg-surface-inverse opacity-60" />
-
         <div className="py-6 bp-lg:pl-72 bp-lg:pr-8 bp-sm:py-8 xl:pl-80 xl:pr-12 2xl:pr-16">
           <SiteContainer variant="wide">
             <div className="space-y-6 bp-sm:space-y-8">
@@ -114,19 +112,19 @@ const Footer = () => {
                         <span className="block text-ui-body-lg font-semibold leading-none text-surface-inverse-foreground">
                           010-5218-5248
                         </span>
-                        <p className="mt-1 text-ui-label text-surface-inverse-muted/95">
+                        <p className="mt-1 text-ui-label text-surface-inverse-muted">
                           영업 시간 내 상담 가능
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2.5 text-ui-label text-surface-inverse-muted/95">
-                      <Mail className="h-4 w-4 shrink-0 text-brand-highlight/90" />
-                      <span className="break-all text-surface-inverse-foreground/90">korgis5813@naver.com</span>
+                    <div className="flex items-center gap-2.5 text-ui-body-sm text-surface-inverse-foreground">
+                      <Mail className="h-4 w-4 shrink-0 text-brand-highlight" />
+                      <span className="break-all text-surface-inverse-foreground">korgis5813@naver.com</span>
                     </div>
 
-                    <div className="flex items-start gap-2.5 text-ui-label text-surface-inverse-muted/95">
-                      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight/90" />
+                    <div className="flex items-start gap-2.5 text-ui-body-sm text-surface-inverse-foreground">
+                      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight" />
                       <div className="space-y-1">
                         <div>평일 10:00 - 22:00</div>
                         <div>토요일 09:00 - 18:00</div>
@@ -141,25 +139,25 @@ const Footer = () => {
                     <Truck className="h-4 w-4 text-brand-highlight" />
                     배송안내
                   </h3>
-                  <ul className="w-full space-y-2.5 text-ui-label leading-5 text-surface-inverse-muted/95">
+                  <ul className="w-full space-y-2.5 text-ui-body-sm leading-5 text-surface-inverse-muted">
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
                       <p>
-                        <span className="font-medium text-surface-inverse-foreground/90">작업 완료 시</span> 당일
+                        <span className="font-medium text-surface-inverse-foreground">작업 완료 시</span> 당일
                         발송됩니다.
                       </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
                       <p>
-                        <span className="font-medium text-surface-inverse-foreground/90">영업일 기준</span> 순차
+                        <span className="font-medium text-surface-inverse-foreground">영업일 기준</span> 순차
                         처리됩니다.
                       </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
                       <p>
-                        <span className="font-medium text-surface-inverse-foreground/90">작업량에 따라</span> 일정이
+                        <span className="font-medium text-surface-inverse-foreground">작업량에 따라</span> 일정이
                         변동될 수 있습니다.
                       </p>
                     </li>
@@ -174,11 +172,11 @@ const Footer = () => {
                   <div className="w-full space-y-3">
                     <div className="space-y-1.5 border-l border-brand-highlight/35 pl-3">
                       <p className="text-ui-body-sm font-semibold text-surface-inverse-foreground">도깨비테니스</p>
-                      <p className="text-ui-body-sm text-surface-inverse-foreground/95">
+                      <p className="text-ui-body-sm text-surface-inverse-foreground">
                         서울 동작구 노량진로 22 B1
                       </p>
-                      <div className="mt-2 flex items-start gap-2 text-ui-label text-surface-inverse-muted/95">
-                        <Train className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-highlight/80" />
+                      <div className="mt-2 flex items-start gap-2 text-ui-label text-surface-inverse-muted">
+                        <Train className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-highlight" />
                         <span>대방역 2번 출구 도보 이동</span>
                       </div>
                     </div>
@@ -186,7 +184,7 @@ const Footer = () => {
                     <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2">
                       <Link
                         href="/services/locations"
-                        className="inline-flex items-center text-ui-label font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight"
+                        className="inline-flex items-center text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         위치 안내 보기
                       </Link>
@@ -194,7 +192,7 @@ const Footer = () => {
                         href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md border border-surface-inverse-foreground/20 px-2.5 py-1.5 text-ui-label text-surface-inverse-foreground transition-colors hover:border-brand-highlight hover:text-brand-highlight"
+                        className="inline-flex items-center gap-1 rounded-md border border-surface-inverse-foreground/20 px-2.5 py-1.5 text-ui-body-sm text-surface-inverse-foreground transition-colors hover:border-brand-highlight hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         네이버 지도
                         <ArrowUpRight className="h-3 w-3" />
@@ -208,7 +206,7 @@ const Footer = () => {
                     <CreditCard className="h-4 w-4 text-brand-highlight" />
                     결제안내
                   </h3>
-                  <div className="w-full space-y-2 text-ui-label leading-5 text-surface-inverse-muted/95">
+                  <div className="w-full space-y-2 text-ui-label leading-5 text-surface-inverse-muted">
                     <p>무통장 입금 계좌</p>
                     <p className="text-ui-body-sm font-semibold text-surface-inverse-foreground">
                       카카오뱅크 3333-2110-92155
@@ -229,10 +227,10 @@ const Footer = () => {
                         href={href}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-ui-label font-medium text-surface-inverse-muted/95 transition-colors hover:text-brand-highlight"
+                        className="inline-flex items-center gap-2 text-ui-label font-medium text-surface-inverse-muted transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {Icon ? (
-                          <Icon className="h-4 w-4 shrink-0 text-brand-highlight/90" />
+                          <Icon className="h-4 w-4 shrink-0 text-brand-highlight" />
                         ) : (
                           <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-brand-highlight-muted text-ui-micro font-semibold text-brand-highlight">
                             B
@@ -252,60 +250,60 @@ const Footer = () => {
           <div className="py-4 bp-lg:pl-72 bp-lg:pr-8 bp-sm:py-5 xl:pl-80 xl:pr-12 2xl:pr-16">
             <SiteContainer variant="wide">
               <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
-                <div className="min-w-0 space-y-2.5 text-ui-label leading-5 text-surface-inverse-muted/95">
+                <div className="min-w-0 space-y-2.5 text-ui-label leading-5 text-surface-inverse-muted">
                   <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
                     {policyLinks.map((link) => (
                       <Link
                         key={`policy-${link.name}`}
                         href={link.href}
-                        className="font-medium text-surface-inverse-foreground/90 transition-colors duration-300 hover:text-brand-highlight"
+                        className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {link.name}
                       </Link>
                     ))}
                     <Link
                       href="/board/notice"
-                      className="transition-colors duration-300 hover:text-brand-highlight"
+                      className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       공지사항
                     </Link>
                     <Link
                       href="/board/event"
-                      className="transition-colors duration-300 hover:text-brand-highlight"
+                      className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       이벤트
                     </Link>
                     <Link
                       href="/board/qna"
-                      className="transition-colors duration-300 hover:text-brand-highlight"
+                      className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Q&amp;A 문의
                     </Link>
                     {guestOrderMode === "on" ? (
                       <Link
                         href="/order-lookup"
-                        className="transition-colors duration-300 hover:text-brand-highlight"
+                        className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         주문조회
                       </Link>
                     ) : null}
                   </div>
 
-                  <p className="text-surface-inverse-foreground/85">
+                  <p className="text-surface-inverse-muted">
                     상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 |
                     통신판매업신고: 제 2026 - 서울동작 - 0548 호
                   </p>
-                  <p className="text-surface-inverse-foreground/80">
+                  <p className="text-surface-inverse-muted">
                     사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)
                   </p>
-                  <p className="text-ui-body-sm text-surface-inverse-foreground/75">
+                  <p className="text-ui-label text-surface-inverse-muted">
                     &copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.
                   </p>
                 </div>
 
                 <Link
                   href="/"
-                  className="group flex shrink-0 items-center gap-4 self-start bp-md:self-center"
+                  className="group flex shrink-0 items-center gap-4 self-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:self-center"
                   aria-label="도깨비테니스 홈으로 이동"
                 >
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-panel bg-background p-1 bp-sm:h-16 bp-sm:w-16">
