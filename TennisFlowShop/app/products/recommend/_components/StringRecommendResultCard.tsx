@@ -128,7 +128,7 @@ export default function StringRecommendResultCard({
       </CardContent>
       <CardFooter className="flex-col items-start gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="mt-1 w-full">
-          <Button asChild className="min-h-10 w-full overflow-hidden whitespace-nowrap">
+          <Button asChild variant="highlight" className="min-h-10 w-full overflow-hidden whitespace-nowrap">
             <Link href={productHref}>
               <span className="min-w-0 truncate">이 스트링으로 교체서비스 이어가기</span>
             </Link>
