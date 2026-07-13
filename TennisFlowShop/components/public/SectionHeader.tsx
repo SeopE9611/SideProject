@@ -9,6 +9,7 @@ export type SectionHeaderProps = {
   actions?: ReactNode;
   align?: "left" | "center";
   className?: string;
+  variant?: "standard" | "brand";
 };
 
 export function SectionHeader({
@@ -18,6 +19,7 @@ export function SectionHeader({
   actions,
   align = "left",
   className,
+  variant = "standard",
 }: SectionHeaderProps) {
   const centered = align === "center";
 
@@ -36,7 +38,12 @@ export function SectionHeader({
           </div>
         )}
 
-        <h2 className="text-ui-section-title font-semibold tracking-tight text-foreground sm:text-ui-section-title-lg">
+        <h2
+          className={cn(
+            "text-ui-section-title font-semibold tracking-tight text-foreground sm:text-ui-section-title-lg",
+            variant === "brand" && "font-brand-heading tracking-[-0.015em]",
+          )}
+        >
           {title}
         </h2>
 

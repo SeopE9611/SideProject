@@ -9,7 +9,7 @@
 export { AuthShell, type AuthShellProps } from "./AuthShell";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { InteractiveCard, type InteractiveCardProps } from "./InteractiveCard";
-export { PublicPageHero, type PublicPageHeroProps } from "./PublicPageHero";
+export { PublicPageHero, type PublicPageHeroProps, type PublicPageHeroVariant } from "./PublicPageHero";
 export { PublicSurface, type PublicSurfaceProps } from "./PublicSurface";
 export { ResultState, type ResultStateProps } from "./ResultState";
 export { SectionHeader, type SectionHeaderProps } from "./SectionHeader";
