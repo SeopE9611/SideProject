@@ -323,7 +323,7 @@ async function loadHomePreviewData(): Promise<HomePreviewData | null> {
   return { products, rackets, notices, packages };
 }
 
-export const getHomePreviewData = unstable_cache(loadHomePreviewData, ["home-preview-public-v2"], {
+export const getHomePreviewData = unstable_cache(loadHomePreviewData, ["home-preview-public-v3"], {
   revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
   tags: [HOME_PREVIEW_CACHE_TAG],
 });
