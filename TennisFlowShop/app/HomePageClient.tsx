@@ -970,16 +970,12 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">
                     스트링 교체서비스
                   </span>
-                  <h3
-                    className={cn(styles.marketingTitle, "mt-5 text-ui-page-title leading-tight")}
-                  >
-                    라켓을 맡기는 순간부터 수령할 때까지
-                  </h3>
-                  <p className="mt-4 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">
+                  <h3 className={styles.bentoTitle}>라켓을 맡기는 순간부터 수령할 때까지</h3>
+                  <p className={styles.bentoDescription}>
                     신청서 작성, 접수 방식 선택, 스트링·텐션 확인, 작업 완료 안내를 순서대로
                     확인하세요.
                   </p>
-                  <span className={cn(buttonHighlight, "mt-6 w-fit")}>
+                  <span className={cn(buttonHighlight, styles.bentoCta)}>
                     교체서비스 시작하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </span>
                 </div>
