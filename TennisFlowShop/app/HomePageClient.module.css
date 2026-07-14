@@ -1,0 +1,596 @@
+.page {
+  background: color-mix(in srgb, hsl(var(--background)) 94%, hsl(var(--brand-highlight-muted)) 6%);
+  color: hsl(var(--foreground));
+}
+
+.wrap {
+  width: min(100%, 1240px);
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.section {
+  padding-block: 72px;
+}
+
+.sectionHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.62fr);
+  gap: 40px;
+  align-items: end;
+  margin-bottom: 30px;
+}
+
+.sectionHeadMain {
+  min-width: 0;
+}
+
+.sectionNo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.sectionNoCircle {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 999px;
+  background: hsl(var(--brand-highlight));
+  color: hsl(var(--brand-highlight-foreground));
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sectionEyebrow {
+  color: hsl(var(--muted-foreground));
+}
+
+.sectionTitle {
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-family: var(--font-brand-heading), inherit;
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+  word-break: keep-all;
+}
+
+.sectionDescription {
+  max-width: 440px;
+  justify-self: end;
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.hero {
+  padding-block: 42px 72px;
+}
+
+.heroShell {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 16%, transparent);
+  border-radius: 30px;
+  background: hsl(var(--surface-inverse));
+  color: hsl(var(--surface-inverse-foreground));
+  box-shadow: var(--shadow-soft, 0 18px 55px color-mix(in srgb, hsl(var(--foreground)) 12%, transparent));
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  min-height: 520px;
+}
+
+.heroCopy {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: 58px 56px;
+}
+
+.heroTitle {
+  max-width: 720px;
+  margin: 22px 0;
+  font-family: var(--font-brand-display), inherit;
+  font-size: clamp(46px, 5.4vw, 78px);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+  word-break: keep-all;
+}
+
+.heroOutline {
+  display: block;
+  color: transparent;
+  -webkit-text-stroke: 1.2px hsl(var(--surface-inverse-foreground));
+}
+
+@supports not (-webkit-text-stroke: 1px currentColor) {
+  .heroOutline {
+    color: hsl(var(--surface-inverse-foreground));
+  }
+}
+
+.heroVisual {
+  position: relative;
+  min-height: 520px;
+}
+
+.heroImageWrap {
+  position: absolute;
+  inset: 0;
+}
+
+.heroPlan {
+  position: absolute;
+  z-index: 2;
+  top: 52px;
+  right: 42px;
+  width: min(390px, calc(100% - 70px));
+  border: 1px solid color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 16%, transparent);
+  border-radius: 24px;
+  background: color-mix(in srgb, hsl(var(--surface-inverse)) 92%, transparent);
+  padding: 24px;
+  box-shadow: 0 24px 55px color-mix(in srgb, hsl(var(--surface-inverse)) 72%, transparent);
+}
+
+.pathGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pathCard {
+  position: relative;
+  min-height: 205px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 22px;
+  background: hsl(var(--card));
+  padding: 24px;
+  text-align: left;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.pathCardIdle:hover {
+  border-color: color-mix(in srgb, hsl(var(--foreground)) 24%, hsl(var(--border)));
+}
+
+.pathCardActive {
+  border-color: hsl(var(--brand-highlight));
+  background: color-mix(in srgb, hsl(var(--brand-highlight-muted)) 48%, hsl(var(--card)));
+  box-shadow: 0 0 0 2px color-mix(in srgb, hsl(var(--brand-highlight)) 36%, transparent);
+}
+
+.pathDetail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  min-height: 300px;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 22px;
+  background: hsl(var(--card));
+}
+
+.detailCopy,
+.detailPreview {
+  padding: 34px;
+}
+
+.detailPreview {
+  background: hsl(var(--surface-inverse));
+  color: hsl(var(--surface-inverse-foreground));
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  gap: 14px;
+}
+
+.bentoMain {
+  position: relative;
+  min-height: 420px;
+  overflow: hidden;
+  border-radius: 30px;
+  color: hsl(var(--surface-inverse-foreground));
+}
+
+.bentoMainInner,
+.bentoImageWrap {
+  position: absolute;
+  inset: 0;
+}
+
+.bentoCopy {
+  position: absolute;
+  left: 38px;
+  bottom: 38px;
+  width: min(520px, calc(100% - 76px));
+  border-radius: 24px;
+  background: color-mix(in srgb, hsl(var(--surface-inverse)) 88%, transparent);
+  padding: 30px;
+}
+
+.bentoSide {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.processWrap {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 30px;
+  background: hsl(var(--card));
+}
+
+.stepTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-height: 62px;
+}
+
+.stepBody {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  min-height: 410px;
+}
+
+.stepCopy {
+  padding: 38px;
+  background: hsl(var(--brand-highlight));
+  color: hsl(var(--brand-highlight-foreground));
+}
+
+.stepCopy h3 {
+  font-size: clamp(36px, 4vw, 44px);
+  line-height: 1.07;
+}
+
+.stepVisual {
+  display: grid;
+  align-items: center;
+  background: color-mix(in srgb, hsl(var(--muted)) 42%, hsl(var(--card)));
+  padding: 32px;
+}
+
+.formMock {
+  width: min(100%, 560px);
+  margin-inline: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: 24px;
+  background: hsl(var(--card));
+  padding: 26px;
+  box-shadow: var(--shadow-soft, 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 10%, transparent));
+}
+
+.trustSection {
+  margin-block: 0;
+  padding-block: 86px;
+  background: hsl(var(--surface-inverse));
+  color: hsl(var(--surface-inverse-foreground));
+}
+
+.trustLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 56px;
+  align-items: center;
+}
+
+.trustLayout h2 {
+  font-size: clamp(40px, 4.5vw, 50px);
+  line-height: 1.04;
+}
+
+.trustMatrix {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 15%, transparent);
+}
+
+.trustMatrix > div {
+  min-height: 145px;
+  padding: 24px;
+}
+
+.recoLayout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.68fr) minmax(0, 1.32fr);
+  gap: 14px;
+}
+
+.purposeList {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.recoPanel {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 30px;
+  background: hsl(var(--card));
+}
+
+.recoImageWrap {
+  position: relative;
+  height: 250px;
+}
+
+.recoContent {
+  padding: 28px;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.productCard,
+.productSkeleton {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  background: hsl(var(--card));
+}
+
+.productSkeleton {
+  min-height: 260px;
+  background: hsl(var(--muted));
+}
+
+.productImage {
+  position: relative;
+  height: 170px;
+  background: hsl(var(--muted));
+}
+
+.productBadges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.productBadges span {
+  border-radius: 999px;
+  background: hsl(var(--brand-highlight));
+  color: hsl(var(--brand-highlight-foreground));
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.productBody {
+  padding: 14px;
+}
+
+.productBrand {
+  margin: 0 0 6px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.productName {
+  min-height: 44px;
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.productPrice {
+  margin: 12px 0 0;
+  color: hsl(var(--foreground));
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.packages {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+  gap: 16px;
+}
+
+.packageIntro {
+  border-radius: 30px;
+  background: hsl(var(--brand-highlight));
+  color: hsl(var(--brand-highlight-foreground));
+  padding: 38px;
+}
+
+.packageIntro h3 {
+  font-size: clamp(34px, 4vw, 42px);
+  line-height: 1.06;
+}
+
+.packageTable {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 30px;
+  background: hsl(var(--card));
+}
+
+.packageRow {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 22px;
+}
+
+.racketShow {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.racketShowWithInventory {
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+}
+
+.racketFeature {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 30px;
+  background: hsl(var(--surface-inverse));
+  color: hsl(var(--surface-inverse-foreground));
+  min-height: 390px;
+}
+
+.inventory {
+  display: grid;
+  gap: 12px;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.careBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 30px;
+  background: color-mix(in srgb, hsl(var(--brand-highlight-muted)) 36%, hsl(var(--card)));
+  padding: 26px 30px;
+}
+
+@media (max-width: 980px) {
+  .sectionHead,
+  .heroGrid,
+  .pathDetail,
+  .bento,
+  .stepBody,
+  .trustLayout,
+  .recoLayout,
+  .packages,
+  .racketShowWithInventory,
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroVisual {
+    min-height: 460px;
+  }
+
+  .bentoSide {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: none;
+  }
+
+  .purposeList {
+    display: flex;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 680px) {
+  .wrap {
+    padding-inline: 12px;
+  }
+
+  .section {
+    padding-block: 48px;
+  }
+
+  .sectionHead {
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+
+  .sectionDescription {
+    justify-self: start;
+  }
+
+  .hero {
+    padding-block: 16px 46px;
+  }
+
+  .heroGrid {
+    min-height: auto;
+  }
+
+  .heroCopy {
+    padding: 32px 22px;
+  }
+
+  .heroTitle {
+    font-size: 43px;
+  }
+
+  .heroVisual {
+    display: grid;
+    min-height: auto;
+  }
+
+  .heroImageWrap {
+    position: relative;
+    min-height: 360px;
+  }
+
+  .heroPlan {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: auto;
+    border-radius: 0;
+  }
+
+  .pathGrid,
+  .productGrid,
+  .trustMatrix {
+    grid-template-columns: 1fr;
+  }
+
+  .bentoMain {
+    min-height: 390px;
+  }
+
+  .bentoCopy {
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+    width: auto;
+    padding: 22px;
+  }
+
+  .bentoSide,
+  .stepTabs {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .careBanner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -2,7 +2,7 @@
 
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
+import styles from "./HomePageClient.module.css";
 import SiteContainer from "@/components/layout/SiteContainer";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
@@ -26,7 +26,19 @@ const HomeNoticePreview = dynamic(() => import("@/components/HomeNoticePreview")
 
 type ApiProduct = HomePreviewProduct;
 
-type MerchandisingBadge = NonNullable<HItem["merchandisingBadges"]>[number];
+type MerchandisingBadge = "품절" | "SALE" | "NEW" | "추천" | "입고예정";
+
+type HomeCardItem = {
+  _id: string;
+  name: string;
+  price: number;
+  images?: string[];
+  brand?: string;
+  href?: string;
+  merchandisingBadges?: MerchandisingBadge[];
+  inventory?: ApiProduct["inventory"];
+  marketing?: RItem["marketing"];
+};
 
 const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
 
@@ -257,21 +269,21 @@ function HomeEditorialHeader({
   description: ReactNode;
 }) {
   return (
-    <div className="mb-6 grid gap-4 bp-sm:mb-8 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.55fr)] bp-lg:items-end">
-      <div>
-        <div className="mb-3 flex items-center gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-highlight text-ui-label font-bold text-brand-highlight-foreground">
+    <div className={styles.sectionHead}>
+      <div className={styles.sectionHeadMain}>
+        <div className={styles.sectionNo}>
+          <span className={styles.sectionNoCircle}>
             {no}
           </span>
-          <span className="text-ui-label font-bold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className={styles.sectionEyebrow}>
             {eyebrow}
           </span>
         </div>
-        <h2 className="break-keep font-brand-heading text-ui-section-title-lg font-semibold leading-tight tracking-tight text-foreground bp-md:text-ui-page-title bp-lg:text-ui-page-title-lg">
+        <h2 className={styles.sectionTitle}>
           {title}
         </h2>
       </div>
-      <p className="max-w-[440px] break-keep text-ui-body leading-relaxed text-muted-foreground bp-lg:justify-self-end">
+      <p className={styles.sectionDescription}>
         {description}
       </p>
     </div>
@@ -534,7 +546,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       .map(({ product }) => product);
   }, [activePurpose, premiumItemsSource]);
 
-  const premiumItems: HItem[] = useMemo(
+  const premiumItems: HomeCardItem[] = useMemo(
     () =>
       sortedProductsByPurpose.map((p) => ({
         _id: p._id,
@@ -550,7 +562,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
 
   const usedRacketsSource = rackByBrand[activeBrand] ?? [];
-  const usedRacketsItems: HItem[] = useMemo(
+  const usedRacketsItems: HomeCardItem[] = useMemo(
     () =>
       usedRacketsSource.map((r) => ({
         _id: r.id,
@@ -568,9 +580,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     [usedRacketsSource],
   );
 
-  const stringTotal =
-    activeStringBrand === "all" ? allProductsTotal : (stringTotalsByBrand[activeStringBrand] ?? premiumItems.length);
-  const hasMoreStringProducts = stringTotal > premiumItems.length;
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
@@ -584,26 +593,65 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     () => getPurposeProductHref(activePurpose, activeStringBrand),
     [activePurpose, activeStringBrand],
   );
+  const stringProductsLoading =
+    !shouldLoadStrings ||
+    (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]));
+  const stringProductsError =
+    activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand]);
+  const retryStringProducts = () => {
+    if (activeStringBrand === "all") {
+      void fetchHomeProducts();
+      return;
+    }
+    void loadStringBrand(activeStringBrand);
+  };
+  const renderProductGrid = () => {
+    if (stringProductsLoading) {
+      return (
+        <div className={styles.productGrid}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className={styles.productSkeleton} />
+          ))}
+        </div>
+      );
+    }
+
+    if (stringProductsError) {
+      return <EmptyPanel title="스트링을 불러오지 못했어요" action={retryStringProducts} />;
+    }
+
+    if (premiumItems.length === 0) {
+      return <EmptyPanel title="추천할 스트링이 없습니다" />;
+    }
+
+    return (
+      <div className={styles.productGrid}>
+        {premiumItems.slice(0, 3).map((item) => (
+          <HomeStringProductCard key={item._id} item={item} />
+        ))}
+      </div>
+    );
+  };
   const homePackages = initialHomeData?.packages ?? [];
   const featuredRacket = usedRacketsSource[0];
   const inventoryRackets = usedRacketsSource.slice(1, 4);
   const hasInventoryRackets = inventoryRackets.length > 0;
 
   return (
-    <div className="bg-background">
+    <div className={styles.page}>
       <SignupBonusPromoPopup promo={signupPromo} onPrimaryClick={() => router.push("/login?tab=register")} />
 
-      <section className="py-4 bp-sm:py-5 bp-md:py-6">
+      <section className={styles.hero}>
         <SiteContainer variant="wide">
-          <div className="overflow-hidden rounded-hero border border-surface-inverse-foreground/15 bg-surface-inverse text-surface-inverse-foreground shadow-soft">
-            <div className="grid bp-lg:min-h-[520px] bp-lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
-              <div className="flex flex-col justify-center p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-14">
+          <div className={styles.heroShell}>
+            <div className={styles.heroGrid}>
+              <div className={styles.heroCopy}>
                 <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">
                   스트링 교체서비스
                 </span>
-                <h1 className="mt-5 break-keep font-brand-display text-ui-display font-semibold leading-none tracking-tight">
+                <h1 className={styles.heroTitle}>
                   스트링 교체,
-                  <span className="block">내 플레이에 맞게.</span>
+                  <span className={styles.heroOutline}>내 플레이에 맞게.</span>
                 </h1>
                 <p className="mt-5 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">
                   스트링 선택부터 텐션 상담, 라켓 접수와 수령까지. 복잡한 교체 과정을 쉽게 안내해드려요.
@@ -625,8 +673,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   ))}
                 </div>
               </div>
-              <div className="relative grid gap-0 border-t border-surface-inverse-foreground/15 bp-lg:border-l bp-lg:border-t-0">
-                <div className="relative min-h-[260px] bp-sm:min-h-[340px] bp-lg:min-h-full">
+              <div className={styles.heroVisual}>
+                <div className={styles.heroImageWrap}>
                   <Image
                     src="/images/home/home-hero-stringing-workbench.webp"
                     alt="도깨비테니스 스트링 교체 작업대"
@@ -636,7 +684,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     sizes="(max-width: 1199px) calc(100vw - 24px), 680px"
                   />
                 </div>
-                <div className="bg-surface-inverse p-5 bp-sm:p-6 bp-lg:absolute bp-lg:right-8 bp-lg:top-8 bp-lg:w-[390px] bp-lg:rounded-panel bp-lg:border bp-lg:border-surface-inverse-foreground/15 bp-lg:shadow-soft">
+                <div className={styles.heroPlan}>
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-ui-label font-bold uppercase tracking-[0.12em] text-surface-inverse-muted">
@@ -713,10 +761,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </section>
       )}
 
-      <section className="py-10 bp-md:py-14" id="paths">
+      <section className={styles.section} id="paths">
         <SiteContainer variant="wide">
           <HomeEditorialHeader no="01" eyebrow="신청 방식 선택" title="지금 상황에 맞는 신청 방법을 선택하세요." description={<>원하는 스트링을 직접 선택하거나 추천받을 수 있어요.<br />보유한 스트링으로 장착만 신청하는 것도 가능합니다.</>} />
-          <div className="grid gap-3 bp-lg:grid-cols-3">
+          <div className={styles.pathGrid}>
             {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => {
               const path = APPLICATION_PATHS[key];
               const active = activeApplicationPath === key;
@@ -727,8 +775,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   aria-pressed={active}
                   onClick={() => setActiveApplicationPath(key)}
                   className={cn(
-                    "group relative min-h-[190px] rounded-panel border bg-card p-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 bp-md:min-h-[220px]",
-                    active ? "border-brand-highlight ring-2 ring-brand-highlight/30" : "border-border hover:border-foreground/20",
+                    styles.pathCard,
+                    active ? styles.pathCardActive : styles.pathCardIdle,
                   )}
                 >
                   <span className="text-ui-label font-bold text-muted-foreground">{path.no} · {path.label}</span>
@@ -745,8 +793,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               );
             })}
           </div>
-          <div className="mt-4 grid overflow-hidden rounded-panel border border-border bg-card bp-lg:min-h-[280px] bp-lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-            <div className="p-6 bp-md:p-8">
+          <div className={styles.pathDetail}>
+            <div className={styles.detailCopy}>
               <span className="rounded-full bg-brand-highlight-muted px-3 py-1.5 text-ui-label font-bold text-foreground">{currentPath.label}</span>
               <h3 className="mt-5 break-keep text-ui-section-title-lg font-semibold leading-tight text-foreground">{currentPath.detailTitle}</h3>
               <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">{currentPath.detailDescription}</p>
@@ -755,7 +803,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <Link className={cn(buttonHighlight, "mt-6")} href={currentPath.href}>{currentPath.cta}</Link>
             </div>
-            <div className="bg-surface-inverse p-6 text-surface-inverse-foreground bp-md:p-8">
+            <div className={styles.detailPreview}>
               <p className="text-ui-label font-bold uppercase tracking-[0.12em] text-surface-inverse-muted">신청 요약</p>
               <PreviewLine label="스트링" value={currentPath.string} />
               <PreviewLine label="텐션" value={currentPath.tension} />
@@ -766,14 +814,14 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className="py-10 bp-md:py-14">
+      <section className={styles.section}>
         <SiteContainer variant="wide">
           <HomeEditorialHeader no="02" eyebrow="주요 서비스" title={<>라켓을 맡기기 전부터<br />수령할 때까지</>} description={<>교체 신청부터 라켓 접수, 장착과 수령까지<br />필요한 메뉴를 빠르게 확인할 수 있어요.</>} />
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]">
-            <Link href="/services/apply" className="group overflow-hidden rounded-hero border border-border bg-surface-inverse text-surface-inverse-foreground shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
-              <div className="grid bp-md:grid-cols-[minmax(0,1fr)_minmax(280px,0.72fr)]">
-                <div className="relative min-h-[260px] bp-md:min-h-[420px]"><Image src="/images/home/home-stringing-setup-clean.webp" alt="스트링 교체 준비가 된 라켓과 도구" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 820px" /></div>
-                <div className="flex flex-col justify-end p-6 bp-md:p-8">
+          <div className={styles.bento}>
+            <Link href="/services/apply" className={styles.bentoMain}>
+              <div className={styles.bentoMainInner}>
+                <div className={styles.bentoImageWrap}><Image src="/images/home/home-stringing-setup-clean.webp" alt="스트링 교체 준비가 된 라켓과 도구" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 820px" /></div>
+                <div className={styles.bentoCopy}>
                   <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">스트링 교체서비스</span>
                   <h3 className="mt-5 break-keep text-ui-page-title font-semibold leading-tight">라켓을 맡기기 전부터 수령할 때까지</h3>
                   <p className="mt-4 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">신청서 작성, 접수 방식 선택, 스트링·텐션 확인, 작업 완료 안내를 순서대로 확인하세요.</p>
@@ -781,7 +829,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 </div>
               </div>
             </Link>
-            <div className="grid gap-3">
+            <div className={styles.bentoSide}>
               {[
                 ["내게 맞는 스트링 찾기", "플레이 목적에서 시작하는 선택", "/products/recommend"],
                 ["교체 패키지", "자주 교체한다면 회차형 이용권", "/services/packages"],
@@ -797,26 +845,26 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className="py-10 bp-md:py-14" id="process">
+      <section className={styles.section} id="process">
         <SiteContainer variant="wide">
           <HomeEditorialHeader no="03" eyebrow="교체 진행 순서" title="신청부터 수령까지 필요한 정보만 보여드려요." description="단계를 선택하면 설명과 신청 화면 미리보기가 함께 바뀝니다." />
-          <div className="overflow-hidden rounded-hero border border-border bg-card">
-            <div className="flex overflow-x-auto bp-lg:grid bp-lg:grid-cols-4">
+          <div className={styles.processWrap}>
+            <div className={styles.stepTabs}>
               {PROCESS_STEPS.map((step) => {
                 const active = activeStepKey === step.key;
                 return <button key={step.key} type="button" aria-pressed={active} onClick={() => setActiveStepKey(step.key)} className={cn("min-w-40 border-b border-r border-border px-4 py-4 text-left font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30", active ? "bg-surface-inverse text-surface-inverse-foreground" : "bg-card text-foreground hover:bg-muted/30")}><small className={cn("mb-1 block font-bold", active ? "text-brand-highlight" : "text-muted-foreground")}>{step.no}</small>{step.tab}</button>;
               })}
             </div>
-            <div className="grid bp-lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
-              <div className="bg-brand-highlight p-6 text-brand-highlight-foreground bp-md:p-10">
+            <div className={styles.stepBody}>
+              <div className={styles.stepCopy}>
                 <p className="text-ui-label font-bold">단계 {currentStep.no}</p>
                 <h3 className="mt-4 whitespace-pre-line break-keep text-ui-page-title font-semibold leading-tight">{currentStep.title}</h3>
                 <p className="mt-4 break-keep text-ui-body leading-relaxed">{currentStep.description}</p>
                 <div className="mt-6 grid gap-2">{currentStep.checks.map((check) => <CheckLine key={check} inverse>{check}</CheckLine>)}</div>
                 {currentStepIndex < PROCESS_STEPS.length - 1 ? <button type="button" className={cn(buttonInverse, "mt-7")} onClick={() => setActiveStepKey(PROCESS_STEPS[currentStepIndex + 1].key)}>다음 단계 보기</button> : <Link className={cn(buttonInverse, "mt-7")} href="/services/apply">교체서비스 신청하기</Link>}
               </div>
-              <div className="bg-muted/30 p-5 bp-md:p-10">
-                <div className="mx-auto max-w-xl rounded-panel border border-border bg-card p-5 shadow-soft" role="img" aria-label="교체서비스 신청 화면 미리보기">
+              <div className={styles.stepVisual}>
+                <div className={styles.formMock} role="img" aria-label="교체서비스 신청 화면 미리보기">
                   <div className="flex items-center justify-between border-b border-border pb-4"><strong>{currentStep.mockTitle}</strong><span className="text-ui-label text-muted-foreground">진행 예시</span></div>
                   <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-brand-highlight" style={{ width: currentStep.progress }} /></div>
                   <h4 className="mt-6 break-keep text-ui-section-title font-semibold text-foreground">{currentStep.question}</h4>
@@ -829,11 +877,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className="my-10 bg-surface-inverse py-16 text-surface-inverse-foreground bp-md:my-14 bp-md:py-24">
+      <section className={styles.trustSection}>
         <SiteContainer variant="wide">
-          <div className="grid gap-10 bp-lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] bp-lg:items-center">
+          <div className={styles.trustLayout}>
             <div><span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">도깨비테니스 교체서비스</span><h2 className="mt-5 break-keep font-brand-heading text-ui-page-title font-semibold leading-tight">신청부터 장착까지 <span className="text-brand-highlight">한 번에</span> 확인하세요.</h2><p className="mt-5 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">스트링 선택부터 수령 안내까지 교체 과정에 필요한 내용을 단계별로 확인할 수 있어요.</p></div>
-            <div className="grid border border-surface-inverse-foreground/15 bp-sm:grid-cols-2">
+            <div className={styles.trustMatrix}>
               {[
                 ["신청 내용 확인", "라켓, 스트링, 텐션과 접수 방법을 신청 전에 한 번 더 확인해요."],
                 ["필요한 항목만 선택", "직접 선택과 추천 중 내게 필요한 방법으로 시작할 수 있어요."],
@@ -845,23 +893,23 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section ref={stringsSectionRef} className="py-10 bp-md:py-14" id="strings">
+      <section ref={stringsSectionRef} className={styles.section} id="strings">
         <SiteContainer variant="wide">
           <HomeEditorialHeader no="04" eyebrow="플레이 목적별 추천" title="브랜드보다 먼저 원하는 플레이를 고르세요." description={<>편안함, 스핀, 컨트롤과 내구성 중<br />원하는 기준을 고르면 알맞은 스트링을 먼저 보여드려요.</>} />
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(220px,0.68fr)_minmax(0,1.32fr)]">
-            <div className="flex gap-2 overflow-x-auto pb-2 bp-lg:grid bp-lg:overflow-visible bp-lg:pb-0">
+          <div className={styles.recoLayout}>
+            <div className={styles.purposeList}>
               {PURPOSES.map((purpose) => <button key={purpose.key} type="button" aria-pressed={activePurpose === purpose.key} onClick={() => setActivePurpose(purpose.key)} className={cn("flex min-w-40 items-center justify-between rounded-control border px-4 py-4 text-left font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30", activePurpose === purpose.key ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground" : "border-border bg-card text-foreground hover:bg-muted/30")}><span>{purpose.title}</span><span className={activePurpose === purpose.key ? "text-brand-highlight" : "text-muted-foreground"}>{purpose.no}</span></button>)}
             </div>
-            <div className="overflow-hidden rounded-hero border border-border bg-card">
-              <div className="relative h-[220px] bp-md:h-[260px]"><Image src="/images/home/home-string-product-showcase.webp" alt="테니스 스트링 상품 쇼케이스" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 920px" /></div>
-              <div className="p-5 bp-md:p-7">
+            <div className={styles.recoPanel}>
+              <div className={styles.recoImageWrap}><Image src="/images/home/home-string-product-showcase.webp" alt="테니스 스트링 상품 쇼케이스" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 920px" /></div>
+              <div className={styles.recoContent}>
                 <h3 className="text-ui-section-title-lg font-semibold text-foreground">{activePurposeInfo.title}</h3>
                 <p className="mt-2 break-keep text-ui-body text-muted-foreground">{activePurposeInfo.desc}</p>
                 <div className={cn(brandRailClass, "mt-5")} ref={stringBrandRailRef}>
                   <button type="button" aria-pressed={activeStringBrand === "all"} onClick={() => setActiveStringBrand("all")} className={getBrandTabClass(activeStringBrand === "all")}>전체</button>
                   {STRING_BRANDS.map((b) => <button key={b.value} type="button" aria-pressed={activeStringBrand === b.value} onClick={() => setActiveStringBrand(b.value as StringBrandKey)} className={getBrandTabClass(activeStringBrand === b.value)}>{b.label}</button>)}
                 </div>
-                <HorizontalProducts variant="home" title="스트링" items={premiumItems.slice(0, 3)} moreHref={recommendationMoreHref} showHeader={false} showMoreCard={false} cardWidthClass="flex-none basis-full bp-sm:basis-[calc((100%_-_16px)/2)] bp-lg:basis-[calc((100%_-_32px)/3)]" firstPageSlots={3} loading={!shouldLoadStrings || (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))} error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])} onRetry={() => activeStringBrand === "all" ? void fetchHomeProducts() : void loadStringBrand(activeStringBrand)} emptyTitle="추천할 스트링이 없습니다" emptyDescription="다른 목적이나 브랜드를 선택해 보세요." errorTitle="스트링을 불러오지 못했어요" errorDescription="잠시 후 다시 시도해 주세요." />
+                {renderProductGrid()}
                 <Link className={cn(buttonOutline, "mt-5")} href={recommendationMoreHref}>추천 상품 더 보기</Link>
               </div>
             </div>
@@ -869,28 +917,28 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className="py-10 bp-md:py-14" id="packages">
+      <section className={styles.section} id="packages">
         <SiteContainer variant="wide">
           <HomeEditorialHeader no="05" eyebrow="패키지 비교" title="자주 교체한다면 패키지로 더 편리하게 이용하세요." description={<>이용 횟수와 가격, 회당 금액과 절감 혜택을<br />한눈에 비교해보세요.</>} />
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(260px,0.75fr)_minmax(0,1.25fr)]">
-            <div className="rounded-hero bg-brand-highlight p-6 text-brand-highlight-foreground bp-md:p-8"><h3 className="text-ui-section-title-lg font-semibold">패키지로 교체 일정을 준비하세요.</h3><p className="mt-4 break-keep text-ui-body leading-relaxed">반복 교체가 필요하다면 회차형 패키지로 이용 횟수와 비용을 한 번에 확인할 수 있어요.</p><Link className={cn(buttonInverse, "mt-6")} href="/services/packages">패키지 자세히 보기</Link></div>
-            <div className="overflow-hidden rounded-hero border border-border bg-card">
+          <div className={styles.packages}>
+            <div className={styles.packageIntro}><h3 className="text-ui-section-title-lg font-semibold">패키지로 교체 일정을 준비하세요.</h3><p className="mt-4 break-keep text-ui-body leading-relaxed">반복 교체가 필요하다면 회차형 패키지로 이용 횟수와 비용을 한 번에 확인할 수 있어요.</p><Link className={cn(buttonInverse, "mt-6")} href="/services/packages">패키지 자세히 보기</Link></div>
+            <div className={styles.packageTable}>
               {homePackages.length > 0 ? homePackages.map((pkg) => <PackageRow key={pkg.id} pkg={pkg} />) : <div className="p-6 text-ui-body text-muted-foreground">패키지 정보를 확인해 주세요.</div>}
             </div>
           </div>
         </SiteContainer>
       </section>
 
-      <section ref={racketsSectionRef} className="py-10 bp-md:py-14" id="rackets">
+      <section ref={racketsSectionRef} className={styles.section} id="rackets">
         <SiteContainer variant="wide">
           <HomeEditorialHeader no="06" eyebrow="도깨비 인증 중고 라켓" title={<>검수된 중고 라켓을<br />한눈에 살펴보세요.</>} description={<>대표 라켓과 최근 등록된 라켓의<br />상태, 대여 여부와 가격을 함께 확인할 수 있어요.</>} />
           <div className={brandRailClass} ref={racketBrandRailRef}>
             <button type="button" aria-pressed={activeBrand === "all"} onClick={() => setActiveBrand("all")} className={getBrandTabClass(activeBrand === "all")}>전체</button>
             {RACKET_BRANDS.map((b) => <button key={b.value} type="button" aria-pressed={activeBrand === b.value} onClick={() => setActiveBrand(b.value as BrandKey)} className={getBrandTabClass(activeBrand === b.value)}>{b.label}</button>)}
           </div>
-          <div className={cn("mt-4 grid gap-4", featuredRacket && hasInventoryRackets && "bp-lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]")}>
+          <div className={cn(styles.racketShow, featuredRacket && hasInventoryRackets && styles.racketShowWithInventory)}>
             {featuredRacket ? (
-              <div className="overflow-hidden rounded-hero border border-border bg-surface-inverse text-surface-inverse-foreground shadow-soft">
+              <div className={styles.racketFeature}>
                 <div className="relative h-[280px] bp-md:h-[360px]"><Image src="/images/home/home-racket-section-showcase.webp" alt="검수된 중고 라켓" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 720px" /></div>
                 <div className="p-6 bp-md:p-8">
                   <p className="text-ui-label font-bold text-brand-highlight">대표 라켓</p>
@@ -903,7 +951,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <EmptyPanel title={usedRacketsError ? "중고 라켓을 불러오지 못했어요" : usedRacketsLoading || !shouldLoadRackets ? "중고 라켓을 확인하고 있어요" : "검수된 중고 라켓을 준비 중입니다"} action={usedRacketsError ? () => loadUsedRackets(activeBrand) : undefined} />
             )}
             {featuredRacket && hasInventoryRackets && (
-              <div className="grid gap-3">
+              <div className={styles.inventory}>
                 {inventoryRackets.map((racket) => <InventoryRow key={racket.id} racket={racket} />)}
               </div>
             )}
@@ -912,10 +960,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section ref={communitySectionRef} className="py-10 bp-md:py-14" id="info">
+      <section ref={communitySectionRef} className={styles.section} id="info">
         <SiteContainer variant="wide">
           <HomeEditorialHeader no="07" eyebrow="이용 안내" title="접수 방법과 필요한 안내를 한곳에서 확인하세요." description="공지사항과 이용 메뉴를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있습니다." />
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
+          <div className={styles.infoGrid}>
             {shouldLoadCommunity ? <HomeNoticePreview initialItems={initialHomeData?.notices} /> : <div className="h-[260px] animate-pulse rounded-panel border border-border bg-muted" />}
             <div className="grid gap-3 bp-sm:grid-cols-2">
               {[
@@ -927,7 +975,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               ].map(([title, href]) => <Link key={href} href={href} className="rounded-panel border border-border bg-card p-5 text-ui-card-title font-semibold text-foreground transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">{title}</Link>)}
             </div>
           </div>
-          <div className="mt-5 flex flex-col gap-4 rounded-hero border border-border bg-card p-6 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:p-8">
+          <div className={styles.careBanner}>
             <div><p className="text-ui-label font-bold text-muted-foreground">교체 후 관리</p><h3 className="mt-2 break-keep text-ui-section-title-lg font-semibold text-foreground">교체 이력은 라켓 케어에서 이어서 관리하세요.</h3><p className="mt-2 break-keep text-ui-body text-muted-foreground">완료된 교체 이력을 저장하면 다음 교체 시기와 라켓 상태를 확인할 수 있어요.</p></div>
             <Link className={buttonOutline} href="/racket-care">라켓 케어 알아보기</Link>
           </div>
@@ -982,6 +1030,28 @@ function CheckLine({ children, inverse = false }: { children: string; inverse?: 
 
 function PreviewLine({ label, value }: { label: string; value: string }) {
   return <div className="flex items-center justify-between gap-4 border-b border-surface-inverse-foreground/15 py-4"><span className="text-ui-body-sm text-surface-inverse-muted">{label}</span><strong className="text-right text-ui-body-sm text-surface-inverse-foreground">{value}</strong></div>;
+}
+
+function HomeStringProductCard({ item }: { item: HomeCardItem }) {
+  return (
+    <Link href={item.href ?? `/products/${item._id}`} className={styles.productCard}>
+      <div className={styles.productImage}>
+        <Image src={getImageSrc(item.images)} alt={item.name} fill className="object-cover" sizes="(max-width: 767px) 100vw, 280px" />
+        {item.merchandisingBadges?.length ? (
+          <div className={styles.productBadges}>
+            {item.merchandisingBadges.map((badge) => (
+              <span key={badge}>{badge}</span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <div className={styles.productBody}>
+        {item.brand && <p className={styles.productBrand}>{item.brand}</p>}
+        <h3 className={styles.productName}>{item.name}</h3>
+        <p className={styles.productPrice}>{formatPrice(item.price)}</p>
+      </div>
+    </Link>
+  );
 }
 
 function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
