@@ -642,7 +642,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <SignupBonusPromoPopup promo={signupPromo} onPrimaryClick={() => router.push("/login?tab=register")} />
 
       <section className={styles.hero}>
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <div className={styles.heroShell}>
             <div className={styles.heroGrid}>
               <div className={styles.heroCopy}>
@@ -732,7 +732,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       {PROMO_BANNERS.length > 0 && (
         <section className="pb-6">
-          <SiteContainer variant="wide">
+          <SiteContainer variant="wide" className={styles.wrap}>
             <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-md:grid-cols-4">
               {PROMO_BANNERS.map((banner) => {
                 const title = banner.label.split("\n")[0] || "안내";
@@ -762,7 +762,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       )}
 
       <section className={styles.section} id="paths">
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader no="01" eyebrow="신청 방식 선택" title="지금 상황에 맞는 신청 방법을 선택하세요." description={<>원하는 스트링을 직접 선택하거나 추천받을 수 있어요.<br />보유한 스트링으로 장착만 신청하는 것도 가능합니다.</>} />
           <div className={styles.pathGrid}>
             {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => {
@@ -815,7 +815,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       <section className={styles.section}>
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader no="02" eyebrow="주요 서비스" title={<>라켓을 맡기기 전부터<br />수령할 때까지</>} description={<>교체 신청부터 라켓 접수, 장착과 수령까지<br />필요한 메뉴를 빠르게 확인할 수 있어요.</>} />
           <div className={styles.bento}>
             <Link href="/services/apply" className={styles.bentoMain}>
@@ -835,7 +835,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 ["교체 패키지", "자주 교체한다면 회차형 이용권", "/services/packages"],
                 ["가격·이용 안내", "장착 비용과 이용 방법 확인", "/services/pricing"],
               ].map(([title, desc, href]) => (
-                <Link key={href} href={href} className="group flex min-h-32 items-center justify-between rounded-panel border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
+                <Link key={href} href={href} className={cn(styles.bentoSideCard, "group flex min-h-32 items-center justify-between rounded-panel border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30")}>
                   <span><strong className="block text-ui-card-title-lg text-foreground">{title}</strong><span className="mt-2 block break-keep text-ui-body-sm text-muted-foreground">{desc}</span></span>
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-highlight-muted text-foreground">↗</span>
                 </Link>
@@ -846,7 +846,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       <section className={styles.section} id="process">
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader no="03" eyebrow="교체 진행 순서" title="신청부터 수령까지 필요한 정보만 보여드려요." description="단계를 선택하면 설명과 신청 화면 미리보기가 함께 바뀝니다." />
           <div className={styles.processWrap}>
             <div className={styles.stepTabs}>
@@ -878,7 +878,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       <section className={styles.trustSection}>
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <div className={styles.trustLayout}>
             <div><span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">도깨비테니스 교체서비스</span><h2 className="mt-5 break-keep font-brand-heading text-ui-page-title font-semibold leading-tight">신청부터 장착까지 <span className="text-brand-highlight">한 번에</span> 확인하세요.</h2><p className="mt-5 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">스트링 선택부터 수령 안내까지 교체 과정에 필요한 내용을 단계별로 확인할 수 있어요.</p></div>
             <div className={styles.trustMatrix}>
@@ -894,7 +894,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       <section ref={stringsSectionRef} className={styles.section} id="strings">
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader no="04" eyebrow="플레이 목적별 추천" title="브랜드보다 먼저 원하는 플레이를 고르세요." description={<>편안함, 스핀, 컨트롤과 내구성 중<br />원하는 기준을 고르면 알맞은 스트링을 먼저 보여드려요.</>} />
           <div className={styles.recoLayout}>
             <div className={styles.purposeList}>
@@ -918,7 +918,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       <section className={styles.section} id="packages">
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader no="05" eyebrow="패키지 비교" title="자주 교체한다면 패키지로 더 편리하게 이용하세요." description={<>이용 횟수와 가격, 회당 금액과 절감 혜택을<br />한눈에 비교해보세요.</>} />
           <div className={styles.packages}>
             <div className={styles.packageIntro}><h3 className="text-ui-section-title-lg font-semibold">패키지로 교체 일정을 준비하세요.</h3><p className="mt-4 break-keep text-ui-body leading-relaxed">반복 교체가 필요하다면 회차형 패키지로 이용 횟수와 비용을 한 번에 확인할 수 있어요.</p><Link className={cn(buttonInverse, "mt-6")} href="/services/packages">패키지 자세히 보기</Link></div>
@@ -930,7 +930,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       <section ref={racketsSectionRef} className={styles.section} id="rackets">
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader no="06" eyebrow="도깨비 인증 중고 라켓" title={<>검수된 중고 라켓을<br />한눈에 살펴보세요.</>} description={<>대표 라켓과 최근 등록된 라켓의<br />상태, 대여 여부와 가격을 함께 확인할 수 있어요.</>} />
           <div className={brandRailClass} ref={racketBrandRailRef}>
             <button type="button" aria-pressed={activeBrand === "all"} onClick={() => setActiveBrand("all")} className={getBrandTabClass(activeBrand === "all")}>전체</button>
@@ -947,8 +947,19 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <Link className={cn(buttonHighlight, "mt-6")} href={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}>중고 라켓 둘러보기</Link>
                 </div>
               </div>
+            ) : usedRacketsError || usedRacketsLoading || !shouldLoadRackets ? (
+              <EmptyPanel title={usedRacketsError ? "중고 라켓을 불러오지 못했어요" : "중고 라켓을 확인하고 있어요"} action={usedRacketsError ? () => loadUsedRackets(activeBrand) : undefined} />
             ) : (
-              <EmptyPanel title={usedRacketsError ? "중고 라켓을 불러오지 못했어요" : usedRacketsLoading || !shouldLoadRackets ? "중고 라켓을 확인하고 있어요" : "검수된 중고 라켓을 준비 중입니다"} action={usedRacketsError ? () => loadUsedRackets(activeBrand) : undefined} />
+              <div className={styles.racketEmpty}>
+                <div className={styles.racketEmptyImage}>
+                  <Image src="/images/home/home-racket-section-showcase.webp" alt="검수된 중고 라켓 준비 중" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 680px" />
+                </div>
+                <div className={styles.racketEmptyCopy}>
+                  <h3 className="break-keep text-ui-section-title-lg font-semibold text-foreground">검수된 중고 라켓을 준비 중입니다.</h3>
+                  <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">상태 확인이 끝난 라켓부터 순차적으로 소개해드릴게요.</p>
+                  <Link className={cn(buttonHighlight, "mt-6 w-fit")} href="/rackets">중고 라켓 둘러보기</Link>
+                </div>
+              </div>
             )}
             {featuredRacket && hasInventoryRackets && (
               <div className={styles.inventory}>
@@ -961,7 +972,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       <section ref={communitySectionRef} className={styles.section} id="info">
-        <SiteContainer variant="wide">
+        <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader no="07" eyebrow="이용 안내" title="접수 방법과 필요한 안내를 한곳에서 확인하세요." description="공지사항과 이용 메뉴를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있습니다." />
           <div className={styles.infoGrid}>
             {shouldLoadCommunity ? <HomeNoticePreview initialItems={initialHomeData?.notices} /> : <div className="h-[260px] animate-pulse rounded-panel border border-border bg-muted" />}
@@ -1033,10 +1044,21 @@ function PreviewLine({ label, value }: { label: string; value: string }) {
 }
 
 function HomeStringProductCard({ item }: { item: HomeCardItem }) {
+  const regularPrice = Number(item.price ?? 0);
+  const salePrice = Number(item.inventory?.salePrice ?? 0);
+  const isSale =
+    (item.inventory?.isSale === true ||
+      item.inventory?.isSale === "true" ||
+      item.inventory?.isSale === 1) &&
+    salePrice > 0 &&
+    salePrice < regularPrice;
+  const displayPrice = isSale ? salePrice : regularPrice;
+  const saleRate = isSale ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
+
   return (
     <Link href={item.href ?? `/products/${item._id}`} className={styles.productCard}>
       <div className={styles.productImage}>
-        <Image src={getImageSrc(item.images)} alt={item.name} fill className="object-cover" sizes="(max-width: 767px) 100vw, 280px" />
+        <Image src={getImageSrc(item.images)} alt={item.name} fill className="object-contain" sizes="(max-width: 767px) 100vw, 280px" />
         {item.merchandisingBadges?.length ? (
           <div className={styles.productBadges}>
             {item.merchandisingBadges.map((badge) => (
@@ -1048,7 +1070,11 @@ function HomeStringProductCard({ item }: { item: HomeCardItem }) {
       <div className={styles.productBody}>
         {item.brand && <p className={styles.productBrand}>{item.brand}</p>}
         <h3 className={styles.productName}>{item.name}</h3>
-        <p className={styles.productPrice}>{formatPrice(item.price)}</p>
+        <div className={styles.productPriceRow}>
+          <p className={styles.productPrice}>{formatPrice(displayPrice)}</p>
+          {isSale && <span className={cn(styles.productRegularPrice, "line-through")}>{formatPrice(regularPrice)}</span>}
+          {isSale && <span className={styles.productSaleRate}>{saleRate}% OFF</span>}
+        </div>
       </div>
     </Link>
   );
@@ -1057,7 +1083,24 @@ function HomeStringProductCard({ item }: { item: HomeCardItem }) {
 function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
   const perSession = pkg.sessions > 0 ? Math.round(pkg.price / pkg.sessions) : null;
   const savings = pkg.originalPrice > pkg.price ? pkg.originalPrice - pkg.price : 0;
-  return <div className="grid gap-3 border-b border-border p-5 last:border-b-0 bp-md:grid-cols-[0.6fr_1fr_0.8fr_0.8fr_auto] bp-md:items-center"><div><b className="text-ui-section-title font-semibold text-foreground">{pkg.sessions}회</b>{pkg.isPopular && <span className="ml-2 rounded-full bg-brand-highlight px-2 py-1 text-ui-caption font-bold text-brand-highlight-foreground">추천</span>}</div><div><strong className="block text-ui-card-title text-foreground">{pkg.name}</strong><span className="mt-1 block break-keep text-ui-label text-muted-foreground">{pkg.description}</span></div><div className="font-semibold text-foreground">{formatPrice(pkg.price)}</div><div className="text-ui-body-sm text-muted-foreground">{perSession ? `회당 ${formatPrice(perSession)}` : "회당 금액 확인 필요"}{savings > 0 ? <span className="block text-foreground">{formatPrice(savings)} 절감</span> : null}</div><Link className={buttonOutline} href={`/services/packages/checkout?package=${pkg.id}`}>이 패키지 보기</Link></div>;
+  return (
+    <div className={cn(styles.packageRow, pkg.isPopular && styles.packageRowPopular)}>
+      <div>
+        <b className="text-ui-section-title font-semibold text-foreground">{pkg.sessions}회</b>
+        {pkg.isPopular && <span className="ml-2 rounded-full bg-brand-highlight px-2 py-1 text-ui-caption font-bold text-brand-highlight-foreground">추천</span>}
+      </div>
+      <div>
+        <strong className="block text-ui-card-title text-foreground">{pkg.name}</strong>
+        <span className="mt-1 block break-keep text-ui-label text-muted-foreground">{pkg.description}</span>
+      </div>
+      <div className="text-ui-body-sm text-muted-foreground">
+        <strong className="block text-ui-card-title text-foreground">{formatPrice(pkg.price)}</strong>
+        {perSession ? `회당 ${formatPrice(perSession)}` : "회당 금액 확인 필요"}
+        {savings > 0 ? <span className="block text-foreground">{formatPrice(savings)} 절감</span> : null}
+      </div>
+      <Link className={buttonOutline} href={`/services/packages/checkout?package=${pkg.id}`}>이 패키지 보기</Link>
+    </div>
+  );
 }
 
 function RacketFeature({ racket }: { racket: RItem }) {

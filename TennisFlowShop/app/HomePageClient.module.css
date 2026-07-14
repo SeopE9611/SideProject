@@ -1,12 +1,14 @@
 .page {
-  background: color-mix(in srgb, hsl(var(--background)) 94%, hsl(var(--brand-highlight-muted)) 6%);
+  background: color-mix(in srgb, hsl(var(--background)) 30%, hsl(var(--secondary)) 70%);
   color: hsl(var(--foreground));
 }
 
+:global(.dark) .page {
+  background: hsl(var(--background));
+}
+
 .wrap {
-  width: min(100%, 1240px);
-  margin-inline: auto;
-  padding-inline: 24px;
+  max-width: 1240px !important;
 }
 
 .section {
@@ -59,6 +61,8 @@
   font-size: clamp(32px, 4vw, 54px);
   line-height: 1.08;
   letter-spacing: -0.055em;
+  font-weight: 700;
+  text-wrap: balance;
   word-break: keep-all;
 }
 
@@ -154,13 +158,14 @@
 
 .pathCard {
   position: relative;
-  min-height: 205px;
+  min-height: 220px;
   border: 1px solid hsl(var(--border));
   border-radius: 22px;
   background: hsl(var(--card));
-  padding: 24px;
+  padding: 22px;
+  overflow: hidden;
   text-align: left;
-  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
 .pathCardIdle:hover {
@@ -175,21 +180,21 @@
 
 .pathDetail {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  min-height: 300px;
-  margin-top: 14px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  min-height: 280px;
+  margin-top: 15px;
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 22px;
   background: hsl(var(--card));
 }
 
-.detailCopy,
-.detailPreview {
-  padding: 34px;
+.detailCopy {
+  padding: 36px;
 }
 
 .detailPreview {
+  padding: 30px;
   background: hsl(var(--surface-inverse));
   color: hsl(var(--surface-inverse-foreground));
 }
@@ -214,14 +219,23 @@
   inset: 0;
 }
 
+.bentoMainInner::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0 42% 0 0;
+  background: color-mix(in srgb, hsl(var(--surface-inverse)) 90%, transparent);
+}
+
 .bentoCopy {
   position: absolute;
+  z-index: 2;
   left: 38px;
   bottom: 38px;
   width: min(520px, calc(100% - 76px));
-  border-radius: 24px;
-  background: color-mix(in srgb, hsl(var(--surface-inverse)) 88%, transparent);
-  padding: 30px;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
 }
 
 .bentoSide {
@@ -245,12 +259,12 @@
 
 .stepBody {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  min-height: 410px;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  min-height: 390px;
 }
 
 .stepCopy {
-  padding: 38px;
+  padding: 48px;
   background: hsl(var(--brand-highlight));
   color: hsl(var(--brand-highlight-foreground));
 }
@@ -261,19 +275,20 @@
 }
 
 .stepVisual {
-  display: grid;
+  display: flex;
   align-items: center;
   background: color-mix(in srgb, hsl(var(--muted)) 42%, hsl(var(--card)));
-  padding: 32px;
+  padding: 34px;
 }
 
 .formMock {
-  width: min(100%, 560px);
+  width: 100%;
+  max-width: none;
   margin-inline: auto;
   border: 1px solid hsl(var(--border));
-  border-radius: 24px;
+  border-radius: 20px;
   background: hsl(var(--card));
-  padding: 26px;
+  padding: 24px;
   box-shadow: var(--shadow-soft, 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 10%, transparent));
 }
 
@@ -351,6 +366,17 @@
   background: hsl(var(--card));
 }
 
+.productCard {
+  display: block;
+  height: 100%;
+  transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.productCard:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 34%, transparent);
+}
+
 .productSkeleton {
   min-height: 260px;
   background: hsl(var(--muted));
@@ -360,6 +386,11 @@
   position: relative;
   height: 170px;
   background: hsl(var(--muted));
+  padding: 12px;
+}
+
+.productImage img {
+  object-fit: contain;
 }
 
 .productBadges {
@@ -402,9 +433,32 @@
 }
 
 .productPrice {
-  margin: 12px 0 0;
+  margin: 0;
   color: hsl(var(--foreground));
   font-size: 15px;
+  font-weight: 900;
+}
+
+.productPriceRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.productRegularPrice {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  text-decoration: line-through;
+}
+
+.productSaleRate {
+  border-radius: 999px;
+  background: hsl(var(--brand-highlight));
+  color: hsl(var(--brand-highlight-foreground));
+  padding: 3px 7px;
+  font-size: 11px;
   font-weight: 900;
 }
 
@@ -435,26 +489,37 @@
 
 .packageRow {
   display: grid;
-  grid-template-columns: 0.7fr 1fr 1fr auto;
+  grid-template-columns: minmax(90px, 0.7fr) minmax(0, 1fr) minmax(150px, 1fr) auto;
   gap: 16px;
   align-items: center;
   padding: 22px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.packageRow:last-child {
+  border-bottom: 0;
+}
+
+.packageRowPopular {
+  background: color-mix(in srgb, hsl(var(--brand-highlight-muted)) 48%, hsl(var(--card)));
 }
 
 .racketShow {
   display: grid;
-  gap: 14px;
+  gap: 0;
   margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 30px;
+  background: hsl(var(--card));
 }
 
 .racketShowWithInventory {
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
 }
 
 .racketFeature {
   overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 30px;
   background: hsl(var(--surface-inverse));
   color: hsl(var(--surface-inverse-foreground));
   min-height: 390px;
@@ -462,7 +527,26 @@
 
 .inventory {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+  padding: 20px;
+}
+
+.racketEmpty {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  min-height: 340px;
+}
+
+.racketEmptyImage {
+  position: relative;
+  min-height: 340px;
+}
+
+.racketEmptyCopy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 34px;
 }
 
 .infoGrid {
@@ -484,7 +568,34 @@
   padding: 26px 30px;
 }
 
-@media (max-width: 980px) {
+.bentoSideCard {
+  transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pathCardIdle:hover,
+  .productCard:hover,
+  .bentoSideCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pathCard,
+  .productCard,
+  .bentoSideCard {
+    transition: none;
+  }
+
+  .pathCardIdle:hover,
+  .productCard:hover,
+  .bentoSideCard:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 1199px) {
   .sectionHead,
   .heroGrid,
   .pathDetail,
@@ -494,6 +605,7 @@
   .recoLayout,
   .packages,
   .racketShowWithInventory,
+  .racketEmpty,
   .infoGrid {
     grid-template-columns: 1fr;
   }
@@ -513,11 +625,7 @@
   }
 }
 
-@media (max-width: 680px) {
-  .wrap {
-    padding-inline: 12px;
-  }
-
+@media (max-width: 767px) {
   .section {
     padding-block: 48px;
   }
@@ -575,12 +683,36 @@
     min-height: 390px;
   }
 
+  .bentoMainInner::after {
+    inset: 0;
+    background: color-mix(in srgb, hsl(var(--surface-inverse)) 82%, transparent);
+  }
+
   .bentoCopy {
-    left: 18px;
-    right: 18px;
-    bottom: 18px;
+    left: 22px;
+    right: 22px;
+    bottom: 22px;
     width: auto;
-    padding: 22px;
+  }
+
+  .stepCopy {
+    padding: 26px;
+  }
+
+  .stepVisual {
+    padding: 18px;
+  }
+
+  .packageRow {
+    grid-template-columns: 1fr;
+  }
+
+  .racketEmpty {
+    grid-template-columns: 1fr;
+  }
+
+  .racketEmptyImage {
+    min-height: 260px;
   }
 
   .bentoSide,
