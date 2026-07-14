@@ -267,7 +267,7 @@ function HomeEditorialHeader({
             {eyebrow}
           </span>
         </div>
-        <h2 className="break-keep font-brand-heading text-ui-section-title-lg font-semibold leading-tight tracking-tight text-foreground bp-md:text-ui-page-title">
+        <h2 className="break-keep font-brand-heading text-ui-section-title-lg font-semibold leading-tight tracking-tight text-foreground bp-md:text-ui-page-title bp-lg:text-ui-page-title-lg">
           {title}
         </h2>
       </div>
@@ -587,6 +587,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const homePackages = initialHomeData?.packages ?? [];
   const featuredRacket = usedRacketsSource[0];
   const inventoryRackets = usedRacketsSource.slice(1, 4);
+  const hasInventoryRackets = inventoryRackets.length > 0;
 
   return (
     <div className="bg-background">
@@ -600,9 +601,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">
                   스트링 교체서비스
                 </span>
-                <h1 className="mt-5 break-keep font-brand-display text-ui-display font-semibold leading-none tracking-tight bp-md:text-ui-display-lg">
+                <h1 className="mt-5 break-keep font-brand-display text-ui-display font-semibold leading-none tracking-tight">
                   스트링 교체,
-                  <br />내 플레이에 맞게.
+                  <span className="block">내 플레이에 맞게.</span>
                 </h1>
                 <p className="mt-5 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">
                   스트링 선택부터 텐션 상담, 라켓 접수와 수령까지. 복잡한 교체 과정을 쉽게 안내해드려요.
@@ -714,7 +715,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       <section className="py-10 bp-md:py-14" id="paths">
         <SiteContainer variant="wide">
-          <HomeEditorialHeader no="01" eyebrow="신청 방식 선택" title="지금 준비된 만큼만 선택하세요." description="스트링을 정확히 알고 있어도, 추천이 필요해도, 보유한 스트링이 있어도 같은 교체 흐름으로 이어집니다." />
+          <HomeEditorialHeader no="01" eyebrow="신청 방식 선택" title="지금 상황에 맞는 신청 방법을 선택하세요." description={<>원하는 스트링을 직접 선택하거나 추천받을 수 있어요.<br />보유한 스트링으로 장착만 신청하는 것도 가능합니다.</>} />
           <div className="grid gap-3 bp-lg:grid-cols-3">
             {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => {
               const path = APPLICATION_PATHS[key];
@@ -860,7 +861,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <button type="button" aria-pressed={activeStringBrand === "all"} onClick={() => setActiveStringBrand("all")} className={getBrandTabClass(activeStringBrand === "all")}>전체</button>
                   {STRING_BRANDS.map((b) => <button key={b.value} type="button" aria-pressed={activeStringBrand === b.value} onClick={() => setActiveStringBrand(b.value as StringBrandKey)} className={getBrandTabClass(activeStringBrand === b.value)}>{b.label}</button>)}
                 </div>
-                <HorizontalProducts variant="home" title="스트링" items={premiumItems.slice(0, 3)} moreHref={recommendationMoreHref} showHeader={false} showMoreCard={false} cardWidthClass="flex-none basis-full bp-sm:basis-[calc((100%-16px)/2)] bp-lg:basis-[calc((100%-32px)/3)]" firstPageSlots={3} loading={!shouldLoadStrings || (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))} error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])} onRetry={() => activeStringBrand === "all" ? void fetchHomeProducts() : void loadStringBrand(activeStringBrand)} emptyTitle="추천할 스트링이 없습니다" emptyDescription="다른 목적이나 브랜드를 선택해 보세요." errorTitle="스트링을 불러오지 못했어요" errorDescription="잠시 후 다시 시도해 주세요." />
+                <HorizontalProducts variant="home" title="스트링" items={premiumItems.slice(0, 3)} moreHref={recommendationMoreHref} showHeader={false} showMoreCard={false} cardWidthClass="flex-none basis-full bp-sm:basis-[calc((100%_-_16px)/2)] bp-lg:basis-[calc((100%_-_32px)/3)]" firstPageSlots={3} loading={!shouldLoadStrings || (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))} error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])} onRetry={() => activeStringBrand === "all" ? void fetchHomeProducts() : void loadStringBrand(activeStringBrand)} emptyTitle="추천할 스트링이 없습니다" emptyDescription="다른 목적이나 브랜드를 선택해 보세요." errorTitle="스트링을 불러오지 못했어요" errorDescription="잠시 후 다시 시도해 주세요." />
                 <Link className={cn(buttonOutline, "mt-5")} href={recommendationMoreHref}>추천 상품 더 보기</Link>
               </div>
             </div>
@@ -887,18 +888,25 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <button type="button" aria-pressed={activeBrand === "all"} onClick={() => setActiveBrand("all")} className={getBrandTabClass(activeBrand === "all")}>전체</button>
             {RACKET_BRANDS.map((b) => <button key={b.value} type="button" aria-pressed={activeBrand === b.value} onClick={() => setActiveBrand(b.value as BrandKey)} className={getBrandTabClass(activeBrand === b.value)}>{b.label}</button>)}
           </div>
-          <div className="mt-4 grid gap-4 bp-lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-            <div className="overflow-hidden rounded-hero border border-border bg-surface-inverse text-surface-inverse-foreground shadow-soft">
-              <div className="relative h-[280px] bp-md:h-[360px]"><Image src="/images/home/home-racket-section-showcase.webp" alt="검수된 중고 라켓" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 720px" /></div>
-              <div className="p-6 bp-md:p-8">
-                <p className="text-ui-label font-bold text-brand-highlight">대표 라켓</p>
-                {featuredRacket ? <RacketFeature racket={featuredRacket} /> : <p className="mt-3 text-surface-inverse-muted">검수된 중고 라켓을 준비 중입니다.</p>}
-                <Link className={cn(buttonHighlight, "mt-6")} href={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}>중고 라켓 둘러보기</Link>
+          <div className={cn("mt-4 grid gap-4", featuredRacket && hasInventoryRackets && "bp-lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]")}>
+            {featuredRacket ? (
+              <div className="overflow-hidden rounded-hero border border-border bg-surface-inverse text-surface-inverse-foreground shadow-soft">
+                <div className="relative h-[280px] bp-md:h-[360px]"><Image src="/images/home/home-racket-section-showcase.webp" alt="검수된 중고 라켓" fill className="object-cover" sizes="(max-width: 1199px) 100vw, 720px" /></div>
+                <div className="p-6 bp-md:p-8">
+                  <p className="text-ui-label font-bold text-brand-highlight">대표 라켓</p>
+                  <RacketFeature racket={featuredRacket} />
+                  {!hasInventoryRackets && <p className="mt-4 break-keep text-ui-body-sm text-surface-inverse-muted">최근 등록된 다른 중고 라켓을 준비 중입니다.</p>}
+                  <Link className={cn(buttonHighlight, "mt-6")} href={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}>중고 라켓 둘러보기</Link>
+                </div>
               </div>
-            </div>
-            <div className="grid gap-3">
-              {usedRacketsError ? <EmptyPanel title="중고 라켓을 불러오지 못했어요" action={() => loadUsedRackets(activeBrand)} /> : inventoryRackets.length > 0 ? inventoryRackets.map((racket) => <InventoryRow key={racket.id} racket={racket} />) : <EmptyPanel title={usedRacketsLoading || !shouldLoadRackets ? "중고 라켓을 확인하고 있어요" : "검수된 중고 라켓을 준비 중입니다"} />}
-            </div>
+            ) : (
+              <EmptyPanel title={usedRacketsError ? "중고 라켓을 불러오지 못했어요" : usedRacketsLoading || !shouldLoadRackets ? "중고 라켓을 확인하고 있어요" : "검수된 중고 라켓을 준비 중입니다"} action={usedRacketsError ? () => loadUsedRackets(activeBrand) : undefined} />
+            )}
+            {featuredRacket && hasInventoryRackets && (
+              <div className="grid gap-3">
+                {inventoryRackets.map((racket) => <InventoryRow key={racket.id} racket={racket} />)}
+              </div>
+            )}
           </div>
           <span className="sr-only">{hasMoreRacketProducts ? "더 많은 중고 라켓이 있습니다." : "표시된 중고 라켓이 전체입니다."}</span>
         </SiteContainer>
