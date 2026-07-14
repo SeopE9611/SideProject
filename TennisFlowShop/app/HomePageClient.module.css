@@ -1,6 +1,7 @@
 .page {
   background: color-mix(in srgb, hsl(var(--background)) 30%, hsl(var(--secondary)) 70%);
   color: hsl(var(--foreground));
+  overflow-x: clip;
 }
 
 :global(.dark) .page {
@@ -160,10 +161,38 @@
 
 .heroTrust {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-top: 28px;
   border-top: 1px solid color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 15%, transparent);
   padding-top: 20px;
+}
+
+.heroTrustItem {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 14%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 8%, transparent);
+  padding: 14px;
+}
+
+.heroTrustItem strong,
+.heroTrustItem span {
+  display: block;
+  word-break: keep-all;
+}
+
+.heroTrustItem strong {
+  color: hsl(var(--surface-inverse-foreground));
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.heroTrustItem span {
+  margin-top: 5px;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .heroPlanModes {
@@ -253,8 +282,8 @@
   content: "";
   position: absolute;
   z-index: 1;
-  inset: 0 42% 0 0;
-  background: color-mix(in srgb, hsl(var(--surface-inverse)) 90%, transparent);
+  inset: 0 34% 0 0;
+  background: linear-gradient(90deg, hsl(var(--surface-inverse)) 0%, color-mix(in srgb, hsl(var(--surface-inverse)) 92%, transparent) 62%, transparent 100%);
 }
 
 .bentoCopy {
@@ -266,6 +295,7 @@
   border-radius: 0;
   background: transparent;
   padding: 0;
+  text-shadow: 0 1px 18px color-mix(in srgb, hsl(var(--surface-inverse)) 80%, transparent);
 }
 
 .bentoSide {
@@ -364,6 +394,20 @@
   gap: 8px;
 }
 
+.purposeList,
+.pathGrid,
+.bentoSide,
+.stepTabs {
+  scrollbar-width: none;
+}
+
+.purposeList::-webkit-scrollbar,
+.pathGrid::-webkit-scrollbar,
+.bentoSide::-webkit-scrollbar,
+.stepTabs::-webkit-scrollbar {
+  display: none;
+}
+
 .recoPanel {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
@@ -426,6 +470,16 @@
 .packageMeta,
 .packagePrice {
   min-width: 0;
+}
+
+.packagePriceSub {
+  display: block;
+  margin-top: 4px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  word-break: keep-all;
 }
 
 .packageDescription {
@@ -693,7 +747,7 @@
 
   .bentoMainInner::after {
     inset: 0;
-    background: color-mix(in srgb, hsl(var(--surface-inverse)) 82%, transparent);
+    background: color-mix(in srgb, hsl(var(--surface-inverse)) 88%, transparent);
   }
 
   .bentoCopy {

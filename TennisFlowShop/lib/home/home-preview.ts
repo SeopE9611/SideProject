@@ -223,7 +223,6 @@ async function loadPackages() {
   return packageConfigs
     .filter((pkg) => pkg.isActive)
     .sort((a, b) => a.sortOrder - b.sortOrder)
-    .slice(0, 3)
     .map((pkg) => ({
       id: pkg.id,
       name: pkg.name,
