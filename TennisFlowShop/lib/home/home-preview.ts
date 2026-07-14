@@ -1,3 +1,4 @@
+import { loadPackageSettings } from "@/app/features/packages/api/db";
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import "server-only";
 
@@ -8,6 +9,14 @@ import { getBoardList } from "@/lib/boards.queries";
 import { buildCommunityListMongoFilter, getCommunitySortOption } from "@/lib/community-list-query";
 import { getDb } from "@/lib/mongodb";
 
+export type HomePreviewProductFeatures = {
+  power?: number;
+  control?: number;
+  spin?: number;
+  durability?: number;
+  comfort?: number;
+};
+
 export type HomePreviewProduct = {
   _id: string;
   name: string;
@@ -16,6 +25,7 @@ export type HomePreviewProduct = {
   brand?: string;
   isNew?: boolean | string | number;
   material?: "polyester" | "hybrid" | string;
+  features?: HomePreviewProductFeatures;
   inventory?: {
     isFeatured?: boolean | string | number;
     isNew?: boolean | string | number;
@@ -49,6 +59,19 @@ export type HomePreviewRacket = {
   };
 };
 
+export type HomePreviewPackage = {
+  id: string;
+  name: string;
+  sessions: number;
+  price: number;
+  originalPrice: number;
+  isPopular: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  validityDays: number;
+  description: string;
+};
+
 export type HomePreviewNotice = {
   _id: string;
   title: string;
@@ -66,6 +89,7 @@ export type HomePreviewData = {
   rackets?: { items: HomePreviewRacket[]; total: number };
   notices?: HomePreviewNotice[];
   marketPosts?: HomePreviewMarketPost[];
+  packages?: HomePreviewPackage[];
 };
 
 type ProductDoc = {
@@ -76,6 +100,7 @@ type ProductDoc = {
   brand?: string;
   isNew?: boolean | string | number;
   material?: "polyester" | "hybrid" | string;
+  features?: HomePreviewProductFeatures;
   inventory?: HomePreviewProduct["inventory"];
   isDeleted?: boolean;
 };
@@ -124,6 +149,7 @@ async function loadProducts() {
     brand: 1,
     isNew: 1,
     material: 1,
+    features: 1,
     "inventory.isFeatured": 1,
     "inventory.isNew": 1,
     "inventory.isSale": 1,
@@ -148,6 +174,7 @@ async function loadProducts() {
       brand: product.brand,
       isNew: product.isNew,
       material: product.material,
+      features: product.features,
       inventory: product.inventory,
     })),
     total,
@@ -188,6 +215,27 @@ async function loadRackets() {
     }),
     total,
   };
+}
+
+async function loadPackages() {
+  const { packageConfigs } = await loadPackageSettings();
+
+  return packageConfigs
+    .filter((pkg) => pkg.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .slice(0, 3)
+    .map((pkg) => ({
+      id: pkg.id,
+      name: pkg.name,
+      sessions: pkg.sessions,
+      price: pkg.price,
+      originalPrice: pkg.originalPrice ?? pkg.price,
+      isPopular: pkg.isPopular,
+      isActive: pkg.isActive,
+      sortOrder: pkg.sortOrder,
+      validityDays: pkg.validityDays,
+      description: pkg.description,
+    }));
 }
 
 async function loadNotices() {
@@ -265,17 +313,18 @@ async function safe<T>(source: string, loader: () => Promise<T>) {
 async function loadHomePreviewData(): Promise<HomePreviewData | null> {
   // 홈 공개 미리보기 데이터는 사용자별 쿠키/인증과 무관하므로 서버에서 짧게 캐시해
   // 첫 진입 후 클라이언트 중복 fetch 의존도를 낮춘다.
-  const [products, rackets, notices] = await Promise.all([
+  const [products, rackets, notices, packages] = await Promise.all([
     safe("products", loadProducts),
     safe("rackets", loadRackets),
     safe("notices", loadNotices),
+    safe("packages", loadPackages),
   ]);
 
-  if (!products && !rackets && !notices) return null;
-  return { products, rackets, notices };
+  if (!products && !rackets && !notices && !packages) return null;
+  return { products, rackets, notices, packages };
 }
 
-export const getHomePreviewData = unstable_cache(loadHomePreviewData, ["home-preview-public-v1"], {
+export const getHomePreviewData = unstable_cache(loadHomePreviewData, ["home-preview-public-v2"], {
   revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
   tags: [HOME_PREVIEW_CACHE_TAG],
 });

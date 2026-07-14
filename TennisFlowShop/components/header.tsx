@@ -1088,7 +1088,7 @@ const Header = () => {
               </div>
             </div>
             <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
-              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-8">
+              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-5">
                 <Link
                   href="/"
                   className="flex items-center gap-2 shrink-0 group"
@@ -1117,13 +1117,6 @@ const Header = () => {
                     도깨비테니스
                   </div>
                 </Link>
-                <Link
-                  href="/services/apply"
-                  className="hidden h-10 shrink-0 items-center justify-center rounded-control bg-brand-highlight px-4 text-ui-body-sm font-medium text-brand-highlight-foreground transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-brand-highlight/90 bp-lg:inline-flex whitespace-nowrap"
-                >
-                  교체서비스 시작하기
-                </Link>
-
                 {SHOW_DESKTOP_HEADER_NAV ? (
                   <nav
                     ref={navRef}
