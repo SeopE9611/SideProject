@@ -654,7 +654,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   스트링 교체서비스
                 </span>
                 <h1 className={styles.heroTitle}>
-                  스트링 교체,
+                  스트링 교체도,
                   <span className={styles.heroOutline}>내 플레이에 맞게.</span>
                 </h1>
                 <p className="mt-5 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">
@@ -670,13 +670,14 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   </Link>
                 </div>
                 <div className={styles.heroTrust}>
-                  {["방문·택배 접수", "직접 선택·상담 가능", "패키지 이용 가능"].map((item) => (
-                    <div
-                      key={item}
-                      className="text-ui-body-sm font-semibold text-surface-inverse-muted"
-                    >
-                      <span className="mb-2 block h-1.5 w-1.5 rounded-full bg-brand-highlight" />
-                      {item}
+                  {[
+                    ["방문·택배", "두 가지 접수 방식"],
+                    ["직접 선택·상담", "준비 상태에 맞춘 신청"],
+                    ["패키지", "반복 교체 이용 가능"],
+                  ].map(([title, desc]) => (
+                    <div key={title} className={styles.heroTrustItem}>
+                      <strong>{title}</strong>
+                      <span>{desc}</span>
                     </div>
                   ))}
                 </div>
@@ -1275,7 +1276,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 homePackages.map((pkg) => <PackageRow key={pkg.id} pkg={pkg} />)
               ) : (
                 <div className="p-6 text-ui-body text-muted-foreground">
-                  패키지 정보를 확인해 주세요.
+                  현재 표시할 패키지가 없습니다. 패키지 전체 안내에서 이용 가능 여부를 확인해 주세요.
                 </div>
               )}
             </div>
@@ -1425,18 +1426,21 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             )}
             <div className={styles.utilityGrid}>
               {[
-                ["방문·택배 접수 방법", "/services/apply"],
-                ["비용 기준 확인", "/services/pricing"],
-                ["영업시간·매장 위치", "/services/locations"],
-                ["문의하기", "/board/qna"],
-                ["이용 후기", "/reviews"],
-              ].map(([title, href]) => (
+                ["방문·택배 접수 방법", "접수 전 준비사항과 진행 절차를 확인합니다.", "/services/apply"],
+                ["비용 기준 확인", "장착비와 서비스 비용을 안내합니다.", "/services/pricing"],
+                ["영업시간·매장 위치", "운영시간과 위치를 확인합니다.", "/services/locations"],
+                ["문의하기", "Q&A로 궁금한 점을 남깁니다.", "/board/qna"],
+                ["이용 후기", "실제 교체 경험을 확인합니다.", "/reviews"],
+              ].map(([title, desc, href]) => (
                 <Link
                   key={href}
                   href={href}
-                  className="rounded-panel border border-border bg-card p-5 text-ui-card-title font-semibold text-foreground transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                  className="rounded-panel border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
-                  {title}
+                  <strong className="block text-ui-card-title font-semibold text-foreground">{title}</strong>
+                  <span className="mt-2 block break-keep text-ui-body-sm font-normal leading-relaxed text-muted-foreground">
+                    {desc}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -1567,10 +1571,10 @@ function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
         <strong className="block text-ui-card-title text-foreground">
           {formatPrice(pkg.price)}
         </strong>
-        {perSession ? `회당 ${formatPrice(perSession)}` : "회당 금액 확인 필요"}
-        {savings > 0 ? (
-          <span className="block text-foreground">{formatPrice(savings)} 절감</span>
-        ) : null}
+        <span className={styles.packagePriceSub}>
+          {perSession ? `회당 ${formatPrice(perSession)}` : "회당 금액 확인 필요"}
+          {savings > 0 ? ` · ${formatPrice(savings)} 절감` : ""}
+        </span>
       </div>
       <Link
         className={cn(buttonOutline, styles.packageAction)}

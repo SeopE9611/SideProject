@@ -110,7 +110,11 @@ export default function HorizontalProducts({
     const update = () => {
       const w = window.innerWidth;
       // 프로젝트 공용 BP(≤575 / 576~767 / 768~1199 / ≥1200)
-      if (w <= 575) {
+      if (variant === "home") {
+        if (w <= 575) setItemsPerPage(1);
+        else if (w <= 1199) setItemsPerPage(2);
+        else setItemsPerPage(3);
+      } else if (w <= 575) {
         // Mobile S
         setItemsPerPage(2);
       } else if (w <= 767) {
@@ -128,7 +132,7 @@ export default function HorizontalProducts({
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
+  }, [variant]);
 
   // 데이터 → 슬라이드 배열로 변환
   //
@@ -197,10 +201,12 @@ export default function HorizontalProducts({
   // 슬라이드 폭
   const slideClass =
     cardWidthClass ??
-    "flex-none basis-[calc((100%-12px)/2)] " +
-      "bp-sm:basis-[calc((100%-16px)/2)] " +
-      "bp-md-only:basis-[calc((100%-40px)/3)] " +
-      "bp-lg:basis-[calc((100%-72px)/4)]";
+    (variant === "home"
+      ? "flex-none basis-full bp-sm:basis-[calc((100%-16px)/2)] bp-lg:basis-[calc((100%-48px)/3)]"
+      : "flex-none basis-[calc((100%-12px)/2)] " +
+        "bp-sm:basis-[calc((100%-16px)/2)] " +
+        "bp-md-only:basis-[calc((100%-40px)/3)] " +
+        "bp-lg:basis-[calc((100%-72px)/4)]");
 
   // Embla 설정
   //    - slidesToScroll 을 itemsPerPage 로 줘서

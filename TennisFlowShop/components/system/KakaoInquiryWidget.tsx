@@ -43,8 +43,6 @@ function normalizeChannelPublicId(raw: string) {
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
   const isMypageRoute = pathname === "/mypage" || pathname.startsWith("/mypage/");
-  const isReviewsIndexRoute = pathname === "/reviews";
-  const isReviewWriteRoute = pathname === "/reviews/write";
   const authHiddenPrefixes = [
     "/login",
     "/forgot-password",
@@ -94,7 +92,6 @@ export default function KakaoInquiryWidget() {
     (!isMypageRoute && !canShowGuide && !canShowInquiry && !canShowBug);
   const hideOnFinderTouch = pathname === "/rackets/finder";
   const hideOnCartMobile = pathname === "/cart";
-  const useReviewsCompactLauncher = isReviewsIndexRoute || isReviewWriteRoute;
 
   useEffect(() => {
     // 숨김 상태로 전환되면 패널은 닫아줌(UX + 상태 정리)
@@ -290,13 +287,13 @@ export default function KakaoInquiryWidget() {
         "fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4",
         hideOnFinderTouch && "hidden bp-lg:block",
         hideOnCartMobile && "hidden bp-lg:block",
-        useReviewsCompactLauncher && "bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-lg:bottom-4",
+        "bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-lg:bottom-4",
       )}
       style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
     >
       <div className="flex flex-col items-end gap-2 bp-sm:gap-3">
-        {useReviewsCompactLauncher ? (
-          <div className="relative bp-lg:hidden">
+        {canShowGuide || canShowBug || canShowInquiry ? (
+          <div className="relative">
             <div
               className={[
                 "absolute right-0 bottom-[58px]",
@@ -306,7 +303,7 @@ export default function KakaoInquiryWidget() {
                   : "opacity-0 translate-y-2 pointer-events-none",
               ].join(" ")}
             >
-              <div ref={reviewsCompactPanelRef} id="reviews-compact-inquiry-panel" className="relative">
+              <div ref={reviewsCompactPanelRef} id="compact-inquiry-panel" className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] rounded-panel border-border shadow-float">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                     <CardTitle className="text-ui-body-sm font-semibold">무엇을 도와드릴까요?</CardTitle>
@@ -335,9 +332,9 @@ export default function KakaoInquiryWidget() {
             <button
               type="button"
               ref={reviewsCompactTriggerRef}
-              aria-label="후기 페이지 문의 메뉴 열기"
+              aria-label="문의 메뉴 열기"
               aria-expanded={panel === "guide"}
-              aria-controls="reviews-compact-inquiry-panel"
+              aria-controls="compact-inquiry-panel"
               onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
               className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 text-ui-body-sm font-semibold text-primary-foreground shadow-float hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
@@ -347,8 +344,8 @@ export default function KakaoInquiryWidget() {
           </div>
         ) : null}
         {/* ---------------- 목적 선택 ---------------- */}
-        {!isMypageRoute ? (
-          <div className={cn("relative", useReviewsCompactLauncher && "hidden bp-lg:block")}>
+        {false && !isMypageRoute ? (
+          <div className="relative">
             <div
               className={[
                 "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
@@ -422,8 +419,8 @@ export default function KakaoInquiryWidget() {
         ) : null}
 
         {/* ---------------- 버그 제보 ---------------- */}
-        {canShowBug && !isMypageRoute ? (
-          <div className={cn("relative", useReviewsCompactLauncher && "hidden bp-lg:block")}>
+        {false && canShowBug && !isMypageRoute ? (
+          <div className="relative">
             <div
               className={[
                 "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
@@ -515,8 +512,8 @@ export default function KakaoInquiryWidget() {
         ) : null}
 
         {/* ---------------- 카카오 문의 ---------------- */}
-        {canShowInquiry ? (
-          <div className={cn("relative", useReviewsCompactLauncher && "hidden bp-lg:block")}>
+        {false && canShowInquiry ? (
+          <div className="relative">
             <div
               className={[
                 "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
