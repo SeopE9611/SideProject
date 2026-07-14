@@ -651,7 +651,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <Badge variant="signal_solid" className="w-fit">스트링 교체서비스</Badge>
                 <h1 className="mt-5 max-w-3xl break-keep font-brand-heading text-ui-page-title font-semibold tracking-tight text-surface-inverse-foreground bp-md:text-ui-page-title-lg bp-lg:font-brand-display">스트링 교체,<br />내 플레이에 맞게.</h1>
                 <p className="mt-4 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">스트링 선택부터 텐션 상담, 라켓 접수와 수령까지.<br className="hidden bp-sm:block" /> 복잡한 교체 과정을 쉽게 안내해드려요.</p>
-                <div className="mt-6 grid gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:gap-3"><Button asChild variant="highlight" size="tall" wrap="responsive"><Link href="/services/apply">교체서비스 신청하기</Link></Button><Button asChild variant="inverse" size="tall" wrap="responsive"><Link href="/products">내게 맞는 스트링 찾기</Link></Button></div>
+                <div className="mt-6 grid gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:gap-3"><Button asChild variant="highlight" size="tall" wrap="responsive"><Link href="/services/apply">교체서비스 신청하기</Link></Button><Button asChild variant="inverse" size="tall" wrap="responsive"><Link href="/products/recommend">내게 맞는 스트링 찾기</Link></Button></div>
                 <div className="mt-6 grid gap-3 border-t border-surface-inverse-foreground/15 pt-5 bp-md:grid-cols-3">{[["방문·택배 접수","편한 방법으로 라켓을 맡길 수 있어요."],["직접 선택·상담 가능","알고 있는 항목만 선택해도 됩니다."],["패키지 이용 가능","자주 교체한다면 패키지를 이용할 수 있어요."]].map(([title, desc]) => <div key={title} className="rounded-control border border-surface-inverse-foreground/15 p-3"><strong className="block text-ui-body-sm text-surface-inverse-foreground">{title}</strong><span className="mt-1 block break-keep text-ui-label leading-relaxed text-surface-inverse-muted">{desc}</span></div>)}</div>
               </div>
               <div className="border-t border-surface-inverse-foreground/15 p-4 bp-sm:p-6 bp-lg:border-l bp-lg:border-t-0 bp-lg:p-8">
@@ -717,11 +717,183 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       )}
 
-      <section className="py-8 bp-sm:py-10 bp-md:py-14"><SiteContainer><SectionHeader variant="brand" eyebrow="신청 방법 선택" title="지금 알고 있는 만큼만 선택하세요." description={"원하는 스트링을 이미 정했다면 바로 신청하고,\n잘 모르겠다면 추천부터 받을 수 있어요.\n보유한 스트링으로 장착만 신청하는 것도 가능합니다."} align="center" className="mb-8 bp-sm:mb-10" /><div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]"><div className="grid gap-3">{APPLICATION_PATHS.map((item) => { const selected = item.key === activeApplicationPath; return <button key={item.key} type="button" aria-pressed={selected} onClick={() => setActiveApplicationPath(item.key)} className={cn("rounded-panel border p-5 text-left transition-[background-color,color,border-color,opacity] focus:outline-none focus:ring-2 focus:ring-ring/30", selected ? "border-foreground/30 bg-brand-highlight-muted ring-1 ring-brand-highlight/30" : "border-border/80 bg-card hover:border-foreground/20 hover:bg-muted/20")}><span className="text-ui-label font-semibold text-muted-foreground">{selected ? "선택됨" : "신청 방법"}</span><h3 className="mt-2 break-keep text-ui-card-title-lg font-semibold text-foreground">{item.cardTitle}</h3><p className="mt-2 whitespace-pre-line break-keep text-ui-body-sm leading-relaxed text-muted-foreground">{item.cardDescription}</p><span className="mt-4 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground">{item.cardCta}<ChevronRight className="h-3.5 w-3.5" /></span></button>; })}</div><PublicSurface variant="feature" padding="lg" className="border-border/80 bg-card shadow-sm"><h3 className="break-keep text-ui-section-title font-semibold text-foreground">무엇을 골라야 할지 몰라도 괜찮아요.</h3><p className="mt-3 whitespace-pre-line break-keep text-ui-body leading-relaxed text-muted-foreground">플레이 빈도와 원하는 타구감을 알려주시면\n알맞은 스트링과 텐션을 찾을 수 있도록 도와드려요.\n추천 결과를 확인한 뒤 바로 교체를 신청할 수 있습니다.</p><dl className="mt-5 grid gap-3 text-ui-body-sm">{[["신청 방법","추천받고 신청"],["스트링","추천 결과에서 선택"],["텐션","추천 또는 상담 후 결정"],["접수 방법","방문 또는 택배"]].map(([label,value]) => <div key={label} className="flex justify-between gap-4 rounded-control bg-muted/30 px-4 py-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-semibold text-foreground">{value}</dd></div>)}</dl><Button asChild variant="highlight" size="tall" wrap="responsive" className="mt-5"><Link href="/products">맞춤 스트링 찾기</Link></Button></PublicSurface></div></SiteContainer></section>
+      <section className="py-8 bp-sm:py-10 bp-md:py-14">
+        <SiteContainer>
+          <SectionHeader
+            variant="brand"
+            eyebrow="신청 방법 선택"
+            title="지금 알고 있는 만큼만 선택하세요."
+            description={"원하는 스트링을 이미 정했다면 바로 신청하고,\n잘 모르겠다면 추천부터 받을 수 있어요.\n보유한 스트링으로 장착만 신청하는 것도 가능합니다."}
+            align="center"
+            className="mb-8 bp-sm:mb-10"
+          />
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
+            <div className="grid gap-3">
+              {APPLICATION_PATHS.map((item) => {
+                const selected = item.key === activeApplicationPath;
 
-      <section className="py-8 bp-sm:py-10 bp-md:py-14"><SiteContainer><SectionHeader variant="brand" eyebrow="주요 서비스" title={"교체 신청에 필요한 메뉴를\n한곳에서 확인하세요."} description={"교체서비스 신청을 중심으로 스트링 추천,\n패키지와 이용 안내를 빠르게 확인할 수 있어요."} align="center" className="mb-8 bp-sm:mb-10" /><div className="grid gap-4 bp-lg:grid-cols-[1.2fr_0.8fr]"><Link href="/services/apply" className="group rounded-hero border border-border/80 bg-card p-6 shadow-soft transition-[background-color,color,border-color,opacity] hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring/30 bp-md:p-8"><Badge variant="signal" className="w-fit">스트링 교체서비스</Badge><h3 className="mt-5 break-keep text-ui-section-title-lg font-semibold text-foreground">라켓을 맡기기 전부터<br />수령할 때까지</h3><p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">신청서 작성, 접수 방법 선택, 스트링·텐션 확인, 작업 완료 안내를 순서대로 확인할 수 있어요.</p><span className="mt-8 inline-flex items-center gap-1 text-ui-body font-semibold text-foreground">교체서비스 시작하기<ChevronRight className="h-4 w-4" /></span></Link><div className="grid gap-4 bp-sm:grid-cols-3 bp-lg:grid-cols-1">{[["/products","내게 맞는 스트링 찾기","플레이 스타일과 원하는 타구감에 맞춰 추천받아요.","추천 시작하기"],["/services/packages","교체 패키지","자주 교체한다면 횟수형 패키지로\n더 편리하게 이용할 수 있어요.","패키지 살펴보기"],["/services/pricing","가격·이용 안내","장착 비용과 방문·택배 접수 방법을\n미리 확인하세요.","이용 방법 확인하기"]].map(([href,title,desc,cta]) => <Link key={title} href={href} className="group rounded-panel border border-border/80 bg-card p-5 transition-[background-color,color,border-color,opacity] hover:border-foreground/20 hover:bg-muted/20 focus:outline-none focus:ring-2 focus:ring-ring/30"><h3 className="break-keep text-ui-card-title font-semibold text-foreground">{title}</h3><p className="mt-2 whitespace-pre-line break-keep text-ui-body-sm leading-relaxed text-muted-foreground">{desc}</p><span className="mt-4 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground">{cta}<ChevronRight className="h-3.5 w-3.5" /></span></Link>)}</div></div></SiteContainer></section>
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setActiveApplicationPath(item.key)}
+                    className={cn(
+                      "rounded-panel border p-5 text-left transition-[background-color,color,border-color,opacity] focus:outline-none focus:ring-2 focus:ring-ring/30",
+                      selected
+                        ? "border-foreground/30 bg-brand-highlight-muted ring-1 ring-brand-highlight/30"
+                        : "border-border/80 bg-card hover:border-foreground/20 hover:bg-muted/20",
+                    )}
+                  >
+                    <span className="text-ui-label font-semibold text-muted-foreground">
+                      {selected ? "선택됨" : "신청 방법"}
+                    </span>
+                    <h3 className="mt-2 break-keep text-ui-card-title-lg font-semibold text-foreground">
+                      {item.cardTitle}
+                    </h3>
+                    <p className="mt-2 whitespace-pre-line break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                      {item.cardDescription}
+                    </p>
+                    <span className="mt-4 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground">
+                      {item.cardCta}
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <PublicSurface variant="feature" padding="lg" className="border-border/80 bg-card shadow-sm">
+              <h3 className="break-keep text-ui-section-title font-semibold text-foreground">
+                {selectedApplicationPath.cardTitle}
+              </h3>
+              <p className="mt-3 whitespace-pre-line break-keep text-ui-body leading-relaxed text-muted-foreground">
+                {selectedApplicationPath.description}
+              </p>
+              <dl className="mt-5 grid gap-3 text-ui-body-sm">
+                {[
+                  ["스트링", selectedApplicationPath.stringValue],
+                  ["텐션", selectedApplicationPath.tensionValue],
+                  ["접수 방법", "방문 또는 택배"],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex justify-between gap-4 rounded-control bg-muted/30 px-4 py-3">
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="font-semibold text-foreground">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <Button asChild variant="highlight" size="tall" wrap="responsive" className="mt-5">
+                <Link href={selectedApplicationPath.href}>{selectedApplicationPath.cardCta}</Link>
+              </Button>
+            </PublicSurface>
+          </div>
+        </SiteContainer>
+      </section>
 
-      <section className="py-8 bp-sm:py-10 bp-md:py-14"><SiteContainer><PublicSurface variant="feature" padding="lg" className="border-border/80 bg-card shadow-sm bp-md:p-10"><SectionHeader variant="brand" eyebrow="교체 진행 순서" title={"신청부터 수령까지\n차근차근 진행해요."} description={"각 단계를 선택하면 준비할 내용과\n진행 방법을 확인할 수 있어요."} align="center" className="mb-8 bp-sm:mb-10" /><div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-3 bp-md:mx-0 bp-md:grid bp-md:grid-cols-4 bp-md:px-0">{STRINGING_STEPS.map((step) => <button key={step.key} type="button" aria-pressed={step.key === activeStepKey} onClick={() => setActiveStepKey(step.key)} className={cn("min-h-12 shrink-0 rounded-control border px-4 py-2 text-ui-body-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring/30", step.key === activeStepKey ? "border-foreground/30 bg-brand-highlight-muted text-foreground ring-1 ring-brand-highlight/30" : "border-border/80 bg-card text-muted-foreground hover:bg-muted/20")}>{step.label}</button>)}</div><div className="mt-5 grid gap-5 bp-lg:grid-cols-[1fr_0.85fr] bp-lg:items-stretch"><div className="rounded-panel border border-border/70 bg-card p-5 bp-md:p-7"><h3 className="break-keep text-ui-section-title font-semibold text-foreground">{selectedStep.title}</h3><p className="mt-3 whitespace-pre-line break-keep text-ui-body leading-relaxed text-muted-foreground">{selectedStep.description}</p><ul className="mt-5 grid gap-2">{selectedStep.bullets.map((item) => <li key={item} className="flex items-center gap-2 rounded-control bg-muted/30 px-4 py-3 text-ui-body-sm font-medium text-foreground"><span aria-hidden="true">●</span>{item}</li>)}</ul><Button asChild variant={selectedStep.key === "pickup" ? "highlight" : "outline"} size="tall" wrap="responsive" className="mt-5"><Link href="/services/apply">{selectedStep.cta}</Link></Button></div><div className="overflow-hidden rounded-panel border border-border/70 bg-muted/20"><img src="/images/home/home-stringing-setup-clean.webp" alt="테니스 라켓과 스트링 교체 도구" className="h-64 w-full object-cover bp-lg:h-full" loading="lazy" decoding="async" /></div></div></PublicSurface></SiteContainer></section>
+      <section className="py-8 bp-sm:py-10 bp-md:py-14"><SiteContainer><SectionHeader variant="brand" eyebrow="주요 서비스" title={"교체 신청에 필요한 메뉴를\n한곳에서 확인하세요."} description={"교체서비스 신청을 중심으로 스트링 추천,\n패키지와 이용 안내를 빠르게 확인할 수 있어요."} align="center" className="mb-8 bp-sm:mb-10" /><div className="grid gap-4 bp-lg:grid-cols-[1.2fr_0.8fr]"><Link href="/services/apply" className="group rounded-hero border border-border/80 bg-card p-6 shadow-soft transition-[background-color,color,border-color,opacity] hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring/30 bp-md:p-8"><Badge variant="signal" className="w-fit">스트링 교체서비스</Badge><h3 className="mt-5 break-keep text-ui-section-title-lg font-semibold text-foreground">라켓을 맡기기 전부터<br />수령할 때까지</h3><p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">신청서 작성, 접수 방법 선택, 스트링·텐션 확인, 작업 완료 안내를 순서대로 확인할 수 있어요.</p><span className="mt-8 inline-flex items-center gap-1 text-ui-body font-semibold text-foreground">교체서비스 시작하기<ChevronRight className="h-4 w-4" /></span></Link><div className="grid gap-4 bp-sm:grid-cols-3 bp-lg:grid-cols-1">{[["/products/recommend","내게 맞는 스트링 찾기","플레이 스타일과 원하는 타구감에 맞춰 추천받아요.","추천 시작하기"],["/services/packages","교체 패키지","자주 교체한다면 횟수형 패키지로\n더 편리하게 이용할 수 있어요.","패키지 살펴보기"],["/services/pricing","가격·이용 안내","장착 비용과 방문·택배 접수 방법을\n미리 확인하세요.","이용 방법 확인하기"]].map(([href,title,desc,cta]) => <Link key={title} href={href} className="group rounded-panel border border-border/80 bg-card p-5 transition-[background-color,color,border-color,opacity] hover:border-foreground/20 hover:bg-muted/20 focus:outline-none focus:ring-2 focus:ring-ring/30"><h3 className="break-keep text-ui-card-title font-semibold text-foreground">{title}</h3><p className="mt-2 whitespace-pre-line break-keep text-ui-body-sm leading-relaxed text-muted-foreground">{desc}</p><span className="mt-4 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground">{cta}<ChevronRight className="h-3.5 w-3.5" /></span></Link>)}</div></div></SiteContainer></section>
+
+      <section className="py-8 bp-sm:py-10 bp-md:py-14">
+        <SiteContainer>
+          <PublicSurface variant="feature" padding="lg" className="border-border/80 bg-card shadow-sm bp-md:p-10">
+            <SectionHeader
+              variant="brand"
+              eyebrow="교체 진행 순서"
+              title={"신청부터 수령까지\n차근차근 진행해요."}
+              description={"각 단계를 선택하면 준비할 내용과\n진행 방법을 확인할 수 있어요."}
+              align="center"
+              className="mb-8 bp-sm:mb-10"
+            />
+            <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-3 bp-md:mx-0 bp-md:grid bp-md:grid-cols-4 bp-md:px-0">
+              {STRINGING_STEPS.map((step) => (
+                <button
+                  key={step.key}
+                  type="button"
+                  aria-pressed={step.key === activeStepKey}
+                  onClick={() => setActiveStepKey(step.key)}
+                  className={cn(
+                    "min-h-12 shrink-0 rounded-control border px-4 py-2 text-ui-body-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring/30",
+                    step.key === activeStepKey
+                      ? "border-foreground/30 bg-brand-highlight-muted text-foreground ring-1 ring-brand-highlight/30"
+                      : "border-border/80 bg-card text-muted-foreground hover:bg-muted/20",
+                  )}
+                >
+                  <span aria-hidden="true" className="mr-1">
+                    {step.key === activeStepKey ? "●" : "○"}
+                  </span>
+                  {step.label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-5 grid gap-5 bp-lg:grid-cols-[1fr_0.85fr] bp-lg:items-stretch">
+              <div className="rounded-panel border border-border/70 bg-card p-5 bp-md:p-7">
+                <h3 className="break-keep text-ui-section-title font-semibold text-foreground">
+                  {selectedStep.title}
+                </h3>
+                <p className="mt-3 whitespace-pre-line break-keep text-ui-body leading-relaxed text-muted-foreground">
+                  {selectedStep.description}
+                </p>
+                <ul className="mt-5 grid gap-2">
+                  {selectedStep.bullets.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-center gap-2 rounded-control bg-muted/30 px-4 py-3 text-ui-body-sm font-medium text-foreground"
+                    >
+                      <span aria-hidden="true">●</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                {activeStepKey === "apply" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="tall"
+                    wrap="responsive"
+                    className="mt-5"
+                    onClick={() => setActiveStepKey("receive")}
+                  >
+                    다음: 접수 방법 선택
+                  </Button>
+                ) : activeStepKey === "receive" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="tall"
+                    wrap="responsive"
+                    className="mt-5"
+                    onClick={() => setActiveStepKey("work")}
+                  >
+                    다음: 전문 장착 확인
+                  </Button>
+                ) : activeStepKey === "work" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="tall"
+                    wrap="responsive"
+                    className="mt-5"
+                    onClick={() => setActiveStepKey("pickup")}
+                  >
+                    다음: 수령 방법 확인
+                  </Button>
+                ) : (
+                  <Button asChild variant="highlight" size="tall" wrap="responsive" className="mt-5">
+                    <Link href="/services/apply">교체서비스 신청하기</Link>
+                  </Button>
+                )}
+              </div>
+              <div className="overflow-hidden rounded-panel border border-border/70 bg-muted/20">
+                <img
+                  src="/images/home/home-stringing-setup-clean.webp"
+                  alt="테니스 라켓과 스트링 교체 도구"
+                  className="h-64 w-full object-cover bp-lg:h-full"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+          </PublicSurface>
+        </SiteContainer>
+      </section>
 
       <section className="py-8 bp-sm:py-10 bp-md:py-14"><SiteContainer><SectionHeader variant="brand" eyebrow="도깨비테니스 교체서비스" title={"신청부터 장착까지\n한 번에 확인하세요."} description={"스트링 선택, 라켓 접수, 장착과 수령 과정을\n단계별로 알기 쉽게 안내해드려요."} align="center" className="mb-8 bp-sm:mb-10" /><div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">{[["신청 내용 확인","라켓, 스트링, 텐션과 접수 방법을\n한 번에 확인합니다."],["필요한 항목만 선택","직접 선택과 추천 경로를 나눠\n필요한 내용만 보여드려요."],["작업 과정 안내","접수부터 장착, 완료와 수령까지\n진행 과정을 확인할 수 있어요."],["교체 이력 관리","완료된 교체 이력은 라켓 케어에서\n계속 관리할 수 있어요."]].map(([title,desc]) => <Card key={title} variant="feature" className="rounded-panel shadow-none"><CardContent className="p-5"><h3 className="text-ui-card-title font-semibold text-foreground">{title}</h3><p className="mt-2 whitespace-pre-line break-keep text-ui-body-sm leading-relaxed text-muted-foreground">{desc}</p></CardContent></Card>)}</div></SiteContainer></section>
 
@@ -884,8 +1056,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       <div className="flex flex-wrap gap-2">
                         <Badge variant="signal" className="w-fit">PRE-OWNED RACKETS</Badge>
                         {discountRate > 0 && <Badge variant="signal_solid">{discountRate}% 할인</Badge>}
-                        {featuredRacket.condition && <Badge variant="signal">{featuredRacket.condition}급</Badge>}
-                        {featuredRacket.rental?.enabled && <Badge variant="signal">대여 가능</Badge>}
+                        {featuredRacket.condition && <Badge variant="secondary">{featuredRacket.condition}급</Badge>}
+                        {featuredRacket.rental?.enabled && <Badge variant="secondary">대여 가능</Badge>}
                       </div>
                       <h3 className="mt-4 break-keep text-ui-section-title font-semibold text-foreground">
                         검수된 라켓을<br />교체서비스와 함께 이용해보세요.
@@ -934,8 +1106,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       <div className="min-w-0">
                         <div className="mb-2 flex flex-wrap gap-1.5">
                           {discountRate > 0 && <Badge variant="signal_solid">{discountRate}% 할인</Badge>}
-                          {racket.condition && <Badge variant="signal">{racket.condition}급</Badge>}
-                          {racket.rental?.enabled && <Badge variant="signal">대여 가능</Badge>}
+                          {racket.condition && <Badge variant="secondary">{racket.condition}급</Badge>}
+                          {racket.rental?.enabled && <Badge variant="secondary">대여 가능</Badge>}
                         </div>
                         <h3 className="truncate text-ui-card-title font-semibold text-foreground">{racket.model}</h3>
                         <p className="mt-1 text-ui-body-sm text-muted-foreground">
