@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -253,8 +253,8 @@ function HomeEditorialHeader({
 }: {
   no: string;
   eyebrow: string;
-  title: string;
-  description: string;
+  title: ReactNode;
+  description: ReactNode;
 }) {
   return (
     <div className="mb-6 grid gap-4 bp-sm:mb-8 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.55fr)] bp-lg:items-end">
@@ -282,7 +282,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
   const [activeApplicationPath, setActiveApplicationPath] = useState<ApplicationPathKey>("consult");
-  const [selectedApplicationPath, setSelectedApplicationPath] = useState<ApplicationPathKey>("consult");
   const [activeStepKey, setActiveStepKey] = useState<ProcessStepKey>("apply");
   const [activePurpose, setActivePurpose] = useState<PurposeKey>("comfort");
   const router = useRouter();
@@ -576,14 +575,18 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
   const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
-  const currentPath = APPLICATION_PATHS[selectedApplicationPath];
-  const heroPath = APPLICATION_PATHS[activeApplicationPath];
+  const currentPath = APPLICATION_PATHS[activeApplicationPath];
+  const heroPath = currentPath;
   const currentStepIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStepKey);
   const currentStep = PROCESS_STEPS[currentStepIndex] ?? PROCESS_STEPS[0];
   const activePurposeInfo = PURPOSES.find((purpose) => purpose.key === activePurpose) ?? PURPOSES[0];
+  const recommendationMoreHref = useMemo(
+    () => getPurposeProductHref(activePurpose, activeStringBrand),
+    [activePurpose, activeStringBrand],
+  );
   const homePackages = initialHomeData?.packages ?? [];
   const featuredRacket = usedRacketsSource[0];
-  const inventoryRackets = usedRacketsSource.slice(0, 3);
+  const inventoryRackets = usedRacketsSource.slice(1, 4);
 
   return (
     <div className="bg-background">
@@ -715,18 +718,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <div className="grid gap-3 bp-lg:grid-cols-3">
             {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => {
               const path = APPLICATION_PATHS[key];
-              const active = selectedApplicationPath === key;
+              const active = activeApplicationPath === key;
               return (
                 <button
                   key={key}
                   type="button"
                   aria-pressed={active}
-                  onMouseEnter={() => setActiveApplicationPath(key)}
-                  onFocus={() => setActiveApplicationPath(key)}
-                  onClick={() => {
-                    setSelectedApplicationPath(key);
-                    setActiveApplicationPath(key);
-                  }}
+                  onClick={() => setActiveApplicationPath(key)}
                   className={cn(
                     "group relative min-h-[190px] rounded-panel border bg-card p-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 bp-md:min-h-[220px]",
                     active ? "border-brand-highlight ring-2 ring-brand-highlight/30" : "border-border hover:border-foreground/20",
@@ -769,7 +767,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       <section className="py-10 bp-md:py-14">
         <SiteContainer variant="wide">
-          <HomeEditorialHeader no="02" eyebrow="교체서비스 허브" title="라켓을 맡기기 전부터 수령할 때까지." description="신청, 접수, 장착, 수령 안내가 한 화면 안에서 자연스럽게 이어지도록 구성했습니다." />
+          <HomeEditorialHeader no="02" eyebrow="주요 서비스" title={<>라켓을 맡기기 전부터<br />수령할 때까지</>} description={<>교체 신청부터 라켓 접수, 장착과 수령까지<br />필요한 메뉴를 빠르게 확인할 수 있어요.</>} />
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]">
             <Link href="/services/apply" className="group overflow-hidden rounded-hero border border-border bg-surface-inverse text-surface-inverse-foreground shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
               <div className="grid bp-md:grid-cols-[minmax(0,1fr)_minmax(280px,0.72fr)]">
@@ -818,7 +816,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <div className="bg-muted/30 p-5 bp-md:p-10">
                 <div className="mx-auto max-w-xl rounded-panel border border-border bg-card p-5 shadow-soft" role="img" aria-label="교체서비스 신청 화면 미리보기">
-                  <div className="flex items-center justify-between border-b border-border pb-4"><strong>{currentStep.mockTitle}</strong><span className="text-ui-label text-muted-foreground">표시용</span></div>
+                  <div className="flex items-center justify-between border-b border-border pb-4"><strong>{currentStep.mockTitle}</strong><span className="text-ui-label text-muted-foreground">진행 예시</span></div>
                   <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-brand-highlight" style={{ width: currentStep.progress }} /></div>
                   <h4 className="mt-6 break-keep text-ui-section-title font-semibold text-foreground">{currentStep.question}</h4>
                   <div className="mt-4 grid gap-2">{currentStep.options.map((option, idx) => <div key={option} className={cn("flex items-center justify-between rounded-control border px-4 py-3", idx === 0 ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground" : "border-border bg-card text-foreground")}><span>{option}</span><span className={cn("h-3 w-3 rounded-full", idx === 0 ? "bg-brand-highlight" : "bg-muted")} /></div>)}</div>
@@ -833,9 +831,14 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section className="my-10 bg-surface-inverse py-16 text-surface-inverse-foreground bp-md:my-14 bp-md:py-24">
         <SiteContainer variant="wide">
           <div className="grid gap-10 bp-lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] bp-lg:items-center">
-            <div><span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">도깨비테니스 교체서비스</span><h2 className="mt-5 break-keep font-brand-heading text-ui-page-title font-semibold leading-tight">신청부터 장착까지 <span className="text-brand-highlight">한 번에</span> 확인하세요.</h2><p className="mt-5 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">스트링 선택, 접수 방식, 장착 진행, 수령 안내를 끊기지 않게 확인할 수 있도록 구성했습니다.</p></div>
+            <div><span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">도깨비테니스 교체서비스</span><h2 className="mt-5 break-keep font-brand-heading text-ui-page-title font-semibold leading-tight">신청부터 장착까지 <span className="text-brand-highlight">한 번에</span> 확인하세요.</h2><p className="mt-5 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">스트링 선택부터 수령 안내까지 교체 과정에 필요한 내용을 단계별로 확인할 수 있어요.</p></div>
             <div className="grid border border-surface-inverse-foreground/15 bp-sm:grid-cols-2">
-              {["신청 내용 확인", "필요한 항목만 선택", "작업 과정 안내", "교체 이력 관리"].map((title, idx) => <div key={title} className="border-b border-surface-inverse-foreground/15 p-6 last:border-b-0 bp-sm:border-r bp-sm:even:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"><b className="text-brand-highlight">0{idx + 1}</b><h3 className="mt-3 text-ui-card-title-lg font-semibold">{title}</h3><p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-surface-inverse-muted">교체서비스를 이용할 때 꼭 필요한 정보를 분명하게 안내합니다.</p></div>)}
+              {[
+                ["신청 내용 확인", "라켓, 스트링, 텐션과 접수 방법을 신청 전에 한 번 더 확인해요."],
+                ["필요한 항목만 선택", "직접 선택과 추천 중 내게 필요한 방법으로 시작할 수 있어요."],
+                ["작업 과정 안내", "라켓 접수부터 장착 완료까지 진행 과정을 확인할 수 있어요."],
+                ["교체 이력 관리", "완료된 교체 내역은 라켓 케어에서 이어서 관리할 수 있어요."],
+              ].map(([title, copy], idx) => <div key={title} className="border-b border-surface-inverse-foreground/15 p-6 last:border-b-0 bp-sm:border-r bp-sm:even:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"><b className="text-brand-highlight">0{idx + 1}</b><h3 className="mt-3 text-ui-card-title-lg font-semibold">{title}</h3><p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-surface-inverse-muted">{copy}</p></div>)}
             </div>
           </div>
         </SiteContainer>
@@ -843,7 +846,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       <section ref={stringsSectionRef} className="py-10 bp-md:py-14" id="strings">
         <SiteContainer variant="wide">
-          <HomeEditorialHeader no="04" eyebrow="플레이 목적별 추천" title="브랜드보다 먼저 원하는 플레이를 고르세요." description="선택한 목적에 맞춰 실제 상품의 feature 점수로 추천 순서를 바꿉니다." />
+          <HomeEditorialHeader no="04" eyebrow="플레이 목적별 추천" title="브랜드보다 먼저 원하는 플레이를 고르세요." description={<>편안함, 스핀, 컨트롤과 내구성 중<br />원하는 기준을 고르면 알맞은 스트링을 먼저 보여드려요.</>} />
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(220px,0.68fr)_minmax(0,1.32fr)]">
             <div className="flex gap-2 overflow-x-auto pb-2 bp-lg:grid bp-lg:overflow-visible bp-lg:pb-0">
               {PURPOSES.map((purpose) => <button key={purpose.key} type="button" aria-pressed={activePurpose === purpose.key} onClick={() => setActivePurpose(purpose.key)} className={cn("flex min-w-40 items-center justify-between rounded-control border px-4 py-4 text-left font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30", activePurpose === purpose.key ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground" : "border-border bg-card text-foreground hover:bg-muted/30")}><span>{purpose.title}</span><span className={activePurpose === purpose.key ? "text-brand-highlight" : "text-muted-foreground"}>{purpose.no}</span></button>)}
@@ -857,8 +860,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <button type="button" aria-pressed={activeStringBrand === "all"} onClick={() => setActiveStringBrand("all")} className={getBrandTabClass(activeStringBrand === "all")}>전체</button>
                   {STRING_BRANDS.map((b) => <button key={b.value} type="button" aria-pressed={activeStringBrand === b.value} onClick={() => setActiveStringBrand(b.value as StringBrandKey)} className={getBrandTabClass(activeStringBrand === b.value)}>{b.label}</button>)}
                 </div>
-                <HorizontalProducts variant="home" title="스트링" items={premiumItems.slice(0, 3)} moreHref={activeStringBrand === "all" ? "/products" : `/products?brand=${activeStringBrand}`} showHeader={false} showMoreCard={false} cardWidthClass="flex-none basis-full bp-sm:basis-[calc((100%-16px)/2)] bp-lg:basis-[calc((100%-32px)/3)]" firstPageSlots={3} loading={!shouldLoadStrings || (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))} error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])} onRetry={() => activeStringBrand === "all" ? void fetchHomeProducts() : void loadStringBrand(activeStringBrand)} emptyTitle="추천할 스트링이 없습니다" emptyDescription="다른 목적이나 브랜드를 선택해 보세요." errorTitle="스트링을 불러오지 못했어요" errorDescription="잠시 후 다시 시도해 주세요." />
-                <Link className={cn(buttonOutline, "mt-5")} href={activeStringBrand === "all" ? "/products" : `/products?brand=${activeStringBrand}`}>추천 상품 더 보기</Link>
+                <HorizontalProducts variant="home" title="스트링" items={premiumItems.slice(0, 3)} moreHref={recommendationMoreHref} showHeader={false} showMoreCard={false} cardWidthClass="flex-none basis-full bp-sm:basis-[calc((100%-16px)/2)] bp-lg:basis-[calc((100%-32px)/3)]" firstPageSlots={3} loading={!shouldLoadStrings || (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))} error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])} onRetry={() => activeStringBrand === "all" ? void fetchHomeProducts() : void loadStringBrand(activeStringBrand)} emptyTitle="추천할 스트링이 없습니다" emptyDescription="다른 목적이나 브랜드를 선택해 보세요." errorTitle="스트링을 불러오지 못했어요" errorDescription="잠시 후 다시 시도해 주세요." />
+                <Link className={cn(buttonOutline, "mt-5")} href={recommendationMoreHref}>추천 상품 더 보기</Link>
               </div>
             </div>
           </div>
@@ -867,7 +870,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       <section className="py-10 bp-md:py-14" id="packages">
         <SiteContainer variant="wide">
-          <HomeEditorialHeader no="05" eyebrow="패키지 비교" title="자주 교체한다면 패키지로 더 편리하게 이용하세요." description="운영 중인 실제 패키지 설정만 표시하고, 정보가 없으면 임의 가격을 보여주지 않습니다." />
+          <HomeEditorialHeader no="05" eyebrow="패키지 비교" title="자주 교체한다면 패키지로 더 편리하게 이용하세요." description={<>이용 횟수와 가격, 회당 금액과 절감 혜택을<br />한눈에 비교해보세요.</>} />
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(260px,0.75fr)_minmax(0,1.25fr)]">
             <div className="rounded-hero bg-brand-highlight p-6 text-brand-highlight-foreground bp-md:p-8"><h3 className="text-ui-section-title-lg font-semibold">패키지로 교체 일정을 준비하세요.</h3><p className="mt-4 break-keep text-ui-body leading-relaxed">반복 교체가 필요하다면 회차형 패키지로 이용 횟수와 비용을 한 번에 확인할 수 있어요.</p><Link className={cn(buttonInverse, "mt-6")} href="/services/packages">패키지 자세히 보기</Link></div>
             <div className="overflow-hidden rounded-hero border border-border bg-card">
@@ -879,7 +882,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       <section ref={racketsSectionRef} className="py-10 bp-md:py-14" id="rackets">
         <SiteContainer variant="wide">
-          <HomeEditorialHeader no="06" eyebrow="검수 중고 라켓" title="대표 라켓과 빠른 재고 목록을 함께 확인하세요." description="추천 스트링과 같은 캐러셀 반복 대신, 검수된 라켓을 재고 목록처럼 살펴볼 수 있습니다." />
+          <HomeEditorialHeader no="06" eyebrow="도깨비 인증 중고 라켓" title={<>검수된 중고 라켓을<br />한눈에 살펴보세요.</>} description={<>대표 라켓과 최근 등록된 라켓의<br />상태, 대여 여부와 가격을 함께 확인할 수 있어요.</>} />
           <div className={brandRailClass} ref={racketBrandRailRef}>
             <button type="button" aria-pressed={activeBrand === "all"} onClick={() => setActiveBrand("all")} className={getBrandTabClass(activeBrand === "all")}>전체</button>
             {RACKET_BRANDS.map((b) => <button key={b.value} type="button" aria-pressed={activeBrand === b.value} onClick={() => setActiveBrand(b.value as BrandKey)} className={getBrandTabClass(activeBrand === b.value)}>{b.label}</button>)}
@@ -926,6 +929,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
 }
 
+const PURPOSE_PRODUCT_QUERY: Record<PurposeKey, string> = {
+  comfort: "comfort=80",
+  spin: "spin=80",
+  control: "control=80",
+  durability: "durability=80",
+  beginner: "comfort=70&control=70",
+};
+
+function getPurposeProductHref(purpose: PurposeKey, brand: StringBrandKey) {
+  const params = new URLSearchParams(PURPOSE_PRODUCT_QUERY[purpose]);
+
+  if (brand !== "all") {
+    params.set("brand", brand);
+  }
+
+  return `/products?${params.toString()}#product-list`;
+}
+
 function getPurposeScore(features: ApiProduct["features"], purpose: PurposeKey) {
   switch (purpose) {
     case "comfort":
@@ -958,7 +979,7 @@ function PreviewLine({ label, value }: { label: string; value: string }) {
 function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
   const perSession = pkg.sessions > 0 ? Math.round(pkg.price / pkg.sessions) : null;
   const savings = pkg.originalPrice > pkg.price ? pkg.originalPrice - pkg.price : 0;
-  return <div className="grid gap-3 border-b border-border p-5 last:border-b-0 bp-md:grid-cols-[0.6fr_1fr_0.8fr_0.8fr_auto] bp-md:items-center"><div><b className="text-ui-section-title font-semibold text-foreground">{pkg.sessions}회</b>{pkg.isPopular && <span className="ml-2 rounded-full bg-brand-highlight px-2 py-1 text-ui-caption font-bold text-brand-highlight-foreground">추천</span>}</div><div><strong className="block text-ui-card-title text-foreground">{pkg.name}</strong><span className="mt-1 block break-keep text-ui-label text-muted-foreground">{pkg.description}</span></div><div className="font-semibold text-foreground">{formatPrice(pkg.price)}</div><div className="text-ui-body-sm text-muted-foreground">{perSession ? `회당 ${formatPrice(perSession)}` : "회당 금액 확인 필요"}{savings > 0 ? <span className="block text-foreground">{formatPrice(savings)} 절감</span> : null}</div><Link className={buttonOutline} href={`/services/packages/checkout?package=${pkg.id}`}>선택</Link></div>;
+  return <div className="grid gap-3 border-b border-border p-5 last:border-b-0 bp-md:grid-cols-[0.6fr_1fr_0.8fr_0.8fr_auto] bp-md:items-center"><div><b className="text-ui-section-title font-semibold text-foreground">{pkg.sessions}회</b>{pkg.isPopular && <span className="ml-2 rounded-full bg-brand-highlight px-2 py-1 text-ui-caption font-bold text-brand-highlight-foreground">추천</span>}</div><div><strong className="block text-ui-card-title text-foreground">{pkg.name}</strong><span className="mt-1 block break-keep text-ui-label text-muted-foreground">{pkg.description}</span></div><div className="font-semibold text-foreground">{formatPrice(pkg.price)}</div><div className="text-ui-body-sm text-muted-foreground">{perSession ? `회당 ${formatPrice(perSession)}` : "회당 금액 확인 필요"}{savings > 0 ? <span className="block text-foreground">{formatPrice(savings)} 절감</span> : null}</div><Link className={buttonOutline} href={`/services/packages/checkout?package=${pkg.id}`}>이 패키지 보기</Link></div>;
 }
 
 function RacketFeature({ racket }: { racket: RItem }) {
@@ -969,7 +990,7 @@ function RacketFeature({ racket }: { racket: RItem }) {
 
 function InventoryRow({ racket }: { racket: RItem }) {
   const effectivePrice = getEffectiveRacketPrice(racket);
-  return <Link href={`/rackets/${racket.id}`} className="grid grid-cols-[76px_1fr_auto] items-center gap-4 rounded-panel border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"><div className="relative h-16 overflow-hidden rounded-control bg-muted"><Image src={getImageSrc(racket.images)} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" sizes="76px" /></div><div><small className="text-ui-label text-muted-foreground">{racketBrandLabel(racket.brand)} · {racket.condition ?? "상태 확인"}</small><h3 className="text-ui-card-title font-semibold text-foreground">{racket.model}</h3><p className="text-ui-label text-muted-foreground">{racket.rental?.enabled ? "대여 가능" : "판매 가능"} · {formatPrice(effectivePrice)}</p></div><ChevronRight aria-hidden="true" className="h-5 w-5 text-muted-foreground" /></Link>;
+  return <Link href={`/rackets/${racket.id}`} className="grid grid-cols-[76px_1fr_auto] items-center gap-4 rounded-panel border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"><div className="relative h-16 overflow-hidden rounded-control bg-muted"><Image src={getImageSrc(racket.images)} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" sizes="76px" /></div><div className="min-w-0"><small className="text-ui-label text-muted-foreground">{racketBrandLabel(racket.brand)} · {racket.condition ?? "상태 확인"}</small><h3 className="break-words text-ui-card-title font-semibold text-foreground">{racket.model}</h3><p className="text-ui-label text-muted-foreground">{racket.rental?.enabled ? "대여 가능" : "판매 가능"} · {formatPrice(effectivePrice)}</p></div><ChevronRight aria-hidden="true" className="h-5 w-5 text-muted-foreground" /></Link>;
 }
 
 function EmptyPanel({ title, action }: { title: string; action?: () => void }) {
