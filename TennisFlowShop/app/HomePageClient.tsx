@@ -279,7 +279,7 @@ const buttonHighlight = `${buttonBase} bg-brand-highlight text-brand-highlight-f
 const buttonInverse = `${buttonBase} border border-surface-inverse-foreground/20 bg-surface-inverse text-surface-inverse-foreground hover:border-surface-inverse-foreground/40`;
 const buttonOutline = `${buttonBase} border border-border bg-card text-foreground hover:bg-muted/40`;
 const brandRailClass =
-  "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
+  "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:none] bp-sm:gap-2.5 [&::-webkit-scrollbar]:hidden";
 const getBrandTabClass = (isActive: boolean) =>
   cn(
     "min-h-11 shrink-0 whitespace-nowrap rounded-control border px-5 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,opacity] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
@@ -376,6 +376,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const hasInitialProducts = Boolean(initialHomeData?.products);
   const hasInitialRackets = Boolean(initialHomeData?.rackets);
   const hasInitialCommunity = Boolean(initialHomeData?.notices);
+  const hasInitialPackages = Array.isArray(initialHomeData?.packages);
   const [shouldLoadCommunity, setShouldLoadCommunity] = useState(hasInitialCommunity);
   const [shouldLoadStrings, setShouldLoadStrings] = useState(hasInitialProducts);
   const [shouldLoadRackets, setShouldLoadRackets] = useState(hasInitialRackets);
@@ -466,6 +467,41 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
   const [racketsLoadingByBrand, setRacketsLoadingByBrand] = useState<Record<string, boolean>>({});
   const [racketsErrorByBrand, setRacketsErrorByBrand] = useState<Record<string, boolean>>({});
+  const [homePackages, setHomePackages] = useState<HomePreviewPackage[]>(
+    initialHomeData?.packages ?? [],
+  );
+  const [packagesLoading, setPackagesLoading] = useState(!hasInitialPackages);
+  const [packagesError, setPackagesError] = useState(false);
+
+  const fetchHomePackages = useCallback(async () => {
+    if (hasInitialPackages) return;
+
+    setPackagesLoading(true);
+    setPackagesError(false);
+
+    try {
+      const res = await fetch("/api/packages/settings", { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!Array.isArray(data?.packages)) throw new Error("Invalid packages response");
+
+      setHomePackages(
+        data.packages
+          .filter((pkg: HomePreviewPackage) => pkg.isActive)
+          .sort((a: HomePreviewPackage, b: HomePreviewPackage) => a.sortOrder - b.sortOrder),
+      );
+    } catch {
+      setHomePackages([]);
+      setPackagesError(true);
+    } finally {
+      setPackagesLoading(false);
+    }
+  }, [hasInitialPackages]);
+
+  useEffect(() => {
+    if (hasInitialPackages) return;
+    void fetchHomePackages();
+  }, [fetchHomePackages, hasInitialPackages]);
 
   const loadUsedRackets = useCallback(async (brand: BrandKey) => {
     setRacketsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
@@ -633,7 +669,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     }
     void loadStringBrand(activeStringBrand);
   };
-  const homePackages = initialHomeData?.packages ?? [];
   const featuredRacket = usedRacketsSource[0];
   const inventoryRackets = usedRacketsSource.slice(1, 4);
   const hasInventoryRackets = inventoryRackets.length > 0;
@@ -1272,11 +1307,32 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </Link>
             </div>
             <div className={styles.packageTable}>
-              {homePackages.length > 0 ? (
+              {packagesError ? (
+                <div className="space-y-4 p-6 text-ui-body text-muted-foreground">
+                  <div>
+                    <strong className="block text-ui-card-title text-foreground">
+                      패키지 정보를 불러오지 못했어요.
+                    </strong>
+                    <p className="mt-2">
+                      잠시 후 다시 시도하거나 전체 패키지 안내에서 확인해 주세요.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button className={buttonOutline} type="button" onClick={fetchHomePackages}>
+                      다시 시도
+                    </button>
+                    <Link className={buttonOutline} href="/services/packages">
+                      패키지 전체 보기
+                    </Link>
+                  </div>
+                </div>
+              ) : homePackages.length > 0 ? (
                 homePackages.map((pkg) => <PackageRow key={pkg.id} pkg={pkg} />)
               ) : (
                 <div className="p-6 text-ui-body text-muted-foreground">
-                  현재 표시할 패키지가 없습니다. 패키지 전체 안내에서 이용 가능 여부를 확인해 주세요.
+                  {packagesLoading
+                    ? "패키지 정보를 불러오는 중입니다."
+                    : "현재 표시할 패키지가 없습니다. 패키지 전체 안내에서 이용 가능 여부를 확인해 주세요."}
                 </div>
               )}
             </div>

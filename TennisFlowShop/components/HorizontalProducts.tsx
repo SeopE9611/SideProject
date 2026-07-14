@@ -202,7 +202,7 @@ export default function HorizontalProducts({
   const slideClass =
     cardWidthClass ??
     (variant === "home"
-      ? "flex-none basis-full bp-sm:basis-[calc((100%-16px)/2)] bp-lg:basis-[calc((100%-48px)/3)]"
+      ? "flex-none basis-full bp-sm:basis-[calc((100%_-_16px)/2)] bp-lg:basis-[calc((100%_-_48px)/3)]"
       : "flex-none basis-[calc((100%-12px)/2)] " +
         "bp-sm:basis-[calc((100%-16px)/2)] " +
         "bp-md-only:basis-[calc((100%-40px)/3)] " +

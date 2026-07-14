@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Bug, Compass, MessageCircle, X } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -12,7 +12,6 @@ declare global {
     Kakao?: any;
   }
 }
-
 
 const guideLinks = [
   { label: "스트링 교체 신청하기", href: "/services/apply" },
@@ -42,7 +41,6 @@ function normalizeChannelPublicId(raw: string) {
  */
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
-  const isMypageRoute = pathname === "/mypage" || pathname.startsWith("/mypage/");
   const authHiddenPrefixes = [
     "/login",
     "/forgot-password",
@@ -54,17 +52,11 @@ export default function KakaoInquiryWidget() {
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
   // 어떤 패널이 열려있는지(중복 오픈 방지)
-  const [panel, setPanel] = useState<"guide" | "inquiry" | "bug" | null>(null);
+  const [panel, setPanel] = useState<"guide" | null>(null);
 
   // outside click 닫기용 ref
-  const guideTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const bugTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const inquiryTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const guidePanelRef = useRef<HTMLDivElement | null>(null);
-  const reviewsCompactTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const reviewsCompactPanelRef = useRef<HTMLDivElement | null>(null);
-  const bugPanelRef = useRef<HTMLDivElement | null>(null);
-  const inquiryPanelRef = useRef<HTMLDivElement | null>(null);
+  const compactTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const compactPanelRef = useRef<HTMLDivElement | null>(null);
 
   // 하단 고정 바(모바일 CTA 등)와 겹치지 않도록 위로 올리는 픽셀
   const [liftPx, setLiftPx] = useState(0);
@@ -86,10 +78,7 @@ export default function KakaoInquiryWidget() {
   const canShowGuide = true;
 
   // 목적 선택은 Kakao env와 무관하게 노출한다.
-  const shouldHide =
-    hideAll ||
-    (isMypageRoute && !canShowInquiry) ||
-    (!isMypageRoute && !canShowGuide && !canShowInquiry && !canShowBug);
+  const shouldHide = hideAll || (!canShowGuide && !canShowInquiry && !canShowBug);
   const hideOnFinderTouch = pathname === "/rackets/finder";
   const hideOnCartMobile = pathname === "/cart";
 
@@ -99,18 +88,8 @@ export default function KakaoInquiryWidget() {
       setPanel(null);
       return;
     }
-    if (isMypageRoute && panel !== "inquiry") {
-      setPanel(null);
-      return;
-    }
-
-    // 문의 위젯이 비활성화되면
-    // - 문의 패널은 자동 닫기
-    // - Kakao SDK init도 불필요하므로 여기서 종료
-    if (!canShowInquiry) {
-      if (panel === "inquiry") setPanel(null);
-      return;
-    }
+    // 문의 위젯이 비활성화되면 Kakao SDK init도 불필요하므로 여기서 종료
+    if (!canShowInquiry) return;
 
     let ticks = 0;
 
@@ -141,7 +120,7 @@ export default function KakaoInquiryWidget() {
     }, 50);
 
     return () => window.clearInterval(timer);
-  }, [jsKey, shouldHide, canShowInquiry, panel, isMypageRoute]);
+  }, [jsKey, shouldHide, canShowInquiry]);
 
   /**
    * 모바일 하단 고정 CTA(장바구니/상품상세/라켓상세 등)가 있는 페이지에서는
@@ -223,29 +202,17 @@ export default function KakaoInquiryWidget() {
     };
   }, [shouldHide, pathname]);
 
-  // X 안 눌러도: 패널 바깥 클릭 시 닫기
+  // X 안 눌러도: compact 패널 바깥 클릭 시 닫기
   useEffect(() => {
-    if (!panel) return;
+    if (panel !== "guide") return;
 
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as Node | null;
       if (!target) return;
 
-      if (panel === "guide") {
-        const guidePanels = [guidePanelRef.current, reviewsCompactPanelRef.current];
-        const guideTriggers = [guideTriggerRef.current, reviewsCompactTriggerRef.current];
-        if (guidePanels.some((element) => element?.contains(target))) return;
-        if (guideTriggers.some((element) => element?.contains(target))) return;
-      }
+      if (compactPanelRef.current?.contains(target)) return;
+      if (compactTriggerRef.current?.contains(target)) return;
 
-      const activePanelEl = panel === "bug" ? bugPanelRef.current : panel === "inquiry" ? inquiryPanelRef.current : null;
-      const activeTriggerEl = panel === "bug" ? bugTriggerRef.current : panel === "inquiry" ? inquiryTriggerRef.current : null;
-
-      // 패널 내부 클릭 or 트리거 버튼 클릭이면 유지
-      if (activePanelEl?.contains(target)) return;
-      if (activeTriggerEl?.contains(target)) return;
-
-      // 그 외(바깥 클릭)면 닫기
       setPanel(null);
     };
 
@@ -303,7 +270,7 @@ export default function KakaoInquiryWidget() {
                   : "opacity-0 translate-y-2 pointer-events-none",
               ].join(" ")}
             >
-              <div ref={reviewsCompactPanelRef} id="compact-inquiry-panel" className="relative">
+              <div ref={compactPanelRef} id="compact-inquiry-panel" className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] rounded-panel border-border shadow-float">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                     <CardTitle className="text-ui-body-sm font-semibold">무엇을 도와드릴까요?</CardTitle>
@@ -331,7 +298,7 @@ export default function KakaoInquiryWidget() {
             </div>
             <button
               type="button"
-              ref={reviewsCompactTriggerRef}
+              ref={compactTriggerRef}
               aria-label="문의 메뉴 열기"
               aria-expanded={panel === "guide"}
               aria-controls="compact-inquiry-panel"
@@ -340,262 +307,6 @@ export default function KakaoInquiryWidget() {
             >
               <MessageCircle className="h-4 w-4" />
               문의
-            </button>
-          </div>
-        ) : null}
-        {/* ---------------- 목적 선택 ---------------- */}
-        {false && !isMypageRoute ? (
-          <div className="relative">
-            <div
-              className={[
-                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
-                "transition-all duration-150",
-                panel === "guide"
-                  ? "opacity-100 translate-y-0 pointer-events-auto"
-                  : "opacity-0 translate-y-2 pointer-events-none",
-              ].join(" ")}
-            >
-              <div ref={guidePanelRef} className="relative">
-                <Card className="relative w-[min(320px,calc(100vw-2rem))] border-border shadow-xl bp-sm:w-[340px]">
-                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-ui-body-sm font-semibold">
-                      무엇을 하러 오셨나요?
-                    </CardTitle>
-                    <button
-                      type="button"
-                      aria-label="닫기"
-                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
-                      onClick={() => setPanel(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </CardHeader>
-
-                  <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-ui-body-sm text-muted-foreground">
-                      원하는 목적을 선택하면 필요한 단계로 바로 이동할 수 있어요.
-                    </p>
-                    <div className="grid gap-2">
-                      {guideLinks.map(({ label, href }) => (
-                        <Link
-                          key={href}
-                          href={href}
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-ui-body-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
-                          onClick={() => setPanel(null)}
-                        >
-                          <span className="block whitespace-nowrap text-foreground">{label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 12"
-                  className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]"
-                >
-                  <path d="M1 1H23L12 11Z" strokeWidth="1" />
-                </svg>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              ref={guideTriggerRef}
-              aria-label="목적 선택"
-              onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
-              className={[
-                "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
-                "bg-primary text-primary-foreground",
-                "hover:bg-primary/90",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                "flex items-center justify-center",
-              ].join(" ")}
-            >
-              <Compass className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
-            </button>
-          </div>
-        ) : null}
-
-        {/* ---------------- 버그 제보 ---------------- */}
-        {false && canShowBug && !isMypageRoute ? (
-          <div className="relative">
-            <div
-              className={[
-                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
-                "transition-all duration-150",
-                panel === "bug"
-                  ? "opacity-100 translate-y-0 pointer-events-auto"
-                  : "opacity-0 translate-y-2 pointer-events-none",
-              ].join(" ")}
-            >
-              <div ref={bugPanelRef} className="relative">
-                <Card
-                  className={[
-                    "relative w-[min(320px,calc(100vw-2rem))] shadow-xl",
-                    // 다크/라이트 공통 테마 토큰
-                    "border-border",
-                  ].join(" ")}
-                >
-                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-ui-body-sm font-semibold">버그 제보</CardTitle>
-                    <button
-                      type="button"
-                      aria-label="닫기"
-                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
-                      onClick={() => setPanel(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </CardHeader>
-
-                  <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-ui-body-sm text-muted-foreground">
-                      사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 개발자의 오픈채팅으로
-                      제보해주시면 빠르게 확인할게요.
-                    </p>
-
-                    <div className="rounded-md bg-muted/60 p-3 text-ui-label text-muted-foreground">
-                      <div className="font-medium text-foreground">
-                        제보 시 함께 적어주면 좋아요
-                      </div>
-                      <ul className="mt-1 list-disc space-y-1 pl-4">
-                        <li>어떤 페이지/기능에서 발생했는지</li>
-                        <li>재현 절차(무슨 버튼을 눌렀는지)</li>
-                        <li>스크린샷</li>
-                      </ul>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={openBugChat}
-                      className={[
-                        "w-full rounded-md py-3 text-ui-body-sm font-semibold",
-                        "bg-primary text-primary-foreground",
-                        "hover:bg-primary/90",
-                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                      ].join(" ")}
-                    >
-                      개발자에게 제보하기
-                    </button>
-                  </CardContent>
-                </Card>
-
-                {/* 말풍선 꼬리 */}
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 12"
-                  className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]"
-                >
-                  <path d="M1 1H23L12 11Z" strokeWidth="1" />
-                </svg>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              ref={bugTriggerRef}
-              aria-label="버그 제보"
-              onClick={() => setPanel((cur) => (cur === "bug" ? null : "bug"))}
-              className={[
-                "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
-                "bg-primary text-primary-foreground",
-                "hover:bg-primary/90",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                "flex items-center justify-center",
-              ].join(" ")}
-            >
-              <Bug className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
-            </button>
-          </div>
-        ) : null}
-
-        {/* ---------------- 카카오 문의 ---------------- */}
-        {false && canShowInquiry ? (
-          <div className="relative">
-            <div
-              className={[
-                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
-                "transition-all duration-150",
-                panel === "inquiry"
-                  ? "opacity-100 translate-y-0 pointer-events-auto"
-                  : "opacity-0 translate-y-2 pointer-events-none",
-              ].join(" ")}
-            >
-              <div ref={inquiryPanelRef} className="relative">
-                <Card
-                  className={[
-                    "relative w-[min(320px,calc(100vw-2rem))] shadow-xl",
-                    "border-border",
-                  ].join(" ")}
-                >
-                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-ui-body-sm font-semibold">
-                      문의하기{" "}
-                      <span className="ml-1 text-ui-label font-normal text-muted-foreground">
-                        (카카오톡 1:1)
-                      </span>
-                    </CardTitle>
-                    <button
-                      type="button"
-                      aria-label="닫기"
-                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
-                      onClick={() => setPanel(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </CardHeader>
-
-                  <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-ui-body-sm text-muted-foreground">
-                      카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는 답변이 늦을 수 있어요.
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={openKakaoChat}
-                      className={[
-                        "w-full rounded-md py-3 text-ui-body-sm font-semibold",
-                        "bg-primary text-primary-foreground",
-                        "hover:bg-primary/90",
-                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                      ].join(" ")}
-                    >
-                      카카오톡으로 문의하기
-                    </button>
-                  </CardContent>
-                </Card>
-
-                {/* 말풍선 꼬리 */}
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 12"
-                  className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]"
-                >
-                  <path d="M1 1H23L12 11Z" strokeWidth="1" />
-                </svg>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              ref={inquiryTriggerRef}
-              aria-label="카카오톡 문의"
-              onClick={() => setPanel((cur) => (cur === "inquiry" ? null : "inquiry"))}
-              className={[
-                isMypageRoute
-                  ? "h-11 w-11 rounded-full shadow-lg"
-                  : "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
-                "bg-primary text-primary-foreground",
-                "hover:bg-primary/90",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                "flex items-center justify-center",
-              ].join(" ")}
-            >
-              <MessageCircle
-                className={isMypageRoute ? "h-5 w-5" : "h-6 w-6 bp-sm:h-7 bp-sm:w-7"}
-              />
             </button>
           </div>
         ) : null}
