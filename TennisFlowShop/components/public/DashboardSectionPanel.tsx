@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -23,13 +23,15 @@ export function DashboardSectionPanel({
   contentClassName,
   variant = "default",
 }: DashboardSectionPanelProps) {
+  const titleId = useId();
+
   return (
     <section
       className={cn(
         "overflow-hidden rounded-panel border border-border/80 bg-card text-card-foreground shadow-soft",
         className,
       )}
-      aria-label={typeof title === "string" ? title : undefined}
+      aria-labelledby={titleId}
     >
       <div className="flex flex-col gap-3 border-b border-border bg-muted/30 px-4 py-3 bp-sm:px-5 bp-sm:py-4 bp-md:flex-row bp-md:items-start bp-md:justify-between bp-lg:px-6">
         <div className="flex min-w-0 items-start gap-3">
@@ -47,6 +49,7 @@ export function DashboardSectionPanel({
 
           <div className="min-w-0 flex-1">
             <h2
+              id={titleId}
               className={cn(
                 "text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg",
                 variant === "feature" && "font-brand-heading tracking-[-0.015em]",

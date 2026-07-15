@@ -344,7 +344,7 @@ export default function MypageClient({ user }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="border-border/80 shadow-soft"
+              className="rounded-panel border-border/80 shadow-soft bp-lg:col-span-2"
               contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4"
             >
               <div className="mb-3 flex items-center justify-between gap-3">
