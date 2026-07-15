@@ -76,3 +76,13 @@
 - 관리자 페이지에는 사용하지 않습니다. 관리자 화면은 기존 admin layout과 admin typography 기준을 우선합니다.
 - 주문 상세, 대여 상세, 신청 상세처럼 깊은 상세 화면의 모든 카드를 강제로 대체하지 않습니다.
 - `feature` variant는 페이지당 제한적으로 사용하고, 상태 의미는 `success`/`warning`/`destructive` 같은 의미 토큰으로 분리합니다.
+
+
+## 11. 마이페이지 허브 V2 적용 기준
+
+- 마이페이지 허브는 V2 적용 강도를 중간~강함으로 유지하되, 기존 semantic token의 상태 의미를 대체하지 않습니다.
+- 사용자 업무 화면에서는 마케팅 Hero 대신 compact Hero를 사용하고, 핵심 사용자 정보와 오늘 처리할 일을 한 화면 안에서 연결합니다.
+- 외부 panel은 `rounded-panel`과 `shadow-soft`로 화면 단위를 만들고, 내부 반복 item은 `rounded-control`과 `border` 중심으로 card-in-card 피로감을 줄입니다.
+- `highlight` CTA는 page-level primary action에 제한하며, 거래 카드의 일반 처리 액션은 기본 `primary` 계열을 우선합니다.
+- 거래 상태색은 `success`, `warning`, `info`, `destructive` 등 semantic status token을 유지하고, `brand-highlight`를 완료·성공 의미로 사용하지 않습니다.
+- 상품명, 라켓명, 날짜, 금액, 상태, 버튼, Badge, 다음 행동 문구에는 기본 본문 서체를 사용합니다.

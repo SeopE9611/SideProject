@@ -4,11 +4,10 @@ import OrdersScopeTabs, {
   resolveOrdersScopeContext,
 } from "@/app/mypage/_components/OrdersScopeTabs";
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
-import UserSection from "@/app/mypage/UserSection";
+import MypageDashboardHero from "@/app/mypage/_components/MypageDashboardHero";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { DashboardSectionPanel, SummaryCard } from "@/components/public";
+import { DashboardSectionPanel } from "@/components/public";
 import { TabPanelSkeleton } from "@/components/system/loading";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,7 +24,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useSWR from "swr";
 
 const ApplicationDetail = dynamic(
@@ -72,6 +71,30 @@ const MYPAGE_TABS = [
   "points",
 ] as const;
 
+const scrollItemIntoHorizontalView = (
+  container: HTMLElement | null,
+  item: HTMLElement | null,
+) => {
+  if (!container || !item) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const itemRect = item.getBoundingClientRect();
+  const targetLeft =
+    container.scrollLeft +
+    itemRect.left -
+    containerRect.left -
+    (containerRect.width - itemRect.width) / 2;
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  const nextScrollLeft = Math.min(maxScrollLeft, Math.max(0, targetLeft));
+
+  container.scrollTo({
+    left: nextScrollLeft,
+    behavior: "auto",
+  });
+};
+
+type MypageSummaryState = "loading" | "error" | "ready";
+
 type Props = {
   user: {
     id: string;
@@ -85,6 +108,7 @@ type Props = {
 export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const mobileTabsScrollRef = useRef<HTMLDivElement | null>(null);
 
   const {
     data: summary,
@@ -101,6 +125,11 @@ export default function MypageClient({ user }: Props) {
     revalidateOnFocus: true,
   });
   const hasSummaryError = !!summaryError;
+  const summaryState: MypageSummaryState = summaryLoading
+    ? "loading"
+    : summaryError
+      ? "error"
+      : "ready";
 
   const resolveOrdersScope = (scope: string | null) => {
     if (
@@ -172,6 +201,20 @@ export default function MypageClient({ user }: Props) {
     router.replace(query ? `/mypage?${query}` : "/mypage", { scroll: false });
   }, [router, searchParams]);
 
+  const tabParam = searchParams.get("tab");
+  const currentTab = MYPAGE_TABS.includes(tabParam as (typeof MYPAGE_TABS)[number])
+    ? tabParam!
+    : "orders";
+
+  useEffect(() => {
+    const container = mobileTabsScrollRef.current;
+    const activeTab = container?.querySelector<HTMLElement>(
+      '[role="tab"][data-state="active"]',
+    );
+
+    scrollItemIntoHorizontalView(container, activeTab ?? null);
+  }, [currentTab]);
+
   if (!user) {
     return (
       <SiteContainer variant="wide" className="py-10">
@@ -184,11 +227,6 @@ export default function MypageClient({ user }: Props) {
       </SiteContainer>
     );
   }
-
-  const tabParam = searchParams.get("tab");
-  const currentTab = MYPAGE_TABS.includes(tabParam as (typeof MYPAGE_TABS)[number])
-    ? tabParam!
-    : "orders";
 
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -235,7 +273,6 @@ export default function MypageClient({ user }: Props) {
 
   const sidebarCardClass = "overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft";
   const todoCount = summary?.todoCount ?? 0;
-  const hasTodoItems = !summaryLoading && todoCount > 0;
   const activitySummaryItems = [
     {
       label: "거래/이용",
@@ -266,113 +303,48 @@ export default function MypageClient({ user }: Props) {
           variant="wide"
           className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6"
         >
-          <UserSection user={user} />
+          <MypageDashboardHero user={user} todoCount={todoCount} summaryState={summaryState} />
 
-          <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
-            <SummaryCard
-              variant="feature"
-              className="transition-colors hover:bg-muted/20"
-              contentClassName="p-4 bp-sm:p-5"
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  router.push("/mypage?tab=orders&scope=todo", {
-                    scroll: false,
-                  })
-                }
-                className="group w-full rounded-xl bg-muted/20 px-4 py-3 text-left transition-colors hover:bg-muted/30 bp-sm:px-5 bp-sm:py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <div className="flex min-w-0 items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-primary">
-                      해야 할 일
-                    </p>
-                    <h2 className="mt-1 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
-                      {summaryLoading ? (
-                        <span className="block">
-                          <Skeleton className="h-6 w-40" />
-                        </span>
-                      ) : hasTodoItems ? (
-                        `확인할 항목 ${todoCount}개`
-                      ) : (
-                        "현재 처리할 일이 없습니다"
-                      )}
-                    </h2>
-                    <p className="mt-1 line-clamp-2 break-keep text-ui-body-sm text-muted-foreground">
-                      {hasTodoItems
-                        ? "후기, 배송, 확정이 필요한 내역만 모았습니다."
-                        : "새로 처리할 내역이 없습니다."}
-                    </p>
-                  </div>
+          <section className="grid gap-3 bp-lg:grid-cols-[minmax(280px,0.75fr)_minmax(0,1.25fr)]" aria-label="마이페이지 요약">
+            <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
+              <CardContent className="p-4 bp-sm:p-5">
+                <button type="button" onClick={() => router.push("/mypage/racket-care")} className="group flex w-full items-center gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                  <span className="rounded-control bg-brand-highlight-muted p-2.5 text-brand-highlight">
+                    <Wrench className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-brand-heading text-ui-section-title text-foreground">라켓 케어</span>
+                    <span className="mt-1 block break-keep text-ui-body-sm font-medium text-foreground">
+                      {summaryState === "loading"
+                        ? "불러오는 중"
+                        : summaryState === "error"
+                          ? "정보를 확인할 수 없음"
+                          : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
+                    </span>
+                    <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">다음 스트링 교체 시점을 확인해보세요.</span>
+                  </span>
+                  <span className="text-brand-highlight" aria-hidden="true">→</span>
+                </button>
+              </CardContent>
+            </Card>
 
-                  <Badge
-                    variant={hasTodoItems ? "warning" : "success"}
-                    className="shrink-0 whitespace-nowrap"
-                  >
-                    {hasTodoItems ? "확인하기" : "완료"}
-                  </Badge>
+            <Card className="rounded-panel border-border/80 bg-card shadow-soft">
+              <CardContent className="p-4 bp-sm:p-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-ui-body-sm font-semibold text-foreground">내 활동 지표</p>
+                  {hasSummaryError ? <span className="text-ui-label text-destructive">지표 불러오기 실패</span> : null}
                 </div>
-              </button>
-            </SummaryCard>
-
-            <SummaryCard
-              variant="inverse"
-              className="transition-colors"
-              contentClassName="p-4 bp-sm:p-5"
-            >
-              <button
-                type="button"
-                onClick={() => router.push("/mypage/racket-care")}
-                className="group flex min-h-24 w-full items-center gap-3 rounded-xl bg-surface-inverse-muted/10 px-4 py-3 text-left transition-colors hover:bg-surface-inverse-muted/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <span className="rounded-control bg-brand-highlight-muted p-2 text-brand-highlight">
-                  <Wrench className="h-5 w-5" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-ui-label font-semibold text-surface-inverse-muted">라켓 케어</span>
-                  <span className="mt-1 block break-keep text-ui-body-sm font-medium text-surface-inverse-foreground">
-                    {summaryLoading
-                      ? "불러오는 중"
-                      : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
-                  </span>
-                  <span className="mt-0.5 block break-keep text-ui-label text-surface-inverse-muted">
-                    다음 스트링 교체 시점을 확인해보세요.
-                  </span>
-                </span>
-              </button>
-            </SummaryCard>
-
-            <SummaryCard
-              className="rounded-panel border-border/80 shadow-soft bp-lg:col-span-2"
-              contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4"
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-ui-body-sm font-semibold text-foreground">내 활동</p>
-                {hasSummaryError ? (
-                  <span className="text-ui-label text-muted-foreground">일부 지표 오류</span>
-                ) : null}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
-                {activitySummaryItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => router.push(item.href, { scroll: false })}
-                    className="min-w-0 rounded-xl bg-muted/15 px-2 py-3 text-center transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:py-2.5"
-                  >
-                    <span className="block text-ui-body font-semibold tabular-nums text-foreground">
-                      {summaryLoading ? "-" : (item.value ?? 0)}
-                    </span>
-                    <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">
-                      {item.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </SummaryCard>
-          </div>
+                <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
+                  {activitySummaryItems.map((item) => (
+                    <button key={item.label} type="button" onClick={() => router.push(item.href, { scroll: false })} className="min-w-0 rounded-control border border-border/70 bg-muted/15 px-2 py-3 text-center transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                      <span className="block text-ui-card-title-lg font-bold tabular-nums text-foreground">{summaryState === "ready" ? (item.value ?? 0) : "-"}</span>
+                      <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
         </SiteContainer>
       </div>
 
@@ -391,15 +363,12 @@ export default function MypageClient({ user }: Props) {
           <div className="bp-lg:col-span-3 min-w-0">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <Card className="mb-3 overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft bp-sm:mb-4 bp-lg:hidden">
-                <CardContent className="p-2.5 bp-sm:p-3">
-                  <p className="mb-2 px-1 text-ui-label font-medium text-muted-foreground">
-                    내 상세 내역
-                  </p>
-                  <div>
-                    <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-muted/40 p-1 bp-md:grid-cols-7 bp-md:gap-1.5 bp-lg:w-full">
+                <CardContent className="p-2">
+                  <div ref={mobileTabsScrollRef} className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <TabsList aria-label="마이페이지 주요 탭" className="flex h-auto min-w-max w-max gap-1 bg-transparent p-0">
                       <TabsTrigger
                         value="orders"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
                       >
                         <ClipboardList className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -410,7 +379,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="academy"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
                       >
                         <GraduationCap className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -421,7 +390,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="wishlist"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
                       >
                         <Heart className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -432,7 +401,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="reviews"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
                       >
                         <MessageSquare className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -443,7 +412,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="qna"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
                       >
                         <MessageCircleQuestion className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -454,7 +423,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="passes"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
                       >
                         <Ticket className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight bp-md:text-ui-body-sm">
@@ -464,7 +433,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="points"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
                       >
                         <ReceiptCent className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -480,6 +449,7 @@ export default function MypageClient({ user }: Props) {
               {/* 거래 내역 탭 */}
               <TabsContent value="orders" className="mt-0">
                 <DashboardSectionPanel
+                  variant="feature"
                   icon={<ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
                   title="거래/이용 내역"
                   description="상태와 다음 행동을 확인하세요."

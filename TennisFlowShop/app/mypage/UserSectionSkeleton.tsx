@@ -2,20 +2,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function UserSectionSkeleton() {
   return (
-    <div className="rounded-panel border border-border/80 bg-card p-4 shadow-soft bp-sm:p-5">
-      <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
-          <Skeleton className="h-10 w-10 shrink-0 rounded-control" />
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-5 w-28 rounded-control" />
-              <Skeleton className="h-6 w-20 rounded-control" />
-              <Skeleton className="h-6 w-24 rounded-control" />
-            </div>
-            <Skeleton className="h-4 w-full max-w-sm rounded-control" />
+    <div className="rounded-hero border border-surface-inverse-foreground/15 bg-surface-inverse p-5 shadow-soft bp-sm:p-6 bp-lg:p-8">
+      <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] bp-lg:items-end">
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Skeleton className="h-4 w-28 rounded-control bg-surface-inverse-muted/30" />
+            <Skeleton className="h-6 w-20 rounded-control bg-surface-inverse-muted/30" />
+          </div>
+          <Skeleton className="h-8 w-full max-w-lg rounded-control bg-surface-inverse-muted/30 bp-sm:h-10" />
+          <Skeleton className="h-4 w-full max-w-sm rounded-control bg-surface-inverse-muted/30" />
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-24 rounded-control bg-surface-inverse-muted/30" />
+            <Skeleton className="h-6 w-20 rounded-control bg-surface-inverse-muted/30" />
           </div>
         </div>
-        <Skeleton className="h-9 w-full rounded-control bp-sm:w-28" />
+        <div className="rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse-muted/10 p-4 bp-sm:p-5">
+          <Skeleton className="h-4 w-28 rounded-control bg-surface-inverse-muted/30" />
+          <Skeleton className="mt-3 h-12 w-20 rounded-control bg-surface-inverse-muted/30" />
+          <div className="mt-4 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
+            <Skeleton className="h-11 rounded-control bg-surface-inverse-muted/30" />
+            <Skeleton className="h-11 rounded-control bg-surface-inverse-muted/30" />
+          </div>
+        </div>
       </div>
     </div>
   );

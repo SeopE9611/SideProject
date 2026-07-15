@@ -58,10 +58,16 @@
 - PR 1 기반: 토큰, Tailwind 매핑, primitive variant, 정책 문서만 준비합니다.
 - PR 2 라켓 케어: 라켓 케어 페이지에 Hero, 상태 카드, 부유 정보 카드 패턴을 적용합니다.
 - PR 3 홈: 홈 Hero와 주요 마케팅 섹션에 역상 표면과 라임 CTA를 적용합니다.
-- PR 4 / Phase 4: 마이페이지 허브
-  - 사용자 정보
-  - 해야 할 일
-  - 라켓 케어
-  - 활동 요약
-  - 탭 section panel
+- PR 4 / Phase 4A: 마이페이지 디자인 시스템 기반
+  - DashboardSectionPanel
+  - 공용 surface
+  - radius/shadow
+  - 접근성 연결
+- PR 4 / Phase 4B: 마이페이지 체감형 UX/UI
+  - compact dashboard hero
+  - racket care + activity bento
+  - mobile navigation rail
+  - segmented order scope
+  - transaction flow card
+  - next action hierarchy
 - 이후 상품/서비스/체크아웃/관리자: 화면 성격에 맞춰 적용 강도를 조절합니다.
