@@ -2,10 +2,14 @@ import { normalizeCollection } from "@/app/features/stringing-applications/lib/c
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import {
-  isApplicationTodoActionable,
-  isOrderTodoActionable,
-  isRentalTodoActionable,
+  hasRentalReturnShipping,
+  isRentalReturnShippingRegistrationRequired,
+  resolveApplicationTodoReason,
+  resolveOrderTodoReason,
+  resolveRentalTodoReason,
+  type MypageTodoReasonCode,
 } from "@/lib/mypage/activity-todo";
+import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
 import jwt from "jsonwebtoken";
@@ -135,6 +139,7 @@ type ActivityRentalSummary = {
   dueAt: string | null;
   returnedAt: string | null;
   hasReturnShipping: boolean;
+  returnShippingWindowOpen: boolean;
   stringingApplicationIds: string[];
   applicationSummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
@@ -203,6 +208,7 @@ export type ActivityGroup = {
   flowType: FlowType;
   flowLabel: string;
   detailTarget: DetailTarget;
+  todoReasonCode: MypageTodoReasonCode | null;
 };
 
 function getOrderFlowLabel(opts: {
@@ -526,6 +532,8 @@ export async function GET(req: Request) {
             updatedAt: 1,
             status: 1,
             userConfirmedAt: 1,
+            dueAt: 1,
+            returnedAt: 1,
             racketId: 1,
             brand: 1,
             model: 1,
@@ -762,6 +770,8 @@ export async function GET(req: Request) {
     }
   }
 
+  const todayYmd = toKstYmd();
+
   const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] = await Promise.all([
     resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
     resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
@@ -822,6 +832,7 @@ export async function GET(req: Request) {
         type: "order",
         id: orderId,
       },
+      todoReasonCode: null,
       order: {
         id: orderId,
         createdAt,
@@ -880,12 +891,14 @@ export async function GET(req: Request) {
       typeof r?.shipping?.outbound?.trackingNumber === "string"
         ? r.shipping.outbound.trackingNumber.trim()
         : "";
-    const returnTracking = String(
-      r?.shipping?.return?.trackingNumber ??
-        r?.shipping?.return?.trackingNo ??
-        r?.shipping?.return?.tracking_no ??
-        "",
-    ).trim();
+    const hasReturnTracking = hasRentalReturnShipping(r?.shipping);
+    const returnShippingWindowOpen = isRentalReturnShippingRegistrationRequired({
+      status: r.status ?? "",
+      dueAt: r?.dueAt ?? null,
+      returnedAt: r?.returnedAt ?? null,
+      hasReturnShipping: false,
+      todayYmd,
+    });
 
     groups.push({
       key: `rental:${rentalId}`,
@@ -897,6 +910,7 @@ export async function GET(req: Request) {
         type: "rental",
         id: rentalId,
       },
+      todoReasonCode: null,
       rental: {
         id: rentalId,
         createdAt,
@@ -922,7 +936,8 @@ export async function GET(req: Request) {
         outboundTrackingNumber: outboundTracking || null,
         dueAt: r?.dueAt ? toISO(r.dueAt) : null,
         returnedAt: r?.returnedAt ? toISO(r.returnedAt) : null,
-        hasReturnShipping: Boolean(returnTracking),
+        hasReturnShipping: hasReturnTracking,
+        returnShippingWindowOpen,
         stringingApplicationIds: linkedApps.map((app) => app.id),
         applicationSummaries: linkedApps,
         stringingApplicationId: linked?.id ?? null,
@@ -945,9 +960,6 @@ export async function GET(req: Request) {
   for (const doc of standaloneApps as any[]) {
     const details = doc.stringDetails ?? {};
     const shipping = doc.shippingInfo ?? {};
-    const trackingNo = String(
-      (shipping as any)?.trackingNo ?? shipping?.trackingNumber ?? "",
-    ).trim();
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
 
     // 단독 신청서는 기본적으로 "고객 라켓 입고"가 필요
@@ -981,6 +993,7 @@ export async function GET(req: Request) {
         type: "application",
         id: String(doc._id),
       },
+      todoReasonCode: null,
       application: {
         id: String(doc._id),
         createdAt,
@@ -1017,38 +1030,49 @@ export async function GET(req: Request) {
     });
   }
 
+  const groupsWithTodoReason = groups.map((group): ActivityGroup => {
+    if (group.kind === "application") {
+      return { ...group, todoReasonCode: resolveApplicationTodoReason(group.application) };
+    }
+    if (group.kind === "order") {
+      return {
+        ...group,
+        todoReasonCode: resolveOrderTodoReason({
+          status: group.order?.status,
+          userConfirmedAt: group.order?.userConfirmedAt,
+          reviewPendingCount: group.order?.reviewPendingCount,
+          linkedApplications: group.order?.applicationSummaries,
+          primaryApplication: group.application,
+        }),
+      };
+    }
+    return {
+      ...group,
+      todoReasonCode: resolveRentalTodoReason({
+        status: group.rental?.status,
+        userConfirmedAt: group.rental?.userConfirmedAt,
+        dueAt: group.rental?.dueAt ?? null,
+        returnedAt: group.rental?.returnedAt ?? null,
+        hasReturnShipping: group.rental?.hasReturnShipping,
+        todayYmd,
+        linkedApplications: group.rental?.applicationSummaries,
+        primaryApplication: group.application,
+        reviewPendingCount: group.rental?.reviewPendingCount,
+        stringingApplicationId: group.rental?.stringingApplicationId,
+        withStringService: group.rental?.withStringService,
+      }),
+    };
+  });
+
   // 7) scope 필터 + 정렬 + 페이지 슬라이스
-  const scopedGroups = groups.filter((group) => {
+  const scopedGroups = groupsWithTodoReason.filter((group) => {
     if (scope === "all") return true;
     if (scope === "order") return group.kind === "order";
     if (scope === "rental") return group.kind === "rental";
     if (scope === "application") return group.kind === "application" || Boolean(group.application);
 
     if (scope === "todo") {
-      const applicationNeedsAction =
-        group.kind === "application" && isApplicationTodoActionable(group.application);
-      const orderNeedsAction =
-        group.kind === "order" &&
-        isOrderTodoActionable({
-          status: group.order?.status,
-          userConfirmedAt: group.order?.userConfirmedAt,
-          reviewPendingCount: group.order?.reviewPendingCount,
-          linkedApplications: group.order?.applicationSummaries,
-          primaryApplication: group.application,
-        });
-      const rentalNeedsAction =
-        group.kind === "rental" &&
-        isRentalTodoActionable({
-          status: group.rental?.status,
-          userConfirmedAt: group.rental?.userConfirmedAt,
-          linkedApplications: group.rental?.applicationSummaries,
-          primaryApplication: group.application,
-          reviewPendingCount: group.rental?.reviewPendingCount,
-          stringingApplicationId: group.rental?.stringingApplicationId,
-          withStringService: group.rental?.withStringService,
-        });
-
-      return orderNeedsAction || applicationNeedsAction || rentalNeedsAction;
+      return group.todoReasonCode !== null;
     }
 
     return true;
