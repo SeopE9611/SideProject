@@ -631,11 +631,20 @@ function FlowListSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, idx) => (
-        <Card key={idx} className="border-border bg-card shadow-sm">
-          <CardContent className="space-y-3 p-4 bp-sm:p-6">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-4 w-52" />
-            <Skeleton className="h-4 w-28" />
+        <Card key={idx} className="rounded-control border-border bg-card shadow-none">
+          <CardContent className="grid gap-3 p-4 bp-sm:grid-cols-[72px_minmax(0,1fr)_168px] bp-sm:p-5">
+            <Skeleton className="h-16 w-16 rounded-control bp-sm:h-[72px] bp-sm:w-[72px]" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-5 w-52" />
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-10 w-full rounded-control" />
+            </div>
+            <div className="hidden space-y-2 bp-sm:block">
+              <Skeleton className="ml-auto h-6 w-20" />
+              <Skeleton className="h-9 w-full rounded-control" />
+              <Skeleton className="h-9 w-full rounded-control" />
+            </div>
           </CardContent>
         </Card>
       ))}
@@ -1011,9 +1020,9 @@ export default function TransactionFlowList() {
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
       {scope === "todo" ? (
-        <div className="rounded-xl border border-border bg-muted/30 px-3 py-2.5">
+        <div className="rounded-control border border-warning/25 bg-warning/10 px-3 py-2.5">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+            <Sparkles className="h-4 w-4 shrink-0 text-warning" />
             <p className="break-keep text-ui-label font-medium text-foreground">
               지금 처리할 수 있는 항목만 모았습니다.
             </p>
@@ -1097,6 +1106,10 @@ export default function TransactionFlowList() {
             const needsTrackingAction = isApplicationTrackingNeeded(applicationActionTarget);
             const todoPrimaryReason =
               scope === "todo" || scope === "all" ? getTodoPrimaryReason(g) : null;
+            const nextActionText = getFlowNextActionText(g, {
+              prefersApplicationView,
+              todoPrimaryReason,
+            });
 
             const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
             const isApplicationActionContext =
@@ -1187,20 +1200,21 @@ export default function TransactionFlowList() {
               g.kind === "application" && isStandaloneApplication(g.application);
 
             return (
-              <div
+              <article
                 key={g.key}
-                className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 md:grid-cols-[72px_minmax(0,1fr)_168px] md:items-start md:gap-4"
+                aria-labelledby={`transaction-flow-${g.key}`}
+                className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-control border border-border bg-card p-3.5 shadow-none transition-colors hover:bg-muted/20 bp-sm:p-4 md:grid-cols-[72px_minmax(0,1fr)_180px] md:items-start md:gap-4"
               >
                 <Link
                   href={detailHref}
                   className={cn(
                     "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border/60 md:h-[72px] md:w-[72px]",
-                    shouldShowServiceIcon ? "bg-primary/5" : "bg-muted",
+                    shouldShowServiceIcon ? "bg-surface-inverse text-brand-highlight" : "bg-muted",
                   )}
                   aria-label={`${displayTitle} 상세 보기`}
                 >
                   {shouldShowServiceIcon ? (
-                    <Wrench className="h-7 w-7 text-primary/80" aria-hidden="true" />
+                    <Wrench className="h-7 w-7 text-brand-highlight" aria-hidden="true" />
                   ) : (
                     <Image
                       src={representativeImage ?? FALLBACK_FLOW_IMAGE}
@@ -1231,7 +1245,7 @@ export default function TransactionFlowList() {
                   </p>
 
                   <Link href={detailHref} className="block min-w-0">
-                    <span className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground transition-colors hover:text-primary bp-sm:text-ui-body">
+                    <span id={`transaction-flow-${g.key}`} className="line-clamp-2 break-keep text-ui-card-title font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-ui-card-title-lg">
                       {displayTitle}
                     </span>
                   </Link>
@@ -1241,9 +1255,25 @@ export default function TransactionFlowList() {
                   </p>
 
                   {secondaryMetaText ? (
-                    <p className="line-clamp-1 break-keep text-ui-label leading-relaxed text-muted-foreground">
+                    <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
                       {secondaryMetaText}
                     </p>
+                  ) : null}
+
+                  {nextActionText ? (
+                    <div
+                      className={cn(
+                        "mt-2 rounded-control border px-3 py-2 text-ui-label leading-relaxed",
+                        todoPrimaryReason
+                          ? "border-warning/25 bg-warning/10 text-foreground"
+                          : "border-border bg-muted/30 text-foreground",
+                      )}
+                    >
+                      <span className={cn("mr-2 font-semibold", todoPrimaryReason ? "text-warning" : "text-muted-foreground")}>
+                        {todoPrimaryReason ? "다음 조치" : "진행 안내"}
+                      </span>
+                      {nextActionText}
+                    </div>
                   ) : null}
                 </div>
 
@@ -1288,7 +1318,7 @@ export default function TransactionFlowList() {
                   const detailAction: CardAction = {
                     key: "flow-detail",
                     node: (
-                      <Button asChild size="sm" variant="outline" className="bg-transparent">
+                      <Button asChild size="sm" variant="outline" className="min-h-11 bg-transparent md:min-h-9">
                         <Link href={resolvedDetailHref} aria-label={`${displayTitle} 상세 보기`}>
                           상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                         </Link>
@@ -1491,13 +1521,13 @@ export default function TransactionFlowList() {
 
                       <div className="flex w-full flex-col gap-2">
                         {primaryAction ? (
-                          <div className="hidden w-full gap-2 md:grid [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-nowrap [&_a]:break-keep md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-nowrap [&_button]:break-keep md:[&_button]:h-8 md:[&_button]:px-3">
+                          <div className="hidden w-full gap-2 md:grid [&_a]:h-10 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep md:[&_a]:h-9 md:[&_a]:px-3 [&_button]:h-10 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep md:[&_button]:h-9 md:[&_button]:px-3">
                             {primaryAction.node}
                           </div>
                         ) : null}
 
                         <div className={cn(
-                          "grid w-full gap-2 [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-nowrap [&_a]:break-keep md:[&_a]:h-8 md:[&_a]:px-3",
+                          "grid w-full gap-2 [&_a]:min-h-11 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-snug [&_a]:whitespace-normal [&_a]:break-keep md:[&_a]:min-h-9 md:[&_a]:px-3 [&_button]:min-h-11 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-snug [&_button]:whitespace-normal [&_button]:break-keep md:[&_button]:min-h-9 md:[&_button]:px-3",
                           primaryAction && hasSecondaryActions
                             ? "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_40px] md:grid-cols-[minmax(0,1fr)_40px]"
                             : primaryAction
@@ -1514,7 +1544,7 @@ export default function TransactionFlowList() {
                           {hasSecondaryActions ? (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button type="button" variant="outline" size="icon" className="h-9 w-10 shrink-0 rounded-lg border-border bg-background px-0 text-muted-foreground hover:bg-muted hover:text-foreground md:h-8 md:w-10" aria-label={`${secondaryActions.length}개 추가 작업 보기`} title="더보기">
+                                <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-control border-border bg-background px-0 text-muted-foreground hover:bg-muted hover:text-foreground md:h-9 md:w-10" aria-label={`${secondaryActions.length}개 추가 작업 보기`} title="더보기">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -1534,7 +1564,7 @@ export default function TransactionFlowList() {
                     </div>
                   );
                 })()}
-              </div>
+              </article>
             );
           })}
         </div>

@@ -76,8 +76,8 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
             key={value}
             variant="ghost"
             className={cn(
-              "w-full justify-start gap-2.5 h-10 px-3 transition-colors group relative rounded-lg",
-              isActive ? "bg-primary/10 text-primary" : "hover:bg-muted dark:hover:bg-card",
+              "w-full justify-start gap-2.5 h-10 px-3 transition-colors group relative rounded-control",
+              isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold before:absolute before:left-0 before:top-2 before:h-6 before:w-[3px] before:rounded-full before:bg-brand-highlight" : "text-foreground hover:bg-muted dark:hover:bg-card",
             )}
             asChild
           >
@@ -86,7 +86,7 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
                 className={cn(
                   "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
                   isActive
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-muted text-foreground"
                     : "bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-muted",
                 )}
               >

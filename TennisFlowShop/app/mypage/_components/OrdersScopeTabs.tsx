@@ -48,12 +48,12 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
   return (
     <nav
       className={cn(
-        "relative overflow-x-auto border-b border-border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "overflow-x-auto rounded-control border border-border bg-card p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         className,
       )}
       aria-label="거래/이용내역 하위 탭"
     >
-      <div className="flex min-w-max items-center gap-x-5 sm:gap-x-7">
+      <div className="flex min-w-max items-center gap-1">
         {SCOPE_ITEMS.map((item) => {
           const isActive = item.value === activeScope;
           return (
@@ -62,13 +62,13 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group relative -mb-px flex min-w-fit items-center whitespace-nowrap border-b-2 px-0.5 py-2.5 text-ui-label bp-sm:py-3 bp-sm:text-ui-body-sm",
-                "transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
+                "group relative flex min-h-11 min-w-fit items-center gap-2 whitespace-nowrap rounded-control px-3.5 py-2.5 text-ui-label font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-4 bp-sm:text-ui-body-sm",
                 isActive
-                  ? "border-foreground font-medium text-foreground"
-                  : "border-transparent font-medium text-muted-foreground hover:text-foreground",
+                  ? "bg-surface-inverse text-surface-inverse-foreground"
+                  : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
               )}
             >
+              {isActive ? <span className="h-1.5 w-1.5 rounded-full bg-brand-highlight" aria-hidden="true" /> : null}
               <span>{item.label}</span>
             </Link>
           );
