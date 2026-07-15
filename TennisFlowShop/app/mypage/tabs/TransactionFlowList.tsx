@@ -27,6 +27,10 @@ import {
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import {
+  getMypageTodoReasonMeta,
+  type MypageTodoReasonCode,
+} from "@/lib/mypage/activity-todo";
+import {
   isOrderConfirmedStatus,
   isOrderDeliveredStatus,
   isRentalReturnedStatus,
@@ -146,6 +150,7 @@ type ActivityGroup = {
     dueAt?: string | null;
     returnedAt?: string | null;
     hasReturnShipping?: boolean;
+    returnShippingWindowOpen?: boolean;
     reviewPendingCount?: number;
     reviewAllDone?: boolean;
     reviewNextTargetProductId?: string | null;
@@ -157,6 +162,7 @@ type ActivityGroup = {
     applicationSummaries?: ActivityApplicationSummary[];
   };
   application?: ActivityApplicationSummary;
+  todoReasonCode?: MypageTodoReasonCode | null;
 };
 
 type ActivityResponse = {
@@ -367,106 +373,15 @@ const getApplicationTrackingLabel = (app?: ActivityApplicationSummary) => {
   return app.hasTracking ? "라켓 발송 운송장 등록됨" : "라켓 발송 운송장 등록 필요";
 };
 
-const isRentalReturnShippingAvailable = (rental?: ActivityGroup["rental"]) => {
-  if (!rental || rental.status !== "out" || rental.returnedAt) return false;
-  if (!rental.dueAt) return false;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dueDate = new Date(rental.dueAt);
-  if (Number.isNaN(dueDate.getTime())) return false;
-  dueDate.setHours(0, 0, 0, 0);
-
-  return today >= dueDate;
-};
-
-const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
-  if (group.kind === "order") {
-    // 취소/환불된 주문은 사용자가 더 처리할 일이 없으므로 Todo에서 제외합니다.
-    if (isTerminalCanceledStatus(group.order?.status)) return null;
-
-    if (isOrderDeliveredStatus(group.order?.status)) {
-      return "구매 확정 필요";
-    }
-
-    const actionableApplication = group.order?.applicationSummaries?.find((app) =>
-      isApplicationTrackingNeeded(app),
-    );
-
-    if (isApplicationTrackingNeeded(actionableApplication)) {
-      return "라켓 발송 운송장 등록 필요";
-    }
-
-    const isConfirmed =
-      Boolean(group.order?.userConfirmedAt) ||
-      isOrderConfirmedStatus(group.order?.status);
-
-    if (isConfirmed && (group.order?.reviewPendingCount ?? 0) > 0) {
-      return "상품 후기 작성 가능";
-    }
-
-    if (group.application?.serviceReviewPending) {
-      return "상품·교체서비스 후기 작성 가능";
-    }
-
-    return null;
-  }
-
-  if (group.kind === "rental") {
-    if (isTerminalCanceledStatus(group.rental?.status)) return null;
-
-    if (isRentalReturnShippingAvailable(group.rental)) {
-      return group.rental?.hasReturnShipping ? "반납 운송장 수정 필요" : "반납 운송장 등록 필요";
-    }
-
-    if (
-      isRentalReturnedStatus(group.rental?.status) &&
-      !group.rental?.userConfirmedAt
-    ) {
-      return "수령 확인 필요";
-    }
-
-    if (group.application?.serviceReviewPending) {
-      return "상품·교체서비스 후기 작성 가능";
-    }
-
-    if (!group.rental?.stringingApplicationId && group.rental?.withStringService) {
-      return "교체서비스 신청 필요";
-    }
-
-    return null;
-  }
-
-  if (isTerminalCanceledStatus(group.application?.status)) return null;
-
-  if (isApplicationTrackingNeeded(group.application)) return "라켓 발송 운송장 등록 필요";
-  if (isApplicationConfirmNeeded(group.application)) return "교체서비스 확정 필요";
-  if (group.application?.serviceReviewPending) {
-    return "상품·교체서비스 후기 작성 가능";
-  }
-
-  return null;
-};
-
 const getFlowNextActionText = (
   group: ActivityGroup,
   opts?: {
     prefersApplicationView?: boolean;
-    todoPrimaryReason?: string | null;
+    todoReasonMessage?: string | null;
   },
 ): string | null => {
-  if (opts?.todoPrimaryReason) {
-    const todoMessageMap: Record<string, string> = {
-      "구매 확정 필요": "상품을 받으셨다면 구매 확정을 진행해주세요.",
-      "수령 확인 필요": "반납 내용을 확인하고 수령 확인을 진행해주세요.",
-      "라켓 발송 운송장 등록 필요": "라켓 발송 운송장을 등록해주세요.",
-      "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
-      "후기를 남길 수 있어요": "후기를 남길 수 있어요.",
-      "상품 후기 작성 가능": "후기를 남길 수 있어요.",
-      "상품·교체서비스 후기 작성 가능": "후기를 남길 수 있어요.",
-      "교체서비스 신청 필요": "교체서비스 신청을 이어갈 수 있어요.",
-    };
-    return todoMessageMap[opts.todoPrimaryReason] ?? null;
+  if (opts?.todoReasonMessage) {
+    return opts.todoReasonMessage;
   }
 
   const viewKind: ActivityGroup["kind"] =
@@ -1093,11 +1008,13 @@ export default function TransactionFlowList() {
                   ? (g.rental?.linkedApplicationCount ?? 0)
                   : 0;
             const needsTrackingAction = isApplicationTrackingNeeded(applicationActionTarget);
-            const todoPrimaryReason =
-              scope === "todo" || scope === "all" ? getTodoPrimaryReason(g) : null;
+            const reasonMeta =
+              (scope === "todo" || scope === "all") && g.todoReasonCode
+                ? getMypageTodoReasonMeta(g.todoReasonCode)
+                : null;
             const nextActionText = getFlowNextActionText(g, {
               prefersApplicationView,
-              todoPrimaryReason,
+              todoReasonMessage: reasonMeta?.message ?? null,
             });
 
             const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
@@ -1260,9 +1177,8 @@ export default function TransactionFlowList() {
                   ) : null}
 
                   {nextActionText ? (() => {
-                    const isOptionalReviewAction = todoPrimaryReason === "상품 후기 작성 가능" || todoPrimaryReason === "상품·교체서비스 후기 작성 가능";
-                    const isRequiredAction = Boolean(todoPrimaryReason && !isOptionalReviewAction);
-                    const actionLabel = isRequiredAction ? "다음 조치" : isOptionalReviewAction ? "선택 활동" : "진행 안내";
+                    const isRequiredAction = reasonMeta?.kind === "required";
+                    const actionLabel = reasonMeta?.label ?? "진행 안내";
 
                     return (
                       <div
@@ -1449,11 +1365,11 @@ export default function TransactionFlowList() {
                   }
 
                   if (g.kind === "rental" && rentalId && !prefersApplicationView) {
-                    if (isRentalReturnShippingAvailable(g.rental) && !g.rental?.hasReturnShipping) {
+                    if (g.todoReasonCode === "rental_return_shipping_register") {
                       addPrimaryActionCandidate({ key: "rental-return-shipping", node: <Button asChild size="sm" variant="highlight_soft"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 등록</Link></Button> });
-                    } else if (isRentalReturnedStatus(g.rental?.status) && !g.rental?.userConfirmedAt) {
+                    } else if (g.todoReasonCode === "rental_confirm") {
                       addPrimaryActionCandidate({ key: "rental-confirm", node: <Button size="sm" variant="highlight_soft" disabled={confirmingRentalId === rentalId} onClick={() => handleConfirmRental(rentalId)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}</Button> });
-                    } else if (g.rental?.userConfirmedAt) {
+                    } else if (g.todoReasonCode === "product_review" || g.todoReasonCode === "product_stringing_review") {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "rental-review",
                         rentalId,
@@ -1464,11 +1380,11 @@ export default function TransactionFlowList() {
                         fallbackApplicationId: g.rental?.reviewNextApplicationId,
                       });
                       if (reviewAction) addPrimaryActionCandidate(reviewAction);
-                    } else if (!g.rental?.stringingApplicationId && g.rental?.withStringService) {
+                    } else if (g.todoReasonCode === "rental_stringing_apply") {
                       addPrimaryActionCandidate({ key: "rental-apply-stringing", node: <Button asChild size="sm" variant="highlight_soft"><Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
                     }
 
-                    if (isRentalReturnShippingAvailable(g.rental) && g.rental?.hasReturnShipping) {
+                    if (g.rental?.returnShippingWindowOpen && g.rental?.hasReturnShipping) {
                       addSecondaryAction({ key: "rental-return-shipping-edit", node: <Button asChild size="sm" variant="outline" className="bg-transparent"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 수정</Link></Button> });
                     }
                     if (["pending", "paid", "대기중", "결제완료"].includes(normalizedStatus) && !g.rental?.hasOutboundShipping) {

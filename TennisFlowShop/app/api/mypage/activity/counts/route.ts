@@ -1,10 +1,13 @@
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import {
-  isApplicationTodoActionable,
-  isOrderTodoActionable,
-  isRentalTodoActionable,
+  hasRentalReturnShipping,
+  resolveApplicationTodoReason,
+  resolveOrderTodoReason,
+  resolveRentalTodoReason,
+  type ActivityTodoApplicationLike,
 } from "@/lib/mypage/activity-todo";
+import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
 import clientPromise from "@/lib/mongodb";
@@ -82,6 +85,11 @@ export async function GET() {
         {
           projection: {
             _id: 1,
+            status: 1,
+            userConfirmedAt: 1,
+            dueAt: 1,
+            returnedAt: 1,
+            shipping: 1,
             stringingApplicationId: 1,
             stringing: 1,
           },
@@ -142,8 +150,8 @@ export async function GET() {
     )
     .toArray();
 
-  const actionableLinkedAppCountByOrderId = new Map<string, number>();
-  const actionableLinkedAppCountByRentalId = new Map<string, number>();
+  const linkedTodoAppsByOrderId = new Map<string, ActivityTodoApplicationLike[]>();
+  const linkedTodoAppsByRentalId = new Map<string, ActivityTodoApplicationLike[]>();
 
   for (const doc of linkedApps as any[]) {
     const shipping = doc.shippingInfo ?? {};
@@ -159,7 +167,7 @@ export async function GET() {
         : true;
     const needsInboundTracking = inboundRequired && collectionMethod === "self_ship";
 
-    const isActionable = isApplicationTodoActionable({
+    const appLike: ActivityTodoApplicationLike = {
       status: doc.status,
       hasTracking,
       needsInboundTracking,
@@ -169,25 +177,19 @@ export async function GET() {
           : typeof doc.userConfirmedAt === "string"
             ? doc.userConfirmedAt
             : null,
-    });
-
-    if (!isActionable) continue;
+    };
 
     if (doc.orderId) {
       const key = String(doc.orderId);
-      actionableLinkedAppCountByOrderId.set(
-        key,
-        (actionableLinkedAppCountByOrderId.get(key) ?? 0) + 1,
-      );
+      linkedTodoAppsByOrderId.set(key, [...(linkedTodoAppsByOrderId.get(key) ?? []), appLike]);
     }
     if (doc.rentalId) {
       const key = String(doc.rentalId);
-      actionableLinkedAppCountByRentalId.set(
-        key,
-        (actionableLinkedAppCountByRentalId.get(key) ?? 0) + 1,
-      );
+      linkedTodoAppsByRentalId.set(key, [...(linkedTodoAppsByRentalId.get(key) ?? []), appLike]);
     }
   }
+
+  const todayYmd = toKstYmd();
 
   const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] = await Promise.all([
     resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
@@ -203,7 +205,7 @@ export async function GET() {
       ? (reviewBundlesByOrderId.get(orderId)?.counts.remaining ?? 0)
       : 0;
 
-    const needsAction = isOrderTodoActionable({
+    const needsAction = resolveOrderTodoReason({
       status: order?.status,
       userConfirmedAt:
         order?.userConfirmedAt instanceof Date
@@ -212,20 +214,10 @@ export async function GET() {
             ? order.userConfirmedAt
             : null,
       reviewPendingCount,
-      linkedApplications:
-        (actionableLinkedAppCountByOrderId.get(orderId) ?? 0) > 0
-          ? [
-              {
-                status: "교체완료",
-                hasTracking: false,
-                needsInboundTracking: true,
-                userConfirmedAt: null,
-              },
-            ]
-          : [],
+      linkedApplications: linkedTodoAppsByOrderId.get(orderId) ?? [],
     });
 
-    if (needsAction) todoOrderCount += 1;
+    if (needsAction !== null) todoOrderCount += 1;
   }
 
   let todoRentalCount = 0;
@@ -234,18 +226,19 @@ export async function GET() {
     const withStringService =
       Boolean(rental?.stringing?.requested) || Boolean(rental?.stringingApplicationId);
 
-    const needsAction = isRentalTodoActionable({
-      linkedApplications:
-        (actionableLinkedAppCountByRentalId.get(rentalId) ?? 0) > 0
-          ? [
-              {
-                status: "교체완료",
-                hasTracking: false,
-                needsInboundTracking: true,
-                userConfirmedAt: null,
-              },
-            ]
-          : [],
+    const needsAction = resolveRentalTodoReason({
+      status: rental?.status,
+      userConfirmedAt:
+        rental?.userConfirmedAt instanceof Date
+          ? rental.userConfirmedAt.toISOString()
+          : typeof rental?.userConfirmedAt === "string"
+            ? rental.userConfirmedAt
+            : null,
+      dueAt: rental?.dueAt ?? null,
+      returnedAt: rental?.returnedAt ?? null,
+      hasReturnShipping: hasRentalReturnShipping(rental?.shipping),
+      todayYmd,
+      linkedApplications: linkedTodoAppsByRentalId.get(rentalId) ?? [],
       stringingApplicationId: rental?.stringingApplicationId
         ? String(rental.stringingApplicationId)
         : null,
@@ -253,7 +246,7 @@ export async function GET() {
       reviewPendingCount: (reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0),
     });
 
-    if (needsAction) todoRentalCount += 1;
+    if (needsAction !== null) todoRentalCount += 1;
   }
 
   let todoApplicationCount = 0;
@@ -265,7 +258,7 @@ export async function GET() {
     );
     const needsInboundTracking = collectionMethod === "self_ship";
 
-    const needsAction = isApplicationTodoActionable({
+    const needsAction = resolveApplicationTodoReason({
       status: app?.status,
       hasTracking,
       needsInboundTracking,
@@ -275,9 +268,11 @@ export async function GET() {
           : typeof app?.userConfirmedAt === "string"
             ? app.userConfirmedAt
             : null,
+      serviceReviewPending:
+        (reviewBundlesByApplicationId.get(String(app._id))?.counts.remaining ?? 0) > 0,
     });
 
-    if (needsAction) todoApplicationCount += 1;
+    if (needsAction !== null) todoApplicationCount += 1;
   }
 
   const todo = todoOrderCount + todoRentalCount + todoApplicationCount;
