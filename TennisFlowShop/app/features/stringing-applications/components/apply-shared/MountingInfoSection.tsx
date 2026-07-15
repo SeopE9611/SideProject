@@ -1094,8 +1094,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               </PublicSurface>
             )}
             {linesForSubmit.map((line, index) => {
-              const lineKey = String(line.id ?? `line-${index}`);
-              const isLineOpen = openLineId ? openLineId === lineKey : index === 0;
+              const stableLineKey = typeof line.id === "string" && line.id ? line.id : null;
+              const panelId = stableLineKey ? `work-line-${stableLineKey}` : `work-line-legacy-${index}`;
+              const isLineOpen = stableLineKey !== null && openLineId === stableLineKey;
               const lineComplete = Boolean(
                 line.racketType?.trim() &&
                   line.tensionMain?.trim() &&
@@ -1111,7 +1112,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
               return (
               <PublicSurface
-                key={line.id ?? index}
+                key={stableLineKey ?? `legacy-line-${index}`}
                 padding="none"
                 className="group relative overflow-hidden"
               >
@@ -1147,7 +1148,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         className="h-8 gap-1 px-2 text-ui-label text-destructive hover:text-destructive"
                         onClick={() => {
                           removeStandaloneWorkLine(index);
-                          setOpenLineId((current) => (current === lineKey ? null : current));
+                          setOpenLineId((current) => (current === stableLineKey ? null : current));
                         }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -1159,9 +1160,13 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       variant="outline"
                       size="sm"
                       className="h-8 px-2 text-ui-label bp-md:hidden"
-                      onClick={() => setOpenLineId(isLineOpen ? null : lineKey)}
+                      onClick={() => {
+                        if (!stableLineKey) return;
+                        setOpenLineId(isLineOpen ? null : stableLineKey);
+                      }}
                       aria-expanded={isLineOpen}
-                      aria-controls={`work-line-${lineKey}`}
+                      aria-controls={panelId}
+                      disabled={!stableLineKey}
                     >
                       {isLineOpen ? "접기" : "편집"}
                     </Button>
@@ -1172,7 +1177,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </div>
 
                 {/* 라켓 이름 + 텐션 */}
-                <div id={`work-line-${lineKey}`} className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}>
+                <div id={panelId} className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-ui-label font-medium text-foreground">

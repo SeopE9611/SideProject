@@ -140,7 +140,8 @@ export default function ApplicationNiceCheckoutButton({
         type="button"
         onClick={handleClick}
         disabled={isDisabled}
-        className="w-full sm:w-auto"
+        variant="highlight"
+        className="min-h-11 w-full sm:w-auto"
       >
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         카드/간편결제로 신청 완료
@@ -148,7 +149,7 @@ export default function ApplicationNiceCheckoutButton({
       {!scriptReady && (
         <p className="text-ui-label text-muted-foreground">카드/간편결제창을 준비 중입니다.</p>
       )}
-      {inlineError && <p className="text-ui-label text-destructive">{inlineError}</p>}
+      {inlineError && <p className="text-ui-label text-destructive break-words">{inlineError}</p>}
     </div>
   );
 }

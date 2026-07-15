@@ -88,11 +88,15 @@ export default function ApplyStepFooter({
             {compactSummary}
           </p>
         ) : null}
-        <div className={currentStep === 1 ? "grid grid-cols-1 gap-2 bp-lg:flex bp-lg:justify-end" : "grid grid-cols-2 gap-2 bp-lg:flex bp-lg:flex-row-reverse bp-lg:justify-end"}>
-          <div className="[&>*]:h-11 [&>*]:w-full bp-lg:[&>*]:w-auto">{primaryAction}</div>
+        <div className={currentStep === 1 ? "grid grid-cols-1 gap-2 bp-lg:flex bp-lg:justify-end" : "grid grid-cols-2 gap-2 bp-lg:flex bp-lg:justify-end"}>
           {currentStep > 1 ? (
-            <div className="[&>*]:h-11 [&>*]:w-full bp-lg:[&>*]:w-auto">{secondaryAction}</div>
+            <div className="[&_button]:min-h-11 [&_button]:w-full bp-lg:[&_button]:w-auto">
+              {secondaryAction}
+            </div>
           ) : null}
+          <div className="[&_button]:min-h-11 [&_button]:w-full bp-lg:[&_button]:w-auto">
+            {primaryAction}
+          </div>
         </div>
       </div>
     </div>
