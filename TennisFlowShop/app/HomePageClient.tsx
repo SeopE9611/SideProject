@@ -284,7 +284,7 @@ const getImageSrc = (images?: string[]) => {
 };
 
 const buttonBase =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-4 py-2.5 text-ui-body-sm font-semibold transition-[background-color,color,border-color,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-4 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30";
 const buttonHighlight = `${buttonBase} bg-brand-highlight text-brand-highlight-foreground hover:opacity-90`;
 const buttonInverse = `${buttonBase} border border-surface-inverse-foreground/20 bg-surface-inverse text-surface-inverse-foreground hover:border-surface-inverse-foreground/40`;
 const buttonOutline = `${buttonBase} border border-border bg-card text-foreground hover:bg-muted/40`;
@@ -776,7 +776,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <div className={styles.heroShell}>
             <div className={styles.heroGrid}>
               <div className={styles.heroCopy}>
-                <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">
+                <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-medium text-brand-highlight-foreground">
                   스트링 교체서비스
                 </span>
                 <h1 className={styles.heroTitle}>
@@ -822,14 +822,14 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <div className={styles.heroPlan}>
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-ui-label font-bold uppercase tracking-[0.12em] text-surface-inverse-muted">
+                      <p className="text-ui-label font-medium uppercase tracking-[0.12em] text-surface-inverse-muted">
                         MY STRINGING PLAN
                       </p>
-                      <h2 className="mt-2 text-ui-section-title font-semibold">
+                      <h2 className={cn(styles.marketingTitle, "mt-2 text-ui-section-title")}>
                         교체 신청 미리보기
                       </h2>
                     </div>
-                    <span className="rounded-full bg-brand-highlight px-2.5 py-1 text-ui-caption font-bold text-brand-highlight-foreground">
+                    <span className="rounded-full bg-brand-highlight px-2.5 py-1 text-ui-caption font-medium text-brand-highlight-foreground">
                       선택
                     </span>
                   </div>
@@ -841,7 +841,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                         aria-pressed={activeApplicationPath === key}
                         onClick={() => setActiveApplicationPath(key)}
                         className={cn(
-                          "rounded-control border px-3 py-2 text-left text-ui-label font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                          "rounded-control border px-3 py-2 text-left text-ui-label font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                           activeApplicationPath === key
                             ? "border-brand-highlight bg-brand-highlight text-brand-highlight-foreground"
                             : "border-surface-inverse-foreground/15 bg-card/10 text-surface-inverse-foreground hover:border-surface-inverse-foreground/30",
@@ -886,7 +886,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     ) : (
                       <div className="absolute inset-0 bg-muted" />
                     )}
-                    <div className="relative z-10 flex h-full items-center justify-center bg-card/80 p-4 text-center text-ui-card-title font-semibold text-foreground">
+                    <div className="relative z-10 flex h-full items-center justify-center bg-card/80 p-4 text-center text-ui-card-title font-medium text-foreground">
                       {title}
                     </div>
                   </>
@@ -956,7 +956,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     active ? styles.pathCardActive : styles.pathCardIdle,
                   )}
                 >
-                  <span className="text-ui-label font-bold text-muted-foreground">
+                  <span className="text-ui-label font-medium text-muted-foreground">
                     {path.no} · {path.label}
                   </span>
                   <span
@@ -980,7 +980,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                     {path.description}
                   </p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-ui-label font-bold text-foreground">
+                  <span className="mt-5 inline-flex items-center gap-2 text-ui-label font-medium text-foreground">
                     <span
                       className={cn(
                         "h-2 w-2 rounded-full",
@@ -995,7 +995,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           </div>
           <div className={styles.pathDetail}>
             <div className={styles.detailCopy}>
-              <span className="rounded-full bg-brand-highlight-muted px-3 py-1.5 text-ui-label font-bold text-foreground">
+              <span className="rounded-full bg-brand-highlight-muted px-3 py-1.5 text-ui-label font-medium text-foreground">
                 {currentPath.label}
               </span>
               <h3
@@ -1019,7 +1019,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </Link>
             </div>
             <div className={styles.detailPreview}>
-              <p className="text-ui-label font-bold uppercase tracking-[0.12em] text-surface-inverse-muted">
+              <p className="text-ui-label font-medium uppercase tracking-[0.12em] text-surface-inverse-muted">
                 신청 요약
               </p>
               <PreviewLine label="스트링" value={currentPath.string} />
@@ -1058,7 +1058,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   />
                 </div>
                 <div className={styles.bentoCopy}>
-                  <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">
+                  <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-medium text-brand-highlight-foreground">
                     스트링 교체서비스
                   </span>
                   <h3 className={styles.bentoTitle}>라켓을 맡기는 순간부터 수령할 때까지</h3>
@@ -1091,7 +1091,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   )}
                 >
                   <span>
-                    <strong className="block text-ui-card-title-lg text-foreground">{title}</strong>
+                    <strong className="block text-ui-card-title-lg font-medium text-foreground">{title}</strong>
                     <span className="mt-2 block break-keep text-ui-body-sm text-muted-foreground">
                       {desc}
                     </span>
@@ -1125,7 +1125,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     aria-pressed={active}
                     onClick={() => setActiveStepKey(step.key)}
                     className={cn(
-                      "min-w-40 border-b border-r border-border px-4 py-4 text-left font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                      "min-w-40 border-b border-r border-border px-4 py-4 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                       active
                         ? "bg-surface-inverse text-surface-inverse-foreground"
                         : "bg-card text-foreground hover:bg-muted/30",
@@ -1133,7 +1133,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   >
                     <small
                       className={cn(
-                        "mb-1 block font-bold",
+                        "mb-1 block font-medium",
                         active ? "text-brand-highlight" : "text-muted-foreground",
                       )}
                     >
@@ -1146,7 +1146,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             </div>
             <div className={styles.stepBody}>
               <div className={styles.stepCopy}>
-                <p className="text-ui-label font-bold">단계 {currentStep.no}</p>
+                <p className="text-ui-label font-medium">단계 {currentStep.no}</p>
                 <h3
                   className={cn(
                     styles.marketingTitle,
@@ -1186,7 +1186,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   aria-label="교체서비스 신청 화면 미리보기"
                 >
                   <div className="flex items-center justify-between border-b border-border pb-4">
-                    <strong>{currentStep.mockTitle}</strong>
+                    <strong className="font-medium">{currentStep.mockTitle}</strong>
                     <span className="text-ui-label text-muted-foreground">진행 예시</span>
                   </div>
                   <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted">
@@ -1195,7 +1195,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       style={{ width: currentStep.progress }}
                     />
                   </div>
-                  <h4 className="mt-6 break-keep text-ui-section-title font-semibold text-foreground">
+                  <h4 className="mt-6 break-keep text-ui-section-title font-medium text-foreground">
                     {currentStep.question}
                   </h4>
                   <div className="mt-4 grid gap-2">
@@ -1219,7 +1219,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-5 rounded-control bg-brand-highlight px-4 py-3 text-center font-semibold text-brand-highlight-foreground">
+                  <div className="mt-5 rounded-control bg-brand-highlight px-4 py-3 text-center font-medium text-brand-highlight-foreground">
                     {currentStep.cta}
                   </div>
                 </div>
@@ -1233,7 +1233,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         <SiteContainer variant="wide" className={styles.wrap}>
           <div className={styles.trustLayout}>
             <div>
-              <span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-bold text-brand-highlight-foreground">
+              <span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-medium text-brand-highlight-foreground">
                 도깨비테니스 교체서비스
               </span>
               <h2 className={cn(styles.marketingTitle, "mt-5 text-ui-page-title leading-tight")}>
@@ -1257,8 +1257,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   key={title}
                   className="border-b border-surface-inverse-foreground/15 p-6 last:border-b-0 bp-sm:border-r bp-sm:even:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"
                 >
-                  <b className="text-brand-highlight">0{idx + 1}</b>
-                  <h3 className="mt-3 text-ui-card-title-lg font-semibold">{title}</h3>
+                  <b className="font-medium text-brand-highlight">0{idx + 1}</b>
+                  <h3 className="mt-3 text-ui-card-title-lg font-medium">{title}</h3>
                   <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-surface-inverse-muted">
                     {copy}
                   </p>
@@ -1286,7 +1286,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   aria-pressed={activePurpose === purpose.key}
                   onClick={() => setActivePurpose(purpose.key)}
                   className={cn(
-                    "flex min-w-40 items-center justify-between rounded-control border px-4 py-4 text-left font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                    "flex min-w-40 items-center justify-between rounded-control border px-4 py-4 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                     activePurpose === purpose.key
                       ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
                       : "border-border bg-card text-foreground hover:bg-muted/30",
@@ -1433,7 +1433,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               {packagesError ? (
                 <div className="space-y-4 p-6 text-ui-body text-muted-foreground">
                   <div>
-                    <strong className="block text-ui-card-title text-foreground">
+                    <strong className="block text-ui-card-title font-medium text-foreground">
                       패키지 정보를 불러오지 못했어요.
                     </strong>
                     <p className="mt-2">
@@ -1522,7 +1522,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   />
                 </div>
                 <div className="p-6 bp-md:p-8">
-                  <p className="text-ui-label font-bold text-brand-highlight">대표 라켓</p>
+                  <p className="text-ui-label font-medium text-brand-highlight">대표 라켓</p>
                   <RacketFeature racket={featuredRacket} />
                   {!hasInventoryRackets && (
                     <p className="mt-4 break-keep text-ui-body-sm text-surface-inverse-muted">
@@ -1620,7 +1620,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   href={href}
                   className="rounded-panel border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
-                  <strong className="block text-ui-card-title font-semibold text-foreground">
+                  <strong className="block text-ui-card-title font-medium text-foreground">
                     {title}
                   </strong>
                   <span className="mt-2 block break-keep text-ui-body-sm font-normal leading-relaxed text-muted-foreground">
@@ -1632,7 +1632,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           </div>
           <div className={styles.careBanner}>
             <div>
-              <p className="text-ui-label font-bold text-muted-foreground">교체 후 관리</p>
+              <p className="text-ui-label font-medium text-muted-foreground">교체 후 관리</p>
               <h3
                 className={cn(
                   styles.marketingTitle,
@@ -1694,7 +1694,7 @@ function PlanCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-control border border-surface-inverse-foreground/15 bg-card/10 p-3">
       <span className="block text-ui-caption text-surface-inverse-muted">{label}</span>
-      <strong className="mt-1 block text-ui-body-sm text-surface-inverse-foreground">
+      <strong className="mt-1 block text-ui-body-sm font-medium text-surface-inverse-foreground">
         {value}
       </strong>
     </div>
@@ -1705,7 +1705,7 @@ function CheckLine({ children, inverse = false }: { children: string; inverse?: 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 text-ui-body-sm font-semibold",
+        "flex items-center gap-2 text-ui-body-sm font-medium",
         inverse ? "text-brand-highlight-foreground" : "text-foreground",
       )}
     >
@@ -1728,7 +1728,7 @@ function PreviewLine({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-surface-inverse-foreground/15 py-4">
       <span className="text-ui-body-sm text-surface-inverse-muted">{label}</span>
-      <strong className="text-right text-ui-body-sm text-surface-inverse-foreground">
+      <strong className="text-right text-ui-body-sm font-medium text-surface-inverse-foreground">
         {value}
       </strong>
     </div>
@@ -1743,17 +1743,17 @@ function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
       <div className={styles.packageSessions}>
         <b className="text-ui-section-title font-semibold text-foreground">{pkg.sessions}회</b>
         {pkg.isPopular && (
-          <span className="ml-2 rounded-full bg-brand-highlight px-2 py-1 text-ui-caption font-bold text-brand-highlight-foreground">
+          <span className="ml-2 rounded-full bg-brand-highlight px-2 py-1 text-ui-caption font-medium text-brand-highlight-foreground">
             추천
           </span>
         )}
       </div>
       <div className={styles.packageMeta}>
-        <strong className="block text-ui-card-title text-foreground">{pkg.name}</strong>
+        <strong className="block text-ui-card-title font-medium text-foreground">{pkg.name}</strong>
         <span className={styles.packageDescription}>{pkg.description}</span>
       </div>
       <div className={styles.packagePrice}>
-        <strong className="block text-ui-card-title text-foreground">
+        <strong className="block text-ui-card-title font-semibold text-foreground">
           {formatPrice(pkg.price)}
         </strong>
         <span className={styles.packagePriceSub}>
@@ -1776,7 +1776,7 @@ function RacketFeature({ racket }: { racket: RItem }) {
   const discountRate = getRacketDiscountRate(racket);
   return (
     <div className="mt-3">
-      <h3 className="break-keep text-ui-page-title font-semibold leading-tight">
+      <h3 className="break-keep text-ui-page-title font-medium leading-tight">
         {racketBrandLabel(racket.brand)} {racket.model}
       </h3>
       <div className="mt-4 flex flex-wrap gap-2 text-ui-label text-surface-inverse-muted">
@@ -1814,7 +1814,7 @@ function InventoryRow({ racket }: { racket: RItem }) {
         <small className="text-ui-label text-muted-foreground">
           {racketBrandLabel(racket.brand)} · {racket.condition ?? "상태 확인"}
         </small>
-        <h3 className="break-words text-ui-card-title font-semibold text-foreground">
+        <h3 className="break-words text-ui-card-title font-medium text-foreground">
           {racket.model}
         </h3>
         <p className="text-ui-label text-muted-foreground">
@@ -1829,7 +1829,7 @@ function InventoryRow({ racket }: { racket: RItem }) {
 function EmptyPanel({ title, action }: { title: string; action?: () => void }) {
   return (
     <div className="rounded-panel border border-border bg-card p-6 text-center">
-      <p className="break-keep text-ui-card-title font-semibold text-foreground">{title}</p>
+      <p className="break-keep text-ui-card-title font-medium text-foreground">{title}</p>
       {action && (
         <button type="button" className={cn(buttonOutline, "mt-4")} onClick={action}>
           다시 시도
