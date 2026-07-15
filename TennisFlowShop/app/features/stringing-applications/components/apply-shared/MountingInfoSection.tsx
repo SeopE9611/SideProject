@@ -403,6 +403,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
   if (typeof lockedRacketQuantity === "number")
     limitReasons.push(`라켓 수량 ${lockedRacketQuantity}자루`);
 
+  const [openLineIndex, setOpenLineIndex] = React.useState(0);
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -1091,7 +1093,16 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </div>
               </PublicSurface>
             )}
-            {linesForSubmit.map((line, index) => (
+            {linesForSubmit.map((line, index) => {
+              const isLineOpen = openLineIndex === index;
+              const lineComplete = Boolean(
+                line.racketType?.trim() && line.tensionMain?.trim() && line.tensionCross?.trim(),
+              );
+              const lineSummary = [line.racketType?.trim() || `라켓 ${index + 1}`, line.tensionMain && line.tensionCross ? `${line.tensionMain}/${line.tensionCross}LB` : "텐션 미입력"]
+                .filter(Boolean)
+                .join(" · ");
+
+              return (
               <PublicSurface
                 key={line.id ?? index}
                 padding="none"
@@ -1133,11 +1144,25 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         삭제
                       </Button>
                     )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-2 text-ui-label bp-md:hidden"
+                      onClick={() => setOpenLineIndex(isLineOpen ? -1 : index)}
+                      aria-expanded={isLineOpen}
+                      aria-controls={`work-line-${index}`}
+                    >
+                      {isLineOpen ? "접기" : "편집"}
+                    </Button>
                   </div>
+                </div>
+                <div className="border-b border-border px-4 py-2 text-ui-label text-muted-foreground bp-md:hidden">
+                  {lineSummary} · {lineComplete ? "입력 완료" : "입력 필요"}
                 </div>
 
                 {/* 라켓 이름 + 텐션 */}
-                <div className="p-4 space-y-4">
+                <div id={`work-line-${index}`} className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-ui-label font-medium text-foreground">
@@ -1213,7 +1238,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
                 </div>
               </PublicSurface>
-            ))}
+              );
+            })}
           </SummaryCard>
         )}
 

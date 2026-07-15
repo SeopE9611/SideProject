@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import PriceSummaryCard from "@/app/services/_components/PriceSummaryCard";
+import { Button } from "@/components/ui/button";
 
 /**
  * Apply 페이지에서 사용되는 요금 요약 UI를 "표현(UI)만" 분리한 컴포넌트
- * - 모바일/태블릿: 폼 내부에 인라인으로 렌더
- * - 데스크탑(xl 이상): 우측 sticky 카드로 렌더
- *
+ * - 모바일/태블릿: compact 요약 + 펼침 상세
+ * - 데스크탑: grid 우측 sticky rail
  */
 
 type PriceSummaryCommonProps = {
@@ -16,8 +17,8 @@ type PriceSummaryCommonProps = {
   collectionMethod: any;
   stringTypes: any;
 
-  stringIncluded?: boolean; // 스트링 금액이 결제에 포함되는지(주문/대여 기반)
-  headerHint?: string; // 헤더 안내문(대여/주문 기반 혼선 방지)
+  stringIncluded?: boolean;
+  headerHint?: string;
 
   usingPackage: boolean;
   base: number;
@@ -39,46 +40,48 @@ type PriceSummaryCommonProps = {
   }>;
 };
 
-export function ApplyPriceSummaryMobile({
-  preferredDate,
-  preferredTime,
-  collectionMethod,
-  stringTypes,
-  stringIncluded = false,
-  headerHint,
-  usingPackage,
-  base,
-  pickupFee,
-  total,
-  racketPrice,
-  rentalDeposit,
-  rentalFee,
-  stringPrice,
-  totalLabel,
-  summaryTitle,
-  workLines,
-}: PriceSummaryCommonProps) {
+function collectionLabel(collectionMethod: any) {
+  if (collectionMethod === "visit") return "방문 접수";
+  if (collectionMethod === "courier_pickup") return "택배 픽업";
+  if (collectionMethod === "self_ship") return "택배 발송";
+  return "전달 방법 미선택";
+}
+
+function won(value: number) {
+  return `${Number(value || 0).toLocaleString()}원`;
+}
+
+export function ApplyPriceSummaryMobile(props: PriceSummaryCommonProps) {
+  const [open, setOpen] = useState(false);
+  const racketCount = props.workLines?.length || props.stringTypes?.length || 0;
+
   return (
-    <div className="mt-6 bp-sm:mt-8 xl:hidden">
-      <PriceSummaryCard
-        preferredDate={preferredDate ?? undefined}
-        preferredTime={preferredTime ?? undefined}
-        collectionMethod={collectionMethod}
-        stringTypes={stringTypes}
-        stringIncluded={stringIncluded}
-        headerHint={headerHint}
-        usingPackage={usingPackage}
-        base={base}
-        pickupFee={pickupFee}
-        total={total}
-        racketPrice={racketPrice}
-        rentalDeposit={rentalDeposit}
-        rentalFee={rentalFee}
-        stringPrice={stringPrice}
-        totalLabel={totalLabel}
-        summaryTitle={summaryTitle}
-        workLines={workLines}
-      />
+    <div className="mt-5 bp-lg:hidden">
+      <div className="rounded-panel border border-border bg-card p-4 shadow-soft">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-ui-body-sm font-semibold text-foreground">
+              라켓 {racketCount || "-"}대 · {collectionLabel(props.collectionMethod)} · {won(props.total)}
+            </p>
+            <p className="mt-1 text-ui-label text-muted-foreground">신청 요약을 접어 두고 입력을 이어갈 수 있습니다.</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
+            className="shrink-0"
+          >
+            {open ? "닫기" : "내용 보기"}
+          </Button>
+        </div>
+        {open ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <PriceSummaryCard {...props} preferredDate={props.preferredDate ?? undefined} preferredTime={props.preferredTime ?? undefined} />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -87,59 +90,12 @@ type DesktopProps = PriceSummaryCommonProps & {
   stickyTop: number;
 };
 
-export function ApplyPriceSummaryDesktop({
-  stickyTop,
-  preferredDate,
-  preferredTime,
-  collectionMethod,
-  stringTypes,
-  stringIncluded = false,
-  headerHint,
-  usingPackage,
-  base,
-  pickupFee,
-  total,
-  racketPrice,
-  rentalDeposit,
-  rentalFee,
-  stringPrice,
-  totalLabel,
-  summaryTitle,
-  workLines,
-}: DesktopProps) {
+export function ApplyPriceSummaryDesktop({ stickyTop, ...props }: DesktopProps) {
   return (
-    <div
-      className="hidden 2xl:block"
-      style={{
-        position: "absolute",
-        width: "320px",
-        left: "calc(50% + 400px + 24px)",
-        top: 0,
-        height: "100%",
-        pointerEvents: "none",
-      }}
-    >
-      <div className="sticky pointer-events-auto" style={{ top: stickyTop }}>
-        <PriceSummaryCard
-          preferredDate={preferredDate}
-          preferredTime={preferredTime}
-          collectionMethod={collectionMethod}
-          stringTypes={stringTypes}
-          stringIncluded={stringIncluded}
-          headerHint={headerHint}
-          usingPackage={usingPackage}
-          base={base}
-          pickupFee={pickupFee}
-          total={total}
-          racketPrice={racketPrice}
-          rentalDeposit={rentalDeposit}
-          rentalFee={rentalFee}
-          stringPrice={stringPrice}
-          totalLabel={totalLabel}
-          summaryTitle={summaryTitle}
-          workLines={workLines}
-        />
+    <aside className="hidden min-w-0 bp-lg:block">
+      <div className="sticky" style={{ top: Math.max(88, stickyTop) }}>
+        <PriceSummaryCard {...props} />
       </div>
-    </div>
+    </aside>
   );
 }

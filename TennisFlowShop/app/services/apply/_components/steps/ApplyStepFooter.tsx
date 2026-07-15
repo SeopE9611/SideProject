@@ -38,7 +38,7 @@ export default function ApplyStepFooter({
         type="button"
         onClick={onNext}
         disabled={!isStepValid(currentStep)}
-        variant="default"
+        variant="highlight"
         className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
       >
         다음
@@ -51,7 +51,7 @@ export default function ApplyStepFooter({
         type="button"
         disabled={isSubmitting || isOrderSlotBlocked}
         onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
-        variant="default"
+        variant="highlight"
         className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
       >
         {isSubmitting ? (
@@ -80,12 +80,12 @@ export default function ApplyStepFooter({
   );
 
   return (
-    <div className="mt-8 flex border-t border-border pt-5 sm:justify-end">
+    <div className="sticky bottom-0 z-30 -mx-4 mt-8 border-t border-border bg-card/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-soft backdrop-blur-sm bp-sm:-mx-5 bp-sm:px-5 bp-lg:static bp-lg:mx-0 bp-lg:flex bp-lg:bg-transparent bp-lg:p-0 bp-lg:pt-5 bp-lg:shadow-none bp-lg:backdrop-blur-0 bp-lg:justify-end">
       <PrimaryCTAGroup
         primary={primaryAction}
         secondary={secondaryAction}
         align="right"
-        className="sm:flex-row-reverse"
+        className="w-full sm:flex-row-reverse bp-lg:w-auto"
       />
     </div>
   );
