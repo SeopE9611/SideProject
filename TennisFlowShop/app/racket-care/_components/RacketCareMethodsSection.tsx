@@ -34,7 +34,7 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
         {methods.map((method) => (
           <Card key={method.no} variant="feature" className="rounded-panel">
             <CardContent className="p-5 bp-sm:p-6">
-              <p className="text-ui-label font-semibold text-brand-highlight">{method.no}</p>
+              <p className="text-ui-label font-semibold text-brand-highlight-ink">{method.no}</p>
               <h3 className="mt-4 text-ui-card-title-lg font-bold tracking-[-0.01em]">{method.title}</h3>
               <p className="mt-3 break-keep text-ui-body-sm text-muted-foreground">{method.copy}</p>
               <div className="mt-6 grid gap-2">

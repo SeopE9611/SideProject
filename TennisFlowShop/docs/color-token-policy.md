@@ -81,12 +81,12 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--card-foreground`: `0 0% 10%`
 - `--popover`: `40 10% 99%`
 - `--popover-foreground`: `0 0% 10%`
-- `--primary`: `0 0% 10%`
+- `--primary`: `220 7% 30%`
 - `--primary-foreground`: `0 0% 98%`
-- `--accent`: `0 0% 18%`
+- `--accent`: `220 6% 26%`
 - `--accent-foreground`: `0 0% 98%`
-- `--accent-hover`: `0 0% 14%`
-- `--accent-active`: `0 0% 8%`
+- `--accent-hover`: `220 7% 24%`
+- `--accent-active`: `220 8% 20%`
 - `--secondary`: `40 8% 95%` (`#F2F2F0`)
 - `--secondary-foreground`: `0 0% 16%`
 - `--muted`: `40 6% 96%` (`#F4F4F2`)
@@ -94,7 +94,15 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--border`: `40 6% 88%` (`#E3E3E0`)
 - `--input`: `40 6% 88%`
 - `--brand-text`: `0 0% 10%`
-- `--ring`: `0 0% 18%`
+- `--brand-highlight`: `78 72% 47%`
+- `--brand-highlight-foreground`: `120 10% 8%`
+- `--brand-highlight-muted`: `78 34% 91%`
+- `--brand-highlight-ink`: `80 50% 28%`
+- `--surface-inverse`: `132 12% 7%`
+- `--surface-inverse-foreground`: `45 35% 96%`
+- `--surface-inverse-muted`: `42 8% 68%`
+- `--outline-text`: `120 10% 8%`
+- `--ring`: `220 7% 38%`
 - `--overlay`: `0 0% 6%`
 - `--sidebar`: `40 12% 98%`
 - `--sidebar-foreground`: `0 0% 10%`
@@ -115,12 +123,12 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--card-foreground`: `0 0% 96%`
 - `--popover`: `240 3% 10%`
 - `--popover-foreground`: `0 0% 96%`
-- `--primary`: `0 0% 96%`
-- `--primary-foreground`: `0 0% 10%`
-- `--accent`: `0 0% 82%`
-- `--accent-foreground`: `0 0% 10%`
-- `--accent-hover`: `0 0% 88%`
-- `--accent-active`: `0 0% 92%`
+- `--primary`: `220 7% 72%`
+- `--primary-foreground`: `220 10% 12%`
+- `--accent`: `220 7% 68%`
+- `--accent-foreground`: `220 10% 12%`
+- `--accent-hover`: `220 8% 76%`
+- `--accent-active`: `220 8% 82%`
 - `--secondary`: `240 3% 15%` (`#252528`)
 - `--secondary-foreground`: `0 0% 94%`
 - `--muted`: `240 3% 17%` (`#2B2B2E`)
@@ -128,7 +136,15 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--border`: `240 3% 24%` (`#3C3C3F`)
 - `--input`: `240 3% 24%`
 - `--brand-text`: `0 0% 96%`
-- `--ring`: `0 0% 80%`
+- `--brand-highlight`: `78 82% 50%`
+- `--brand-highlight-foreground`: `120 10% 7%`
+- `--brand-highlight-muted`: `78 44% 18%`
+- `--brand-highlight-ink`: `78 82% 56%`
+- `--surface-inverse`: `132 12% 5%`
+- `--surface-inverse-foreground`: `45 35% 96%`
+- `--surface-inverse-muted`: `42 8% 72%`
+- `--outline-text`: `45 35% 96%`
+- `--ring`: `220 7% 78%`
 - `--overlay`: `0 0% 4%`
 - `--sidebar`: `240 4% 9%` (`#151517`)
 - `--sidebar-foreground`: `0 0% 94%`
@@ -137,7 +153,7 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--sidebar-accent`: `240 3% 15%`
 - `--sidebar-accent-foreground`: `0 0% 94%`
 - `--sidebar-border`: `240 3% 22%`
-- `--sidebar-ring`: `0 0% 80%`
+- `--sidebar-ring`: `220 7% 78%`
 
 ### 상태색(역할 유지)
 
@@ -170,6 +186,9 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - 배경/표면: `bg-background`, `bg-card`, `bg-popover`
 - 텍스트: `text-foreground`, `text-muted-foreground`
 - 주요 CTA: `bg-primary text-primary-foreground`
+- 브랜드 채움/스트로크/inverse signal: `bg-brand-highlight`, `text-brand-highlight`, `border-brand-highlight`
+- 브랜드 soft surface: `bg-brand-highlight-muted`
+- 라이트/중립 표면 위 브랜드 텍스트·아이콘: `text-brand-highlight-ink`, `border-brand-highlight-ink`
 - 보조 강조: `bg-accent text-accent-foreground`
 - 경계/입력: `border-border`, `bg-background`, `ring-ring`
 - 위험 액션: `bg-destructive text-destructive-foreground`

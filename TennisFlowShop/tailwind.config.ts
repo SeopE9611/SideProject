@@ -90,6 +90,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--brand-highlight))",
           foreground: "hsl(var(--brand-highlight-foreground))",
           muted: "hsl(var(--brand-highlight-muted))",
+          ink: "hsl(var(--brand-highlight-ink))",
         },
         "surface-inverse": {
           DEFAULT: "hsl(var(--surface-inverse))",

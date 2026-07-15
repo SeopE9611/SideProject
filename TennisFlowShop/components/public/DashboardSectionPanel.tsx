@@ -39,7 +39,7 @@ export function DashboardSectionPanel({
             <div
               className={cn(
                 "flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-border bg-muted text-muted-foreground",
-                variant === "feature" && "border-brand-highlight/30 bg-brand-highlight-muted text-brand-highlight",
+                variant === "feature" && "border-brand-highlight/30 bg-brand-highlight-muted text-brand-highlight-ink",
               )}
               aria-hidden="true"
             >

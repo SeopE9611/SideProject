@@ -309,7 +309,7 @@ export default function MypageClient({ user }: Props) {
             <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
               <CardContent className="p-4 bp-sm:p-5">
                 <button type="button" onClick={() => router.push("/mypage/racket-care")} className="group flex w-full items-center gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                  <span className="rounded-control bg-brand-highlight-muted p-2.5 text-brand-highlight">
+                  <span className="rounded-control bg-brand-highlight-muted p-2.5 text-brand-highlight-ink">
                     <Wrench className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -323,7 +323,7 @@ export default function MypageClient({ user }: Props) {
                     </span>
                     <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">다음 스트링 교체 시점을 확인해보세요.</span>
                   </span>
-                  <span className="text-brand-highlight" aria-hidden="true">→</span>
+                  <span className="text-brand-highlight-ink" aria-hidden="true">→</span>
                 </button>
               </CardContent>
             </Card>
@@ -331,7 +331,7 @@ export default function MypageClient({ user }: Props) {
             <Card className="rounded-panel border-border/80 bg-card shadow-soft">
               <CardContent className="p-4 bp-sm:p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-ui-body-sm font-semibold text-foreground">내 활동 지표</p>
+                  <p className="text-ui-body-sm font-semibold text-foreground">활동 요약</p>
                   {hasSummaryError ? <span className="text-ui-label text-destructive">지표 불러오기 실패</span> : null}
                 </div>
                 <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">

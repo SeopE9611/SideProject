@@ -42,7 +42,6 @@ import {
   MoreHorizontal,
   Package,
   Wrench,
-  Sparkles,
   Undo2,
   XCircle,
 } from "lucide-react";
@@ -1019,22 +1018,12 @@ export default function TransactionFlowList() {
     <div className="space-y-4">
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
-      {scope === "todo" ? (
-        <div className="rounded-control border border-warning/25 bg-warning/10 px-3 py-2.5">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 shrink-0 text-warning" />
-            <p className="break-keep text-ui-label font-medium text-foreground">
-              지금 처리할 수 있는 항목만 모았습니다.
-            </p>
-          </div>
-        </div>
-      ) : null}
       {items.length === 0 ? (
         <EmptyState
           icon={<Package className="h-8 w-8" />}
           title={
             scope === "todo"
-              ? "지금 처리할 일이 없습니다."
+              ? "현재 확인할 항목이 없습니다."
               : scope === "application"
                 ? "표시할 서비스 신청이 없습니다."
                 : scope === "rental"
@@ -1045,7 +1034,7 @@ export default function TransactionFlowList() {
           }
           description={
             scope === "todo"
-              ? "주문, 교체서비스, 대여 진행 중 필요한 작업이 생기면 이곳에 표시됩니다."
+              ? "확인이 필요하거나 선택할 수 있는 활동이 생기면 이곳에 표시됩니다."
               : "새 이용내역이 생기면 이곳에서 상태와 다음 행동을 확인할 수 있습니다."
           }
         />
@@ -1270,21 +1259,25 @@ export default function TransactionFlowList() {
                     </p>
                   ) : null}
 
-                  {nextActionText ? (
-                    <div
-                      className={cn(
-                        "mt-2 rounded-control border px-3 py-2 text-ui-label leading-relaxed",
-                        todoPrimaryReason
-                          ? "border-warning/25 bg-warning/10 text-foreground"
-                          : "border-border bg-muted/30 text-foreground",
-                      )}
-                    >
-                      <span className={cn("mr-2 font-semibold", todoPrimaryReason ? "text-warning" : "text-muted-foreground")}>
-                        {todoPrimaryReason ? "다음 조치" : "진행 안내"}
-                      </span>
-                      {nextActionText}
-                    </div>
-                  ) : null}
+                  {nextActionText ? (() => {
+                    const isOptionalReviewAction = todoPrimaryReason === "상품 후기 작성 가능" || todoPrimaryReason === "상품·교체서비스 후기 작성 가능";
+                    const isRequiredAction = Boolean(todoPrimaryReason && !isOptionalReviewAction);
+                    const actionLabel = isRequiredAction ? "다음 조치" : isOptionalReviewAction ? "선택 활동" : "진행 안내";
+
+                    return (
+                      <div
+                        className={cn(
+                          "mt-2 flex items-start gap-2 border-l-2 py-1 pl-2 text-ui-label leading-relaxed",
+                          isRequiredAction ? "border-warning/55" : "border-border",
+                        )}
+                      >
+                        <span className={cn("shrink-0 font-semibold", isRequiredAction ? "text-warning" : "text-muted-foreground")}>
+                          {actionLabel}
+                        </span>
+                        <span className="text-muted-foreground">{nextActionText}</span>
+                      </div>
+                    );
+                  })() : null}
                 </div>
 
                 {/* 오른쪽(상태 배지 + 액션 버튼) + 펼침 패널 */}
@@ -1365,7 +1358,7 @@ export default function TransactionFlowList() {
                     return {
                       key: params.key,
                       node: (
-                        <Button size="sm" asChild>
+                        <Button size="sm" asChild variant="secondary">
                           <Link href={href}>
                             <MessageSquarePlus className="mr-1 h-3.5 w-3.5" />
                             후기 작성
@@ -1410,7 +1403,7 @@ export default function TransactionFlowList() {
                       addPrimaryActionCandidate({
                         key: "application-shipping",
                         node: (
-                          <Button asChild size="sm">
+                          <Button asChild size="sm" variant="highlight_soft">
                             <Link href={`/services/applications/${actionableOrderApplication.id}/shipping?return=${encodeURIComponent(resolvedDetailHref)}`}>
                               라켓 발송 운송장 등록
                             </Link>
@@ -1421,7 +1414,7 @@ export default function TransactionFlowList() {
                       addPrimaryActionCandidate({
                         key: "order-confirm",
                         node: (
-                          <Button size="sm" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
+                          <Button size="sm" variant="highlight_soft" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
                             {confirmingOrderId === orderId ? "처리 중..." : "구매 확정"}
                           </Button>
@@ -1457,9 +1450,9 @@ export default function TransactionFlowList() {
 
                   if (g.kind === "rental" && rentalId && !prefersApplicationView) {
                     if (isRentalReturnShippingAvailable(g.rental) && !g.rental?.hasReturnShipping) {
-                      addPrimaryActionCandidate({ key: "rental-return-shipping", node: <Button asChild size="sm"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 등록</Link></Button> });
+                      addPrimaryActionCandidate({ key: "rental-return-shipping", node: <Button asChild size="sm" variant="highlight_soft"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 등록</Link></Button> });
                     } else if (isRentalReturnedStatus(g.rental?.status) && !g.rental?.userConfirmedAt) {
-                      addPrimaryActionCandidate({ key: "rental-confirm", node: <Button size="sm" disabled={confirmingRentalId === rentalId} onClick={() => handleConfirmRental(rentalId)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}</Button> });
+                      addPrimaryActionCandidate({ key: "rental-confirm", node: <Button size="sm" variant="highlight_soft" disabled={confirmingRentalId === rentalId} onClick={() => handleConfirmRental(rentalId)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}</Button> });
                     } else if (g.rental?.userConfirmedAt) {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "rental-review",
@@ -1472,7 +1465,7 @@ export default function TransactionFlowList() {
                       });
                       if (reviewAction) addPrimaryActionCandidate(reviewAction);
                     } else if (!g.rental?.stringingApplicationId && g.rental?.withStringService) {
-                      addPrimaryActionCandidate({ key: "rental-apply-stringing", node: <Button asChild size="sm"><Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
+                      addPrimaryActionCandidate({ key: "rental-apply-stringing", node: <Button asChild size="sm" variant="highlight_soft"><Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
                     }
 
                     if (isRentalReturnShippingAvailable(g.rental) && g.rental?.hasReturnShipping) {
@@ -1491,7 +1484,7 @@ export default function TransactionFlowList() {
                         : `/mypage?tab=orders&flowType=application&flowId=${applicationActionTarget.id}&${flowQuery}`;
 
                     if (!isRentalLinkedApplicationAction && isApplicationTrackingNeeded(applicationActionTarget)) {
-                      const action = { key: "application-shipping", node: <Button asChild size="sm" variant={applicationActionTarget.hasTracking ? "outline" : "default"} className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}><Link href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(applicationShippingReturnHref)}`}>{applicationActionTarget.hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}</Link></Button> };
+                      const action = { key: "application-shipping", node: <Button asChild size="sm" variant={applicationActionTarget.hasTracking ? "outline" : "highlight_soft"} className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}><Link href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(applicationShippingReturnHref)}`}>{applicationActionTarget.hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}</Link></Button> };
                       if (applicationActionTarget.hasTracking) addSecondaryAction(action);
                       else addPrimaryActionCandidate(action);
                     }
@@ -1499,7 +1492,7 @@ export default function TransactionFlowList() {
                       addSecondaryAction({ key: "application-cancel-request", node: <Button size="sm" variant="outline" className="border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}><XCircle className="mr-1 h-3.5 w-3.5" />취소 요청</Button> });
                     }
                     if (isStringingCompletedStatus(applicationActionTarget.status) && !applicationActionTarget.userConfirmedAt && !isLinkedApplicationConfirmSuppressed) {
-                      addPrimaryActionCandidate({ key: "application-confirm", node: <Button size="sm" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체서비스 확정"}</Button> });
+                      addPrimaryActionCandidate({ key: "application-confirm", node: <Button size="sm" variant="highlight_soft" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체서비스 확정"}</Button> });
                     } else if (!applicationActionTarget.orderId && !applicationActionTarget.rentalId && applicationActionTarget.userConfirmedAt) {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "application-review",

@@ -109,9 +109,10 @@ html body[data-scroll-locked] {
   --brand-text: 0 0% 10%;
 
   /* Dokkaebi Design System V2 brand emphasis */
-  --brand-highlight: 78 92% 56%;
+  --brand-highlight: 78 72% 47%;
   --brand-highlight-foreground: 120 10% 8%;
-  --brand-highlight-muted: 78 80% 92%;
+  --brand-highlight-muted: 78 34% 91%;
+  --brand-highlight-ink: 80 50% 28%;
   --surface-inverse: 132 12% 7%;
   --surface-inverse-foreground: 45 35% 96%;
   --surface-inverse-muted: 42 8% 68%;
@@ -188,6 +189,7 @@ html body[data-scroll-locked] {
   --brand-highlight: 78 82% 50%;
   --brand-highlight-foreground: 120 10% 7%;
   --brand-highlight-muted: 78 44% 18%;
+  --brand-highlight-ink: 78 82% 56%;
   --surface-inverse: 132 12% 5%;
   --surface-inverse-foreground: 45 35% 96%;
   --surface-inverse-muted: 42 8% 72%;
