@@ -20,7 +20,7 @@ import {
 } from "@/lib/points.policy";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Check, ChevronRight } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -64,6 +64,15 @@ type BrandKey = (typeof BRAND_KEYS)[number];
 
 const STRING_BRAND_KEYS = ["all", ...STRING_BRANDS.map((b) => b.value)] as const;
 type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
+
+type BrandRailState = {
+  canScrollPrev: boolean;
+  canScrollNext: boolean;
+  hasOverflow: boolean;
+};
+
+const BRAND_RAIL_SCROLL_EPSILON = 2;
+const STRING_BRAND_RAIL_ID = "home-string-brand-rail";
 
 type PromoBanner = {
   key: string;
@@ -316,12 +325,48 @@ function HomeEditorialHeader({
 export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
+  const [stringBrandRailState, setStringBrandRailState] = useState<BrandRailState>({
+    canScrollPrev: false,
+    canScrollNext: false,
+    hasOverflow: false,
+  });
   const [activeApplicationPath, setActiveApplicationPath] = useState<ApplicationPathKey>("consult");
   const [activeStepKey, setActiveStepKey] = useState<ProcessStepKey>("apply");
   const [activePurpose, setActivePurpose] = useState<PurposeKey>("comfort");
   const router = useRouter();
   const stringBrandRailRef = useRef<HTMLDivElement>(null);
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
+
+  const updateStringBrandRailState = useCallback(() => {
+    const rail = stringBrandRailRef.current;
+    if (!rail) return;
+
+    const maxScrollLeft = Math.max(0, rail.scrollWidth - rail.clientWidth);
+    const nextState: BrandRailState = {
+      canScrollPrev: rail.scrollLeft > BRAND_RAIL_SCROLL_EPSILON,
+      canScrollNext: rail.scrollLeft < maxScrollLeft - BRAND_RAIL_SCROLL_EPSILON,
+      hasOverflow: maxScrollLeft > BRAND_RAIL_SCROLL_EPSILON,
+    };
+
+    setStringBrandRailState((prev) =>
+      prev.canScrollPrev === nextState.canScrollPrev &&
+      prev.canScrollNext === nextState.canScrollNext &&
+      prev.hasOverflow === nextState.hasOverflow
+        ? prev
+        : nextState,
+    );
+  }, []);
+
+  const scrollStringBrandRail = useCallback((direction: -1 | 1) => {
+    const rail = stringBrandRailRef.current;
+    if (!rail) return;
+
+    const distance = Math.max(180, rail.clientWidth * 0.7) * direction;
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    rail.scrollBy({ left: distance, behavior: reduceMotion ? "auto" : "smooth" });
+  }, []);
 
   useEffect(() => {
     const rails = [stringBrandRailRef.current, racketBrandRailRef.current].filter(
@@ -347,6 +392,51 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     rails.forEach((rail) => rail.addEventListener("wheel", handleWheel, { passive: false }));
     return () => rails.forEach((rail) => rail.removeEventListener("wheel", handleWheel));
   }, []);
+
+  useEffect(() => {
+    const rail = stringBrandRailRef.current;
+    if (!rail) return;
+
+    updateStringBrandRailState();
+    const handleScroll = () => updateStringBrandRailState();
+    const handleResize = () => updateStringBrandRailState();
+    rail.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+
+    const resizeObserver =
+      "ResizeObserver" in window ? new ResizeObserver(updateStringBrandRailState) : null;
+    resizeObserver?.observe(rail);
+
+    return () => {
+      rail.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      resizeObserver?.disconnect();
+    };
+  }, [updateStringBrandRailState]);
+
+  useEffect(() => {
+    const rail = stringBrandRailRef.current;
+    if (!rail) return;
+    const activeButton = rail.querySelector<HTMLButtonElement>(
+      `[data-string-brand="${activeStringBrand}"]`,
+    );
+    if (!activeButton) return;
+
+    const railStart = rail.scrollLeft;
+    const railEnd = railStart + rail.clientWidth;
+    const buttonStart = activeButton.offsetLeft;
+    const buttonEnd = buttonStart + activeButton.offsetWidth;
+    const edgePadding = 12;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
+
+    if (buttonStart < railStart + edgePadding) {
+      rail.scrollTo({ left: Math.max(0, buttonStart - edgePadding), behavior });
+    } else if (buttonEnd > railEnd - edgePadding) {
+      rail.scrollTo({ left: buttonEnd - rail.clientWidth + edgePadding, behavior });
+    }
+  }, [activeStringBrand]);
 
   const signupPromo = useMemo(
     () => ({
@@ -1233,26 +1323,62 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <p className="mt-2 break-keep text-ui-body text-muted-foreground">
                   {activePurposeInfo.desc}
                 </p>
-                <div className={cn(brandRailClass, "mt-5")} ref={stringBrandRailRef}>
+                <div className="mt-5 flex max-w-full items-center gap-2 overflow-hidden">
                   <button
                     type="button"
-                    aria-pressed={activeStringBrand === "all"}
-                    onClick={() => setActiveStringBrand("all")}
-                    className={getBrandTabClass(activeStringBrand === "all")}
+                    aria-label="이전 브랜드 보기"
+                    aria-controls={STRING_BRAND_RAIL_ID}
+                    disabled={!stringBrandRailState.canScrollPrev}
+                    onClick={() => scrollStringBrandRail(-1)}
+                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
                   >
-                    전체
+                    <ChevronLeft aria-hidden="true" className="h-4 w-4" />
                   </button>
-                  {STRING_BRANDS.map((b) => (
-                    <button
-                      key={b.value}
-                      type="button"
-                      aria-pressed={activeStringBrand === b.value}
-                      onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                      className={getBrandTabClass(activeStringBrand === b.value)}
+                  <div className="relative min-w-0 flex-1">
+                    <div
+                      id={STRING_BRAND_RAIL_ID}
+                      className={brandRailClass}
+                      ref={stringBrandRailRef}
                     >
-                      {b.label}
-                    </button>
-                  ))}
+                      <button
+                        type="button"
+                        data-string-brand="all"
+                        aria-pressed={activeStringBrand === "all"}
+                        onClick={() => setActiveStringBrand("all")}
+                        className={getBrandTabClass(activeStringBrand === "all")}
+                      >
+                        전체
+                      </button>
+                      {STRING_BRANDS.map((b) => (
+                        <button
+                          key={b.value}
+                          type="button"
+                          data-string-brand={b.value}
+                          aria-pressed={activeStringBrand === b.value}
+                          onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
+                          className={getBrandTabClass(activeStringBrand === b.value)}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollPrev && (
+                      <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-card to-transparent" />
+                    )}
+                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollNext && (
+                      <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="다음 브랜드 보기"
+                    aria-controls={STRING_BRAND_RAIL_ID}
+                    disabled={!stringBrandRailState.canScrollNext}
+                    onClick={() => scrollStringBrandRail(1)}
+                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
+                  >
+                    <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                  </button>
                 </div>
                 <HorizontalProducts
                   title={activePurposeInfo.title}
