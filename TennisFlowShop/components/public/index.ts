@@ -7,6 +7,7 @@
  * - 로그인/비밀번호/계정 탈퇴처럼 인증 맥락의 단일 폼 화면은 AuthShell을 우선 사용합니다.
  */
 export { AuthShell, type AuthShellProps } from "./AuthShell";
+export { DashboardSectionPanel, type DashboardSectionPanelProps } from "./DashboardSectionPanel";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { InteractiveCard, type InteractiveCardProps } from "./InteractiveCard";
 export { PublicPageHero, type PublicPageHeroProps, type PublicPageHeroVariant } from "./PublicPageHero";

@@ -6,10 +6,10 @@ import OrdersScopeTabs, {
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import UserSection from "@/app/mypage/UserSection";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { SummaryCard } from "@/components/public/SummaryCard";
+import { DashboardSectionPanel, SummaryCard } from "@/components/public";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -233,19 +233,7 @@ export default function MypageClient({ user }: Props) {
       : "order";
   const activeOrdersScope = resolveOrdersScopeContext(flowBackUrl, detailScopeFallback);
 
-  // 페이지 톤 클래스 분류(대시보드 카드, 탭 헤더, 아이콘 배경)
-  const pageTone = {
-    dashboardPanel: "border-b border-border/60 bg-background",
-    shellCard:
-      "overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
-    sectionHeader:
-      "border-b border-border/60 bg-secondary/30 px-4 py-3 bp-sm:px-5 bp-sm:py-4 bp-lg:px-6",
-    iconSurface: "rounded-xl bg-primary/10 p-2 ring-1 ring-primary/10",
-  };
-
-  const ordersPanelClass = pageTone.shellCard;
-  const ordersHeaderClass = pageTone.sectionHeader;
-  const ordersContentClass = "p-3 bp-sm:p-5 bp-lg:p-6";
+  const sidebarCardClass = "overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft";
   const todoCount = summary?.todoCount ?? 0;
   const hasTodoItems = !summaryLoading && todoCount > 0;
   const activitySummaryItems = [
@@ -273,7 +261,7 @@ export default function MypageClient({ user }: Props) {
 
   return (
     <div className="min-h-full bg-background">
-      <div className={pageTone.dashboardPanel}>
+      <div className="border-b border-border/60 bg-background">
         <SiteContainer
           variant="wide"
           className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6"
@@ -282,7 +270,8 @@ export default function MypageClient({ user }: Props) {
 
           <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
             <SummaryCard
-              className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20"
+              variant="feature"
+              className="transition-colors hover:bg-muted/20"
               contentClassName="p-4 bp-sm:p-5"
             >
               <button
@@ -318,7 +307,7 @@ export default function MypageClient({ user }: Props) {
                   </div>
 
                   <Badge
-                    variant={hasTodoItems ? "default" : "secondary"}
+                    variant={hasTodoItems ? "warning" : "success"}
                     className="shrink-0 whitespace-nowrap"
                   >
                     {hasTodoItems ? "확인하기" : "완료"}
@@ -328,25 +317,26 @@ export default function MypageClient({ user }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20"
+              variant="inverse"
+              className="transition-colors"
               contentClassName="p-4 bp-sm:p-5"
             >
               <button
                 type="button"
                 onClick={() => router.push("/mypage/racket-care")}
-                className="group flex min-h-24 w-full items-center gap-3 rounded-xl bg-muted/15 px-4 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="group flex min-h-24 w-full items-center gap-3 rounded-xl bg-surface-inverse-muted/10 px-4 py-3 text-left transition-colors hover:bg-surface-inverse-muted/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <span className={pageTone.iconSurface}>
-                  <Wrench className="h-5 w-5 text-primary" />
+                <span className="rounded-control bg-brand-highlight-muted p-2 text-brand-highlight">
+                  <Wrench className="h-5 w-5" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-ui-label font-semibold text-primary">라켓 케어</span>
-                  <span className="mt-1 block break-keep text-ui-body-sm font-medium text-foreground">
+                  <span className="block text-ui-label font-semibold text-surface-inverse-muted">라켓 케어</span>
+                  <span className="mt-1 block break-keep text-ui-body-sm font-medium text-surface-inverse-foreground">
                     {summaryLoading
                       ? "불러오는 중"
                       : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
                   </span>
-                  <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">
+                  <span className="mt-0.5 block break-keep text-ui-label text-surface-inverse-muted">
                     다음 스트링 교체 시점을 확인해보세요.
                   </span>
                 </span>
@@ -354,7 +344,7 @@ export default function MypageClient({ user }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
+              className="border-border/80 shadow-soft"
               contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4"
             >
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -390,7 +380,7 @@ export default function MypageClient({ user }: Props) {
         <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
           <div className="hidden bp-lg:block bp-lg:col-span-1">
             <div className="sticky top-8">
-              <Card className={pageTone.shellCard}>
+              <Card className={sidebarCardClass}>
                 <CardContent className="p-3">
                   <UserSidebar />
                 </CardContent>
@@ -400,7 +390,7 @@ export default function MypageClient({ user }: Props) {
           {/* 메인 콘텐츠 */}
           <div className="bp-lg:col-span-3 min-w-0">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
-              <Card className="mb-3 overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 bp-sm:mb-4 bp-lg:hidden">
+              <Card className="mb-3 overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft bp-sm:mb-4 bp-lg:hidden">
                 <CardContent className="p-2.5 bp-sm:p-3">
                   <p className="mb-2 px-1 text-ui-label font-medium text-muted-foreground">
                     내 상세 내역
@@ -489,191 +479,99 @@ export default function MypageClient({ user }: Props) {
 
               {/* 거래 내역 탭 */}
               <TabsContent value="orders" className="mt-0">
-                <Card className={ordersPanelClass}>
-                  <CardHeader className={ordersHeaderClass}>
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <ClipboardList className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          거래/이용 내역
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-md:text-ui-body-sm">
-                          상태와 다음 행동을 확인하세요.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className={ordersContentClass}>
-                    {isOrdersDetailView ? (
-                      <OrdersScopeTabs
-                        activeScope={activeOrdersScope}
-                        className="mb-4 bp-sm:mb-5"
-                      />
-                    ) : null}
-                    {isOrdersTab && flowType === "order" && flowId ? (
-                      <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} />
-                    ) : isOrdersTab && flowType === "application" && flowId ? (
-                      <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
-                    ) : isOrdersTab && flowType === "rental" && flowId ? (
-                      <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
-                    ) : isOrdersTab && orderId ? (
-                      <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} />
-                    ) : isOrdersTab && selectedApplicationId ? (
-                      <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
-                    ) : isOrdersTab && selectedRentalId ? (
-                      <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
-                    ) : isOrdersTab ? (
-                      <TransactionFlowList />
-                    ) : null}
-                  </CardContent>
-                </Card>
+                <DashboardSectionPanel
+                  icon={<ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                  title="거래/이용 내역"
+                  description="상태와 다음 행동을 확인하세요."
+                >
+                  {isOrdersDetailView ? (
+                    <OrdersScopeTabs
+                      activeScope={activeOrdersScope}
+                      className="mb-4 bp-sm:mb-5"
+                    />
+                  ) : null}
+                  {isOrdersTab && flowType === "order" && flowId ? (
+                    <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} />
+                  ) : isOrdersTab && flowType === "application" && flowId ? (
+                    <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
+                  ) : isOrdersTab && flowType === "rental" && flowId ? (
+                    <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
+                  ) : isOrdersTab && orderId ? (
+                    <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} />
+                  ) : isOrdersTab && selectedApplicationId ? (
+                    <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
+                  ) : isOrdersTab && selectedRentalId ? (
+                    <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
+                  ) : isOrdersTab ? (
+                    <TransactionFlowList />
+                  ) : null}
+                </DashboardSectionPanel>
               </TabsContent>
 
               {/* 클래스 신청 탭 */}
               <TabsContent value="academy" className="mt-0">
-                <Card className={pageTone.shellCard}>
-                  <CardHeader className={pageTone.sectionHeader}>
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <GraduationCap className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          클래스 신청
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                          도깨비테니스 아카데미 클래스 신청 내역을 확인하세요.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
-                    {currentTab === "academy" ? <AcademyApplicationsTab /> : null}
-                  </CardContent>
-                </Card>
+                <DashboardSectionPanel
+                  icon={<GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                  title="클래스 신청"
+                  description="도깨비테니스 아카데미 클래스 신청 내역을 확인하세요."
+                >
+                  {currentTab === "academy" ? <AcademyApplicationsTab /> : null}
+                </DashboardSectionPanel>
               </TabsContent>
 
               {/* 위시리스트 탭 */}
               <TabsContent value="wishlist" className="mt-0">
-                <Card className={pageTone.shellCard}>
-                  <CardHeader className={pageTone.sectionHeader}>
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <Heart className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          위시리스트
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                          찜한 상품 목록을 확인하실 수 있습니다.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
-                    {currentTab === "wishlist" ? <Wishlist /> : null}
-                  </CardContent>
-                </Card>
+                <DashboardSectionPanel
+                  icon={<Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                  title="위시리스트"
+                  description="찜한 상품 목록을 확인하실 수 있습니다."
+                >
+                  {currentTab === "wishlist" ? <Wishlist /> : null}
+                </DashboardSectionPanel>
               </TabsContent>
 
               {/* 리뷰 관리 탭 */}
               <TabsContent value="reviews" className="mt-0">
-                <Card className={pageTone.shellCard}>
-                  <CardHeader className={pageTone.sectionHeader}>
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <MessageSquare className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          리뷰 관리
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                          작성한 리뷰를 확인하고 관리하실 수 있습니다.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
-                    {currentTab === "reviews" ? <ReviewList /> : null}
-                  </CardContent>
-                </Card>
+                <DashboardSectionPanel
+                  icon={<MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                  title="리뷰 관리"
+                  description="작성한 리뷰를 확인하고 관리하실 수 있습니다."
+                >
+                  {currentTab === "reviews" ? <ReviewList /> : null}
+                </DashboardSectionPanel>
               </TabsContent>
 
               {/* 문의 내역 탭 */}
               <TabsContent value="qna" className="mt-0">
-                <Card className={pageTone.shellCard}>
-                  <CardHeader className={pageTone.sectionHeader}>
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <MessageCircleQuestion className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          문의 내역
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                          문의 내역을 확인하고 답변을 받으실 수 있습니다.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
-                    {currentTab === "qna" ? <QnAList /> : null}
-                  </CardContent>
-                </Card>
+                <DashboardSectionPanel
+                  icon={<MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                  title="문의 내역"
+                  description="문의 내역을 확인하고 답변을 받으실 수 있습니다."
+                >
+                  {currentTab === "qna" ? <QnAList /> : null}
+                </DashboardSectionPanel>
               </TabsContent>
 
               {/* 패키지권 탭 */}
               <TabsContent value="passes" className="mt-0">
-                <Card className={pageTone.shellCard}>
-                  <CardHeader className={pageTone.sectionHeader}>
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <Ticket className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          패키지권
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                          보유 중인 패키지권을 확인하실 수 있습니다.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
-                    {currentTab === "passes" ? <PassList /> : null}
-                  </CardContent>
-                </Card>
+                <DashboardSectionPanel
+                  icon={<Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                  title="패키지권"
+                  description="보유 중인 패키지권을 확인하실 수 있습니다."
+                >
+                  {currentTab === "passes" ? <PassList /> : null}
+                </DashboardSectionPanel>
               </TabsContent>
 
               {/* 적립 포인트 탭 */}
               <TabsContent value="points" className="mt-0">
-                <Card className={pageTone.shellCard}>
-                  <CardHeader className={pageTone.sectionHeader}>
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <ReceiptCent className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          적립 포인트
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                          포인트 적립 및 사용 내역을 확인하실 수 있습니다.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
-                    {currentTab === "points" ? <MyPointsTab /> : null}
-                  </CardContent>
-                </Card>
+                <DashboardSectionPanel
+                  icon={<ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                  title="적립 포인트"
+                  description="포인트 적립 및 사용 내역을 확인하실 수 있습니다."
+                >
+                  {currentTab === "points" ? <MyPointsTab /> : null}
+                </DashboardSectionPanel>
               </TabsContent>
             </Tabs>
           </div>

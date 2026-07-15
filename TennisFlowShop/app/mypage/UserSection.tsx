@@ -1,9 +1,12 @@
 "use client";
 
+import { PublicSurface } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
-import { Mail, ShieldCheck, User } from "lucide-react";
+import { Mail, ShieldCheck, User, UserCog } from "lucide-react";
+import Link from "next/link";
 
 type Props = {
   user: {
@@ -25,60 +28,75 @@ export default function UserSection({ user }: Props) {
   const hasNaver = socialProviders.includes("naver");
 
   return (
-    <section className="rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5 bp-sm:py-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
-          <User className="h-5 w-5 text-primary" aria-hidden="true" />
-        </div>
+    <section>
+      <PublicSurface variant="feature" padding="sm" className="bp-sm:px-5 bp-sm:py-4">
+        <div className="flex min-w-0 flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-border bg-muted">
+              <User className="h-5 w-5 text-primary" aria-hidden="true" />
+            </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <h1 className="min-w-0 break-keep text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-              {user.name ?? "회원"}님
-            </h1>
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5">
+                <h1 className="min-w-0 text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
+                  {user.name ?? "회원"}님
+                </h1>
 
-            <Badge
-              variant={isAdmin ? "info" : "secondary"}
-              className="h-6 gap-1 whitespace-nowrap px-2 text-ui-label font-medium"
-            >
-              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-              {isAdmin ? `${getUserRoleLabel(normalizedRole)} 계정` : "사용자 회원"}
-            </Badge>
+                <Badge
+                  variant={isAdmin ? "info" : "secondary"}
+                  wrap="normal"
+                  className="min-h-6 gap-1 px-2 text-ui-label font-medium"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {isAdmin ? `${getUserRoleLabel(normalizedRole)} 계정` : "사용자 회원"}
+                </Badge>
 
-            {hasKakao && (
-              <Badge
-                variant={getSocialProviderBadgeSpec("kakao").variant}
-                className="h-6 whitespace-nowrap px-2 text-ui-label font-medium"
-              >
-                카카오 로그인
-              </Badge>
-            )}
+                {hasKakao && (
+                  <Badge
+                    variant={getSocialProviderBadgeSpec("kakao").variant}
+                    wrap="normal"
+                    className="min-h-6 px-2 text-ui-label font-medium"
+                  >
+                    카카오 로그인
+                  </Badge>
+                )}
 
-            {hasNaver && (
-              <Badge
-                variant={getSocialProviderBadgeSpec("naver").variant}
-                className="h-6 whitespace-nowrap px-2 text-ui-label font-medium"
-              >
-                네이버 로그인
-              </Badge>
-            )}
+                {hasNaver && (
+                  <Badge
+                    variant={getSocialProviderBadgeSpec("naver").variant}
+                    wrap="normal"
+                    className="min-h-6 px-2 text-ui-label font-medium"
+                  >
+                    네이버 로그인
+                  </Badge>
+                )}
 
-            {!hasKakao && !hasNaver && (
-              <Badge
-                variant="secondary"
-                className="h-6 whitespace-nowrap px-2 text-ui-label font-medium"
-              >
-                이메일 계정
-              </Badge>
-            )}
+                {!hasKakao && !hasNaver && (
+                  <Badge
+                    variant="secondary"
+                    wrap="normal"
+                    className="min-h-6 px-2 text-ui-label font-medium"
+                  >
+                    이메일 계정
+                  </Badge>
+                )}
+              </div>
+
+              <p className="mt-1 flex min-w-0 items-center gap-1.5 text-ui-label text-muted-foreground">
+                <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="min-w-0 break-all">{user.email || "이메일 없음"}</span>
+              </p>
+            </div>
           </div>
 
-          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-ui-label text-muted-foreground">
-            <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 break-all">{user.email || "이메일 없음"}</span>
-          </p>
+          <Button variant="outline" size="sm" className="w-full shrink-0 bp-sm:w-auto" asChild>
+            <Link href="/mypage/profile">
+              <UserCog className="h-4 w-4" aria-hidden="true" />
+              회원정보 수정
+            </Link>
+          </Button>
         </div>
-      </div>
+      </PublicSurface>
     </section>
   );
 }
