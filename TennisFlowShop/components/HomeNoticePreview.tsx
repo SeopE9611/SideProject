@@ -35,7 +35,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
           <div className="flex h-8 w-8 items-center justify-center rounded-control border border-border/70 bg-brand-highlight-muted text-foreground">
             <Megaphone className="h-4 w-4" />
           </div>
-          <h2 className="text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
+          <h2 className="text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
             공지사항
           </h2>
         </div>
