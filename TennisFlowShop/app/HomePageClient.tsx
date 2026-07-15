@@ -689,8 +689,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   스트링 교체서비스
                 </span>
                 <h1 className={styles.heroTitle}>
-                  스트링 교체도,
-                  <span className={styles.heroOutline}>내 플레이에 맞게.</span>
+                  스트링부터 텐션까지
+                  <span className={styles.heroOutline}>내 플레이에 맞게</span>
                 </h1>
                 <p className="mt-5 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">
                   스트링 선택부터 텐션 상담, 라켓 접수와 수령까지. 복잡한 교체 과정을 쉽게
@@ -945,10 +945,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <HomeEditorialHeader
             no="02"
             eyebrow="주요 서비스"
-            title="라켓을 맡기는 순간부터 수령할 때까지"
+            title="교체서비스에 필요한 메뉴를 한곳에서 확인하세요."
             description={
               <>
-                교체 신청부터 라켓 접수, 장착과 수령까지
+                교체 신청부터 스트링 추천, 패키지와 가격 안내까지
                 <br />
                 필요한 메뉴를 빠르게 확인할 수 있어요.
               </>
@@ -1478,7 +1478,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             )}
             <div className={styles.utilityGrid}>
               {[
-                ["방문·택배 접수 방법", "접수 전 준비사항과 진행 절차를 확인합니다.", "/services/apply"],
+                [
+                  "방문·택배 접수 방법",
+                  "접수 전 준비사항과 진행 절차를 확인합니다.",
+                  "/services/apply",
+                ],
                 ["비용 기준 확인", "장착비와 서비스 비용을 안내합니다.", "/services/pricing"],
                 ["영업시간·매장 위치", "운영시간과 위치를 확인합니다.", "/services/locations"],
                 ["문의하기", "Q&A로 궁금한 점을 남깁니다.", "/board/qna"],
@@ -1489,7 +1493,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   href={href}
                   className="rounded-panel border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
-                  <strong className="block text-ui-card-title font-semibold text-foreground">{title}</strong>
+                  <strong className="block text-ui-card-title font-semibold text-foreground">
+                    {title}
+                  </strong>
                   <span className="mt-2 block break-keep text-ui-body-sm font-normal leading-relaxed text-muted-foreground">
                     {desc}
                   </span>
