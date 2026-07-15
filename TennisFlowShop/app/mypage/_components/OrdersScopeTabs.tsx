@@ -35,7 +35,7 @@ const SCOPE_ITEMS: Array<{
   href: string;
 }> = [
   { value: "all", label: "전체", href: "/mypage?tab=orders" },
-  { value: "todo", label: "해야 할 일", href: "/mypage?tab=orders&scope=todo" },
+  { value: "todo", label: "확인할 항목", href: "/mypage?tab=orders&scope=todo" },
   { value: "order", label: "주문", href: "/mypage?tab=orders&scope=order" },
   {
     value: "application",

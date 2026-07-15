@@ -63,7 +63,7 @@
 - Feature card: 라켓 케어 상태 카드, 마케팅 기능 패널, Hero 내부 핵심 UI에는 `Card`의 `feature` variant와 `rounded-panel`, `shadow-soft`를 사용합니다.
 - Floating card: D-day, 플레이 빈도, 텐션 정보처럼 Hero 주변 보조 정보에는 `Card`의 `floating` variant와 `shadow-float`를 사용합니다. 모바일에서는 일반 흐름으로 배치합니다.
 - Inverse section: 검정형 가치 설명 섹션은 `surface-inverse` 계열 토큰만 사용하고 raw black/white 클래스를 사용하지 않습니다.
-- `brand-highlight`: Hero의 가장 강한 CTA, 브랜드 기능 라벨, 시그널 배지에 제한적으로 사용합니다. 상태 의미 전달에는 사용하지 않습니다.
+- `brand-highlight`: 채움 CTA, stroke/progress, inverse surface 위 숫자·시그널에 제한적으로 사용합니다. 밝은 표면 위 작은 텍스트·아이콘은 `brand-highlight-ink`를 사용하고, 상태 의미 전달에는 사용하지 않습니다.
 - Radius: `rounded-control`은 버튼·작은 카드, `rounded-panel`은 대형 카드, `rounded-hero`는 Hero 컨테이너에 사용합니다.
 - Shadow: `shadow-soft`는 넓은 패널, `shadow-float`는 부유 정보 카드에 사용합니다.
 - Outline text: Hero 장면의 제한적 표현이며 일반 본문, 버튼, 폼에는 사용하지 않습니다.
@@ -83,6 +83,6 @@
 - 마이페이지 허브는 V2 적용 강도를 중간~강함으로 유지하되, 기존 semantic token의 상태 의미를 대체하지 않습니다.
 - 사용자 업무 화면에서는 마케팅 Hero 대신 compact Hero를 사용하고, 핵심 사용자 정보와 오늘 처리할 일을 한 화면 안에서 연결합니다.
 - 외부 panel은 `rounded-panel`과 `shadow-soft`로 화면 단위를 만들고, 내부 반복 item은 `rounded-control`과 `border` 중심으로 card-in-card 피로감을 줄입니다.
-- `highlight` CTA는 page-level primary action에 제한하며, 거래 카드의 일반 처리 액션은 기본 `primary` 계열을 우선합니다.
+- `highlight` CTA는 page-level primary action에 제한합니다. 거래 카드에서 반복되는 필수 처리 액션은 `highlight_soft`를 사용할 수 있으며, default primary와 filled highlight를 목록 전체에 반복하지 않습니다. 후기 작성처럼 선택적인 활동은 `secondary` 또는 `outline`을 사용합니다.
 - 거래 상태색은 `success`, `warning`, `info`, `destructive` 등 semantic status token을 유지하고, `brand-highlight`를 완료·성공 의미로 사용하지 않습니다.
 - 상품명, 라켓명, 날짜, 금액, 상태, 버튼, Badge, 다음 행동 문구에는 기본 본문 서체를 사용합니다.

@@ -78,7 +78,7 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
                 <div className="rounded-control border border-border bg-card p-3"><p className="text-ui-micro text-muted-foreground">최근 스트링</p><p className="mt-1 break-keep text-ui-label font-semibold">예시 스트링</p></div>
               </div>
               <div className="mt-5 flex gap-3 rounded-control bg-brand-highlight-muted p-4 text-left">
-                <Target className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight-foreground dark:text-brand-highlight" />
+                <Target className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight-ink" />
                 <p className="break-keep text-ui-body-sm text-muted-foreground">
                   예시 화면입니다. 상태 점수와 예상 교체일은 마지막 교체일과 플레이 빈도에 따른 관리 지표이며, 실제 스트링 마모 상태와 다를 수 있습니다.
                 </p>

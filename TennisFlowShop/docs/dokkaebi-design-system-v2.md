@@ -9,7 +9,9 @@
 ## 2. 토큰 의미
 
 - `primary`는 기존 주요 인터랙션과 일반 CTA의 기준 토큰입니다. 기존 화면의 기본 버튼과 주요 액션 안정성을 유지합니다.
-- `brand-highlight`는 Dokkaebi Design System V2 전용 브랜드 강조 토큰입니다. Hero의 강한 CTA, NEW/기능 안내, 브랜드 시그널에 사용하며 모든 CTA를 대체하지 않습니다.
+- `brand-highlight`는 Dokkaebi Design System V2 전용 브랜드 강조 토큰입니다. 채움 CTA, stroke/progress, inverse surface 위 숫자·시그널에 제한적으로 사용하며 모든 CTA를 대체하지 않습니다.
+- `brand-highlight-muted`는 옅은 브랜드 표면, 선택 상태의 soft background, feature icon background에 사용합니다.
+- `brand-highlight-ink`는 라이트/중립 표면 위 브랜드 텍스트·아이콘, `brand-highlight-muted` 위 전경, 작은 화살표와 kicker에 사용합니다.
 - `brand-highlight`는 `success`가 아닙니다. 저장 완료, 정상 처리, 안전 상태 같은 상태 의미는 반드시 `success`를 사용합니다.
 - `surface-inverse`는 딥 블랙형 Hero, 가치 설명 섹션, 역상 카드처럼 명확한 마케팅 대비가 필요한 영역에만 사용합니다.
 - `outline-text`는 Hero 제목의 외곽선 표현을 위한 토큰이며 본문, 폼, 버튼 텍스트에는 사용하지 않습니다.
@@ -71,3 +73,9 @@
   - transaction flow card
   - next action hierarchy
 - 이후 상품/서비스/체크아웃/관리자: 화면 성격에 맞춰 적용 강도를 조절합니다.
+
+## Phase 5 색상·업무 액션 규칙
+
+- 업무형 Hero에서는 라임 CTA 대신 inverse CTA를 사용할 수 있으며, 라임은 큰 수치와 작은 signal에 집중할 수 있습니다.
+- 업무 리스트에서 반복되는 필수 처리 액션은 `highlight_soft` 같은 soft brand action을 사용하고, default primary와 filled highlight를 목록 전체에 반복하지 않습니다.
+- 후기 작성, 추천 확인처럼 선택적인 활동은 warning이 아니며 `secondary` 또는 `outline` 계열로 표현합니다.

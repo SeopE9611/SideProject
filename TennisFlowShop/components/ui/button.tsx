@@ -21,6 +21,8 @@ const buttonVariants = cva(
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         highlight:
           "bg-brand-highlight text-brand-highlight-foreground shadow-sm hover:bg-brand-highlight/90 active:translate-y-px active:bg-brand-highlight/85",
+        highlight_soft:
+          "border border-brand-highlight-ink/30 bg-brand-highlight-muted text-foreground shadow-none hover:border-brand-highlight-ink/45 hover:bg-brand-highlight-muted/80 active:translate-y-px",
         inverse:
           "border border-surface-inverse-foreground/20 bg-surface-inverse-foreground text-surface-inverse shadow-sm hover:bg-surface-inverse-foreground/90 active:translate-y-px",
         link: "text-primary underline-offset-4 hover:underline",

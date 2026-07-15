@@ -920,7 +920,7 @@ export default function ActivityFeed() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-ui-body bp-sm:text-ui-card-title-lg font-semibold text-primary truncate">
-                      해야 할 일
+                      확인할 항목
                     </h3>
                     <p className="text-ui-label text-primary truncate">
                       {actionTop.length}건의 액션 필요
@@ -1372,7 +1372,7 @@ export default function ActivityFeed() {
                                           }
                                           className="rounded-md text-ui-micro font-medium"
                                         >
-                                          해야 할 일
+                                          확인할 항목
                                         </Badge>
                                         <p className="text-ui-body-sm font-semibold text-foreground">
                                           {shippingLabel}

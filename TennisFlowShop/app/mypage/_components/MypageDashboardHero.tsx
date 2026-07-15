@@ -2,8 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
+import { cn } from "@/lib/utils";
 import { Mail, ShieldCheck, UserCog } from "lucide-react";
 import Link from "next/link";
 
@@ -57,17 +57,16 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
     >
       <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] bp-lg:items-end">
         <div className="min-w-0">
-          <div className="mb-5 flex flex-wrap items-center gap-2">
+          <div className="mb-5 flex items-center gap-2">
+            <span className="h-px w-6 bg-brand-highlight" aria-hidden="true" />
             <span className="text-ui-kicker text-surface-inverse-muted">MY TENNIS LAB</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-highlight" aria-hidden="true" />
-            <Badge variant="signal_solid">Dashboard</Badge>
           </div>
 
           <h1
             id="mypage-dashboard-hero-title"
             className="break-keep font-brand-heading text-[1.65rem] leading-tight tracking-[-0.015em] bp-sm:text-[2rem] bp-lg:text-[2.35rem]"
           >
-            {user.name ?? "회원"}님, 오늘의 관리 흐름을 확인하세요.
+            {user.name ?? "회원"}님, 내 이용 현황을 한눈에 확인하세요.
           </h1>
 
           <div className="mt-3 flex min-w-0 items-center gap-1.5 text-ui-body-sm text-surface-inverse-muted">
@@ -76,12 +75,12 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant={isAdmin ? "info" : "secondary"} wrap="normal" className="min-h-6 gap-1 px-2 text-ui-label font-medium">
+            <Badge variant="secondary" wrap="normal" className="min-h-6 gap-1 px-2 text-ui-label font-medium">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               {isAdmin ? `${getUserRoleLabel(normalizedRole)} 계정` : "사용자 회원"}
             </Badge>
-            {hasKakao ? <Badge variant={getSocialProviderBadgeSpec("kakao").variant} wrap="normal" className="min-h-6 px-2 text-ui-label font-medium">카카오 로그인</Badge> : null}
-            {hasNaver ? <Badge variant={getSocialProviderBadgeSpec("naver").variant} wrap="normal" className="min-h-6 px-2 text-ui-label font-medium">네이버 로그인</Badge> : null}
+            {hasKakao ? <Badge variant="secondary" wrap="normal" className="min-h-6 px-2 text-ui-label font-medium">카카오 로그인</Badge> : null}
+            {hasNaver ? <Badge variant="secondary" wrap="normal" className="min-h-6 px-2 text-ui-label font-medium">네이버 로그인</Badge> : null}
             {!hasKakao && !hasNaver ? <Badge variant="secondary" wrap="normal" className="min-h-6 px-2 text-ui-label font-medium">이메일 계정</Badge> : null}
           </div>
         </div>
@@ -100,7 +99,7 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
             {isSummaryReady ? todoCount : "-"}
           </p>
           <div className="mt-4 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
-            <Button asChild variant={hasTodoItems ? "highlight" : "outline"} className="min-h-11 rounded-control">
+            <Button asChild variant={hasTodoItems ? "inverse" : "outline"} className={cn("min-h-11 rounded-control", !hasTodoItems && "border-surface-inverse-foreground/25 bg-transparent text-surface-inverse-foreground hover:bg-surface-inverse-muted/15 hover:text-surface-inverse-foreground")}>
               <Link href={hasTodoItems ? "/mypage?tab=orders&scope=todo" : "/mypage?tab=orders"}>
                 {todoCtaLabel}
               </Link>

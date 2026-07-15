@@ -24,7 +24,7 @@ const badgeVariants = cva(
         danger_solid: "border-transparent bg-destructive text-destructive-foreground shadow-sm",
         brand_solid: "border-transparent bg-primary text-primary-foreground shadow-sm",
         signal:
-          "border-brand-highlight/35 bg-brand-highlight-muted text-brand-highlight-foreground dark:border-brand-highlight/45 dark:bg-brand-highlight-muted dark:text-brand-highlight",
+          "border-brand-highlight-ink/30 bg-brand-highlight-muted text-brand-highlight-ink",
         signal_solid:
           "border-transparent bg-brand-highlight text-brand-highlight-foreground shadow-sm",
         secondary:

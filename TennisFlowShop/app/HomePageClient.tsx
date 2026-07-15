@@ -1257,7 +1257,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   key={title}
                   className="border-b border-surface-inverse-foreground/15 p-6 last:border-b-0 bp-sm:border-r bp-sm:even:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"
                 >
-                  <b className="font-medium text-brand-highlight">0{idx + 1}</b>
+                  <b className="font-medium text-brand-highlight-ink">0{idx + 1}</b>
                   <h3 className="mt-3 text-ui-card-title-lg font-medium">{title}</h3>
                   <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-surface-inverse-muted">
                     {copy}
@@ -1522,7 +1522,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   />
                 </div>
                 <div className="p-6 bp-md:p-8">
-                  <p className="text-ui-label font-medium text-brand-highlight">대표 라켓</p>
+                  <p className="text-ui-label font-medium text-brand-highlight-ink">대표 라켓</p>
                   <RacketFeature racket={featuredRacket} />
                   {!hasInventoryRackets && (
                     <p className="mt-4 break-keep text-ui-body-sm text-surface-inverse-muted">
@@ -1782,7 +1782,7 @@ function RacketFeature({ racket }: { racket: RItem }) {
       <div className="mt-4 flex flex-wrap gap-2 text-ui-label text-surface-inverse-muted">
         <span>상태 {racket.condition ?? "확인중"}</span>
         <span>{racket.rental?.enabled ? "대여 가능" : "판매 가능"}</span>
-        {discountRate > 0 && <span className="text-brand-highlight">{discountRate}% 할인</span>}
+        {discountRate > 0 && <span className="text-brand-highlight-ink">{discountRate}% 할인</span>}
       </div>
       <p className="mt-4 text-ui-section-title font-semibold">{formatPrice(effectivePrice)}</p>
       {discountRate > 0 && (

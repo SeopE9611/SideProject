@@ -59,7 +59,7 @@ export function NextTodoCallout({
       <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
         <div className="min-w-0 space-y-1">
           <p className="text-ui-label font-semibold uppercase tracking-wide text-primary">
-            지금 해야 할 일
+            지금 확인할 항목
           </p>
           <p className="text-ui-body font-semibold text-foreground">{label}</p>
           <p className="text-ui-body-sm text-muted-foreground">{description}</p>
