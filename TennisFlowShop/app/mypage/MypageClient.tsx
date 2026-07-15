@@ -71,6 +71,28 @@ const MYPAGE_TABS = [
   "points",
 ] as const;
 
+const scrollItemIntoHorizontalView = (
+  container: HTMLElement | null,
+  item: HTMLElement | null,
+) => {
+  if (!container || !item) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const itemRect = item.getBoundingClientRect();
+  const targetLeft =
+    container.scrollLeft +
+    itemRect.left -
+    containerRect.left -
+    (containerRect.width - itemRect.width) / 2;
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  const nextScrollLeft = Math.min(maxScrollLeft, Math.max(0, targetLeft));
+
+  container.scrollTo({
+    left: nextScrollLeft,
+    behavior: "auto",
+  });
+};
+
 type MypageSummaryState = "loading" | "error" | "ready";
 
 type Props = {
@@ -185,15 +207,12 @@ export default function MypageClient({ user }: Props) {
     : "orders";
 
   useEffect(() => {
-    const activeTab = mobileTabsScrollRef.current?.querySelector<HTMLElement>(
+    const container = mobileTabsScrollRef.current;
+    const activeTab = container?.querySelector<HTMLElement>(
       '[role="tab"][data-state="active"]',
     );
 
-    activeTab?.scrollIntoView({
-      behavior: "auto",
-      block: "nearest",
-      inline: "center",
-    });
+    scrollItemIntoHorizontalView(container, activeTab ?? null);
   }, [currentTab]);
 
   if (!user) {
@@ -313,7 +332,7 @@ export default function MypageClient({ user }: Props) {
               <CardContent className="p-4 bp-sm:p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <p className="text-ui-body-sm font-semibold text-foreground">내 활동 지표</p>
-                  {hasSummaryError ? <span className="text-ui-label text-muted-foreground">일부 지표 오류</span> : null}
+                  {hasSummaryError ? <span className="text-ui-label text-destructive">지표 불러오기 실패</span> : null}
                 </div>
                 <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
                   {activitySummaryItems.map((item) => (

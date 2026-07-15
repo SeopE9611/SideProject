@@ -7,6 +7,28 @@ import Link from "next/link";
 
 export type OrdersFlowScope = "all" | "todo" | "order" | "application" | "rental";
 
+const scrollItemIntoHorizontalView = (
+  container: HTMLElement | null,
+  item: HTMLElement | null,
+) => {
+  if (!container || !item) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const itemRect = item.getBoundingClientRect();
+  const targetLeft =
+    container.scrollLeft +
+    itemRect.left -
+    containerRect.left -
+    (containerRect.width - itemRect.width) / 2;
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+  const nextScrollLeft = Math.min(maxScrollLeft, Math.max(0, targetLeft));
+
+  container.scrollTo({
+    left: nextScrollLeft,
+    behavior: "auto",
+  });
+};
+
 const SCOPE_ITEMS: Array<{
   value: OrdersFlowScope;
   label: string;
@@ -50,15 +72,12 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
   const scopeNavRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const activeLink = scopeNavRef.current?.querySelector<HTMLElement>(
+    const container = scopeNavRef.current;
+    const activeLink = container?.querySelector<HTMLElement>(
       '[aria-current="page"]',
     );
 
-    activeLink?.scrollIntoView({
-      behavior: "auto",
-      block: "nearest",
-      inline: "center",
-    });
+    scrollItemIntoHorizontalView(container, activeLink ?? null);
   }, [activeScope]);
 
   return (

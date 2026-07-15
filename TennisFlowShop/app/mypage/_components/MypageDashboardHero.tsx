@@ -30,11 +30,17 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
       : hasTodoItems
         ? "오늘 확인할 항목"
         : "현재 처리할 일이 없습니다";
-  const todoBadgeVariant: "warning" | "success" | "secondary" = summaryState === "ready" ? (hasTodoItems ? "warning" : "success") : "secondary";
+  const todoBadgeVariant: "warning" | "success" | "secondary" | "danger" = summaryState === "error"
+    ? "danger"
+    : summaryState === "loading"
+      ? "secondary"
+      : hasTodoItems
+        ? "warning"
+        : "success";
   const todoBadgeLabel = summaryState === "loading"
     ? "불러오는 중"
     : summaryState === "error"
-      ? "확인 필요"
+      ? "불러오기 실패"
       : hasTodoItems
         ? "확인 필요"
         : "완료";
