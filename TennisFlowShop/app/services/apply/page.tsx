@@ -7,6 +7,7 @@ import useStringingApplySharedState, {
   type CollectionMethod,
 } from "@/app/features/stringing-applications/hooks/useStringingApplySharedState";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import ApplicationNiceCheckoutButton from "@/app/services/apply/_components/ApplicationNiceCheckoutButton";
 import ApplyHero from "@/app/services/apply/_components/ApplyHero";
 import {
@@ -1692,6 +1693,14 @@ export default function StringServiceApplyPage() {
 
   const shouldShowEntryChooser =
     !isOrderBased && !isRentalBased && !pdpProductId && mode !== "single";
+  const entryLabel = isOrderBased
+    ? "주문 상품으로 신청"
+    : isRentalBased
+      ? "대여 라켓 신청"
+      : "보유 스트링으로 신청";
+  const compactSummaryText = `라켓 ${requiredPassCount || "-"}대 · ${collectionMethodLabel(
+    formData.collectionMethod,
+  )} · ${won(checkoutTotal)}`;
 
   if (shouldShowEntryChooser)
     return (
@@ -1704,7 +1713,7 @@ export default function StringServiceApplyPage() {
           {/* Section Header */}
           <SectionHeader
             title="신청 방식을 선택해 주세요"
-            description="필요한 방식을 선택하면 다음 단계로 이동합니다. 지금은 신청 경로만 확정하는 단계입니다."
+            description="구매 후 장착할지, 보유한 라켓·스트링으로 작업만 신청할지 선택합니다."
             align="center"
             className="mx-auto mb-6 max-w-3xl break-keep bp-sm:mb-8"
           />
@@ -1713,12 +1722,12 @@ export default function StringServiceApplyPage() {
           <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-sm:gap-5 max-w-4xl mx-auto">
             {[
               {
-                badge: "추천",
+                badge: "상품 구매 후 신청",
                 stepLabel: "선택 01",
                 icon: <Grid2X2 className="h-7 w-7" />,
                 title: "스트링 구매 후 장착",
-                target: "새 스트링을 고른 뒤 보유 라켓에 장착 신청까지 이어갑니다.",
-                steps: "스트링 선택 → 결제/장착 정보 입력",
+                target: "상품을 먼저 고르고 구매 흐름에서 장착 신청으로 이어집니다.",
+                steps: "스트링 선택 → 주문·결제 → 장착 정보 입력",
                 cta: "스트링 고르고 신청하기",
                 href: "/products?from=apply",
               },
@@ -1726,9 +1735,9 @@ export default function StringServiceApplyPage() {
                 badge: "보유 장비",
                 stepLabel: "선택 02",
                 icon: <File className="h-8 w-8" />,
-                title: "보유 라켓/보유 스트링으로 장착",
-                target: "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.",
-                steps: "신청서 작성 → 접수",
+                title: "보유 라켓·보유 스트링 장착",
+                target: "보유한 라켓과 스트링을 직접 보내거나 매장에 가져오는 흐름입니다.",
+                steps: "신청서 작성 → 라켓 전달 → 작업 접수",
                 cta: "보유 장비로 신청하기",
                 href: "/services/apply?mode=single",
               },
@@ -1737,14 +1746,14 @@ export default function StringServiceApplyPage() {
                 key={item.title}
                 type="button"
                 onClick={() => safePush(item.href)}
-                className={`group flex h-full min-w-0 flex-col rounded-2xl border bg-card p-4 text-left shadow-sm transition-[border-color,background-color,box-shadow] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
+                className={`group flex h-full min-w-0 flex-col rounded-panel border p-4 text-left transition-[border-color,background-color,box-shadow] duration-200 hover:border-brand-highlight/45 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-brand-highlight/45 bg-brand-highlight-muted" : "border-border bg-card"}`}
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <span className="text-ui-label font-semibold text-muted-foreground">
                     {item.stepLabel}
                   </span>
                   <Badge
-                    variant={index === 0 ? "brand" : "secondary"}
+                    variant={index === 0 ? "signal_solid" : "secondary"}
                     className="shrink-0 whitespace-nowrap"
                   >
                     {item.badge}
@@ -1764,13 +1773,13 @@ export default function StringServiceApplyPage() {
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <p className="text-ui-label font-semibold text-primary">다음 진행</p>
+                  <p className="text-ui-label font-semibold text-brand-highlight-foreground">다음 진행</p>
                   <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
                     {item.steps}
                   </p>
                 </div>
                 <div className="mt-auto pt-4">
-                  <span className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-center text-ui-body-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
+                  <span className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-control border border-border bg-card px-3 py-2 text-center text-ui-body-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
                     <span className="break-keep whitespace-normal">{item.cta}</span>
                     <svg
                       className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1"
@@ -1836,6 +1845,7 @@ export default function StringServiceApplyPage() {
                 </div>
                 <Button
                   asChild
+                  variant="highlight"
                   className="w-full shrink-0 whitespace-normal break-keep text-center bp-md:w-auto"
                 >
                   <Link href="/products/recommend">스트링 추천받기</Link>
@@ -1850,20 +1860,20 @@ export default function StringServiceApplyPage() {
   return (
     <div className="min-h-full bg-card bp-lg:bg-background">
       {/* Hero Section */}
-      <ApplyHero />
+      <ApplyHero entryLabel={entryLabel} />
 
       {/* Main */}
-      <SiteContainer variant="wide" className="py-6 bp-sm:py-8">
-        <div className="mx-auto max-w-7xl">
-          {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
-          <div ref={stepsRef} className="mb-4 bp-sm:mb-5">
+      <SiteContainer variant="wide" className="pb-36 pt-6 bp-sm:pb-40 bp-sm:pt-8 bp-lg:pb-8">
+        <div className="mx-auto max-w-[1280px]">
+          {/* Progress Steps */}
+          <div ref={stepsRef} className="mb-4 bp-sm:mb-5 bp-lg:mx-auto bp-lg:max-w-[840px]">
             <ProgressSteps steps={steps} currentStep={currentStep} />
           </div>
 
-          {/* === 폼만 '진짜' 중앙, 요금카드는 오른쪽에 겹쳐 배치 === */}
-          <div className="relative">
-            {/* 중앙 메인 폼 */}
-            <div className="mx-auto w-full md:w-[800px]">
+          {/* 본문: 데스크톱은 입력 영역과 Sticky 요약을 실제 grid로 분리 */}
+          <div className="grid items-start gap-5 bp-lg:grid-cols-[minmax(0,1fr)_320px] bp-xl:grid-cols-[minmax(0,820px)_340px] bp-xl:justify-center">
+            {/* 메인 폼 */}
+            <div className="min-w-0">
               {paymentError ? (
                 <PublicSurface
                   className="mb-4 border-destructive/30 bg-destructive/10 text-ui-body-sm text-destructive"
@@ -1880,7 +1890,7 @@ export default function StringServiceApplyPage() {
                   ) : null}
                 </PublicSurface>
               ) : null}
-              <PublicSurface className="bp-lg:bg-card/90" padding="none">
+              <PublicSurface className="rounded-panel bp-lg:bg-card/90" padding="none">
                 <div className="p-4 bp-sm:p-5 bp-lg:p-6">
                   {shouldShowEntryBanner ? (
                     <SummaryCard
@@ -1923,7 +1933,7 @@ export default function StringServiceApplyPage() {
                   <form onSubmit={handleSubmit}>
                     {getCurrentStepContent()}
 
-                    {/* 모바일/태블릿: 인라인 요금 요약 (xl 미만에서만 노출) */}
+                    {/* 모바일/작은 태블릿: compact 신청 요약 */}
                     <ApplyPriceSummaryMobile
                       preferredDate={formData.preferredDate ?? undefined}
                       preferredTime={formData.preferredTime ?? undefined}
@@ -1935,6 +1945,7 @@ export default function StringServiceApplyPage() {
                       base={summaryBaseForCard}
                       pickupFee={priceView.pickupFee}
                       total={checkoutTotal}
+                      racketCount={requiredPassCount}
                       racketPrice={isRentalBased ? 0 : summaryRacketPrice}
                       rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
                       rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
@@ -1957,6 +1968,7 @@ export default function StringServiceApplyPage() {
                       isStepValid={isStepValid}
                       isSubmitting={isSubmitting}
                       isOrderSlotBlocked={isOrderSlotBlocked}
+                      compactSummary={compactSummaryText}
                       handleSubmit={() => void doSubmit(true)}
                       finalAction={
                         isSingleApplyMode &&

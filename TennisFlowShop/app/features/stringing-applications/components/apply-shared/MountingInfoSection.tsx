@@ -403,6 +403,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
   if (typeof lockedRacketQuantity === "number")
     limitReasons.push(`라켓 수량 ${lockedRacketQuantity}자루`);
 
+  const [openLineId, setOpenLineId] = React.useState<string | null>(null);
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -1091,9 +1093,26 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </div>
               </PublicSurface>
             )}
-            {linesForSubmit.map((line, index) => (
+            {linesForSubmit.map((line, index) => {
+              const stableLineKey = typeof line.id === "string" && line.id ? line.id : null;
+              const panelId = stableLineKey ? `work-line-${stableLineKey}` : `work-line-legacy-${index}`;
+              const isLineOpen = stableLineKey !== null && openLineId === stableLineKey;
+              const lineComplete = Boolean(
+                line.racketType?.trim() &&
+                  line.tensionMain?.trim() &&
+                  line.tensionCross?.trim() &&
+                  (!canEditStandaloneWorkLines || line.stringName?.trim()),
+              );
+              const lineSummary = [
+                line.racketType?.trim() || `라켓 ${index + 1}`,
+                line.tensionMain && line.tensionCross ? `${line.tensionMain}/${line.tensionCross}LB` : "텐션 미입력",
+              ]
+                .filter(Boolean)
+                .join(" · ");
+
+              return (
               <PublicSurface
-                key={line.id ?? index}
+                key={stableLineKey ?? `legacy-line-${index}`}
                 padding="none"
                 className="group relative overflow-hidden"
               >
@@ -1127,17 +1146,38 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         variant="ghost"
                         size="sm"
                         className="h-8 gap-1 px-2 text-ui-label text-destructive hover:text-destructive"
-                        onClick={() => removeStandaloneWorkLine(index)}
+                        onClick={() => {
+                          removeStandaloneWorkLine(index);
+                          setOpenLineId((current) => (current === stableLineKey ? null : current));
+                        }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         삭제
                       </Button>
                     )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-2 text-ui-label bp-md:hidden"
+                      onClick={() => {
+                        if (!stableLineKey) return;
+                        setOpenLineId(isLineOpen ? null : stableLineKey);
+                      }}
+                      aria-expanded={isLineOpen}
+                      aria-controls={panelId}
+                      disabled={!stableLineKey}
+                    >
+                      {isLineOpen ? "접기" : "편집"}
+                    </Button>
                   </div>
+                </div>
+                <div className="border-b border-border px-4 py-2 text-ui-label text-muted-foreground bp-md:hidden">
+                  {lineSummary} · {lineComplete ? "입력 완료" : "입력 필요"}
                 </div>
 
                 {/* 라켓 이름 + 텐션 */}
-                <div className="p-4 space-y-4">
+                <div id={panelId} className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-ui-label font-medium text-foreground">
@@ -1213,7 +1253,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
                 </div>
               </PublicSurface>
-            ))}
+              );
+            })}
           </SummaryCard>
         )}
 
