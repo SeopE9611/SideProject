@@ -73,6 +73,7 @@ type BrandRailState = {
 
 const BRAND_RAIL_SCROLL_EPSILON = 2;
 const STRING_BRAND_RAIL_ID = "home-string-brand-rail";
+const STRING_BRAND_RAIL_EDGE_PADDING = 40;
 
 type PromoBanner = {
   key: string;
@@ -426,7 +427,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     const railEnd = railStart + rail.clientWidth;
     const buttonStart = activeButton.offsetLeft;
     const buttonEnd = buttonStart + activeButton.offsetWidth;
-    const edgePadding = 12;
+    const edgePadding = STRING_BRAND_RAIL_EDGE_PADDING;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const behavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
