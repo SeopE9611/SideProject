@@ -68,3 +68,11 @@
 - Shadow: `shadow-soft`는 넓은 패널, `shadow-float`는 부유 정보 카드에 사용합니다.
 - Outline text: Hero 장면의 제한적 표현이며 일반 본문, 버튼, 폼에는 사용하지 않습니다.
 - 체크아웃/관리자는 V2 적용 강도를 낮게 유지하고 결제·업무 흐름의 안정성을 우선합니다.
+
+## 10. DashboardSectionPanel 사용 기준
+
+- 사용자 대시보드와 마이페이지 탭 shell처럼 `카드 표면 → 헤더 → 본문` 구조가 반복되는 영역에 사용합니다.
+- 단순 콘텐츠 카드나 요약 카드에는 `PublicSurface` 또는 `SummaryCard`를 먼저 사용합니다.
+- 관리자 페이지에는 사용하지 않습니다. 관리자 화면은 기존 admin layout과 admin typography 기준을 우선합니다.
+- 주문 상세, 대여 상세, 신청 상세처럼 깊은 상세 화면의 모든 카드를 강제로 대체하지 않습니다.
+- `feature` variant는 페이지당 제한적으로 사용하고, 상태 의미는 `success`/`warning`/`destructive` 같은 의미 토큰으로 분리합니다.
