@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useSWR from "swr";
 
 const ApplicationDetail = dynamic(
@@ -71,6 +71,8 @@ const MYPAGE_TABS = [
   "points",
 ] as const;
 
+type MypageSummaryState = "loading" | "error" | "ready";
+
 type Props = {
   user: {
     id: string;
@@ -84,6 +86,7 @@ type Props = {
 export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const mobileTabsScrollRef = useRef<HTMLDivElement | null>(null);
 
   const {
     data: summary,
@@ -100,6 +103,11 @@ export default function MypageClient({ user }: Props) {
     revalidateOnFocus: true,
   });
   const hasSummaryError = !!summaryError;
+  const summaryState: MypageSummaryState = summaryLoading
+    ? "loading"
+    : summaryError
+      ? "error"
+      : "ready";
 
   const resolveOrdersScope = (scope: string | null) => {
     if (
@@ -171,6 +179,23 @@ export default function MypageClient({ user }: Props) {
     router.replace(query ? `/mypage?${query}` : "/mypage", { scroll: false });
   }, [router, searchParams]);
 
+  const tabParam = searchParams.get("tab");
+  const currentTab = MYPAGE_TABS.includes(tabParam as (typeof MYPAGE_TABS)[number])
+    ? tabParam!
+    : "orders";
+
+  useEffect(() => {
+    const activeTab = mobileTabsScrollRef.current?.querySelector<HTMLElement>(
+      '[role="tab"][data-state="active"]',
+    );
+
+    activeTab?.scrollIntoView({
+      behavior: "auto",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [currentTab]);
+
   if (!user) {
     return (
       <SiteContainer variant="wide" className="py-10">
@@ -183,11 +208,6 @@ export default function MypageClient({ user }: Props) {
       </SiteContainer>
     );
   }
-
-  const tabParam = searchParams.get("tab");
-  const currentTab = MYPAGE_TABS.includes(tabParam as (typeof MYPAGE_TABS)[number])
-    ? tabParam!
-    : "orders";
 
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -264,7 +284,7 @@ export default function MypageClient({ user }: Props) {
           variant="wide"
           className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6"
         >
-          <MypageDashboardHero user={user} todoCount={todoCount} isLoading={summaryLoading} />
+          <MypageDashboardHero user={user} todoCount={todoCount} summaryState={summaryState} />
 
           <section className="grid gap-3 bp-lg:grid-cols-[minmax(280px,0.75fr)_minmax(0,1.25fr)]" aria-label="마이페이지 요약">
             <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
@@ -274,9 +294,13 @@ export default function MypageClient({ user }: Props) {
                     <Wrench className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-brand-heading text-ui-card-title-lg text-foreground">라켓 케어</span>
+                    <span className="block font-brand-heading text-ui-section-title text-foreground">라켓 케어</span>
                     <span className="mt-1 block break-keep text-ui-body-sm font-medium text-foreground">
-                      {summaryLoading ? "불러오는 중" : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
+                      {summaryState === "loading"
+                        ? "불러오는 중"
+                        : summaryState === "error"
+                          ? "정보를 확인할 수 없음"
+                          : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
                     </span>
                     <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">다음 스트링 교체 시점을 확인해보세요.</span>
                   </span>
@@ -294,7 +318,7 @@ export default function MypageClient({ user }: Props) {
                 <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
                   {activitySummaryItems.map((item) => (
                     <button key={item.label} type="button" onClick={() => router.push(item.href, { scroll: false })} className="min-w-0 rounded-control border border-border/70 bg-muted/15 px-2 py-3 text-center transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                      <span className="block text-ui-card-title-lg font-bold tabular-nums text-foreground">{summaryLoading ? "-" : (item.value ?? 0)}</span>
+                      <span className="block text-ui-card-title-lg font-bold tabular-nums text-foreground">{summaryState === "ready" ? (item.value ?? 0) : "-"}</span>
                       <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">{item.label}</span>
                     </button>
                   ))}
@@ -321,8 +345,8 @@ export default function MypageClient({ user }: Props) {
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <Card className="mb-3 overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft bp-sm:mb-4 bp-lg:hidden">
                 <CardContent className="p-2">
-                  <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="마이페이지 주요 탭">
-                    <TabsList className="flex h-auto min-w-max w-max gap-1 bg-transparent p-0">
+                  <div ref={mobileTabsScrollRef} className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <TabsList aria-label="마이페이지 주요 탭" className="flex h-auto min-w-max w-max gap-1 bg-transparent p-0">
                       <TabsTrigger
                         value="orders"
                         className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"

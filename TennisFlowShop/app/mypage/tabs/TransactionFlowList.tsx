@@ -1153,15 +1153,13 @@ export default function TransactionFlowList() {
               (displayKind === "application" &&
                 (displayApplication ?? g.application)?.cancelStatus === "requested");
             const amountText =
-              displayKind === "order"
-                ? formatAmount(g.order?.totalPrice)
-                : displayKind === "rental"
-                  ? formatAmount(g.rental?.totalAmount)
+              displayKind === "order" && typeof g.order?.totalPrice === "number"
+                ? formatAmount(g.order.totalPrice)
+                : displayKind === "rental" && typeof g.rental?.totalAmount === "number"
+                  ? formatAmount(g.rental.totalAmount)
                   : null;
 
-            const primaryMetaText = [getCompactDate(displayDateValue), amountText]
-              .filter(Boolean)
-              .join(" · ");
+            const displayDateText = getCompactDate(displayDateValue);
             const linkedStringSummary = !prefersApplicationView
               ? getStringSelectionSummary(g.application)
               : null;
@@ -1250,9 +1248,21 @@ export default function TransactionFlowList() {
                     </span>
                   </Link>
 
-                  <p className="break-keep text-ui-label tabular-nums text-muted-foreground bp-sm:text-ui-body-sm">
-                    {primaryMetaText}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-ui-label bp-sm:text-ui-body-sm">
+                    <span className="tabular-nums text-muted-foreground">
+                      {displayDateText}
+                    </span>
+                    {amountText ? (
+                      <>
+                        <span aria-hidden="true" className="text-muted-foreground">
+                          ·
+                        </span>
+                        <span className="font-semibold tabular-nums text-foreground">
+                          {amountText}
+                        </span>
+                      </>
+                    ) : null}
+                  </div>
 
                   {secondaryMetaText ? (
                     <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">

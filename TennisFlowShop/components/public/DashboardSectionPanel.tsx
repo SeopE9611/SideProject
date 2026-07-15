@@ -52,7 +52,7 @@ export function DashboardSectionPanel({
               id={titleId}
               className={cn(
                 "text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg",
-                variant === "feature" && "font-brand-heading tracking-[-0.015em]",
+                variant === "feature" && "font-brand-heading text-ui-section-title tracking-[-0.015em]",
               )}
             >
               {title}

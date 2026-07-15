@@ -7,19 +7,42 @@ import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { Mail, ShieldCheck, UserCog } from "lucide-react";
 import Link from "next/link";
 
+type MypageSummaryState = "loading" | "error" | "ready";
+
 type Props = {
   user: { id: string; name: string; email: string; role: string; oauthProviders?: Array<"kakao" | "naver"> };
   todoCount: number;
-  isLoading?: boolean;
+  summaryState: MypageSummaryState;
 };
 
-export default function MypageDashboardHero({ user, todoCount, isLoading }: Props) {
+export default function MypageDashboardHero({ user, todoCount, summaryState }: Props) {
   const normalizedRole = String(user.role ?? "").toLowerCase();
   const isAdmin = isAdminRole(normalizedRole);
   const socialProviders = user.oauthProviders ?? [];
   const hasKakao = socialProviders.includes("kakao");
   const hasNaver = socialProviders.includes("naver");
-  const hasTodoItems = !isLoading && todoCount > 0;
+  const hasTodoItems = summaryState === "ready" && todoCount > 0;
+  const isSummaryReady = summaryState === "ready";
+  const todoMessage = summaryState === "loading"
+    ? "요약 정보를 불러오는 중입니다"
+    : summaryState === "error"
+      ? "요약 정보를 불러오지 못했습니다"
+      : hasTodoItems
+        ? "오늘 확인할 항목"
+        : "현재 처리할 일이 없습니다";
+  const todoBadgeVariant: "warning" | "success" | "secondary" = summaryState === "ready" ? (hasTodoItems ? "warning" : "success") : "secondary";
+  const todoBadgeLabel = summaryState === "loading"
+    ? "불러오는 중"
+    : summaryState === "error"
+      ? "확인 필요"
+      : hasTodoItems
+        ? "확인 필요"
+        : "완료";
+  const todoCtaLabel = hasTodoItems
+    ? "확인할 항목 보기"
+    : isSummaryReady
+      ? "거래 전체 보기"
+      : "거래 내역 보기";
 
   return (
     <section
@@ -62,18 +85,18 @@ export default function MypageDashboardHero({ user, todoCount, isLoading }: Prop
             <div>
               <p className="text-ui-kicker text-surface-inverse-muted">TODAY ACTION</p>
               <p className="mt-2 text-ui-body-sm text-surface-inverse-muted">
-                {hasTodoItems ? "오늘 확인할 항목" : "현재 처리할 일이 없습니다"}
+                {todoMessage}
               </p>
             </div>
-            <Badge variant={hasTodoItems ? "warning" : "success"}>{hasTodoItems ? "확인 필요" : "완료"}</Badge>
+            <Badge variant={todoBadgeVariant}>{todoBadgeLabel}</Badge>
           </div>
           <p className="mt-2 font-brand-display text-[2.75rem] leading-none text-brand-highlight bp-sm:text-[3.25rem]">
-            {isLoading ? "-" : todoCount}
+            {isSummaryReady ? todoCount : "-"}
           </p>
           <div className="mt-4 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
             <Button asChild variant={hasTodoItems ? "highlight" : "outline"} className="min-h-11 rounded-control">
               <Link href={hasTodoItems ? "/mypage?tab=orders&scope=todo" : "/mypage?tab=orders"}>
-                {hasTodoItems ? "확인할 항목 보기" : "거래 전체 보기"}
+                {todoCtaLabel}
               </Link>
             </Button>
             <Button asChild variant="outline" className="min-h-11 rounded-control border-surface-inverse-foreground/25 bg-transparent text-surface-inverse-foreground hover:bg-surface-inverse-muted/15 hover:text-surface-inverse-foreground">

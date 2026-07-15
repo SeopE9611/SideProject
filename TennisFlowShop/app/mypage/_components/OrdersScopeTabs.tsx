@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -45,8 +47,23 @@ type OrdersScopeTabsProps = {
 };
 
 export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeTabsProps) {
+  const scopeNavRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const activeLink = scopeNavRef.current?.querySelector<HTMLElement>(
+      '[aria-current="page"]',
+    );
+
+    activeLink?.scrollIntoView({
+      behavior: "auto",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [activeScope]);
+
   return (
     <nav
+      ref={scopeNavRef}
       className={cn(
         "overflow-x-auto rounded-control border border-border bg-card p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         className,
