@@ -235,7 +235,7 @@ const PURPOSES = [
   {
     key: "beginner",
     no: "05",
-    title: "처음 시작하는 분",
+    title: "처음 시작",
     desc: "처음 스트링을 고르는 분도 부담 없이 선택할 수 있어요.",
   },
 ] as const;
