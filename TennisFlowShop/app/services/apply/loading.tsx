@@ -11,7 +11,7 @@ export default function StringServiceApplyLoading() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[1280px] px-3 pb-28 pt-6 bp-sm:px-4 bp-sm:pb-32 bp-md:px-6 bp-lg:pb-8">
+      <div className="mx-auto w-full max-w-[1280px] px-3 pb-36 pt-6 bp-sm:px-4 bp-sm:pb-40 bp-md:px-6 bp-lg:pb-8">
         <div className="mb-5 rounded-panel border border-border bg-card p-4 shadow-soft bp-md:hidden">
           <Skeleton className="h-4 w-16" />
           <Skeleton className="mt-2 h-6 w-44" />
@@ -43,10 +43,13 @@ export default function StringServiceApplyLoading() {
               <Skeleton className="h-5 w-64 max-w-full" />
               <Skeleton className="mt-2 h-4 w-32" />
             </div>
-            <div className="sticky bottom-0 -mx-4 mt-8 border-t border-border bg-card/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 bp-sm:-mx-5 bp-sm:px-5 bp-lg:static bp-lg:mx-0 bp-lg:bg-transparent bp-lg:p-0 bp-lg:pt-5">
-              <div className="grid grid-cols-2 gap-2 bp-lg:flex bp-lg:justify-end">
-                <Skeleton className="h-10 w-full bp-lg:w-28" />
-                <Skeleton className="h-10 w-full bp-lg:w-28" />
+            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-soft bp-sm:px-5 bp-lg:static bp-lg:inset-auto bp-lg:mt-8 bp-lg:bg-transparent bp-lg:p-0 bp-lg:pt-5 bp-lg:shadow-none">
+              <div className="mx-auto w-full max-w-[720px] bp-lg:mx-0 bp-lg:max-w-none">
+                <Skeleton className="mb-2 h-4 w-64 max-w-full bp-lg:hidden" />
+                <div className="grid grid-cols-2 gap-2 bp-lg:flex bp-lg:justify-end">
+                  <Skeleton className="h-11 w-full bp-lg:w-28" />
+                  <Skeleton className="h-11 w-full bp-lg:w-28" />
+                </div>
               </div>
             </div>
           </div>

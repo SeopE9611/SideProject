@@ -403,7 +403,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
   if (typeof lockedRacketQuantity === "number")
     limitReasons.push(`라켓 수량 ${lockedRacketQuantity}자루`);
 
-  const [openLineIndex, setOpenLineIndex] = React.useState(0);
+  const [openLineId, setOpenLineId] = React.useState<string | null>(null);
 
   return (
     <div className="space-y-6">
@@ -1094,11 +1094,18 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               </PublicSurface>
             )}
             {linesForSubmit.map((line, index) => {
-              const isLineOpen = openLineIndex === index;
+              const lineKey = String(line.id ?? `line-${index}`);
+              const isLineOpen = openLineId ? openLineId === lineKey : index === 0;
               const lineComplete = Boolean(
-                line.racketType?.trim() && line.tensionMain?.trim() && line.tensionCross?.trim(),
+                line.racketType?.trim() &&
+                  line.tensionMain?.trim() &&
+                  line.tensionCross?.trim() &&
+                  (!canEditStandaloneWorkLines || line.stringName?.trim()),
               );
-              const lineSummary = [line.racketType?.trim() || `라켓 ${index + 1}`, line.tensionMain && line.tensionCross ? `${line.tensionMain}/${line.tensionCross}LB` : "텐션 미입력"]
+              const lineSummary = [
+                line.racketType?.trim() || `라켓 ${index + 1}`,
+                line.tensionMain && line.tensionCross ? `${line.tensionMain}/${line.tensionCross}LB` : "텐션 미입력",
+              ]
                 .filter(Boolean)
                 .join(" · ");
 
@@ -1138,7 +1145,10 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         variant="ghost"
                         size="sm"
                         className="h-8 gap-1 px-2 text-ui-label text-destructive hover:text-destructive"
-                        onClick={() => removeStandaloneWorkLine(index)}
+                        onClick={() => {
+                          removeStandaloneWorkLine(index);
+                          setOpenLineId((current) => (current === lineKey ? null : current));
+                        }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         삭제
@@ -1149,9 +1159,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       variant="outline"
                       size="sm"
                       className="h-8 px-2 text-ui-label bp-md:hidden"
-                      onClick={() => setOpenLineIndex(isLineOpen ? -1 : index)}
+                      onClick={() => setOpenLineId(isLineOpen ? null : lineKey)}
                       aria-expanded={isLineOpen}
-                      aria-controls={`work-line-${index}`}
+                      aria-controls={`work-line-${lineKey}`}
                     >
                       {isLineOpen ? "접기" : "편집"}
                     </Button>
@@ -1162,7 +1172,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </div>
 
                 {/* 라켓 이름 + 텐션 */}
-                <div id={`work-line-${index}`} className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}>
+                <div id={`work-line-${lineKey}`} className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-ui-label font-medium text-foreground">

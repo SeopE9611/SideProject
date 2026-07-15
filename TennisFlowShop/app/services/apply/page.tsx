@@ -7,6 +7,7 @@ import useStringingApplySharedState, {
   type CollectionMethod,
 } from "@/app/features/stringing-applications/hooks/useStringingApplySharedState";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import ApplicationNiceCheckoutButton from "@/app/services/apply/_components/ApplicationNiceCheckoutButton";
 import ApplyHero from "@/app/services/apply/_components/ApplyHero";
 import {
@@ -1697,6 +1698,9 @@ export default function StringServiceApplyPage() {
     : isRentalBased
       ? "대여 라켓 신청"
       : "보유 스트링으로 신청";
+  const compactSummaryText = `라켓 ${requiredPassCount || "-"}대 · ${collectionMethodLabel(
+    formData.collectionMethod,
+  )} · ${won(checkoutTotal)}`;
 
   if (shouldShowEntryChooser)
     return (
@@ -1718,12 +1722,12 @@ export default function StringServiceApplyPage() {
           <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-sm:gap-5 max-w-4xl mx-auto">
             {[
               {
-                badge: "구매 선행",
+                badge: "상품 구매 후 신청",
                 stepLabel: "선택 01",
                 icon: <Grid2X2 className="h-7 w-7" />,
                 title: "스트링 구매 후 장착",
                 target: "상품을 먼저 고르고 구매 흐름에서 장착 신청으로 이어집니다.",
-                steps: "상품 선택 → /products?from=apply → 장착 정보 입력",
+                steps: "스트링 선택 → 주문·결제 → 장착 정보 입력",
                 cta: "스트링 고르고 신청하기",
                 href: "/products?from=apply",
               },
@@ -1859,7 +1863,7 @@ export default function StringServiceApplyPage() {
       <ApplyHero entryLabel={entryLabel} />
 
       {/* Main */}
-      <SiteContainer variant="wide" className="pb-28 pt-6 bp-sm:pb-32 bp-sm:pt-8 bp-lg:pb-8">
+      <SiteContainer variant="wide" className="pb-36 pt-6 bp-sm:pb-40 bp-sm:pt-8 bp-lg:pb-8">
         <div className="mx-auto max-w-[1280px]">
           {/* Progress Steps */}
           <div ref={stepsRef} className="mb-4 bp-sm:mb-5 bp-lg:mx-auto bp-lg:max-w-[840px]">
@@ -1941,6 +1945,7 @@ export default function StringServiceApplyPage() {
                       base={summaryBaseForCard}
                       pickupFee={priceView.pickupFee}
                       total={checkoutTotal}
+                      racketCount={requiredPassCount}
                       racketPrice={isRentalBased ? 0 : summaryRacketPrice}
                       rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
                       rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
@@ -1963,6 +1968,7 @@ export default function StringServiceApplyPage() {
                       isStepValid={isStepValid}
                       isSubmitting={isSubmitting}
                       isOrderSlotBlocked={isOrderSlotBlocked}
+                      compactSummary={compactSummaryText}
                       handleSubmit={() => void doSubmit(true)}
                       finalAction={
                         isSingleApplyMode &&

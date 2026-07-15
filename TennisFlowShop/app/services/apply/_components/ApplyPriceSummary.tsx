@@ -38,6 +38,7 @@ type PriceSummaryCommonProps = {
     tensionCross?: string;
     mountingFee?: number;
   }>;
+  racketCount?: number;
 };
 
 function collectionLabel(collectionMethod: any) {
@@ -53,7 +54,7 @@ function won(value: number) {
 
 export function ApplyPriceSummaryMobile(props: PriceSummaryCommonProps) {
   const [open, setOpen] = useState(false);
-  const racketCount = props.workLines?.length || props.stringTypes?.length || 0;
+  const racketCount = props.racketCount ?? 0;
 
   return (
     <div className="mt-5 bp-lg:hidden">
