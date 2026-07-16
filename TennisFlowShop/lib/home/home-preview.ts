@@ -51,6 +51,7 @@ export type HomePreviewRacket = {
     deposit?: number;
     fee?: { d7?: number; d15?: number; d30?: number };
   };
+  status?: string;
   marketing?: {
     isFeatured?: boolean;
     isNew?: boolean;

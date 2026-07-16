@@ -271,6 +271,7 @@ type RItem = {
     deposit?: number;
     fee?: { d7?: number; d15?: number; d30?: number };
   };
+  status?: string;
   marketing?: {
     isFeatured?: boolean;
     isNew?: boolean;
@@ -717,28 +718,12 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
 
   const usedRacketsSource = rackByBrand[activeBrand] ?? [];
-  const usedRacketsItems: HomeCardItem[] = useMemo(
-    () =>
-      usedRacketsSource.map((r) => ({
-        _id: r.id,
-        name: r.model ?? "",
-        price: r.price ?? 0,
-        images: r.images ?? [],
-        brand: racketBrandLabel?.(r.brand) ?? r.brand ?? "",
-        href: `/rackets/${r.id}`,
-        marketing: r.marketing,
-        merchandisingBadges: [
-          ...(r.marketing?.isFeatured ? (["추천"] as const) : []),
-          ...(r.marketing?.isNew ? (["NEW"] as const) : []),
-        ],
-      })),
-    [usedRacketsSource],
-  );
+  const previewRackets = usedRacketsSource.slice(0, 3);
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
-  const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
-  const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
+  const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsSource.length;
+  const hasMoreRacketProducts = racketTotal > previewRackets.length;
   const currentPath = APPLICATION_PATHS[activeApplicationPath];
   const heroPath = currentPath;
   const currentStepIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStepKey);
@@ -1502,10 +1487,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             ))}
           </div>
           <div className={styles.racketShow}>
-            {usedRacketsItems.length > 0 ? (
+            {previewRackets.length > 0 ? (
               <>
                 <div className={styles.racketCardGrid}>
-                  {usedRacketsSource.map((racket) => (
+                  {previewRackets.map((racket) => (
                     <RacketPreviewCard key={racket.id} racket={racket} />
                   ))}
                 </div>
@@ -1740,13 +1725,17 @@ function RacketPreviewCard({ racket }: { racket: RItem }) {
   const effectivePrice = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
   const conditionMeta = racket.condition ? usedBadgeMeta("condition", racket.condition) : null;
-  const rentalFee = racket.rental?.fee?.d7;
+  const rentalFee = Number(racket.rental?.fee?.d7);
   const rentalLabel =
-    racket.rental?.enabled && Number.isFinite(rentalFee) && Number(rentalFee) > 0
-      ? `대여 7일 ${formatPrice(Number(rentalFee))}부터`
-      : racket.rental?.enabled
-        ? "대여 가능"
-        : "판매 가능";
+    racket.status === "sold"
+      ? "판매 완료"
+      : racket.status === "rented"
+        ? "현재 대여 중"
+        : racket.rental?.enabled && Number.isFinite(rentalFee) && rentalFee > 0
+          ? `7일 대여료 ${formatPrice(rentalFee)}`
+          : racket.rental?.enabled
+            ? "대여 옵션 있음"
+            : "판매 상품";
   const brandLabel = racketBrandLabel(racket.brand);
   const imageAlt = `${brandLabel} ${racket.model}`.trim();
   const showConditionBadge = !racket.marketing?.isFeatured || !racket.marketing?.isNew;
