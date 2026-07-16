@@ -16,7 +16,7 @@ function SelectedCompareItem({ item, onRemove }: { item: CompareRacketItem; onRe
   const brandText = racketBrandLabel(item.brand);
 
   return (
-    <div className="relative flex min-w-[168px] max-w-[200px] flex-1 items-center gap-2 rounded-lg border border-border bg-background px-2 py-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:shadow-md bp-md:min-w-0">
+    <div className="relative flex min-w-[168px] max-w-[200px] flex-1 items-center gap-2 rounded-lg border border-border bg-background px-2 py-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:shadow-md bp-md:w-full bp-md:min-w-0 bp-md:max-w-none">
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 ring-1 ring-border/10">
         {item.image ? (
           <Image src={item.image || "/placeholder.svg"} alt={title} fill className="object-contain p-1" unoptimized />

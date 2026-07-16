@@ -16,7 +16,6 @@ export default function RacketFinderPageSkeleton() {
         <div className="bp-lg:grid bp-lg:grid-cols-[320px_minmax(0,1fr)] bp-lg:gap-8">
           <Skeleton className="hidden h-[620px] rounded-panel bp-lg:block" />
           <div className="space-y-4">
-            <Skeleton className="h-12 rounded-xl" />
             <FinderRacketCardSkeleton count={5} />
           </div>
         </div>
