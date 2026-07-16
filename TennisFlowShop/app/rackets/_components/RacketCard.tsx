@@ -4,8 +4,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { CatalogPrice, CatalogRating } from "@/components/commerce";
-import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { CatalogCardFrame, CatalogPrice, CatalogRating } from "@/components/commerce";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Briefcase, Eye, ShoppingCart } from "lucide-react";
@@ -28,8 +27,6 @@ const RentDialog = dynamic(() => import("@/app/rackets/[id]/_components/RentDial
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
-const racketCardSurfaceClass =
-  "overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:bg-muted/20 hover:shadow-sm";
 const racketImageWrapClass = "relative block w-full aspect-[4/3] overflow-hidden bg-muted/20";
 
 type RacketItem = {
@@ -244,193 +241,100 @@ const RacketCard = React.memo(
         "border border-border bg-muted/70 text-muted-foreground cursor-not-allowed opacity-100 disabled:opacity-100",
       );
       const iconClassName = "h-4 w-4 shrink-0";
+      const buyButton = canBuy ? (
+        <Button asChild size="sm" variant="highlight_soft" className={buttonClassName} onClick={(e) => e.stopPropagation()}>
+          <Link href={`/rackets/${racket.id}/select-string`} onClick={(e) => e.stopPropagation()} className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 text-center">
+            <ShoppingCart className={iconClassName} />
+            {buyLabel}
+          </Link>
+        </Button>
+      ) : (
+        <Button size="sm" className={disabledButtonClassName} disabled title={buyDisabledTitle}>
+          <ShoppingCart className={iconClassName} />
+          구매 불가
+        </Button>
+      );
+      const rentButton = racket.rental?.enabled && canRent ? (
+        <RentDialog
+          id={racket.id}
+          rental={racket.rental}
+          brand={displayBrandLabel}
+          model={racket.model}
+          size="sm"
+          preventCardNav={true}
+          full={false}
+          className={buttonClassName}
+          variant={canBuy ? "outline" : "highlight_soft"}
+          label="스트링 선택 후 대여"
+        />
+      ) : (
+        <Button size="sm" className={disabledButtonClassName} disabled aria-disabled title={rentDisabledTitle}>
+          <Briefcase className={iconClassName} />
+          대여 불가
+        </Button>
+      );
 
       return (
-        <div className={cn("grid w-full gap-2", "grid-cols-1")}>
-          {canBuy ? (
-            <Button
-              asChild
-              size="sm"
-              variant="highlight_soft"
-              className={buttonClassName}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Link
-                href={`/rackets/${racket.id}/select-string`}
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 text-center"
-              >
-                <ShoppingCart className={iconClassName} />
-                {buyLabel}
-              </Link>
-            </Button>
-          ) : (
-            <Button size="sm" className={disabledButtonClassName} disabled title={buyDisabledTitle}>
-              <ShoppingCart className={iconClassName} />
-              구매 불가
-            </Button>
-          )}
-
-          {racket.rental?.enabled ? (
-            canRent ? (
-              <RentDialog
-                id={racket.id}
-                rental={racket.rental}
-                brand={displayBrandLabel}
-                model={racket.model}
-                size="sm"
-                preventCardNav={true}
-                full={false}
-                className={buttonClassName}
-              />
-            ) : (
-              <Button
-                size="sm"
-                className={disabledButtonClassName}
-                disabled
-                aria-disabled
-                title={rentDisabledTitle}
-              >
-                <Briefcase className={iconClassName} />
-                대여 불가
-              </Button>
-            )
-          ) : (
-            <Button
-              size="sm"
-              className={disabledButtonClassName}
-              disabled
-              aria-disabled
-              title={rentDisabledTitle}
-            >
-              <Briefcase className={iconClassName} />
-              대여 불가
-            </Button>
-          )}
+        <div className="grid w-full grid-cols-1 gap-2">
+          {canBuy ? buyButton : canRent ? rentButton : buyButton}
+          {canBuy ? rentButton : canRent ? buyButton : rentButton}
         </div>
       );
     };
 
+    const media = (
+      <Link href={`/rackets/${racket.id}`} className={racketImageWrapClass} aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}>
+        {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
+        <Image
+          src={racket.images?.[0] || "/placeholder.svg?height=300&width=300&query=tennis+racket"}
+          alt={`${displayBrandLabel} ${racket.model}`}
+          fill
+          sizes={viewMode === "list" ? "(max-width: 768px) 100vw, 260px" : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+          className="object-contain object-center p-3 transition-opacity duration-200 group-hover:opacity-95"
+        />
+      </Link>
+    );
+
+    const content = (
+      <div className="min-w-0">
+        <div className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm" title={displayBrandLabel}>
+          {displayBrandLabel}
+        </div>
+        <Link href={`/rackets/${racket.id}`} className="block min-w-0">
+          <h3 className="mb-2 line-clamp-2 break-words text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3" title={racket.model}>
+            {racket.model}
+          </h3>
+        </Link>
+        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+          {ratingBadge}
+          <ConditionBadge state={racket.condition} />
+          <RacketAvailBadge {...availability} />
+          {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
+        </div>
+      </div>
+    );
+
     if (viewMode === "list") {
       return (
-        <Card className={racketCardSurfaceClass}>
-          <div className="flex flex-col bp-md:flex-row">
-            <Link
-              href={`/rackets/${racket.id}`}
-              className={cn(
-                racketImageWrapClass,
-                "shrink-0 bp-md:w-[240px] bp-md:aspect-square bp-xl:w-[280px]",
-              )}
-              aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
-            >
-              {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
-              <Image
-                src={
-                  racket.images?.[0] || "/placeholder.svg?height=200&width=200&query=tennis+racket"
-                }
-                alt={`${displayBrandLabel} ${racket.model}`}
-                fill
-                sizes="(max-width: 768px) 100vw, 260px"
-                className="object-contain object-center p-2"
-              />
-            </Link>
-
-            <div className="flex min-w-0 flex-1 flex-col p-4 bp-sm:p-5 bp-md:p-6 bp-lg:py-7">
-              <div className="min-w-0">
-                <div
-                  className="mb-1.5 max-w-full truncate text-ui-body-sm font-medium text-muted-foreground bp-sm:text-ui-body"
-                  title={displayBrandLabel}
-                >
-                  {displayBrandLabel}
-                </div>
-                <Link href={`/rackets/${racket.id}`} className="block min-w-0">
-                  <h3
-                    className="line-clamp-2 break-words text-ui-body font-medium leading-snug text-foreground transition-colors hover:text-primary bp-sm:text-ui-section-title bp-lg:line-clamp-3"
-                    title={racket.model}
-                  >
-                    {racket.model}
-                  </h3>
-                </Link>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
-                  {ratingBadge}
-                  <ConditionBadge state={racket.condition} />
-                  <RacketAvailBadge {...availability} />
-                  {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex shrink-0 flex-col justify-between gap-5 border-t border-border/60 bg-muted/10 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
-              <div>{priceBlock("right")}</div>
-              <div className="mt-4 space-y-2">
-                {actionButtons({ compact: true, stackOnNarrow: true })}
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"
-                >
-                  <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                    <Eye className="mr-1.5 h-4 w-4 shrink-0" />
-                    상세 보기
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Card>
+        <CatalogCardFrame
+          viewMode="list"
+          media={media}
+          content={content}
+          price={priceBlock("right")}
+          actions={<>{actionButtons({ compact: true, stackOnNarrow: true })}<Button asChild size="sm" variant="outline" className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"><Link href={`/rackets/${racket.id}`}><Eye className="mr-1.5 h-4 w-4 shrink-0" />상세 보기</Link></Button></>}
+        />
       );
     }
 
     // grid view
     return (
-      <Card className={cn(racketCardSurfaceClass, "group relative flex h-full flex-col")}>
-        <Link
-          href={`/rackets/${racket.id}`}
-          className={racketImageWrapClass}
-          aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
-        >
-          {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
-          <Image
-            src={racket.images?.[0] || "/placeholder.svg?height=300&width=300&query=tennis+racket"}
-            alt={`${displayBrandLabel} ${racket.model}`}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-contain object-center p-3 transition-opacity duration-200 group-hover:opacity-95"
-          />
-        </Link>
-        <CardContent className="flex flex-1 flex-col p-4 bp-sm:p-6">
-          <div
-            className="mb-2 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm"
-            title={displayBrandLabel}
-          >
-            {displayBrandLabel}
-          </div>
-          <Link href={`/rackets/${racket.id}`} className="block min-w-0">
-            <CardTitle
-              className="mb-2 line-clamp-2 break-words text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3"
-              title={racket.model}
-            >
-              {racket.model}
-            </CardTitle>
-          </Link>
-
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {ratingBadge}
-            <ConditionBadge state={racket.condition} />
-            <RacketAvailBadge {...availability} />
-            {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
-          </div>
-        </CardContent>
-
-        <CardFooter className="mt-auto border-t border-border/50 bg-muted/10 p-4 bp-sm:p-6">
-          <div className="w-full">
-            <div>{priceBlock()}</div>
-
-            <div className="mt-3">{actionButtons({ compact: true, stackOnNarrow: false })}</div>
-          </div>
-        </CardFooter>
-      </Card>
+      <CatalogCardFrame
+        viewMode="grid"
+        media={media}
+        content={content}
+        price={priceBlock()}
+        actions={actionButtons({ compact: true, stackOnNarrow: false })}
+      />
     );
   },
   (prev, next) =>
