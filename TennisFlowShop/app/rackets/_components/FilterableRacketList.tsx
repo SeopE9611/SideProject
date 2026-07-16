@@ -645,7 +645,12 @@ export default function FilterableRacketList({
                   : "grid-cols-1",
               )}
             >
-              <CatalogCardSkeleton viewMode={effectiveViewMode} count={effectiveViewMode === "grid" ? 12 : 4} />
+              <CatalogCardSkeleton
+                viewMode={effectiveViewMode}
+                count={effectiveViewMode === "grid" ? 12 : 4}
+                actionCount={effectiveViewMode === "list" ? 3 : 2}
+                mediaAspectClassName="aspect-[4/3]"
+              />
             </div>
           ) : error ? (
             <AsyncState
