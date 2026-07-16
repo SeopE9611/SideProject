@@ -19,6 +19,8 @@ type Ctx = {
   type: "single" | "multiple";
   openSet: Set<string>;
   toggle: (id: string) => void;
+  getTriggerId: (value: string) => string;
+  getContentId: (value: string) => string;
 };
 
 const AccordionCtx = React.createContext<Ctx | null>(null);
@@ -30,6 +32,7 @@ export function Accordion({
   className,
   children,
 }: AccordionRootProps) {
+  const rootId = React.useId();
   const initial = new Set<string>(
     Array.isArray(defaultValue) ? defaultValue : defaultValue ? [defaultValue] : [],
   );
@@ -56,9 +59,14 @@ export function Accordion({
     [type],
   );
 
+  const getTriggerId = React.useCallback((value: string) => `${rootId}-${value}-trigger`, [rootId]);
+  const getContentId = React.useCallback((value: string) => `${rootId}-${value}-content`, [rootId]);
+
   return (
     <div className={className} data-accordion-type={type}>
-      <AccordionCtx.Provider value={{ type, openSet, toggle }}>{children}</AccordionCtx.Provider>
+      <AccordionCtx.Provider value={{ type, openSet, toggle, getTriggerId, getContentId }}>
+        {children}
+      </AccordionCtx.Provider>
     </div>
   );
 }
@@ -84,9 +92,15 @@ type TriggerProps = {
 export function AccordionTrigger({ value, className, children }: TriggerProps) {
   const ctx = React.useContext(AccordionCtx)!;
   const open = ctx.openSet.has(value);
+  const triggerId = ctx.getTriggerId(value);
+  const contentId = ctx.getContentId(value);
+
   return (
     <button
+      id={triggerId}
       type="button"
+      aria-expanded={open}
+      aria-controls={contentId}
       onClick={() => ctx.toggle(value)}
       className={cn(
         "flex w-full items-center justify-between py-3 text-left text-ui-body-sm font-medium",
@@ -108,9 +122,14 @@ type ContentProps = {
 export function AccordionContent({ value, className, children }: ContentProps) {
   const ctx = React.useContext(AccordionCtx)!;
   const open = ctx.openSet.has(value);
+  const triggerId = ctx.getTriggerId(value);
+  const contentId = ctx.getContentId(value);
 
   return (
     <div
+      id={contentId}
+      role="region"
+      aria-labelledby={triggerId}
       aria-hidden={open ? "false" : "true"}
       data-state={open ? "open" : "closed"}
       className={cn(

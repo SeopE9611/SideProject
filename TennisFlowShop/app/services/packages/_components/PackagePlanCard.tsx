@@ -19,12 +19,14 @@ interface PackagePlanCardProps {
 export default function PackagePlanCard({ pkg, ctaHref, blocked = false }: PackagePlanCardProps) {
   const pricingMeta = getPackagePricingMeta(pkg);
   const visibleFeatures = pkg.features.slice(0, 3);
+  const savingAmountLabel =
+    pricingMeta.savingAmount > 0 ? `${pricingMeta.savingAmount.toLocaleString()}원 절감` : null;
+  const discountRateLabel =
+    pricingMeta.discountRate > 0 ? `${pricingMeta.discountRate.toFixed(1)}% 할인` : null;
   const savingLabel =
-    pricingMeta.savingAmount > 0
-      ? `${pricingMeta.savingAmount.toLocaleString()}원 절감`
-      : pricingMeta.discountRate > 0
-        ? `${pricingMeta.discountRate.toFixed(1)}% 할인`
-        : "정가 기준 제공";
+    savingAmountLabel && discountRateLabel
+      ? `${savingAmountLabel} · ${discountRateLabel}`
+      : savingAmountLabel || discountRateLabel || "정가 기준 제공";
 
   return (
     <PublicSurface

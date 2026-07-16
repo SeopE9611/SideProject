@@ -91,8 +91,14 @@ export default function StringPackagesPageClient({
     ownershipBlockedMessage?.includes("결제대기") || ownershipBlockedMessage?.includes("주문 상태");
   const ownershipCtaHref = isPendingOrderBlocked ? "/mypage?tab=orders" : "/mypage?tab=passes";
   const ownershipCtaLabel = isPendingOrderBlocked ? "주문 상태 확인하기" : "보유 패키지 확인하기";
-  const packageGridMaxWidth =
-    packages.length <= 1 ? "max-w-md" : packages.length === 2 ? "max-w-4xl" : "max-w-[1500px]";
+  const packageGridClass =
+    packages.length <= 1
+      ? "max-w-md grid-cols-1"
+      : packages.length === 2
+        ? "max-w-4xl grid-cols-1 bp-sm:grid-cols-2"
+        : packages.length === 3
+          ? "max-w-[1500px] grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3"
+          : "max-w-[1500px] grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4";
 
   // 처음 진입 시 쿼리로 스크롤 트리거
   useEffect(() => {
@@ -200,7 +206,7 @@ export default function StringPackagesPageClient({
 
           {packages.length > 0 ? (
             <div
-              className={`mx-auto grid ${packageGridMaxWidth} items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4`}
+              className={`mx-auto grid ${packageGridClass} items-stretch gap-4`}
             >
               {packages.map((pkg) => (
                 <PackagePlanCard
