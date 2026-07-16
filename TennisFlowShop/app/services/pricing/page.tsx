@@ -111,6 +111,7 @@ function BadgeList({ items, emptyLabel, variant = "secondary" }: { items: string
 
 export default async function PricingPage() {
   const { primarySummaries, otherSummary, hybridGuide } = await getStringingPricingView();
+  const hasOtherSummary = Boolean(otherSummary && otherSummary.count > 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -247,8 +248,8 @@ export default async function PricingPage() {
           </PublicSurface>
         </section>
 
-        <section className="grid gap-4 bp-lg:grid-cols-2">
-          {otherSummary && otherSummary.count > 0 ? (
+        <section className={hasOtherSummary ? "grid gap-4 bp-lg:grid-cols-2" : "grid gap-4"}>
+          {hasOtherSummary ? (
             <PublicSurface className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-ui-card-title-lg font-semibold text-foreground">기타 소재</h2>
@@ -274,14 +275,20 @@ export default async function PricingPage() {
                 하이브리드는 단일 소재가 아니라 메인·크로스 스트링 조합이므로 선택한 조합을 기준으로 최종 금액을 확인합니다.
               </p>
             </div>
-            <div className="grid gap-3 bp-sm:grid-cols-2">
-              <div><p className="text-ui-label text-muted-foreground">등록 상품 수</p><p className="mt-1 font-semibold tabular-nums text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p></div>
-              <div><p className="text-ui-label text-muted-foreground">대표 조합</p><div className="mt-2"><BadgeList items={hybridGuide.representativeMaterials} emptyLabel={hybridGuide.count > 0 ? "데이터 없음" : "현재 등록된 하이브리드 상품이 없습니다."} variant="brand" /></div></div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-ui-label text-muted-foreground">대표 상품</p>
-              <BadgeList items={hybridGuide.representativeProducts} emptyLabel={hybridGuide.count > 0 ? "데이터 없음" : "현재 등록된 하이브리드 상품이 없습니다."} variant="outline" />
-            </div>
+            {hybridGuide.count === 0 ? (
+              <p className="text-ui-body-sm font-medium text-foreground">현재 등록된 하이브리드 상품이 없습니다.</p>
+            ) : (
+              <>
+                <div className="grid gap-3 bp-sm:grid-cols-2">
+                  <div><p className="text-ui-label text-muted-foreground">등록 상품 수</p><p className="mt-1 font-semibold tabular-nums text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p></div>
+                  <div><p className="text-ui-label text-muted-foreground">대표 조합</p><div className="mt-2"><BadgeList items={hybridGuide.representativeMaterials} emptyLabel="데이터 없음" variant="brand" /></div></div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-ui-label text-muted-foreground">대표 상품</p>
+                  <BadgeList items={hybridGuide.representativeProducts} emptyLabel="데이터 없음" variant="outline" />
+                </div>
+              </>
+            )}
           </PublicSurface>
         </section>
 
