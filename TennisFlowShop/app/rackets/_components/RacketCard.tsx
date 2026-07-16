@@ -4,10 +4,11 @@ import React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
+import { CatalogPrice, CatalogRating } from "@/components/commerce";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, Eye, ShoppingCart, Star } from "lucide-react";
+import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
@@ -190,13 +191,7 @@ const RacketCard = React.memo(
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
     const ratingAvg = Number(racket.ratingAvg ?? racket.ratingAverage ?? 0);
     const ratingCount = Number(racket.reviewCount ?? racket.ratingCount ?? 0);
-    const ratingBadge = (
-      <div className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-ui-label text-muted-foreground">
-        <Star className="h-3.5 w-3.5 shrink-0 fill-current text-warning" />
-        <span className="tabular-nums text-foreground">{Number.isFinite(ratingAvg) ? ratingAvg.toFixed(1) : "0.0"}</span>
-        <span className="tabular-nums">({Number.isFinite(ratingCount) ? Math.max(0, ratingCount) : 0})</span>
-      </div>
-    );
+    const ratingBadge = <CatalogRating average={ratingAvg} count={ratingCount} />;
     const buyLabel = isApplyFlow ? "스트링 선택" : "스트링 선택 후 구매";
     const salePrice = getEffectiveRacketPrice(racket);
     const discountRate = getRacketDiscountRate(racket);
@@ -229,53 +224,19 @@ const RacketCard = React.memo(
     );
 
     const priceBlock = (align: "left" | "right" = "right") => (
-      <div
-        className={cn(
-          "flex flex-col gap-1 tabular-nums",
-          align === "right" ? "items-end text-right" : "items-start text-left",
-        )}
-      >
-        {hasSalePrice ? (
-          <>
-            <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-              <span className="text-ui-caption text-muted-foreground">할인가</span>
-              <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
-                {salePrice.toLocaleString()}원
-              </span>
-            </div>
-            <div
-              className={cn(
-                "flex flex-wrap items-center gap-1.5",
-                align === "right" && "justify-end",
-              )}
-            >
-              <span className="text-ui-caption text-muted-foreground">정가</span>
-              <span className="whitespace-nowrap text-ui-label text-muted-foreground line-through">
-                {racket.price.toLocaleString()}원
-              </span>
-              <Badge
-                variant="outline"
-                className={cn("shrink-0 whitespace-nowrap text-ui-label", benefitBadgeClass.off)}
-              >
-                {discountRate}% OFF
-              </Badge>
-            </div>
-          </>
-        ) : (
-          <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-            <span className="text-ui-caption text-muted-foreground">판매가</span>
-            <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
-              {racket.price.toLocaleString()}원
-            </span>
-          </div>
-        )}
-      </div>
+      <CatalogPrice
+        regularPrice={racket.price}
+        salePrice={hasSalePrice ? salePrice : null}
+        label={hasSalePrice ? "할인가" : "판매가"}
+        align={align === "right" ? "end" : "start"}
+        size={viewMode === "list" ? "list" : "card"}
+      />
     );
 
     const actionButtons = (options?: { compact?: boolean; stackOnNarrow?: boolean }) => {
       const compact = options?.compact ?? false;
       const buttonClassName = cn(
-        "inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
+        "inline-flex h-10 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
         compact ? "text-ui-caption bp-sm:text-ui-label bp-md:text-ui-body-sm" : "text-ui-body-sm",
       );
       const disabledButtonClassName = cn(
@@ -290,6 +251,7 @@ const RacketCard = React.memo(
             <Button
               asChild
               size="sm"
+              variant="highlight_soft"
               className={buttonClassName}
               onClick={(e) => e.stopPropagation()}
             >
@@ -406,7 +368,7 @@ const RacketCard = React.memo(
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-10 w-full justify-center whitespace-nowrap rounded-lg bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"
+                  className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"
                 >
                   <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
                     <Eye className="mr-1.5 h-4 w-4 shrink-0" />

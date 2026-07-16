@@ -6,7 +6,7 @@
 - 데스크탑에서 한 줄로 예쁜 CTA라도 모바일에서 잘리거나 카드 폭을 밀면 실패로 본다.
 - 긴 한글 버튼은 줄바꿈 가능성을 기본으로 본다.
 - 모바일에서는 1열을 기본으로 하고, `sm`/`bp-sm` 이상에서만 2열 또는 가로 배치를 허용한다.
-- 주요 CTA에는 `truncate`를 쓰지 않고, `whitespace-nowrap`도 무조건 강제하지 않는다.
+- Transaction command는 `truncate`를 쓰지 않고 `whitespace-nowrap`으로 한 줄을 유지한다. 공간이 부족하면 full-width 또는 다음 행으로 이동한다.
 - 여러 액션이 붙는 카드 footer와 필터·폼은 모바일 1열을 기본으로 한다.
 - 관리자 화면도 모바일·태블릿에서 핵심 업무를 확인하고 처리할 수 있어야 한다.
 - 화면별 예외 class를 늘리기 전에 기존 `Button`의 `wrap` variant 등 공통 UI가 제공하는 기능을 확인한다.
@@ -15,7 +15,7 @@
 
 - 긴 한글 CTA에는 `wrap="responsive"`를 우선 사용한다.
 - 정말 짧고 고정된 버튼만 `wrap` 기본값을 허용한다.
-- 주요 CTA에는 `truncate` 또는 직접 지정한 `whitespace-nowrap`를 사용하지 않는다.
+- Transaction command(구매, 신청, 대여, 상세 보기, 운송장 등록, 확정)는 `whitespace-nowrap`을 사용하고 텍스트 줄바꿈으로 공간 문제를 해결하지 않는다.
 - 모바일에서 버튼이 2개 이상이면 기본 1열로 배치하고, `sm`/`bp-sm` 이상에서 2열 또는 `flex`로 전환한다.
 - 아이콘은 `shrink-0`으로 유지하고 텍스트는 줄바꿈 가능하게 처리한다. 공통 `Button` 내부 아이콘에는 이미 `shrink-0`이 적용되어 있다.
 - `h-9`/`h-10` 같은 고정 높이에 긴 문구를 넣지 않는다.
@@ -134,3 +134,10 @@
 - Transaction command는 한 줄을 유지하고 버튼 자체 줄바꿈을 금지한다.
 - 공간이 부족하면 primary action을 full-width 행으로 이동한다.
 - Marketing/descriptive CTA는 매우 긴 경우에만 `wrap="responsive"`를 허용한다.
+
+
+## Transaction command / Marketing descriptive CTA
+
+Transaction command는 구매, 신청, 대여, 상세 보기, 운송장 등록, 확정처럼 거래 진행에 직접 연결되는 명령이다. 이 버튼은 한 줄, `nowrap`, 공간 부족 시 full-width 또는 다음 행 이동을 원칙으로 하며 텍스트 줄바꿈으로 공간을 해결하지 않는다.
+
+Marketing/descriptive CTA는 설명형 문구가 매우 긴 경우에만 제한적으로 responsive wrap을 허용한다.

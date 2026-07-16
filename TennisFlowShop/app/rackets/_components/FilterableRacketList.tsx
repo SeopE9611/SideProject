@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { EmptyState, SummaryCard } from "@/components/public";
+import { ActiveFilterBar, CatalogCardSkeleton, CatalogResultsPanel, CatalogToolbar, type ActiveFilterItem } from "@/components/commerce";
+import { EmptyState } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,6 @@ import {
 import useSWRInfinite from "swr/infinite";
 import RacketCard from "./RacketCard";
 import RacketFilterPanel from "./RacketFilterPanel";
-import { SkeletonProductCard } from "@/app/products/components/SkeletonProductCard";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { RACKET_BRANDS, racketBrandLabel } from "@/lib/constants";
 import {
@@ -70,9 +69,6 @@ type RacketsApiResponse = { items: RacketItem[]; total: number };
 const RACKETS_PAGE_SIZE = 12;
 
 const brands = RACKET_BRANDS.map(({ value, label }) => ({ value, label }));
-
-const activeFilterChipClass =
-  "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-muted px-2 py-1 text-ui-label";
 
 const parsePriceParam = (value: string | null): number | null => {
   if (!value) return null;
@@ -553,6 +549,15 @@ export default function FilterableRacketList({
     onClearInput: () => setDraftSearchQuery(""),
   };
 
+  const activeFilterItems: ActiveFilterItem[] = [
+    ...(submittedQuery ? [{ id: "search", label: `검색어 “${submittedQuery}”`, removeLabel: "검색어 필터 해제", onRemove: () => { setSearchQuery(""); setSubmittedQuery(""); mutate(); } }] : []),
+    ...(selectedBrand ? [{ id: "brand", label: `브랜드 ${racketBrandLabel(selectedBrand)}`, removeLabel: "브랜드 필터 해제", onRemove: () => setSelectedBrand(null) }] : []),
+    ...(selectedCondition ? [{ id: "condition", label: `상태 ${selectedCondition}`, removeLabel: "상태 필터 해제", onRemove: () => setSelectedCondition(null) }] : []),
+    ...(priceChanged ? [{ id: "price", label: `가격 ${priceMin !== null ? `${priceMin.toLocaleString()}원` : "0원"}~${priceMax !== null ? `${priceMax.toLocaleString()}원` : "제한 없음"}`, removeLabel: "가격 필터 해제", onRemove: () => { setPriceMin(null); setPriceMax(null); } }] : []),
+    ...(exposureLabel ? [{ id: "benefit", label: exposureLabel, removeLabel: "혜택 필터 해제", onRemove: () => setExposureFilter([]) }] : []),
+    ...(rentOnly ? [{ id: "rent", label: "대여 가능", removeLabel: "대여 가능 필터 해제", onRemove: () => setRentOnly(false) }] : []),
+  ];
+
   return (
     <>
       <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
@@ -574,86 +579,45 @@ export default function FilterableRacketList({
       <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
-          <div className="mb-6 space-y-3 bp-md:mb-8">
-            <SummaryCard
+          <div className="mb-6 bp-md:mb-8">
+            <CatalogResultsPanel
               eyebrow="Racket Finder"
               title="라켓 목록"
               description="브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요."
-              contentClassName="space-y-4"
-            >
-              <div
-                className="min-w-0 break-keep rounded-xl border border-border bg-muted/20 px-4 py-3 text-ui-body-sm font-semibold tabular-nums text-foreground bp-sm:text-ui-body"
-                aria-live="polite"
-              >
-                {racketCountPrefix}{" "}
-                {isInitialLikeLoading ? (
-                  <Skeleton className="inline-block h-5 w-12 align-middle" />
-                ) : (
-                  <span className="font-semibold text-primary">{total}</span>
-                )}
-                {racketCountSuffix}
-                {isInitialLikeLoading ? (
-                  <Skeleton className="ml-2 inline-block h-5 w-10 align-middle" />
-                ) : (
-                  <span className="ml-2 text-ui-body-sm text-muted-foreground">
-                    (표시중 {visibleProducts.length}개)
-                  </span>
-                )}
-                {isBackgroundRefreshing ? (
-                  <span className="ml-2 text-ui-label font-medium text-muted-foreground">
-                    조회 중...
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-3 bp-sm:flex-row bp-sm:items-center bp-md:justify-between">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (showFilters) cancelFiltersSheet();
-                    else openFiltersSheet();
-                  }}
-                  className="h-10 w-full shrink-0 whitespace-nowrap rounded-lg border-border px-3 hover:bg-muted bp-sm:w-auto"
-                  aria-expanded={showFilters}
-                  aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-                >
-                  <Filter className="mr-2 h-4 w-4" />
-                  필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-                </Button>
-                <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-initial">
-                  {!isFilterSheetViewport && (
-                    <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
-                      <Button
-                        type="button"
-                        variant={effectiveViewMode === "grid" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setViewMode("grid")}
-                        className="h-8 w-9 p-0"
-                        aria-label="그리드 보기"
-                        aria-pressed={effectiveViewMode === "grid"}
-                      >
-                        <Grid3X3 className="h-4 w-4" />
-                      </Button>
-
-                      <Button
-                        type="button"
-                        variant={effectiveViewMode === "list" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setViewMode("list")}
-                        className="h-8 w-9 p-0"
-                        aria-label="리스트 보기"
-                        aria-pressed={effectiveViewMode === "list"}
-                      >
-                        <List className="h-4 w-4" />
-                      </Button>
+              total={total}
+              visibleCount={visibleProducts.length}
+              countPrefix={racketCountPrefix}
+              countSuffix={racketCountSuffix}
+              isCountLoading={isInitialLikeLoading}
+              isRefreshing={isBackgroundRefreshing}
+              toolbar={
+                <CatalogToolbar
+                  filterButton={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (showFilters) cancelFiltersSheet();
+                        else openFiltersSheet();
+                      }}
+                      className="h-10 w-full shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted bp-sm:h-9 bp-sm:w-auto"
+                      aria-expanded={showFilters}
+                      aria-label={showFilters ? "필터 닫기" : "필터 열기"}
+                    >
+                      <Filter className="mr-2 h-4 w-4" />
+                      필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                    </Button>
+                  }
+                  viewToggle={!isFilterSheetViewport ? (
+                    <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
+                      <Button type="button" variant={effectiveViewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={effectiveViewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
+                      <Button type="button" variant={effectiveViewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={effectiveViewMode === "list"}><List className="h-4 w-4" /></Button>
                     </div>
-                  )}
-
-                  <div className="min-w-0 flex-1 bp-sm:w-[180px] bp-sm:flex-none">
+                  ) : null}
+                  sortControl={
                     <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 w-full min-w-0 rounded-lg border border-border bg-card text-ui-body-sm focus:border-border bp-sm:h-9 dark:focus:border-border">
+                      <SelectTrigger className="h-10 w-full min-w-0 rounded-control border border-border bg-card text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] dark:focus:border-border">
                         <SelectValue placeholder="정렬" />
                       </SelectTrigger>
                       <SelectContent className="dark:border-border dark:bg-card">
@@ -664,45 +628,11 @@ export default function FilterableRacketList({
                         <SelectItem value="price-high">가격 높은순</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-              </div>
-            </SummaryCard>
-
-            {activeFiltersCount > 0 && (
-              <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
-                <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                  {submittedQuery && (
-                    <span className={activeFilterChipClass}>검색어 “{submittedQuery}”</span>
-                  )}
-                  {selectedBrand && (
-                    <span className={activeFilterChipClass}>
-                      브랜드 {racketBrandLabel(selectedBrand)}
-                    </span>
-                  )}
-                  {selectedCondition && (
-                    <span className={activeFilterChipClass}>상태 {selectedCondition}</span>
-                  )}
-                  {priceChanged && (
-                    <span className={activeFilterChipClass}>
-                      가격 {priceMin !== null ? `${priceMin.toLocaleString()}원` : "0원"}~
-                      {priceMax !== null ? `${priceMax.toLocaleString()}원` : "제한 없음"}
-                    </span>
-                  )}
-                  {exposureLabel && <span className={activeFilterChipClass}>{exposureLabel}</span>}
-                  {rentOnly && <span className={activeFilterChipClass}>대여 가능</span>}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleResetAll}
-                    className="h-7 shrink-0 whitespace-nowrap px-2 text-ui-label"
-                  >
-                    전체 초기화
-                  </Button>
-                </div>
-              </div>
-            )}
+                  }
+                />
+              }
+              activeFilters={activeFiltersCount > 0 ? <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} /> : undefined}
+            />
           </div>
 
           {/* 콘텐츠 */}
@@ -711,13 +641,11 @@ export default function FilterableRacketList({
               className={cn(
                 "grid gap-4 bp-md:gap-6",
                 effectiveViewMode === "grid"
-                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
+                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4"
                   : "grid-cols-1",
               )}
             >
-              {Array.from({ length: 12 }).map((_, i) => (
-                <SkeletonProductCard key={i} />
-              ))}
+              <CatalogCardSkeleton viewMode={effectiveViewMode} count={effectiveViewMode === "grid" ? 12 : 4} />
             </div>
           ) : error ? (
             <AsyncState
@@ -749,7 +677,7 @@ export default function FilterableRacketList({
                 "grid gap-4 bp-md:gap-6 transition-opacity",
                 isBackgroundRefreshing && "opacity-70",
                 effectiveViewMode === "grid"
-                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
+                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4"
                   : "grid-cols-1",
               )}
             >

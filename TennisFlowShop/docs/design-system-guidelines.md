@@ -97,3 +97,9 @@
 - 최상위 destination navigation은 모바일 hidden scroll을 사용하지 않는다.
 - identity Badge와 workflow status Badge를 분리한다.
 - fixed Header 아래 sticky offset은 `--header-h`를 사용한다.
+
+## Phase 7A / V2.2 Commerce Discovery Foundation
+
+- `CatalogResultsPanel`, `CatalogToolbar`, `ActiveFilterBar`, `CatalogFilterPanelShell`로 상품/라켓 탐색 결과 문법을 통일한다.
+- `CatalogCardFrame`, `CatalogPrice`, `CatalogRating`, `CatalogCardSkeleton`은 presentation shell만 담당하며 상품/라켓 도메인 로직을 합치지 않는다.
+- Products/Rackets는 Commerce Discovery reference implementation으로 관리한다.

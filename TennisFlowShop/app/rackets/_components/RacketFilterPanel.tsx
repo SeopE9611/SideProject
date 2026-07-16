@@ -1,5 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
+import { CatalogFilterPanelShell } from "@/components/commerce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -90,10 +91,13 @@ export default function RacketFilterPanel({
   }
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border bg-card p-5 shadow-sm bp-lg:max-h-[calc(100vh-120px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-3 bp-lg:[scrollbar-gutter:stable] bp-lg:[scrollbar-width:thin] bp-lg:[scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] bp-lg:[&::-webkit-scrollbar]:w-1 bp-lg:[&::-webkit-scrollbar-track]:bg-transparent bp-lg:[&::-webkit-scrollbar-thumb]:rounded-full bp-lg:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 bp-lg:hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30",
-      )}
+    <CatalogFilterPanelShell
+      title="라켓 필터"
+      activeCount={activeFiltersCount}
+      description="브랜드, 상태, 가격대와 대여 가능 여부를 선택한 뒤 적용하세요."
+      onReset={onReset}
+      onApply={onSearchSubmit}
+      applyLabel="필터 적용"
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -328,6 +332,6 @@ export default function RacketFilterPanel({
           )}
         </motion.div>
       </AnimatePresence>
-    </div>
+    </CatalogFilterPanelShell>
   );
 }

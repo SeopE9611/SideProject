@@ -91,3 +91,7 @@ SSOT: `docs/dokkaebi-v2-interaction-responsive-policy.md`
 - segmented filter navigation은 5개 이하 항목을 equal-width grid로 표시한다.
 - Home/Racket Care/Mypage CTA는 canonical Button recipe를 사용한다.
 - Mypage를 V2.1 reference implementation으로 유지한다.
+
+## Phase 7A / V2.2 Commerce Discovery Foundation
+
+Commerce Discovery는 중간 강도의 V2 적용 영역이다. 결과 패널, 툴바, 활성 필터, 필터 패널 shell, 카드 frame, 가격, 평점, skeleton을 공용 문법으로 맞추되 상품 재고·스트링 성능·라켓 컨디션·구매/대여 판정은 각 도메인 컴포넌트에 남긴다.
