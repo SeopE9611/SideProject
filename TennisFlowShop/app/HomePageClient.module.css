@@ -554,7 +554,7 @@
 }
 
 .racketShowcaseImagePanel img {
-  object-position: center;
+  object-position: 52% center;
 }
 
 .racketShowcaseOverlay {
@@ -584,6 +584,7 @@
 
 .racketShowcaseTitle {
   margin-top: 10px;
+  max-width: 330px;
   font-size: 30px;
   line-height: 1.12;
   color: hsl(var(--surface-inverse-foreground));
@@ -597,10 +598,6 @@
   font-weight: 500;
   line-height: 1.55;
   word-break: keep-all;
-}
-
-.racketShowcaseCta {
-  margin-top: 20px;
 }
 
 .racketInventoryPanel {
@@ -703,10 +700,10 @@
 
 .racketInventoryRow {
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr) 24px;
+  grid-template-columns: 104px minmax(0, 1fr) minmax(140px, auto) 24px;
   gap: 16px;
   align-items: center;
-  min-height: 96px;
+  min-height: 102px;
   border-bottom: 1px solid hsl(var(--border));
   color: hsl(var(--foreground));
   text-decoration: none;
@@ -722,7 +719,10 @@
   position: relative;
   width: 104px;
   height: 88px;
-  background: hsl(var(--muted));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 82%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, hsl(var(--muted)) 74%, hsl(var(--card)));
 }
 
 .racketInventoryThumb img {
@@ -732,6 +732,15 @@
 .racketInventoryInfo {
   min-width: 0;
   padding-block: 10px;
+}
+
+.racketInventoryDeal {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-block: 10px;
+  text-align: right;
 }
 
 .racketInventoryBadges {
@@ -764,13 +773,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: flex-end;
   gap: 8px;
-  margin-top: 5px;
 }
 
 .racketInventoryPriceLine strong {
   color: hsl(var(--foreground));
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -779,6 +788,13 @@
   color: hsl(var(--brand-highlight-ink));
   font-size: 12px;
   font-weight: 700;
+}
+
+.racketInventoryOriginalPrice {
+  margin-top: 2px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .racketInventoryRental {
@@ -859,13 +875,25 @@
 }
 
 @media (max-width: 1199px) {
+  .racketInventoryRow {
+    grid-template-columns: 96px minmax(0, 1fr) minmax(126px, auto) 22px;
+    gap: 14px;
+  }
+
+  .racketInventoryThumb {
+    width: 96px;
+    height: 84px;
+  }
+}
+
+@media (max-width: 1023px) {
   .racketShowcase {
     grid-template-columns: 1fr;
     min-height: 0;
   }
 
   .racketShowcaseImagePanel {
-    min-height: 220px;
+    min-height: 250px;
   }
 
   .racketInventoryPanel {
@@ -879,7 +907,7 @@
   }
 
   .racketShowcaseImagePanel {
-    min-height: 164px;
+    min-height: 220px;
   }
 
   .racketShowcaseCopy {
@@ -890,8 +918,7 @@
     font-size: 22px;
   }
 
-  .racketShowcaseDescription,
-  .racketShowcaseCta {
+  .racketShowcaseDescription {
     display: none;
   }
 
@@ -939,7 +966,15 @@
     font-size: 15px;
   }
 
+  .racketInventoryDeal {
+    grid-column: 2 / 3;
+    align-items: flex-start;
+    padding-block: 0 10px;
+    text-align: left;
+  }
+
   .racketInventoryPriceLine {
+    justify-content: flex-start;
     gap: 6px;
   }
 
