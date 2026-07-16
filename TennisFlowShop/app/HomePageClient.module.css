@@ -535,7 +535,10 @@
   justify-self: end;
 }
 
-.racketShow {
+.racketShowcase {
+  display: grid;
+  grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+  min-height: 420px;
   margin-top: 16px;
   overflow: hidden;
   border: 1px solid hsl(var(--border));
@@ -543,63 +546,287 @@
   background: hsl(var(--card));
 }
 
-.racketCarousel {
+.racketShowcaseImagePanel {
   position: relative;
-  padding: 18px;
+  min-height: 420px;
+  overflow: hidden;
+  background: hsl(var(--muted));
 }
 
-.racketCarouselTrack {
-  margin-left: -14px;
+.racketShowcaseImagePanel img {
+  object-position: center;
 }
 
-.racketCarouselTrackCentered {
-  justify-content: center;
+.racketShowcaseOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 8%, transparent) 0%,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 18%, transparent) 46%,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 70%, transparent) 100%
+  );
 }
 
-.racketCarouselItem {
-  flex-basis: 100%;
-  padding-left: 14px;
+.racketShowcaseCopy {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 30px;
+  color: hsl(var(--surface-inverse-foreground));
 }
 
-.racketCarouselControls {
+.racketShowcaseEyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: hsl(var(--brand-highlight));
+}
+
+.racketShowcaseTitle {
+  margin-top: 10px;
+  font-size: 30px;
+  line-height: 1.12;
+  color: hsl(var(--surface-inverse-foreground));
+}
+
+.racketShowcaseDescription {
+  max-width: 320px;
+  margin-top: 12px;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.racketShowcaseCta {
+  margin-top: 20px;
+}
+
+.racketInventoryPanel {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 14px;
+  min-width: 0;
+  flex-direction: column;
+  padding: 24px;
 }
 
-.racketCarouselControl {
+.racketInventoryHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.racketInventoryKicker {
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.racketInventoryTitle {
+  margin-top: 4px;
+  color: hsl(var(--foreground));
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.racketInventoryCount {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.racketBrandRailWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.racketBrandRailViewport {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+}
+
+.racketBrandRailButton {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
   place-items: center;
   border: 1px solid hsl(var(--border));
-  border-radius: 999px;
-  background: hsl(var(--background));
+  border-radius: 16px;
+  background: hsl(var(--card));
   color: hsl(var(--foreground));
-  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s, opacity 0.2s;
 }
 
-.racketCarouselControl:focus-visible {
+.racketBrandRailButton:focus-visible {
   outline: none;
   border-color: hsl(var(--ring));
   box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
 }
 
-.racketCarouselControl:disabled {
+.racketBrandRailButton:disabled {
   cursor: not-allowed;
   opacity: 0.4;
 }
 
-.racketSkeletonGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+.racketBrandRailFadeLeft,
+.racketBrandRailFadeRight {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 12px;
+  width: 30px;
 }
 
-.racketSkeletonCard {
-  min-height: 360px;
-  border-radius: 24px;
+.racketBrandRailFadeLeft {
+  left: 0;
+  background: linear-gradient(90deg, hsl(var(--card)), transparent);
+}
+
+.racketBrandRailFadeRight {
+  right: 0;
+  background: linear-gradient(270deg, hsl(var(--card)), transparent);
+}
+
+.racketInventoryList {
+  margin-top: 12px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.racketInventoryRow {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) 24px;
+  gap: 16px;
+  align-items: center;
+  min-height: 96px;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.racketInventoryRow:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
+}
+
+.racketInventoryThumb {
+  position: relative;
+  width: 104px;
+  height: 88px;
+  background: hsl(var(--muted));
+}
+
+.racketInventoryThumb img {
+  padding: 8px;
+}
+
+.racketInventoryInfo {
+  min-width: 0;
+  padding-block: 10px;
+}
+
+.racketInventoryBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.racketInventoryBrand {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.racketInventoryModel {
+  display: -webkit-box;
+  margin-top: 2px;
+  overflow: hidden;
+  color: hsl(var(--foreground));
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.racketInventoryPriceLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.racketInventoryPriceLine strong {
+  color: hsl(var(--foreground));
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.racketInventoryPriceLine span {
+  color: hsl(var(--brand-highlight-ink));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.racketInventoryRental {
+  margin-top: 3px;
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.racketInventoryArrow {
+  width: 18px;
+  height: 18px;
+  color: hsl(var(--muted-foreground));
+}
+
+.racketInventoryFooter {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.racketInventoryMoreLink {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  color: hsl(var(--foreground));
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.racketInventoryMoreLink small {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.racketInventoryMoreLink:focus-visible {
+  outline: none;
+  border-radius: 16px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
+}
+
+.racketSkeletonRow {
+  min-height: 96px;
+  border-bottom: 1px solid hsl(var(--border));
   background: linear-gradient(
     90deg,
     hsl(var(--muted)) 0%,
@@ -619,158 +846,115 @@
   }
 }
 
-.racketCard {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 24px;
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  text-decoration: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
-}
-
-.racketCard:focus-visible {
-  outline: none;
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
-}
-
-.racketCardImage {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  min-height: 190px;
-  background: hsl(var(--muted));
-}
-
-.racketCardImage img {
-  padding: 18px;
-  transition: transform 0.2s;
-}
-
-.racketCardBody {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  padding: 18px;
-}
-
-.racketCardBadges {
-  display: flex;
-  min-height: 24px;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.racketCardBrand {
-  color: hsl(var(--muted-foreground));
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-.racketCardModel {
-  display: -webkit-box;
-  min-height: 48px;
-  margin-top: 4px;
-  overflow: hidden;
-  color: hsl(var(--foreground));
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1.2;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.racketCardMeta {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.racketCardPrice {
-  color: hsl(var(--foreground));
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.racketCardDiscount {
-  color: hsl(var(--brand-highlight-ink));
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.racketCardRental {
-  margin-top: 8px;
-  color: hsl(var(--muted-foreground));
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.45;
-}
-
-.racketMoreCard {
-  height: 100%;
-  min-height: 100%;
-}
-
-.racketMoreCardBody {
-  display: flex;
-  min-height: 100%;
-  flex-direction: column;
-  justify-content: center;
-  padding: 26px;
-}
-
-.racketMoreCardKicker {
-  color: hsl(var(--muted-foreground));
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.racketMoreCardTitle {
-  margin-top: 10px;
-  color: hsl(var(--foreground));
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.25;
-  word-break: keep-all;
-}
-
-.racketMoreCardDescription,
-.racketMoreCardCount {
-  margin-top: 8px;
-  color: hsl(var(--muted-foreground));
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.45;
-}
-
-.racketMoreCardIcon {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  margin-top: 22px;
-  border-radius: 999px;
-  background: hsl(var(--foreground));
-  color: hsl(var(--background));
-}
-
 .racketEmpty {
-  min-height: 260px;
+  min-height: 180px;
 }
 
 .racketEmptyCopy {
   display: flex;
-  min-height: 260px;
+  min-height: 180px;
   flex-direction: column;
   justify-content: center;
-  padding: 34px;
+  padding: 26px 0 0;
+}
+
+@media (max-width: 1199px) {
+  .racketShowcase {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .racketShowcaseImagePanel {
+    min-height: 220px;
+  }
+
+  .racketInventoryPanel {
+    padding: 22px;
+  }
+}
+
+@media (max-width: 767px) {
+  .racketShowcase {
+    border-radius: 24px;
+  }
+
+  .racketShowcaseImagePanel {
+    min-height: 164px;
+  }
+
+  .racketShowcaseCopy {
+    padding: 20px;
+  }
+
+  .racketShowcaseTitle {
+    font-size: 22px;
+  }
+
+  .racketShowcaseDescription,
+  .racketShowcaseCta {
+    display: none;
+  }
+
+  .racketInventoryPanel {
+    padding: 18px;
+  }
+
+  .racketInventoryHeader {
+    align-items: flex-start;
+  }
+
+  .racketInventoryTitle {
+    font-size: 19px;
+  }
+
+  .racketBrandRailWrap {
+    margin-inline: -2px;
+  }
+
+  .racketBrandRailButton {
+    display: none;
+  }
+
+  .racketInventoryRow {
+    grid-template-columns: 92px minmax(0, 1fr) 18px;
+    gap: 10px;
+    min-height: 96px;
+  }
+
+  .racketInventoryThumb {
+    width: 92px;
+    height: 82px;
+  }
+
+  .racketInventoryThumb img {
+    padding: 6px;
+  }
+
+  .racketInventoryBadges {
+    overflow: hidden;
+    flex-wrap: nowrap;
+  }
+
+  .racketInventoryModel {
+    font-size: 15px;
+  }
+
+  .racketInventoryPriceLine {
+    gap: 6px;
+  }
+
+  .racketInventoryPriceLine strong,
+  .racketInventoryRental {
+    font-size: 12px;
+  }
+
+  .racketInventoryFooter {
+    padding-top: 12px;
+  }
+
+  .racketInventoryMoreLink {
+    justify-content: flex-start;
+  }
 }
 
 .infoGrid {
@@ -802,20 +986,10 @@
   transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
-@media (min-width: 1200px) {
-  .racketCarouselItem {
-    flex-basis: 33.3333%;
-  }
-}
 
 @media (hover: hover) and (pointer: fine) {
-  .racketCard:hover {
-    border-color: color-mix(in srgb, hsl(var(--foreground)) 24%, hsl(var(--border)));
-    box-shadow: 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
-  }
-
-  .racketCard:hover .racketCardImage img {
-    transform: scale(1.02);
+  .racketInventoryRow:hover {
+    background: hsl(var(--muted) / 0.35);
   }
 }
 
@@ -830,13 +1004,12 @@
 @media (prefers-reduced-motion: reduce) {
   .pathCard,
   .bentoSideCard,
-  .racketCard,
-  .racketCardImage img,
-  .racketCarouselControl {
+  .racketInventoryRow,
+  .racketBrandRailButton {
     transition: none;
   }
 
-  .racketSkeletonCard {
+  .racketSkeletonRow {
     animation: none;
   }
 
@@ -868,17 +1041,6 @@
     grid-template-columns: 1fr;
   }
 
-  .racketCarouselItem {
-    flex-basis: 50%;
-  }
-
-  .racketSkeletonGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .racketSkeletonCard:nth-child(3) {
-    display: none;
-  }
 
   .heroVisual {
     min-height: 460px;
@@ -897,75 +1059,6 @@
 }
 
 @media (max-width: 767px) {
-  .racketCarousel {
-    padding: 12px;
-  }
-
-  .racketCarouselTrack {
-    margin-left: -10px;
-  }
-
-  .racketCarouselItem {
-    flex-basis: 100%;
-    padding-left: 10px;
-  }
-
-  .racketSkeletonGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .racketSkeletonCard {
-    min-height: 132px;
-  }
-
-  .racketSkeletonCard:nth-child(n + 2) {
-    display: none;
-  }
-
-  .racketCard {
-    grid-template-columns: 112px minmax(0, 1fr);
-    grid-template-rows: auto;
-    align-items: center;
-    border-radius: 20px;
-  }
-
-  .racketCardImage {
-    aspect-ratio: auto;
-    min-height: 132px;
-    height: 100%;
-  }
-
-  .racketCardImage img {
-    padding: 12px;
-  }
-
-  .racketCardBody {
-    padding: 14px;
-  }
-
-  .racketCardBadges {
-    min-height: 0;
-    margin-bottom: 8px;
-  }
-
-  .racketCardModel {
-    min-height: 0;
-    font-size: 17px;
-  }
-
-  .racketCardMeta {
-    flex-wrap: wrap;
-    margin-top: 10px;
-  }
-
-  .racketCardPrice {
-    font-size: 16px;
-  }
-
-  .racketMoreCardBody {
-    min-height: 132px;
-    padding: 18px;
-  }
 
   .section {
     padding-block: 36px;
