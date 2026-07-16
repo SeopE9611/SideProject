@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { ReactNode } from "react";
 import {
   ExternalLink,
@@ -29,6 +29,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
+import { racketConditionLabel } from "@/lib/racket-condition";
 
 import type { CompareRacketItem } from "@/app/store/racketCompareStore";
 
@@ -117,7 +118,6 @@ function SpecRow({
   value: string;
   isLast: boolean;
 }) {
-  const [isHovered, setIsHovered] = useState(false);
   const IconComponent = SPEC_ICONS[specKey] || Circle;
 
   return (
@@ -128,8 +128,6 @@ function SpecRow({
         "hover:bg-muted/50",
         !isLast && "border-b border-muted/60",
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex items-center gap-2 bp-sm:gap-3">
         <div
@@ -137,7 +135,6 @@ function SpecRow({
             "flex h-7 w-7 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8",
             "bg-muted/60 transition-all duration-200",
             "group-hover:bg-secondary",
-            isHovered && "scale-105",
           )}
         >
           <IconComponent
@@ -179,49 +176,52 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
     () => [
       {
         key: "headSize",
-        label: "Head",
+        label: "헤드 크기",
         value: fmtNum(racket.spec?.headSize, " sq.in", 0),
       },
       {
         key: "weight",
-        label: "Weight",
+        label: "무게",
         value: fmtNum(racket.spec?.weight, " g", 0),
       },
       {
         key: "balance",
-        label: "Balance",
+        label: "밸런스",
         value: fmtNum(racket.spec?.balance, " mm", 0),
       },
       {
         key: "lengthIn",
-        label: "Length",
+        label: "길이",
         value: fmtNum(racket.spec?.lengthIn, " in", 1),
       },
       {
         key: "swingWeight",
-        label: "SwingWeight",
+        label: "스윙웨이트",
         value: fmtNum(racket.spec?.swingWeight, "", 0),
       },
       {
         key: "stiffnessRa",
-        label: "Stiffness(RA)",
+        label: "강성(RA)",
         value: fmtNum(racket.spec?.stiffnessRa, "", 0),
       },
       // 패턴/그립은 공통 라벨 함수로 렌더링해서 raw value 노출을 막는다.
       {
         key: "pattern",
-        label: "Pattern",
+        label: "스트링 패턴",
         value: racket.spec?.pattern ? stringPatternLabel(String(racket.spec.pattern)) : "-",
       },
       {
         key: "gripSize",
-        label: "Grip",
+        label: "그립 사이즈",
         value: racket.spec?.gripSize ? gripSizeLabel(String(racket.spec.gripSize)) : "-",
       },
       {
         key: "price",
-        label: "Price",
-        value: racket.price ? `${Math.round(racket.price).toLocaleString()}원` : "-",
+        label: "가격",
+        value:
+          typeof racket.price === "number" && Number.isFinite(racket.price)
+            ? `${Math.round(racket.price).toLocaleString()}원`
+            : "-",
       },
     ],
     [racket],
@@ -246,7 +246,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
 
       <DialogContent
         className={cn(
-          "w-[calc(100%-24px)] overflow-hidden border border-border bg-card p-0 shadow-md",
+          "w-[calc(100%-24px)] max-h-[90dvh] overflow-y-auto overscroll-contain border border-border bg-card p-0 shadow-md",
           "max-w-[920px] bp-md:max-w-[1040px] bp-lg:max-w-[1120px]",
           "bp-sm:w-[calc(100%-48px)]",
         )}
@@ -283,7 +283,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       "transition-colors duration-200",
                     )}
                   >
-                    {racket.condition}
+                    상태 {racketConditionLabel(racket.condition)}
                   </Badge>
                 ) : null}
               </div>
@@ -312,17 +312,9 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       alt={`${brandText} ${racket.model}`}
                       fill
                       className={cn(
-                        "object-cover transition-transform duration-500",
-                        "group-hover:scale-105",
+                        "object-contain p-4",
                       )}
                       unoptimized
-                    />
-                    <div
-                      className={cn(
-                        "absolute inset-0 bg-overlay/20",
-                        "opacity-0 transition-opacity duration-300",
-                        "group-hover:opacity-100",
-                      )}
                     />
                   </>
                 ) : (
@@ -386,15 +378,15 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                   >
                     <Link href={`/rackets/${racket.id}`} target="_blank" rel="noopener noreferrer">
                       상세 페이지 열기
-                      <ExternalLink className="h-4 w-4" />
+                      <ExternalLink className="h-4 w-4" aria-hidden="true" />
                     </Link>
                   </Button>
 
                   <Button
                     asChild
+                    variant="highlight_soft"
                     className={cn(
                       "inline-flex items-center justify-center gap-2",
-                      "bg-primary text-primary-foreground",
                       "shadow-sm transition-all duration-200",
                       "hover:shadow-md",
                       "bp-sm:flex-1",
