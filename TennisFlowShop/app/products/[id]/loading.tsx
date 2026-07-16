@@ -1,5 +1,5 @@
-import { DetailPageSkeleton } from "@/components/system/loading";
+import { CommerceDetailSkeleton } from "@/components/commerce/detail";
 
 export default function Loading() {
-  return <DetailPageSkeleton sectionCount={3} summaryCardCount={0} asideVariant="summary" />;
+  return <CommerceDetailSkeleton optionSectionCount={3} actionCount={3} />;
 }
