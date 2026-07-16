@@ -1,8 +1,8 @@
-# Dokkaebi Commerce Discovery Policy (V2.2 Catalog Toolbar Layout Recovery)
+# Dokkaebi Commerce Discovery Policy (V2.2 Catalog Responsive Final Polish)
 
 ## 결과·툴바 구성
 
-결과 요약과 toolbar의 구조는 도메인별 정보 밀도에 따라 달라질 수 있다.
+결과 요약과 toolbar의 구조는 도메인별 정보 밀도에 따라 달라질 수 있으나, catalog 결과 영역은 다음 순서를 기본으로 한다.
 
 상품 목록:
 - compact 결과 요약 카드
@@ -10,8 +10,56 @@
 - 활성 필터 별도 카드
 
 라켓 목록:
-- 결과 요약과 toolbar를 `SummaryCard` 안에 배치
+- compact 결과 요약 카드
+- 별도 toolbar 카드
 - 활성 필터 별도 카드
+
+## Catalog summary
+
+Catalog summary는 header와 content를 분리하지 않는 single-surface 구조를 사용한다.
+
+- eyebrow
+- title
+- description
+- count
+
+를 하나의 content 영역에 배치한다.
+
+모바일에서는 세로 stack, 768px 이상에서는 설명과 count를 좌우 배치할 수 있다.
+
+유지 문구:
+
+상품:
+- 스트링 상품
+- 플레이 성향과 성능, 가격 조건을 조합해 원하는 스트링을 찾아보세요.
+
+라켓:
+- 라켓 목록
+- 브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요.
+
+## Product toolbar
+
+768px 이상:
+- 왼쪽: 필터와 quick filter
+- 오른쪽: 품절 제외, view, sort
+- 한 줄을 우선한다.
+- 공간이 부족하면 왼쪽 rail만 overflow할 수 있다.
+
+767px 이하:
+- 첫 행: 필터 + 정렬
+- 두 번째 행: 추천, 신상품, 할인상품, 품절 제외
+- quick filter는 compact horizontal rail
+- view toggle은 숨긴다.
+
+## Racket toolbar
+
+768px 이상:
+- 필터 왼쪽
+- view와 sort 오른쪽
+
+767px 이하:
+- 필터 + 정렬
+- view toggle 숨김
 
 ## 반복 카드 기준
 
@@ -28,7 +76,8 @@
 - 버튼을 큰 2열 grid로 확대하지 않는다.
 - 360px에서만 필요한 경우 horizontal overflow를 허용한다.
 - 기능이 숨겨졌다는 인상을 줄이지 않도록 버튼 일부가 충분히 보이게 한다.
-- 품절 제외와 정렬은 별도 control row에 둘 수 있다.
+- 품절 제외는 모바일 quick filter rail 마지막에 배치한다.
+- 정렬은 첫 행에서 필터와 함께 배치한다.
 
 ## 활성 필터
 
