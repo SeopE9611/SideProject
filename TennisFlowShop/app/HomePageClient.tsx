@@ -1518,23 +1518,17 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 alt="도깨비 인증 중고 라켓 카테고리 쇼케이스"
                 fill
                 className="object-cover"
-                sizes="(max-width: 1199px) 100vw, 42vw"
+                sizes="(max-width: 1023px) 100vw, 42vw"
               />
               <div className={styles.racketShowcaseOverlay} aria-hidden="true" />
               <div className={styles.racketShowcaseCopy}>
                 <p className={styles.racketShowcaseEyebrow}>도깨비 인증 중고 라켓</p>
                 <h3 className={cn(styles.marketingTitle, styles.racketShowcaseTitle)}>
-                  상태를 확인하고
-                  <br />
-                  내 라켓을 찾아보세요.
+                  상태를 확인하고 내 라켓을 찾아보세요.
                 </h3>
                 <p className={styles.racketShowcaseDescription}>
-                  구매·대여 후 스트링 선택과 교체 신청까지 이어집니다.
+                  검수된 라켓을 구매·대여하고 스트링 서비스까지 이어보세요.
                 </p>
-                <Link className={cn(homeCtaHighlight, styles.racketShowcaseCta)} href="/rackets">
-                  중고 라켓 전체 보기
-                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
-                </Link>
               </div>
             </div>
             <div className={styles.racketInventoryPanel}>
@@ -1872,7 +1866,7 @@ function RacketInventoryList({
   );
 }
 
-function getRacketRowBadges(racket: RItem, discountRate: number) {
+function getRacketRowBadges(racket: RItem) {
   const badges: Array<{ key: string; label: string; tone: Parameters<typeof badgeToneVariant>[0] }> = [];
 
   if (racket.status === "sold") badges.push({ key: "sold", label: "판매 완료", tone: "neutral" });
@@ -1883,7 +1877,6 @@ function getRacketRowBadges(racket: RItem, discountRate: number) {
     badges.push({ key: "condition", label: `${racket.condition}급`, tone: conditionMeta.tone });
   }
 
-  if (discountRate > 0) badges.push({ key: "discount", label: `${discountRate}% 할인`, tone: "brand" });
   if (racket.marketing?.isNew) badges.push({ key: "new", label: "NEW", tone: "info" });
   if (racket.marketing?.isFeatured) badges.push({ key: "featured", label: "추천", tone: "brand" });
 
@@ -1895,18 +1888,17 @@ function RacketInventoryRow({ racket }: { racket: RItem }) {
   const discountRate = getRacketDiscountRate(racket);
   const rentalFee = Number(racket.rental?.fee?.d7);
   const rentalLabel =
-    racket.status === "sold"
-      ? "판매 완료"
-      : racket.status === "rented"
-        ? "현재 대여 중"
-        : racket.rental?.enabled && Number.isFinite(rentalFee) && rentalFee > 0
-          ? `7일 대여: ${formatPrice(rentalFee)}`
-          : racket.rental?.enabled
-            ? "대여 가능"
-            : "판매 상품";
+    racket.status !== "sold" && racket.status !== "rented"
+      ? racket.rental?.enabled && Number.isFinite(rentalFee) && rentalFee > 0
+        ? `7일 대여: ${formatPrice(rentalFee)}`
+        : racket.rental?.enabled
+          ? "대여 가능"
+          : null
+      : null;
   const brandLabel = racketBrandLabel(racket.brand);
   const imageAlt = `${brandLabel} ${racket.model}`.trim();
-  const rowBadges = getRacketRowBadges(racket, discountRate);
+  const rowBadges = getRacketRowBadges(racket);
+  const hasDiscount = discountRate > 0 && effectivePrice < racket.price;
 
   return (
     <Link href={`/rackets/${racket.id}`} className={styles.racketInventoryRow}>
@@ -1929,11 +1921,14 @@ function RacketInventoryRow({ racket }: { racket: RItem }) {
         </div>
         <p className={styles.racketInventoryBrand}>{brandLabel}</p>
         <h4 className={styles.racketInventoryModel}>{racket.model}</h4>
+      </div>
+      <div className={styles.racketInventoryDeal}>
         <div className={styles.racketInventoryPriceLine}>
-          <strong>판매가: {formatPrice(effectivePrice)}</strong>
-          {discountRate > 0 && <span>{discountRate}% 할인</span>}
+          <strong>{formatPrice(effectivePrice)}</strong>
+          {hasDiscount && <span>{discountRate}% 할인</span>}
         </div>
-        <p className={styles.racketInventoryRental}>{rentalLabel}</p>
+        {hasDiscount && <del className={styles.racketInventoryOriginalPrice}>{formatPrice(racket.price)}</del>}
+        {rentalLabel && <p className={styles.racketInventoryRental}>{rentalLabel}</p>}
       </div>
       <ArrowRight className={styles.racketInventoryArrow} aria-hidden="true" />
     </Link>
