@@ -27,8 +27,12 @@ const violations = [];
 for (const file of pageFiles) {
   const source = readFileSync(file, "utf8");
 
-  const hasSearchParamsRecord = /searchParams\??\s*:\s*Record<\s*string\s*,/m.test(source);
-  const hasParamsObject = /params\??\s*:\s*\{[^}]*\}/m.test(source);
+  const asyncPageSignature =
+    source.match(/export\s+default\s+async\s+function[\s\S]*?\)\s*\{/m)?.[0] ?? "";
+  const hasSearchParamsRecord = /searchParams\??\s*:\s*Record<\s*string\s*,/m.test(
+    asyncPageSignature,
+  );
+  const hasParamsObject = /params\??\s*:\s*\{[^}]*\}/m.test(asyncPageSignature);
 
   if (hasSearchParamsRecord) {
     violations.push({
@@ -38,7 +42,7 @@ for (const file of pageFiles) {
     });
   }
 
-  if (hasParamsObject && /export\s+default\s+async\s+function/m.test(source)) {
+  if (hasParamsObject) {
     violations.push({
       file,
       reason:

@@ -1,6 +1,11 @@
 const DEFAULT_INTERNAL_RETURN_PATH = "/cart";
 const INTERNAL_BASE_URL = "https://internal.invalid";
-const CONTROL_CHARACTER_PATTERN = /[\u0000-\u001F\u007F]/;
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0);
+    return codePoint !== undefined && (codePoint <= 0x1f || codePoint === 0x7f);
+  });
+}
 
 export function normalizeInternalReturnPath(
   value: string | null | undefined,
@@ -13,7 +18,7 @@ export function normalizeInternalReturnPath(
     !candidate.startsWith("/") ||
     candidate.startsWith("//") ||
     candidate.includes("\\") ||
-    CONTROL_CHARACTER_PATTERN.test(candidate)
+    hasControlCharacter(candidate)
   ) {
     return fallback;
   }
@@ -31,7 +36,7 @@ export function normalizeInternalReturnPath(
     !decodedPath.startsWith("/") ||
     decodedPath.startsWith("//") ||
     decodedPath.includes("\\") ||
-    CONTROL_CHARACTER_PATTERN.test(decodedPath)
+    hasControlCharacter(decodedPath)
   ) {
     return fallback;
   }
@@ -50,7 +55,7 @@ export function normalizeInternalReturnPath(
       !normalized.startsWith("/") ||
       normalized.startsWith("//") ||
       normalized.includes("\\") ||
-      CONTROL_CHARACTER_PATTERN.test(normalized)
+      hasControlCharacter(normalized)
     ) {
       return fallback;
     }
