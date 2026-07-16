@@ -37,6 +37,7 @@ export type SelectedRacket = {
   discountRate?: number;
   maxQty?: number;
   condition?: "A" | "B" | "C";
+  conditionLabel?: string;
   brand?: string;
   model?: string;
 };
@@ -59,6 +60,7 @@ type SelectStringLayoutProps = {
   initialSelectedColor?: string;
   isCartEditMode?: boolean;
   backLink?: string;
+  backLabel?: string;
   ctaLabel?: string;
   ctaSubLabel?: string;
   designVariant?: "default" | "racketPurchase" | "rental";
@@ -77,6 +79,7 @@ export default function SelectStringLayout({
   initialSelectedColor = "",
   isCartEditMode = false,
   backLink,
+  backLabel,
   ctaLabel,
   ctaSubLabel,
   designVariant = "default",
@@ -238,13 +241,12 @@ export default function SelectStringLayout({
       ) : undefined}
       meta={flowType === "rental" ? (
         <div className="space-y-1 text-ui-label text-muted-foreground">
-          {rentalPeriod && <p>대여 기간 <span className="font-medium text-foreground">{rentalPeriod}일</span></p>}
-          {(racket.brand || racket.model) && <p>{[racket.brand, racket.model].filter(Boolean).join(" · ")}</p>}
-          {racket.condition && <p>상태 등급 <span className="font-medium text-foreground">{racket.condition}</span></p>}
+          {rentalPeriod ? <p>대여 기간 <span className="font-medium text-foreground">{rentalPeriod}일</span></p> : null}
+          {racket.condition ? <p>상태 <span className="font-medium text-foreground">{racket.conditionLabel ?? racket.condition}</span></p> : null}
         </div>
       ) : undefined}
       quantityControls={showQuantityControls ? renderQuantityControls() : undefined}
-      secondaryAction={onSkipString ? <Button variant="outline" className="h-10 w-full rounded-xl" onClick={onSkipString}>스트링 없이 {flowType === "rental" ? "대여" : "구매"}하기</Button> : undefined}
+      secondaryAction={onSkipString ? <Button type="button" variant="outline" wrap="nowrap" className="h-10 w-full rounded-xl" onClick={onSkipString}>스트링 없이 {flowType === "rental" ? "대여" : "구매"}하기</Button> : undefined}
       helper={<><p className="font-semibold text-foreground">다음 단계 안내</p><p className="mt-1 break-keep">{flowType === "rental" ? "선택한 대여 라켓과 스트링 옵션은 신청 단계에서 한 번 더 확인할 수 있습니다." : "선택한 라켓, 스트링 옵션, 수량은 체크아웃에서 한 번 더 확인할 수 있습니다."}</p></>}
     />
   );
@@ -252,7 +254,7 @@ export default function SelectStringLayout({
   return (
     <div className="min-h-screen bg-background">
       <SiteContainer variant="wide" className="space-y-6 py-5 bp-md:py-8">
-        <CommerceSelectionHeader backHref={backLink} title={headerTitle} description={headerDescription} steps={selectionSteps} />
+        <CommerceSelectionHeader backHref={backLink} backLabel={backLabel} title={headerTitle} description={headerDescription} steps={selectionSteps} />
 
         <div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_360px]">
           <main className="space-y-6">

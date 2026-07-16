@@ -30,7 +30,7 @@ export function CommerceSelectionHeader({
       {backHref && (
         <Link
           href={backHref}
-          className="inline-flex max-w-full items-center gap-2 whitespace-nowrap text-ui-body-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex min-h-10 max-w-full items-center gap-2 whitespace-nowrap rounded-control px-2 text-ui-body-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="min-w-0 overflow-hidden text-ellipsis">{backLabel}</span>

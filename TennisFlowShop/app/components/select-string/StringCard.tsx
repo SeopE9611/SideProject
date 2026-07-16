@@ -152,7 +152,7 @@ export function StringCard({
     <div
       className={cn(
         "group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200",
-        viewMode === "list" ? "flex flex-col bp-md:grid bp-md:grid-cols-[210px_minmax(0,1fr)_200px]" : "flex flex-col",
+        viewMode === "list" ? "flex flex-col bp-md:grid bp-md:grid-cols-[210px_minmax(0,1fr)_200px]" : "flex h-full flex-col",
         isSelected
           ? cn(
               "border-primary/40 bg-primary/5",
@@ -166,7 +166,7 @@ export function StringCard({
       {isSelected && (
         <div className="absolute right-3 top-3 z-10">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Check className="h-4 w-4" />
+            <Check className="h-4 w-4" aria-hidden="true" />
           </div>
         </div>
       )}
@@ -201,11 +201,12 @@ export function StringCard({
       </div>
 
       {/* Content */}
-      <div className={cn("flex flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
+      <div className={cn("flex min-w-0 flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
           <h3 className="line-clamp-2 min-w-0 break-words text-ui-body-sm font-semibold leading-tight text-foreground bp-md:text-ui-body">
             {product.name}
+            {isSelected ? <span className="sr-only">현재 선택된 스트링</span> : null}
           </h3>
           {product.shortDescription && (
             <p className="line-clamp-2 min-w-0 break-words text-ui-label text-muted-foreground">
@@ -345,20 +346,30 @@ export function StringCard({
           )}
         </div>
 
-        {/* CTA Button */}
+      </div>
+
+      {/* Actions */}
+      <div
+        className={cn(
+          "flex flex-col justify-end gap-2 border-t border-border bg-muted/10 p-4",
+          viewMode === "list" && "bp-md:border-l bp-md:border-t-0 bp-md:bg-muted/10",
+        )}
+      >
         <Button
           variant="highlight_soft"
-          className="mt-3 h-10 w-full justify-center gap-2 rounded-xl"
+          wrap="nowrap"
+          className="h-10 w-full justify-center gap-2 rounded-xl"
           disabled={isDisabled}
           onClick={onSelect}
         >
-          <span className="min-w-0">{ctaLabel}</span>
+          <span className="whitespace-nowrap">{ctaLabel}</span>
           <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
         </Button>
         <Button
           asChild
           variant="outline"
-          className="mt-2 h-10 w-full justify-center gap-2 rounded-xl"
+          wrap="nowrap"
+          className="h-10 w-full justify-center gap-2 rounded-xl"
         >
           <Link
             href={`/products/${product._id}`}
@@ -367,7 +378,7 @@ export function StringCard({
             onClick={(event) => event.stopPropagation()}
           >
             <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="min-w-0">상세 보기</span>
+            <span className="whitespace-nowrap">상세 보기</span>
           </Link>
         </Button>
       </div>

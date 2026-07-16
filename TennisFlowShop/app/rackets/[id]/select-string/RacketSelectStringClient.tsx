@@ -46,6 +46,9 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   const initialSelectedGauge = searchParams.get("selectedGauge") ?? "";
   const initialSelectedColor = searchParams.get("selectedColor") ?? "";
   const returnTo = searchParams.get("returnTo") ?? "/cart";
+  const normalizedReturnTo = returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/cart";
+  const backLink = isFromCart ? normalizedReturnTo : `/rackets/${racket.id}`;
+  const backLabel = isFromCart ? "장바구니로" : "라켓 상세로";
 
   // Stores
   const setItems = usePdpBundleStore((s) => s.setItems);
@@ -338,7 +341,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       try {
         upsertCartBundle(p, finalQty, selectedGauge, selectedColor);
         showSuccessToast?.("장바구니의 라켓+스트링 구성을 수정했어요.");
-        router.push(returnTo);
+        router.push(normalizedReturnTo);
       } catch (e) {
         showErrorToast?.("장바구니 수정 중 오류가 발생했어요. 다시 시도해주세요.");
       }
@@ -386,6 +389,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
         maxQty: racket.maxQty,
       }}
       flowType="purchase"
+      backLink={backLink}
+      backLabel={backLabel}
       onSelectString={handleSelectString}
       showQuantityControls={true}
       initialWorkCount={isFromCart ? initialQtyParam : 1}
