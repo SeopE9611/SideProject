@@ -106,7 +106,7 @@ type ProductDoc = {
   isDeleted?: boolean;
 };
 
-const HOME_PREVIEW_CACHE_TAG = "home-preview";
+export const HOME_PREVIEW_CACHE_TAG = "home-preview";
 const HOME_PREVIEW_REVALIDATE_SECONDS = 60;
 
 type RacketDoc = {

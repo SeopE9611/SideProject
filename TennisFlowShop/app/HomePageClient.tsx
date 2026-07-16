@@ -6,6 +6,7 @@ import HorizontalProducts from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 import type {
@@ -560,6 +561,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
   const [racketsLoadingByBrand, setRacketsLoadingByBrand] = useState<Record<string, boolean>>({});
   const [racketsErrorByBrand, setRacketsErrorByBrand] = useState<Record<string, boolean>>({});
+  const racketsFetchedRef = useRef(new Set<BrandKey>());
   const [homePackages, setHomePackages] = useState<HomePreviewPackage[]>(
     initialHomeData?.packages ?? [],
   );
@@ -596,7 +598,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     void fetchHomePackages();
   }, [fetchHomePackages, hasInitialPackages]);
 
-  const loadUsedRackets = useCallback(async (brand: BrandKey) => {
+  const loadUsedRackets = useCallback(async (brand: BrandKey, options?: { force?: boolean }) => {
+    if (options?.force) racketsFetchedRef.current.delete(brand);
     setRacketsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
     setRacketsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
 
@@ -613,8 +616,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       setRackByBrand((prev) => ({ ...prev, [brand]: items }));
       setRacketTotalsByBrand((prev) => ({ ...prev, [brand]: total }));
     } catch {
-      setRackByBrand((prev) => ({ ...prev, [brand]: [] }));
-      setRacketTotalsByBrand((prev) => ({ ...prev, [brand]: 0 }));
       setRacketsErrorByBrand((prev) => ({ ...prev, [brand]: true }));
     } finally {
       setRacketsLoadingByBrand((prev) => ({ ...prev, [brand]: false }));
@@ -681,9 +682,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
   useEffect(() => {
     if (!shouldLoadRackets) return;
-    if (rackByBrand[activeBrand]) return;
+    if (racketsFetchedRef.current.has(activeBrand)) return;
+    racketsFetchedRef.current.add(activeBrand);
     void loadUsedRackets(activeBrand);
-  }, [activeBrand, rackByBrand, loadUsedRackets, shouldLoadRackets]);
+  }, [activeBrand, loadUsedRackets, shouldLoadRackets]);
 
   const homeStringProducts = useMemo(() => allProducts, [allProducts]);
   const premiumItemsSource = useMemo(() => {
@@ -718,12 +720,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
 
   const usedRacketsSource = rackByBrand[activeBrand] ?? [];
-  const previewRackets = usedRacketsSource.slice(0, 3);
+  const carouselRackets = usedRacketsSource.slice(0, 10);
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsSource.length;
-  const hasMoreRacketProducts = racketTotal > previewRackets.length;
   const currentPath = APPLICATION_PATHS[activeApplicationPath];
   const heroPath = currentPath;
   const currentStepIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStepKey);
@@ -1487,29 +1488,19 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             ))}
           </div>
           <div className={styles.racketShow}>
-            {previewRackets.length > 0 ? (
-              <>
-                <div className={styles.racketCardGrid}>
-                  {previewRackets.map((racket) => (
-                    <RacketPreviewCard key={racket.id} racket={racket} />
-                  ))}
-                </div>
-                <div className={styles.racketShowFooter}>
-                  <Link
-                    className={cn(homeCtaHighlight, "w-fit")}
-                    href={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
-                  >
-                    전체 중고 라켓 보기
-                  </Link>
-                </div>
-              </>
-            ) : usedRacketsError || usedRacketsLoading || !shouldLoadRackets ? (
-              <EmptyPanel
-                title={
-                  usedRacketsError ? "중고 라켓을 불러오지 못했어요" : "중고 라켓을 확인하고 있어요"
-                }
-                action={usedRacketsError ? () => loadUsedRackets(activeBrand) : undefined}
+            {carouselRackets.length > 0 ? (
+              <HomeRacketCarousel
+                activeBrand={activeBrand}
+                rackets={carouselRackets}
+                total={racketTotal}
               />
+            ) : usedRacketsError ? (
+              <EmptyPanel
+                title="중고 라켓을 불러오지 못했어요"
+                action={usedRacketsError ? () => loadUsedRackets(activeBrand, { force: true }) : undefined}
+              />
+            ) : usedRacketsLoading || !shouldLoadRackets ? (
+              <RacketCarouselSkeleton />
             ) : (
               <div className={styles.racketEmpty}>
                 <div className={styles.racketEmptyCopy}>
@@ -1522,20 +1513,28 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     검수된 중고 라켓을 준비 중입니다.
                   </h3>
                   <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">
-                    상태 확인이 끝난 라켓부터 순차적으로 소개해드릴게요.
+                    {activeBrand === "all"
+                      ? "현재 준비된 중고 라켓이 없습니다."
+                      : `현재 ${racketBrandLabel(activeBrand)} 중고 라켓이 없습니다.`}
                   </p>
-                  <Link className={cn(homeCtaHighlight, "mt-6 w-fit")} href="/rackets">
-                    전체 중고 라켓 보기
-                  </Link>
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {activeBrand !== "all" && (
+                      <button
+                        type="button"
+                        className={homeCtaOutline}
+                        onClick={() => setActiveBrand("all")}
+                      >
+                        전체 브랜드 보기
+                      </button>
+                    )}
+                    <Link className={homeCtaHighlight} href="/rackets">
+                      중고 라켓 목록 보기
+                    </Link>
+                  </div>
                 </div>
               </div>
             )}
           </div>
-          <span className="sr-only">
-            {hasMoreRacketProducts
-              ? "더 많은 중고 라켓이 있습니다."
-              : "표시된 중고 라켓이 전체입니다."}
-          </span>
         </SiteContainer>
       </section>
 
@@ -1718,6 +1717,122 @@ function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
         이 패키지 보기
       </Link>
     </div>
+  );
+}
+
+function RacketCarouselSkeleton() {
+  return (
+    <div className={styles.racketCarousel} aria-label="중고 라켓을 확인하고 있어요">
+      <div className={styles.racketSkeletonGrid}>
+        {[0, 1, 2].map((index) => (
+          <div key={index} className={styles.racketSkeletonCard} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HomeRacketCarousel({
+  activeBrand,
+  rackets,
+  total,
+}: {
+  activeBrand: BrandKey;
+  rackets: RItem[];
+  total: number;
+}) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+  const moreHref =
+    activeBrand === "all" ? "/rackets" : `/rackets?brand=${encodeURIComponent(activeBrand)}`;
+  const remainingCount = Math.max(0, total - rackets.length);
+  const hasMore = remainingCount > 0;
+  const moreTitle = hasMore
+    ? "더 많은 중고 라켓"
+    : activeBrand === "all"
+      ? "전체 중고 라켓"
+      : `${racketBrandLabel(activeBrand)} 중고 라켓`;
+  const moreDescription = hasMore ? "목록에서 전체 보기" : "목록에서 자세히 보기";
+  const itemCount = rackets.length + 1;
+  const shouldCenter = itemCount <= 2;
+
+  const updateScrollState = useCallback((carouselApi: CarouselApi) => {
+    if (!carouselApi) return;
+    setCanScrollPrev(carouselApi.canScrollPrev());
+    setCanScrollNext(carouselApi.canScrollNext());
+  }, []);
+
+  useEffect(() => {
+    if (!api) return;
+    updateScrollState(api);
+    api.on("select", updateScrollState);
+    api.on("reInit", updateScrollState);
+    return () => {
+      api.off("select", updateScrollState);
+      api.off("reInit", updateScrollState);
+    };
+  }, [api, updateScrollState]);
+
+  useEffect(() => {
+    if (!api) return;
+    api.scrollTo(0, true);
+    api.reInit();
+    updateScrollState(api);
+  }, [activeBrand, api, rackets.length, updateScrollState]);
+
+  return (
+    <Carousel
+      setApi={setApi}
+      opts={{ align: shouldCenter ? "center" : "start", dragFree: false, containScroll: "trimSnaps" }}
+      className={styles.racketCarousel}
+      aria-label="도깨비 인증 중고 라켓 목록"
+    >
+      <CarouselContent className={cn(styles.racketCarouselTrack, shouldCenter && styles.racketCarouselTrackCentered)}>
+        {rackets.map((racket) => (
+          <CarouselItem key={racket.id} className={styles.racketCarouselItem}>
+            <RacketPreviewCard racket={racket} />
+          </CarouselItem>
+        ))}
+        <CarouselItem className={styles.racketCarouselItem}>
+          <Link href={moreHref} className={cn(styles.racketCard, styles.racketMoreCard)}>
+            <div className={styles.racketMoreCardBody}>
+              <span className={styles.racketMoreCardKicker}>중고 라켓 목록</span>
+              <strong className={styles.racketMoreCardTitle}>{moreTitle}</strong>
+              <span className={styles.racketMoreCardDescription}>{moreDescription}</span>
+              {hasMore && (
+                <span className={styles.racketMoreCardCount}>{remainingCount}개 더 보기</span>
+              )}
+              <span className={styles.racketMoreCardIcon} aria-hidden="true">
+                <ArrowRight className="h-5 w-5" />
+              </span>
+            </div>
+          </Link>
+        </CarouselItem>
+      </CarouselContent>
+      {(canScrollPrev || canScrollNext) && (
+        <div className={styles.racketCarouselControls}>
+          <button
+            type="button"
+            className={styles.racketCarouselControl}
+            onClick={() => api?.scrollPrev()}
+            disabled={!canScrollPrev}
+            aria-label="이전 중고 라켓 보기"
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={styles.racketCarouselControl}
+            onClick={() => api?.scrollNext()}
+            disabled={!canScrollNext}
+            aria-label="다음 중고 라켓 보기"
+          >
+            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+      )}
+    </Carousel>
   );
 }
 
