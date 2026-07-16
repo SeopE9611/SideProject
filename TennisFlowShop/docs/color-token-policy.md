@@ -113,6 +113,18 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--sidebar-border`: `40 6% 88%`
 - `--sidebar-ring`: `0 0% 18%`
 
+#### Light identity token
+
+- `--identity-admin`: `214 65% 48%`
+- `--identity-admin-muted`: `214 45% 92%`
+- `--identity-admin-foreground`: `215 55% 30%`
+- `--identity-kakao`: `45 70% 48%`
+- `--identity-kakao-muted`: `46 55% 90%`
+- `--identity-kakao-foreground`: `40 60% 24%`
+- `--identity-naver`: `145 52% 40%`
+- `--identity-naver-muted`: `145 34% 90%`
+- `--identity-naver-foreground`: `145 48% 25%`
+
 ### Dark (charcoal + graphite + high legibility)
 
 - `--background`: `240 4% 7%` (`#111113`)
@@ -155,10 +167,37 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--sidebar-border`: `240 3% 22%`
 - `--sidebar-ring`: `220 7% 78%`
 
+#### Dark identity token
+
+- `--identity-admin`: `214 72% 68%`
+- `--identity-admin-muted`: `214 30% 22%`
+- `--identity-admin-foreground`: `214 80% 82%`
+- `--identity-kakao`: `45 80% 64%`
+- `--identity-kakao-muted`: `45 30% 20%`
+- `--identity-kakao-foreground`: `45 85% 78%`
+- `--identity-naver`: `145 60% 60%`
+- `--identity-naver-muted`: `145 28% 18%`
+- `--identity-naver-foreground`: `145 68% 74%`
+
 ### 상태색(역할 유지)
 
 - `--success`, `--warning`, `--info`, `--destructive`는 **의미색 역할을 유지**한다.
 - 본 리브랜딩에서 변경한 축은 neutral/primary/chart/sidebar이며, 상태색의 의미 체계는 바꾸지 않는다.
+
+### Identity token 역할
+
+Identity token은 사용자 역할·로그인 제공자 식별에만 사용한다.
+
+- `admin`: 관리자 역할 식별
+- `kakao`: 카카오 로그인 제공자 식별
+- `naver`: 네이버 로그인 제공자 식별
+- `email`: 별도 identity token을 만들지 않고 neutral secondary 사용
+
+Identity token은 workflow status를 표현하지 않는다.
+
+- Kakao ≠ warning
+- Naver ≠ success
+- Admin ≠ info/success
 
 ### 차트 팔레트 원칙 (Monotone with depth)
 

@@ -1450,7 +1450,7 @@ export default function TransactionFlowList() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-44 p-1">
+                            <DropdownMenuContent align="end" className="w-56 max-w-[calc(100vw-2rem)] p-1">
                               <div className="grid gap-1 [&_a]:h-8 [&_a]:w-full [&_a]:justify-start [&_a]:px-3 [&_a]:text-ui-label [&_a]:font-medium [&_button]:h-8 [&_button]:w-full [&_button]:justify-start [&_button]:px-3 [&_button]:text-ui-label [&_button]:font-medium">
                                 {secondaryActions.map((action) => (
                                   <DropdownMenuItem key={action.key} asChild className="p-0 focus:bg-transparent">

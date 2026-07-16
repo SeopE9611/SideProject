@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuthStore } from "@/app/store/authStore";
-import { Badge } from "@/components/ui/badge";
 import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,12 +71,12 @@ export function UserNav() {
             </span>
 
             {isAdmin && (
-              <Badge
-                variant="info"
-                className="shrink-0 whitespace-nowrap text-ui-micro font-medium px-1.5 py-[2px]"
+              <IdentityBadge
+                tone="admin"
+                className="h-5 min-h-0 shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro font-medium"
               >
                 {getUserRoleLabel(normalizedRole)}
-              </Badge>
+              </IdentityBadge>
             )}
           </div>
         </div>

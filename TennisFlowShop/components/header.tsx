@@ -12,7 +12,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -578,12 +577,12 @@ const Header = () => {
                           <IdentityBadge tone="naver" className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 text-ui-micro leading-none">네이버</IdentityBadge>
                         )}
                         {isAdmin && (
-                          <Badge
-                            variant="success"
-                            className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 py-0 text-ui-micro leading-none"
+                          <IdentityBadge
+                            tone="admin"
+                            className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-none"
                           >
                             {getUserRoleLabel(user?.role)}
-                          </Badge>
+                          </IdentityBadge>
                         )}
                       </div>
                       <Link
