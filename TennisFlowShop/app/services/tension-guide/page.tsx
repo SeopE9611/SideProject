@@ -1,11 +1,11 @@
 "use client";
 
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
-import { SummaryCard } from "@/components/public/SummaryCard";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertTriangle,
@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Gauge,
-  Info,
   Layers,
   Lightbulb,
   Settings2,
@@ -368,864 +367,133 @@ export default function TensionGuidePage() {
     return { text: "컨트롤 중심 세팅", color: "text-foreground" };
   };
 
+  const basisRows = [
+    { label: "기준점", value: `${selectedRange.base}LB` },
+    { label: "플레이 스타일 보정", value: `${styleAdjust > 0 ? `+${styleAdjust}` : styleAdjust}LB` },
+    { label: "스윙 스피드 보정", value: `${speedAdjust > 0 ? `+${speedAdjust}` : speedAdjust}LB` },
+    { label: "중간 계산값", value: `${rawTensionValue}LB` },
+    { label: clampReason.label, value: `${clampReason.value}LB` },
+    { label: "최종 추천", value: `${calculatedTension}LB`, emphasis: true },
+  ];
+
+  const choiceClass = (selected: boolean, align: "left" | "center" = "left") =>
+    `relative rounded-xl border p-3 text-${align} transition-[background-color,color,border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+      selected
+        ? "border-brand-highlight-ink/40 bg-brand-highlight-muted text-foreground shadow-sm"
+        : "border-border bg-card text-foreground hover:bg-muted/40"
+    }`;
+
+  const renderPros = (pros: StringPro[]) =>
+    pros.map((pro, index) => (
+      <li key={index} className="flex gap-2 text-ui-body-sm leading-relaxed text-muted-foreground">
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight-ink" aria-hidden />
+        {typeof pro === "string" ? (
+          <span>{pro}</span>
+        ) : (
+          <span>
+            <strong className="font-semibold text-foreground">{pro.title}</strong> — {pro.description}
+          </span>
+        )}
+      </li>
+    ));
+
   return (
     <div className="min-h-screen bg-background">
-      <PublicPageHero
-        align="center"
-        eyebrow={
-          <span className="inline-flex items-center gap-2">
-            <Gauge className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-            전문가 텐션 가이드
-          </span>
-        }
-        title={
-          <>
-            나에게 맞는
-            <br />
-            <span className="text-primary">최적의 텐션</span>을 찾아보세요
-          </>
-        }
-        description="플레이 스타일, 스윙 스피드, 스트링 타입에 따른 맞춤형 텐션 가이드로 최고의 퍼포먼스를 경험하세요"
-      />
+      <section className="border-b border-border bg-muted/30">
+        <SiteContainer className="grid gap-8 py-10 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center bp-lg:py-14">
+          <div className="space-y-6">
+            <Badge variant="outline" className="w-fit gap-2 border-brand-highlight-ink/30 bg-brand-highlight-muted text-brand-highlight-ink">
+              <Gauge className="h-3.5 w-3.5" aria-hidden />
+              TENSION LAB
+            </Badge>
+            <div className="max-w-3xl space-y-4">
+              <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-[-0.02em] text-foreground bp-md:text-ui-page-title-lg">
+                감이 아닌 플레이 조건으로 적정 장력을 좁혀보세요.
+              </h1>
+              <p className="text-ui-body leading-relaxed text-muted-foreground bp-md:text-ui-body-lg">
+                성별, 스윙 스피드, 스트링 타입과 플레이 스타일을 기준으로 시작 장력을 확인하고 실제 타구감에 맞춰 1LB 단위로 조정해 보세요.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 bp-sm:flex-row">
+              <Button asChild variant="highlight" size="lg" className="w-full bp-sm:w-auto">
+                <Link href="#tension-guide-workspace">텐션 계산 시작하기</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="w-full bp-sm:w-auto">
+                <Link href="/services">교체서비스 보기</Link>
+              </Button>
+            </div>
+          </div>
+          <PublicSurface variant="feature" className="space-y-4">
+            <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">이용 흐름</p>
+            {[
+              "플레이 조건 선택",
+              "추천 범위와 계산값 확인",
+              "실제 타구감에 따라 1LB 단위 조정",
+            ].map((step, index) => (
+              <div key={step} className="flex items-center gap-3 border-t border-border pt-4 first:border-t-0 first:pt-0">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-highlight-muted text-ui-label font-semibold text-brand-highlight-ink">{index + 1}</span>
+                <span className="text-ui-body-sm font-medium text-foreground">{step}</span>
+              </div>
+            ))}
+          </PublicSurface>
+        </SiteContainer>
+      </section>
 
       <SiteContainer className="py-6 bp-md:py-10 bp-lg:pb-16">
-        {/* Navigation Tabs */}
-        <Tabs
-          value={activeSection}
-          onValueChange={setActiveSection}
-          className="mb-6 overflow-x-auto pb-1 bp-md:mb-12"
-        >
-          <TabsList className="mx-auto grid h-auto w-full min-w-[20rem] max-w-2xl grid-cols-4 bg-muted p-1">
-            <TabsTrigger
-              value="calculator"
-              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
-            >
-              <BarChart3 className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
-              <span className="hidden bp-sm:inline">텐션</span> 계산기
-            </TabsTrigger>
-            <TabsTrigger
-              value="levels"
-              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
-            >
-              <Users className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
-              <span className="bp-xs:hidden">수준별</span>
-              <span className="hidden bp-xs:inline">수준별 가이드</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="strings"
-              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
-            >
-              <Layers className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
-              <span className="bp-xs:hidden">스트링</span>
-              <span className="hidden bp-xs:inline">스트링 타입</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="tips"
-              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
-            >
-              <Lightbulb className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
-              <span className="bp-xs:hidden">팁</span>
-              <span className="hidden bp-xs:inline">전문가 팁</span>
-            </TabsTrigger>
+        <Tabs id="tension-guide-workspace" value={activeSection} onValueChange={setActiveSection} className="mb-8 bp-md:mb-12">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted p-1 bp-sm:grid-cols-4">
+            {[
+              { value: "calculator", label: "계산기", icon: BarChart3 },
+              { value: "levels", label: "수준별", icon: Users },
+              { value: "strings", label: "스트링", icon: Layers },
+              { value: "tips", label: "전문가 팁", icon: Lightbulb },
+            ].map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 rounded-lg border border-transparent py-2.5 text-ui-label text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm bp-sm:text-ui-body-sm">
+                <tab.icon className="h-3.5 w-3.5" aria-hidden />
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {/* 텐션 계산기 */}
-          <TabsContent value="calculator" className="mt-6 bp-md:mt-8">
-            <div className="grid bp-lg:grid-cols-2 gap-6 bp-md:gap-8">
-              {/* 입력 섹션 */}
-              <div className="space-y-6">
-                <SummaryCard
-                  title={
-                    <span className="flex items-center gap-2 break-keep">
-                      <Settings2 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
-                      나의 플레이 정보
-                    </span>
-                  }
-                  className="border border-border shadow-sm bg-card dark:bg-muted/90"
-                  contentClassName="space-y-6 bp-md:space-y-8"
-                >
-                  {/* 성별 선택 */}
-                  <div>
-                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
-                      성별
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
-                      {[
-                        {
-                          id: "female",
-                          label: "여자",
-                          desc: "여성 추천 범위 기준 계산",
-                        },
-                        {
-                          id: "male",
-                          label: "남자",
-                          desc: "남성 추천 범위 기준 계산",
-                        },
-                      ].map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => setGender(option.id as Gender)}
-                          className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${gender === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
-                        >
-                          <div
-                            className={`font-medium text-ui-body-sm ${gender === option.id ? "text-primary" : "text-foreground"}`}
-                          >
-                            {option.label}
-                          </div>
-                          <div className="text-ui-label text-muted-foreground mt-1">
-                            {option.desc}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+          <TabsContent value="calculator" className="mt-8 space-y-6">
+            <SectionHeader eyebrow="Calculator" title="조건을 입력하고 추천 장력을 확인하세요" description="입력과 결과를 한 화면에서 비교하며 스트링 기준점, 보정값, 범위 제한 과정을 함께 확인할 수 있습니다." />
+            <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+              <div className="grid bp-lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]">
+                <div className="space-y-7 p-4 bp-sm:p-6 bp-lg:p-8">
+                  <div className="space-y-3">
+                    <h3 className="flex items-center gap-2 text-ui-card-title font-semibold text-foreground"><Settings2 className="h-4 w-4 text-muted-foreground" aria-hidden />플레이 조건 입력</h3>
+                    <p className="text-ui-body-sm text-muted-foreground">모든 선택지는 계산값에 즉시 반영됩니다.</p>
                   </div>
-
-                  {/* 스윙 스피드 선택 */}
-                  <div>
-                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
-                      스윙 스피드
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
-                      {swingSpeedOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => setSwingSpeed(option.id as SwingSpeed)}
-                          className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${swingSpeed === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
-                        >
-                          <div
-                            className={`font-medium text-ui-label bp-sm:text-ui-body-sm ${swingSpeed === option.id ? "text-primary" : "text-foreground"}`}
-                          >
-                            {option.label}
-                          </div>
-                          <div className="text-ui-label text-foreground/80 mt-1 hidden bp-sm:block">
-                            {option.desc}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {/* 스트링 타입 선택 */}
-                  <div>
-                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
-                      스트링 타입
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
-                      {stringTypes.map((st) => (
-                        <button
-                          key={st.id}
-                          onClick={() => setStringType(st.id as StringType)}
-                          className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${stringType === st.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <st.icon
-                              className={`h-4 w-4 ${stringType === st.id ? "text-primary" : "text-muted-foreground"}`}
-                            />
-                            <span
-                              className={`font-medium text-ui-body-sm ${stringType === st.id ? "text-primary" : "text-foreground"}`}
-                            >
-                              {st.name}
-                            </span>
-                          </div>
-                          <span className="text-ui-label text-muted-foreground">
-                            여 {st.ranges.female.min}~{st.ranges.female.max}LB · 남{" "}
-                            {st.ranges.male.min}~{st.ranges.male.max}LB
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 플레이 스타일 선택 */}
-                  <div>
-                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
-                      플레이 스타일
-                    </label>
-                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
-                      {playStyleOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => setPlayStyle(option.id as PlayStyle)}
-                          className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${playStyle === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
-                        >
-                          <div
-                            className={`font-medium text-ui-label bp-sm:text-ui-body-sm ${playStyle === option.id ? "text-primary" : "text-foreground"}`}
-                          >
-                            {option.label}
-                          </div>
-                          <div className="text-ui-label text-foreground/80 mt-1 hidden bp-sm:block">
-                            {option.desc}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </SummaryCard>
-              </div>
-
-              {/* 결과 섹션 */}
-              <div className="space-y-6">
-                <SummaryCard
-                  title={
-                    <span className="flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
-                      <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                      추천 텐션
-                    </span>
-                  }
-                  className="border border-border shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden"
-                >
-                  <div className="text-center mb-6 bp-md:mb-8">
-                    <div className="text-ui-page-title-lg font-semibold text-primary mb-2 ">
-                      {calculatedTension}LB
-                    </div>
-                    <div
-                      className={`text-ui-body-lg bp-md:text-ui-card-title-lg font-medium ${getTensionFeedback().color}`}
-                    >
-                      {getTensionFeedback().text}
-                    </div>
-                  </div>
-
-                  {/* 텐션 시각화 */}
-                  <div className="mb-6 bp-md:mb-8">
-                    <div className="flex justify-between text-ui-label text-muted-foreground mb-2">
-                      <span>42LB</span>
-                      <span>56LB</span>
-                    </div>
-                    <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
-                      <div
-                        className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-2 ring-border rounded-full shadow-sm transition-[transform,box-shadow,border-color,background-color] duration-500 ease-out"
-                        style={{ left: `${gaugePosition}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-ui-label mt-2">
-                      <span className="text-primary">파워</span>
-                      <span className="text-muted-foreground">컨트롤</span>
-                    </div>
-                  </div>
-
-                  {/* 추천 범위 */}
-                  <PublicSurface padding="sm" className="mb-4 rounded-xl dark:bg-muted/80">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Info className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-foreground">
-                        추천 범위 (선택 성별 기준)
-                      </span>
-                    </div>
-                    <p className="text-ui-body-sm text-muted-foreground">
-                      최종 추천 텐션 {calculatedTension}LB · {selectedRange.min}
-                      LB ~ {selectedRange.max}LB
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge
-                        variant="secondary"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
-                      >
-                        {gender === "female" ? "여자" : "남자"} {selectedRange.min}~
-                        {selectedRange.max}LB
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
-                      >
-                        {oppositeGender === "female" ? "여자" : "남자"} {oppositeRange.min}~
-                        {oppositeRange.max}LB
-                      </Badge>
-                    </div>
-                  </PublicSurface>
-
-                  {/* 계산 근거를 한눈에 보여주면 사용자가 추천값의 출처를 빠르게 이해할 수 있습니다. */}
-                  <PublicSurface padding="sm" className="mb-6 rounded-xl dark:bg-muted/80">
-                    <div className="flex items-center gap-2 mb-3">
-                      <BarChart3 className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-foreground">계산 근거</span>
-                    </div>
-                    <ul className="space-y-2">
-                      <li className="flex items-center justify-between text-ui-body-sm">
-                        <span className="text-muted-foreground">기준점</span>
-                        <span className="font-medium text-foreground">{selectedRange.base}LB</span>
-                      </li>
-                      <li className="flex items-center justify-between text-ui-body-sm">
-                        <span className="text-muted-foreground">플레이 스타일 보정</span>
-                        <span className="font-medium text-foreground">
-                          {styleAdjust > 0 ? `+${styleAdjust}` : styleAdjust}
-                          LB
-                        </span>
-                      </li>
-                      <li className="flex items-center justify-between text-ui-body-sm">
-                        <span className="text-muted-foreground">스윙 스피드 보정</span>
-                        <span className="font-medium text-foreground">
-                          {speedAdjust > 0 ? `+${speedAdjust}` : speedAdjust}
-                          LB
-                        </span>
-                      </li>
-                      <li className="flex items-center justify-between text-ui-body-sm">
-                        <span className="text-muted-foreground">중간 계산값 (raw value)</span>
-                        <span className="font-medium text-foreground">{rawTensionValue}LB</span>
-                      </li>
-                      <li className="flex items-center justify-between text-ui-body-sm">
-                        <span className="text-muted-foreground">{clampReason.label}</span>
-                        <span className="font-medium text-foreground">{clampReason.value}LB</span>
-                      </li>
-                      <li className="pt-2 border-t border-border flex items-center justify-between text-ui-body-sm">
-                        <span className="text-foreground font-medium">최종 추천</span>
-                        <span className="text-primary font-semibold">{calculatedTension}LB</span>
-                      </li>
-                    </ul>
-                  </PublicSurface>
-
-                  {/* <Button asChild className="w-full bg-secondary hover:bg-secondary/90 transition-[background-color,color,border-color,box-shadow,opacity] duration-200">
-                      <Link href="/services/apply">
-                        이 텐션으로 스트링 신청하기
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button> */}
-                </SummaryCard>
-
-                {/* 환경 요인 */}
-                <SummaryCard
-                  title={
-                    <span className="flex items-center gap-2 text-foreground">
-                      <Thermometer className="h-4 w-4 text-muted-foreground" />
-                      환경에 따른 조정
-                    </span>
-                  }
-                  className="border border-border shadow-sm bg-card dark:bg-muted/90"
-                >
-                  <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
-                    {environmentFactors.map((factor, index) => (
-                      <PublicSurface
-                        key={index}
-                        variant="muted"
-                        padding="sm"
-                        className="flex items-start gap-2 rounded-lg hover:bg-muted dark:hover:bg-muted transition-colors duration-200"
-                      >
-                        <factor.icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${factor.color}`} />
-                        <div>
-                          <div className="text-ui-label bp-sm:text-ui-label font-medium text-foreground">
-                            {factor.factor}
-                          </div>
-                          <div className="text-ui-label bp-sm:text-ui-label text-primary font-semibold">
-                            {factor.adjustment}
-                          </div>
-                        </div>
-                      </PublicSurface>
-                    ))}
-                  </div>
-                </SummaryCard>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* 플레이어 수준별 가이드 */}
-          <TabsContent value="levels" className="mt-6 bp-md:mt-8">
-            <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 bp-md:gap-6">
-              {playerTypes.map((player, index) => {
-                const IconComponent = player.icon;
-                const isSelected = selectedLevel === index;
-                return (
-                  <PublicSurface
-                    key={index}
-                    padding="none"
-                    className={`cursor-pointer transition-[background-color,color,border-color,box-shadow,opacity] duration-300 overflow-hidden border bg-card ${isSelected ? "border-primary/60 ring-2 ring-inset ring-primary/20 shadow-sm" : "hover:shadow-md"}`}
-                    onClick={() => setSelectedLevel(isSelected ? null : index)}
-                  >
-                    <div className="p-5 pb-3 bp-md:pb-4 sm:p-6 sm:pb-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3 bp-sm:gap-4">
-                          <div
-                            className={`w-10 h-10 bp-sm:w-12 bp-sm:h-12 bp-md:w-14 bp-md:h-14 ${player.color} rounded-xl bp-md:rounded-2xl flex items-center justify-center shadow-md`}
-                          >
-                            <IconComponent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 bp-md:h-7 bp-md:w-7 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="text-ui-body-lg bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title mb-1 font-semibold text-card-foreground">
-                              {player.type}
-                            </h3>
-                            <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                              <Badge
-                                variant="secondary"
-                                className="shrink-0 whitespace-nowrap text-ui-label bp-md:text-ui-body-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
-                              >
-                                여자 {player.femaleTension}
-                              </Badge>
-                              <Badge
-                                variant="outline"
-                                className="shrink-0 whitespace-nowrap text-ui-label bp-md:text-ui-body-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
-                              >
-                                남자 {player.maleTension}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <ChevronRight
-                          className={`h-4 w-4 bp-md:h-5 bp-md:w-5 text-muted-foreground transition-transform ${isSelected ? "rotate-90" : ""}`}
-                        />
-                      </div>
-                    </div>
-                    <div className="p-5 pt-0 sm:p-6 sm:pt-0">
-                      <p className="text-ui-body-sm bp-md:text-ui-body-lg text-muted-foreground mb-3 bp-md:mb-4">
-                        {player.description}
-                      </p>
-
-                      {/* 공통 축(42~56LB)으로 맞춰야 여자/남자 범위를 동일 스케일에서 직관적으로 비교할 수 있습니다. */}
-                      <div className="mb-3 bp-md:mb-4">
-                        <div className="space-y-2">
-                          <div>
-                            <div className="flex items-center justify-between text-ui-label bp-sm:text-ui-label mb-1">
-                              <span className="text-muted-foreground">여자</span>
-                              <span className="text-muted-foreground">
-                                {player.femaleRange[0]}~{player.femaleRange[1]}
-                                LB
-                              </span>
-                            </div>
-                            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="absolute h-full bg-foreground/40 rounded-full"
-                                style={{
-                                  ...getRangeBarStyle(player.femaleRange[0], player.femaleRange[1]),
-                                }}
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="flex items-center justify-between text-ui-label bp-sm:text-ui-label mb-1">
-                              <span className="text-muted-foreground">남자</span>
-                              <span className="text-muted-foreground">
-                                {player.maleRange[0]}~{player.maleRange[1]}LB
-                              </span>
-                            </div>
-                            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="absolute h-full bg-muted-foreground/40 rounded-full"
-                                style={{
-                                  ...getRangeBarStyle(player.maleRange[0], player.maleRange[1]),
-                                }}
-                              />
-                            </div>
-                          </div>
-                          <div className="flex justify-between text-ui-label bp-sm:text-ui-label text-muted-foreground">
-                            <span>{tensionAxis.min}LB</span>
-                            <span>{tensionAxis.max}LB</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1.5 bp-sm:gap-2 mb-3 bp-md:mb-4">
-                        {player.characteristics.map((char, i) => (
-                          <span
-                            key={i}
-                            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1 bg-muted rounded-full text-ui-label bp-sm:text-ui-label text-muted-foreground"
-                          >
-                            <CheckCircle2 className="h-3 w-3 text-primary" />
-                            {char}
-                          </span>
-                        ))}
-                      </div>
-
-                      {isSelected && (
-                        <div className="mt-3 bp-md:mt-4 pt-3 bp-md:pt-4 border-t border-border animate-in fade-in">
-                          <div className="flex items-start gap-2 bg-muted/50 dark:bg-muted/40 p-3 rounded-lg">
-                            <Lightbulb className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                            <p className="text-ui-label bp-md:text-ui-body-sm text-foreground">
-                              {player.recommended}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </PublicSurface>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          {/* 스트링 타입별 가이드 */}
-          <TabsContent value="strings" className="mt-6 bp-md:mt-8">
-            <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-md:gap-6">
-              {stringTypes.map((string, index) => (
-                <PublicSurface
-                  key={index}
-                  padding="none"
-                  className="overflow-hidden border bg-card hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-300"
-                >
-                  <div className={`h-1.5 bp-md:h-2 ${string.color}`} />
-                  <div className="p-5 pb-3 bp-md:pb-4 sm:p-6 sm:pb-4">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <h3 className="flex items-center gap-2 bp-sm:gap-3 text-ui-body-lg bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title font-semibold text-card-foreground">
-                        <div
-                          className={`w-8 h-8 bp-sm:w-9 bp-sm:h-9 bp-md:w-10 bp-md:h-10 ${string.color} rounded-lg bp-md:rounded-xl flex items-center justify-center`}
-                        >
-                          <string.icon className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
-                        </div>
-                        {string.name}
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="space-y-3 bp-md:space-y-4 p-5 pt-0 sm:p-6 sm:pt-0">
-                    <p className="text-ui-body-sm text-muted-foreground">
-                      {string.characteristics}
-                    </p>
-
-                    <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                      <Badge
-                        variant="secondary"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
-                      >
-                        여자 {string.ranges.female.min}~{string.ranges.female.max}LB
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
-                      >
-                        남자 {string.ranges.male.min}~{string.ranges.male.max}LB
-                      </Badge>
-                    </div>
-
-                    {string.helperText && (
-                      <p className="text-ui-label text-muted-foreground">{string.helperText}</p>
-                    )}
-
-                    <div>
-                      <div>
-                        <h4 className="text-ui-label bp-md:text-ui-body-sm font-semibold text-primary mb-2 flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4" /> 장점
-                        </h4>
-                        <ul className="space-y-2">
-                          {string.pros.map((pro: StringPro, i: number) => (
-                            <li
-                              key={i}
-                              className="text-ui-label text-foreground/80 flex items-start gap-2"
-                            >
-                              <div className="w-1 h-1 bg-foreground/50 rounded-full flex-shrink-0 mt-1.5" />
-                              {typeof pro === "string" ? (
-                                <span>{pro}</span>
-                              ) : (
-                                <div>
-                                  <p className="font-semibold text-foreground text-ui-label bp-sm:text-ui-body-sm">
-                                    {pro.title}
-                                  </p>
-                                  <p className="text-foreground/80">{pro.description}</p>
-                                </div>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="bg-secondary p-3 bp-md:p-4 rounded-xl">
-                      <div className="flex items-start gap-2">
-                        <Info className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-ui-label bp-md:text-ui-body-sm font-medium text-foreground mb-0.5 bp-md:mb-1">
-                            텐션 조정 팁
-                          </p>
-                          <p className="text-ui-label bp-sm:text-ui-body-sm text-foreground/80">
-                            {string.adjustment}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-1 bp-md:pt-2">
-                      <Target className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground" />
-                      <span className="text-ui-label bp-sm:text-ui-body-sm text-foreground/80">
-                        추천: {string.bestFor}
-                      </span>
-                    </div>
-                  </div>
-                </PublicSurface>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* 전문가 팁 */}
-          <TabsContent value="tips" className="mt-6 bp-md:mt-8">
-            <div className="grid gap-4 bp-md:gap-6">
-              {/* 텐션 이해하기 */}
-              <SummaryCard
-                title={
-                  <span className="flex items-center gap-2 text-card-foreground">
-                    <BarChart3 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
-                    텐션이 플레이에 미치는 영향
-                  </span>
-                }
-                className="overflow-hidden border bg-card before:block before:h-1 before:bg-muted/30"
-              >
-                <div className="grid bp-md:grid-cols-2 gap-6 bp-md:gap-8">
-                  {/* 낮은 텐션 */}
-                  <div className="space-y-3 bp-md:space-y-4">
-                    <div className="flex items-center gap-2 bp-sm:gap-3">
-                      <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 border border-primary/20 bg-secondary rounded-xl flex items-center justify-center">
-                        <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground">
-                          낮은 텐션
-                        </h4>
-                        <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                          파워와 편안함 중심
-                        </p>
-                      </div>
-                    </div>
-                    <ul className="space-y-1.5 bp-md:space-y-2">
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                        스트링 베드가 더 많이 휘어져 볼에 더 많은 에너지를 전달합니다
-                      </li>
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                        스윗스팟이 넓어져 미스히트 시에도 괜찮은 샷이 나옵니다
-                      </li>
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                        팔과 어깨에 가해지는 충격이 줄어들어 부상 위험이 감소합니다
-                      </li>
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        정밀한 컨트롤이 어려울 수 있습니다
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* 높은 텐션 */}
-                  <div className="space-y-3 bp-md:space-y-4">
-                    <div className="flex items-center gap-2 bp-sm:gap-3">
-                      <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 bg-muted/40 rounded-xl flex items-center justify-center">
-                        <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground">
-                          높은 텐션
-                        </h4>
-                        <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                          컨트롤과 정밀함 중심
-                        </p>
-                      </div>
-                    </div>
-                    <ul className="space-y-1.5 bp-md:space-y-2">
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                        스트링 베드가 단단해져 정밀한 샷 컨트롤이 가능합니다
-                      </li>
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                        스핀 생성이 용이하고 볼의 궤적을 예측하기 쉽습니다
-                      </li>
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                        강한 스윙 스피드를 가진 선수에게 적합합니다
-                      </li>
-                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                        <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        팔에 무리가 갈 수 있으며 파워가 줄어들 수 있습니다
-                      </li>
-                    </ul>
+                  <div className="space-y-5">
+                    <div className="space-y-2"><p className="text-ui-body-sm font-semibold text-foreground">성별</p><div className="grid grid-cols-2 gap-2">{[{id:"female",label:"여자",desc:"여성 추천 범위"},{id:"male",label:"남자",desc:"남성 추천 범위"}].map((option)=>(<button key={option.id} type="button" aria-pressed={gender===option.id} onClick={()=>setGender(option.id as Gender)} className={choiceClass(gender===option.id)}><span className="flex items-center justify-between gap-2 text-ui-body-sm font-semibold">{option.label}{gender===option.id&&<CheckCircle2 className="h-4 w-4 text-brand-highlight-ink" aria-hidden />}</span><span className="mt-1 block text-ui-label text-muted-foreground">{option.desc}</span></button>))}</div></div>
+                    <div className="space-y-2"><p className="text-ui-body-sm font-semibold text-foreground">스윙 스피드</p><div className="grid grid-cols-3 gap-2">{swingSpeedOptions.map((option)=>(<button key={option.id} type="button" aria-pressed={swingSpeed===option.id} onClick={()=>setSwingSpeed(option.id as SwingSpeed)} className={choiceClass(swingSpeed===option.id,"center")}><span className="block text-ui-label font-semibold bp-sm:text-ui-body-sm">{option.label}</span><span className="mt-1 hidden text-ui-label text-muted-foreground bp-sm:block">{option.desc}</span>{swingSpeed===option.id&&<CheckCircle2 className="absolute right-2 top-2 h-3.5 w-3.5 text-brand-highlight-ink" aria-hidden />}</button>))}</div></div>
+                    <div className="space-y-2"><p className="text-ui-body-sm font-semibold text-foreground">스트링 타입</p><div className="grid grid-cols-2 gap-2">{stringTypes.map((st)=>(<button key={st.id} type="button" aria-pressed={stringType===st.id} onClick={()=>setStringType(st.id)} className={choiceClass(stringType===st.id)}><span className="flex items-center gap-2 text-ui-body-sm font-semibold"><st.icon className="h-4 w-4 text-muted-foreground" aria-hidden />{st.name}</span><span className="mt-1 block text-ui-label text-muted-foreground tabular-nums">여 {st.ranges.female.min}~{st.ranges.female.max} · 남 {st.ranges.male.min}~{st.ranges.male.max}LB</span>{stringType===st.id&&<CheckCircle2 className="absolute right-2 top-2 h-4 w-4 text-brand-highlight-ink" aria-hidden />}</button>))}</div></div>
+                    <div className="space-y-2"><p className="text-ui-body-sm font-semibold text-foreground">플레이 스타일</p><div className="grid grid-cols-3 gap-2">{playStyleOptions.map((option)=>(<button key={option.id} type="button" aria-pressed={playStyle===option.id} onClick={()=>setPlayStyle(option.id as PlayStyle)} className={choiceClass(playStyle===option.id,"center")}><span className="block text-ui-label font-semibold bp-sm:text-ui-body-sm">{option.label}</span><span className="mt-1 hidden text-ui-label text-muted-foreground bp-sm:block">{option.desc}</span>{playStyle===option.id&&<CheckCircle2 className="absolute right-2 top-2 h-3.5 w-3.5 text-brand-highlight-ink" aria-hidden />}</button>))}</div></div>
                   </div>
                 </div>
-              </SummaryCard>
-
-              {/* 텐션 관리 팁 */}
-              <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-                <SummaryCard
-                  title={
-                    <span className="flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
-                      <Gauge className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                      텐션 손실 이해하기
-                    </span>
-                  }
-                  className="bg-secondary border-border"
-                  contentClassName="space-y-2 bp-md:space-y-3"
-                >
-                  <p className="text-ui-label bp-md:text-ui-body-sm text-foreground">
-                    스트링은 장착 후 지속적으로 텐션이 감소합니다.
-                  </p>
-                  <ul className="space-y-1.5 bp-md:space-y-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                      첫 24시간: 10-15% 손실
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                      첫 주: 추가 5-10% 손실
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                      이후: 점진적 안정화
-                    </li>
-                  </ul>
-                </SummaryCard>
-
-                <SummaryCard
-                  title={
-                    <span className="flex items-center gap-2 text-foreground">
-                      <Shield className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                      스트링 보관 팁
-                    </span>
-                  }
-                  className="bg-secondary border-border"
-                  contentClassName="space-y-2 bp-md:space-y-3"
-                >
-                  <p className="text-ui-label bp-md:text-ui-body-sm text-foreground">
-                    올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.
-                  </p>
-                  <ul className="space-y-1.5 bp-md:space-y-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                      직사광선 피하기
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                      극단적 온도 피하기
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                      라켓 커버 사용
-                    </li>
-                  </ul>
-                </SummaryCard>
-
-                <SummaryCard
-                  title={
-                    <span className="flex items-center gap-2 text-foreground">
-                      <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                      교체 시기 판단
-                    </span>
-                  }
-                  className="bg-muted/50 dark:bg-muted/40 border-border bp-sm:col-span-2 bp-lg:col-span-1"
-                  contentClassName="space-y-2 bp-md:space-y-3"
-                >
-                  <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                    다음 신호가 나타나면 교체를 고려하세요.
-                  </p>
-                  <ul className="space-y-1.5 bp-md:space-y-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
-                      탄력 감소 느낌
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
-                      노칭(홈) 발생
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
-                      변색 또는 보풀
-                    </li>
-                  </ul>
-                </SummaryCard>
-              </div>
-
-              {/* FAQ 섹션 */}
-              <SummaryCard
-                title={
-                  <span className="flex items-center gap-2 text-card-foreground">
-                    <Info className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
-                    자주 묻는 질문
-                  </span>
-                }
-                className="border bg-card"
-                contentClassName="space-y-3 bp-md:space-y-4"
-              >
-                <div className="space-y-4 bp-md:space-y-6">
-                  <div className="border-b border-border pb-3 bp-md:pb-4">
-                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
-                      메인과 크로스 텐션을 다르게 해야 하나요?
-                    </h4>
-                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                      반드시 필요하지는 않지만, 일부 선수들은 메인을 크로스보다 2-4LB 높게
-                      설정합니다. 이는 스윗스팟을 확장하고 컨트롤과 파워의 균형을 맞추는 데 도움이
-                      됩니다.
-                    </p>
-                  </div>
-                  <div className="border-b border-border pb-3 bp-md:pb-4">
-                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
-                      새 라켓에는 어떤 텐션으로 시작해야 하나요?
-                    </h4>
-                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                      라켓 제조사가 권장하는 텐션 범위의 중간값으로 시작하는 것이 좋습니다. 이후
-                      플레이 느낌에 따라 2-4LB씩 조절해 나가세요.
-                    </p>
-                  </div>
-                  <div className="border-b border-border pb-3 bp-md:pb-4">
-                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
-                      텐션을 자주 바꿔도 되나요?
-                    </h4>
-                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                      일관된 텐션을 유지하는 것이 플레이 향상에 도움이 됩니다. 하지만 계절 변화나
-                      코트 조건에 따라 2-4LB 정도 조절하는 것은 권장됩니다.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
-                      프로 선수들은 어떤 텐션을 사용하나요?
-                    </h4>
-                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
-                      프로 선수들은 보통 51-60LB 범위를 사용합니다. 일반적인 인식과 달리 매우 높은
-                      텐션을 사용하지 않는 경우가 많습니다. 중요한 것은 자신의 플레이 스타일에 맞는
-                      텐션을 찾는 것입니다.
-                    </p>
+                <div className="bg-surface-inverse p-4 text-surface-inverse-foreground bp-sm:p-6 bp-lg:p-8" aria-live="polite">
+                  <div className="space-y-6">
+                    <div><p className="text-ui-label font-medium uppercase tracking-[0.14em] text-surface-inverse-muted">추천 텐션</p><div className="mt-3 flex items-end gap-2"><span className="text-ui-page-title-lg font-semibold tabular-nums text-brand-highlight">{calculatedTension}</span><span className="pb-2 text-ui-card-title font-semibold text-brand-highlight">LB</span></div><p className="mt-2 text-ui-body text-surface-inverse-muted">{getTensionFeedback().text}</p></div>
+                    <div role="meter" aria-valuemin={42} aria-valuemax={56} aria-valuenow={calculatedTension} aria-label={`추천 텐션 ${calculatedTension}LB, 전체 축 42LB에서 56LB 사이`} className="space-y-2"><div className="flex justify-between text-ui-label text-surface-inverse-muted"><span>42LB</span><span>56LB</span></div><div className="relative h-3 rounded-full bg-surface-inverse-foreground/15"><div className="absolute top-1/2 h-5 w-5 -translate-x-[10px] -translate-y-1/2 rounded-full border-2 border-brand-highlight bg-surface-inverse transition-[left] duration-500" style={{ left: `${gaugePosition}%` }} /></div><div className="flex justify-between text-ui-label text-surface-inverse-muted"><span>파워</span><span>컨트롤</span></div></div>
+                    <div className="grid gap-3 border-y border-surface-inverse-foreground/15 py-4 bp-sm:grid-cols-2"><div><p className="text-ui-label text-surface-inverse-muted">선택 성별 추천 범위</p><p className="mt-1 text-ui-body font-semibold tabular-nums">{gender === "female" ? "여자" : "남자"} {selectedRange.min}~{selectedRange.max}LB</p></div><div><p className="text-ui-label text-surface-inverse-muted">반대 성별 참고 범위</p><p className="mt-1 text-ui-body font-semibold tabular-nums">{oppositeGender === "female" ? "여자" : "남자"} {oppositeRange.min}~{oppositeRange.max}LB</p></div></div>
+                    <div><h3 className="text-ui-body-sm font-semibold text-surface-inverse-foreground">계산 근거</h3><ul className="mt-2 divide-y divide-surface-inverse-foreground/15">{basisRows.map((row)=>(<li key={row.label} className="flex items-center justify-between gap-4 py-2 text-ui-body-sm"><span className={row.emphasis ? "font-semibold text-surface-inverse-foreground" : "text-surface-inverse-muted"}>{row.label}</span><span className={row.emphasis ? "font-semibold tabular-nums text-brand-highlight" : "font-medium tabular-nums text-surface-inverse-foreground"}>{row.value}</span></li>))}</ul></div>
                   </div>
                 </div>
-              </SummaryCard>
-            </div>
+              </div>
+            </PublicSurface>
+            <PublicSurface className="space-y-4"><SectionHeader eyebrow="Environment" title="환경에 따른 조정" description="기온 변화는 스트링 탄성과 타구감에 영향을 주므로 같은 장력도 다르게 느껴질 수 있습니다." /> <div className="grid bp-sm:grid-cols-2">{environmentFactors.map((factor,index)=>(<div key={factor.factor} className="flex gap-3 border-t border-border pt-4 bp-sm:border-l bp-sm:border-t-0 bp-sm:pl-5 bp-sm:pt-0 bp-sm:first:border-l-0 bp-sm:first:pl-0"><factor.icon className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden /><div><p className="text-ui-body-sm font-semibold text-foreground">{factor.factor}</p><p className="mt-1 text-ui-card-title font-semibold tabular-nums text-foreground">{factor.adjustment}</p><p className="mt-1 text-ui-body-sm text-muted-foreground">{factor.reason}</p></div></div>))}</div></PublicSurface>
           </TabsContent>
+
+          <TabsContent value="levels" className="mt-8 space-y-6"><SectionHeader eyebrow="Level Guide" title="수준별 남녀 추천 장력 비교" description="모든 범위는 42~56LB 공통 축 위에서 비교됩니다." /><PublicSurface padding="none" className="overflow-hidden">{playerTypes.map((player,index)=>{const IconComponent=player.icon; const isSelected=selectedLevel===index; return <div key={player.type} className="border-t border-border first:border-t-0"><button type="button" aria-expanded={isSelected} onClick={()=>setSelectedLevel(isSelected ? null : index)} className="flex w-full flex-col gap-4 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:p-6"><div className="flex items-start justify-between gap-3"><div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/30 text-muted-foreground"><IconComponent className="h-5 w-5" aria-hidden /></span><div><h3 className="text-ui-card-title font-semibold text-foreground">{player.type}</h3><p className="mt-1 text-ui-body-sm text-muted-foreground">{player.description}</p></div></div><ChevronRight className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${isSelected ? "rotate-90" : ""}`} aria-hidden /></div><div className="grid gap-4 bp-md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"><div className="grid grid-cols-2 gap-2 text-ui-body-sm"><Badge variant="secondary" className="justify-center tabular-nums">여자 {player.femaleTension}</Badge><Badge variant="outline" className="justify-center tabular-nums">남자 {player.maleTension}</Badge></div><div className="space-y-2"><div className="relative h-2 rounded-full bg-muted"><div className="absolute h-full rounded-full bg-brand-highlight-muted ring-1 ring-brand-highlight-ink/30" style={getRangeBarStyle(player.femaleRange[0], player.femaleRange[1])}/><div className="absolute h-full rounded-full bg-muted-foreground/35" style={getRangeBarStyle(player.maleRange[0], player.maleRange[1])}/></div><div className="flex justify-between text-ui-label text-muted-foreground"><span>{tensionAxis.min}LB</span><span>여자/남자 range bar</span><span>{tensionAxis.max}LB</span></div></div></div><div className="flex flex-wrap gap-2">{player.characteristics.map((char)=><span key={char} className="rounded-full bg-muted/50 px-2.5 py-1 text-ui-label text-muted-foreground">{char}</span>)}</div></button>{isSelected&&<div className="border-t border-border bg-muted/30 p-4 bp-md:px-6"><p className="flex gap-2 text-ui-body-sm text-foreground"><Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />{player.recommended}</p></div>}</div>})}</PublicSurface></TabsContent>
+
+          <TabsContent value="strings" className="mt-8 space-y-6"><SectionHeader eyebrow="String Type" title="스트링 타입별 특성과 조정 팁" description="상단에서 선택한 스트링 타입은 계산기 추천값에도 그대로 반영됩니다." /><div className="grid grid-cols-2 gap-2 bp-lg:grid-cols-5">{stringTypes.map((st)=><button key={st.id} type="button" aria-pressed={stringType===st.id} onClick={()=>setStringType(st.id)} className={choiceClass(stringType===st.id,"center")}><st.icon className="mx-auto mb-2 h-4 w-4 text-muted-foreground" aria-hidden /><span className="text-ui-label font-semibold bp-sm:text-ui-body-sm">{st.name}</span>{stringType===st.id&&<CheckCircle2 className="absolute right-2 top-2 h-4 w-4 text-brand-highlight-ink" aria-hidden />}</button>)}</div><PublicSurface className="space-y-6"><div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-start bp-md:justify-between"><div><h3 className="text-ui-section-title font-semibold text-foreground">{selectedString.name}</h3><p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">{selectedString.characteristics}</p></div><div className="flex flex-wrap gap-2"><Badge variant="secondary" className="tabular-nums">여자 {selectedString.ranges.female.min}~{selectedString.ranges.female.max}LB</Badge><Badge variant="outline" className="tabular-nums">남자 {selectedString.ranges.male.min}~{selectedString.ranges.male.max}LB</Badge></div></div>{selectedString.helperText&&<p className="rounded-xl bg-muted/30 p-3 text-ui-body-sm text-muted-foreground">{selectedString.helperText}</p>}<div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.7fr)]"><div><h4 className="text-ui-body-sm font-semibold text-foreground">장점</h4><ul className="mt-3 space-y-2">{renderPros(selectedString.pros)}</ul></div><div className="space-y-4 border-t border-border pt-5 bp-lg:border-l bp-lg:border-t-0 bp-lg:pl-6 bp-lg:pt-0"><div><p className="text-ui-body-sm font-semibold text-foreground">텐션 조정 팁</p><p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">{selectedString.adjustment}</p></div><div><p className="text-ui-body-sm font-semibold text-foreground">추천 대상</p><p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">{selectedString.bestFor}</p></div></div></div></PublicSurface></TabsContent>
+
+          <TabsContent value="tips" className="mt-8 space-y-6"><SectionHeader eyebrow="Expert Tips" title="텐션 관리와 자주 묻는 질문" description="장력의 높고 낮음이 만드는 차이와 교체 판단 기준을 한 번에 확인하세요." /><PublicSurface padding="none" className="overflow-hidden"><div className="grid bp-md:grid-cols-2">{[{title:"낮은 텐션",desc:"파워와 편안함 중심",icon:<TrendingUp className="h-5 w-5 rotate-180" aria-hidden />,items:["스트링 베드가 더 많이 휘어져 볼에 더 많은 에너지를 전달합니다","스윗스팟이 넓어져 미스히트 시에도 괜찮은 샷이 나옵니다","팔과 어깨에 가해지는 충격이 줄어들어 부상 위험이 감소합니다"],caution:"정밀한 컨트롤이 어려울 수 있습니다"},{title:"높은 텐션",desc:"컨트롤과 정밀함 중심",icon:<TrendingUp className="h-5 w-5" aria-hidden />,items:["스트링 베드가 단단해져 정밀한 샷 컨트롤이 가능합니다","스핀 생성이 용이하고 볼의 궤적을 예측하기 쉽습니다","강한 스윙 스피드를 가진 선수에게 적합합니다"],caution:"팔에 무리가 갈 수 있으며 파워가 줄어들 수 있습니다"}].map((tip)=><div key={tip.title} className="space-y-4 border-t border-border p-4 first:border-t-0 bp-md:border-l bp-md:border-t-0 bp-md:p-6 bp-md:first:border-l-0"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/30 text-muted-foreground">{tip.icon}</span><div><h3 className="text-ui-card-title font-semibold text-foreground">{tip.title}</h3><p className="text-ui-body-sm text-muted-foreground">{tip.desc}</p></div></div><ul className="space-y-2">{tip.items.map((item)=><li key={item} className="flex gap-2 text-ui-body-sm text-muted-foreground"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />{item}</li>)}<li className="flex gap-2 text-ui-body-sm text-muted-foreground"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />{tip.caution}</li></ul></div>)}</div></PublicSurface><PublicSurface padding="none" className="overflow-hidden"><div className="grid bp-lg:grid-cols-3">{[{title:"텐션 손실 이해하기",icon:Gauge,body:"스트링은 장착 후 지속적으로 텐션이 감소합니다.",items:["첫 24시간: 10-15% 손실","첫 주: 추가 5-10% 손실","이후: 점진적 안정화"]},{title:"스트링 보관 팁",icon:Shield,body:"올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.",items:["직사광선 피하기","극단적 온도 피하기","라켓 커버 사용"]},{title:"교체 시기 판단",icon:Target,body:"다음 신호가 나타나면 교체를 고려하세요.",items:["탄력 감소 느낌","노칭(홈) 발생","변색 또는 보풀"]}].map((tip)=><div key={tip.title} className="border-t border-border p-4 first:border-t-0 bp-lg:border-l bp-lg:border-t-0 bp-lg:p-6 bp-lg:first:border-l-0"><div className="flex items-center gap-2"><tip.icon className="h-4 w-4 text-muted-foreground" aria-hidden /><h3 className="text-ui-body-sm font-semibold text-foreground">{tip.title}</h3></div><p className="mt-3 text-ui-body-sm text-muted-foreground">{tip.body}</p><ul className="mt-3 space-y-2">{tip.items.map((item)=><li key={item} className="flex gap-2 text-ui-body-sm text-muted-foreground"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" aria-hidden />{item}</li>)}</ul></div>)}</div></PublicSurface><PublicSurface><SectionHeader eyebrow="FAQ" title="자주 묻는 질문" /><Accordion type="single" className="mt-2"><AccordionItem value="main-cross"><AccordionTrigger value="main-cross" className="gap-3 text-foreground"><span className="min-w-0">메인과 크로스 텐션을 다르게 해야 하나요?</span></AccordionTrigger><AccordionContent value="main-cross" className="pb-4 text-ui-body-sm leading-relaxed text-muted-foreground">반드시 필요하지는 않지만, 일부 선수들은 메인을 크로스보다 2-4LB 높게 설정합니다. 이는 스윗스팟을 확장하고 컨트롤과 파워의 균형을 맞추는 데 도움이 됩니다.</AccordionContent></AccordionItem><AccordionItem value="new-racket"><AccordionTrigger value="new-racket" className="gap-3 text-foreground"><span className="min-w-0">새 라켓에는 어떤 텐션으로 시작해야 하나요?</span></AccordionTrigger><AccordionContent value="new-racket" className="pb-4 text-ui-body-sm leading-relaxed text-muted-foreground">라켓 제조사가 권장하는 텐션 범위의 중간값으로 시작하는 것이 좋습니다. 이후 플레이 느낌에 따라 2-4LB씩 조절해 나가세요.</AccordionContent></AccordionItem><AccordionItem value="change-often"><AccordionTrigger value="change-often" className="gap-3 text-foreground"><span className="min-w-0">텐션을 자주 바꿔도 되나요?</span></AccordionTrigger><AccordionContent value="change-often" className="pb-4 text-ui-body-sm leading-relaxed text-muted-foreground">일관된 텐션을 유지하는 것이 플레이 향상에 도움이 됩니다. 하지만 계절 변화나 코트 조건에 따라 2-4LB 정도 조절하는 것은 권장됩니다.</AccordionContent></AccordionItem><AccordionItem value="pro"><AccordionTrigger value="pro" className="gap-3 text-foreground"><span className="min-w-0">프로 선수들은 어떤 텐션을 사용하나요?</span></AccordionTrigger><AccordionContent value="pro" className="pb-4 text-ui-body-sm leading-relaxed text-muted-foreground">프로 선수들은 보통 51-60LB 범위를 사용합니다. 일반적인 인식과 달리 매우 높은 텐션을 사용하지 않는 경우가 많습니다. 중요한 것은 자신의 플레이 스타일에 맞는 텐션을 찾는 것입니다.</AccordionContent></AccordionItem></Accordion></PublicSurface></TabsContent>
         </Tabs>
 
-        {/* CTA 섹션 */}
-        <PublicSurface
-          padding="none"
-          className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8"
-        >
-          <div className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
-            <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
-              <div className="text-center bp-md:text-left">
-                <h3 className="font-semibold text-ui-section-title bp-sm:text-ui-section-title-lg bp-md:text-ui-page-title-lg mb-2 text-foreground">
-                  최적의 텐션으로 스트링 서비스를 받아보세요
-                </h3>
-                <p className="text-muted-foreground text-ui-body-sm bp-md:text-ui-body-lg bp-lg:text-ui-card-title-lg">
-                  스트링어가 정밀하게 작업해 드립니다
-                </p>
-              </div>
-              <Button
-                asChild
-                size="lg"
-                variant="secondary"
-                className="px-6 bp-md:px-8 whitespace-nowrap"
-              >
-                <Link href="/services/apply">
-                  스트링 신청하기
-                  <ArrowRight className="ml-2 h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </PublicSurface>
-        <PublicSurface
-          padding="none"
-          className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8"
-        >
-          <div className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
-            <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
-              <div className="text-center bp-md:text-left">
-                <h3 className="font-semibold text-ui-section-title bp-sm:text-ui-section-title-lg bp-md:text-ui-page-title-lg mb-2 text-foreground">
-                  나에게 맞는 라켓을 찾아보세요
-                </h3>
-                <p className="text-muted-foreground text-ui-body-sm bp-md:text-ui-body-lg bp-lg:text-ui-card-title-lg">
-                  라켓 검색을 활용해 나의 라켓을 선택해보세요
-                </p>
-              </div>
-              <Button
-                asChild
-                size="lg"
-                variant="secondary"
-                className="px-6 bp-md:px-8 whitespace-nowrap"
-              >
-                <Link href="/rackets/finder">
-                  라켓 검색 사용하기
-                  <ArrowRight className="ml-2 h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                </Link>
-              </Button>
-            </div>
-          </div>
+        <PublicSurface className="flex flex-col gap-5 bg-muted/30 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
+          <div className="space-y-2"><h2 className="text-ui-section-title font-semibold text-foreground">추천 장력을 실제 세팅으로 이어가세요</h2><p className="text-ui-body-sm text-muted-foreground">계산값을 기준으로 스트링 서비스를 신청하거나, 라켓 검색으로 나에게 맞는 라켓을 함께 확인할 수 있습니다.</p></div>
+          <div className="flex w-full flex-col gap-3 bp-sm:flex-row bp-lg:w-auto"><Button asChild variant="highlight" size="lg" className="w-full bp-sm:w-auto"><Link href="/services/apply">스트링 신청하기<ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link></Button><Button asChild variant="outline" size="lg" className="w-full bp-sm:w-auto"><Link href="/rackets/finder">라켓 검색 사용하기<ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link></Button></div>
         </PublicSurface>
       </SiteContainer>
     </div>
