@@ -3,28 +3,21 @@
 import OrdersScopeTabs, {
   resolveOrdersScopeContext,
 } from "@/app/mypage/_components/OrdersScopeTabs";
+import MypagePrimaryNavigation from "@/app/mypage/_components/MypagePrimaryNavigation";
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import MypageDashboardHero from "@/app/mypage/_components/MypageDashboardHero";
 import SiteContainer from "@/components/layout/SiteContainer";
+import StickyAside from "@/components/layout/StickyAside";
 import { DashboardSectionPanel } from "@/components/public";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  ClipboardList,
-  GraduationCap,
-  Heart,
-  MessageCircleQuestion,
-  MessageSquare,
-  ReceiptCent,
-  Ticket,
-  Wrench,
-} from "lucide-react";
+import { ClipboardList, GraduationCap, Heart, MessageCircleQuestion, MessageSquare, ReceiptCent, Ticket, Wrench } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import useSWR from "swr";
 
 const ApplicationDetail = dynamic(
@@ -71,28 +64,6 @@ const MYPAGE_TABS = [
   "points",
 ] as const;
 
-const scrollItemIntoHorizontalView = (
-  container: HTMLElement | null,
-  item: HTMLElement | null,
-) => {
-  if (!container || !item) return;
-
-  const containerRect = container.getBoundingClientRect();
-  const itemRect = item.getBoundingClientRect();
-  const targetLeft =
-    container.scrollLeft +
-    itemRect.left -
-    containerRect.left -
-    (containerRect.width - itemRect.width) / 2;
-  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
-  const nextScrollLeft = Math.min(maxScrollLeft, Math.max(0, targetLeft));
-
-  container.scrollTo({
-    left: nextScrollLeft,
-    behavior: "auto",
-  });
-};
-
 type MypageSummaryState = "loading" | "error" | "ready";
 
 type Props = {
@@ -108,7 +79,6 @@ type Props = {
 export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const mobileTabsScrollRef = useRef<HTMLDivElement | null>(null);
 
   const {
     data: summary,
@@ -206,14 +176,7 @@ export default function MypageClient({ user }: Props) {
     ? tabParam!
     : "orders";
 
-  useEffect(() => {
-    const container = mobileTabsScrollRef.current;
-    const activeTab = container?.querySelector<HTMLElement>(
-      '[role="tab"][data-state="active"]',
-    );
 
-    scrollItemIntoHorizontalView(container, activeTab ?? null);
-  }, [currentTab]);
 
   if (!user) {
     return (
@@ -351,98 +314,20 @@ export default function MypageClient({ user }: Props) {
       <SiteContainer variant="wide" className="py-4 bp-sm:py-5 bp-lg:py-8">
         <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
           <div className="hidden bp-lg:block bp-lg:col-span-1">
-            <div className="sticky top-8">
+            <StickyAside>
               <Card className={sidebarCardClass}>
                 <CardContent className="p-3">
                   <UserSidebar />
                 </CardContent>
               </Card>
-            </div>
+            </StickyAside>
           </div>
           {/* 메인 콘텐츠 */}
           <div className="bp-lg:col-span-3 min-w-0">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <Card className="mb-3 overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft bp-sm:mb-4 bp-lg:hidden">
                 <CardContent className="p-2">
-                  <div ref={mobileTabsScrollRef} className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <TabsList aria-label="마이페이지 주요 탭" className="flex h-auto min-w-max w-max gap-1 bg-transparent p-0">
-                      <TabsTrigger
-                        value="orders"
-                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
-                      >
-                        <ClipboardList className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
-                          <span className="bp-lg:hidden">거래/이용</span>
-                          <span className="hidden bp-lg:inline">거래/이용 내역</span>
-                        </span>
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="academy"
-                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
-                      >
-                        <GraduationCap className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
-                          <span className="bp-lg:hidden">클래스</span>
-                          <span className="hidden bp-lg:inline">클래스 신청</span>
-                        </span>
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="wishlist"
-                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
-                      >
-                        <Heart className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
-                          <span className="bp-lg:hidden">찜</span>
-                          <span className="hidden bp-lg:inline">찜한 상품</span>
-                        </span>
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="reviews"
-                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
-                      >
-                        <MessageSquare className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
-                          <span className="bp-lg:hidden">리뷰</span>
-                          <span className="hidden bp-lg:inline">리뷰 관리</span>
-                        </span>
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="qna"
-                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
-                      >
-                        <MessageCircleQuestion className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
-                          <span className="bp-lg:hidden">문의</span>
-                          <span className="hidden bp-lg:inline">문의 내역</span>
-                        </span>
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="passes"
-                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
-                      >
-                        <Ticket className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-ui-label font-medium leading-tight bp-md:text-ui-body-sm">
-                          패키지권
-                        </span>
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="points"
-                        className="relative flex min-h-11 min-w-[4.8rem] flex-row items-center gap-1.5 rounded-control px-3 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-surface-inverse data-[state=active]:text-surface-inverse-foreground data-[state=active]:shadow-sm data-[state=active]:after:absolute data-[state=active]:after:bottom-1 data-[state=active]:after:h-1 data-[state=active]:after:w-1 data-[state=active]:after:rounded-full data-[state=active]:after:bg-brand-highlight"
-                      >
-                        <ReceiptCent className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
-                          <span className="bp-lg:hidden">포인트</span>
-                          <span className="hidden bp-lg:inline">적립 포인트</span>
-                        </span>
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
+                  <MypagePrimaryNavigation />
                 </CardContent>
               </Card>
 

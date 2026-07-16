@@ -91,6 +91,7 @@ export function badgeStyleSpec(tone: BadgeSemanticTone): BadgeStyleSpec {
 
 export type SocialProviderBadgeKind = "kakao" | "naver" | "other";
 
+/** @deprecated 실제 provider identity 표시는 IdentityBadge를 사용하세요. */
 export function getSocialProviderBadgeSpec(provider?: string | null) {
   const normalized = String(provider ?? "")
     .trim()

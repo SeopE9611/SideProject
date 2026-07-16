@@ -79,3 +79,15 @@
 - 업무형 Hero에서는 라임 CTA 대신 inverse CTA를 사용할 수 있으며, 라임은 큰 수치와 작은 signal에 집중할 수 있습니다.
 - 업무 리스트에서 반복되는 필수 처리 액션은 `highlight_soft` 같은 soft brand action을 사용하고, default primary와 filled highlight를 목록 전체에 반복하지 않습니다.
 - 후기 작성, 추천 확인처럼 선택적인 활동은 warning이 아니며 `secondary` 또는 `outline` 계열로 표현합니다.
+
+## Phase 6 / V2.1 Interaction Foundation
+
+SSOT: `docs/dokkaebi-v2-interaction-responsive-policy.md`
+
+- `IdentityBadge`로 identity와 status 의미 체계를 분리한다.
+- `ResponsiveActionGroup`으로 transaction action 배치를 표준화한다.
+- `StickyAside`로 fixed Header 하단 sticky offset을 표준화한다.
+- destination navigation은 모바일 hidden scroll을 금지한다.
+- segmented filter navigation은 5개 이하 항목을 equal-width grid로 표시한다.
+- Home/Racket Care/Mypage CTA는 canonical Button recipe를 사용한다.
+- Mypage를 V2.1 reference implementation으로 유지한다.

@@ -126,3 +126,11 @@
 - 제목·상태·가격·CTA가 한 줄에 과밀하지 않은가?
 - 관리자 화면에서 긴급 상태와 지금 해야 할 일이 먼저 보이는가?
 - `truncate`, `whitespace-nowrap`, 고정 높이, 모바일 `grid-cols-2`를 쓴 이유가 명확한가?
+
+## V2.1 transaction command 예외
+
+자세한 SSOT는 `docs/dokkaebi-v2-interaction-responsive-policy.md`를 따른다.
+
+- Transaction command는 한 줄을 유지하고 버튼 자체 줄바꿈을 금지한다.
+- 공간이 부족하면 primary action을 full-width 행으로 이동한다.
+- Marketing/descriptive CTA는 매우 긴 경우에만 `wrap="responsive"`를 허용한다.

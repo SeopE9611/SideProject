@@ -98,6 +98,23 @@ const config: Config = {
           muted: "hsl(var(--surface-inverse-muted))",
         },
         "outline-text": "hsl(var(--outline-text))",
+        identity: {
+          admin: {
+            DEFAULT: "hsl(var(--identity-admin))",
+            muted: "hsl(var(--identity-admin-muted))",
+            foreground: "hsl(var(--identity-admin-foreground))",
+          },
+          kakao: {
+            DEFAULT: "hsl(var(--identity-kakao))",
+            muted: "hsl(var(--identity-kakao-muted))",
+            foreground: "hsl(var(--identity-kakao-foreground))",
+          },
+          naver: {
+            DEFAULT: "hsl(var(--identity-naver))",
+            muted: "hsl(var(--identity-naver-muted))",
+            foreground: "hsl(var(--identity-naver-foreground))",
+          },
+        },
         surface: {
           DEFAULT: "hsl(var(--surface))",
           foreground: "hsl(var(--surface-foreground))",

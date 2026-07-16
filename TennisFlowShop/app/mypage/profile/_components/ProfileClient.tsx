@@ -31,7 +31,7 @@ import { useRouter } from "next/navigation";
 import { MdSportsTennis } from "react-icons/md";
 import TennisProfileForm from "@/app/mypage/profile/_components/TennisProfileForm";
 import { Badge } from "@/components/ui/badge";
-import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
@@ -456,14 +456,10 @@ export default function ProfileClient({ user }: Props) {
                         {socialProviders.length ? (
                           <>
                             {socialProviders.includes("kakao") && (
-                              <Badge variant={getSocialProviderBadgeSpec("kakao").variant}>
-                                카카오
-                              </Badge>
+                              <IdentityBadge tone="kakao">카카오</IdentityBadge>
                             )}
                             {socialProviders.includes("naver") && (
-                              <Badge variant={getSocialProviderBadgeSpec("naver").variant}>
-                                네이버
-                              </Badge>
+                              <IdentityBadge tone="naver">네이버</IdentityBadge>
                             )}
                           </>
                         ) : (

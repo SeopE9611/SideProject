@@ -2,11 +2,12 @@
 
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import SiteContainer from "@/components/layout/SiteContainer";
+import StickyAside from "@/components/layout/StickyAside";
 import { Badge } from "@/components/ui/badge";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   ClipboardList,
@@ -225,7 +226,7 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-lg:py-12">
         <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
           <div className="hidden bp-lg:block bp-lg:col-span-1">
-            <div className="sticky top-8">
+            <StickyAside>
               <Card className="border-border bg-card shadow-sm">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
@@ -241,20 +242,10 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                         {user.oauthProviders?.length ? (
                           <>
                             {user.oauthProviders.includes("kakao") && (
-                              <Badge
-                                variant={getSocialProviderBadgeSpec("kakao").variant}
-                                className="text-ui-label py-0 px-2 h-5"
-                              >
-                                카카오
-                              </Badge>
+                              <IdentityBadge tone="kakao" className="h-5 min-h-0 px-2 py-0 text-ui-label">카카오</IdentityBadge>
                             )}
                             {user.oauthProviders.includes("naver") && (
-                              <Badge
-                                variant={getSocialProviderBadgeSpec("naver").variant}
-                                className="text-ui-label py-0 px-2 h-5"
-                              >
-                                네이버
-                              </Badge>
+                              <IdentityBadge tone="naver" className="h-5 min-h-0 px-2 py-0 text-ui-label">네이버</IdentityBadge>
                             )}
                           </>
                         ) : (
@@ -268,7 +259,7 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                   <UserSidebar activeTab={ACTIVE_TAB} />
                 </CardContent>
               </Card>
-            </div>
+            </StickyAside>
           </div>
 
           <div className="bp-lg:col-span-3 min-w-0">

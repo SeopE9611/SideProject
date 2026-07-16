@@ -2,6 +2,7 @@
 
 import { useAuthStore } from "@/app/store/authStore";
 import { Badge } from "@/components/ui/badge";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { LayoutDashboard, LogOut, MessageSquare, Settings, UserIcon } from "lucide-react";
@@ -90,20 +90,10 @@ export function UserNav() {
                 <span className="text-ui-label text-muted-foreground">소셜 로그인</span>
                 <div className="flex gap-1">
                   {hasKakao && (
-                    <Badge
-                      variant={getSocialProviderBadgeSpec("kakao").variant}
-                      className="pointer-events-none h-5 px-2 text-ui-micro"
-                    >
-                      카카오
-                    </Badge>
+                    <IdentityBadge tone="kakao" className="pointer-events-none h-5 min-h-0 px-2 text-ui-micro">카카오</IdentityBadge>
                   )}
                   {hasNaver && (
-                    <Badge
-                      variant={getSocialProviderBadgeSpec("naver").variant}
-                      className="pointer-events-none h-5 px-2 text-ui-micro"
-                    >
-                      네이버
-                    </Badge>
+                    <IdentityBadge tone="naver" className="pointer-events-none h-5 min-h-0 px-2 text-ui-micro">네이버</IdentityBadge>
                   )}
                 </div>
               </div>
