@@ -16,6 +16,7 @@ import {
   normalizeColorRows,
   normalizeGaugeRows,
 } from "@/lib/products/string-stock";
+import { normalizeInternalReturnPath } from "@/lib/navigation/internal-return-path";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -45,8 +46,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   const initialStringId = searchParams.get("stringId");
   const initialSelectedGauge = searchParams.get("selectedGauge") ?? "";
   const initialSelectedColor = searchParams.get("selectedColor") ?? "";
-  const returnTo = searchParams.get("returnTo") ?? "/cart";
-  const normalizedReturnTo = returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/cart";
+  const normalizedReturnTo = normalizeInternalReturnPath(searchParams.get("returnTo"), "/cart");
   const backLink = isFromCart ? normalizedReturnTo : `/rackets/${racket.id}`;
   const backLabel = isFromCart ? "장바구니로" : "라켓 상세로";
 
