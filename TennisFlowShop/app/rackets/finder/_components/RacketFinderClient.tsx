@@ -40,6 +40,7 @@ import {
   normalizeAndValidateStringPattern,
   stringPatternLabel,
 } from "@/lib/constants";
+import { racketConditionLabel } from "@/lib/racket-condition";
 import { cn } from "@/lib/utils";
 import {
   Filter,
@@ -113,6 +114,16 @@ const DEFAULT: Filters = {
 
 function rangeEq(a: Range, b: Range) {
   return a[0] === b[0] && a[1] === b[1];
+}
+
+function getFinderConditionFilterLabel(condition: string): string {
+  const code = String(condition ?? "").trim().toUpperCase();
+  const label = racketConditionLabel(code);
+
+  if (!code) return "";
+  if (!label || label === code) return code;
+
+  return `${code} (${label})`;
 }
 
 function countActiveFinderFilters(filters: Filters) {
@@ -462,7 +473,7 @@ export default function RacketFinderClient() {
         brand: "",
       });
     if (applied.condition)
-      add("condition", `컨디션: ${applied.condition === "B" ? "B (양호)" : applied.condition}`, {
+      add("condition", `컨디션: ${getFinderConditionFilterLabel(applied.condition)}`, {
         ...applied,
         condition: "",
       });
@@ -797,21 +808,23 @@ export default function RacketFinderClient() {
       <RacketFinderHeader />
 
       <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-        <SheetContent side="bottom" className="max-h-[88dvh] overflow-hidden rounded-t-3xl p-0">
+        <SheetContent side="bottom" className="h-[88dvh] max-h-[88dvh] overflow-hidden rounded-t-3xl p-0">
           <SheetHeader className="sr-only">
             <SheetTitle>라켓 필터</SheetTitle>
             <SheetDescription>원하는 조건을 선택한 뒤 검색하기를 눌러주세요.</SheetDescription>
           </SheetHeader>
-          <CatalogFilterPanelShell
-            title="라켓 필터"
-            activeCount={draftActiveCount}
-            description="가격과 스펙 조건을 선택한 뒤 검색하기를 누르면 결과에 반영됩니다."
-            onReset={reset}
-            onApply={apply}
-            applyLabel="검색하기"
-          >
-            {filterControls}
-          </CatalogFilterPanelShell>
+          <div className="h-full min-h-0 [&>div]:!h-full [&>div]:!max-h-full">
+            <CatalogFilterPanelShell
+              title="라켓 필터"
+              activeCount={draftActiveCount}
+              description="가격과 스펙 조건을 선택한 뒤 검색하기를 누르면 결과에 반영됩니다."
+              onReset={reset}
+              onApply={apply}
+              applyLabel="검색하기"
+            >
+              {filterControls}
+            </CatalogFilterPanelShell>
+          </div>
         </SheetContent>
       </Sheet>
 
