@@ -68,7 +68,12 @@ import {
   buildProductDetailHybridDisplay,
 } from "./ProductDetailDisplaySpec.utils";
 import { CatalogPrice, CatalogRating } from "@/components/commerce";
-import { CommerceDetailTabs, CommerceDetailTopBar, CommercePurchaseActions } from "@/components/commerce/detail";
+import {
+  CommerceDetailTabs,
+  CommerceDetailTopBar,
+  CommercePurchaseActions,
+  CommercePurchasePanel,
+} from "@/components/commerce/detail";
 import ProductDetailImageGallery from "./ProductDetailImageGallery";
 import { getProductDetailLoginRedirectTarget } from "./ProductDetailLoginTarget.utils";
 import {
@@ -139,8 +144,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const isSale =
     isTruthyBadgeField(product?.inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
   const displayPrice = isSale ? salePrice : regularPrice;
-  const saleRate =
-    isSale && regularPrice > 0 ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
 
   const {
     hybridSpec,
@@ -233,12 +236,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const isApplyFlow = searchParams.get("from") === "apply";
   const careItemId =
     searchParams.get("source") === "racket-care" ? searchParams.get("careItemId") : null;
-  const serviceCtaLabel = "교체서비스 신청하기";
-  const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
   const isStandalonePausedMountableString =
     canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
   const cartCtaLabel = "장바구니 담기";
   const standalonePausedNotice = "현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.";
+  const isProductSoldOut = hasVariantInventories
+    ? selectedVariantSoldOut
+    : Boolean(product.inventory?.manageStock && product.inventory.stock <= 0);
+  const soldOutHelper = hasVariantInventories
+    ? "선택한 색상과 게이지(굵기) 조합의 재고가 없습니다. 다른 옵션을 선택해주세요."
+    : "현재 상품 구매 가능 재고가 없습니다.";
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -1010,23 +1017,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
           />
 
           <div className="space-y-4 sm:space-y-5">
-            <Card className="rounded-3xl border border-border bg-card shadow-sm">
-              <CardContent className="p-5 sm:p-6 bp-md:p-7">
-                <div className="space-y-5 sm:space-y-6">
-                  {/* 브랜드와 제품명 */}
-                  <div>
-                    <span className="inline-block max-w-full truncate text-ui-body-sm sm:text-ui-body text-muted-foreground font-medium mb-2">
-                      {productBrandLabel}
-                    </span>
-                    <h1 className="min-w-0 text-balance break-words text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
-                      {product.name}
-                    </h1>
-                    <div className="mt-3"><CatalogRating average={averageRating} count={reviewCount} size="lg" /></div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <CatalogPrice regularPrice={regularPrice} salePrice={isSale ? salePrice : null} size="detail" />
-                    {canCheckoutWithService && (
+            <CommercePurchasePanel
+              eyebrow={<span className="break-words">{productBrandLabel}</span>}
+              title={
+                <h1 className="min-w-0 text-balance break-words text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
+                  {product.name}
+                </h1>
+              }
+              rating={<CatalogRating average={averageRating} count={reviewCount} size="lg" />}
+              price={<CatalogPrice regularPrice={regularPrice} salePrice={isSale ? salePrice : null} size="detail" />}
+              summary={
+                canCheckoutWithService ? (
                       <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm sm:text-ui-body">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-muted-foreground">상품가</span>
@@ -1048,10 +1049,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           {mountingFee.toLocaleString()}원
                         </p>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-4 sm:space-y-5 pt-5 sm:pt-6 border-t border-border/60">
+                ) : undefined
+              }
+              options={
+                <div className="space-y-4 sm:space-y-5">
                     {visibleColorRows.length > 0 && (
                       <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
@@ -1246,34 +1247,32 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     )}
 
-                    <div className="flex flex-col gap-3 sm:gap-3.5">
-                      {(
-                        hasVariantInventories
-                          ? selectedVariantSoldOut
-                          : product.inventory?.manageStock && product.inventory.stock <= 0
-                      ) ? (
-                        <div className="space-y-3">
-                          <Button
-                            disabled
-                            variant="secondary"
-                            size="tall"
-                            wrap="nowrap"
-                            className="min-h-12 w-full sm:min-h-14"
-                          >
-                            <X className="mr-2 h-5 w-5" />
-                            {hasVariantInventories
-                              ? "선택한 색상/게이지(굵기) 조합이 품절되었습니다"
-                              : "재고가 소진되었습니다"}
-                          </Button>
-                          {renderWishlistButton()}
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <CommercePurchaseActions
+                </div>
+              }
+              actions={
+                isProductSoldOut ? (
+                  <CommercePurchaseActions
+                    primary={
+                      <Button
+                        disabled
+                        variant="secondary"
+                        size="tall"
+                        wrap="nowrap"
+                        className="min-h-12 w-full sm:min-h-14"
+                        aria-label={soldOutHelper}
+                      >
+                        <X className="mr-2 h-5 w-5 shrink-0" aria-hidden="true" />
+                        <span className="whitespace-nowrap">품절</span>
+                      </Button>
+                    }
+                    helper={<p className="break-keep text-destructive">{soldOutHelper}</p>}
+                  />
+                ) : (
+                  <CommercePurchaseActions
                             primary={
                               canCheckoutWithService ? (
                                 <Button
-                                  variant={shouldEmphasizeServiceCta ? "highlight_soft" : "secondary"}
+                                  variant="highlight_soft"
                                   size="tall"
                                   className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14" wrap="nowrap" aria-label="교체서비스 신청하기"
                                   disabled={
@@ -1289,7 +1288,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 </Button>
                               ) : ENABLE_STRING_STANDALONE_ORDER ? (
                                 <Button
-                                  variant="default"
+                                  variant="highlight_soft"
                                   size="tall"
                                   className="h-12 w-full whitespace-nowrap sm:h-14"
                                   onClick={handleBuyNow}
@@ -1361,16 +1360,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 </Button>
                               ) : undefined
                             }
-
-                          />
-                          {renderWishlistButton()}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  />
+                )
+              }
+              utilities={renderWishlistButton()}
+            />
           </div>
         </div>
 
