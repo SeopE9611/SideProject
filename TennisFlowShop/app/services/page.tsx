@@ -1,31 +1,12 @@
 import { getStringingPricingView } from "@/app/services/_lib/stringingPricingView";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { InteractiveCard } from "@/components/public/InteractiveCard";
-import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
-import { SummaryCard } from "@/components/public/SummaryCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
-import {
-  ArrowRight,
-  Award,
-  CheckCircle,
-  File,
-  Grid2X2,
-  Package,
-  RotateCw,
-  Shield,
-  ShoppingBag,
-  Sliders,
-  Star,
-  Target,
-  ThumbsUp,
-  Users,
-  Wrench,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Award, CheckCircle, File, Grid2X2, MapPin, Package, Phone, Shield, ShoppingBag, Sliders, Target } from "lucide-react";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -50,638 +31,222 @@ const formatPriceRange = (
   return value == null ? emptyLabel : `${value.toLocaleString("ko-KR")}원`;
 };
 
+const serviceStartOptions = [
+  {
+    badge: "빠른 신청",
+    icon: <Grid2X2 className="h-7 w-7" aria-hidden />,
+    title: "새 스트링으로 교체서비스 신청",
+    description: "새 스트링을 고른 뒤 보유 라켓에 바로 장착 신청까지 이어갑니다.",
+    steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료",
+    href: "/products?from=apply",
+    cta: "새 스트링 선택하기",
+    featured: true,
+  },
+  {
+    badge: "라켓 구매/대여",
+    icon: <Target className="h-7 w-7" aria-hidden />,
+    title: "라켓 구매/대여 후 스트링 선택",
+    description: "라켓을 구매하거나 대여한 뒤 스트링을 선택해 교체서비스까지 함께 진행합니다.",
+    steps: "라켓 선택 → 스트링 선택 → 결제/접수",
+    href: "/rackets?from=apply",
+    cta: "라켓 구매/대여 시작하기",
+    featured: false,
+  },
+  {
+    badge: "보유 장비",
+    icon: <File className="h-7 w-7" aria-hidden />,
+    title: "보유 장비로 교체서비스 신청",
+    description: "이미 가진 라켓이나 스트링으로 교체 작업만 맡기고 싶을 때 선택합니다.",
+    steps: "교체서비스 정보 입력 → 결제/접수 → 작업 진행",
+    href: "/services/apply?mode=single",
+    cta: "보유 장비로 신청하기",
+    featured: false,
+  },
+];
+
+const serviceNoticeChips = [
+  { title: "100% 예약제", description: "사전 예약 필수" },
+  { title: "소요 시간", description: "30분~1시간" },
+  { title: "방문 안내", description: "완료 10분 전 도착 권장" },
+];
+
+const serviceHubLinks = [
+  { title: "패키지 비교", description: "횟수권과 이용 조건을 비교합니다.", href: "/services/packages", icon: <Package className="h-5 w-5" aria-hidden /> },
+  { title: "가격 안내", description: "상품가·장착비·패키지 차감을 확인합니다.", href: "/services/pricing", icon: <ShoppingBag className="h-5 w-5" aria-hidden /> },
+  { title: "장력 가이드", description: "플레이 성향별 장력 선택 기준을 봅니다.", href: "/services/tension-guide", icon: <Sliders className="h-5 w-5" aria-hidden /> },
+  { title: "매장 위치", description: "방문 가능 매장과 안내를 확인합니다.", href: "/services/locations", icon: <MapPin className="h-5 w-5" aria-hidden /> },
+  { title: "스트링 추천", description: "내 플레이에 맞는 스트링 후보를 좁힙니다.", href: "/products/recommend", icon: <Target className="h-5 w-5" aria-hidden /> },
+  { title: "자주 묻는 질문", description: "예약·신청 전 궁금한 점을 확인합니다.", href: "/board/qna", icon: <CheckCircle className="h-5 w-5" aria-hidden /> },
+];
+
+const processSteps = [
+  { step: 1, title: "라켓 상태 점검", description: "프레임과 그로밋 상태를 먼저 확인합니다.", icon: <Shield className="h-6 w-6" aria-hidden /> },
+  { step: 2, title: "정밀 스트링 제거", description: "라켓 손상을 줄이도록 기존 스트링을 제거합니다.", icon: <Target className="h-6 w-6" aria-hidden /> },
+  { step: 3, title: "정확한 장력 설정", description: "전자식 머신으로 요청 장력을 세팅합니다.", icon: <Award className="h-6 w-6" aria-hidden /> },
+  { step: 4, title: "품질 확인 및 마무리", description: "텐션과 패턴을 확인한 뒤 마무리합니다.", icon: <CheckCircle className="h-6 w-6" aria-hidden /> },
+];
+
 export default async function ServicesPage() {
   const { primarySummaries, hybridGuide } = await getStringingPricingView();
-  // 스트링 유형 데이터
-  const stringTypes = [
-    {
-      id: 1,
-      title: "파워형 스트링",
-      description: "강력한 파워와 반발력을 제공하는 스트링",
-      features: [
-        "최대한의 파워 제공",
-        "부드러운 타구감",
-        "관절에 부담이 적음",
-        "낮은 장력에서도 충분한 반발력",
-      ],
-      recommended: [
-        "파워 중심의 플레이 스타일",
-        "어깨나 팔꿈치에 부담을 줄이고 싶은 분",
-        "초보자 및 중급자",
-        "자연스러운 스윙으로 힘을 얻고 싶은 분",
-      ],
-      examples: ["핀포인트 엑스드라이브", "탑스핀 사이버블루", "포커스헥스울트라"],
-      icon: <Zap className="h-8 w-8" />,
-      performance: { power: 95, control: 70, spin: 75, durability: 80 },
-    },
-    {
-      id: 2,
-      title: "스핀형 스트링",
-      description: "정확한 컨트롤과 스핀을 위한 스트링",
-      features: [
-        "최대한의 스핀 생성",
-        "정확한 볼 컨트롤",
-        "내구성이 우수함",
-        "중상급자용 하드 히팅에 적합",
-      ],
-      recommended: [
-        "컨트롤과 스핀 중심의 플레이 스타일",
-        "강한 스트로크로 공격하는 플레이어",
-        "중급자 및 상급자",
-        "정확한 샷 배치를 중요시하는 분",
-      ],
-      examples: [
-        "볼키 사이클론",
-        "탑스핀 센서스로테이션",
-        "요넥스 폴리투어스핀",
-        "Msv포커스헥스",
-        "솔린코 하이퍼지",
-      ],
-      icon: <RotateCw className="h-8 w-8" />,
-      performance: { power: 75, control: 95, spin: 90, durability: 85 },
-    },
-    {
-      id: 3,
-      title: "내구성형 스트링",
-      description: "파워와 컨트롤의 균형 잡힌 성능",
-      features: [
-        "파워와 컨트롤의 균형",
-        "중간 정도의 타구감",
-        "다양한 플레이 스타일에 적합",
-        "하이브리드 구성으로 활용 가능",
-      ],
-      recommended: [
-        "올라운드 플레이 스타일",
-        "다양한 샷을 구사하는 플레이어",
-        "파워와 컨트롤 모두 중요시하는 분",
-        "모든 수준의 플레이어",
-      ],
-      examples: [
-        "핀포인트 엑스펜타",
-        "탑스핀 사이버플래쉬",
-        "요넥스 폴리투어프로",
-        "솔린코 투어바이트소프트",
-      ],
-      icon: <Shield className="h-8 w-8" />,
-      performance: { power: 85, control: 85, spin: 80, durability: 90 },
-    },
-  ];
 
-  // 서비스 가격 정보
-  const pricingInfo = [
-    {
-      service: "보유/커스텀 스트링 장착",
-      priceLabel: `${CUSTOM_STRING_MOUNTING_FEE.toLocaleString()}원`,
-      description: "보유 스트링 또는 직접 입력 스트링 기준 교체비",
-      icon: <Wrench className="h-6 w-6" />,
-      duration: "30-45분",
-      popular: false,
-    },
-    {
-      service: "스트링 상품 선택 장착",
-      priceLabel: "상품별 상이",
-      description: "선택한 스트링 상품과 신청 방식에 따라 최종 교체비가 안내됩니다.",
-      icon: <ShoppingBag className="h-6 w-6" />,
-      duration: "30-45분",
-      popular: true,
-    },
-    {
-      service: "패키지 적용 신청",
-      priceLabel: "잔여횟수 차감",
-      description: "사용가능한 패키지 횟수가 있으면 교체비 대신 패키지 잔여횟수가 차감됩니다",
-      icon: <Package className="h-6 w-6" />,
-      duration: "45-60분",
-      popular: false,
-    },
-  ];
-
-  // 추가 서비스 정보
-  const additionalServices = [
-    {
-      title: "장력 추천 서비스",
-      description: "플레이 스타일과 라켓에 맞는 장력 추천을 무료로 안내합니다.",
-      free: true,
-      icon: <Sliders className="h-5 w-5" />,
-    },
-    {
-      title: "스트링 추천 서비스",
-      description: "개인의 플레이 스타일에 맞는 스트링/장력 조합을 무료로 안내합니다.",
-      free: true,
-      icon: <ThumbsUp className="h-5 w-5" />,
-    },
-    {
-      title: "라켓 그립 교체",
-      description: "부자재/작업 범위에 따라 비용이 달라져 별도 문의가 필요합니다.",
-      free: false,
-      priceLabel: "별도 문의",
-      icon: <Wrench className="h-5 w-5" />,
-    },
-  ];
-
-  const processSteps = [
-    {
-      step: 1,
-      title: "라켓 상태 점검",
-      description: "라켓 프레임과 그로밋의 상태를 세심하게 점검합니다.",
-      icon: <Shield className="h-8 w-8" />,
-    },
-    {
-      step: 2,
-      title: "정밀 스트링 제거",
-      description: "라켓에 손상이 가지 않도록 기존 스트링을 조심스럽게 제거합니다.",
-      icon: <Target className="h-8 w-8" />,
-    },
-    {
-      step: 3,
-      title: "정확한 장력 설정",
-      description: "전자식 스트링 머신으로 장력을 설정하고 장착합니다.",
-      icon: <Award className="h-8 w-8" />,
-    },
-    {
-      step: 4,
-      title: "품질 확인 및 마무리",
-      description: "장착 후 텐션과 패턴을 확인하고 완벽한 상태로 마무리합니다.",
-      icon: <CheckCircle className="h-8 w-8" />,
-    },
-  ];
-
-  const serviceStartOptions = [
-    {
-      badge: "빠른 신청",
-      icon: <Grid2X2 className="h-7 w-7" />,
-      title: "새 스트링으로 교체서비스 신청",
-      description: "새 스트링을 고른 뒤 보유 라켓에 바로 장착 신청까지 이어갑니다.",
-      steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료",
-      href: "/products?from=apply",
-      cta: "새 스트링 선택하기",
-      featured: true,
-    },
-    {
-      badge: "라켓 구매/대여",
-      icon: <Target className="h-7 w-7" />,
-      title: "라켓 구매/대여 후 스트링 선택",
-      description: "라켓을 구매하거나 대여한 뒤 스트링을 선택해 교체서비스까지 함께 진행합니다.",
-      steps: "라켓 선택 → 스트링 선택 → 결제/접수",
-      href: "/rackets?from=apply",
-      cta: "라켓 구매/대여 시작하기",
-      featured: false,
-    },
-    {
-      badge: "보유 장비",
-      icon: <File className="h-7 w-7" />,
-      title: "보유 장비로 교체서비스 신청",
-      description: "이미 가진 라켓이나 스트링으로 교체 작업만 맡기고 싶을 때 선택합니다.",
-      steps: "교체서비스 정보 입력 → 결제/접수 → 작업 진행",
-      href: "/services/apply?mode=single",
-      cta: "보유 장비로 신청하기",
-      featured: false,
-    },
-  ];
-
-  const serviceHelpLinks = [
-    {
-      label: "스트링 추천 도우미",
-      href: "/products/recommend",
-      helper: "플레이 성향에 맞는 스트링을 먼저 좁혀보세요.",
-    },
-    {
-      label: "가격 먼저 보기",
-      href: "#pricing",
-      helper: "가격 안내 페이지로 이동합니다.",
-    },
-    {
-      label: "자주 묻는 질문",
-      href: "/board/qna",
-      helper: "예약·신청 문의를 확인합니다.",
-    },
-    {
-      label: "전화 상담",
-      href: "tel:01052185248",
-      helper: "010-5218-5248 · 평일 10:00-22:00, 토요일 09:00-18:00",
-    },
-  ];
-
-  const serviceNoticeChips = [
-    { title: "100% 예약제", description: "사전 예약 필수" },
-    { title: "소요 시간", description: "30분~1시간" },
-    { title: "방문 안내", description: "완료 10분 전 도착 권장" },
-  ];
   return (
-    <div className="flex flex-col">
-      <PublicPageHero
-        align="center"
-        eyebrow="스트링 교체 서비스"
-        title="스트링 교체 서비스를 더 쉽게"
-        description="스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다."
-        actions={
-          <>
-            <Button asChild wrap="responsive">
-              <Link href="#service-start">신청 방식 선택하기</Link>
-            </Button>
-            <Button variant="outline" asChild wrap="responsive">
-              <Link href="#pricing">가격 안내 보기</Link>
-            </Button>
-          </>
-        }
-      />
-
-      <section className="scroll-mt-24 py-8 bp-md:scroll-mt-28 bp-md:py-12" id="service-start">
+    <div className="flex flex-col bg-background">
+      <header className="border-b border-border bg-muted/30 py-7 bp-sm:py-9">
         <SiteContainer>
-          <div className="mx-auto max-w-7xl">
-            <SectionHeader
-              align="center"
-              className="mb-6 bp-md:mb-8"
-              eyebrow="신청 방식 먼저 선택하기"
-              title="어떤 방식으로 시작할까요?"
-              description="현재 상황에 맞는 시작 지점을 고르면 구매·대여·보유 장비 흐름에 맞춰 신청이 이어집니다."
-            />
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {serviceStartOptions.map((item) => (
-                <InteractiveCard
-                  key={item.title}
-                  href={item.href}
-                  className={`group relative flex h-full min-w-0 flex-col text-left ${item.featured ? "border-primary/40 bg-primary/5" : ""}`}
-                >
-                  <div className="mb-4 flex min-w-0 items-start justify-between gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted bp-sm:h-14 bp-sm:w-14">
-                      {item.icon}
-                    </div>
-                    <Badge variant={item.featured ? "brand" : "secondary"} className="shrink-0">
-                      {item.badge}
-                    </Badge>
-                  </div>
-
-                  <div className="flex flex-1 flex-col">
-                    <h3 className="break-keep text-ui-card-title font-medium leading-snug text-foreground bp-sm:text-ui-card-title-lg">
-                      {item.title}
-                    </h3>
-                    <p className="mt-3 break-words text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
-                      {item.description}
-                    </p>
-
-                    <PublicSurface variant="muted" padding="sm" className="mt-4">
-                      <p className="text-ui-caption font-medium text-primary">진행 순서</p>
-                      <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
-                        {item.steps}
-                      </p>
-                    </PublicSurface>
-
-                    <div className="mt-auto pt-5">
-                      <span className="inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-normal break-keep rounded-lg border border-border bg-card px-3 py-2.5 text-center text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:bg-secondary">
-                        <span className="min-w-0">{item.cta}</span>
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </span>
-                    </div>
-                  </div>
-                </InteractiveCard>
-              ))}
+          <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
+            <div className="max-w-3xl space-y-4">
+              <p className="text-ui-label font-medium text-primary">스트링 교체 서비스</p>
+              <h1 className="text-balance font-brand-heading text-ui-page-title font-semibold tracking-[-0.015em] text-foreground bp-sm:text-ui-page-title-lg">
+                스트링 교체, 내 상황에 맞는 흐름부터 선택하세요.
+              </h1>
+              <p className="text-pretty text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
+                새 스트링 구매부터 라켓 구매·대여 연계, 보유 장비 장착까지 필요한 시작점을 한곳에서 안내합니다.
+              </p>
+              <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
+                <Button variant="highlight" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                  <Link href="#service-start">신청 방식 선택하기</Link>
+                </Button>
+                <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                  <Link href="#pricing">가격 구조 확인하기</Link>
+                </Button>
+              </div>
             </div>
 
-            <PublicSurface variant="muted" className="mt-5 bp-md:mt-7">
-              <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-                <div className="space-y-3">
-                  <Badge variant="secondary">도움이 필요할 때</Badge>
-                  <div className="space-y-2">
-                    <h3 className="break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
-                      잘 모르겠다면 상담과 안내를 먼저 확인하세요
-                    </h3>
-                    <p className="text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
-                      추천 도우미, 가격 안내, FAQ, 전화 상담을 한{"\u00A0"}
-                      곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수
-                      있어요.
-                    </p>
-                  </div>
-                  <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                    {serviceNoticeChips.map((notice) => (
-                      <PublicSurface key={notice.title} padding="sm">
-                        <p className="text-ui-body-sm font-medium text-foreground">
-                          {notice.title}
-                        </p>
-                        <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground bp-md:text-ui-body-sm">
-                          {notice.description}
-                        </p>
-                      </PublicSurface>
-                    ))}
-                  </div>
+            <PublicSurface variant="inverse" className="space-y-3">
+              {serviceNoticeChips.map((notice) => (
+                <div key={notice.title} className="flex items-start justify-between gap-4 border-b border-surface-inverse-foreground/15 pb-3 last:border-b-0 last:pb-0">
+                  <span className="text-ui-body-sm font-semibold text-surface-inverse-foreground">{notice.title}</span>
+                  <span className="text-right text-ui-body-sm leading-relaxed text-surface-inverse-muted">{notice.description}</span>
                 </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {serviceHelpLinks.map((link) => (
-                    <InteractiveCard
-                      key={link.label}
-                      href={link.href}
-                      className="group flex h-full min-w-0 flex-col p-4"
-                    >
-                      <span className="flex min-w-0 items-center justify-between gap-3 text-ui-body-sm font-medium text-foreground">
-                        <span className="min-w-0 break-keep">{link.label}</span>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-                      </span>
-                      <span className="mt-2 break-words text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
-                        {link.helper}
-                      </span>
-                    </InteractiveCard>
-                  ))}
-                </div>
-              </div>
+              ))}
             </PublicSurface>
           </div>
         </SiteContainer>
-      </section>
+      </header>
 
-      {/* 서비스 소개 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40" id="string-types">
+      <section className="scroll-mt-[calc(var(--header-h)+1rem)] py-8 bp-sm:py-10 bp-lg:py-12" id="service-start">
         <SiteContainer>
-          <SectionHeader
-            align="center"
-            className="mb-10 md:mb-16"
-            eyebrow="프리미엄 스트링 컬렉션"
-            title="스트링 종류 안내"
-            description="플레이 스타일과 경기력 향상을 위한 다양한 특성의 스트링을 제공합니다. 자신에게 맞는 최적의 스트링을 선택해보세요."
-          />
-
-          <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6 bp-lg:grid-cols-3 bp-lg:gap-8">
-            {stringTypes.map((type) => (
-              <SummaryCard
-                key={type.id}
-                className="group relative h-full overflow-hidden border-border shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md"
-                contentClassName="space-y-4 md:space-y-6"
-              >
-                <div className="absolute inset-x-0 top-0 h-2 bg-muted" />
-
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border/60 bg-secondary text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">
-                    {type.icon}
-                  </div>
-                  <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground">
-                    {type.title}
-                  </h3>
-                  <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
-                    {type.description}
-                  </p>
+          <SectionHeader title="어떤 방식으로 시작할까요?" description="현재 보유한 장비와 구매 계획에 맞는 시작점을 선택하면 신청 흐름이 이어집니다." className="mb-5 bp-sm:mb-7" />
+          <div className="grid gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-12">
+            {serviceStartOptions.map((item) => (
+              <InteractiveCard key={item.title} href={item.href} className={`group flex h-full min-w-0 flex-col ${item.featured ? "border-brand-highlight-ink/35 bg-brand-highlight-muted bp-sm:col-span-2 bp-lg:col-span-6" : "bp-lg:col-span-3"}`}>
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${item.featured ? "border-brand-highlight-ink/30 text-brand-highlight-ink" : "border-border bg-background text-muted-foreground"}`}>{item.icon}</div>
+                  <Badge variant={item.featured ? "signal" : "secondary"} wrap="normal">{item.badge}</Badge>
                 </div>
-
-                {/* 성능 차트 */}
-                <PublicSurface variant="muted" padding="sm">
-                  <h4 className="mb-3 text-center text-ui-label font-medium text-foreground">
-                    성능 특성
-                  </h4>
-                  <div className="space-y-2">
-                    {Object.entries(type.performance).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-ui-label capitalize text-muted-foreground">
-                          {key === "power"
-                            ? "파워"
-                            : key === "control"
-                              ? "컨트롤"
-                              : key === "spin"
-                                ? "스핀"
-                                : "내구성"}
-                        </span>
-                        <div className="mx-3 h-2 flex-1 rounded-full bg-muted">
-                          <div
-                            className="h-2 rounded-full bg-muted-foreground/70 transition-all duration-1000 ease-out"
-                            style={{ width: `${value}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-ui-label font-medium text-foreground">{value}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </PublicSurface>
-
-                {/* 주요 특징 */}
-                <div>
-                  <h4 className="mb-3 flex items-center text-ui-body-sm font-medium text-foreground">
-                    <CheckCircle className="mr-2 h-4 w-4 text-muted-foreground" />
-                    주요 특징
-                  </h4>
-                  <ul className="space-y-2">
-                    {type.features.map((feature, idx) => (
-                      <li
-                        key={idx}
-                        className="flex items-start text-ui-body-sm text-muted-foreground"
-                      >
-                        <div className="mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-muted-foreground/70"></div>
-                        <span className="min-w-0 break-words">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* 추천 대상 */}
-                <div>
-                  <h4 className="mb-3 flex items-center text-ui-body-sm font-medium text-foreground">
-                    <Users className="mr-2 h-4 w-4 text-muted-foreground" />
-                    추천 대상
-                  </h4>
-                  <ul className="space-y-2">
-                    {type.recommended.slice(0, 2).map((rec, idx) => (
-                      <li
-                        key={idx}
-                        className="flex items-start text-ui-body-sm text-muted-foreground"
-                      >
-                        <ArrowRight className="mr-2 mt-1 h-3 w-3 flex-shrink-0 text-muted-foreground" />
-                        <span className="min-w-0 break-words">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* 대표 제품 */}
-                <PublicSurface variant="muted" padding="sm">
-                  <h4 className="mb-3 text-ui-body-sm font-medium text-foreground">대표 제품</h4>
-                  <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                    {type.examples.map((example, idx) => (
-                      <Badge
-                        key={idx}
-                        variant="secondary"
-                        className="max-w-full whitespace-normal break-keep"
-                      >
-                        {example}
-                      </Badge>
-                    ))}
-                  </div>
-                </PublicSurface>
-              </SummaryCard>
+                <h3 className="text-ui-card-title-lg font-semibold leading-snug text-foreground">{item.title}</h3>
+                <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                <div className="my-4 border-t border-border/80 pt-3 text-ui-body-sm leading-relaxed text-muted-foreground">{item.steps}</div>
+                <span className={`mt-auto inline-flex items-center gap-2 text-ui-body-sm font-semibold ${item.featured ? "text-brand-highlight-ink" : "text-foreground"}`}>
+                  {item.cta}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
+                </span>
+              </InteractiveCard>
             ))}
           </div>
         </SiteContainer>
       </section>
 
-      {/* 가격 안내 섹션 */}
-      <section
-        className="bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20"
-        id="pricing"
-      >
+      <section className="py-8 bp-sm:py-10 bp-lg:py-12">
         <SiteContainer>
-          <SectionHeader
-            align="center"
-            className="mb-10 md:mb-16"
-            eyebrow="투명한 가격 정책"
-            title="가격 안내"
-            description="합리적인 가격으로 필요한 스트링 서비스를 선택할 수 있습니다."
-          />
-
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 mb-16">
-            {pricingInfo.map((item) => (
-              <PublicSurface
-                key={item.service}
-                variant="elevated"
-                className={`relative flex h-full flex-col overflow-hidden text-center ${item.popular ? "border-primary/40 bg-primary/5" : ""}`}
-              >
-                {item.popular && (
-                  <div className="absolute right-0 top-0 rounded-bl-lg bg-secondary px-3 py-1 text-ui-caption font-medium text-foreground">
-                    인기
-                  </div>
-                )}
-
-                <div className="flex flex-1 flex-col items-center">
-                  <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm bg-secondary text-muted-foreground">
-                    {item.icon}
-                  </div>
-                  <h3 className="break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground">
-                    {item.service}
-                  </h3>
-                  <div className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold text-foreground bp-sm:text-ui-page-title">
-                    {item.priceLabel}
-                  </div>
-                  <div className="text-ui-body-sm text-muted-foreground">
-                    소요시간: {item.duration}
-                  </div>
-                  <p className="mt-4 text-ui-body-sm leading-relaxed text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              </PublicSurface>
-            ))}
-          </div>
-
-          <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {primarySummaries.map((cat) => (
-              <PublicSurface key={cat.key} padding="sm">
-                <h3 className="mb-2 break-keep text-ui-card-title font-medium leading-tight text-foreground">
-                  {cat.label}
-                </h3>
-                <p className="break-words text-ui-body-sm leading-relaxed text-muted-foreground">
-                  {cat.count === 0
-                    ? "등록된 상품 데이터 없음"
-                    : `상품가 ${formatPriceRange(cat.minPrice, cat.maxPrice)} / 장착비 ${formatPriceRange(cat.minMountingFee, cat.maxMountingFee)}`}
-                </p>
-              </PublicSurface>
-            ))}
-            <PublicSurface padding="sm" className="border-dashed md:col-span-2">
-              <h3 className="mb-2 break-keep text-ui-card-title font-medium leading-tight text-foreground">
-                하이브리드 조합 안내
-              </h3>
-              <div className="space-y-1 text-ui-body-sm text-muted-foreground">
-                <p>
-                  하이브리드는 단일 재질이 아닌 조합 방식으로, 단일 재질 가격대와 분리해 안내합니다.
-                </p>
-                <p className="break-words tabular-nums">
-                  등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개
-                </p>
-              </div>
-            </PublicSurface>
-          </div>
-
-          {/* 추가 서비스 */}
-          <PublicSurface padding="lg">
-            <h3 className="mb-5 text-center text-ui-section-title font-semibold text-foreground bp-md:mb-6 bp-md:text-ui-section-title-lg">
-              추가 서비스
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {additionalServices.map((service) => (
-                <PublicSurface key={service.title} padding="sm" className="h-full">
-                  <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-muted-foreground mr-3">
-                        {service.icon}
-                      </div>
-                      <h4 className="text-ui-body-sm font-medium text-foreground">
-                        {service.title}
-                      </h4>
-                    </div>
-                    {service.free ? (
-                      <Badge variant="info">무료</Badge>
-                    ) : (
-                      <span className="text-ui-body-sm font-semibold text-foreground">
-                        {service.priceLabel ?? "별도 안내"}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-ui-body-sm text-muted-foreground">{service.description}</p>
-                </PublicSurface>
+          <SectionHeader title="신청 전에 필요한 안내를 골라보세요" description="가격·패키지·장력·매장 안내는 전문 페이지에서 더 자세히 확인할 수 있습니다." className="mb-5 bp-sm:mb-7" />
+          <PublicSurface padding="none" className="overflow-hidden">
+            <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3">
+              {serviceHubLinks.map((item) => (
+                <Link key={item.title} href={item.href} className="group flex min-w-0 items-start gap-3 border-b border-border p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:border-r bp-lg:[&:nth-child(3n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:[&:nth-last-child(-n+3)]:border-b-0">
+                  <span className="mt-0.5 text-muted-foreground group-hover:text-primary">{item.icon}</span>
+                  <span className="min-w-0 flex-1 space-y-1">
+                    <span className="block text-ui-body-sm font-semibold text-foreground">{item.title}</span>
+                    <span className="block text-ui-body-sm leading-relaxed text-muted-foreground">{item.description}</span>
+                  </span>
+                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" aria-hidden />
+                </Link>
               ))}
             </div>
+            <Link href="tel:01052185248" className="flex flex-col gap-2 border-t border-border bg-muted/25 p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+              <span className="flex items-center gap-3 text-ui-body-sm font-semibold text-foreground"><Phone className="h-4 w-4 text-primary" aria-hidden />전화 상담</span>
+              <span className="text-ui-body-sm leading-relaxed text-muted-foreground"><span className="tabular-nums text-foreground">010-5218-5248</span> · 평일 10:00-22:00, 토요일 09:00-18:00</span>
+            </Link>
           </PublicSurface>
         </SiteContainer>
       </section>
 
-      {/* 장착 과정 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background">
+      <section className="scroll-mt-[calc(var(--header-h)+1rem)] bg-muted/30 py-8 bp-sm:py-10 bp-lg:py-12" id="pricing">
         <SiteContainer>
-          <SectionHeader
-            align="center"
-            className="mb-10 md:mb-16"
-            eyebrow="전문적인 프로세스"
-            title="스트링 장착 과정"
-            description="도깨비테니스는 세심한 과정을 통해 최고 품질의 스트링 장착 서비스를 제공합니다."
-          />
-
-          <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
-            {processSteps.map((step) => (
-              <div key={step.step} className="relative group">
-                {processSteps.indexOf(step) < processSteps.length - 1 && (
-                  <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-border/70 dark:bg-border/80 transform translate-x-4 z-0"></div>
-                )}
-
-                <PublicSurface className="relative z-10 h-full text-center">
-                  <div className="relative mb-6">
-                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-muted-foreground mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">
-                      {step.icon}
-                    </div>
-                    <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-ui-caption font-semibold text-foreground shadow-sm">
-                      {step.step}
-                    </div>
-                  </div>
-                  <h3 className="mb-3 text-ui-card-title-lg font-semibold text-foreground bp-md:mb-4">
-                    {step.title}
-                  </h3>
-                  <p className="text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
-                    {step.description}
-                  </p>
-                </PublicSurface>
+          <div className="grid gap-6 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-start">
+            <div className="space-y-4">
+              <p className="text-ui-label font-medium text-primary">가격 구조</p>
+              <h2 className="text-ui-section-title-lg font-semibold tracking-tight text-foreground">신청 방식에 따라 비용이 달라집니다</h2>
+              <div className="space-y-3 text-ui-body-sm leading-relaxed text-muted-foreground">
+                <p><span className="font-semibold text-foreground">보유/커스텀 스트링 장착비</span>: <span className="whitespace-nowrap tabular-nums">{CUSTOM_STRING_MOUNTING_FEE.toLocaleString("ko-KR")}원</span></p>
+                <p><span className="font-semibold text-foreground">스트링 상품 선택</span>: 상품가와 상품별 장착비 기준</p>
+                <p><span className="font-semibold text-foreground">패키지 적용</span>: 사용 가능한 잔여 횟수 차감</p>
               </div>
-            ))}
+              <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto"><Link href="/services/pricing">전체 가격 안내 보기</Link></Button>
+              <div className="border-t border-border pt-3 text-ui-body-sm leading-relaxed text-muted-foreground">장력 추천: 무료 안내 · 스트링 추천: 무료 안내 · 라켓 그립 교체: 별도 문의</div>
+            </div>
+            <PublicSurface padding="none" className="overflow-hidden">
+              <div className="hidden grid-cols-[1.1fr_0.7fr_1fr_1fr] border-b border-border bg-muted/40 px-4 py-3 text-ui-label font-medium text-muted-foreground bp-sm:grid">
+                <span>소재</span><span>상품</span><span>상품 가격</span><span>장착비</span>
+              </div>
+              {primarySummaries.map((cat) => (
+                <div key={cat.key} className="grid gap-2 border-b border-border px-4 py-3 text-ui-body-sm last:border-b-0 bp-sm:grid-cols-[1.1fr_0.7fr_1fr_1fr]">
+                  <div className="font-semibold text-foreground">{cat.label}</div>
+                  {cat.count === 0 ? (
+                    <div className="text-muted-foreground bp-sm:col-span-3">등록된 상품 데이터 없음</div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between gap-3 bp-sm:block"><span className="text-muted-foreground bp-sm:hidden">등록 상품 개수</span><span className="whitespace-nowrap tabular-nums">{cat.count.toLocaleString("ko-KR")}개</span></div>
+                      <div className="flex justify-between gap-3 bp-sm:block"><span className="text-muted-foreground bp-sm:hidden">상품 가격 범위</span><span className="whitespace-nowrap tabular-nums">{formatPriceRange(cat.minPrice, cat.maxPrice)}</span></div>
+                      <div className="flex justify-between gap-3 bp-sm:block"><span className="text-muted-foreground bp-sm:hidden">장착비 범위</span><span className="whitespace-nowrap tabular-nums">{formatPriceRange(cat.minMountingFee, cat.maxMountingFee)}</span></div>
+                    </>
+                  )}
+                </div>
+              ))}
+              <div className="grid gap-2 px-4 py-3 text-ui-body-sm bp-sm:grid-cols-[1.1fr_2.7fr]">
+                <div className="font-semibold text-foreground">하이브리드 조합</div>
+                <div className="text-muted-foreground">등록된 하이브리드 상품 개수 <span className="whitespace-nowrap tabular-nums text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</span></div>
+              </div>
+            </PublicSurface>
           </div>
         </SiteContainer>
       </section>
 
-      {/* 고객 후기 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40">
+      <section className="py-8 bp-sm:py-10 bp-lg:py-12">
         <SiteContainer>
-          <SectionHeader
-            align="center"
-            className="mb-10"
-            title="고객 후기"
-            description="도깨비테니스 스트링 서비스를 경험한 후기를 확인해보세요."
-          />
+          <PublicSurface variant="inverse" className="space-y-5">
+            <div className="max-w-2xl space-y-2">
+              <p className="text-ui-label font-medium text-surface-inverse-muted">전문적인 프로세스</p>
+              <h2 className="text-ui-section-title-lg font-semibold text-surface-inverse-foreground">스트링 장착 과정</h2>
+            </div>
+            <ol className="grid gap-0 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+              {processSteps.map((step) => (
+                <li key={step.step} className="border-t border-surface-inverse-foreground/15 py-4 bp-sm:px-4 bp-sm:[&:nth-child(2n)]:border-l bp-lg:border-l bp-lg:first:border-l-0">
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-highlight-muted text-ui-body-sm font-semibold text-brand-highlight-ink">{step.step}</span>
+                    <span className="text-brand-highlight-ink">{step.icon}</span>
+                  </div>
+                  <h3 className="text-ui-body font-semibold text-surface-inverse-foreground">{step.title}</h3>
+                  <p className="mt-2 text-ui-body-sm leading-relaxed text-surface-inverse-muted">{step.description}</p>
+                </li>
+              ))}
+            </ol>
+          </PublicSurface>
+        </SiteContainer>
+      </section>
 
-          <div className="text-center">
-            <Button
-              size="lg"
-              variant="default"
-              wrap="responsive"
-              className="w-full shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:shadow-md sm:w-auto"
-              asChild
-            >
-              <Link href="/reviews">
-                <Star className="w-5 h-5 mr-2" />
-                서비스 후기 보기
-              </Link>
-            </Button>
-          </div>
+      <section className="pb-10 pt-2 bp-sm:pb-12 bp-lg:pb-16">
+        <SiteContainer>
+          <PublicSurface className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
+            <div className="space-y-2">
+              <h2 className="text-ui-section-title font-semibold text-foreground">준비됐다면 신청 방식부터 선택하세요.</h2>
+              <p className="text-ui-body-sm leading-relaxed text-muted-foreground">보유 장비와 구매 계획에 맞는 시작점을 고르면 필요한 신청 화면으로 이어집니다.</p>
+            </div>
+            <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
+              <Button variant="highlight" asChild wrap="responsive" className="w-full bp-sm:w-auto"><Link href="#service-start">신청 방식 선택하기</Link></Button>
+              <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto"><Link href="/reviews">서비스 후기 보기</Link></Button>
+            </div>
+          </PublicSurface>
         </SiteContainer>
       </section>
     </div>
