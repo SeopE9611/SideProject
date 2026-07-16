@@ -3,7 +3,14 @@
 import ProductDetailQnaTab from "@/app/products/[id]/ProductDetailQnaTab";
 import { CompareRacketItem, useRacketCompareStore } from "@/app/store/racketCompareStore";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { SummaryCard } from "@/components/public/SummaryCard";
+import { CatalogPrice, CatalogRating } from "@/components/commerce";
+import {
+  CommerceDetailTabs,
+  CommerceDetailTopBar,
+  CommerceMediaGallery,
+  CommercePurchaseActions,
+  CommercePurchasePanel,
+} from "@/components/commerce/detail";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
@@ -17,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   merchandisingImageBadgeClass,
@@ -37,8 +44,6 @@ import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   EyeOff,
   FileText,
@@ -112,7 +117,6 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const searchParams = useSearchParams();
   const rentSectionRef = useRef<HTMLDivElement>(null);
   const [autoOpen, setAutoOpen] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   type DetailTab = "description" | "specifications" | "reviews" | "qna";
 
   const initialTab = (searchParams.get("tab") as DetailTab) || "description";
@@ -550,158 +554,65 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     }
   }, [open, racket?.rental?.enabled]);
 
-  const nextImage = () => {
-    setSelectedImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
 
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
-      <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground sm:py-5">
-        <SiteContainer variant="wide" className="relative">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-ui-body-sm sm:gap-2.5 sm:text-ui-body">
-              <Link
-                href="/"
-                className="shrink-0 whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
-              >
-                홈
+      <CommerceDetailTopBar
+        breadcrumbs={[
+          { label: "홈", href: "/" },
+          { label: "중고 라켓", href: "/rackets" },
+        ]}
+        currentLabel={`${brandLabel} ${racket.model}`}
+        onBack={() => router.back()}
+        adminAction={
+          isAdmin && racketId ? (
+            <Button asChild variant="outline" size="sm" className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3">
+              <Link href={`/admin/rackets/${racketId}/edit`}>
+                <Pencil className="mr-1.5 h-4 w-4" />
+                라켓 수정
               </Link>
-              <span className="shrink-0 text-muted-foreground/60">/</span>
-              <Link
-                href="/rackets"
-                className="shrink-0 whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
-              >
-                중고 라켓
-              </Link>
-              <span className="shrink-0 text-muted-foreground/60">/</span>
-              <span className="min-w-0 flex-1 truncate break-keep font-medium text-foreground">
-                {racketBrandLabel(racket.brand)} {racket.model}
-              </span>
-            </div>
-
-            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
-              <Button
-                variant="ghost"
-                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-ui-body-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
-                onClick={() => router.back()}
-              >
-                <ArrowLeft className="mr-1.5 h-4 w-4" />
-                뒤로
-              </Button>
-              {isAdmin && racketId && (
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3"
-                >
-                  <Link href={`/admin/rackets/${racketId}/edit`}>
-                    <Pencil className="mr-1.5 h-4 w-4" />
-                    라켓 수정
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </div>
-        </SiteContainer>
-      </div>
+            </Button>
+          ) : undefined
+        }
+      />
 
       <SiteContainer variant="wide" className="py-8 pb-12 md:pb-16">
-        <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-5">
-          {/* 상품 이미지 */}
-          <div className="space-y-4 lg:col-span-3">
-            <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
-              <div className="relative aspect-square">
-                {images.length > 0 ? (
-                  <Image
-                    src={images[selectedImageIndex] || "/placeholder.svg"}
-                    alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
-                    fill
-                    className="object-cover transition-transform duration-300 hover:scale-[1.02]"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
-                    이미지 없음
-                  </div>
-                )}
-                {images.length > 1 && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute left-3 top-1/2 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm hover:bg-card"
-                      onClick={prevImage}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm hover:bg-card"
-                      onClick={nextImage}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
-                {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
-                  <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                    {racket?.marketing?.isFeatured && (
-                      <Badge
-                        variant={merchandisingImageBadgeVariant("추천")}
-                        shape="pill"
-                        className={cn(merchandisingImageBadgeClass)}
-                      >
-                        추천
-                      </Badge>
-                    )}
-                    {racket?.marketing?.isNew && (
-                      <Badge
-                        variant={merchandisingImageBadgeVariant("NEW")}
-                        shape="pill"
-                        className={cn(merchandisingImageBadgeClass)}
-                      >
-                        NEW
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3">
-                {images.slice(0, 5).map((image: string, index: number) => (
-                  <Card
-                    key={index}
-                    className={`cursor-pointer overflow-hidden rounded-xl border border-border/60 transition-[border-color,box-shadow] duration-200 ${selectedImageIndex === index ? "ring-2 ring-ring ring-offset-2 ring-offset-background" : "hover:border-border"}`}
-                    onClick={() => setSelectedImageIndex(index)}
+        <div className="grid grid-cols-1 gap-6 bp-md:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] bp-lg:grid-cols-[minmax(0,1.25fr)_minmax(380px,440px)] bp-lg:gap-8">
+          <CommerceMediaGallery
+            images={images}
+            alt={`${brandLabel} ${racket.model}`}
+            objectFit="contain"
+            emptyLabel="라켓 이미지가 없습니다"
+            badges={
+              <>
+                {racket?.marketing?.isFeatured && (
+                  <Badge
+                    variant={merchandisingImageBadgeVariant("추천")}
+                    shape="pill"
+                    className={cn(merchandisingImageBadgeClass)}
                   >
-                    <div className="aspect-square relative">
-                      <Image
-                        src={image || "/placeholder.svg"}
-                        alt={`${racketBrandLabel(racket.brand)} ${racket.model} ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                    추천
+                  </Badge>
+                )}
+                {racket?.marketing?.isNew && (
+                  <Badge
+                    variant={merchandisingImageBadgeVariant("NEW")}
+                    shape="pill"
+                    className={cn(merchandisingImageBadgeClass)}
+                  >
+                    NEW
+                  </Badge>
+                )}
+              </>
+            }
+          />
 
           {/* 상품 정보 */}
-          <div className="space-y-4 lg:col-span-2">
-            <SummaryCard
+          <div className="space-y-4">
+            <CommercePurchasePanel
               eyebrow="Used racket"
-              title={
-                <div className="min-w-0 space-y-3">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+              badges={
+                <>
                     <Badge variant="outline">{racketBrandLabel(racket.brand)}</Badge>
                     <Badge variant="outline">
                       {usedBadgeMeta("condition", racket.condition).label}
@@ -713,56 +624,13 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           : "품절"
                         : `재고 ${stock.available}개`}
                     </Badge>
-                  </div>
-                  <h1 className="min-w-0 break-words text-ui-page-title font-semibold leading-tight text-foreground lg:text-ui-page-title-lg">
-                    {racket.model}
-                  </h1>
-                </div>
+                </>
               }
-              description={
-                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "fill-current text-foreground" : "fill-current text-muted-foreground/30"}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="whitespace-nowrap text-ui-body-sm text-muted-foreground sm:text-ui-body">
-                    {averageRating.toFixed(1)} ({reviewCount}개 후기)
-                  </span>
-                </div>
-              }
-              contentClassName="space-y-5"
-            >
-              {/* 가격 정보 */}
-              <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-                  {hasSalePrice ? (
-                    <>
-                      <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold tracking-normal text-foreground">
-                        {salePrice.toLocaleString()}
-                        <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">
-                          원
-                        </span>
-                      </span>
-                      <span className="whitespace-nowrap tabular-nums text-ui-card-title-lg text-muted-foreground/60 line-through sm:text-ui-section-title">
-                        {racket.price?.toLocaleString()}원
-                      </span>
-                      <span className="shrink-0 whitespace-nowrap rounded-lg bg-destructive/10 px-2.5 py-1 text-ui-body-sm font-semibold text-destructive">
-                        {discountRate}% OFF
-                      </span>
-                    </>
-                  ) : (
-                    <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold tracking-normal text-foreground">
-                      {racket.price?.toLocaleString()}
-                      <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">
-                        원
-                      </span>
-                    </span>
-                  )}
-                </div>
+              title={<h1 className="min-w-0 break-words text-ui-page-title font-semibold leading-tight text-foreground lg:text-ui-page-title-lg">{racket.model}</h1>}
+              rating={<CatalogRating average={averageRating} count={reviewCount} size="lg" />}
+              price={<CatalogPrice regularPrice={Number(racket.price ?? 0)} salePrice={hasSalePrice ? salePrice : null} size="detail" />}
+              summary={
+                <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
                 <div className="grid gap-2 text-ui-body-sm sm:text-ui-body">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">배송비</span>
@@ -784,9 +652,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   * 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.
                 </div>
               </div>
-
-              {/* CTA 영역 */}
-              <div ref={rentSectionRef} className="space-y-4 border-t border-border pt-5">
+              }
+              actions={
+              <div ref={rentSectionRef} className="space-y-4">
                 <div className="rounded-xl border border-border bg-muted/20 p-4">
                   <h2 className="text-ui-body font-semibold text-foreground">
                     이 라켓으로 무엇을 할까요?
@@ -796,11 +664,13 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     결제되지 않아요.
                   </p>
                 </div>
-                <div className="grid gap-2.5">
+                <CommercePurchaseActions
+                  primary={
                   <Button
-                    wrap="responsive"
+                    wrap="nowrap"
                     size="tall"
-                    className="min-h-12 w-full px-3 sm:min-h-14"
+                    variant="highlight_soft"
+                    className="min-h-12 w-full whitespace-nowrap px-3 sm:min-h-14"
                     onClick={() => router.push(`/rackets/${racketId}/select-string`)}
                     disabled={soldOut}
                     title={
@@ -811,19 +681,22 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         : undefined
                     }
                   >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    {soldOut ? "품절(구매 불가)" : "스트링 선택하고 구매 계속"}
+                    <ShoppingCart className="mr-2 h-4 w-4 shrink-0" />
+                    <span className="whitespace-nowrap">{soldOut ? "구매 불가" : "스트링 선택 후 구매"}</span>
                   </Button>
-                  {racket?.rental?.enabled ? (
+                  }
+                  secondary={racket?.rental?.enabled ? (
                     soldOut ? (
                       <Button
                         size="tall"
-                        className="min-h-12 w-full bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
+                        variant="secondary"
+                        wrap="nowrap"
+                        className="min-h-12 w-full whitespace-nowrap bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
                         disabled
                         title="현재 대여 가능 수량이 없습니다."
                       >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        품절(대여 불가)
+                        <Calendar className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="whitespace-nowrap">대여 불가</span>
                       </Button>
                     ) : (
                       <div className="min-w-0 [&_button]:min-h-12 [&_button]:w-full [&_button]:rounded-xl sm:[&_button]:min-h-14">
@@ -834,57 +707,62 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           model={racket.model}
                           autoOpen={autoOpen}
                           full
+                          variant="outline"
+                          label="스트링 선택 후 대여"
+                          ariaLabel="스트링을 선택하고 대여 신청 계속하기"
                         />
                       </div>
                     )
                   ) : (
                     <Button
                       size="tall"
-                      className="min-h-12 w-full bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
+                      variant="secondary"
+                      wrap="nowrap"
+                      className="min-h-12 w-full whitespace-nowrap bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
                       disabled
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      대여 불가
+                      <Calendar className="mr-2 h-4 w-4 shrink-0" />
+                      <span className="whitespace-nowrap">대여 불가</span>
                     </Button>
                   )}
-                </div>
-                {/* 비교 버튼(상세에서도 비교 담기/이동 가능) */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <Button
-                    variant="outline"
-                    className={`min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-ui-body-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
-                    onClick={toggleCompare}
-                    disabled={!racketId}
-                    title={
-                      !racketId
-                        ? "상품 ID가 없어 비교 목록에 담을 수 없습니다."
-                        : !isCompared && compareCount >= 4
-                          ? "비교는 최대 4개까지 가능합니다."
-                          : undefined
-                    }
-                  >
-                    <Scale className="mr-2 h-4 w-4" />
-                    비교담기 ({compareCount}/4)
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-ui-body-sm"
-                    onClick={() => router.push("/rackets/compare")}
-                    disabled={compareCount < 2}
-                    title={compareCount < 2 ? "비교는 최소 2개부터 가능합니다." : undefined}
-                  >
-                    비교하기
-                  </Button>
-                </div>
-
+                />
                 {racket?.rental?.enabled === false && racket?.rental?.disabledReason && (
                   <div className="mt-3 break-keep rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm text-foreground">
                     대여 불가 사유: {racket.rental.disabledReason}
                   </div>
                 )}
               </div>
-            </SummaryCard>
+              }
+              utilities={
+                <div className="space-y-3">
+                  <div className="text-ui-body-sm font-semibold text-foreground">비교 도구</div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <Button
+                      variant="outline"
+                      wrap="nowrap"
+                      className={`min-h-11 min-w-0 rounded-xl whitespace-nowrap px-2 text-ui-body-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
+                      onClick={toggleCompare}
+                      disabled={!racketId}
+                      title={!racketId ? "상품 ID가 없어 비교 목록에 담을 수 없습니다." : !isCompared && compareCount >= 4 ? "비교는 최대 4개까지 가능합니다." : undefined}
+                    >
+                      <Scale className="mr-2 h-4 w-4 shrink-0" />
+                      <span className="whitespace-nowrap">비교 담기</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      wrap="nowrap"
+                      className="min-h-11 min-w-0 rounded-xl whitespace-nowrap px-2 text-ui-body-sm"
+                      onClick={() => router.push("/rackets/compare")}
+                      disabled={compareCount < 2}
+                      title={compareCount < 2 ? "비교는 최소 2개부터 가능합니다." : undefined}
+                    >
+                      비교하기
+                    </Button>
+                  </div>
+                  <div className="text-ui-label text-muted-foreground">현재 비교 {compareCount}/4</div>
+                </div>
+              }
+            />
 
             <div>
               <Link
@@ -901,44 +779,16 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         {/* 스펙 카드 */}
         <Card className="mt-10 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:mt-12 sm:rounded-3xl">
           <CardContent className="p-0">
-            <Tabs
+            <CommerceDetailTabs
               value={activeTab}
               onValueChange={(v) => updateTabInUrl(v as any)}
-              className="w-full"
+              items={[
+                { value: "description", label: "상품 설명", shortLabel: "설명", ariaLabel: "라켓 설명", icon: <FileText className="h-4 w-4 sm:h-5 sm:w-5" /> },
+                { value: "specifications", label: "상세 스펙", shortLabel: "스펙", ariaLabel: "라켓 상세 스펙", icon: <Settings className="h-4 w-4 sm:h-5 sm:w-5" /> },
+                { value: "reviews", label: "후기", shortLabel: "후기", ariaLabel: "라켓 후기", icon: <Star className="h-4 w-4 sm:h-5 sm:w-5" />, count: reviewCount },
+                { value: "qna", label: "문의", shortLabel: "문의", ariaLabel: "라켓 문의", icon: <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />, count: qnaTotal },
+              ]}
             >
-              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 border-b border-border bg-muted/30 p-1 sm:gap-1.5 sm:p-1.5 md:grid-cols-4">
-                <TabsTrigger
-                  value="description"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
-                >
-                  <FileText className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
-                  상품 설명
-                </TabsTrigger>
-                <TabsTrigger
-                  value="specifications"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
-                >
-                  <Settings className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
-                  상세 스펙
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
-                >
-                  <Star className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
-                  후기
-                  <span className="ml-1 text-muted-foreground sm:ml-1.5">({reviewCount})</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="qna"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
-                >
-                  <MessageSquare className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
-                  문의
-                  <span className="ml-1 text-muted-foreground sm:ml-1.5">({qnaTotal})</span>
-                </TabsTrigger>
-              </TabsList>
-
               <TabsContent value="description" className="p-4 sm:p-6 md:p-8">
                 <div className="prose max-w-none">
                   <div className="mb-5 flex min-w-0 items-center gap-3 sm:mb-6">
@@ -1439,7 +1289,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   targetType="racket"
                 />
               </TabsContent>
-            </Tabs>
+            </CommerceDetailTabs>
           </CardContent>
         </Card>
         <RecentViewedItems currentType="racket" currentId={racketId} />

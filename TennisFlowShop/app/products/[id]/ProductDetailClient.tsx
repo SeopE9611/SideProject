@@ -5,7 +5,6 @@ import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
 import type { HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PrimaryCTAGroup } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { stringBrandLabel } from "@/lib/constants";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
@@ -30,7 +29,6 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
   Clock,
   CreditCard,
   FileText,
@@ -69,6 +67,8 @@ import {
   buildProductDetailDisplaySpec,
   buildProductDetailHybridDisplay,
 } from "./ProductDetailDisplaySpec.utils";
+import { CatalogPrice, CatalogRating } from "@/components/commerce";
+import { CommerceDetailTabs, CommerceDetailTopBar, CommercePurchaseActions } from "@/components/commerce/detail";
 import ProductDetailImageGallery from "./ProductDetailImageGallery";
 import { getProductDetailLoginRedirectTarget } from "./ProductDetailLoginTarget.utils";
 import {
@@ -989,56 +989,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
-      {/* Hero Section with Breadcrumb */}
-      <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground sm:py-5">
-        <SiteContainer variant="wide" className="relative">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-ui-body-sm sm:gap-2.5 sm:text-ui-body">
-              <Link
-                href="/"
-                className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-              >
-                홈
-              </Link>
-              <span className="text-muted-foreground/50">/</span>
-              <Link
-                href="/products"
-                className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-              >
-                상품
-              </Link>
-              <span className="text-muted-foreground/50">/</span>
-              <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                {product.name}
-              </span>
-            </div>
-            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
-              <Button
-                variant="ghost"
-                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-ui-body-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
-                onClick={() => router.back()}
-              >
-                <ArrowLeft className="mr-1.5 h-4 w-4" />
-                뒤로
-              </Button>
-              {isAdmin && (
-                <Link href={`/admin/products/${productId}/edit`}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3"
-                  >
-                    상품 수정
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </SiteContainer>
-      </div>
+      <CommerceDetailTopBar
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "상품", href: "/products" }]}
+        currentLabel={product.name}
+        onBack={() => router.back()}
+        adminAction={isAdmin ? (
+          <Button asChild variant="outline" size="sm" className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3">
+            <Link href={`/admin/products/${productId}/edit`}>상품 수정</Link>
+          </Button>
+        ) : undefined}
+      />
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10">
-        <div className="grid grid-cols-1 gap-6 sm:gap-8 bp-lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-6 bp-md:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] bp-lg:grid-cols-[minmax(0,1.25fr)_minmax(380px,440px)] bp-lg:gap-8">
           <ProductDetailImageGallery
             images={images}
             productName={product.name}
@@ -1046,7 +1009,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             merchandisingBadges={merchandisingBadges}
           />
 
-          <div className="bp-lg:col-span-2 space-y-4 sm:space-y-5">
+          <div className="space-y-4 sm:space-y-5">
             <Card className="rounded-3xl border border-border bg-card shadow-sm">
               <CardContent className="p-5 sm:p-6 bp-md:p-7">
                 <div className="space-y-5 sm:space-y-6">
@@ -1058,40 +1021,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <h1 className="min-w-0 text-balance break-words text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
                       {product.name}
                     </h1>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "text-foreground fill-current" : "text-muted-foreground/30 fill-current"}`}
-                          />
-                        ))}
-                      </div>
-                      <span className="whitespace-nowrap text-ui-body-sm text-muted-foreground sm:text-ui-body">
-                        {averageRating.toFixed(1)} ({reviewCount}개 후기)
-                      </span>
-                    </div>
+                    <div className="mt-3"><CatalogRating average={averageRating} count={reviewCount} size="lg" /></div>
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold text-foreground tracking-normal">
-                        {displayPrice.toLocaleString()}
-                        <span className="text-ui-section-title sm:text-ui-page-title font-medium ml-0.5">
-                          원
-                        </span>
-                      </span>
-                      {isSale && (
-                        <>
-                          <span className="whitespace-nowrap tabular-nums text-ui-card-title-lg sm:text-ui-section-title text-muted-foreground/60 line-through">
-                            {regularPrice.toLocaleString()}원
-                          </span>
-                          <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">
-                            {saleRate}% OFF
-                          </span>
-                        </>
-                      )}
-                    </div>
+                    <CatalogPrice regularPrice={regularPrice} salePrice={isSale ? salePrice : null} size="detail" />
                     {canCheckoutWithService && (
                       <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm sm:text-ui-body">
                         <div className="flex items-center justify-between gap-3">
@@ -1323,7 +1257,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             disabled
                             variant="secondary"
                             size="tall"
-                            wrap="normal"
+                            wrap="nowrap"
                             className="min-h-12 w-full sm:min-h-14"
                           >
                             <X className="mr-2 h-5 w-5" />
@@ -1335,13 +1269,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          <PrimaryCTAGroup
+                          <CommercePurchaseActions
                             primary={
                               canCheckoutWithService ? (
                                 <Button
-                                  variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
+                                  variant={shouldEmphasizeServiceCta ? "highlight_soft" : "secondary"}
                                   size="tall"
-                                  className="min-h-12 w-full gap-2 overflow-hidden whitespace-nowrap sm:min-h-14"
+                                  className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14" wrap="nowrap" aria-label="교체서비스 신청하기"
                                   disabled={
                                     loading ||
                                     quantity > effectiveStock ||
@@ -1351,13 +1285,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   onClick={handleBuyNowWithService}
                                 >
                                   <Wrench className="mr-2 h-5 w-5 shrink-0" />
-                                  <span className="min-w-0 truncate">{serviceCtaLabel}</span>
+                                  <span className="whitespace-nowrap">교체서비스 신청</span>
                                 </Button>
                               ) : ENABLE_STRING_STANDALONE_ORDER ? (
                                 <Button
                                   variant="default"
                                   size="tall"
-                                  className="h-12 w-full whitespace-normal break-keep sm:h-14"
+                                  className="h-12 w-full whitespace-nowrap sm:h-14"
                                   onClick={handleBuyNow}
                                   disabled={
                                     loading ||
@@ -1374,7 +1308,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <Button
                                   variant="outline"
                                   size="lg"
-                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-ui-body-sm sm:text-ui-body"
+                                  className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
                                   onClick={handleAddToCart}
                                   disabled={
                                     loading ||
@@ -1393,7 +1327,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <Button
                                   variant="secondary"
                                   size="tall"
-                                  className="h-12 w-full whitespace-normal break-keep sm:h-14"
+                                  className="h-12 w-full whitespace-nowrap sm:h-14"
                                   onClick={handleBuyNow}
                                   disabled={
                                     loading ||
@@ -1413,7 +1347,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <Button
                                   variant="outline"
                                   size="lg"
-                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-ui-body-sm sm:text-ui-body"
+                                  className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
                                   onClick={handleAddToCart}
                                   disabled={
                                     loading ||
@@ -1427,7 +1361,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 </Button>
                               ) : undefined
                             }
-                            className="sm:w-full sm:flex-col sm:items-stretch sm:[&>div>*]:w-full"
+
                           />
                           {renderWishlistButton()}
                         </div>
@@ -1449,48 +1383,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
         <Card className="mt-10 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:mt-12 sm:rounded-3xl">
           <CardContent className="p-0">
-            <Tabs
+            <CommerceDetailTabs
               value={activeTab}
               onValueChange={(v) => updateTabInUrl(v as any)}
-              className="w-full"
+              items={[
+                { value: "description", label: "상품 설명", shortLabel: "설명", ariaLabel: "상품 설명", icon: <FileText className="h-4 w-4 sm:h-5 sm:w-5" /> },
+                { value: "specifications", label: "상세 스펙", shortLabel: "스펙", ariaLabel: "상세 스펙", icon: <Settings className="h-4 w-4 sm:h-5 sm:w-5" /> },
+                { value: "reviews", label: "후기", shortLabel: "후기", ariaLabel: "상품 후기", icon: <Star className="h-4 w-4 sm:h-5 sm:w-5" />, count: reviewCount },
+                { value: "qna", label: "문의", shortLabel: "문의", ariaLabel: "상품 문의", icon: <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />, count: qnaTotal },
+              ]}
             >
-              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 border-b border-border bg-muted/30 p-1 sm:gap-1.5 sm:p-1.5 md:grid-cols-4">
-                <TabsTrigger
-                  value="description"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
-                >
-                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-                  <span className="hidden sm:inline">상품 설명</span>
-                  <span className="sm:hidden">설명</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="specifications"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
-                >
-                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-                  <span className="hidden sm:inline">상세 스펙</span>
-                  <span className="sm:hidden">스펙</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
-                >
-                  <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-                  <span className="hidden sm:inline">후기</span>
-                  <span className="sm:hidden">후기</span>
-                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({reviewCount})</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="qna"
-                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
-                >
-                  <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-                  <span className="hidden sm:inline">문의</span>
-                  <span className="sm:hidden">문의</span>
-                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({qnaTotal})</span>
-                </TabsTrigger>
-              </TabsList>
-
               <TabsContent value="description" className="p-4 sm:p-6 bp-md:p-8">
                 <div className="prose max-w-none">
                   <div className="flex min-w-0 items-center gap-3 mb-5 sm:mb-6">
@@ -1552,7 +1454,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   qnaError={qnaError}
                 />
               </TabsContent>
-            </Tabs>
+            </CommerceDetailTabs>
           </CardContent>
         </Card>
 
