@@ -4,6 +4,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import HorizontalProducts from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
@@ -19,6 +20,7 @@ import {
   SIGNUP_BONUS_POINTS,
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
+import { badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
@@ -759,10 +761,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     }
     void loadStringBrand(activeStringBrand);
   };
-  const featuredRacket = usedRacketsSource[0];
-  const inventoryRackets = usedRacketsSource.slice(1, 4);
-  const hasInventoryRackets = inventoryRackets.length > 0;
-
   return (
     <div className={styles.page}>
       <SignupBonusPromoPopup
@@ -1476,9 +1474,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             }
             description={
               <>
-                대표 라켓과 최근 등록된 라켓의
+                실제 등록된 라켓의 상태, 가격과 대여 가능 여부를
                 <br />
-                상태, 대여 여부와 가격을 함께 확인할 수 있어요.
+                카드별로 비교하며 확인할 수 있어요.
               </>
             }
           />
@@ -1503,39 +1501,23 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </button>
             ))}
           </div>
-          <div
-            className={cn(
-              styles.racketShow,
-              featuredRacket && hasInventoryRackets && styles.racketShowWithInventory,
-            )}
-          >
-            {featuredRacket ? (
-              <div className={styles.racketFeature}>
-                <div className="relative h-[280px] bp-md:h-[360px]">
-                  <Image
-                    src="/images/home/home-racket-section-showcase.webp"
-                    alt="검수된 중고 라켓"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1199px) 100vw, 720px"
-                  />
+          <div className={styles.racketShow}>
+            {usedRacketsItems.length > 0 ? (
+              <>
+                <div className={styles.racketCardGrid}>
+                  {usedRacketsSource.map((racket) => (
+                    <RacketPreviewCard key={racket.id} racket={racket} />
+                  ))}
                 </div>
-                <div className="p-6 bp-md:p-8">
-                  <p className="text-ui-label font-medium text-brand-highlight-ink">대표 라켓</p>
-                  <RacketFeature racket={featuredRacket} />
-                  {!hasInventoryRackets && (
-                    <p className="mt-4 break-keep text-ui-body-sm text-surface-inverse-muted">
-                      최근 등록된 다른 중고 라켓을 준비 중입니다.
-                    </p>
-                  )}
+                <div className={styles.racketShowFooter}>
                   <Link
-                    className={cn(homeCtaHighlight, "mt-6")}
+                    className={cn(homeCtaHighlight, "w-fit")}
                     href={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
                   >
-                    중고 라켓 둘러보기
+                    전체 중고 라켓 보기
                   </Link>
                 </div>
-              </div>
+              </>
             ) : usedRacketsError || usedRacketsLoading || !shouldLoadRackets ? (
               <EmptyPanel
                 title={
@@ -1545,15 +1527,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               />
             ) : (
               <div className={styles.racketEmpty}>
-                <div className={styles.racketEmptyImage}>
-                  <Image
-                    src="/images/home/home-racket-section-showcase.webp"
-                    alt="검수된 중고 라켓 준비 중"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1199px) 100vw, 680px"
-                  />
-                </div>
                 <div className={styles.racketEmptyCopy}>
                   <h3
                     className={cn(
@@ -1567,16 +1540,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     상태 확인이 끝난 라켓부터 순차적으로 소개해드릴게요.
                   </p>
                   <Link className={cn(homeCtaHighlight, "mt-6 w-fit")} href="/rackets">
-                    중고 라켓 둘러보기
+                    전체 중고 라켓 보기
                   </Link>
                 </div>
-              </div>
-            )}
-            {featuredRacket && hasInventoryRackets && (
-              <div className={styles.inventory}>
-                {inventoryRackets.map((racket) => (
-                  <InventoryRow key={racket.id} racket={racket} />
-                ))}
               </div>
             )}
           </div>
@@ -1770,57 +1736,60 @@ function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
   );
 }
 
-function RacketFeature({ racket }: { racket: RItem }) {
+function RacketPreviewCard({ racket }: { racket: RItem }) {
   const effectivePrice = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
-  return (
-    <div className="mt-3">
-      <h3 className="break-keep text-ui-page-title font-medium leading-tight">
-        {racketBrandLabel(racket.brand)} {racket.model}
-      </h3>
-      <div className="mt-4 flex flex-wrap gap-2 text-ui-label text-surface-inverse-muted">
-        <span>상태 {racket.condition ?? "확인중"}</span>
-        <span>{racket.rental?.enabled ? "대여 가능" : "판매 가능"}</span>
-        {discountRate > 0 && <span className="text-brand-highlight-ink">{discountRate}% 할인</span>}
-      </div>
-      <p className="mt-4 text-ui-section-title font-semibold">{formatPrice(effectivePrice)}</p>
-      {discountRate > 0 && (
-        <p className="text-ui-body-sm text-surface-inverse-muted">
-          정상가 {formatPrice(racket.price)}
-        </p>
-      )}
-    </div>
-  );
-}
+  const conditionMeta = racket.condition ? usedBadgeMeta("condition", racket.condition) : null;
+  const rentalFee = racket.rental?.fee?.d7;
+  const rentalLabel =
+    racket.rental?.enabled && Number.isFinite(rentalFee) && Number(rentalFee) > 0
+      ? `대여 7일 ${formatPrice(Number(rentalFee))}부터`
+      : racket.rental?.enabled
+        ? "대여 가능"
+        : "판매 가능";
+  const brandLabel = racketBrandLabel(racket.brand);
+  const imageAlt = `${brandLabel} ${racket.model}`.trim();
+  const showConditionBadge = !racket.marketing?.isFeatured || !racket.marketing?.isNew;
 
-function InventoryRow({ racket }: { racket: RItem }) {
-  const effectivePrice = getEffectiveRacketPrice(racket);
   return (
-    <Link
-      href={`/rackets/${racket.id}`}
-      className="grid grid-cols-[76px_1fr_auto] items-center gap-4 rounded-panel border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-    >
-      <div className="relative h-16 overflow-hidden rounded-control bg-muted">
+    <Link href={`/rackets/${racket.id}`} className={styles.racketCard}>
+      <div className={styles.racketCardImage}>
         <Image
           src={getImageSrc(racket.images)}
-          alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
+          alt={imageAlt || "중고 라켓 상품 이미지"}
           fill
-          className="object-cover"
-          sizes="76px"
+          className="object-contain"
+          sizes="(max-width: 767px) 112px, (max-width: 1199px) 42vw, 28vw"
         />
       </div>
-      <div className="min-w-0">
-        <small className="text-ui-label text-muted-foreground">
-          {racketBrandLabel(racket.brand)} · {racket.condition ?? "상태 확인"}
-        </small>
-        <h3 className="break-words text-ui-card-title font-medium text-foreground">
-          {racket.model}
-        </h3>
-        <p className="text-ui-label text-muted-foreground">
-          {racket.rental?.enabled ? "대여 가능" : "판매 가능"} · {formatPrice(effectivePrice)}
-        </p>
+      <div className={styles.racketCardBody}>
+        <div className={styles.racketCardBadges}>
+          {racket.marketing?.isFeatured && (
+            <Badge variant={badgeToneVariant("brand")} shape="pill">
+              추천
+            </Badge>
+          )}
+          {racket.marketing?.isNew && (
+            <Badge variant={badgeToneVariant("info")} shape="pill">
+              NEW
+            </Badge>
+          )}
+          {conditionMeta && showConditionBadge && (
+            <Badge variant={badgeToneVariant(conditionMeta.tone)} shape="pill">
+              {racket.condition}급
+            </Badge>
+          )}
+        </div>
+        <p className={styles.racketCardBrand}>{brandLabel}</p>
+        <h3 className={styles.racketCardModel}>{racket.model}</h3>
+        <div className={styles.racketCardMeta}>
+          <p className={styles.racketCardPrice}>{formatPrice(effectivePrice)}</p>
+          {discountRate > 0 && (
+            <span className={styles.racketCardDiscount}>{discountRate}% 할인</span>
+          )}
+        </div>
+        <p className={styles.racketCardRental}>{rentalLabel}</p>
       </div>
-      <ChevronRight aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
     </Link>
   );
 }
