@@ -14,9 +14,9 @@ export function CommercePurchaseActions({ primary, secondary, tertiary, helper, 
   const hasBoth = Boolean(secondary && tertiary);
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="[&_*]:whitespace-nowrap">{primary}</div>
+      <div>{primary}</div>
       {(secondary || tertiary) && (
-        <div className={cn("grid gap-3 [&_*]:whitespace-nowrap", hasBoth && "bp-sm:grid-cols-2")}>
+        <div className={cn("grid gap-3", hasBoth && "bp-sm:grid-cols-2")}>
           {secondary ? <div>{secondary}</div> : null}
           {tertiary ? <div>{tertiary}</div> : null}
         </div>
