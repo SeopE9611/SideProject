@@ -1,5 +1,6 @@
 "use client";
 
+import { CatalogPrice } from "@/components/commerce/CatalogPrice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,8 +56,8 @@ type StringCardProps = {
   disabled?: boolean;
   workCount?: number;
   ctaLabel?: string;
-  ctaSubLabel?: string;
   designVariant?: "default" | "racketPurchase" | "rental";
+  viewMode: "grid" | "list";
 };
 
 export function StringCard({
@@ -70,12 +71,11 @@ export function StringCard({
   disabled = false,
   workCount = 1,
   ctaLabel = "스트링 선택",
-  ctaSubLabel,
   designVariant = "default",
+  viewMode,
 }: StringCardProps) {
   const isRacketPurchaseDesign = designVariant === "racketPurchase";
   const stringId = String(product._id);
-  const stringImage = product?.images?.[0] ?? product?.imageUrl;
   const hasVariantInventories =
     Array.isArray(product?.variantInventories) && product.variantInventories.length > 0;
   const variantRows = hasVariantInventories ? normalizeVariantRows(product) : [];
@@ -142,14 +142,17 @@ export function StringCard({
   const regularPrice = Number(product?.price ?? 0);
   const salePrice = getEffectiveProductPrice(product);
   const hasSalePrice = Number.isFinite(salePrice) && salePrice > 0 && salePrice < regularPrice;
-  const discountAmount = hasSalePrice ? regularPrice - salePrice : 0;
-  const discountRate =
-    hasSalePrice && regularPrice > 0 ? Math.round((discountAmount / regularPrice) * 100) : 0;
+  const stringImage =
+    selectedVariant?.colorImage?.trim() ||
+    selectedColorRow?.image?.trim() ||
+    product?.images?.[0] ||
+    product?.imageUrl;
 
   return (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200",
+        "group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200",
+        viewMode === "list" ? "flex flex-col bp-md:grid bp-md:grid-cols-[210px_minmax(0,1fr)_200px]" : "flex flex-col",
         isSelected
           ? cn(
               "border-primary/40 bg-primary/5",
@@ -172,7 +175,7 @@ export function StringCard({
       <div
         className={cn(
           "relative w-full overflow-hidden bg-muted/20",
-          isRacketPurchaseDesign ? "aspect-[4/3]" : "aspect-square",
+          viewMode === "list" ? "aspect-[5/4] bp-md:h-full bp-md:min-h-[220px]" : "aspect-[5/4]",
         )}
       >
         {stringImage ? (
@@ -181,7 +184,7 @@ export function StringCard({
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 "
+            className="object-contain p-4 transition-transform duration-300"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
@@ -209,32 +212,11 @@ export function StringCard({
               {product.shortDescription}
             </p>
           )}
-          {hasSalePrice ? (
-            <div className="space-y-1 tabular-nums">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="text-ui-label font-medium text-muted-foreground">할인가</span>
-                <span className="text-ui-card-title-lg font-semibold text-foreground">
-                  {getEffectiveProductPrice(product).toLocaleString()}원
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-ui-label">
-                <span className="text-muted-foreground">정가</span>
-                <span className="text-muted-foreground line-through">
-                  {regularPrice.toLocaleString()}원
-                </span>
-                <Badge variant="destructive" className="text-ui-micro">
-                  {discountRate}% OFF
-                </Badge>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 tabular-nums">
-              <span className="text-ui-label font-medium text-muted-foreground">판매가</span>
-              <span className="text-ui-card-title-lg font-semibold text-foreground">
-                {getEffectiveProductPrice(product).toLocaleString()}원
-              </span>
-            </div>
-          )}
+          <CatalogPrice
+            regularPrice={regularPrice}
+            salePrice={hasSalePrice ? salePrice : null}
+            size={viewMode === "list" ? "list" : "card"}
+          />
         </div>
 
         {/* Color Selector */}
@@ -248,8 +230,8 @@ export function StringCard({
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {colorRows.slice(0, 6).map((row) => {
+            <div className="flex gap-2 overflow-x-auto pb-1 pr-4">
+              {colorRows.map((row) => {
                 const label = getColorLabel(row);
                 const soldOut = hasVariantInventories
                   ? !variantRows.some(
@@ -270,7 +252,7 @@ export function StringCard({
                     key={`${stringId}-color-${row.value}`}
                     type="button"
                     aria-pressed={isColorSelected}
-                    aria-label={`${label} 색상 선택`}
+                    aria-label={`${label} 색상${soldOut ? " 품절" : " 선택"}`}
                     disabled={soldOut}
                     onClick={() => {
                       onColorChange(row.value);
@@ -284,7 +266,7 @@ export function StringCard({
                       }
                     }}
                     className={cn(
-                      "relative h-10 w-10 overflow-hidden rounded-md border-2 transition-all bp-md:h-11 bp-md:w-11",
+                      "relative h-10 w-10 shrink-0 overflow-hidden rounded-md border-2 transition-all bp-md:h-11 bp-md:w-11",
                       isColorSelected
                         ? "border-primary ring-2 ring-primary/30"
                         : "border-border hover:border-primary/50",
@@ -297,7 +279,7 @@ export function StringCard({
                         alt={label}
                         fill
                         sizes="44px"
-                        className="object-cover"
+                        className="object-contain p-1"
                       />
                     ) : row.colorHex ? (
                       <span
@@ -317,11 +299,6 @@ export function StringCard({
                   </button>
                 );
               })}
-              {colorRows.length > 6 && (
-                <span className="flex h-10 items-center px-1 text-ui-label text-muted-foreground bp-md:h-11">
-                  +{colorRows.length - 6}
-                </span>
-              )}
             </div>
           </div>
         )}
@@ -331,7 +308,7 @@ export function StringCard({
           <div className="mb-3 space-y-2">
             <span className="text-ui-label font-medium text-foreground">게이지(굵기)</span>
             <Select value={selectedGauge} onValueChange={onGaugeChange}>
-              <SelectTrigger className="h-10 text-ui-label">
+              <SelectTrigger className="h-11 rounded-control text-ui-label">
                 <SelectValue placeholder="게이지(굵기) 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -370,17 +347,18 @@ export function StringCard({
 
         {/* CTA Button */}
         <Button
-          className="mt-3 h-10 w-full justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl"
+          variant="highlight_soft"
+          className="mt-3 h-10 w-full justify-center gap-2 rounded-xl"
           disabled={isDisabled}
           onClick={onSelect}
         >
-          <span className="min-w-0 truncate">{ctaLabel}</span>
-          <ChevronRight className="h-4 w-4 shrink-0" />
+          <span className="min-w-0">{ctaLabel}</span>
+          <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
         </Button>
         <Button
           asChild
           variant="outline"
-          className="mt-2 h-10 w-full justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl"
+          className="mt-2 h-10 w-full justify-center gap-2 rounded-xl"
         >
           <Link
             href={`/products/${product._id}`}
@@ -388,13 +366,10 @@ export function StringCard({
             rel="noopener noreferrer"
             onClick={(event) => event.stopPropagation()}
           >
-            <Eye className="h-4 w-4 shrink-0" />
-            <span className="min-w-0 truncate">상세 보기</span>
+            <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="min-w-0">상세 보기</span>
           </Link>
         </Button>
-        {ctaSubLabel && (
-          <p className="mt-1.5 text-center text-ui-caption text-muted-foreground">{ctaSubLabel}</p>
-        )}
       </div>
     </div>
   );
