@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ActiveFilterBar, CatalogCardSkeleton, CatalogResultsPanel, CatalogToolbar, type ActiveFilterItem } from "@/components/commerce";
-import { EmptyState } from "@/components/public";
+import { ActiveFilterBar, CatalogCardSkeleton, type ActiveFilterItem } from "@/components/commerce";
+import { EmptyState, SummaryCard } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -579,60 +579,75 @@ export default function FilterableRacketList({
       <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
-          <div className="mb-6 bp-md:mb-8">
-            <CatalogResultsPanel
+          <div className="mb-6 space-y-3 bp-md:mb-8">
+            <SummaryCard
               eyebrow="Racket Finder"
               title="라켓 목록"
               description="브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요."
-              total={total}
-              visibleCount={visibleProducts.length}
-              countPrefix={racketCountPrefix}
-              countSuffix={racketCountSuffix}
-              isCountLoading={isInitialLikeLoading}
-              isRefreshing={isBackgroundRefreshing}
-              toolbar={
-                <CatalogToolbar
-                  filterButton={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (showFilters) cancelFiltersSheet();
-                        else openFiltersSheet();
-                      }}
-                      className="h-10 w-full shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted bp-sm:h-9 bp-sm:w-auto"
-                      aria-expanded={showFilters}
-                      aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-                    >
-                      <Filter className="mr-2 h-4 w-4" />
-                      필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-                    </Button>
-                  }
-                  viewToggle={!isFilterSheetViewport ? (
-                    <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
-                      <Button type="button" variant={effectiveViewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={effectiveViewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
-                      <Button type="button" variant={effectiveViewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={effectiveViewMode === "list"}><List className="h-4 w-4" /></Button>
-                    </div>
+            >
+              <div className="space-y-4">
+                <div className="rounded-xl border border-border bg-muted/20 p-3" aria-live="polite">
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="text-ui-body-sm font-semibold text-foreground">
+                      {isInitialLikeLoading ? "조회 중" : `${racketCountPrefix} ${total.toLocaleString()}${racketCountSuffix}`}
+                    </span>
+                    <span className="text-ui-body-sm text-muted-foreground">
+                      (표시중 {visibleProducts.length.toLocaleString()}개)
+                    </span>
+                  </div>
+                  {isBackgroundRefreshing ? (
+                    <span className="mt-2 inline-flex text-ui-body-sm text-muted-foreground">조회 중...</span>
                   ) : null}
-                  sortControl={
-                    <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 w-full min-w-0 rounded-control border border-border bg-card text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] dark:focus:border-border">
-                        <SelectValue placeholder="정렬" />
-                      </SelectTrigger>
-                      <SelectContent className="dark:border-border dark:bg-card">
-                        <SelectItem value="latest">최신순</SelectItem>
-                        <SelectItem value="sales-desc">구매 많은순</SelectItem>
-                        <SelectItem value="reviews-desc">후기 많은순</SelectItem>
-                        <SelectItem value="price-low">가격 낮은순</SelectItem>
-                        <SelectItem value="price-high">가격 높은순</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  }
-                />
-              }
-              activeFilters={activeFiltersCount > 0 ? <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} /> : undefined}
-            />
+                </div>
+
+                <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-3 bp-sm:flex-row bp-sm:items-center bp-md:justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (showFilters) cancelFiltersSheet();
+                      else openFiltersSheet();
+                    }}
+                    className="h-10 w-full shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted bp-sm:h-9 bp-sm:w-auto"
+                    aria-expanded={showFilters}
+                    aria-label={showFilters ? "필터 닫기" : "필터 열기"}
+                  >
+                    <Filter className="mr-2 h-4 w-4" />
+                    필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                  </Button>
+
+                  <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-initial">
+                    {!isFilterSheetViewport ? (
+                      <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
+                        <Button type="button" variant={effectiveViewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={effectiveViewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
+                        <Button type="button" variant={effectiveViewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={effectiveViewMode === "list"}><List className="h-4 w-4" /></Button>
+                      </div>
+                    ) : null}
+                    <div className="min-w-0 flex-1 bp-sm:flex-none">
+                      <Select value={sortOption} onValueChange={setSortOption}>
+                        <SelectTrigger className="h-10 w-full min-w-0 rounded-control border border-border bg-card text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] dark:focus:border-border">
+                          <SelectValue placeholder="정렬" />
+                        </SelectTrigger>
+                        <SelectContent className="dark:border-border dark:bg-card">
+                          <SelectItem value="latest">최신순</SelectItem>
+                          <SelectItem value="sales-desc">구매 많은순</SelectItem>
+                          <SelectItem value="reviews-desc">후기 많은순</SelectItem>
+                          <SelectItem value="price-low">가격 낮은순</SelectItem>
+                          <SelectItem value="price-high">가격 높은순</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </SummaryCard>
+
+            {activeFiltersCount > 0 ? (
+              <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
+                <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} />
+              </div>
+            ) : null}
           </div>
 
           {/* 콘텐츠 */}
