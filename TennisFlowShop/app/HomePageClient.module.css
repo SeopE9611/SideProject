@@ -543,12 +543,80 @@
   background: hsl(var(--card));
 }
 
-.racketCardGrid {
+.racketCarousel {
+  position: relative;
+  padding: 18px;
+}
+
+.racketCarouselTrack {
+  margin-left: -14px;
+}
+
+.racketCarouselTrackCentered {
+  justify-content: center;
+}
+
+.racketCarouselItem {
+  flex-basis: 100%;
+  padding-left: 14px;
+}
+
+.racketCarouselControls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.racketCarouselControl {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.racketCarouselControl:focus-visible {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
+}
+
+.racketCarouselControl:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.racketSkeletonGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
-  padding: 18px;
-  align-items: start;
+}
+
+.racketSkeletonCard {
+  min-height: 360px;
+  border-radius: 24px;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    color-mix(in srgb, hsl(var(--muted)) 72%, hsl(var(--background))) 48%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: racket-skeleton-pulse 1.3s ease-in-out infinite;
+}
+
+@keyframes racket-skeleton-pulse {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .racketCard {
@@ -645,11 +713,52 @@
   line-height: 1.45;
 }
 
-.racketShowFooter {
+.racketMoreCard {
+  height: 100%;
+  min-height: 100%;
+}
+
+.racketMoreCardBody {
   display: flex;
-  justify-content: flex-end;
-  border-top: 1px solid hsl(var(--border));
-  padding: 16px 18px 18px;
+  min-height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  padding: 26px;
+}
+
+.racketMoreCardKicker {
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.racketMoreCardTitle {
+  margin-top: 10px;
+  color: hsl(var(--foreground));
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.racketMoreCardDescription,
+.racketMoreCardCount {
+  margin-top: 8px;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.racketMoreCardIcon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  margin-top: 22px;
+  border-radius: 999px;
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
 }
 
 .racketEmpty {
@@ -693,6 +802,12 @@
   transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
+@media (min-width: 1200px) {
+  .racketCarouselItem {
+    flex-basis: 33.3333%;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .racketCard:hover {
     border-color: color-mix(in srgb, hsl(var(--foreground)) 24%, hsl(var(--border)));
@@ -716,8 +831,13 @@
   .pathCard,
   .bentoSideCard,
   .racketCard,
-  .racketCardImage img {
+  .racketCardImage img,
+  .racketCarouselControl {
     transition: none;
+  }
+
+  .racketSkeletonCard {
+    animation: none;
   }
 
   .pathCardIdle:hover,
@@ -748,8 +868,16 @@
     grid-template-columns: 1fr;
   }
 
-  .racketCardGrid {
+  .racketCarouselItem {
+    flex-basis: 50%;
+  }
+
+  .racketSkeletonGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .racketSkeletonCard:nth-child(3) {
+    display: none;
   }
 
   .heroVisual {
@@ -769,10 +897,29 @@
 }
 
 @media (max-width: 767px) {
-  .racketCardGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+  .racketCarousel {
     padding: 12px;
+  }
+
+  .racketCarouselTrack {
+    margin-left: -10px;
+  }
+
+  .racketCarouselItem {
+    flex-basis: 100%;
+    padding-left: 10px;
+  }
+
+  .racketSkeletonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .racketSkeletonCard {
+    min-height: 132px;
+  }
+
+  .racketSkeletonCard:nth-child(n + 2) {
+    display: none;
   }
 
   .racketCard {
@@ -815,9 +962,9 @@
     font-size: 16px;
   }
 
-  .racketShowFooter {
-    justify-content: stretch;
-    padding: 12px;
+  .racketMoreCardBody {
+    min-height: 132px;
+    padding: 18px;
   }
 
   .section {

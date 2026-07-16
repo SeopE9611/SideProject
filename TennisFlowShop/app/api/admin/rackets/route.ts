@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import {
@@ -9,6 +10,7 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { HOME_PREVIEW_CACHE_TAG } from "@/lib/home/home-preview";
 
 export const dynamic = "force-dynamic";
 function normalizeRacketMarketing(value: any) {
@@ -242,5 +244,6 @@ export async function POST(req: Request) {
     },
     req,
   );
+  revalidateTag(HOME_PREVIEW_CACHE_TAG);
   return NextResponse.json({ ok: true, id: res.insertedId.toString() });
 }
