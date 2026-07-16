@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CatalogFilterPanelShell } from "@/components/commerce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,11 +130,13 @@ export const FilterPanel = React.memo(function FilterPanel({
   );
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border bg-card p-4 shadow-sm bp-lg:p-4 bp-xl:p-5",
-        "bp-lg:max-h-[calc(100vh-116px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-3 bp-lg:[scrollbar-gutter:stable] bp-lg:[scrollbar-width:thin] bp-lg:[scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] bp-lg:[&::-webkit-scrollbar]:w-1 bp-lg:[&::-webkit-scrollbar-track]:bg-transparent bp-lg:[&::-webkit-scrollbar-thumb]:rounded-full bp-lg:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 bp-lg:hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30",
-      )}
+    <CatalogFilterPanelShell
+      title="스트링 필터"
+      activeCount={activeFiltersCount}
+      description="브랜드, 재질, 성능과 가격 조건을 선택한 뒤 적용하세요."
+      onReset={onReset}
+      onApply={onSearchSubmit}
+      applyLabel="필터 적용"
     >
       {isLoadingInitial ? (
         <div className="space-y-4 bp-sm:space-y-6 animate-pulse">
@@ -344,6 +347,6 @@ export const FilterPanel = React.memo(function FilterPanel({
           </motion.div>
         </AnimatePresence>
       )}
-    </div>
+    </CatalogFilterPanelShell>
   );
 });

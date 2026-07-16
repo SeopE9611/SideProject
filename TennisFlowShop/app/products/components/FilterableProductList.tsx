@@ -3,7 +3,8 @@
 import { FilterPanel } from "@/app/products/components/FilterPanel";
 import ProductCard from "@/app/products/components/ProductCard";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
-import { EmptyState, SummaryCard } from "@/components/public";
+import { ActiveFilterBar, CatalogCardSkeleton, CatalogResultsPanel, CatalogToolbar, type ActiveFilterItem } from "@/components/commerce";
+import { EmptyState } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   BENEFIT_FILTER_VALUES,
   BENEFIT_LABELS,
@@ -55,10 +55,6 @@ const DEFAULT_MIN_PRICE = 0;
 const DEFAULT_MAX_PRICE = 200000;
 const DEFAULT_PRICE_RANGE: [number, number] = [DEFAULT_MIN_PRICE, DEFAULT_MAX_PRICE];
 
-const activeFilterChipClass =
-  "inline-flex max-w-[220px] shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-muted px-2.5 py-1 text-ui-label text-foreground";
-const activeFilterRemoveButtonClass =
-  "shrink-0 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const QUICK_BENEFIT_FILTERS = BENEFIT_FILTER_VALUES.map((value) => ({
   label: value === "sale" ? "할인상품" : BENEFIT_LABELS[value],
   value,
@@ -67,9 +63,9 @@ const QUICK_BENEFIT_FILTERS = BENEFIT_FILTER_VALUES.map((value) => ({
 }));
 const quickToggleButtonClass = (isActive: boolean) =>
   cn(
-    "h-10 shrink-0 whitespace-nowrap rounded-full border px-3 text-ui-body-sm transition-colors bp-sm:h-9",
+    "h-10 w-full shrink-0 whitespace-nowrap rounded-control border px-3 text-ui-body-sm transition-colors bp-sm:h-9 bp-sm:w-auto",
     isActive
-      ? "border-border bg-muted text-foreground shadow-sm hover:bg-muted/80"
+      ? "border-brand-highlight-ink/30 bg-brand-highlight-muted text-brand-highlight-ink hover:bg-brand-highlight-muted/80"
       : "border-border bg-background text-muted-foreground hover:bg-muted/30",
   );
 
@@ -605,6 +601,21 @@ export default function FilterableProductList({
     onClearInput: () => setDraftSearchQuery(""),
   };
 
+  const activeFilterItems: ActiveFilterItem[] = [
+    ...(submittedQuery
+      ? [{ id: "search", label: `검색어 "${submittedQuery}"`, removeLabel: "검색어 필터 해제", onRemove: () => { setSearchQuery(""); setSubmittedQuery(""); resetInfinite(); } }]
+      : []),
+    ...(selectedBrand ? [{ id: "brand", label: `브랜드 ${brandLabelMap[selectedBrand] ?? selectedBrand}`, removeLabel: "브랜드 필터 해제", onRemove: () => setSelectedBrand(null) }] : []),
+    ...(selectedMaterial ? [{ id: "material", label: `재질 ${stringMaterialLabel(selectedMaterial)}`, removeLabel: "재질 필터 해제", onRemove: () => setSelectedMaterial(null) }] : []),
+    ...(selectedBounce !== null ? [{ id: "bounce", label: `반발력 ${getScoreLabel(selectedBounce)}`, removeLabel: "반발력 필터 해제", onRemove: () => setSelectedBounce(null) }] : []),
+    ...(selectedControl !== null ? [{ id: "control", label: `컨트롤 ${getScoreLabel(selectedControl)}`, removeLabel: "컨트롤 필터 해제", onRemove: () => setSelectedControl(null) }] : []),
+    ...(selectedSpin !== null ? [{ id: "spin", label: `스핀 ${getScoreLabel(selectedSpin)}`, removeLabel: "스핀 필터 해제", onRemove: () => setSelectedSpin(null) }] : []),
+    ...(selectedDurability !== null ? [{ id: "durability", label: `내구성 ${getScoreLabel(selectedDurability)}`, removeLabel: "내구성 필터 해제", onRemove: () => setSelectedDurability(null) }] : []),
+    ...(selectedComfort !== null ? [{ id: "comfort", label: `편안함 ${getScoreLabel(selectedComfort)}`, removeLabel: "편안함 필터 해제", onRemove: () => setSelectedComfort(null) }] : []),
+    ...(exposureLabel ? [{ id: "benefit", label: exposureLabel, removeLabel: "혜택 필터 해제", onRemove: () => setExposureFilter([]) }] : []),
+    ...(priceChanged ? [{ id: "price", label: getPriceChipLabel(priceRange), removeLabel: "가격 필터 해제", onRemove: () => setPriceRange(DEFAULT_PRICE_RANGE) }] : []),
+  ];
+
   return (
     <>
       <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
@@ -624,212 +635,37 @@ export default function FilterableProductList({
       <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
-          <div className="mb-6 space-y-3 bp-md:mb-8">
-            <SummaryCard className="overflow-hidden" contentClassName="p-4 bp-sm:p-5">
-              <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
-                <div className="min-w-0 space-y-1">
-                  <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-primary">
-                    String Catalog
-                  </p>
-                  <div
-                    className="flex min-h-6 flex-wrap items-center gap-x-1 text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg"
-                    aria-live="polite"
-                  >
-                    {productCountPrefix}{" "}
-                    {isCountLoading ? (
-                      <Skeleton className="inline-block h-5 w-12 align-middle" />
-                    ) : (
-                      <span className="font-semibold text-primary">{total}</span>
-                    )}
-                    개
-                    {isCountLoading ? (
-                      <Skeleton className="inline-block h-5 w-10 align-middle" />
-                    ) : (
-                      <span className="ml-1 text-ui-body-sm font-normal text-muted-foreground">
-                        (표시중 {loadedCount}개)
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {isBackgroundRefreshing ? (
-                  <span className="w-fit rounded-full border border-border bg-muted/30 px-2.5 py-1 text-ui-label font-medium text-muted-foreground">
-                    조회 중...
-                  </span>
-                ) : null}
-              </div>
-            </SummaryCard>
-            {hasAppliedPanelFilters && (
-              <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-ui-body-sm font-medium text-foreground">적용 중인 조건</p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleResetAll}
-                    className="h-7 whitespace-nowrap px-2 text-ui-label"
-                  >
-                    전체 초기화
-                  </Button>
-                </div>
-                <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                  {submittedQuery && (
-                    <span className={activeFilterChipClass}>
-                      {`검색어 "${submittedQuery}"`}
-                      <button
-                        type="button"
-                        aria-label="검색어 필터 해제"
-                        onClick={() => {
-                          setSearchQuery("");
-                          setSubmittedQuery("");
-                          resetInfinite();
-                        }}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {selectedBrand && (
-                    <span className={activeFilterChipClass}>
-                      브랜드 {brandLabelMap[selectedBrand] ?? selectedBrand}
-                      <button
-                        type="button"
-                        aria-label="브랜드 필터 해제"
-                        onClick={() => setSelectedBrand(null)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {selectedMaterial && (
-                    <span className={activeFilterChipClass}>
-                      재질 {stringMaterialLabel(selectedMaterial)}
-                      <button
-                        type="button"
-                        aria-label="재질 필터 해제"
-                        onClick={() => setSelectedMaterial(null)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {selectedBounce !== null && (
-                    <span className={activeFilterChipClass}>
-                      반발력 {getScoreLabel(selectedBounce)}
-                      <button
-                        type="button"
-                        aria-label="반발력 필터 해제"
-                        onClick={() => setSelectedBounce(null)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {selectedControl !== null && (
-                    <span className={activeFilterChipClass}>
-                      컨트롤 {getScoreLabel(selectedControl)}
-                      <button
-                        type="button"
-                        aria-label="컨트롤 필터 해제"
-                        onClick={() => setSelectedControl(null)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {selectedSpin !== null && (
-                    <span className={activeFilterChipClass}>
-                      스핀 {getScoreLabel(selectedSpin)}
-                      <button
-                        type="button"
-                        aria-label="스핀 필터 해제"
-                        onClick={() => setSelectedSpin(null)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {selectedDurability !== null && (
-                    <span className={activeFilterChipClass}>
-                      내구성 {getScoreLabel(selectedDurability)}
-                      <button
-                        type="button"
-                        aria-label="내구성 필터 해제"
-                        onClick={() => setSelectedDurability(null)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {selectedComfort !== null && (
-                    <span className={activeFilterChipClass}>
-                      편안함 {getScoreLabel(selectedComfort)}
-                      <button
-                        type="button"
-                        aria-label="편안함 필터 해제"
-                        onClick={() => setSelectedComfort(null)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {exposureLabel && (
-                    <span className={activeFilterChipClass}>
-                      {exposureLabel}
-                      <button
-                        type="button"
-                        aria-label="혜택 필터 해제"
-                        onClick={() => setExposureFilter([])}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {priceChanged && (
-                    <span className={activeFilterChipClass}>
-                      {getPriceChipLabel(priceRange)}
-                      <button
-                        type="button"
-                        aria-label="가격 필터 해제"
-                        onClick={() => setPriceRange(DEFAULT_PRICE_RANGE)}
-                        className={activeFilterRemoveButtonClass}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
-              <div className="flex flex-col gap-3 bp-xl:flex-row bp-xl:items-center bp-xl:justify-between">
-                <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 bp-xl:w-auto bp-xl:overflow-visible bp-xl:pb-0">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (showFilters) cancelFiltersSheet();
-                      else openFiltersSheet();
-                    }}
-                    className="h-10 min-w-[88px] shrink-0 whitespace-nowrap border-border px-3 hover:bg-muted/30 bp-sm:h-9"
-                    aria-expanded={showFilters}
-                    aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-                  >
-                    <Filter className="mr-2 h-4 w-4" />
-                    필터{panelFiltersCount > 0 && `(${panelFiltersCount})`}
-                  </Button>
-                  {QUICK_BENEFIT_FILTERS.map((option) => {
+          <div className="mb-6 bp-md:mb-8">
+            <CatalogResultsPanel
+              eyebrow="String Catalog"
+              title="스트링 상품"
+              description="플레이 성향과 성능, 가격 조건을 조합해 원하는 스트링을 찾아보세요."
+              total={total ?? 0}
+              visibleCount={loadedCount}
+              countPrefix={productCountPrefix}
+              countSuffix="개"
+              isCountLoading={isCountLoading}
+              isRefreshing={isBackgroundRefreshing}
+              toolbar={
+                <CatalogToolbar
+                  filterButton={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (showFilters) cancelFiltersSheet();
+                        else openFiltersSheet();
+                      }}
+                      className="h-10 w-full shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted/30 bp-sm:h-9 bp-sm:w-auto"
+                      aria-expanded={showFilters}
+                      aria-label={showFilters ? "필터 닫기" : "필터 열기"}
+                    >
+                      <Filter className="mr-2 h-4 w-4" />
+                      필터{panelFiltersCount > 0 && `(${panelFiltersCount})`}
+                    </Button>
+                  }
+                  quickFilters={QUICK_BENEFIT_FILTERS.map((option) => {
                     const isActive = exposureFilter.includes(option.value);
                     return (
                       <Button
@@ -847,52 +683,29 @@ export default function FilterableProductList({
                       </Button>
                     );
                   })}
-                </div>
-                <div className="flex w-full min-w-0 flex-wrap items-center gap-2 bp-xl:ml-auto bp-xl:w-auto bp-xl:flex-nowrap bp-xl:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleToggleIncludeSoldOut}
-                    className={cn(quickToggleButtonClass(!includeSoldOut), "shrink-0")}
-                    aria-pressed={!includeSoldOut}
-                    aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
-                  >
-                    {!includeSoldOut && <Check className="mr-1.5 h-3.5 w-3.5" />}
-                    품절 제외
-                  </Button>
-                  <div className="flex min-w-0 flex-1 items-center justify-end gap-2 bp-xl:flex-none">
-                    {/* 뷰 모드 토글 */}
-                    {!isMobileViewport && (
-                      <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
-                        <Button
-                          type="button"
-                          variant={viewMode === "grid" ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setViewMode("grid")}
-                          className="h-8 w-9 p-0"
-                          aria-label="그리드 보기"
-                          aria-pressed={viewMode === "grid"}
-                        >
-                          <Grid3X3 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={viewMode === "list" ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setViewMode("list")}
-                          className="h-8 w-9 p-0"
-                          aria-label="리스트 보기"
-                          aria-pressed={viewMode === "list"}
-                        >
-                          <List className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* 정렬 */}
+                  soldOutToggle={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleToggleIncludeSoldOut}
+                      className={quickToggleButtonClass(!includeSoldOut)}
+                      aria-pressed={!includeSoldOut}
+                      aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
+                    >
+                      {!includeSoldOut && <Check className="mr-1.5 h-3.5 w-3.5" />}
+                      품절 제외
+                    </Button>
+                  }
+                  viewToggle={!isMobileViewport ? (
+                    <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
+                      <Button type="button" variant={viewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={viewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
+                      <Button type="button" variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={viewMode === "list"}><List className="h-4 w-4" /></Button>
+                    </div>
+                  ) : null}
+                  sortControl={
                     <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 min-w-[140px] flex-1 rounded-xl border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
+                      <SelectTrigger className="h-10 w-full min-w-0 rounded-control border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] dark:focus:border-border">
                         <SelectValue placeholder="정렬" />
                       </SelectTrigger>
                       <SelectContent className="border-border dark:bg-card">
@@ -902,10 +715,11 @@ export default function FilterableProductList({
                         <SelectItem value="price-high">가격 높은순</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  }
+                />
+              }
+              activeFilters={hasAppliedPanelFilters ? <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} /> : undefined}
+            />
           </div>
 
           {/* 콘텐츠 */}
@@ -915,21 +729,11 @@ export default function FilterableProductList({
                 className={cn(
                   "grid gap-4 bp-md:gap-6",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >
-                {Array.from({ length: viewMode === "grid" ? 12 : 4 }).map((_, index) => (
-                  <div
-                    key={`products-loading-skeleton-${index}`}
-                    className="rounded-2xl border border-border bg-card p-4 shadow-sm"
-                  >
-                    <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
-                    <Skeleton className="h-5 w-2/3" />
-                    <Skeleton className="mt-2 h-4 w-1/2" />
-                    <Skeleton className="mt-4 h-8 w-full rounded-md" />
-                  </div>
-                ))}
+                <CatalogCardSkeleton viewMode={viewMode} count={viewMode === "grid" ? 12 : 4} />
               </div>
             </div>
           ) : error ? (
@@ -968,7 +772,7 @@ export default function FilterableProductList({
                   "grid gap-4 bp-md:gap-6 transition-opacity",
                   isBackgroundRefreshing && "opacity-70",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >
@@ -1004,18 +808,8 @@ export default function FilterableProductList({
 
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
-                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <div
-                      key={`products-fetching-skeleton-${index}`}
-                      className="rounded-2xl border border-border bg-card p-4 shadow-sm"
-                    >
-                      <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
-                      <Skeleton className="h-5 w-2/3" />
-                      <Skeleton className="mt-2 h-4 w-1/2" />
-                      <Skeleton className="mt-4 h-8 w-full rounded-md" />
-                    </div>
-                  ))}
+                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4">
+                  <CatalogCardSkeleton viewMode="grid" count={4} />
                 </div>
               )}
 

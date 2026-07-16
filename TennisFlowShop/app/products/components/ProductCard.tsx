@@ -5,6 +5,7 @@ import { getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { useWishlist } from "@/app/features/wishlist/useWishlist";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
+import { CatalogCardFrame, CatalogPrice, CatalogRating } from "@/components/commerce";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
@@ -179,7 +180,7 @@ function RatingStars({ avg, starClassName = "w-3 h-3" }: { avg: number; starClas
 }
 
 const productCardSurfaceClass =
-  "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:bg-muted/20 hover:shadow-sm";
+  "relative";
 const productImageWrapClass =
   "relative w-full overflow-hidden rounded-t-2xl bg-muted/30 aspect-[5/4] bp-md:aspect-square";
 
@@ -250,47 +251,13 @@ const ProductCard = React.memo(
     ) : null;
 
     const priceBlock = (align: "left" | "right" = "right") => (
-      <div
-        className={cn(
-          "flex flex-col gap-1 tabular-nums",
-          align === "right" ? "items-end text-right" : "items-start text-left",
-        )}
-      >
-        {isSale ? (
-          <>
-            <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-              <span className="text-ui-caption text-muted-foreground">할인가</span>
-              <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
-                {displayPrice.toLocaleString()}원
-              </span>
-            </div>
-            <div
-              className={cn(
-                "flex flex-wrap items-center gap-1.5",
-                align === "right" && "justify-end",
-              )}
-            >
-              <span className="text-ui-caption text-muted-foreground">정가</span>
-              <span className="whitespace-nowrap text-ui-label text-muted-foreground line-through">
-                {regularPrice.toLocaleString()}원
-              </span>
-              <Badge
-                variant="outline"
-                className={cn("shrink-0 whitespace-nowrap text-ui-label", badgeToneClass("danger"))}
-              >
-                {saleRate}% OFF
-              </Badge>
-            </div>
-          </>
-        ) : (
-          <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-            <span className="text-ui-caption text-muted-foreground">판매가</span>
-            <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
-              {displayPrice.toLocaleString()}원
-            </span>
-          </div>
-        )}
-      </div>
+      <CatalogPrice
+        regularPrice={regularPrice}
+        salePrice={isSale ? salePrice : null}
+        label={isSale ? "할인가" : "판매가"}
+        align={align === "right" ? "end" : "start"}
+        size={viewMode === "list" ? "list" : "card"}
+      />
     );
 
     const detailHref = isApplyFlow
@@ -418,10 +385,7 @@ const ProductCard = React.memo(
                     {product.name}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <RatingStars avg={ratingAvg} starClassName="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="text-ui-label text-muted-foreground sm:text-ui-body-sm">
-                      ({ratingCount})
-                    </span>
+                    <CatalogRating average={ratingAvg} count={ratingCount} size="md" />
                   </div>
                 </div>
                 {priceBlock("left")}
@@ -434,13 +398,13 @@ const ProductCard = React.memo(
               <div className="mt-auto grid max-w-md grid-cols-1 gap-2">
                 <Button
                   asChild
-                  variant="default"
+                  variant="highlight_soft"
                   size="sm"
-                  className="w-full overflow-hidden whitespace-nowrap text-ui-label sm:text-ui-body-sm"
+                  className="h-10 w-full whitespace-nowrap rounded-control text-ui-label sm:text-ui-body-sm"
                 >
                   <Link href={detailHref}>
                     <Eye className="mr-1.5 h-3 w-3 shrink-0 bp-sm:h-4 bp-sm:w-4" />
-                    <span className="min-w-0 truncate">교체서비스 신청하기</span>
+                    <span>교체서비스 신청</span>
                   </Link>
                 </Button>
 
@@ -451,7 +415,7 @@ const ProductCard = React.memo(
                     variant="outline"
                     onClick={handleStringSingleBuy}
                     disabled={isSoldOut}
-                    className="h-9 whitespace-nowrap sm:h-10 text-ui-label sm:text-ui-body-sm"
+                    className="h-10 whitespace-nowrap rounded-control text-ui-label sm:text-ui-body-sm"
                   >
                     스트링만 구매
                   </Button>
@@ -551,8 +515,7 @@ const ProductCard = React.memo(
             </div>
 
             <div className="mb-3 flex items-center gap-1.5">
-              <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
-              <span className="text-ui-label text-muted-foreground">({ratingCount})</span>
+              <CatalogRating average={ratingAvg} count={ratingCount} />
             </div>
 
             <div className="mb-4">
@@ -568,12 +531,12 @@ const ProductCard = React.memo(
             <Button
               asChild
               type="button"
-              variant="outline"
-              className="h-10 overflow-hidden whitespace-nowrap rounded-xl text-ui-body-sm"
+              variant="highlight_soft"
+              className="h-10 whitespace-nowrap rounded-control text-ui-body-sm"
             >
               <Link href={detailHref}>
                 <Eye className="mr-1.5 h-4 w-4 shrink-0" />
-                <span className="min-w-0 truncate">교체서비스 신청하기</span>
+                <span>교체서비스 신청</span>
               </Link>
             </Button>
           </div>
@@ -582,7 +545,7 @@ const ProductCard = React.memo(
             <Button
               type="button"
               variant="outline"
-              className="h-10 w-full rounded-xl px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm"
+              className="h-10 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm"
               onClick={handleStringSingleBuy}
               disabled={isSoldOut}
             >
