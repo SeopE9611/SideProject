@@ -3,7 +3,7 @@ import { Eye, X } from "lucide-react";
 
 import type { CompareRacketItem } from "@/app/store/racketCompareStore";
 import RacketSpecQuickViewDialog from "@/app/rackets/compare/_components/RacketSpecQuickViewDialog";
-import { formatNumberValue, racketCompareRowCategories, toCompareNumber, type RacketCompareRow } from "@/app/rackets/compare/_components/racketCompareRows";
+import { formatNumberValue, formatRacketCondition, racketCompareRowCategories, toCompareNumber, type RacketCompareRow } from "@/app/rackets/compare/_components/racketCompareRows";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { racketBrandLabel } from "@/lib/constants";
@@ -33,7 +33,11 @@ export default function RacketCompareMobileSections({ items, rows, onRemove }: {
                 <div className="mt-3 min-w-0 space-y-1">
                   <div className="flex items-center gap-2">{index === 0 ? <Badge variant="info" className="h-5 px-2 text-ui-micro">기준</Badge> : null}<span className="text-ui-label text-muted-foreground">{brand}</span></div>
                   <h2 className="line-clamp-2 text-ui-body-sm font-semibold">{item.model}</h2>
-                  <p className="text-ui-label text-muted-foreground">{item.year ? `${item.year}년` : "-"}</p>
+                  <p className="break-keep text-ui-label text-muted-foreground">
+                    {item.year ? `${item.year}년` : "-"}
+                    {" · "}
+                    {formatRacketCondition(item.condition)}
+                  </p>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <RacketSpecQuickViewDialog racket={item} trigger={<Button type="button" variant="outline" size="sm" className="w-full"><Eye className="h-4 w-4" aria-hidden="true" />Quick View</Button>} />

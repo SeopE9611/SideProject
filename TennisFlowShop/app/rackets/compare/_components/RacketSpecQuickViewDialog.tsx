@@ -334,7 +334,10 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                     "bp-sm:text-ui-body-sm",
                   )}
                 >
-                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+                  <Info
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/70"
+                    aria-hidden="true"
+                  />
                   <span>
                     스펙은{" "}
                     <span className="font-medium text-foreground">
