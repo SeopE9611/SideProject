@@ -24,12 +24,12 @@ export default function RentalSelectStringClient({
   const router = useRouter();
 
   // Format racket name for display
-  const racketName = useMemo(() => {
-    const brand = racketBrandLabel(racket.brand) ?? racket.brand;
-    const conditionLabel = racketConditionLabel(racket.condition);
-    const conditionText = conditionLabel ? `상태: ${conditionLabel}` : "";
-    return `${brand} ${racket.model}${conditionText ? ` · ${conditionText}` : ""}`;
-  }, [racket.brand, racket.model, racket.condition]);
+  const brandLabel = useMemo(() => racketBrandLabel(racket.brand) || racket.brand, [racket.brand]);
+  const conditionLabel = useMemo(
+    () => racketConditionLabel(racket.condition) || racket.condition,
+    [racket.condition],
+  );
+  const racketName = useMemo(() => `${brandLabel} ${racket.model}`.trim(), [brandLabel, racket.model]);
 
   // Navigate to checkout when string is selected
   const handleSelectString = ({
@@ -67,8 +67,11 @@ export default function RentalSelectStringClient({
         brand: racket.brand,
         model: racket.model,
         condition: racket.condition,
+        conditionLabel,
       }}
       flowType="rental"
+      backLink={`/rackets/${racket.id}`}
+      backLabel="라켓 상세로"
       rentalPeriod={period}
       onSelectString={handleSelectString}
       onSkipString={handleSkipString}
