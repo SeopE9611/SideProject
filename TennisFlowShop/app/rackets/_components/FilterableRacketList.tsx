@@ -566,8 +566,8 @@ export default function FilterableRacketList({
           side={isFilterSheetViewport ? "bottom" : "left"}
           className={
             isFilterSheetViewport
-              ? "max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
-              : "h-dvh w-[min(420px,calc(100vw-24px))] max-w-none overflow-y-auto p-0"
+              ? "max-h-[85dvh] overflow-hidden rounded-t-2xl p-0"
+              : "h-dvh w-[min(420px,calc(100vw-24px))] max-w-none overflow-hidden p-0"
           }
         >
           <RacketFilterPanel

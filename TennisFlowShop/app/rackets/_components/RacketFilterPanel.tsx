@@ -82,23 +82,19 @@ export default function RacketFilterPanel({
   onClearSearch,
   onClearInput,
 }: Props) {
-  if (isLoadingInitial) {
-    return (
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <SkeletonFilterDetailed />
-      </div>
-    );
-  }
-
   return (
     <CatalogFilterPanelShell
       title="라켓 필터"
       activeCount={activeFiltersCount}
-      description="브랜드, 상태, 가격대와 대여 가능 여부를 선택한 뒤 적용하세요."
+      description="브랜드, 상태, 가격대와 대여 가능 여부를 선택한 뒤 하단의 필터 적용을 누르면 목록에 반영됩니다."
       onReset={onReset}
       onApply={onSearchSubmit}
       applyLabel="필터 적용"
+      isLoading={isLoadingInitial}
     >
+      {isLoadingInitial ? (
+        <SkeletonFilterDetailed />
+      ) : (
       <AnimatePresence mode="wait">
         <motion.div
           key={resetKey}
@@ -107,25 +103,6 @@ export default function RacketFilterPanel({
           exit={{ opacity: 0, y: -5 }}
           transition={{ duration: 0.15 }}
         >
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex gap-2 items-center">
-              <h2 className="font-semibold text-ui-section-title text-foreground">필터</h2>
-            </div>
-            <div className="flex gap-2">
-              {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={onReset} className="text-ui-label">
-                  초기화 ({activeFiltersCount})
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <p className="mb-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground break-keep">
-            {onClose
-              ? "선택 후 검색/적용을 누르면 결과에 반영됩니다."
-              : "조건을 선택하면 목록에 바로 반영됩니다."}
-          </p>
-
           {/* 검색 */}
           <form
             onSubmit={(e) => {
@@ -315,23 +292,9 @@ export default function RacketFilterPanel({
               })}
             </div>
           </div>
-          {onClose && (
-            <div className="sticky bottom-0 mt-6 flex gap-2 border-t border-border bg-card/95 py-4 backdrop-blur">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 whitespace-nowrap"
-                onClick={onReset}
-              >
-                초기화
-              </Button>
-              <Button type="button" className="flex-1 whitespace-nowrap" onClick={onSearchSubmit}>
-                필터 적용
-              </Button>
-            </div>
-          )}
         </motion.div>
       </AnimatePresence>
+      )}
     </CatalogFilterPanelShell>
   );
 }

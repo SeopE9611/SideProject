@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,6 +28,9 @@ type Props = {
   preventCardNav?: boolean;
   /** 버튼을 가로로 꽉 채울지 여부(리스트/그리드에선 false, 상세/모바일 스티키에선 true) */
   full?: boolean;
+  variant?: React.ComponentProps<typeof Button>["variant"];
+  label?: string;
+  ariaLabel?: string;
 };
 
 export default function RentDialog({
@@ -40,6 +43,9 @@ export default function RentDialog({
   className = "",
   preventCardNav = true,
   full = false,
+  variant = "default",
+  label = "스트링 선택 후 대여",
+  ariaLabel,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<7 | 15 | 30>(7);
@@ -70,6 +76,9 @@ export default function RentDialog({
     <>
       <Button
         size={size}
+        variant={variant}
+        wrap="nowrap"
+        aria-label={ariaLabel ?? label}
         className={cn(
           "min-w-0 rounded-xl shadow-sm",
           full ? "h-12 w-full justify-center gap-2" : "gap-1.5",
@@ -77,8 +86,8 @@ export default function RentDialog({
         )}
         onClick={() => setOpen(true)}
       >
-        <Calendar className="h-4 w-4" />
-        <span className="min-w-0 truncate">스트링 선택 후 대여</span>
+        <Calendar className="h-4 w-4 shrink-0" />
+        <span className="whitespace-nowrap">{label}</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

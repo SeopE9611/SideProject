@@ -133,7 +133,7 @@ export const FilterPanel = React.memo(function FilterPanel({
     <CatalogFilterPanelShell
       title="스트링 필터"
       activeCount={activeFiltersCount}
-      description="브랜드, 재질, 성능과 가격 조건을 선택한 뒤 적용하세요."
+      description="브랜드, 재질, 성능과 가격 조건을 선택한 뒤 하단의 필터 적용을 누르면 목록에 반영됩니다."
       onReset={onReset}
       onApply={onSearchSubmit}
       applyLabel="필터 적용"
@@ -166,33 +166,6 @@ export const FilterPanel = React.memo(function FilterPanel({
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="flex gap-2 items-center">
-                <h2 className="break-keep text-ui-card-title-lg font-semibold leading-tight text-foreground">
-                  필터
-                </h2>
-              </div>
-              <div className="flex gap-2">
-                {activeFiltersCount > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={onReset}
-                    className="h-7 whitespace-nowrap px-2 text-ui-label bp-sm:h-8 bp-sm:px-3"
-                  >
-                    초기화 ({activeFiltersCount})
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <p className="mb-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground break-keep">
-              {onClose
-                ? "선택 후 하단의 필터 적용을 누르면 결과에 반영됩니다."
-                : "조건을 선택하면 목록에 바로 반영됩니다."}
-            </p>
-
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -329,21 +302,6 @@ export const FilterPanel = React.memo(function FilterPanel({
                 })}
               </div>
             </div>
-            {onClose && (
-              <div className="sticky bottom-0 mt-6 flex gap-2 border-t border-border bg-card py-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 whitespace-nowrap"
-                  onClick={onReset}
-                >
-                  초기화
-                </Button>
-                <Button type="button" className="flex-1 whitespace-nowrap" onClick={onSearchSubmit}>
-                  필터 적용
-                </Button>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       )}

@@ -8,7 +8,6 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { CatalogCardFrame, CatalogPrice, CatalogRating } from "@/components/commerce";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import {
   badgeToneClass,
   merchandisingImageBadgeClass,
@@ -20,7 +19,7 @@ import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
 import { hasSelectableStringStock } from "@/lib/products/string-stock";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { Eye, Heart, Star } from "lucide-react";
+import { Eye, Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -160,27 +159,6 @@ function WishButton({
   );
 }
 
-function RatingStars({ avg, starClassName = "w-3 h-3" }: { avg: number; starClassName?: string }) {
-  const safe = Math.max(0, Math.min(5, Number(avg) || 0));
-  return (
-    <div className="flex items-center">
-      {[0, 1, 2, 3, 4].map((i) => {
-        const fill = Math.max(0, Math.min(1, safe - i));
-        return (
-          <span key={i} className={`relative inline-block ${starClassName}`}>
-            <Star className={`${starClassName} text-warning`} />
-            <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-              <Star className={`${starClassName} text-warning fill-current`} />
-            </span>
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
-const productCardSurfaceClass =
-  "relative";
 const productImageWrapClass =
   "relative w-full overflow-hidden rounded-t-2xl bg-muted/30 aspect-[5/4] bp-md:aspect-square";
 
@@ -210,7 +188,6 @@ const ProductCard = React.memo(
       salePrice > 0 &&
       salePrice < regularPrice;
     const displayPrice = isSale ? salePrice : regularPrice;
-    const saleRate = isSale ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
     const stockRaw = typeof inventory?.stock === "number" ? inventory.stock : null;
     const manageStock = inventory?.manageStock === true;
     const allowBackorder = inventory?.allowBackorder === true;
@@ -289,277 +266,114 @@ const ProductCard = React.memo(
       router.push("/checkout?mode=buynow");
     };
 
-    const handleStringServiceApply = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!canCheckoutWithService) return;
-      if (isSoldOut) {
-        showErrorToast("품절된 상품입니다.");
-        return;
-      }
-      clearPdpBundle();
-      const image = product.images?.[0] ?? "";
-      setBuyNowItem({
-        id: String(product._id),
-        name: product.name,
-        price: displayPrice,
-        ...getProductPriceDisplayMeta(product),
-        quantity: 1,
-        image,
-        stock: stockForItem,
-        kind: "product",
-      });
-      const search = new URLSearchParams({ mode: "buynow", withService: "1" });
-      router.push(`/checkout?${search.toString()}`);
-    };
+    const media = (
+      <div className={productImageWrapClass}>
+        <Link
+          href={detailHref}
+          aria-label={`${product.name} ${isApplyFlow ? "교체 신청" : "상세 보기"}`}
+          className="absolute inset-0 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <Image
+            src={(product.images?.[0] as string) || "/placeholder.svg?height=300&width=300&query=tennis+string"}
+            alt={product.name}
+            fill
+            sizes={viewMode === "list" ? "(max-width: 768px) 100vw, 260px" : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+            className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.01]"
+          />
+        </Link>
+        {soldOutOverlay}
+        {merchandisingBadges.length > 0 && (
+          <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
+            {merchandisingBadges.map((badge) => (
+              <Badge key={`${product._id}-${badge}`} variant={merchandisingImageBadgeVariant(badge)} shape="pill" className={cn(merchandisingImageBadgeClass)}>
+                {badge}
+              </Badge>
+            ))}
+          </div>
+        )}
+        <div className="absolute right-3 top-3 z-20">
+          <WishButton
+            inWish={inWish}
+            disabled={isWishUnknown}
+            onToggle={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                await toggle(product._id);
+                showSuccessToast(inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
+              } catch (e: any) {
+                if (e?.message === "unauthorized") {
+                  router.push(`/login?next=${encodeURIComponent(detailHref)}`);
+                } else {
+                  showErrorToast("처리 중 오류가 발생했습니다.");
+                }
+              }
+            }}
+            size="sm"
+          />
+        </div>
+      </div>
+    );
+
+    const content = (
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground" title={brandLabel}>
+          {brandLabel}
+        </div>
+        <Link href={detailHref} className="block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <h3 className="mb-2 line-clamp-2 break-words text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3" title={product.name}>
+            {product.name}
+          </h3>
+        </Link>
+        <div className="mb-3 flex items-center gap-1.5">
+          <CatalogRating average={ratingAvg} count={ratingCount} size={viewMode === "list" ? "md" : "sm"} />
+        </div>
+        <PerformanceSummary entries={featureEntries} />
+        {shouldShowStandaloneServiceBadge && (
+          <Badge variant="secondary" className="mt-3 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-ui-caption">
+            교체서비스 전용
+          </Badge>
+        )}
+      </div>
+    );
+
+    const actions = (
+      <div className="grid grid-cols-1 gap-2">
+        <Button asChild type="button" variant="highlight_soft" className="h-10 whitespace-nowrap rounded-control text-ui-body-sm">
+          <Link href={detailHref}>
+            <Eye className="mr-1.5 h-4 w-4 shrink-0" />
+            <span>교체서비스 신청</span>
+          </Link>
+        </Button>
+        {ENABLE_STRING_STANDALONE_ORDER && (
+          <Button type="button" variant="outline" className="h-10 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm" onClick={handleStringSingleBuy} disabled={isSoldOut}>
+            스트링만 구매
+          </Button>
+        )}
+      </div>
+    );
 
     if (viewMode === "list") {
       return (
-        <Card className={cn(productCardSurfaceClass, "relative")}>
-          {/* 리스트뷰: 배경 장식 SVG 제거 */}
-
-          <div className="relative z-10 flex h-full flex-col bp-md:flex-row">
-            <div className="relative aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-muted/30 bp-md:w-[280px] bp-xl:w-[320px]">
-              <Image
-                src={
-                  (product.images?.[0] as string) ||
-                  "/placeholder.svg?height=200&width=200&query=tennis+string"
-                }
-                alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1536px) 280px, 320px"
-                className="object-contain p-3"
-              />
-              {soldOutOverlay}
-              {merchandisingBadges.length > 0 && (
-                <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
-                  {merchandisingBadges.map((badge) => (
-                    <Badge
-                      key={`${product._id}-${badge}`}
-                      variant={merchandisingImageBadgeVariant(badge)}
-                      shape="pill"
-                      className={cn(merchandisingImageBadgeClass)}
-                    >
-                      {badge}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              <div className="absolute right-3 top-3 z-20">
-                <WishButton
-                  inWish={inWish}
-                  disabled={isWishUnknown}
-                  onToggle={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    try {
-                      await toggle(product._id);
-                      showSuccessToast(
-                        inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.",
-                      );
-                    } catch (e: any) {
-                      if (e?.message === "unauthorized") {
-                        router.push(`/login?next=${encodeURIComponent(detailHref)}`);
-                      } else {
-                        showErrorToast("처리 중 오류가 발생했습니다.");
-                      }
-                    }
-                  }}
-                  size="sm"
-                />
-              </div>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col p-4 bp-md:p-5">
-              <div className="mb-4 flex flex-col gap-3">
-                <div className="min-w-0 flex-1">
-                  <div
-                    className="mb-1 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:text-ui-body-sm"
-                    title={brandLabel}
-                  >
-                    {brandLabel}
-                  </div>
-                  <h3
-                    className="mb-2 line-clamp-2 break-words text-ui-body font-medium text-foreground sm:text-ui-card-title-lg md:text-ui-section-title bp-lg:line-clamp-3"
-                    title={product.name}
-                  >
-                    {product.name}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <CatalogRating average={ratingAvg} count={ratingCount} size="md" />
-                  </div>
-                </div>
-                {priceBlock("left")}
-              </div>
-
-              <div className="mb-4">
-                <PerformanceSummary entries={featureEntries} />
-              </div>
-
-              <div className="mt-auto grid max-w-md grid-cols-1 gap-2">
-                <Button
-                  asChild
-                  variant="highlight_soft"
-                  size="sm"
-                  className="h-10 w-full whitespace-nowrap rounded-control text-ui-label sm:text-ui-body-sm"
-                >
-                  <Link href={detailHref}>
-                    <Eye className="mr-1.5 h-3 w-3 shrink-0 bp-sm:h-4 bp-sm:w-4" />
-                    <span>교체서비스 신청</span>
-                  </Link>
-                </Button>
-
-                {ENABLE_STRING_STANDALONE_ORDER && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleStringSingleBuy}
-                    disabled={isSoldOut}
-                    className="h-10 whitespace-nowrap rounded-control text-ui-label sm:text-ui-body-sm"
-                  >
-                    스트링만 구매
-                  </Button>
-                )}
-              </div>
-              {shouldShowStandaloneServiceBadge && (
-                <Badge
-                  variant="secondary"
-                  className="mt-2 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-ui-caption"
-                >
-                  교체서비스 전용
-                </Badge>
-              )}
-            </div>
-          </div>
-        </Card>
+        <CatalogCardFrame
+          viewMode="list"
+          media={media}
+          content={content}
+          price={priceBlock("right")}
+          actions={actions}
+        />
       );
     }
 
     // ─── 그리드 뷰 ────────────────────────────────────────────────────────────
     return (
-      <Card className={productCardSurfaceClass}>
-        {/* 이미지 영역 */}
-        <div className={productImageWrapClass}>
-          <Link
-            href={detailHref}
-            aria-label={`${product.name} ${isApplyFlow ? "교체 신청" : "상세 보기"}`}
-            className="absolute inset-0 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <Image
-              src={
-                (product.images?.[0] as string) ||
-                "/placeholder.svg?height=300&width=300&query=tennis+string"
-              }
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.01]"
-            />
-          </Link>
-          {soldOutOverlay}
-
-          {merchandisingBadges.length > 0 && (
-            <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
-              {merchandisingBadges.map((badge) => (
-                <Badge
-                  key={`${product._id}-${badge}`}
-                  variant={merchandisingImageBadgeVariant(badge)}
-                  shape="pill"
-                  className={cn(merchandisingImageBadgeClass)}
-                >
-                  {badge}
-                </Badge>
-              ))}
-            </div>
-          )}
-          <div className="absolute right-3 top-3 z-20">
-            <WishButton
-              inWish={inWish}
-              disabled={isWishUnknown}
-              onToggle={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                try {
-                  await toggle(product._id);
-                  showSuccessToast(
-                    inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.",
-                  );
-                } catch {
-                  showErrorToast("처리 중 오류가 발생했습니다.");
-                }
-              }}
-              size="sm"
-            />
-          </div>
-        </div>
-
-        {/* 카드 콘텐츠 */}
-        <CardContent className="flex flex-1 flex-col p-4 pb-3 sm:p-5 sm:pb-4">
-          <Link
-            href={detailHref}
-            className="flex min-w-0 flex-1 flex-col rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <div>
-              <div
-                className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground"
-                title={brandLabel}
-              >
-                {brandLabel}
-              </div>
-              <CardTitle
-                className="mb-2 line-clamp-2 break-words text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3"
-                title={product.name}
-              >
-                {product.name}
-              </CardTitle>
-            </div>
-
-            <div className="mb-3 flex items-center gap-1.5">
-              <CatalogRating average={ratingAvg} count={ratingCount} />
-            </div>
-
-            <div className="mb-4">
-              <PerformanceSummary entries={featureEntries} />
-            </div>
-
-            <div className="mt-auto flex justify-end pt-4">{priceBlock("right")}</div>
-          </Link>
-        </CardContent>
-
-        <CardFooter className="mt-auto grid grid-cols-1 gap-2 border-t border-border/50 p-3 bp-sm:p-4">
-          <div className="grid grid-cols-1 gap-2">
-            <Button
-              asChild
-              type="button"
-              variant="highlight_soft"
-              className="h-10 whitespace-nowrap rounded-control text-ui-body-sm"
-            >
-              <Link href={detailHref}>
-                <Eye className="mr-1.5 h-4 w-4 shrink-0" />
-                <span>교체서비스 신청</span>
-              </Link>
-            </Button>
-          </div>
-
-          {ENABLE_STRING_STANDALONE_ORDER && (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-10 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm"
-              onClick={handleStringSingleBuy}
-              disabled={isSoldOut}
-            >
-              스트링만 구매
-            </Button>
-          )}
-
-          {/* {shouldShowStandaloneServiceBadge && (
-            <Badge variant="secondary" className="w-fit text-ui-caption">
-              교체서비스 전용
-            </Badge>
-          )} */}
-        </CardFooter>
-      </Card>
+      <CatalogCardFrame
+        viewMode="grid"
+        media={media}
+        content={content}
+        price={<div className="flex justify-end">{priceBlock("right")}</div>}
+        actions={actions}
+      />
     );
   },
   (prev, next) =>
