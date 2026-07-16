@@ -249,7 +249,7 @@ export default async function PricingPage() {
         </section>
 
         <section className={hasOtherSummary ? "grid gap-4 bp-lg:grid-cols-2" : "grid gap-4"}>
-          {hasOtherSummary ? (
+          {hasOtherSummary && otherSummary ? (
             <PublicSurface className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-ui-card-title-lg font-semibold text-foreground">기타 소재</h2>
