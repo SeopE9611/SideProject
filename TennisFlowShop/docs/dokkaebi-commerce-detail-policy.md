@@ -56,3 +56,31 @@
 - 576px 이상에서는 full label을 사용한다.
 - hidden horizontal scroll은 금지한다.
 - URL `?tab=` 상태를 유지한다.
+
+## Product purchase panel
+
+- 상품과 라켓 상세는 모두 `CommercePurchasePanel`을 사용한다.
+- 슬롯 순서는 다음을 따른다.
+  1. eyebrow·badge
+  2. title
+  3. rating
+  4. price
+  5. summary
+  6. options
+  7. actions
+  8. utilities
+
+## Sold-out
+
+- 품절 CTA의 visible label은 짧게 "품절"로 표시한다.
+- 색상·게이지 조합 품절, 전체 재고 소진 등 구체적인 사유는 `CommercePurchaseActions.helper`에 표시한다.
+- 긴 품절 문구를 `nowrap` Button 내부에 넣지 않는다.
+
+## Utility actions
+
+- Wishlist와 비교 기능은 transaction action 내부에 섞지 않고 `CommercePurchasePanel.utilities`에 배치한다.
+
+## String detail CTA hierarchy
+
+- 교체서비스 신청이 가능한 스트링 상세에서는 교체서비스 신청을 항상 대표 `highlight_soft` CTA로 표시한다.
+- 동시에 단독 구매가 가능하면 단독 구매는 `secondary`, 장바구니는 `outline`으로 표시한다.
