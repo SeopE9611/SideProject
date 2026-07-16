@@ -5,9 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import FinderRacketCard, {
   type FinderRacket,
 } from "@/app/rackets/finder/_components/FinderRacketCard";
+import FinderRacketCardSkeleton from "@/app/rackets/finder/_components/FinderRacketCardSkeleton";
 import RacketCompareTray from "@/app/rackets/finder/_components/RacketCompareTray";
-import { useRacketCompareStore } from "@/app/store/racketCompareStore";
-import { Badge } from "@/components/ui/badge";
+import RacketFinderHeader from "@/app/rackets/finder/_components/RacketFinderHeader";
+import RacketFinderToolbar from "@/app/rackets/finder/_components/RacketFinderToolbar";
+import { ActiveFilterBar, CatalogFilterPanelShell, type ActiveFilterItem } from "@/components/commerce";
+import StickyAside from "@/components/layout/StickyAside";
+import { EmptyState } from "@/components/public/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -18,14 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -39,16 +41,12 @@ import {
   stringPatternLabel,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { getMerchandisingBadgeSpec } from "@/lib/badge-style";
 import {
-  ChevronLeft,
-  ChevronRight,
   Filter,
   RotateCcw,
   Search,
   SlidersHorizontal,
   Sparkles,
-  X,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
@@ -112,6 +110,28 @@ const DEFAULT: Filters = {
   swingWeight: [250, 390],
   strict: false,
 };
+
+function rangeEq(a: Range, b: Range) {
+  return a[0] === b[0] && a[1] === b[1];
+}
+
+function countActiveFinderFilters(filters: Filters) {
+  let count = 0;
+  if (filters.q.trim()) count += 1;
+  if (filters.brand) count += 1;
+  if (filters.condition) count += 1;
+  if (filters.strict) count += 1;
+  if (!rangeEq(filters.price, DEFAULT.price)) count += 1;
+  if (!rangeEq(filters.headSize, DEFAULT.headSize)) count += 1;
+  if (!rangeEq(filters.weight, DEFAULT.weight)) count += 1;
+  if (!rangeEq(filters.balance, DEFAULT.balance)) count += 1;
+  if (!rangeEq(filters.lengthIn, DEFAULT.lengthIn)) count += 1;
+  if (!rangeEq(filters.stiffnessRa, DEFAULT.stiffnessRa)) count += 1;
+  if (!rangeEq(filters.swingWeight, DEFAULT.swingWeight)) count += 1;
+  count += filters.patterns.length;
+  count += filters.gripSizes.length;
+  return count;
+}
 
 // --- Finder 상태 복원(세션 단위) ---
 const FINDER_STATE_KEY = "racketFinder.state.v1";
@@ -266,7 +286,6 @@ export default function RacketFinderClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const clearCompare = useRacketCompareStore((s) => s.clear);
 
   const didInitFromQueryRef = useRef(false);
   const [draft, setDraft] = useState<Filters>(DEFAULT);
@@ -383,7 +402,7 @@ export default function RacketFinderClient() {
 
   const qs = useMemo(() => buildQuery(applied, page, pageSize), [applied, page, pageSize]);
   const swrKey = hasSearched ? `/api/rackets/finder?${qs}` : null;
-  const { data, error, isLoading } = useSWR(swrKey, fetcher);
+  const { data, error, isLoading, mutate } = useSWR(swrKey, fetcher);
 
   // 검색 이후에도 loading/error/success를 분리해서 헤더 요약이 0개/1페이지로 먼저 보이지 않게 처리
   const hasDataError = hasSearched && Boolean(error);
@@ -410,7 +429,7 @@ export default function RacketFinderClient() {
     setPage(1);
     setHasSearched(false);
     clearFinderPersist();
-    clearCompare();
+    setFilterSheetOpen(false);
     router.replace(pathname, { scroll: false });
   };
 
@@ -428,13 +447,12 @@ export default function RacketFinderClient() {
   const chips = useMemo(() => {
     if (!hasSearched) return [];
 
-    const rangeEq = (a: Range, b: Range) => a[0] === b[0] && a[1] === b[1];
     const fmtNum = (n: number) => (Number.isInteger(n) ? String(n) : String(Number(n.toFixed(1))));
     const fmtWon = (n: number) => `${n.toLocaleString()}원`;
 
-    const list: { id: string; text: string; onRemove: () => void }[] = [];
-    const add = (id: string, text: string, next: Filters) => {
-      list.push({ id, text, onRemove: () => applyNow(next) });
+    const list: ActiveFilterItem[] = [];
+    const add = (id: string, label: string, next: Filters) => {
+      list.push({ id, label, removeLabel: `${label} 필터 제거`, onRemove: () => applyNow(next) });
     };
 
     if (applied.q.trim()) add("q", `키워드: ${applied.q.trim()}`, { ...applied, q: "" });
@@ -444,7 +462,7 @@ export default function RacketFinderClient() {
         brand: "",
       });
     if (applied.condition)
-      add("condition", `컨디션: ${applied.condition}`, {
+      add("condition", `컨디션: ${applied.condition === "B" ? "B (양호)" : applied.condition}`, {
         ...applied,
         condition: "",
       });
@@ -510,12 +528,18 @@ export default function RacketFinderClient() {
       <div className="space-y-2">
         <SectionLabel>모델/키워드 검색</SectionLabel>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
             value={draft.q}
             onChange={(e) => setDraft((p) => ({ ...p, q: e.target.value }))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                apply();
+              }
+            }}
             placeholder="예) ezone, vcore, blade..."
-            className="pl-9 bg-background/50 dark:bg-background/30 focus-visible:ring-primary/50"
+            className="min-h-11 rounded-control pl-9 bg-background/50 dark:bg-background/30 focus-visible:ring-primary/50" aria-label="모델 또는 키워드 검색"
           />
         </div>
       </div>
@@ -523,12 +547,12 @@ export default function RacketFinderClient() {
       {/* 브랜드 & 컨디션 */}
       <div className="space-y-3">
         <SectionLabel>브랜드 / 컨디션</SectionLabel>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
           <Select
             value={draft.brand || undefined}
             onValueChange={(v) => setDraft((p) => ({ ...p, brand: v === ALL ? "" : v }))}
           >
-            <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
+            <SelectTrigger className="min-h-11 rounded-control bg-background/50 dark:bg-background/30 focus:ring-primary/50">
               <SelectValue placeholder="전체 브랜드" />
             </SelectTrigger>
             <SelectContent>
@@ -544,13 +568,13 @@ export default function RacketFinderClient() {
             value={draft.condition || undefined}
             onValueChange={(v) => setDraft((p) => ({ ...p, condition: v === ALL ? "" : v }))}
           >
-            <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
+            <SelectTrigger className="min-h-11 rounded-control bg-background/50 dark:bg-background/30 focus:ring-primary/50">
               <SelectValue placeholder="전체 컨디션" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>전체</SelectItem>
-              <SelectItem value="A">A (최상)</SelectItem>
-              <SelectItem value="B">B (상)</SelectItem>
+              <SelectItem value="A">A (최상급)</SelectItem>
+              <SelectItem value="B">B (양호)</SelectItem>
               <SelectItem value="C">C (보통)</SelectItem>
             </SelectContent>
           </Select>
@@ -638,7 +662,7 @@ export default function RacketFinderClient() {
               <label
                 key={patternOption.value}
                 className={cn(
-                  "flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-ui-body-sm leading-snug transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+                  "flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-ui-body-sm min-h-11 leading-snug transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                   "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                   checked && "bg-secondary ring-1 ring-border",
                 )}
@@ -683,7 +707,7 @@ export default function RacketFinderClient() {
               <label
                 key={gripOption.value}
                 className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-ui-body-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+                  "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-ui-body-sm min-h-11 transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                   "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                   checked && "bg-secondary ring-1 ring-border",
                 )}
@@ -719,7 +743,7 @@ export default function RacketFinderClient() {
 
         <label
           className={cn(
-            "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+            "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 min-h-11 transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
             "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
             draft.strict && "bg-muted ring-1 ring-ring",
           )}
@@ -738,352 +762,133 @@ export default function RacketFinderClient() {
         </label>
       </div>
 
-      {/* 검색 버튼 */}
-      <Button className="w-full h-11 font-semibold" onClick={apply}>
-        <Search className="mr-2 h-4 w-4" />
-        검색하기
-      </Button>
     </div>
   );
 
+  const draftActiveCount = countActiveFinderFilters(draft);
+  const canGoPrevious = hasSearched && !isLoading && !hasDataError && hasResolvedTotalPages && page > 1;
+  const canGoNext = hasSearched && !isLoading && !hasDataError && hasResolvedTotalPages && page < totalPages;
+  const handlePrevious = () => {
+    const nextPage = Math.max(1, page - 1);
+    setPage(nextPage);
+    syncUrl(applied, nextPage);
+  };
+  const handleNext = () => {
+    const nextPage = Math.min(totalPages, page + 1);
+    setPage(nextPage);
+    syncUrl(applied, nextPage);
+  };
+  const handleSortChange = (value: SortKey) => {
+    const ok = SORT_OPTIONS.some((o) => o.value === value);
+    if (!ok) return;
+    applyNow({ ...applied, sort: value });
+  };
+
+  const filterControls = renderFilterControls();
+  const filterTrigger = (
+    <Button type="button" variant="outline" onClick={() => setFilterSheetOpen(true)} className="h-10 min-h-10 justify-center whitespace-nowrap rounded-control px-3">
+      <Filter className="mr-2 h-4 w-4" aria-hidden="true" />
+      필터 {draftActiveCount > 0 ? draftActiveCount : ""}
+    </Button>
+  );
+
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary">
-            <Search className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-ui-page-title font-semibold tracking-normal text-foreground">
-              라켓 검색
-            </h1>
-            <p className="text-ui-body-sm text-muted-foreground">
-              스펙 범위로 원하는 중고 라켓을 빠르게 찾아보세요
-            </p>
-          </div>
+    <div className="space-y-5 bp-md:space-y-6">
+      <RacketFinderHeader />
+
+      <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[88dvh] overflow-hidden rounded-t-3xl p-0">
+          <SheetHeader className="sr-only">
+            <SheetTitle>라켓 필터</SheetTitle>
+            <SheetDescription>원하는 조건을 선택한 뒤 검색하기를 눌러주세요.</SheetDescription>
+          </SheetHeader>
+          <CatalogFilterPanelShell
+            title="라켓 필터"
+            activeCount={draftActiveCount}
+            description="가격과 스펙 조건을 선택한 뒤 검색하기를 누르면 결과에 반영됩니다."
+            onReset={reset}
+            onApply={apply}
+            applyLabel="검색하기"
+          >
+            {filterControls}
+          </CatalogFilterPanelShell>
+        </SheetContent>
+      </Sheet>
+
+      <RacketFinderToolbar
+        filterTrigger={filterTrigger}
+        hasSearched={hasSearched}
+        total={total}
+        page={page}
+        totalPages={hasResolvedTotalPages ? totalPages : null}
+        isLoading={isLoading}
+        hasError={hasDataError}
+        sort={applied.sort}
+        sortOptions={SORT_OPTIONS}
+        onSortChange={handleSortChange}
+        canGoPrevious={canGoPrevious}
+        canGoNext={canGoNext}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
+
+      {hasSearched && chips.length > 0 ? (
+        <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+          <ActiveFilterBar items={chips} onResetAll={reset} resetLabel="필터 초기화" />
         </div>
-      </div>
+      ) : null}
 
-      <div className="bp-lg:grid bp-lg:grid-cols-[320px_1fr] bp-lg:gap-8 space-y-4 md:space-y-6 bp-lg:space-y-0">
-        <aside className="hidden h-fit rounded-2xl bg-muted/30 p-4 ring-1 ring-muted/50 dark:bg-muted/10 bp-lg:block bp-lg:p-5">
-          <div className="flex items-center justify-between pb-4">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-primary" />
-              <span className="font-semibold text-foreground">필터</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={reset}
-              className="h-8 px-2 text-ui-label text-muted-foreground hover:text-foreground"
-            >
-              <RotateCcw className="mr-1 h-3 w-3" />
-              초기화
-            </Button>
-          </div>
-          {renderFilterControls()}
-        </aside>
-
-        <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4 bp-lg:hidden">
-          <div className="flex flex-col gap-2">
-            <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-[auto_auto_1fr] bp-sm:items-center">
-              <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-10 justify-center whitespace-nowrap"
-                  >
-                    <Filter className="mr-2 h-4 w-4" />
-                    필터
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="bottom"
-                  className="flex max-h-[88dvh] flex-col gap-0 overflow-hidden rounded-t-3xl p-0"
-                >
-                  <SheetHeader className="border-b border-border px-4 pb-3 pt-4 text-left">
-                    <SheetTitle className="flex items-center gap-2 text-ui-body">
-                      <Filter className="h-4 w-4 text-primary" />
-                      라켓 필터
-                    </SheetTitle>
-                    <SheetDescription>
-                      원하는 스펙을 조정한 뒤 검색하기를 눌러 결과에 반영하세요.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="flex-1 overflow-y-auto px-4 py-5">{renderFilterControls()}</div>
-                </SheetContent>
-              </Sheet>
-
-              <Button
-                variant="ghost"
-                onClick={reset}
-                className="h-10 justify-center whitespace-nowrap text-muted-foreground hover:text-foreground"
-              >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                초기화
-              </Button>
-
-              {hasSearched && (
-                <Select
-                  value={applied.sort}
-                  onValueChange={(v) => {
-                    const ok = SORT_OPTIONS.some((o) => o.value === (v as SortKey));
-                    if (!ok) return;
-                    applyNow({ ...applied, sort: v as SortKey });
-                  }}
-                >
-                  <SelectTrigger className="col-span-2 h-10 w-full bg-background/80 focus:ring-primary/50 bp-sm:col-span-1 bp-sm:w-[160px] dark:bg-muted/30">
-                    <SelectValue placeholder="정렬" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SORT_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            <div className="flex min-w-0 items-center justify-between gap-2 text-ui-body-sm text-muted-foreground">
-              <div className="flex min-w-0 items-center gap-2">
-                {hasSearched ? (
-                  <>
-                    <Badge
-                      variant={getMerchandisingBadgeSpec("recommended").variant}
-                      className="rounded-lg px-2.5 py-1 font-semibold"
-                    >
-                      {isLoading
-                        ? "준비 중"
-                        : hasDataError
-                          ? "-"
-                          : `${(total ?? 0).toLocaleString()}개`}
-                    </Badge>
-                    <span className="whitespace-nowrap">
-                      페이지 {isLoading || hasDataError ? "-" : page} /{" "}
-                      {hasResolvedTotalPages ? totalPages : "-"}
-                    </span>
-                  </>
-                ) : (
-                  <span>필터 선택 후 검색해 주세요</span>
-                )}
-              </div>
-
-              <div className="flex shrink-0 items-center">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={
-                    !hasSearched || isLoading || hasDataError || !hasResolvedTotalPages || page <= 1
-                  }
-                  onClick={() => {
-                    const nextPage = Math.max(1, page - 1);
-                    setPage(nextPage);
-                    syncUrl(applied, nextPage);
-                  }}
-                  className="h-9 w-9 rounded-r-none"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={
-                    !hasSearched ||
-                    isLoading ||
-                    hasDataError ||
-                    !hasResolvedTotalPages ||
-                    page >= totalPages
-                  }
-                  onClick={() => {
-                    const nextPage = Math.min(totalPages, page + 1);
-                    setPage(nextPage);
-                    syncUrl(applied, nextPage);
-                  }}
-                  className="h-9 w-9 rounded-l-none"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Results */}
-        <div className="space-y-5">
-          {hasSearched && chips.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {chips.map((c) => (
-                <div
-                  key={c.id}
-                  className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-ui-label font-medium text-foreground transition-colors hover:bg-muted"
-                >
-                  <span className="max-w-[200px] truncate">{c.text}</span>
-                  <button
-                    type="button"
-                    onClick={c.onRemove}
-                    className="inline-flex h-4 w-4 items-center justify-center rounded-full opacity-60 transition-opacity hover:opacity-100 hover:bg-muted"
-                    aria-label={`${c.text} 제거`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+      <div className="bp-lg:grid bp-lg:grid-cols-[320px_minmax(0,1fr)] bp-lg:gap-8">
+        <div className="hidden bp-lg:block">
+          <StickyAside>
+            <section className="overflow-hidden rounded-panel border border-border bg-card shadow-sm">
+              <header className="flex items-center justify-between gap-3 border-b border-border p-4">
+                <div>
+                  <h2 className="text-ui-section-title font-semibold text-foreground">라켓 필터</h2>
+                  <p className="text-ui-label text-muted-foreground">적용 조건 {draftActiveCount}개</p>
                 </div>
-              ))}
-            </div>
-          )}
-
-          <div className="hidden flex-col gap-3 bp-lg:flex bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <div className="flex items-center gap-3">
-              {hasSearched ? (
-                <>
-                  <Badge
-                    variant={getMerchandisingBadgeSpec("recommended").variant}
-                    className="rounded-lg px-3 py-1 font-semibold"
-                  >
-                    {isLoading
-                      ? "준비 중"
-                      : hasDataError
-                        ? "-"
-                        : `${(total ?? 0).toLocaleString()}개`}
-                  </Badge>
-                  <span className="text-ui-body-sm text-muted-foreground">
-                    페이지 {isLoading || hasDataError ? "-" : page} /{" "}
-                    {hasResolvedTotalPages ? totalPages : "-"}
-                  </span>
-                </>
-              ) : (
-                <span className="text-ui-body-sm text-muted-foreground">
-                  필터를 선택하고 검색 버튼을 눌러주세요
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {hasSearched && (
-                <Select
-                  value={applied.sort}
-                  onValueChange={(v) => {
-                    const ok = SORT_OPTIONS.some((o) => o.value === (v as SortKey));
-                    if (!ok) return;
-                    applyNow({ ...applied, sort: v as SortKey });
-                  }}
-                >
-                  <SelectTrigger className="w-[160px] bg-background/80 dark:bg-muted/30 focus:ring-primary/50">
-                    <SelectValue placeholder="정렬" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SORT_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <div className="flex items-center">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={
-                    !hasSearched || isLoading || hasDataError || !hasResolvedTotalPages || page <= 1
-                  }
-                  onClick={() => {
-                    const nextPage = Math.max(1, page - 1);
-                    setPage(nextPage);
-                    syncUrl(applied, nextPage);
-                  }}
-                  className="h-9 w-9 rounded-r-none"
-                >
-                  <ChevronLeft className="h-4 w-4" />
+                <Filter className="h-4 w-4 text-primary" aria-hidden="true" />
+              </header>
+              <div className="p-4">{filterControls}</div>
+              <footer className="sticky bottom-0 flex gap-2 border-t border-border bg-card/95 p-4 backdrop-blur">
+                <Button type="button" variant="outline" onClick={reset} className="h-11 min-h-11 flex-1 rounded-control whitespace-nowrap">
+                  <RotateCcw className="mr-2 h-4 w-4" aria-hidden="true" />
+                  초기화
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={
-                    !hasSearched ||
-                    isLoading ||
-                    hasDataError ||
-                    !hasResolvedTotalPages ||
-                    page >= totalPages
-                  }
-                  onClick={() => {
-                    const nextPage = Math.min(totalPages, page + 1);
-                    setPage(nextPage);
-                    syncUrl(applied, nextPage);
-                  }}
-                  className="h-9 w-9 rounded-l-none"
-                >
-                  <ChevronRight className="h-4 w-4" />
+                <Button type="button" variant="highlight_soft" onClick={apply} className="h-11 min-h-11 flex-1 rounded-control whitespace-nowrap">
+                  <Search className="mr-2 h-4 w-4" aria-hidden="true" />
+                  검색하기
                 </Button>
-              </div>
-            </div>
-          </div>
+              </footer>
+            </section>
+          </StickyAside>
+        </div>
 
-          {error && (
-            <div className="rounded-xl bg-destructive/10 p-4 text-ui-body-sm text-destructive dark:bg-destructive/15">
-              조회 중 오류가 발생했습니다.
-            </div>
-          )}
-
+        <main className="min-w-0 space-y-5">
           {!hasSearched ? (
-            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-5 md:p-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
-                <Search className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">
-                검색을 시작해보세요
-              </h3>
-              <p className="text-ui-body-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                왼쪽 필터에서 원하는 스펙 범위를 설정하고{" "}
-                <span className="font-medium text-foreground">검색하기</span> 버튼을 눌러주세요.
-                정확도 모드를 활성화하면 스펙 정보가 누락된 라켓은 제외됩니다.
-              </p>
-            </div>
+            <EmptyState
+              icon={<Search className="h-8 w-8" />}
+              title="라켓 검색을 시작해보세요"
+              description={<>가격과 원하는 스펙을 선택한 뒤 검색하기를 눌러주세요.<br />정확도 모드를 켜면 스펙 정보가 없는 라켓은 제외됩니다.</>}
+              action={<Button type="button" variant="outline" onClick={() => setFilterSheetOpen(true)} className="bp-lg:hidden">필터 열기</Button>}
+            />
           ) : isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-muted/30 dark:bg-muted/10 p-4">
-                  <div className="flex gap-4">
-                    <Skeleton className="h-28 w-28 rounded-xl" />
-                    <div className="flex-1 space-y-3">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-5 w-48" />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                      </div>
-                      <div className="flex gap-2 pt-2">
-                        <Skeleton className="h-8 w-20" />
-                        <Skeleton className="h-8 w-20" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <FinderRacketCardSkeleton count={6} />
           ) : error ? (
-            <div className="rounded-2xl bg-destructive/10 p-6 text-center dark:bg-destructive/15">
-              <p className="text-ui-body-sm text-destructive">
-                데이터를 불러오지 못했습니다. 콘솔/네트워크 탭에서 응답을 확인해주세요.
-              </p>
-            </div>
+            <EmptyState
+              icon={<Search className="h-8 w-8" />}
+              title="라켓 목록을 불러오지 못했습니다"
+              description="잠시 후 다시 시도해주세요."
+              action={<Button type="button" variant="outline" onClick={() => void mutate()}>다시 시도</Button>}
+              className="border-destructive/30 bg-destructive/10 dark:bg-destructive/15"
+            />
           ) : items.length === 0 ? (
-            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-5 md:p-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-                <Search className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">
-                검색 결과 없음
-              </h3>
-              <p className="text-ui-body-sm text-muted-foreground">
-                조건에 맞는 라켓이 없습니다. 필터 범위를 완화하거나 정확도 모드를 끄고 다시
-                시도해보세요.
-              </p>
-            </div>
+            <EmptyState
+              icon={<Search className="h-8 w-8" />}
+              title="조건에 맞는 라켓이 없습니다"
+              description="가격이나 스펙 범위를 넓히거나 정확도 모드를 해제해보세요."
+              action={<Button type="button" variant="outline" onClick={reset}>필터 초기화</Button>}
+            />
           ) : (
             <div className="space-y-4">
               {items.map((r) => (
@@ -1091,7 +896,7 @@ export default function RacketFinderClient() {
               ))}
             </div>
           )}
-        </div>
+        </main>
       </div>
       <RacketCompareTray />
     </div>
