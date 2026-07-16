@@ -538,8 +538,8 @@
 .racketShowcase {
   display: grid;
   grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
-  min-height: 420px;
-  margin-top: 16px;
+  min-height: 390px;
+  margin-top: 14px;
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 30px;
@@ -548,7 +548,7 @@
 
 .racketShowcaseImagePanel {
   position: relative;
-  min-height: 420px;
+  min-height: 390px;
   overflow: hidden;
   background: hsl(var(--muted));
 }
@@ -604,7 +604,7 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 24px;
+  padding: 22px;
 }
 
 .racketInventoryHeader {
@@ -641,7 +641,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .racketBrandRailViewport {
@@ -703,7 +703,7 @@
   grid-template-columns: 104px minmax(0, 1fr) minmax(140px, auto) 24px;
   gap: 16px;
   align-items: center;
-  min-height: 102px;
+  min-height: 96px;
   border-bottom: 1px solid hsl(var(--border));
   color: hsl(var(--foreground));
   text-decoration: none;
@@ -731,7 +731,7 @@
 
 .racketInventoryInfo {
   min-width: 0;
-  padding-block: 10px;
+  padding-block: 8px;
 }
 
 .racketInventoryDeal {
@@ -739,7 +739,7 @@
   min-width: 0;
   flex-direction: column;
   align-items: flex-end;
-  padding-block: 10px;
+  padding-block: 8px;
   text-align: right;
 }
 
@@ -893,11 +893,11 @@
   }
 
   .racketShowcaseImagePanel {
-    min-height: 250px;
+    min-height: 230px;
   }
 
   .racketInventoryPanel {
-    padding: 22px;
+    padding: 20px;
   }
 }
 
@@ -907,11 +907,11 @@
   }
 
   .racketShowcaseImagePanel {
-    min-height: 220px;
+    min-height: 200px;
   }
 
   .racketShowcaseCopy {
-    padding: 20px;
+    padding: 18px;
   }
 
   .racketShowcaseTitle {
@@ -923,7 +923,7 @@
   }
 
   .racketInventoryPanel {
-    padding: 18px;
+    padding: 16px;
   }
 
   .racketInventoryHeader {
@@ -944,13 +944,17 @@
 
   .racketInventoryRow {
     grid-template-columns: 92px minmax(0, 1fr) 18px;
-    gap: 10px;
-    min-height: 96px;
+    column-gap: 10px;
+    row-gap: 4px;
+    min-height: 92px;
   }
 
   .racketInventoryThumb {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
     width: 92px;
-    height: 82px;
+    height: 78px;
   }
 
   .racketInventoryThumb img {
@@ -966,11 +970,24 @@
     font-size: 15px;
   }
 
+  .racketInventoryInfo {
+    grid-column: 2;
+    grid-row: 1;
+    padding-block: 6px 0;
+  }
+
   .racketInventoryDeal {
-    grid-column: 2 / 3;
+    grid-column: 2;
+    grid-row: 2;
     align-items: flex-start;
-    padding-block: 0 10px;
+    padding-block: 0 6px;
     text-align: left;
+  }
+
+  .racketInventoryArrow {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
   }
 
   .racketInventoryPriceLine {
