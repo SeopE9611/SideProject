@@ -24,6 +24,7 @@ import {
   serializeBenefitFilters,
 } from "@/lib/benefit-labels";
 import { stringMaterialLabel } from "@/lib/constants";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { cn } from "@/lib/utils";
 import { Check, Filter, Grid3X3, List, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -92,6 +93,7 @@ export default function FilterableProductList({
   const [sortOption, setSortOption] = useState("latest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const productActionCount = ENABLE_STRING_STANDALONE_ORDER ? 2 : 1;
 
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
@@ -733,7 +735,12 @@ export default function FilterableProductList({
                     : "grid-cols-1",
                 )}
               >
-                <CatalogCardSkeleton viewMode={viewMode} count={viewMode === "grid" ? 12 : 4} />
+                <CatalogCardSkeleton
+                  viewMode={viewMode}
+                  count={viewMode === "grid" ? 12 : 4}
+                  actionCount={productActionCount}
+                  mediaAspectClassName="aspect-[5/4] bp-md:aspect-square"
+                />
               </div>
             </div>
           ) : error ? (
@@ -808,8 +815,18 @@ export default function FilterableProductList({
 
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
-                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4">
-                  <CatalogCardSkeleton viewMode="grid" count={4} />
+                <div
+                  className={cn(
+                    "mt-4 grid grid-cols-1 gap-4 bp-md:gap-6",
+                    viewMode === "grid" && "bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4",
+                  )}
+                >
+                  <CatalogCardSkeleton
+                    viewMode={viewMode}
+                    count={viewMode === "grid" ? 4 : 1}
+                    actionCount={productActionCount}
+                    mediaAspectClassName="aspect-[5/4] bp-md:aspect-square"
+                  />
                 </div>
               )}
 

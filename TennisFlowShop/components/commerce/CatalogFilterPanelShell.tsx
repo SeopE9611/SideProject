@@ -10,7 +10,6 @@ type Props = {
   onApply: () => void;
   applyLabel?: string;
   resetLabel?: string;
-  isLoading?: boolean;
 };
 
 export function CatalogFilterPanelShell({

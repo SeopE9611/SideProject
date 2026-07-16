@@ -90,7 +90,6 @@ export default function RacketFilterPanel({
       onReset={onReset}
       onApply={onSearchSubmit}
       applyLabel="필터 적용"
-      isLoading={isLoadingInitial}
     >
       {isLoadingInitial ? (
         <SkeletonFilterDetailed />

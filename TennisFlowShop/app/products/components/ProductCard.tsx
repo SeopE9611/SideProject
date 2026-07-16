@@ -160,7 +160,7 @@ function WishButton({
 }
 
 const productImageWrapClass =
-  "relative w-full overflow-hidden rounded-t-2xl bg-muted/30 aspect-[5/4] bp-md:aspect-square";
+  "relative aspect-[5/4] w-full overflow-hidden bg-muted/30 bp-md:aspect-square";
 
 type Props = {
   product: Product;
@@ -339,12 +339,27 @@ const ProductCard = React.memo(
 
     const actions = (
       <div className="grid grid-cols-1 gap-2">
-        <Button asChild type="button" variant="highlight_soft" className="h-10 whitespace-nowrap rounded-control text-ui-body-sm">
-          <Link href={detailHref}>
-            <Eye className="mr-1.5 h-4 w-4 shrink-0" />
-            <span>교체서비스 신청</span>
-          </Link>
-        </Button>
+        {isSoldOut ? (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled
+            aria-disabled="true"
+            aria-label="교체서비스 신청 불가: 품절된 상품입니다."
+            title="품절된 상품입니다."
+            className="h-10 w-full cursor-not-allowed whitespace-nowrap rounded-control border border-border bg-muted/70 text-ui-body-sm text-muted-foreground opacity-100 disabled:opacity-100"
+          >
+            <Eye className="h-4 w-4 shrink-0" />
+            품절
+          </Button>
+        ) : (
+          <Button asChild type="button" variant="highlight_soft" className="h-10 whitespace-nowrap rounded-control text-ui-body-sm">
+            <Link href={detailHref}>
+              <Eye className="mr-1.5 h-4 w-4 shrink-0" />
+              <span>교체서비스 신청</span>
+            </Link>
+          </Button>
+        )}
         {ENABLE_STRING_STANDALONE_ORDER && (
           <Button type="button" variant="outline" className="h-10 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm" onClick={handleStringSingleBuy} disabled={isSoldOut}>
             스트링만 구매
