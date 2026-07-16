@@ -6,7 +6,6 @@ import HorizontalProducts from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 import type {
@@ -77,7 +76,8 @@ type BrandRailState = {
 
 const BRAND_RAIL_SCROLL_EPSILON = 2;
 const STRING_BRAND_RAIL_ID = "home-string-brand-rail";
-const STRING_BRAND_RAIL_EDGE_PADDING = 40;
+const RACKET_BRAND_RAIL_ID = "home-racket-brand-rail";
+const BRAND_RAIL_EDGE_PADDING = 40;
 
 type PromoBanner = {
   key: string;
@@ -334,6 +334,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     canScrollNext: false,
     hasOverflow: false,
   });
+  const [racketBrandRailState, setRacketBrandRailState] = useState<BrandRailState>({
+    canScrollPrev: false,
+    canScrollNext: false,
+    hasOverflow: false,
+  });
   const [activeApplicationPath, setActiveApplicationPath] = useState<ApplicationPathKey>("consult");
   const [activeStepKey, setActiveStepKey] = useState<ProcessStepKey>("apply");
   const [activePurpose, setActivePurpose] = useState<PurposeKey>("comfort");
@@ -341,16 +346,19 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const stringBrandRailRef = useRef<HTMLDivElement>(null);
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
 
-  const updateStringBrandRailState = useCallback(() => {
-    const rail = stringBrandRailRef.current;
-    if (!rail) return;
-
+  const getNextBrandRailState = useCallback((rail: HTMLDivElement): BrandRailState => {
     const maxScrollLeft = Math.max(0, rail.scrollWidth - rail.clientWidth);
-    const nextState: BrandRailState = {
+    return {
       canScrollPrev: rail.scrollLeft > BRAND_RAIL_SCROLL_EPSILON,
       canScrollNext: rail.scrollLeft < maxScrollLeft - BRAND_RAIL_SCROLL_EPSILON,
       hasOverflow: maxScrollLeft > BRAND_RAIL_SCROLL_EPSILON,
     };
+  }, []);
+
+  const updateStringBrandRailState = useCallback(() => {
+    const rail = stringBrandRailRef.current;
+    if (!rail) return;
+    const nextState = getNextBrandRailState(rail);
 
     setStringBrandRailState((prev) =>
       prev.canScrollPrev === nextState.canScrollPrev &&
@@ -359,10 +367,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         ? prev
         : nextState,
     );
-  }, []);
+  }, [getNextBrandRailState]);
 
-  const scrollStringBrandRail = useCallback((direction: -1 | 1) => {
-    const rail = stringBrandRailRef.current;
+  const updateRacketBrandRailState = useCallback(() => {
+    const rail = racketBrandRailRef.current;
+    if (!rail) return;
+    const nextState = getNextBrandRailState(rail);
+
+    setRacketBrandRailState((prev) =>
+      prev.canScrollPrev === nextState.canScrollPrev &&
+      prev.canScrollNext === nextState.canScrollNext &&
+      prev.hasOverflow === nextState.hasOverflow
+        ? prev
+        : nextState,
+    );
+  }, [getNextBrandRailState]);
+
+  const scrollBrandRail = useCallback((railRef: { current: HTMLDivElement | null }, direction: -1 | 1) => {
+    const rail = railRef.current;
     if (!rail) return;
 
     const distance = Math.max(180, rail.clientWidth * 0.7) * direction;
@@ -398,25 +420,31 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   }, []);
 
   useEffect(() => {
-    const rail = stringBrandRailRef.current;
-    if (!rail) return;
+    const rails = [
+      { rail: stringBrandRailRef.current, update: updateStringBrandRailState },
+      { rail: racketBrandRailRef.current, update: updateRacketBrandRailState },
+    ].filter((item): item is { rail: HTMLDivElement; update: () => void } => Boolean(item.rail));
+    if (rails.length === 0) return;
 
-    updateStringBrandRailState();
-    const handleScroll = () => updateStringBrandRailState();
-    const handleResize = () => updateStringBrandRailState();
-    rail.addEventListener("scroll", handleScroll, { passive: true });
+    rails.forEach(({ rail, update }) => {
+      update();
+      rail.addEventListener("scroll", update, { passive: true });
+    });
+    const handleResize = () => rails.forEach(({ update }) => update());
     window.addEventListener("resize", handleResize);
 
     const resizeObserver =
-      "ResizeObserver" in window ? new ResizeObserver(updateStringBrandRailState) : null;
-    resizeObserver?.observe(rail);
+      "ResizeObserver" in window
+        ? new ResizeObserver(() => rails.forEach(({ update }) => update()))
+        : null;
+    rails.forEach(({ rail }) => resizeObserver?.observe(rail));
 
     return () => {
-      rail.removeEventListener("scroll", handleScroll);
+      rails.forEach(({ rail, update }) => rail.removeEventListener("scroll", update));
       window.removeEventListener("resize", handleResize);
       resizeObserver?.disconnect();
     };
-  }, [updateStringBrandRailState]);
+  }, [updateRacketBrandRailState, updateStringBrandRailState]);
 
   useEffect(() => {
     const rail = stringBrandRailRef.current;
@@ -430,7 +458,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     const railEnd = railStart + rail.clientWidth;
     const buttonStart = activeButton.offsetLeft;
     const buttonEnd = buttonStart + activeButton.offsetWidth;
-    const edgePadding = STRING_BRAND_RAIL_EDGE_PADDING;
+    const edgePadding = BRAND_RAIL_EDGE_PADDING;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const behavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
@@ -441,6 +469,29 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       rail.scrollTo({ left: buttonEnd - rail.clientWidth + edgePadding, behavior });
     }
   }, [activeStringBrand]);
+
+
+  useEffect(() => {
+    const rail = racketBrandRailRef.current;
+    if (!rail) return;
+    const activeButton = rail.querySelector<HTMLButtonElement>(`[data-racket-brand="${activeBrand}"]`);
+    if (!activeButton) return;
+
+    const railStart = rail.scrollLeft;
+    const railEnd = railStart + rail.clientWidth;
+    const buttonStart = activeButton.offsetLeft;
+    const buttonEnd = buttonStart + activeButton.offsetWidth;
+    const edgePadding = BRAND_RAIL_EDGE_PADDING;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
+
+    if (buttonStart < railStart + edgePadding) {
+      rail.scrollTo({ left: Math.max(0, buttonStart - edgePadding), behavior });
+    } else if (buttonEnd > railEnd - edgePadding) {
+      rail.scrollTo({ left: buttonEnd - rail.clientWidth + edgePadding, behavior });
+    }
+  }, [activeBrand]);
 
   const signupPromo = useMemo(
     () => ({
@@ -720,7 +771,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
 
   const usedRacketsSource = rackByBrand[activeBrand] ?? [];
-  const carouselRackets = usedRacketsSource.slice(0, 10);
+  const visibleRackets = usedRacketsSource.slice(0, 3);
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
@@ -1313,7 +1364,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     aria-label="이전 브랜드 보기"
                     aria-controls={STRING_BRAND_RAIL_ID}
                     disabled={!stringBrandRailState.canScrollPrev}
-                    onClick={() => scrollStringBrandRail(-1)}
+                    onClick={() => scrollBrandRail(stringBrandRailRef, -1)}
                     className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
                   >
                     <ChevronLeft aria-hidden="true" className="h-4 w-4" />
@@ -1358,7 +1409,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     aria-label="다음 브랜드 보기"
                     aria-controls={STRING_BRAND_RAIL_ID}
                     disabled={!stringBrandRailState.canScrollNext}
-                    onClick={() => scrollStringBrandRail(1)}
+                    onClick={() => scrollBrandRail(stringBrandRailRef, 1)}
                     className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
                   >
                     <ChevronRight aria-hidden="true" className="h-4 w-4" />
@@ -1455,85 +1506,143 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <>
                 검수된 중고 라켓을
                 <br />
-                한눈에 살펴보세요.
+                구매와 대여로 만나보세요.
               </>
             }
-            description={
-              <>
-                실제 등록된 라켓의 상태, 가격과 대여 가능 여부를
-                <br />
-                카드별로 비교하며 확인할 수 있어요.
-              </>
-            }
+            description="최근 등록된 라켓의 상태와 가격, 대여 가능 여부를 빠르게 확인할 수 있어요."
           />
-          <div className={brandRailClass} ref={racketBrandRailRef}>
-            <button
-              type="button"
-              aria-pressed={activeBrand === "all"}
-              onClick={() => setActiveBrand("all")}
-              className={getBrandTabClass(activeBrand === "all")}
-            >
-              전체
-            </button>
-            {RACKET_BRANDS.map((b) => (
-              <button
-                key={b.value}
-                type="button"
-                aria-pressed={activeBrand === b.value}
-                onClick={() => setActiveBrand(b.value as BrandKey)}
-                className={getBrandTabClass(activeBrand === b.value)}
-              >
-                {b.label}
-              </button>
-            ))}
-          </div>
-          <div className={styles.racketShow}>
-            {carouselRackets.length > 0 ? (
-              <HomeRacketCarousel
-                activeBrand={activeBrand}
-                rackets={carouselRackets}
-                total={racketTotal}
+          <div className={styles.racketShowcase}>
+            <div className={styles.racketShowcaseImagePanel}>
+              <Image
+                src="/images/home/home-racket-section-showcase.webp"
+                alt="도깨비 인증 중고 라켓 카테고리 쇼케이스"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1199px) 100vw, 42vw"
               />
-            ) : usedRacketsError ? (
-              <EmptyPanel
-                title="중고 라켓을 불러오지 못했어요"
-                action={usedRacketsError ? () => loadUsedRackets(activeBrand, { force: true }) : undefined}
-              />
-            ) : usedRacketsLoading || !shouldLoadRackets ? (
-              <RacketCarouselSkeleton />
-            ) : (
-              <div className={styles.racketEmpty}>
-                <div className={styles.racketEmptyCopy}>
-                  <h3
-                    className={cn(
-                      styles.marketingTitle,
-                      "text-ui-section-title-lg text-foreground",
-                    )}
-                  >
-                    검수된 중고 라켓을 준비 중입니다.
+              <div className={styles.racketShowcaseOverlay} aria-hidden="true" />
+              <div className={styles.racketShowcaseCopy}>
+                <p className={styles.racketShowcaseEyebrow}>도깨비 인증 중고 라켓</p>
+                <h3 className={cn(styles.marketingTitle, styles.racketShowcaseTitle)}>
+                  상태를 확인하고
+                  <br />
+                  내 라켓을 찾아보세요.
+                </h3>
+                <p className={styles.racketShowcaseDescription}>
+                  구매·대여 후 스트링 선택과 교체 신청까지 이어집니다.
+                </p>
+                <Link className={cn(homeCtaHighlight, styles.racketShowcaseCta)} href="/rackets">
+                  중고 라켓 전체 보기
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+            <div className={styles.racketInventoryPanel}>
+              <div className={styles.racketInventoryHeader}>
+                <div>
+                  <p className={styles.racketInventoryKicker}>최근 등록 라켓</p>
+                  <h3 className={styles.racketInventoryTitle}>
+                    {activeBrand === "all" ? "전체 브랜드" : racketBrandLabel(activeBrand)}
                   </h3>
-                  <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">
-                    {activeBrand === "all"
-                      ? "현재 준비된 중고 라켓이 없습니다."
-                      : `현재 ${racketBrandLabel(activeBrand)} 중고 라켓이 없습니다.`}
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {activeBrand !== "all" && (
+                </div>
+                <p className={styles.racketInventoryCount}>
+                  {racketTotal > 0 ? `총 ${racketTotal}개` : "재고 확인 중"}
+                </p>
+              </div>
+              <div className={styles.racketBrandRailWrap}>
+                <button
+                  type="button"
+                  aria-label="이전 라켓 브랜드 보기"
+                  aria-controls={RACKET_BRAND_RAIL_ID}
+                  disabled={!racketBrandRailState.canScrollPrev}
+                  onClick={() => scrollBrandRail(racketBrandRailRef, -1)}
+                  className={styles.racketBrandRailButton}
+                >
+                  <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                </button>
+                <div className={styles.racketBrandRailViewport}>
+                  <div
+                    id={RACKET_BRAND_RAIL_ID}
+                    aria-label="중고 라켓 브랜드 필터"
+                    className={brandRailClass}
+                    ref={racketBrandRailRef}
+                  >
+                    <button
+                      type="button"
+                      data-racket-brand="all"
+                      aria-pressed={activeBrand === "all"}
+                      onClick={() => setActiveBrand("all")}
+                      className={getBrandTabClass(activeBrand === "all")}
+                    >
+                      전체
+                    </button>
+                    {RACKET_BRANDS.map((b) => (
                       <button
+                        key={b.value}
                         type="button"
-                        className={homeCtaOutline}
-                        onClick={() => setActiveBrand("all")}
+                        data-racket-brand={b.value}
+                        aria-pressed={activeBrand === b.value}
+                        onClick={() => setActiveBrand(b.value as BrandKey)}
+                        className={getBrandTabClass(activeBrand === b.value)}
                       >
-                        전체 브랜드 보기
+                        {b.label}
                       </button>
-                    )}
-                    <Link className={homeCtaHighlight} href="/rackets">
-                      중고 라켓 목록 보기
-                    </Link>
+                    ))}
+                  </div>
+                  {racketBrandRailState.hasOverflow && racketBrandRailState.canScrollPrev && (
+                    <div className={styles.racketBrandRailFadeLeft} aria-hidden="true" />
+                  )}
+                  {racketBrandRailState.hasOverflow && racketBrandRailState.canScrollNext && (
+                    <div className={styles.racketBrandRailFadeRight} aria-hidden="true" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  aria-label="다음 라켓 브랜드 보기"
+                  aria-controls={RACKET_BRAND_RAIL_ID}
+                  disabled={!racketBrandRailState.canScrollNext}
+                  onClick={() => scrollBrandRail(racketBrandRailRef, 1)}
+                  className={styles.racketBrandRailButton}
+                >
+                  <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                </button>
+              </div>
+              {visibleRackets.length > 0 ? (
+                <RacketInventoryList activeBrand={activeBrand} rackets={visibleRackets} total={racketTotal} />
+              ) : usedRacketsError ? (
+                <EmptyPanel
+                  title="중고 라켓을 불러오지 못했어요"
+                  action={usedRacketsError ? () => loadUsedRackets(activeBrand, { force: true }) : undefined}
+                />
+              ) : usedRacketsLoading || !shouldLoadRackets ? (
+                <RacketInventorySkeleton />
+              ) : (
+                <div className={styles.racketEmpty}>
+                  <div className={styles.racketEmptyCopy}>
+                    <h3 className={cn(styles.marketingTitle, "text-ui-section-title-lg text-foreground")}>
+                      {activeBrand === "all"
+                        ? "검수된 중고 라켓을 준비 중입니다."
+                        : `현재 ${racketBrandLabel(activeBrand)} 중고 라켓이 없습니다.`}
+                    </h3>
+                    <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">
+                      {activeBrand === "all"
+                        ? "전체 목록에서 입고 소식을 확인해 주세요."
+                        : "다른 브랜드의 등록 라켓을 확인해 보세요."}
+                    </p>
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {activeBrand !== "all" && (
+                        <button type="button" className={homeCtaOutline} onClick={() => setActiveBrand("all")}>
+                          전체 브랜드 보기
+                        </button>
+                      )}
+                      <Link className={homeCtaOutline} href="/rackets">
+                        중고 라켓 전체 보기
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </SiteContainer>
       </section>
@@ -1720,19 +1829,17 @@ function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
   );
 }
 
-function RacketCarouselSkeleton() {
+function RacketInventorySkeleton() {
   return (
-    <div className={styles.racketCarousel} aria-label="중고 라켓을 확인하고 있어요">
-      <div className={styles.racketSkeletonGrid}>
-        {[0, 1, 2].map((index) => (
-          <div key={index} className={styles.racketSkeletonCard} />
-        ))}
-      </div>
+    <div className={styles.racketInventoryList} aria-label="중고 라켓을 확인하고 있어요">
+      {[0, 1, 2].map((index) => (
+        <div key={index} className={styles.racketSkeletonRow} />
+      ))}
     </div>
   );
 }
 
-function HomeRacketCarousel({
+function RacketInventoryList({
   activeBrand,
   rackets,
   total,
@@ -1741,105 +1848,51 @@ function HomeRacketCarousel({
   rackets: RItem[];
   total: number;
 }) {
-  const [api, setApi] = useState<CarouselApi>();
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
   const moreHref =
     activeBrand === "all" ? "/rackets" : `/rackets?brand=${encodeURIComponent(activeBrand)}`;
   const remainingCount = Math.max(0, total - rackets.length);
-  const hasMore = remainingCount > 0;
-  const moreTitle = hasMore
-    ? "더 많은 중고 라켓"
-    : activeBrand === "all"
-      ? "전체 중고 라켓"
-      : `${racketBrandLabel(activeBrand)} 중고 라켓`;
-  const moreDescription = hasMore ? "목록에서 전체 보기" : "목록에서 자세히 보기";
-  const itemCount = rackets.length + 1;
-  const shouldCenter = itemCount <= 2;
-
-  const updateScrollState = useCallback((carouselApi: CarouselApi) => {
-    if (!carouselApi) return;
-    setCanScrollPrev(carouselApi.canScrollPrev());
-    setCanScrollNext(carouselApi.canScrollNext());
-  }, []);
-
-  useEffect(() => {
-    if (!api) return;
-    updateScrollState(api);
-    api.on("select", updateScrollState);
-    api.on("reInit", updateScrollState);
-    return () => {
-      api.off("select", updateScrollState);
-      api.off("reInit", updateScrollState);
-    };
-  }, [api, updateScrollState]);
-
-  useEffect(() => {
-    if (!api) return;
-    api.scrollTo(0, true);
-    api.reInit();
-    updateScrollState(api);
-  }, [activeBrand, api, rackets.length, updateScrollState]);
+  const moreLabel =
+    activeBrand === "all" ? "중고 라켓 전체 보기" : `${racketBrandLabel(activeBrand)} 중고 라켓 전체 보기`;
 
   return (
-    <Carousel
-      setApi={setApi}
-      opts={{ align: shouldCenter ? "center" : "start", dragFree: false, containScroll: "trimSnaps" }}
-      className={styles.racketCarousel}
-      aria-label="도깨비 인증 중고 라켓 목록"
-    >
-      <CarouselContent className={cn(styles.racketCarouselTrack, shouldCenter && styles.racketCarouselTrackCentered)}>
+    <>
+      <div className={styles.racketInventoryList}>
         {rackets.map((racket) => (
-          <CarouselItem key={racket.id} className={styles.racketCarouselItem}>
-            <RacketPreviewCard racket={racket} />
-          </CarouselItem>
+          <RacketInventoryRow key={racket.id} racket={racket} />
         ))}
-        <CarouselItem className={styles.racketCarouselItem}>
-          <Link href={moreHref} className={cn(styles.racketCard, styles.racketMoreCard)}>
-            <div className={styles.racketMoreCardBody}>
-              <span className={styles.racketMoreCardKicker}>중고 라켓 목록</span>
-              <strong className={styles.racketMoreCardTitle}>{moreTitle}</strong>
-              <span className={styles.racketMoreCardDescription}>{moreDescription}</span>
-              {hasMore && (
-                <span className={styles.racketMoreCardCount}>{remainingCount}개 더 보기</span>
-              )}
-              <span className={styles.racketMoreCardIcon} aria-hidden="true">
-                <ArrowRight className="h-5 w-5" />
-              </span>
-            </div>
-          </Link>
-        </CarouselItem>
-      </CarouselContent>
-      {(canScrollPrev || canScrollNext) && (
-        <div className={styles.racketCarouselControls}>
-          <button
-            type="button"
-            className={styles.racketCarouselControl}
-            onClick={() => api?.scrollPrev()}
-            disabled={!canScrollPrev}
-            aria-label="이전 중고 라켓 보기"
-          >
-            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={styles.racketCarouselControl}
-            onClick={() => api?.scrollNext()}
-            disabled={!canScrollNext}
-            aria-label="다음 중고 라켓 보기"
-          >
-            <ChevronRight className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
-      )}
-    </Carousel>
+      </div>
+      <div className={styles.racketInventoryFooter}>
+        <Link href={moreHref} className={styles.racketInventoryMoreLink}>
+          <span>{moreLabel}</span>
+          {remainingCount > 0 && <small>{remainingCount}개 더 보기</small>}
+          <ArrowRight aria-hidden="true" className="h-4 w-4" />
+        </Link>
+      </div>
+    </>
   );
 }
 
-function RacketPreviewCard({ racket }: { racket: RItem }) {
+function getRacketRowBadges(racket: RItem, discountRate: number) {
+  const badges: Array<{ key: string; label: string; tone: Parameters<typeof badgeToneVariant>[0] }> = [];
+
+  if (racket.status === "sold") badges.push({ key: "sold", label: "판매 완료", tone: "neutral" });
+  if (racket.status === "rented") badges.push({ key: "rented", label: "대여 중", tone: "warning" });
+
+  const conditionMeta = racket.condition ? usedBadgeMeta("condition", racket.condition) : null;
+  if (conditionMeta) {
+    badges.push({ key: "condition", label: `${racket.condition}급`, tone: conditionMeta.tone });
+  }
+
+  if (discountRate > 0) badges.push({ key: "discount", label: `${discountRate}% 할인`, tone: "brand" });
+  if (racket.marketing?.isNew) badges.push({ key: "new", label: "NEW", tone: "info" });
+  if (racket.marketing?.isFeatured) badges.push({ key: "featured", label: "추천", tone: "brand" });
+
+  return badges.slice(0, 2);
+}
+
+function RacketInventoryRow({ racket }: { racket: RItem }) {
   const effectivePrice = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
-  const conditionMeta = racket.condition ? usedBadgeMeta("condition", racket.condition) : null;
   const rentalFee = Number(racket.rental?.fee?.d7);
   const rentalLabel =
     racket.status === "sold"
@@ -1847,53 +1900,42 @@ function RacketPreviewCard({ racket }: { racket: RItem }) {
       : racket.status === "rented"
         ? "현재 대여 중"
         : racket.rental?.enabled && Number.isFinite(rentalFee) && rentalFee > 0
-          ? `7일 대여료 ${formatPrice(rentalFee)}`
+          ? `7일 대여: ${formatPrice(rentalFee)}`
           : racket.rental?.enabled
-            ? "대여 옵션 있음"
+            ? "대여 가능"
             : "판매 상품";
   const brandLabel = racketBrandLabel(racket.brand);
   const imageAlt = `${brandLabel} ${racket.model}`.trim();
-  const showConditionBadge = !racket.marketing?.isFeatured || !racket.marketing?.isNew;
+  const rowBadges = getRacketRowBadges(racket, discountRate);
 
   return (
-    <Link href={`/rackets/${racket.id}`} className={styles.racketCard}>
-      <div className={styles.racketCardImage}>
+    <Link href={`/rackets/${racket.id}`} className={styles.racketInventoryRow}>
+      <div className={styles.racketInventoryThumb}>
         <Image
           src={getImageSrc(racket.images)}
           alt={imageAlt || "중고 라켓 상품 이미지"}
           fill
           className="object-contain"
-          sizes="(max-width: 767px) 112px, (max-width: 1199px) 42vw, 28vw"
+          sizes="(max-width: 767px) 92px, 104px"
         />
       </div>
-      <div className={styles.racketCardBody}>
-        <div className={styles.racketCardBadges}>
-          {racket.marketing?.isFeatured && (
-            <Badge variant={badgeToneVariant("brand")} shape="pill">
-              추천
+      <div className={styles.racketInventoryInfo}>
+        <div className={styles.racketInventoryBadges}>
+          {rowBadges.map((badge) => (
+            <Badge key={badge.key} variant={badgeToneVariant(badge.tone)} shape="pill">
+              {badge.label}
             </Badge>
-          )}
-          {racket.marketing?.isNew && (
-            <Badge variant={badgeToneVariant("info")} shape="pill">
-              NEW
-            </Badge>
-          )}
-          {conditionMeta && showConditionBadge && (
-            <Badge variant={badgeToneVariant(conditionMeta.tone)} shape="pill">
-              {racket.condition}급
-            </Badge>
-          )}
+          ))}
         </div>
-        <p className={styles.racketCardBrand}>{brandLabel}</p>
-        <h3 className={styles.racketCardModel}>{racket.model}</h3>
-        <div className={styles.racketCardMeta}>
-          <p className={styles.racketCardPrice}>{formatPrice(effectivePrice)}</p>
-          {discountRate > 0 && (
-            <span className={styles.racketCardDiscount}>{discountRate}% 할인</span>
-          )}
+        <p className={styles.racketInventoryBrand}>{brandLabel}</p>
+        <h4 className={styles.racketInventoryModel}>{racket.model}</h4>
+        <div className={styles.racketInventoryPriceLine}>
+          <strong>판매가: {formatPrice(effectivePrice)}</strong>
+          {discountRate > 0 && <span>{discountRate}% 할인</span>}
         </div>
-        <p className={styles.racketCardRental}>{rentalLabel}</p>
+        <p className={styles.racketInventoryRental}>{rentalLabel}</p>
       </div>
+      <ArrowRight className={styles.racketInventoryArrow} aria-hidden="true" />
     </Link>
   );
 }
