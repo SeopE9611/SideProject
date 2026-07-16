@@ -1,21 +1,34 @@
-# Dokkaebi Commerce Discovery Policy (V2.2 Phase 7A)
+# Dokkaebi Commerce Discovery Policy (V2.2 Catalog Toolbar Layout Recovery)
 
-## Catalog Results Panel
+## 결과·툴바 구성
 
-Commerce Discovery의 결과 영역은 하나의 `CatalogResultsPanel` 안에서 다음 순서를 따른다.
+결과 요약과 toolbar의 구조는 도메인별 정보 밀도에 따라 달라질 수 있다.
 
-1. eyebrow / 카탈로그 성격
-2. 전체 결과 수
-3. 현재 표시 수
-4. background refresh 상태
-5. 필터·정렬·뷰 컨트롤
-6. 적용 중인 필터
+상품 목록:
+- compact 결과 요약 카드
+- 별도 toolbar 카드
+- 활성 필터 별도 카드
 
-결과·툴바·활성 필터를 서로 다른 강한 카드로 반복하지 않는다. 외부 패널은 `rounded-panel`, `border-border`, `bg-card`, `shadow-soft`를 기준으로 하며 내부 구획은 `border-t`와 muted surface만 사용한다.
+라켓 목록:
+- 결과 요약과 toolbar를 `SummaryCard` 안에 배치
+- 활성 필터 별도 카드
 
-## 빠른 필터
+## 반복 카드 기준
 
-항목 수가 5개 이하일 때 모바일에서 hidden horizontal scroll을 사용하지 않는다. grid 또는 wrap으로 모든 항목을 발견 가능하게 배치한다. active 상태는 soft brand surface(`brand-highlight-muted`)로 표시하고, 색상 외에도 `aria-pressed`, check icon, 텍스트로 상태를 전달한다.
+분리된 카드가 각각 명확한 역할을 가질 경우 허용한다.
+
+- 결과 카드: 결과 수와 조회 상태
+- toolbar 카드: 필터·정렬·보기 조작
+- active filter 카드: 현재 적용 조건과 해제
+
+## Quick filter 모바일 기준
+
+짧은 quick filter가 3~4개일 경우 compact horizontal group을 우선한다.
+
+- 버튼을 큰 2열 grid로 확대하지 않는다.
+- 360px에서만 필요한 경우 horizontal overflow를 허용한다.
+- 기능이 숨겨졌다는 인상을 줄이지 않도록 버튼 일부가 충분히 보이게 한다.
+- 품절 제외와 정렬은 별도 control row에 둘 수 있다.
 
 ## 활성 필터
 

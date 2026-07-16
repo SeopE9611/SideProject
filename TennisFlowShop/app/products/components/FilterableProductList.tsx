@@ -3,8 +3,8 @@
 import { FilterPanel } from "@/app/products/components/FilterPanel";
 import ProductCard from "@/app/products/components/ProductCard";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
-import { ActiveFilterBar, CatalogCardSkeleton, CatalogResultsPanel, CatalogToolbar, type ActiveFilterItem } from "@/components/commerce";
-import { EmptyState } from "@/components/public";
+import { ActiveFilterBar, CatalogCardSkeleton, type ActiveFilterItem } from "@/components/commerce";
+import { EmptyState, SummaryCard } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,7 +64,7 @@ const QUICK_BENEFIT_FILTERS = BENEFIT_FILTER_VALUES.map((value) => ({
 }));
 const quickToggleButtonClass = (isActive: boolean) =>
   cn(
-    "h-10 w-full shrink-0 whitespace-nowrap rounded-control border px-3 text-ui-body-sm transition-colors bp-sm:h-9 bp-sm:w-auto",
+    "h-10 shrink-0 whitespace-nowrap rounded-control border px-3 text-ui-body-sm transition-colors bp-sm:h-9",
     isActive
       ? "border-brand-highlight-ink/30 bg-brand-highlight-muted text-brand-highlight-ink hover:bg-brand-highlight-muted/80"
       : "border-border bg-background text-muted-foreground hover:bg-muted/30",
@@ -637,37 +637,49 @@ export default function FilterableProductList({
       <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
-          <div className="mb-6 bp-md:mb-8">
-            <CatalogResultsPanel
-              eyebrow="String Catalog"
-              title="스트링 상품"
-              description="플레이 성향과 성능, 가격 조건을 조합해 원하는 스트링을 찾아보세요."
-              total={total ?? 0}
-              visibleCount={loadedCount}
-              countPrefix={productCountPrefix}
-              countSuffix="개"
-              isCountLoading={isCountLoading}
-              isRefreshing={isBackgroundRefreshing}
-              toolbar={
-                <CatalogToolbar
-                  filterButton={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (showFilters) cancelFiltersSheet();
-                        else openFiltersSheet();
-                      }}
-                      className="h-10 w-full shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted/30 bp-sm:h-9 bp-sm:w-auto"
-                      aria-expanded={showFilters}
-                      aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-                    >
-                      <Filter className="mr-2 h-4 w-4" />
-                      필터{panelFiltersCount > 0 && `(${panelFiltersCount})`}
-                    </Button>
-                  }
-                  quickFilters={QUICK_BENEFIT_FILTERS.map((option) => {
+          <div className="mb-6 space-y-3 bp-md:mb-8">
+            <SummaryCard eyebrow="String Catalog" contentClassName="pt-4">
+              <div
+                className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"
+                aria-live="polite"
+              >
+                <span className="text-ui-body-sm font-semibold text-foreground">
+                  {isCountLoading ? "조회 중" : `${productCountPrefix} ${(total ?? 0).toLocaleString()}개`}
+                </span>
+                <span className="text-ui-body-sm text-muted-foreground">
+                  (표시중 {loadedCount.toLocaleString()}개)
+                </span>
+              </div>
+              {isBackgroundRefreshing ? (
+                <span className="mt-2 inline-flex text-ui-body-sm text-muted-foreground">조회 중...</span>
+              ) : null}
+            </SummaryCard>
+
+            {hasAppliedPanelFilters ? (
+              <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
+                <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} />
+              </div>
+            ) : null}
+
+            <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
+              <div className="flex flex-col gap-3 bp-xl:flex-row bp-xl:items-center bp-xl:justify-between">
+                <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 bp-xl:w-auto bp-xl:overflow-visible bp-xl:pb-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (showFilters) cancelFiltersSheet();
+                      else openFiltersSheet();
+                    }}
+                    className="h-10 shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted/30 bp-sm:h-9"
+                    aria-expanded={showFilters}
+                    aria-label={showFilters ? "필터 닫기" : "필터 열기"}
+                  >
+                    <Filter className="mr-2 h-4 w-4" />
+                    필터{panelFiltersCount > 0 && `(${panelFiltersCount})`}
+                  </Button>
+                  {QUICK_BENEFIT_FILTERS.map((option) => {
                     const isActive = exposureFilter.includes(option.value);
                     return (
                       <Button
@@ -685,43 +697,45 @@ export default function FilterableProductList({
                       </Button>
                     );
                   })}
-                  soldOutToggle={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleToggleIncludeSoldOut}
-                      className={quickToggleButtonClass(!includeSoldOut)}
-                      aria-pressed={!includeSoldOut}
-                      aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
-                    >
-                      {!includeSoldOut && <Check className="mr-1.5 h-3.5 w-3.5" />}
-                      품절 제외
-                    </Button>
-                  }
-                  viewToggle={!isMobileViewport ? (
-                    <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
-                      <Button type="button" variant={viewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={viewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
-                      <Button type="button" variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={viewMode === "list"}><List className="h-4 w-4" /></Button>
+                </div>
+
+                <div className="flex w-full min-w-0 items-center justify-between gap-2 bp-xl:ml-auto bp-xl:w-auto bp-xl:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleToggleIncludeSoldOut}
+                    className={quickToggleButtonClass(!includeSoldOut)}
+                    aria-pressed={!includeSoldOut}
+                    aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
+                  >
+                    {!includeSoldOut && <Check className="mr-1.5 h-3.5 w-3.5" />}
+                    품절 제외
+                  </Button>
+                  <div className="flex min-w-0 items-center justify-end gap-2">
+                    {!isMobileViewport ? (
+                      <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
+                        <Button type="button" variant={viewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={viewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
+                        <Button type="button" variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={viewMode === "list"}><List className="h-4 w-4" /></Button>
+                      </div>
+                    ) : null}
+                    <div className="min-w-0 flex-1 bp-sm:flex-none">
+                      <Select value={sortOption} onValueChange={setSortOption}>
+                        <SelectTrigger className="h-10 w-full min-w-0 rounded-control border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] dark:focus:border-border">
+                          <SelectValue placeholder="정렬" />
+                        </SelectTrigger>
+                        <SelectContent className="border-border dark:bg-card">
+                          <SelectItem value="latest">최신순</SelectItem>
+                          <SelectItem value="reviews-desc">후기 많은순</SelectItem>
+                          <SelectItem value="price-low">가격 낮은순</SelectItem>
+                          <SelectItem value="price-high">가격 높은순</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ) : null}
-                  sortControl={
-                    <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 w-full min-w-0 rounded-control border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] dark:focus:border-border">
-                        <SelectValue placeholder="정렬" />
-                      </SelectTrigger>
-                      <SelectContent className="border-border dark:bg-card">
-                        <SelectItem value="latest">최신순</SelectItem>
-                        <SelectItem value="reviews-desc">후기 많은순</SelectItem>
-                        <SelectItem value="price-low">가격 낮은순</SelectItem>
-                        <SelectItem value="price-high">가격 높은순</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  }
-                />
-              }
-              activeFilters={hasAppliedPanelFilters ? <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} /> : undefined}
-            />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 콘텐츠 */}
