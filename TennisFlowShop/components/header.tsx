@@ -13,6 +13,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,7 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
@@ -572,20 +572,10 @@ const Header = () => {
                           {displayName} 님
                         </div>
                         {hasKakao && (
-                          <Badge
-                            variant={getSocialProviderBadgeSpec("kakao").variant}
-                            className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-ui-micro leading-none"
-                          >
-                            카카오
-                          </Badge>
+                          <IdentityBadge tone="kakao" className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 text-ui-micro leading-none">카카오</IdentityBadge>
                         )}
                         {hasNaver && (
-                          <Badge
-                            variant={getSocialProviderBadgeSpec("naver").variant}
-                            className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-ui-micro leading-none"
-                          >
-                            네이버
-                          </Badge>
+                          <IdentityBadge tone="naver" className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 text-ui-micro leading-none">네이버</IdentityBadge>
                         )}
                         {isAdmin && (
                           <Badge

@@ -4,6 +4,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import HorizontalProducts from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { buttonVariants } from "@/components/ui/button";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 import type {
@@ -283,11 +284,9 @@ const getImageSrc = (images?: string[]) => {
   return src.startsWith("http") || src.startsWith("/") ? src : `/${src}`;
 };
 
-const buttonBase =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-4 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30";
-const buttonHighlight = `${buttonBase} bg-brand-highlight text-brand-highlight-foreground hover:opacity-90`;
-const buttonInverse = `${buttonBase} border border-surface-inverse-foreground/20 bg-surface-inverse text-surface-inverse-foreground hover:border-surface-inverse-foreground/40`;
-const buttonOutline = `${buttonBase} border border-border bg-card text-foreground hover:bg-muted/40`;
+const homeCtaHighlight = buttonVariants({ variant: "highlight", size: "tall" });
+const homeCtaDefault = buttonVariants({ variant: "default", size: "tall" });
+const homeCtaOutline = buttonVariants({ variant: "outline", size: "tall" });
 const brandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:none] bp-sm:gap-2.5 [&::-webkit-scrollbar]:hidden";
 const getBrandTabClass = (isActive: boolean) =>
@@ -788,10 +787,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   안내해드려요.
                 </p>
                 <div className="mt-7 grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-                  <Link className={buttonHighlight} href="/services/apply">
+                  <Link className={homeCtaHighlight} href="/services/apply">
                     교체서비스 신청하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </Link>
-                  <Link className={buttonInverse} href="/products/recommend">
+                  <Link className={homeCtaDefault} href="/products/recommend">
                     내게 맞는 스트링 찾기
                   </Link>
                 </div>
@@ -857,7 +856,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     <PlanCell label="접수 방법" value={heroPath.method} />
                     <PlanCell label="선택 방식" value={heroPath.label} />
                   </div>
-                  <Link className={cn(buttonHighlight, "mt-5 w-full")} href={heroPath.href}>
+                  <Link className={cn(homeCtaHighlight, "mt-5 w-full")} href={heroPath.href}>
                     {heroPath.cta}
                   </Link>
                 </div>
@@ -1014,7 +1013,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <CheckLine key={check}>{check}</CheckLine>
                 ))}
               </div>
-              <Link className={cn(buttonHighlight, "mt-6")} href={currentPath.href}>
+              <Link className={cn(homeCtaHighlight, "mt-6")} href={currentPath.href}>
                 {currentPath.cta}
               </Link>
             </div>
@@ -1066,7 +1065,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     신청서 작성, 접수 방식 선택, 스트링·텐션 확인, 작업 완료 안내를 순서대로
                     확인하세요.
                   </p>
-                  <span className={cn(buttonHighlight, styles.bentoCta)}>
+                  <span className={cn(homeCtaHighlight, styles.bentoCta)}>
                     교체서비스 시작하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </span>
                 </div>
@@ -1168,13 +1167,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 {currentStepIndex < PROCESS_STEPS.length - 1 ? (
                   <button
                     type="button"
-                    className={cn(buttonInverse, "mt-7")}
+                    className={cn(homeCtaDefault, "mt-7")}
                     onClick={() => setActiveStepKey(PROCESS_STEPS[currentStepIndex + 1].key)}
                   >
                     다음 단계 보기
                   </button>
                 ) : (
-                  <Link className={cn(buttonInverse, "mt-7")} href="/services/apply">
+                  <Link className={cn(homeCtaDefault, "mt-7")} href="/services/apply">
                     교체서비스 신청하기
                   </Link>
                 )}
@@ -1425,7 +1424,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <p className="mt-4 break-keep text-ui-body leading-relaxed">
                 교체 횟수와 가격을 비교해 내게 맞는 패키지를 선택할 수 있어요.
               </p>
-              <Link className={cn(buttonInverse, "mt-6")} href="/services/packages">
+              <Link className={cn(homeCtaDefault, "mt-6")} href="/services/packages">
                 패키지 자세히 보기
               </Link>
             </div>
@@ -1441,10 +1440,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button className={buttonOutline} type="button" onClick={fetchHomePackages}>
+                    <button className={homeCtaOutline} type="button" onClick={fetchHomePackages}>
                       다시 시도
                     </button>
-                    <Link className={buttonOutline} href="/services/packages">
+                    <Link className={homeCtaOutline} href="/services/packages">
                       패키지 전체 보기
                     </Link>
                   </div>
@@ -1530,7 +1529,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     </p>
                   )}
                   <Link
-                    className={cn(buttonHighlight, "mt-6")}
+                    className={cn(homeCtaHighlight, "mt-6")}
                     href={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
                   >
                     중고 라켓 둘러보기
@@ -1567,7 +1566,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">
                     상태 확인이 끝난 라켓부터 순차적으로 소개해드릴게요.
                   </p>
-                  <Link className={cn(buttonHighlight, "mt-6 w-fit")} href="/rackets">
+                  <Link className={cn(homeCtaHighlight, "mt-6 w-fit")} href="/rackets">
                     중고 라켓 둘러보기
                   </Link>
                 </div>
@@ -1645,7 +1644,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 완료된 교체 이력을 저장하면 다음 교체 시기와 라켓 상태를 확인할 수 있어요.
               </p>
             </div>
-            <Link className={buttonOutline} href="/racket-care">
+            <Link className={homeCtaOutline} href="/racket-care">
               라켓 케어 알아보기
             </Link>
           </div>
@@ -1762,7 +1761,7 @@ function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
         </span>
       </div>
       <Link
-        className={cn(buttonOutline, styles.packageAction)}
+        className={cn(homeCtaOutline, styles.packageAction)}
         href={`/services/packages/checkout?package=${pkg.id}`}
       >
         이 패키지 보기
@@ -1831,7 +1830,7 @@ function EmptyPanel({ title, action }: { title: string; action?: () => void }) {
     <div className="rounded-panel border border-border bg-card p-6 text-center">
       <p className="break-keep text-ui-card-title font-medium text-foreground">{title}</p>
       {action && (
-        <button type="button" className={cn(buttonOutline, "mt-4")} onClick={action}>
+        <button type="button" className={cn(homeCtaOutline, "mt-4")} onClick={action}>
           다시 시도
         </button>
       )}

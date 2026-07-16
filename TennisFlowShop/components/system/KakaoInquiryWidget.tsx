@@ -251,7 +251,7 @@ export default function KakaoInquiryWidget() {
   return (
     <div
       className={cn(
-        "fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4",
+        "fixed bottom-4 right-3 z-[70] bp-sm:bottom-4 bp-sm:right-4",
         hideOnFinderTouch && "hidden bp-lg:block",
         hideOnCartMobile && "hidden bp-lg:block",
         "bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-lg:bottom-4",
@@ -303,10 +303,10 @@ export default function KakaoInquiryWidget() {
               aria-expanded={panel === "guide"}
               aria-controls="compact-inquiry-panel"
               onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 text-ui-body-sm font-semibold text-primary-foreground shadow-float hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="flex h-11 w-11 items-center justify-center gap-2 rounded-full bg-primary p-0 text-ui-body-sm font-semibold text-primary-foreground shadow-float hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bp-sm:h-auto bp-sm:w-auto bp-sm:px-4"
             >
               <MessageCircle className="h-4 w-4" />
-              문의
+              <span className="sr-only bp-sm:not-sr-only bp-sm:inline">문의</span>
             </button>
           </div>
         ) : null}

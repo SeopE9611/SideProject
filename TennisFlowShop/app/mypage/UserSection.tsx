@@ -1,9 +1,8 @@
 "use client";
 
 import { PublicSurface } from "@/components/public";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { Mail, ShieldCheck, User, UserCog } from "lucide-react";
 import Link from "next/link";
@@ -42,43 +41,20 @@ export default function UserSection({ user }: Props) {
                   {user.name ?? "회원"}님
                 </h1>
 
-                <Badge
-                  variant={isAdmin ? "info" : "secondary"}
-                  wrap="normal"
-                  className="min-h-6 gap-1 px-2 text-ui-label font-medium"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <IdentityBadge tone={isAdmin ? "admin" : "email"} icon={<ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}>
                   {isAdmin ? `${getUserRoleLabel(normalizedRole)} 계정` : "사용자 회원"}
-                </Badge>
+                </IdentityBadge>
 
                 {hasKakao && (
-                  <Badge
-                    variant={getSocialProviderBadgeSpec("kakao").variant}
-                    wrap="normal"
-                    className="min-h-6 px-2 text-ui-label font-medium"
-                  >
-                    카카오 로그인
-                  </Badge>
+                  <IdentityBadge tone="kakao">카카오 로그인</IdentityBadge>
                 )}
 
                 {hasNaver && (
-                  <Badge
-                    variant={getSocialProviderBadgeSpec("naver").variant}
-                    wrap="normal"
-                    className="min-h-6 px-2 text-ui-label font-medium"
-                  >
-                    네이버 로그인
-                  </Badge>
+                  <IdentityBadge tone="naver">네이버 로그인</IdentityBadge>
                 )}
 
                 {!hasKakao && !hasNaver && (
-                  <Badge
-                    variant="secondary"
-                    wrap="normal"
-                    className="min-h-6 px-2 text-ui-label font-medium"
-                  >
-                    이메일 계정
-                  </Badge>
+                  <IdentityBadge tone="email">이메일 계정</IdentityBadge>
                 )}
               </div>
 

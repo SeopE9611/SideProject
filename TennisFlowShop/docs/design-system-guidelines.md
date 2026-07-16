@@ -86,3 +86,14 @@
 - `highlight` CTA는 page-level primary action에 제한합니다. 거래 카드에서 반복되는 필수 처리 액션은 `highlight_soft`를 사용할 수 있으며, default primary와 filled highlight를 목록 전체에 반복하지 않습니다. 후기 작성처럼 선택적인 활동은 `secondary` 또는 `outline`을 사용합니다.
 - 거래 상태색은 `success`, `warning`, `info`, `destructive` 등 semantic status token을 유지하고, `brand-highlight`를 완료·성공 의미로 사용하지 않습니다.
 - 상품명, 라켓명, 날짜, 금액, 상태, 버튼, Badge, 다음 행동 문구에는 기본 본문 서체를 사용합니다.
+
+## V2.1 Interaction Foundation
+
+자세한 SSOT는 `docs/dokkaebi-v2-interaction-responsive-policy.md`를 따른다.
+
+- 모든 페이지 CTA는 `Button` 또는 `buttonVariants`를 사용한다.
+- 파일 내부에 `buttonBase`, `buttonHighlight` 같은 로컬 recipe를 복제하지 않는다.
+- 반복 업무 action은 `highlight_soft`를 사용한다.
+- 최상위 destination navigation은 모바일 hidden scroll을 사용하지 않는다.
+- identity Badge와 workflow status Badge를 분리한다.
+- fixed Header 아래 sticky offset은 `--header-h`를 사용한다.
