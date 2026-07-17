@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { HelpCircle, Search, X } from "lucide-react";
@@ -147,10 +147,10 @@ export default function SupportFaqSearch() {
   };
 
   return (
-    <Card className="overflow-hidden border-border">
-      <CardHeader className="border-b border-border bg-muted/30 p-5 md:p-6">
+    <PublicSurface padding="none" className="overflow-hidden">
+      <div className="border-b border-border bg-muted/30 p-5 md:p-6">
         <div className="flex min-w-0 items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-background">
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
@@ -168,7 +168,7 @@ export default function SupportFaqSearch() {
           <div
             className={cn(
               "relative min-w-0 transition-all duration-200",
-              isFocused && "rounded-lg ring-2 ring-ring ring-offset-2 ring-offset-background",
+              isFocused && "rounded-control ring-2 ring-ring ring-offset-2 ring-offset-background",
             )}
           >
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -219,11 +219,11 @@ export default function SupportFaqSearch() {
             );
           })}
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="p-5 md:p-6">
+      <div className="p-5 md:p-6">
         {filteredFaqs.length === 0 ? (
-          <div className="rounded-xl border border-border bg-muted/30 px-4 py-12 text-center">
+          <PublicSurface variant="muted" padding="none" className="px-4 py-12 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Search className="h-6 w-6 text-muted-foreground" />
             </div>
@@ -236,15 +236,15 @@ export default function SupportFaqSearch() {
             <Button asChild className="mt-4 w-full sm:w-auto" size="sm" wrap="responsive">
               <Link href="/board/qna/write">문의하기</Link>
             </Button>
-          </div>
+          </PublicSurface>
         ) : (
           <div className="space-y-4">
-            <Accordion type="single" className="space-y-2">
+            <Accordion type="single" className="divide-y divide-border">
               {visibleFaqs.map((faq) => (
                 <AccordionItem
                   key={faq.id}
                   value={faq.id}
-                  className="rounded-xl border border-border bg-card px-4 py-1 data-[state=open]:bg-muted/30 sm:px-5"
+                  className="px-4 py-1 data-[state=open]:bg-muted/20 sm:px-5"
                 >
                   <AccordionTrigger
                     value={faq.id}
@@ -295,7 +295,7 @@ export default function SupportFaqSearch() {
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PublicSurface>
   );
 }

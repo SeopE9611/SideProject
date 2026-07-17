@@ -467,22 +467,24 @@ function QnaList({
                 {qna.title}
               </span>
 
-              <div className="hidden shrink-0 items-center gap-2 text-ui-label text-muted-foreground bp-sm:flex">
+              <div className="flex shrink-0 items-center gap-2 text-ui-label text-muted-foreground">
                 <Badge
                   variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
                   className={`${badgeBaseOutlined} ${badgeSizeSm}`}
                 >
                   {qna.answer ? "답변완료" : "대기중"}
                 </Badge>
-                {(qna.hasImage || qna.hasFile) && (
-                  <span className="flex items-center gap-1">
-                    {qna.hasImage && <ImageIcon className="h-3 w-3" />}
-                    {qna.hasFile && <Paperclip className="h-3 w-3" />}
+                <div className="hidden shrink-0 items-center gap-2 bp-sm:flex">
+                  {(qna.hasImage || qna.hasFile) && (
+                    <span className="flex items-center gap-1">
+                      {qna.hasImage && <ImageIcon className="h-3 w-3" />}
+                      {qna.hasFile && <Paperclip className="h-3 w-3" />}
+                    </span>
+                  )}
+                  <span className="w-20 shrink-0 whitespace-nowrap text-right tabular-nums">
+                    {fmt(qna.createdAt)}
                   </span>
-                )}
-                <span className="w-20 shrink-0 whitespace-nowrap text-right tabular-nums">
-                  {fmt(qna.createdAt)}
-                </span>
+                </div>
               </div>
             </div>
           );
