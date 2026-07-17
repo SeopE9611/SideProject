@@ -3,6 +3,9 @@ import CheckoutButton from "@/app/checkout/CheckoutButton";
 import NiceCheckoutButton from "@/app/checkout/NiceCheckoutButton";
 import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
 import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
+import CheckoutLoadingShell from "@/components/checkout/CheckoutLoadingShell";
+import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
+import CheckoutSection from "@/components/checkout/CheckoutSection";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import {
@@ -19,7 +22,7 @@ import { PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/pu
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1349,106 +1352,57 @@ export default function CheckoutPage() {
           pointsToUse={pointsToUse}
           onChangePointsToUse={setPointsToUse}
         />
-        {/* Hero Section */}
-        <div className="relative overflow-hidden border-b border-border bg-secondary/20 text-foreground">
-          {/* 배경 패턴 */}
-          <div className="absolute inset-0 bg-cross-line-pattern opacity-10" />
-          <div className="absolute right-0 top-0 h-64 w-64 translate-x-1/3 -translate-y-1/2 rounded-full bg-primary/[0.02] blur-3xl" />
-
-          <SiteContainer variant="wide" className="relative py-4 bp-sm:py-6 bp-md:py-7">
-            <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 bp-sm:h-12 bp-sm:w-12">
-                  <CreditCard className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+        <CheckoutPageHeader
+          eyebrow="CHECKOUT"
+          title="주문/결제"
+          description="주문 상품, 배송 정보, 결제수단을 확인한 뒤 결제를 진행하세요."
+          icon={<CreditCard className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
+        >
+          {(lockServiceMode || withStringService) && (
+            <nav aria-label="장착 서비스 진행 단계">
+              <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-control border border-border/80 bg-card p-1.5 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2 [&::-webkit-scrollbar]:hidden">
+                <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-ui-caption font-semibold text-background bp-sm:h-8 bp-sm:w-8">
+                    <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
+                  </span>
+                  <span className="whitespace-nowrap text-ui-label font-medium text-foreground bp-sm:text-ui-body-sm">
+                    <span className="bp-sm:hidden">스트링</span>
+                    <span className="hidden bp-sm:inline">{stepperStep1Label}</span>
+                  </span>
                 </div>
-                <div>
-                  <h1 className="text-balance text-ui-page-title font-semibold leading-tight tracking-tight bp-sm:text-ui-page-title-lg">
-                    주문/결제
-                  </h1>
-                  <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground bp-sm:text-ui-body">
-                    주문 상품, 배송 정보, 결제수단을 확인한 뒤 결제를 진행하세요.
-                  </p>
+
+                <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+
+                <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-semibold text-brand-highlight-foreground shadow-sm bp-sm:h-8 bp-sm:w-8">
+                    2
+                  </span>
+                  <span className="whitespace-nowrap text-ui-label font-semibold text-foreground bp-sm:text-ui-body-sm">
+                    <span className="bp-sm:hidden">정보 입력</span>
+                    <span className="hidden bp-sm:inline">결제·장착 정보</span>
+                  </span>
+                </div>
+
+                <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+
+                <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-ui-caption font-semibold text-muted-foreground bp-sm:h-8 bp-sm:w-8">
+                    3
+                  </span>
+                  <span className="whitespace-nowrap text-ui-label font-medium text-muted-foreground bp-sm:text-ui-body-sm">
+                    <span className="bp-sm:hidden">완료</span>
+                    <span className="hidden bp-sm:inline">접수 완료</span>
+                  </span>
                 </div>
               </div>
-            </div>
-
-            {/**
-             *  서비스 신청 흐름용
-             * - 목적: '교체 서비스 포함 결제'가 단순 체크박스가 아니라 '흐름'임을 시각적으로 전달
-             * - 안전성: UI만 추가(상태/결제 로직에 영향 없음)
-             * - 노출 조건:
-             *   1) lockServiceMode: 작업의뢰/교체 포함 결제로 진입한 경우(모드 잠금)
-             *   2) withStringService: 사용자가 서비스 포함을 선택한 경우
-             */}
-            {(lockServiceMode || withStringService) && (
-              <nav aria-label="장착 서비스 진행 단계" className="mt-4 bp-sm:mt-5">
-                <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-xl bg-card/75 p-1.5 ring-1 ring-border/50 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2.5 [&::-webkit-scrollbar]:hidden">
-                  {/* 1) 스트링 선택: 이미 완료된 단계 */}
-                  <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground shadow-sm bp-sm:h-8 bp-sm:w-8">
-                      <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
-                    </span>
-                    <span className="whitespace-nowrap text-ui-label font-medium text-foreground bp-sm:text-ui-body-sm">
-                      <span className="bp-sm:hidden">스트링</span>
-                      <span className="hidden bp-sm:inline">{stepperStep1Label}</span>
-                    </span>
-                  </div>
-
-                  <div className="h-[2px] w-4 shrink-0 rounded-full bg-primary/40 bp-sm:w-8" />
-
-                  {/* 2) 결제/장착 정보: 현재 페이지(현재 단계) */}
-                  <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground shadow-sm ring-2 ring-primary/20 bp-sm:h-8 bp-sm:w-8 bp-sm:ring-4">
-                      2
-                    </span>
-                    <span className="whitespace-nowrap text-ui-label font-medium text-foreground bp-sm:text-ui-body-sm">
-                      <span className="bp-sm:hidden">정보 입력</span>
-                      <span className="hidden bp-sm:inline">결제·장착 정보</span>
-                    </span>
-                  </div>
-
-                  <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
-
-                  {/* 3) 접수 완료: 결제와 함께 서비스 신청이 함께 접수됨 */}
-                  <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-border bg-secondary text-ui-caption font-semibold text-muted-foreground bp-sm:h-8 bp-sm:w-8">
-                      3
-                    </span>
-                    <span className="whitespace-nowrap text-ui-label font-medium text-foreground/80 bp-sm:text-ui-body-sm">
-                      <span className="bp-sm:hidden">완료</span>
-                      <span className="hidden bp-sm:inline">접수 완료</span>
-                    </span>
-                  </div>
-                </div>
-              </nav>
-            )}
-
-            {/* <div className="flex items-center gap-6 text-sm">
- <div className="flex items-center gap-2 text-ui-body-sm">
- <Shield className="h-4 w-4 text-foreground" />
- <span>SSL 보안 결제</span>
- </div>
- <div className="flex items-center gap-2 text-ui-body-sm">
- <Truck className="h-4 w-4 text-primary" />
- <span>빠른 배송</span>
- </div>
- <div className="flex items-center gap-2 text-ui-body-sm">
- <Star className="h-4 w-4 text-foreground" />
- <span>상품별 배송비 정책 적용</span>
- </div>
- </div> */}
-          </SiteContainer>
-        </div>
+            </nav>
+          )}
+        </CheckoutPageHeader>
 
         <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
           <div className="mx-auto w-full max-w-6xl">
             {isInitialLoading ? (
-              <div className="space-y-5 bp-sm:space-y-6">
-                <Skeleton className="h-20 w-full rounded-2xl" />
-                <Skeleton className="h-64 w-full rounded-2xl" />
-                <Skeleton className="h-80 w-full rounded-2xl" />
-                <Skeleton className="h-96 w-full rounded-2xl" />
-              </div>
+              <CheckoutLoadingShell layout="linear" className="-mx-4 -my-6 bp-sm:-my-10" />
             ) : (
               <div
                 className={cn(
@@ -1538,31 +1492,19 @@ export default function CheckoutPage() {
                   </div>
                 </section>
                 {/* 주문 상품 */}
-                <Card
+                <CheckoutSection
                   id="checkout-order-items"
-                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                  icon={<Package className="h-5 w-5" />}
+                  title="주문 상품"
+                  headerAction={
+                    <Badge
+                      variant="secondary"
+                      className="shrink-0 whitespace-nowrap px-3 py-1 text-ui-caption font-medium"
+                    >
+                      {orderItems.length}개 상품
+                    </Badge>
+                  }
                 >
-                  <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                          <Package className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="min-w-0">
-                          <CardTitle className="break-keep text-ui-card-title-lg font-semibold leading-snug">
-                            주문 상품
-                          </CardTitle>
-                        </div>
-                      </div>
-                      <Badge
-                        variant="secondary"
-                        className="shrink-0 whitespace-nowrap px-3 py-1 text-ui-caption font-medium"
-                      >
-                        {orderItems.length}개 상품
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardContent className="p-4 bp-sm:p-6">
                     {isBundleCheckout && bundleQty !== null && (
                       <div className="mb-4 border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5 text-ui-body-sm text-foreground dark:bg-card/30 dark:text-foreground">
                         <p className="font-medium">번들 수량: {bundleQty}개</p>
@@ -1614,7 +1556,7 @@ export default function CheckoutPage() {
                                   className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover"
                                 />
                               </div>
-                              <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground shadow-lg ring-2 ring-card">
+                              <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground shadow-sm ring-2 ring-card">
                                 {item.quantity}
                               </div>
                             </div>
@@ -1716,30 +1658,16 @@ export default function CheckoutPage() {
                         </span>
                       </span>
                     </div>
-                  </CardContent>
-                </Card>
+                </CheckoutSection>
 
                 {/* 수령 방식 및 장착 서비스 카드 */}
-                <Card
+                <CheckoutSection
                   id="checkout-delivery-method"
-                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                  icon={<Truck className="h-5 w-5" />}
+                  title="수령/배송 방법"
+                  description="수령 방식에 맞춰 배송비와 입력 항목이 달라집니다."
+                  contentClassName="space-y-4 bp-sm:space-y-5"
                 >
-                  <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                        <Truck className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-ui-card-title-lg font-semibold">
-                          수령/배송 방법
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
-                          수령 방식에 맞춰 배송비와 입력 항목이 달라집니다.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="space-y-4 p-4 bp-sm:space-y-5 bp-sm:p-6">
                     <RadioGroup
                       value={deliveryMethod}
                       onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")}
@@ -1848,32 +1776,19 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                </CheckoutSection>
 
                 {/* 배송 정보/수령 정보 */}
-                <Card
+                <CheckoutSection
                   id="checkout-recipient-info"
-                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                  icon={<MapPin className="h-5 w-5" />}
+                  title={needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
+                  description={
+                    needsShippingAddress
+                      ? "배송과 연락에 필요한 정보를 입력하세요."
+                      : "방문 수령 안내를 받을 연락처를 입력하세요."
+                  }
                 >
-                  <div className="border-b border-border bg-secondary/50 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20 bp-sm:h-10 bp-sm:w-10">
-                        <MapPin className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-ui-card-title-lg font-semibold">
-                          {needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
-                          {needsShippingAddress
-                            ? "배송과 연락에 필요한 정보를 입력하세요."
-                            : "방문 수령 안내를 받을 연락처를 입력하세요."}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-4 bp-sm:p-6">
                     <div className="w-full space-y-4 bp-sm:space-y-5">
                       <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
                         <div className="space-y-2">
@@ -2088,8 +2003,7 @@ export default function CheckoutPage() {
                         </div>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                </CheckoutSection>
 
                 {withStringService && checkoutStringingAdapter && (
                   <CheckoutStringingServiceSections
@@ -2100,26 +2014,12 @@ export default function CheckoutPage() {
                 )}
 
                 {/* 결제 정보 */}
-                <Card
+                <CheckoutSection
                   id="checkout-payment-info"
-                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                  icon={<CreditCard className="h-5 w-5" />}
+                  title="결제 정보"
+                  description="포인트와 패키지 적용 후 결제수단을 선택하세요."
                 >
-                  <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                        <CreditCard className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-ui-card-title-lg font-semibold">
-                          결제 정보
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
-                          포인트와 패키지 적용 후 결제수단을 선택하세요.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-4 bp-sm:p-6">
                     <div className="space-y-5 bp-sm:space-y-6">
                       <div className="space-y-3">
                         <Label className="flex items-center gap-2">
@@ -2383,30 +2283,15 @@ export default function CheckoutPage() {
                         </>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                </CheckoutSection>
 
                 {/* 주문자 동의 */}
-                <Card
+                <CheckoutSection
                   id="checkout-agreements"
-                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                  icon={<CheckCircle className="h-5 w-5" />}
+                  title="주문자 동의"
+                  description="필수 약관에 동의하면 결제를 진행할 수 있습니다."
                 >
-                  <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-ui-card-title-lg font-semibold">
-                          주문자 동의
-                        </CardTitle>
-                        <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
-                          필수 약관에 동의하면 결제를 진행할 수 있습니다.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-4 bp-sm:p-6">
                     <div className="space-y-5">
                       <label
                         htmlFor="agree-all"
@@ -2498,8 +2383,7 @@ export default function CheckoutPage() {
                         ))}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                </CheckoutSection>
 
                 <div id="checkout-final-confirm" className="scroll-mt-24">
                   <FinalPaymentConfirmCard

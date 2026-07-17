@@ -11,6 +11,8 @@ import {
   toPackageVariant,
 } from "@/app/services/packages/_lib/packageVariant";
 import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
+import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
+import CheckoutSection from "@/components/checkout/CheckoutSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -453,37 +455,27 @@ export default function PackageCheckoutClient({
 
   return (
     <div className="min-h-full bg-background">
-      {/* Hero Section */}
-      <div className="border-b border-border bg-muted/20 text-foreground">
-        <div className="container py-8 md:py-10">
-          <div className="max-w-3xl space-y-4">
-            <div>
-              <p className="mb-2 text-ui-body-sm font-semibold text-primary">주문 정보 확인</p>
-              <h1 className="text-ui-page-title-lg font-semibold tracking-tight sm:text-ui-page-title-lg">
-                패키지 주문/결제
-              </h1>
-              <p className="mt-3 break-keep text-ui-body leading-7 text-muted-foreground sm:text-ui-body-lg">
-                결제 전 패키지 횟수, 유효기간, 총 결제 금액을 먼저 확인해 주세요.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2 text-ui-body-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
-                <Shield className="h-3.5 w-3.5 text-primary" />
-                SSL 보안 결제
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
-                <Calendar className="h-3.5 w-3.5 text-primary" />
-                패키지별 유효기간 적용
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
-                <Star className="h-3.5 w-3.5 text-primary" />
-                전문가 스트링 서비스
-              </span>
-            </div>
-          </div>
+      <CheckoutPageHeader
+        eyebrow="PACKAGE CHECKOUT"
+        title="패키지 주문/결제"
+        description="결제 전 패키지 횟수, 유효기간, 총 결제 금액을 먼저 확인해 주세요."
+        icon={<Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
+      >
+        <div className="flex flex-wrap gap-2 text-ui-label text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-control border border-border bg-card px-2.5 py-1">
+            <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+            보안 결제
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-control border border-border bg-card px-2.5 py-1">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            유효기간 적용
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-control border border-border bg-card px-2.5 py-1">
+            <Star className="h-3.5 w-3.5 text-muted-foreground" />
+            스트링 서비스
+          </span>
         </div>
-      </div>
+      </CheckoutPageHeader>
 
       <div className="container py-8 pb-[calc(96px+env(safe-area-inset-bottom))] md:py-10 lg:pb-10">
         <div
@@ -491,17 +483,12 @@ export default function PackageCheckoutClient({
           aria-busy={isCheckoutSubmitting}
         >
           {/* 선택된 패키지 정보 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
-            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
-              <CardTitle className="flex items-center gap-3">
-                <Package className="h-5 w-5 text-primary" />
-                선택된 패키지
-              </CardTitle>
-              <CardDescription className="mt-2">
-                패키지명, 이용 횟수, 유효기간과 결제 금액을 확인해 주세요.
-              </CardDescription>
-            </div>
-            <CardContent className="p-4 md:p-6">
+          <CheckoutSection
+            className="lg:col-start-1"
+            icon={<Package className="h-5 w-5" />}
+            title="선택된 패키지"
+            description="패키지명, 이용 횟수, 유효기간과 결제 금액을 확인해 주세요."
+          >
               {selectedPackage ? (
                 <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
               ) : (
@@ -511,21 +498,16 @@ export default function PackageCheckoutClient({
                   <Skeleton className="h-24 w-full" />
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </CheckoutSection>
 
           {/* 신청자 정보 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
-            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
-              <CardTitle className="flex items-center gap-3">
-                <UserIcon className="h-5 w-5 text-primary" />
-                신청자 정보
-              </CardTitle>
-              <CardDescription className="mt-2">
-                결제 안내를 받을 신청자 정보를 입력해 주세요.
-              </CardDescription>
-            </div>
-            <CardContent className="p-4 md:p-5">
+          <CheckoutSection
+            className="lg:col-start-1"
+            icon={<UserIcon className="h-5 w-5" />}
+            title="신청자 정보"
+            description="결제 안내를 받을 신청자 정보를 입력해 주세요."
+            contentClassName="bp-sm:p-5"
+          >
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -625,21 +607,16 @@ export default function PackageCheckoutClient({
                   )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </CheckoutSection>
 
           {/* 서비스 이용 안내 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
-            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
-              <CardTitle className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-primary" />
-                서비스 이용 안내
-              </CardTitle>
-              <CardDescription className="mt-2">
-                요청사항은 선택 입력이며, 결제 방식별 처리 기준만 확인해 주세요.
-              </CardDescription>
-            </div>
-            <CardContent className="p-4 md:p-6 space-y-4">
+          <CheckoutSection
+            className="lg:col-start-1"
+            icon={<Shield className="h-5 w-5" />}
+            title="서비스 이용 안내"
+            description="요청사항은 선택 입력이며, 결제 방식별 처리 기준만 확인해 주세요."
+            contentClassName="space-y-4"
+          >
               <div className="rounded-lg border border-border bg-muted/30 p-3 text-ui-body-sm leading-6 text-muted-foreground md:p-4">
                 <p>• 무통장입금은 입금 확인 후 패키지가 활성화됩니다.</p>
                 <p>• 카드/간편결제는 결제 완료 후 자동으로 활성화됩니다.</p>
@@ -661,21 +638,16 @@ export default function PackageCheckoutClient({
                   disabled={isFrameLoading}
                 />
               </div>
-            </CardContent>
-          </Card>
+          </CheckoutSection>
 
           {/* 결제 정보 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
-            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
-              <CardTitle className="flex items-center gap-3">
-                <CreditCard className="h-5 w-5 text-primary" />
-                결제 정보
-              </CardTitle>
-              <CardDescription className="mt-2">
-                결제 방법을 선택하고 필요한 정보를 입력해주세요.
-              </CardDescription>
-            </div>
-            <CardContent className="p-4 md:p-5">
+          <CheckoutSection
+            className="lg:col-start-1"
+            icon={<CreditCard className="h-5 w-5" />}
+            title="결제 정보"
+            description="결제 방법을 선택하고 필요한 정보를 입력해주세요."
+            contentClassName="bp-sm:p-5"
+          >
               <div className="mb-5 rounded-xl border border-primary/15 bg-primary/5 p-4">
                 <div className="flex items-end justify-between gap-4">
                   <span className="text-ui-body-sm font-medium text-muted-foreground">
@@ -841,18 +813,15 @@ export default function PackageCheckoutClient({
                   </div>
                 ) : null}
               </div>
-            </CardContent>
-          </Card>
+          </CheckoutSection>
 
           {/* 주문자 동의 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
-            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
-              <CardTitle className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-primary" />
-                주문자 동의
-              </CardTitle>
-            </div>
-            <CardContent className="p-4 md:p-5">
+          <CheckoutSection
+            className="lg:col-start-1"
+            icon={<Shield className="h-5 w-5" />}
+            title="주문자 동의"
+            contentClassName="bp-sm:p-5"
+          >
               <div className="space-y-3">
                 <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                   <div className="flex items-center space-x-2">
@@ -935,12 +904,11 @@ export default function PackageCheckoutClient({
                   ))}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </CheckoutSection>
 
           {/* 최종 결제 확인 */}
-          <Card className="relative overflow-hidden border border-border bg-card shadow-md lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
-            <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-5">
+          <Card className="relative overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
+            <div className="border-b border-border/80 bg-muted/20 p-4 text-foreground md:p-5">
               <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
                 <Package className="h-5 w-5 text-primary" />
                 최종 결제 확인
@@ -1023,9 +991,9 @@ export default function PackageCheckoutClient({
 
               <Separator />
 
-              <div className="flex items-end justify-between gap-4 text-ui-section-title font-semibold">
+              <div className="rounded-control bg-surface-inverse px-4 py-3 text-surface-inverse-foreground flex items-end justify-between gap-4 text-ui-section-title font-semibold">
                 <span>총 결제 금액</span>
-                <span className="text-primary">
+                <span className="text-brand-highlight tabular-nums">
                   {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
                 </span>
               </div>
