@@ -28,7 +28,7 @@ export default function CheckoutBottomStickyBar({
   return (
     <div
       data-bottom-sticky="1"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 pt-3 pb-[calc(env(safe-area-inset-bottom)+10px)] shadow-lg backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pt-3 pb-[calc(env(safe-area-inset-bottom)+10px)] shadow-float bp-lg:hidden"
     >
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4">
         <div className="min-w-0 flex-1">
@@ -37,12 +37,13 @@ export default function CheckoutBottomStickyBar({
             {safeAmount.toLocaleString()}원
           </p>
           {helperText && (
-            <p className="mt-0.5 truncate text-ui-label text-muted-foreground">{helperText}</p>
+            <p className="mt-0.5 line-clamp-1 text-ui-label leading-tight text-muted-foreground">{helperText}</p>
           )}
         </div>
         <Button
           type="button"
-          className="h-11 min-w-[132px] shrink-0 px-4 font-semibold sm:h-12"
+          variant="highlight"
+          className="h-11 min-w-[128px] max-w-[52vw] shrink-0 px-4 font-semibold sm:h-12"
           disabled={disabled || loading}
           aria-label={ariaLabel ?? label}
           onClick={onClick}
