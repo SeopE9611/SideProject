@@ -183,13 +183,13 @@ function CartOptionChangeContent({
   return (
     <div className="flex max-h-[inherit] flex-col">
       <div className="space-y-5 px-5 pb-4 pt-5 bp-sm:px-6">
-        <div className="flex gap-3 rounded-xl border border-border bg-muted/20 p-3">
+        <div className="flex gap-3 rounded-panel border border-border bg-muted/20 p-3">
           <Image
             src={item.image || PLACEHOLDER_IMAGE}
             alt={item.name}
             width={72}
             height={72}
-            className="h-[72px] w-[72px] rounded-lg object-cover"
+            className="h-[72px] w-[72px] rounded-control border border-border object-cover"
           />
           <div className="min-w-0 flex-1">
             <p className="line-clamp-2 font-medium text-foreground">{item.name}</p>
@@ -204,7 +204,7 @@ function CartOptionChangeContent({
             )}
           </div>
         </div>
-        <div className="rounded-xl bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
+        <div className="rounded-panel border border-border bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
           현재 옵션:{" "}
           {item.selectedGauge ? `게이지(굵기) ${formatGaugeLabel(item.selectedGauge)}` : ""}
           {item.selectedGauge && (item.selectedColorLabel || item.selectedColor) ? " · " : ""}
@@ -237,9 +237,9 @@ function CartOptionChangeContent({
                       <Button
                         key={row.value}
                         type="button"
-                        variant={selectedColor === row.value ? "default" : "outline"}
+                        variant={selectedColor === row.value ? "highlight_soft" : "outline"}
                         size="sm"
-                        className="h-9 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-9 rounded-control disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={isColorDisabled}
                         onClick={() => {
                           setSelectedColor(row.value);
@@ -279,9 +279,9 @@ function CartOptionChangeContent({
                       <Button
                         key={row.value}
                         type="button"
-                        variant={selectedGauge === row.value ? "default" : "outline"}
+                        variant={selectedGauge === row.value ? "highlight_soft" : "outline"}
                         size="sm"
-                        className="h-9 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-9 rounded-control disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={disabled}
                         onClick={() => setSelectedGauge(row.value)}
                       >
@@ -294,7 +294,7 @@ function CartOptionChangeContent({
               </section>
             )}
             <div
-              className={`rounded-xl p-3 text-ui-body-sm ${Number(stock ?? 0) < item.quantity || isSoldOut ? "bg-destructive/10 text-destructive" : "bg-muted/20 text-muted-foreground"}`}
+              className={`rounded-xl p-3 text-ui-body-sm ${Number(stock ?? 0) < item.quantity || isSoldOut ? "bg-destructive/10 text-destructive" : "border border-border bg-muted/20 text-muted-foreground"}`}
             >
               선택 조합 재고: <span className="font-semibold">{Number(stock ?? 0)}개</span>
               {Number(stock ?? 0) < item.quantity && (
@@ -306,7 +306,7 @@ function CartOptionChangeContent({
           </>
         )}
       </div>
-      <div className="sticky bottom-0 flex gap-2 border-t border-border bg-card p-4">
+      <div className="sticky bottom-0 flex gap-2 border-t border-border bg-card p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
           취소
         </Button>
@@ -341,7 +341,7 @@ export default function CartOptionChangeOverlay({
         <SheetContent
           side="bottom"
           data-kakao-widget-hide="1"
-          className="max-h-[88dvh] overflow-y-auto rounded-t-2xl p-0"
+          className="max-h-[88dvh] overflow-y-auto rounded-t-panel p-0"
         >
           <div className="mx-auto mt-3 h-1.5 w-10 rounded-full bg-muted-foreground/30" />
           <div className="px-5 pb-1 pt-4">
@@ -356,7 +356,7 @@ export default function CartOptionChangeOverlay({
     );
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto rounded-2xl p-0">
+      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto rounded-panel p-0">
         <DialogHeader className="px-6 pb-1 pt-6">
           <DialogTitle>옵션 변경</DialogTitle>
           <DialogDescription>변경할 색상과 게이지(굵기)를 선택해주세요.</DialogDescription>
