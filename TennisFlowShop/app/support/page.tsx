@@ -3,6 +3,7 @@
 import SupportFaqSearch from "@/app/support/_components/SupportFaqSearch";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { InteractiveCard } from "@/components/public/InteractiveCard";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import AsyncState from "@/components/system/AsyncState";
@@ -30,18 +31,14 @@ import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
   Megaphone,
-  ChevronRight,
   Eye,
   Gift,
   Headset,
   ImageIcon,
   Lock,
   MessageSquare,
-  PackageSearch,
   Paperclip,
   Pin,
-  Search,
-  ShoppingBag,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -129,7 +126,7 @@ const fmt = (v: string | Date) =>
     .replace(/\.\s/g, ".")
     .replace(/\.$/, "");
 
-// ---------------------- 퀵 액션 카드 ----------------------
+// ---------------------- 퀵 액션/안내 링크 ----------------------
 
 type QuickActionProps = {
   icon: LucideIcon;
@@ -155,72 +152,36 @@ const quickActions: QuickActionProps[] = [
   },
 ];
 
-function QuickActionCard({
-  icon: Icon,
-  title,
-  description,
-  href,
-  variant = "default",
-}: QuickActionProps) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "group relative flex min-w-0 flex-col gap-3 rounded-panel border p-5 transition-colors",
-        variant === "primary"
-          ? "border-primary/20 bg-primary/5 hover:border-primary/30 hover:bg-primary/10"
-          : "border-border bg-card hover:bg-muted/30",
-      )}
-    >
-      <div
-        className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-control transition-colors",
-          variant === "primary"
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground group-hover:bg-muted/80",
-        )}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="min-w-0 space-y-1 pr-7">
-        <h3 className="break-keep font-semibold text-foreground group-hover:text-foreground/90">
-          {title}
-        </h3>
-        <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
-          {description}
-        </p>
-      </div>
-      <ChevronRight className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
-    </Link>
-  );
-}
-
 // ---------------------- 안내 링크 ----------------------
 
 type InfoLinkProps = {
   icon: LucideIcon;
   title: string;
+  description: string;
   href: string;
 };
 
 const infoLinks: InfoLinkProps[] = [
-  { icon: Megaphone, title: "공지사항", href: "/board/notice" },
-  { icon: Gift, title: "이벤트", href: "/board/event" },
-  { icon: Headset, title: "아카데미", href: "/academy" },
-  { icon: MessageSquare, title: "쪽지함", href: "/messages" },
+  { icon: Megaphone, title: "공지사항", description: "서비스 운영 안내와 필수 공지를 확인합니다.", href: "/board/notice" },
+  { icon: Gift, title: "이벤트", description: "진행 중인 혜택과 참여 안내를 살펴봅니다.", href: "/board/event" },
+  { icon: Headset, title: "아카데미", description: "레슨 일정과 수강 안내 페이지로 이동합니다.", href: "/academy" },
+  { icon: MessageSquare, title: "쪽지함", description: "개별 안내와 답변 메시지를 확인합니다.", href: "/messages" },
 ];
 
-function InfoLinkItem({ icon: Icon, title, href }: InfoLinkProps) {
+function InfoLinkItem({ icon: Icon, title, description, href }: InfoLinkProps) {
   return (
     <Link
       href={href}
-      className="group flex min-h-14 min-w-0 items-center gap-3 rounded-control border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50"
+      className="group flex min-w-0 items-start gap-3 border-b border-border p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:border-r bp-md:[&:nth-child(2n)]:border-r-0 bp-lg:[&:nth-child(2n)]:border-r bp-lg:[&:nth-child(4n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"
     >
-      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 break-keep text-ui-body-sm font-medium text-foreground">
-        {title}
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
+      <span className="min-w-0 flex-1 space-y-1">
+        <span className="block break-keep text-ui-body-sm font-semibold text-foreground">{title}</span>
+        <span className="block break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+          {description}
+        </span>
       </span>
-      <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
     </Link>
   );
 }
@@ -551,28 +512,25 @@ export default function SupportPage() {
       {/* Hero Section */}
       <PublicPageHero
         align="center"
+        variant="feature"
         eyebrow="고객센터"
-        title="무엇을 도와드릴까요?"
+        title="필요한 도움을 빠르게 찾아보세요"
         description={
           <p className="break-keep leading-relaxed">
-            주문, 배송, 서비스 관련 궁금한 점을 빠르게 해결해 드립니다.
+            주문, 배송, 교체서비스, 아카데미 문의까지 자주 찾는 해결 경로를 한곳에서 안내합니다.
           </p>
         }
-        className="bg-muted/30"
-      >
-        {/* Search Bar */}
-        <div className="w-full max-w-lg">
-          <div className="group relative">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-foreground" />
-            <Link
-              href="#faq"
-              className="flex min-h-14 w-full items-center rounded-control border border-border bg-card py-3 pl-12 pr-4 text-left text-muted-foreground shadow-sm transition-colors hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              <span className="break-keep">자주 묻는 질문 검색하기</span>
-            </Link>
-          </div>
-        </div>
-      </PublicPageHero>
+        actions={
+          <>
+            <Button variant="highlight" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+              <Link href="#faq">FAQ 찾아보기</Link>
+            </Button>
+            <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+              <Link href="/board/qna/write">문의하기</Link>
+            </Button>
+          </>
+        }
+      />
 
       <SiteContainer className="py-8 md:py-12">
         <div className="space-y-10 md:space-y-14">
@@ -584,16 +542,55 @@ export default function SupportPage() {
               description="문의하기와 자주 묻는 질문을 먼저 확인해 보세요."
             />
             <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2">
-              {quickActions.map((action) => (
-                <QuickActionCard key={action.href} {...action} />
-              ))}
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+                const featured = action.variant === "primary";
+
+                return (
+                  <InteractiveCard
+                    key={action.href}
+                    href={action.href}
+                    className={cn(
+                      "group flex h-full min-w-0 flex-col gap-4",
+                      featured && "border-brand-highlight-ink/35 bg-brand-highlight-muted",
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <span
+                        className={cn(
+                          "flex h-11 w-11 shrink-0 items-center justify-center rounded-control border",
+                          featured
+                            ? "border-brand-highlight-ink/30 text-brand-highlight-ink"
+                            : "border-border bg-background text-muted-foreground",
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                    </div>
+                    <div className="min-w-0 space-y-2">
+                      <h3 className="break-keep text-ui-card-title font-semibold text-foreground">
+                        {action.title}
+                      </h3>
+                      <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                        {action.description}
+                      </p>
+                    </div>
+                  </InteractiveCard>
+                );
+              })}
             </div>
           </section>
 
           {/* Info Links */}
           <section>
-            <PublicSurface padding="sm">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <SectionHeader
+              className="mb-6"
+              title="지원 목적지"
+              description="공지, 이벤트, 아카데미와 메시지 확인 경로를 이어서 확인하세요."
+            />
+            <PublicSurface padding="none" className="overflow-hidden">
+              <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
                 {infoLinks.map((link) => (
                   <InfoLinkItem key={link.href} {...link} />
                 ))}
