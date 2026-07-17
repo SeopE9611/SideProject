@@ -1,4 +1,3 @@
-import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -11,6 +10,30 @@ export type CheckoutLoadingShellProps = {
 
 const defaultLinearKeys = ["items", "delivery", "recipient", "payment", "agreements", "confirm"] as const;
 const defaultAsideKeys = ["package", "applicant", "guide", "payment", "agreements"] as const;
+
+function HeaderSkeleton() {
+  return (
+    <header aria-hidden="true" className="border-b border-border/80 bg-muted/30 text-foreground">
+      <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
+        <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-end bp-md:justify-between">
+          <div className="flex min-w-0 items-start gap-3 bp-sm:gap-4">
+            <div className="min-w-0">
+              <div className="text-ui-label font-semibold uppercase tracking-[0.18em]">
+                <Skeleton className="h-3 w-28" />
+              </div>
+              <div className="mt-1 font-brand-heading leading-tight tracking-tight">
+                <Skeleton className="h-8 w-44" />
+              </div>
+              <div className="mt-2 max-w-3xl leading-relaxed">
+                <Skeleton className="h-4 w-72 max-w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </SiteContainer>
+    </header>
+  );
+}
 
 function SectionSkeleton({ compact = false }: { compact?: boolean }) {
   return (
@@ -42,11 +65,7 @@ export default function CheckoutLoadingShell({
 
   return (
     <div aria-hidden="true" className={cn("min-h-full bg-background", className)}>
-      <CheckoutPageHeader
-        eyebrow={<Skeleton className="h-3 w-28" />}
-        title={<Skeleton className="h-8 w-44" />}
-        description={<Skeleton className="h-4 w-72 max-w-full" />}
-      />
+      <HeaderSkeleton />
       <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
         {layout === "aside" ? (
           <div className="grid gap-6 pb-[calc(96px+env(safe-area-inset-bottom))] bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-lg:pb-0">

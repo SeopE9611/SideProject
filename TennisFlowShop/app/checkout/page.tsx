@@ -1342,6 +1342,10 @@ export default function CheckoutPage() {
       !stringingApplicationMissing &&
       !checkoutStringingAdapter?.packagePreviewLoading;
 
+    if (isInitialLoading) {
+      return <CheckoutLoadingShell layout="linear" />;
+    }
+
     return (
       <div className="min-h-full bg-background">
         <CheckoutPointsAutoAdjust
@@ -1401,16 +1405,13 @@ export default function CheckoutPage() {
 
         <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
           <div className="mx-auto w-full max-w-6xl">
-            {isInitialLoading ? (
-              <CheckoutLoadingShell layout="linear" className="-mx-4 -my-6 bp-sm:-my-10" />
-            ) : (
-              <div
-                className={cn(
-                  "space-y-6 pb-[calc(96px+env(safe-area-inset-bottom))] lg:pb-0",
-                  isCheckoutSubmitting && "pointer-events-none",
-                )}
-                aria-busy={isCheckoutSubmitting}
-              >
+            <div
+              className={cn(
+                "space-y-6 pb-[calc(96px+env(safe-area-inset-bottom))] lg:pb-0",
+                isCheckoutSubmitting && "pointer-events-none",
+              )}
+              aria-busy={isCheckoutSubmitting}
+            >
                 <nav
                   aria-label="주문서 작성 순서"
                   className="rounded-2xl border border-border bg-card p-2.5 shadow-sm bp-sm:p-4"
@@ -2593,8 +2594,7 @@ export default function CheckoutPage() {
                     </div>
                   )}
                 </Card>
-              </div>
-            )}
+            </div>
           </div>
         </SiteContainer>
       </div>
