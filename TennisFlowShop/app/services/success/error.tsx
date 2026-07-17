@@ -14,7 +14,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
   }, [error]);
 
   return (
-    <main className="bg-background">
+    <div className="bg-background">
       <SiteContainer className="flex min-h-[60vh] items-center">
         <ResultState
           status="error"
@@ -33,6 +33,6 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
           </p>
         </ResultState>
       </SiteContainer>
-    </main>
+    </div>
   );
 }
