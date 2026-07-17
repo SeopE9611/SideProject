@@ -479,7 +479,7 @@ export default async function AcademyPage() {
                     </div>
                     <a
                       href={`tel:${contact.phone.replaceAll("-", "")}`}
-                      className="inline-flex max-w-full items-center gap-2 break-all text-ui-body font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="inline-flex max-w-full min-w-0 items-center gap-2 whitespace-nowrap text-ui-body font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       <Phone className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                       <span className="tabular-nums">{contact.phone}</span>
@@ -700,31 +700,25 @@ export default async function AcademyPage() {
               <MessageCircle className="h-7 w-7" aria-hidden />
             </div>
             <h2 className="text-balance text-ui-section-title font-semibold tracking-tight text-foreground md:text-ui-page-title lg:text-ui-page-title-lg">
-              끝까지 확인했다면 상담으로 일정을 맞춰보세요
+              나에게 맞는 레슨이 궁금하다면 문의해 주세요
             </h2>
             <p className="text-pretty text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
-              레벨, 목표, 가능한 일정을 알려주시면 담당자가 수강 가능 여부와 등록 절차를 안내합니다.
+              도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.
             </p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                wrap="responsive"
-                className="w-full sm:w-auto"
-              >
+              <Button asChild size="lg" wrap="responsive" className="w-full sm:w-auto">
                 <Link href="/board/qna/write?category=academy">문의글 작성하기</Link>
               </Button>
               <Button
                 asChild={hasVisibleClasses}
-                variant="secondary"
+                variant="outline"
                 size="lg"
                 wrap="responsive"
                 className="w-full sm:w-auto"
                 disabled={!hasVisibleClasses}
               >
                 {hasVisibleClasses ? (
-                  <Link href="#academy-classes">클래스 다시 확인</Link>
+                  <Link href="#academy-classes">모집 클래스 보기</Link>
                 ) : (
                   "모집 중인 레슨 없음"
                 )}
