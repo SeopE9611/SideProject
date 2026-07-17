@@ -172,7 +172,7 @@ function InfoLinkItem({ icon: Icon, title, description, href }: InfoLinkProps) {
   return (
     <Link
       href={href}
-      className="group flex min-w-0 items-start gap-3 border-b border-border p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:border-r bp-md:[&:nth-child(2n)]:border-r-0 bp-lg:[&:nth-child(2n)]:border-r bp-lg:[&:nth-child(4n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"
+      className="group flex min-w-0 items-start gap-3 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:border-r bp-sm:[&:nth-child(2n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:border-b-0 bp-lg:[&:nth-child(2n)]:border-r bp-lg:[&:nth-child(4n)]:border-r-0"
     >
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
       <span className="min-w-0 flex-1 space-y-1">
