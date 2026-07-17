@@ -955,14 +955,14 @@ export default function RentalsCheckoutClient({
                     )}
                   </div>
                 </div>
-
-                {requestStringing && rentalStringingAdapter && (
-                  <RentalCheckoutStringingSections
-                    withStringService={requestStringing}
-                    adapter={rentalStringingAdapter}
-                  />
-                )}
             </CheckoutSection>
+
+            {requestStringing && rentalStringingAdapter && (
+              <RentalCheckoutStringingSections
+                withStringService={requestStringing}
+                adapter={rentalStringingAdapter}
+              />
+            )}
 
             {/* 배송 정보 */}
             <CheckoutSection
