@@ -2,6 +2,7 @@
 import { PublicSurface } from "@/components/public";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -41,6 +42,12 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   if (hasDataError) {
     return (
       <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
+        <CardHeader className="border-b border-border">
+          <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />
+            내 위시리스트
+          </CardTitle>
+        </CardHeader>
         <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
           위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
         </CardContent>
@@ -51,8 +58,22 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   if (isLoading && !hasResolvedData) {
     return (
       <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
-        <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
-          위시리스트를 불러오는 중입니다.
+        <CardHeader className="border-b border-border">
+          <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />
+            내 위시리스트
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 p-4" aria-label="위시리스트를 불러오는 중입니다.">
+          {["wishlist-loading-primary", "wishlist-loading-secondary"].map((key) => (
+            <div key={key} className="flex min-w-0 items-center gap-4" aria-hidden="true">
+              <Skeleton className="h-14 w-14 shrink-0 rounded-xl" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-4/5 rounded-md" />
+                <Skeleton className="h-4 w-24 rounded-md" />
+              </div>
+            </div>
+          ))}
         </CardContent>
       </PublicSurface>
     );
@@ -125,13 +146,21 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
       </CardHeader>
 
       <CardContent className={variant === "inline" ? "p-0" : ""}>
-        <div className={clsx(variant === "inline" ? "grid gap-0 divide-y bp-xl:grid-cols-2 bp-xl:divide-x bp-xl:divide-y-0" : "space-y-3")}>
-          {list.map((it) => (
+        <div className={clsx(variant === "inline" ? "grid gap-0 bp-xl:grid-cols-2" : "space-y-3")}>
+          {list.map((it, index) => (
             <div
               key={it.id}
               className={clsx(
                 "flex min-w-0 items-center gap-4",
-                variant === "inline" ? "p-4 bp-xl:border-b bp-xl:border-border" : "p-3",
+                variant === "inline"
+                  ? clsx(
+                      "border-b border-border p-4",
+                      index >= list.length - (list.length % 2 === 0 ? 2 : 1) &&
+                        "bp-xl:border-b-0",
+                      index % 2 === 0 && "bp-xl:border-r bp-xl:border-border",
+                      list.length % 2 === 1 && index === list.length - 1 && "bp-xl:border-r-0",
+                    )
+                  : "p-3",
                 "min-w-0", // 말줄임을 위해 필요
               )}
             >

@@ -1386,10 +1386,16 @@ export default function CartPageClient() {
                       )}
                     </div>
                     <div className="hidden flex-col items-stretch gap-3 rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse p-4 text-surface-inverse-foreground shadow-soft bp-lg:flex">
+                      <div className="space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2">
+                        <p className="text-ui-label text-surface-inverse-muted">결제예정금액</p>
+                        <p className="text-ui-card-title-lg font-semibold tabular-nums text-surface-inverse-foreground">
+                          {!isCartPriceReady ? "계산 중" : `${formatKRW(total)}원`}
+                        </p>
+                      </div>
                       {blockServiceCheckout ? (
                         <>
                           {blockServiceCheckoutByComposition && (
-                            <div className="w-full space-y-1 rounded-lg border border-border bg-muted/20 px-3 py-2 text-ui-label leading-relaxed text-foreground">
+                            <div className="w-full space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-muted">
                               <p className="font-semibold">교체서비스 구성을 정리해야 해요</p>
                               <p>라켓 1종에는 장착할 스트링 1종이 필요해요.</p>
                               <p>
@@ -1411,7 +1417,7 @@ export default function CartPageClient() {
                             </div>
                           )}
                           {blockServiceCheckoutByQty && (
-                            <div className="w-full rounded-lg border border-border bg-muted/20 px-3 py-2 text-ui-label leading-relaxed text-foreground">
+                            <div className="w-full rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-muted">
                               라켓 1개에는 장착할 스트링 1개가 필요해요.
                               <br />
                               현재 라켓 <span className="font-semibold">{totalRacketQty}개</span> /
@@ -1429,6 +1435,7 @@ export default function CartPageClient() {
                           {bundleEditHref ? (
                             <Button
                               asChild
+                              variant="highlight"
                               className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold"
                             >
                               <Link href={bundleEditHref}>
@@ -1439,6 +1446,7 @@ export default function CartPageClient() {
                             </Button>
                           ) : (
                             <Button
+                              variant="highlight"
                               className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold"
                               size="lg"
                               onClick={() => showErrorToast(serviceBlockToastMessage)}
@@ -1452,19 +1460,19 @@ export default function CartPageClient() {
                           )}
                         </>
                       ) : loading ? (
-                        <Button className="h-12 w-full font-semibold opacity-70" disabled>
+                        <Button variant="inverse" className="h-12 w-full font-semibold opacity-70" disabled>
                           <Loader2 className="h-5 w-5 animate-spin" />
                           로그인 확인 중...
                         </Button>
                       ) : !isCartPriceReady ? (
-                        <Button className="h-12 w-full font-semibold opacity-70" disabled>
+                        <Button variant="inverse" className="h-12 w-full font-semibold opacity-70" disabled>
                           <Loader2 className="h-5 w-5 animate-spin" />
                           금액 계산 중...
                         </Button>
                       ) : (
                         <>
                           {hasMountableStringOnlyFlow && (
-                            <div className="space-y-1 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-ui-label leading-relaxed text-foreground break-keep">
+                            <div className="space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-muted break-keep">
                               {stringStandalonePausedNoticeLines.map((line) => (
                                 <p key={line}>{line}</p>
                               ))}
@@ -1498,7 +1506,7 @@ export default function CartPageClient() {
                               </span>
                             </Button>
                             <Button
-                              variant="outline"
+                              variant="inverse"
                               className="h-12 w-full px-2 font-semibold"
                               asChild
                             >
