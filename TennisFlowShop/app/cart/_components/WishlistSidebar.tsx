@@ -1,5 +1,6 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PublicSurface } from "@/components/public";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -39,21 +40,21 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
 
   if (hasDataError) {
     return (
-      <Card variant="muted" className={clsx("mt-6", className)}>
+      <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
         <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
           위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
         </CardContent>
-      </Card>
+      </PublicSurface>
     );
   }
 
   if (isLoading && !hasResolvedData) {
     return (
-      <Card variant="muted" className={clsx("mt-6", className)}>
+      <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
         <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
           위시리스트를 불러오는 중입니다.
         </CardContent>
-      </Card>
+      </PublicSurface>
     );
   }
 
@@ -95,7 +96,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   }
 
   return (
-    <Card variant="muted" className={clsx("mt-6", className)}>
+    <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
       <CardHeader
         className={clsx(
           "rounded-t-lg",
@@ -104,7 +105,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
       >
         <div className="flex flex-col items-start gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
           <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
-            <Heart className="h-5 w-5 text-foreground" />
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />
             {title}
           </CardTitle>
           <Button
@@ -117,20 +118,20 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
             }}
             className="w-full justify-center border-border bg-transparent hover:bg-primary/10 bp-sm:w-auto dark:hover:bg-primary/20"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
             위시리스트 비우기
           </Button>
         </div>
       </CardHeader>
 
       <CardContent className={variant === "inline" ? "p-0" : ""}>
-        <div className={clsx(variant === "inline" ? "divide-y" : "space-y-3")}>
+        <div className={clsx(variant === "inline" ? "grid gap-0 divide-y bp-xl:grid-cols-2 bp-xl:divide-x bp-xl:divide-y-0" : "space-y-3")}>
           {list.map((it) => (
             <div
               key={it.id}
               className={clsx(
-                "flex items-center gap-4",
-                variant === "inline" ? "p-4" : "p-3",
+                "flex min-w-0 items-center gap-4",
+                variant === "inline" ? "p-4 bp-xl:border-b bp-xl:border-border" : "p-3",
                 "min-w-0", // 말줄임을 위해 필요
               )}
             >
@@ -174,7 +175,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
               </div>
 
               {/* 액션 버튼: 크기/간격 통일 */}
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1">
                 <Button
                   size="sm"
                   variant="outline"
@@ -189,7 +190,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                   }
                   // remove(it.id); -> 자동삭제 전용 (지워서 활성화 시켜도됨)
                 >
-                  <ShoppingCart className="h-4 w-4" />
+                  <ShoppingCart className="h-4 w-4" aria-hidden="true" />
                 </Button>
 
                 <Button
@@ -201,13 +202,13 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                   aria-label="위시리스트에서 삭제"
                   title="위시리스트에서 삭제"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
             </div>
           ))}
         </div>
       </CardContent>
-    </Card>
+    </PublicSurface>
   );
 }
