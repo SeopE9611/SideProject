@@ -19,6 +19,7 @@ type PaymentFailureResultProps = {
   guide: PaymentFailureGuide;
   code: string;
   message?: string;
+  status?: "error" | "warning";
   primaryAction: PaymentFailureAction;
   secondaryAction: PaymentFailureAction;
   warningMessage: string;
@@ -28,6 +29,7 @@ export function PaymentFailureResult({
   guide,
   code,
   message,
+  status = "error",
   primaryAction,
   secondaryAction,
   warningMessage,
@@ -35,7 +37,7 @@ export function PaymentFailureResult({
   return (
     <SiteContainer className="flex min-h-[60vh] items-center">
       <ResultState
-        status="error"
+        status={status}
         title={guide.title}
         description={
           <ul className="space-y-1">
