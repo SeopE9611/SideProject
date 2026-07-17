@@ -8,7 +8,6 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -167,16 +166,15 @@ function QuickActionCard({
     <Link
       href={href}
       className={cn(
-        "group relative flex min-w-0 flex-col gap-3 rounded-xl border p-5 transition-all duration-200",
-        "hover:-translate-y-0.5 hover:shadow-md",
+        "group relative flex min-w-0 flex-col gap-3 rounded-panel border p-5 transition-colors",
         variant === "primary"
           ? "border-primary/20 bg-primary/5 hover:border-primary/30 hover:bg-primary/10"
-          : "border-border bg-card hover:border-border/80",
+          : "border-border bg-card hover:bg-muted/30",
       )}
     >
       <div
         className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-control transition-colors",
           variant === "primary"
             ? "bg-primary text-primary-foreground"
             : "bg-muted text-muted-foreground group-hover:bg-muted/80",
@@ -192,7 +190,7 @@ function QuickActionCard({
           {description}
         </p>
       </div>
-      <ChevronRight className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
+      <ChevronRight className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
     </Link>
   );
 }
@@ -216,7 +214,7 @@ function InfoLinkItem({ icon: Icon, title, href }: InfoLinkProps) {
   return (
     <Link
       href={href}
-      className="group flex min-h-14 min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50"
+      className="group flex min-h-14 min-w-0 items-center gap-3 rounded-control border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50"
     >
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
       <span className="min-w-0 break-keep text-ui-body-sm font-medium text-foreground">
@@ -291,12 +289,12 @@ function NoticeList({
     );
 
   return (
-    <div className="space-y-1">
+    <div className="divide-y divide-border/70">
       {items.map((notice) => (
         <Link
           key={notice._id}
           href={`${basePath}/${notice._id}?${supportQuery}`}
-          className="group flex items-start gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50"
+          className="group flex min-w-0 items-start gap-3 px-0 py-3 transition-colors hover:bg-muted/30 bp-sm:px-3"
         >
           <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
             {notice.isPinned && (
@@ -319,13 +317,13 @@ function NoticeList({
           </div>
 
           <span
-            className="flex-1 line-clamp-1 text-ui-body-sm font-medium text-foreground group-hover:text-foreground/80"
+            className="min-w-0 flex-1 line-clamp-1 break-keep text-ui-body-sm font-medium text-foreground group-hover:text-foreground/80"
             title={notice.title}
           >
             {notice.title}
           </span>
 
-          <div className="flex shrink-0 items-center gap-2 text-ui-label text-muted-foreground">
+          <div className="hidden shrink-0 items-center gap-2 text-ui-label text-muted-foreground bp-sm:flex">
             {(notice.hasImage || notice.hasFile) && (
               <span className="flex items-center gap-1">
                 {notice.hasImage && <ImageIcon className="h-3 w-3" />}
@@ -343,12 +341,12 @@ function NoticeList({
         </Link>
       ))}
 
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex flex-col gap-2 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
         <Button
           asChild
           variant="ghost"
           size="sm"
-          className="whitespace-nowrap text-muted-foreground hover:text-foreground"
+          className="w-full shrink-0 whitespace-nowrap text-muted-foreground hover:text-foreground bp-sm:w-auto"
         >
           <Link href={basePath}>
             전체 보기
@@ -356,7 +354,12 @@ function NoticeList({
           </Link>
         </Button>
         {isAdmin && (
-          <Button asChild variant="outline" size="sm" className="whitespace-nowrap">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="w-full shrink-0 whitespace-nowrap bp-sm:w-auto"
+          >
             <Link href={writePath}>글 쓰기</Link>
           </Button>
         )}
@@ -440,13 +443,13 @@ function QnaList({
         </DialogContent>
       </Dialog>
 
-      <div className="space-y-1">
+      <div className="divide-y divide-border/70">
         {items.map((qna) => {
           const canOpenSecret =
             !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
 
           const RowContent = (
-            <div className="flex items-start gap-3">
+            <div className="flex min-w-0 items-start gap-3">
               <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
                 <Badge
                   variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant}
@@ -458,13 +461,13 @@ function QnaList({
               </div>
 
               <span
-                className="flex-1 line-clamp-1 text-ui-body-sm font-medium text-foreground"
+                className="min-w-0 flex-1 line-clamp-1 break-keep text-ui-body-sm font-medium text-foreground"
                 title={qna.title}
               >
                 {qna.title}
               </span>
 
-              <div className="flex shrink-0 items-center gap-2 text-ui-label text-muted-foreground">
+              <div className="hidden shrink-0 items-center gap-2 text-ui-label text-muted-foreground bp-sm:flex">
                 <Badge
                   variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
                   className={`${badgeBaseOutlined} ${badgeSizeSm}`}
@@ -489,7 +492,7 @@ function QnaList({
               <button
                 key={qna._id}
                 type="button"
-                className="w-full rounded-lg px-3 py-3 text-left transition-colors hover:bg-muted/50"
+                className="w-full px-0 py-3 text-left transition-colors hover:bg-muted/30 bp-sm:px-3"
                 onClick={() => setSecretBlock({ open: true, item: qna })}
               >
                 {RowContent}
@@ -501,26 +504,26 @@ function QnaList({
             <Link
               key={qna._id}
               href={`/board/qna/${qna._id}?${supportQuery}`}
-              className="block rounded-lg px-3 py-3 transition-colors hover:bg-muted/50"
+              className="block px-0 py-3 transition-colors hover:bg-muted/30 bp-sm:px-3"
             >
               {RowContent}
             </Link>
           );
         })}
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-col gap-2 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="whitespace-nowrap text-muted-foreground hover:text-foreground"
+            className="w-full shrink-0 whitespace-nowrap text-muted-foreground hover:text-foreground bp-sm:w-auto"
           >
             <Link href="/board/qna">
               전체 보기
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild size="sm" className="whitespace-nowrap">
+          <Button asChild size="sm" className="w-full shrink-0 whitespace-nowrap bp-sm:w-auto">
             <Link href="/board/qna/write">문의하기</Link>
           </Button>
         </div>
@@ -561,7 +564,7 @@ export default function SupportPage() {
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-foreground" />
             <Link
               href="#faq"
-              className="flex min-h-14 w-full items-center rounded-xl border border-border bg-card py-3 pl-12 pr-4 text-left text-muted-foreground shadow-sm transition-all hover:border-border/80 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="flex min-h-14 w-full items-center rounded-control border border-border bg-card py-3 pl-12 pr-4 text-left text-muted-foreground shadow-sm transition-colors hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <span className="break-keep">자주 묻는 질문 검색하기</span>
             </Link>
@@ -578,7 +581,7 @@ export default function SupportPage() {
               title="빠른 문의"
               description="문의하기와 자주 묻는 질문을 먼저 확인해 보세요."
             />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2">
               {quickActions.map((action) => (
                 <QuickActionCard key={action.href} {...action} />
               ))}
@@ -609,34 +612,34 @@ export default function SupportPage() {
               description="공지사항, 이벤트, 문의 내역을 한곳에서 확인하세요."
             />
 
-            <Card className="border-border">
+            <PublicSurface padding="none" className="overflow-hidden">
               <Tabs defaultValue="notice" className="w-full">
-                <CardHeader className="border-b border-border p-0">
+                <div className="border-b border-border bg-muted/30">
                   <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0">
                     <TabsTrigger
                       value="notice"
-                      className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none bp-sm:px-6"
                     >
                       <Megaphone className="mr-2 h-4 w-4" />
                       공지사항
                     </TabsTrigger>
                     <TabsTrigger
                       value="event"
-                      className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none bp-sm:px-6"
                     >
                       <Gift className="mr-2 h-4 w-4" />
                       이벤트
                     </TabsTrigger>
                     <TabsTrigger
                       value="qna"
-                      className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none bp-sm:px-6"
                     >
                       <MessageSquare className="mr-2 h-4 w-4" />
                       문의
                     </TabsTrigger>
                   </TabsList>
-                </CardHeader>
-                <CardContent className="p-4 md:p-6">
+                </div>
+                <div className="p-4 md:p-6">
                   <TabsContent value="notice" className="mt-0">
                     <NoticeList
                       items={notices}
@@ -666,9 +669,9 @@ export default function SupportPage() {
                       onRetry={() => mutate()}
                     />
                   </TabsContent>
-                </CardContent>
+                </div>
               </Tabs>
-            </Card>
+            </PublicSurface>
           </section>
         </div>
       </SiteContainer>
