@@ -229,7 +229,7 @@ export default function RentalsSuccessClient({ data }: Props) {
   })();
 
   return (
-    <div className="min-h-full bg-muted/30">
+    <div className="min-h-full bg-background">
       <SiteContainer variant="wide" className="py-8 md:py-12">
         <ResultState
           status="success"
@@ -243,8 +243,8 @@ export default function RentalsSuccessClient({ data }: Props) {
       <SiteContainer variant="wide" className="py-8">
         <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
           {hasStateMismatch && (
-            <Card className="border-0 bg-warning/10 shadow-lg shadow-foreground/[0.03] ring-1 ring-warning/40">
-              <CardHeader className="border-b border-warning/20 bg-warning/10 p-4 sm:p-5">
+            <Card className="rounded-panel border border-warning/30 bg-warning/10 shadow-none">
+              <CardHeader className="p-4 sm:p-5">
                 <CardTitle className="text-ui-body text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">
                   최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지의 주문/대여 내역에서
@@ -254,10 +254,10 @@ export default function RentalsSuccessClient({ data }: Props) {
             </Card>
           )}
 
-          <Card className="overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-            <div className="border-b bg-secondary/30 p-4 sm:p-5">
-              <CardTitle className="flex items-center gap-3 text-ui-page-title">
-                <Package className="h-6 w-6 text-primary" />
+          <Card className="overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">
+            <div className="border-b border-border/80 bg-muted/20 p-4 sm:p-5">
+              <CardTitle className="flex items-center gap-3 text-ui-section-title">
+                <Package className="h-5 w-5 text-foreground" />
                 대여 정보
                 {withService && (
                   <span className="rounded-full border border-border px-2 py-0.5 text-ui-label font-medium text-muted-foreground">
@@ -265,7 +265,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </span>
                 )}
               </CardTitle>
-              <CardDescription className="mt-2 text-ui-card-title-lg">
+              <CardDescription className="mt-2 text-ui-body-sm">
                 {withService
                   ? "접수된 대여 및 교체서비스 정보를 함께 확인하세요."
                   : isPickup
@@ -274,51 +274,51 @@ export default function RentalsSuccessClient({ data }: Props) {
               </CardDescription>
             </div>
             <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="grid gap-3 text-ui-body-sm">
-                <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="text-muted-foreground">대여 접수번호:</span>{" "}
-                  <span className="font-mono font-semibold text-foreground">
+              <dl className="divide-y divide-border/70 rounded-control border border-border/70 bg-muted/20 text-ui-body-sm">
+                <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                  <dt className="text-muted-foreground">대여 접수번호</dt>
+                  <dd className="break-all font-mono font-semibold text-foreground">
                     {shortenId(data.id)}
-                  </span>
-                </p>
+                  </dd>
+                </div>
                 {withService && stringingApplicationId && (
-                  <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                    <span className="text-muted-foreground">교체서비스 접수번호:</span>{" "}
-                    <span className="font-mono font-semibold text-foreground">
+                  <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                    <dt className="text-muted-foreground">교체서비스 접수번호</dt>
+                    <dd className="break-all font-mono font-semibold text-foreground">
                       {shortenId(stringingApplicationId)}
-                    </span>
-                  </p>
+                    </dd>
+                  </div>
                 )}
-                <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="text-muted-foreground">대여 상태:</span>{" "}
-                  <span className="font-semibold text-foreground">
+                <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                  <dt className="text-muted-foreground">대여 상태</dt>
+                  <dd className="font-semibold text-foreground">
                     {rentalStatusLabel(data.status, data.payment?.method === "bank_transfer")}
-                  </span>
-                </p>
+                  </dd>
+                </div>
                 {withService && (
-                  <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                    <span className="text-muted-foreground">교체서비스 상태:</span>{" "}
-                    <span className="font-semibold text-foreground">
+                  <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                    <dt className="text-muted-foreground">교체서비스 상태</dt>
+                    <dd className="font-semibold text-foreground">
                       {stringingApplied
                         ? stringingStatusLabel(data.applicationSummary?.status || "접수완료")
                         : "접수 확인 중"}
-                    </span>
-                  </p>
+                    </dd>
+                  </div>
                 )}
-              </div>
+              </dl>
 
-              <div className="mt-5 border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm text-muted-foreground sm:px-4">
+              <div className="mt-5 rounded-panel border border-border/70 bg-muted/20 px-3 py-3 text-ui-body-sm text-muted-foreground sm:px-4">
                 <h3 className="font-semibold text-foreground">현재 상태와 다음 단계</h3>
-                <div className="mt-3 grid gap-3 leading-relaxed md:grid-cols-3">
-                  <div>
+                <div className="mt-3 grid gap-0 divide-y divide-border/70 leading-relaxed md:grid-cols-3 md:divide-x md:divide-y-0">
+                  <div className="py-3 md:px-4 md:py-0 md:first:pl-0">
                     <p className="font-semibold text-foreground">현재 상태</p>
                     <p className="mt-1">{rentalProgressGuide.status}</p>
                   </div>
-                  <div>
+                  <div className="py-3 md:px-4 md:py-0">
                     <p className="font-semibold text-foreground">지금 할 일</p>
                     <p className="mt-1">{rentalProgressGuide.todo}</p>
                   </div>
-                  <div>
+                  <div className="py-3 md:px-4 md:py-0 md:last:pr-0">
                     <p className="font-semibold text-foreground">다음 단계</p>
                     <p className="mt-1">{rentalProgressGuide.next}</p>
                   </div>
@@ -344,7 +344,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold">
                   <Package className="h-5 w-5 text-foreground" /> 대여 라켓
                 </h3>
-                <div className="rounded-xl bg-muted/15 p-4">
+                <div className="rounded-control border border-border/70 bg-muted/20 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="min-w-0 break-words font-semibold text-foreground">
@@ -375,44 +375,44 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <h3 className="text-ui-card-title-lg font-semibold text-foreground">
                       교체서비스 정보
                     </h3>
-                    <div className="grid gap-3 text-ui-body-sm">
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">접수 방식:</span>{" "}
-                        <span className="font-semibold text-foreground">
+                    <dl className="divide-y divide-border/70 rounded-control border border-border/70 bg-muted/20 text-ui-body-sm">
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">접수 방식</dt>
+                        <dd className="break-words font-semibold text-foreground">
                           {data.applicationSummary.receptionLabel}
-                        </span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">라인 수:</span>{" "}
-                        <span className="font-semibold text-foreground">
+                        </dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">라인 수</dt>
+                        <dd className="break-words font-semibold text-foreground">
                           {data.applicationSummary.lineCount}개
-                        </span>
-                      </p>
+                        </dd>
+                      </div>
                       {data.applicationSummary.stringNames.length > 0 && (
-                        <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-muted-foreground">선택 스트링:</span>{" "}
-                          <span className="font-semibold text-foreground">
+                        <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                          <dt className="text-muted-foreground">선택 스트링</dt>
+                          <dd className="break-words font-semibold text-foreground">
                             {data.applicationSummary.stringNames.join(", ")}
-                          </span>
-                        </p>
+                          </dd>
+                        </div>
                       )}
                       {data.applicationSummary.tensionSummary && (
-                        <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-muted-foreground">텐션:</span>{" "}
-                          <span className="font-semibold text-foreground">
+                        <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                          <dt className="text-muted-foreground">텐션</dt>
+                          <dd className="break-words font-semibold text-foreground">
                             {data.applicationSummary.tensionSummary}
-                          </span>
-                        </p>
+                          </dd>
+                        </div>
                       )}
                       {data.applicationSummary.reservationLabel && (
-                        <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-muted-foreground">방문 예약:</span>{" "}
-                          <span className="font-semibold text-foreground">
+                        <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                          <dt className="text-muted-foreground">방문 예약</dt>
+                          <dd className="break-words font-semibold text-foreground">
                             {data.applicationSummary.reservationLabel}
-                          </span>
-                        </p>
+                          </dd>
+                        </div>
                       )}
-                    </div>
+                    </dl>
                   </div>
                 </>
               )}
@@ -421,20 +421,20 @@ export default function RentalsSuccessClient({ data }: Props) {
 
               <div className="space-y-3">
                 <h3 className="text-ui-card-title-lg font-semibold text-foreground">금액 정보</h3>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 border-b border-border/70 py-2 text-ui-body-sm">
                   <span className="text-muted-foreground">대여 수수료</span>
                   <span className="text-ui-card-title-lg font-semibold">
                     {data.fee.toLocaleString()}원
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 border-b border-border/70 py-2 text-ui-body-sm">
                   <span className="text-muted-foreground">보증금</span>
                   <span className="text-ui-card-title-lg font-semibold">
                     {data.deposit.toLocaleString()}원
                   </span>
                 </div>
                 {data.stringPrice > 0 && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3 border-b border-border/70 py-2 text-ui-body-sm">
                     <span className="text-muted-foreground">스트링 상품</span>
                     <span className="text-ui-card-title-lg font-semibold">
                       {data.stringPrice.toLocaleString()}원
@@ -442,23 +442,22 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                 )}
                 {data.stringingFee > 0 && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3 border-b border-border/70 py-2 text-ui-body-sm">
                     <span className="text-muted-foreground">교체서비스</span>
                     <span className="text-ui-card-title-lg font-semibold">
                       {data.stringingFee.toLocaleString()}원
                     </span>
                   </div>
                 )}
-                <Separator />
-                <div className="border-t border-border pt-4">
-                  <div className="flex items-center justify-between text-ui-page-title font-semibold">
-                    <span className="text-foreground">총 결제 금액</span>
-                    <span className="text-primary">{total.toLocaleString()}원</span>
+                <div className="rounded-control bg-surface-inverse px-4 py-4 text-surface-inverse-foreground">
+                  <div className="flex items-center justify-between gap-3 text-ui-section-title font-semibold">
+                    <span>총 결제 금액</span>
+                    <span className="tabular-nums text-brand-highlight">{total.toLocaleString()}원</span>
                   </div>
-                  <p className="mt-2 border-l-2 border-primary/40 bg-muted/20 px-3 py-2 text-ui-body-sm text-muted-foreground">
-                    * 반납 완료 후 보증금 환불 (연체/파손 시 차감)
-                  </p>
                 </div>
+                <p className="rounded-control border border-border/70 bg-muted/20 px-3 py-2 text-ui-body-sm text-muted-foreground">
+                  * 반납 완료 후 보증금 환불 (연체/파손 시 차감)
+                </p>
               </div>
 
               <Separator className="my-4 md:my-6" />
@@ -466,7 +465,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               <div className="space-y-3">
                 <h3 className="text-ui-card-title-lg font-semibold text-foreground">결제 정보</h3>
                 {isOnlinePaid ? (
-                  <div className="space-y-2 border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm sm:px-4">
+                  <div className="space-y-2 rounded-control border border-border/70 bg-muted/20 px-3 py-3 text-ui-body-sm sm:px-4">
                     <p className="text-muted-foreground">결제가 완료되었습니다.</p>
                     <div>
                       결제수단: <b>{paymentMethodLabel}</b>
@@ -484,7 +483,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     )}
                   </div>
                 ) : (
-                  <div className="border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm sm:px-4">
+                  <div className="rounded-control border border-border/70 bg-muted/20 px-3 py-3 text-ui-body-sm sm:px-4">
                     <p className="text-muted-foreground">
                       아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.
                     </p>
@@ -494,7 +493,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                           은행: <b>{bankInfo.label}</b>
                         </div>
                         <div>
-                          계좌: <b>{bankInfo.account}</b>
+                          계좌: <b className="break-all font-mono tabular-nums">{bankInfo.account}</b>
                         </div>
                         <div>
                           예금주: <b>{bankInfo.holder}</b>
@@ -517,53 +516,53 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <MapPin className="h-5 w-5 text-foreground" />
                   수령 정보
                 </h3>
-                <div className="grid gap-3 text-ui-body-sm">
+                <dl className="divide-y divide-border/70 rounded-control border border-border/70 bg-muted/20 text-ui-body-sm">
                   {isPickup ? (
                     <>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">수령 방식:</span>{" "}
-                        <span className="font-semibold">방문 수령 선택됨</span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">이름:</span>{" "}
-                        <span className="font-semibold">{data.shipping?.name || "-"}</span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">연락처:</span>{" "}
-                        <span className="font-semibold">{data.shipping?.phone || "-"}</span>
-                      </p>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">수령 방식</dt>
+                        <dd className="break-words font-semibold text-foreground">방문 수령 선택됨</dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">이름</dt>
+                        <dd className="break-words font-semibold text-foreground">{data.shipping?.name || "-"}</dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">연락처</dt>
+                        <dd className="break-words font-semibold text-foreground">{data.shipping?.phone || "-"}</dd>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">이름:</span>{" "}
-                        <span className="font-semibold">{data.shipping?.name || "-"}</span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">연락처:</span>{" "}
-                        <span className="font-semibold">{data.shipping?.phone || "-"}</span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">우편번호:</span>{" "}
-                        <span className="font-semibold">{data.shipping?.postalCode || "-"}</span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">주소:</span>{" "}
-                        <span className="font-semibold">{data.shipping?.address || "-"}</span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">상세주소:</span>{" "}
-                        <span className="font-semibold">{data.shipping?.addressDetail || "-"}</span>
-                      </p>
-                      <p className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-muted-foreground">요청사항:</span>{" "}
-                        <span className="font-semibold">
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">이름</dt>
+                        <dd className="break-words font-semibold text-foreground">{data.shipping?.name || "-"}</dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">연락처</dt>
+                        <dd className="break-words font-semibold text-foreground">{data.shipping?.phone || "-"}</dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">우편번호</dt>
+                        <dd className="break-words font-semibold text-foreground">{data.shipping?.postalCode || "-"}</dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">주소</dt>
+                        <dd className="break-words font-semibold text-foreground">{data.shipping?.address || "-"}</dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">상세주소</dt>
+                        <dd className="break-words font-semibold text-foreground">{data.shipping?.addressDetail || "-"}</dd>
+                      </div>
+                      <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                        <dt className="text-muted-foreground">요청사항</dt>
+                        <dd className="break-words font-semibold text-foreground">
                           {data.shipping?.deliveryRequest || "-"}
-                        </span>
-                      </p>
+                        </dd>
+                      </div>
                     </>
                   )}
-                </div>
+                </dl>
               </div>
 
               <Separator className="my-4 md:my-6" />
@@ -573,7 +572,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <Undo2 className="h-5 w-5 text-foreground" />
                   보증금 환급 계좌
                 </h3>
-                <div className="border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm sm:px-4">
+                <div className="rounded-control border border-border/70 bg-muted/20 px-3 py-3 text-ui-body-sm sm:px-4">
                   <p className="text-muted-foreground">
                     반납 완료 후 아래 계좌로 보증금을 환급해 드립니다.
                   </p>
@@ -585,7 +584,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     )}
                     {refundAccount && (
                       <div>
-                        계좌: <b>{refundAccount}</b>
+                        계좌: <b className="break-all font-mono tabular-nums">{refundAccount}</b>
                       </div>
                     )}
                     {refundHolder && (
@@ -598,10 +597,11 @@ export default function RentalsSuccessClient({ data }: Props) {
               </div>
             </CardContent>
 
-            <CardFooter className="border-t bg-secondary/30 p-4 sm:p-5 md:p-6">
+            <CardFooter className="border-t border-border/80 bg-muted/20 p-4 sm:p-5 md:p-6">
               <div className="flex w-full flex-col gap-4 sm:flex-row">
                 <Button
-                  className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md"
+                  className="h-12 flex-1"
+                  wrap="responsive"
                   asChild
                 >
                   <Link href="/mypage?tab=orders&scope=rental" className="flex items-center gap-2">
@@ -613,7 +613,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                 {rentalStringingHref ? (
                   <Button
                     variant="outline"
-                    className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md"
+                    className="h-12 flex-1"
+                    wrap="responsive"
                     asChild
                   >
                     <Link href={rentalStringingHref} className="flex items-center gap-2">
@@ -624,7 +625,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                 ) : null}
                 <Button
                   variant="ghost"
-                  className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md"
+                  className="h-12 flex-1"
+                  wrap="responsive"
                   asChild
                 >
                   <Link href="/rackets" className="flex items-center gap-2">
@@ -636,8 +638,8 @@ export default function RentalsSuccessClient({ data }: Props) {
             </CardFooter>
           </Card>
 
-          <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-            <CardHeader className="border-b bg-secondary/30 p-4 sm:p-5">
+          <Card className="rounded-panel border border-border/80 bg-card shadow-soft">
+            <CardHeader className="border-b border-border/80 bg-muted/20 p-4 sm:p-5">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-foreground" />
                 대여 안내사항
@@ -646,7 +648,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             <CardContent className="p-4 sm:p-5 md:p-6">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-3">
+                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
                     <Truck className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">
@@ -659,7 +661,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-3">
+                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
                     <Clock className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">대여 기간</h4>
@@ -670,7 +672,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-3">
+                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
                     <Shield className="mt-0.5 h-5 w-5 text-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">보증금 환불</h4>
@@ -679,7 +681,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 rounded-xl bg-muted/15 p-3">
+                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
                     <Phone className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
