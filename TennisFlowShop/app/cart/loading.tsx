@@ -75,10 +75,13 @@ export default function Loading() {
                   <Skeleton className="h-4 w-4/5 rounded-md" />
                   <Skeleton className="h-7 w-full rounded-md" />
                 </div>
-                <div className="rounded-panel bg-surface-inverse p-4">
-                  <Skeleton className="h-4 w-24 rounded-md" />
-                  <Skeleton className="mt-3 h-8 w-36 rounded-md" />
-                  <Skeleton className="mt-4 h-12 w-full rounded-control" />
+                <div className="rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse p-4">
+                  <div className="space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2">
+                    <Skeleton className="h-4 w-24 rounded-md bg-surface-inverse-foreground/15" />
+                    <Skeleton className="mt-2 h-7 w-36 rounded-md bg-surface-inverse-foreground/15" />
+                  </div>
+                  <Skeleton className="mt-3 h-12 w-full rounded-control bg-surface-inverse-foreground/15" />
+                  <Skeleton className="mt-2 h-12 w-full rounded-control bg-surface-inverse-foreground/15" />
                 </div>
               </div>
             </div>
