@@ -2,10 +2,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Bell, Eye, MessageSquare, Plus, Star, Pin, Megaphone } from "lucide-react";
+import { ArrowRight, Eye, MessageSquare, Plus, Star, Pin, Megaphone } from "lucide-react";
 import useSWR from "swr";
 
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, PublicSurface, SectionHeader } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
@@ -21,14 +22,18 @@ import Link from "next/link";
 // 공용 스켈레톤
 function FiveLineSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="divide-y divide-border">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="border-b border-border last:border-0 pb-4 last:pb-0">
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-3/4" />
-            <div className="flex items-center space-x-4">
+        <div key={i} className="py-4 first:pt-0 last:pb-0">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-12 rounded-full" />
+              <Skeleton className="h-5 min-w-0 flex-1" />
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-3 w-12" />
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-10" />
             </div>
           </div>
         </div>
@@ -404,136 +409,126 @@ function ReviewCard({
   onRetry?: () => void;
 }) {
   return (
-    <Card className="border border-border bg-card shadow-sm h-full">
-      <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-        <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Star className="h-5 w-5 text-foreground" />
-            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
-              리뷰
-            </span>
-          </div>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Button asChild variant="ghost" size="sm">
+    <section className="space-y-5 bp-md:space-y-6">
+      <SectionHeader
+        eyebrow="Latest Reviews"
+        title="최신 리뷰"
+        actions={
+          <>
+            <Button asChild size="sm" wrap="responsive" className="w-full sm:w-auto">
               <Link href="/reviews/write">
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4" />
                 후기 작성
               </Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              wrap="responsive"
+              className="w-full sm:w-auto"
+            >
               <Link href="/reviews">
-                전체보기 <ArrowRight className="ml-1 h-4 w-4" />
+                전체보기 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 md:p-6">
-        <div className="space-y-4">
-          {error ? (
-            <ErrorBox message="리뷰 불러오기에 실패했습니다." onRetry={onRetry} />
-          ) : isLoading ? (
-            <FiveLineSkeleton />
-          ) : items.length === 0 ? (
-            <div className="py-6 md:py-8 text-center text-ui-body-sm text-muted-foreground">
-              등록된 리뷰가 없습니다.
-            </div>
-          ) : (
-            items.map((review) => (
-              <div key={review._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1 min-w-0">
-                      <Badge
-                        variant={getReviewTypeBadgeSpec(review.type).variant}
-                        className={`${badgeBaseOutlined} ${badgeSizeSm}`}
-                      >
-                        {review.type === "product"
-                          ? "상품"
-                          : review.type === "service"
-                            ? "서비스"
-                            : "기타"}
-                      </Badge>
-                      <Link
-                        href="/reviews"
-                        className="font-semibold text-foreground hover:text-foreground dark:hover:text-foreground transition-colors flex-1 min-w-0 truncate"
-                      >
-                        {reviewExcerpt(review)}
-                      </Link>
-                    </div>
-                    <div className="flex items-center space-x-4 text-ui-label text-muted-foreground">
-                      <span>{review.userName ?? "익명"}</span>
-                      <span>{fmt(review.createdAt)}</span>
-                      <span className="flex items-center">
-                        <Star className="h-3 w-3 mr-1" />
-                        {review.rating}
-                      </span>
-                    </div>
+          </>
+        }
+      />
+      <PublicSurface padding="md" className="overflow-hidden">
+        {error ? (
+          <ErrorBox message="리뷰 불러오기에 실패했습니다." onRetry={onRetry} />
+        ) : isLoading ? (
+          <FiveLineSkeleton />
+        ) : items.length === 0 ? (
+          <AsyncState
+            kind="empty"
+            variant="card"
+            title="등록된 리뷰가 없습니다."
+            description="첫 구매·서비스 후기가 등록되면 이곳에서 확인하실 수 있습니다."
+          />
+        ) : (
+          <div className="divide-y divide-border">
+            {items.map((review) => (
+              <div key={review._id} className="py-4 first:pt-0 last:pb-0">
+                <div className="min-w-0 space-y-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <Badge
+                      variant={getReviewTypeBadgeSpec(review.type).variant}
+                      className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
+                    >
+                      {review.type === "product"
+                        ? "상품"
+                        : review.type === "service"
+                          ? "서비스"
+                          : "기타"}
+                    </Badge>
+                    <Link
+                      href="/reviews"
+                      className="min-w-0 flex-1 truncate font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      {reviewExcerpt(review)}
+                    </Link>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-ui-label text-muted-foreground">
+                    <span className="min-w-0 truncate">{review.userName ?? "익명"}</span>
+                    <span>{fmt(review.createdAt)}</span>
+                    <span className="flex items-center">
+                      <Star className="h-3 w-3 mr-1" />
+                      {review.rating}
+                    </span>
                   </div>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+        )}
+      </PublicSurface>
+    </section>
   );
 }
 
 function CommunityIntroCard() {
+  const boardLinks = [
+    ...(COMMUNITY_BOARDS_ENABLED
+      ? [
+          { label: "자유게시판", href: "/board/free" },
+          { label: "중고거래", href: "/board/market" },
+          { label: "장비 사용기", href: "/board/gear" },
+        ]
+      : []),
+    { label: "구매·서비스 후기", href: "/reviews" },
+  ];
+
   return (
-    <Card className="border border-border bg-card shadow-sm">
-      <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <MessageSquare className="h-5 w-5 text-foreground" />
-            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
-              커뮤니티 게시판
-            </span>
-          </div>
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="p-4 md:p-6 space-y-4 text-ui-body-sm text-muted-foreground">
-        <p>공지사항, Q&A, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요.</p>
+    <section className="space-y-5 bp-md:space-y-6">
+      <SectionHeader
+        eyebrow="Community Boards"
+        title="커뮤니티 게시판"
+        description="공지사항, Q&A, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요."
+      />
+      <PublicSurface padding="none" className="overflow-hidden">
         {!COMMUNITY_BOARDS_ENABLED && (
-          <p className="text-ui-label text-muted-foreground/80">
+          <div className="border-b border-border bg-muted/30 p-4 text-ui-label text-muted-foreground sm:p-5">
             커뮤니티 게시판은 운영 정책 변경으로 일시 중단되었습니다.
-          </p>
+          </div>
         )}
-
-        <div className="grid gap-2 sm:grid-cols-3">
-          {COMMUNITY_BOARDS_ENABLED && (
-            <>
-              <Button asChild variant="outline" size="sm" className="w-full justify-between">
-                <Link href="/board/free">
-                  <span>자유게시판</span>
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="w-full justify-between">
-                <Link href="/board/market">
-                  <span>중고거래</span>
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="w-full justify-between">
-                <Link href="/board/gear">
-                  <span>장비 사용기</span>
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
-              </Button>
-            </>
-          )}
-          <Button asChild variant="outline" size="sm" className="w-full justify-between">
-            <Link href="/reviews">
-              <span>구매·서비스 후기</span>
-              <ArrowRight className="h-3 w-3 ml-1" />
+        <div className="divide-y divide-border">
+          {boardLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group flex min-w-0 items-center justify-between gap-4 p-4 text-foreground transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset sm:p-5"
+            >
+              <span className="min-w-0 break-keep text-ui-body-sm font-semibold sm:text-ui-body">
+                {item.label}
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
             </Link>
-          </Button>
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </PublicSurface>
+    </section>
   );
 }
 
@@ -548,41 +543,25 @@ export default function BoardPage() {
 
   const reviews = Array.isArray(rData?.items) ? (rData.items as ReviewItem[]) : [];
   return (
-    <div className="min-h-screen bg-muted/30">
+    <main className="min-h-screen bg-background text-foreground">
+      <PublicPageHero
+        eyebrow="Dokkaebi Tennis Community"
+        title="커뮤니티"
+        description="공지사항, Q&A, 리뷰를 한 곳에서 확인할 수 있습니다. 주문/서비스 문의는 고객센터를 이용해주세요."
+        variant="feature"
+      />
       <SiteContainer
         variant="wide"
-        className="py-6 bp-sm:py-8 bp-md:py-10 space-y-6 bp-md:space-y-8"
+        className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8 bp-md:space-y-10"
       >
-        {/* 헤더 섹션 */}
-        <div className="text-center space-y-3 bp-md:space-y-4">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-              <MessageSquare className="h-6 w-6" />
-            </div>
-            <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
-              커뮤니티
-            </h1>
-          </div>
-          <p className="text-ui-card-title-lg text-muted-foreground max-w-2xl mx-auto">
-            공지사항, Q&A, 리뷰를 한 곳에서 확인할 수 있습니다. 주문/서비스 문의는 고객센터를
-            이용해주세요.
-          </p>
-        </div>
-
-        {/* 메인 게시판 카드들 */}
-        {/* 커뮤니티 허브 카드 (맨 위) */}
         <CommunityIntroCard />
-
-        {/* 최신 리뷰 섹션 */}
-        <div className="space-y-5 bp-md:space-y-6">
-          <ReviewCard
-            items={reviews}
-            isLoading={rLoading}
-            error={rError}
-            onRetry={() => mutateReviews()}
-          />
-        </div>
+        <ReviewCard
+          items={reviews}
+          isLoading={rLoading}
+          error={rError}
+          onRetry={() => mutateReviews()}
+        />
       </SiteContainer>
-    </div>
+    </main>
   );
 }
