@@ -64,16 +64,19 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
             내 위시리스트
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 p-4" aria-label="위시리스트를 불러오는 중입니다.">
-          {["wishlist-loading-primary", "wishlist-loading-secondary"].map((key) => (
-            <div key={key} className="flex min-w-0 items-center gap-4" aria-hidden="true">
-              <Skeleton className="h-14 w-14 shrink-0 rounded-xl" />
-              <div className="min-w-0 flex-1 space-y-2">
-                <Skeleton className="h-4 w-4/5 rounded-md" />
-                <Skeleton className="h-4 w-24 rounded-md" />
+        <CardContent className="space-y-3 p-4" role="status" aria-live="polite">
+          <span className="sr-only">위시리스트를 불러오는 중입니다.</span>
+          <div className="space-y-3" aria-hidden="true">
+            {["wishlist-loading-primary", "wishlist-loading-secondary"].map((key) => (
+              <div key={key} className="flex min-w-0 items-center gap-4">
+                <Skeleton className="h-14 w-14 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-4/5 rounded-md" />
+                  <Skeleton className="h-4 w-24 rounded-md" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </CardContent>
       </PublicSurface>
     );
@@ -154,7 +157,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                 "flex min-w-0 items-center gap-4",
                 variant === "inline"
                   ? clsx(
-                      "border-b border-border p-4",
+                      "border-b border-border p-4 last:border-b-0",
                       index >= list.length - (list.length % 2 === 0 ? 2 : 1) &&
                         "bp-xl:border-b-0",
                       index % 2 === 0 && "bp-xl:border-r bp-xl:border-border",
