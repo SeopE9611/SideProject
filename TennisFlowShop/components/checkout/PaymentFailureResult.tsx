@@ -21,8 +21,8 @@ type PaymentFailureResultProps = {
   message?: string;
   status?: "error" | "warning";
   primaryAction: PaymentFailureAction;
-  secondaryAction: PaymentFailureAction;
-  warningMessage: string;
+  secondaryAction?: PaymentFailureAction;
+  warningMessage?: string;
 };
 
 export function PaymentFailureResult({
@@ -51,18 +51,20 @@ export function PaymentFailureResult({
             <Button asChild className="w-full sm:w-auto" wrap="responsive">
               <Link href={primaryAction.href}>{primaryAction.label}</Link>
             </Button>
-            <Button asChild variant="outline" className="w-full sm:w-auto" wrap="responsive">
-              <Link href={secondaryAction.href}>{secondaryAction.label}</Link>
-            </Button>
+            {secondaryAction ? (
+              <Button asChild variant="outline" className="w-full sm:w-auto" wrap="responsive">
+                <Link href={secondaryAction.href}>{secondaryAction.label}</Link>
+              </Button>
+            ) : null}
           </>
         }
       >
         <div className="space-y-3 text-ui-body-sm text-muted-foreground">
-          {guide.accent === "warning" && (
+          {guide.accent === "warning" && warningMessage ? (
             <p className="rounded-control border border-warning/30 bg-warning/10 p-3 text-warning">
               {warningMessage}
             </p>
-          )}
+          ) : null}
           <dl className="space-y-2 rounded-control border border-border/70 bg-muted/20 p-3 text-ui-label">
             <div className="space-y-1">
               <dt className="text-muted-foreground">오류 코드</dt>
