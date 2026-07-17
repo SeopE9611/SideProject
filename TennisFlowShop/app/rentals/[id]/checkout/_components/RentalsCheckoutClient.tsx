@@ -7,10 +7,11 @@ import RentalCheckoutStringingSections from "@/app/rentals/[id]/checkout/_compon
 import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
+import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
+import CheckoutSection from "@/components/checkout/CheckoutSection";
 import RefundBankCombobox from "@/components/refund/RefundBankCombobox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -728,71 +729,51 @@ export default function RentalsCheckoutClient({
   };
 
   const renderCheckout = (rentalStringingAdapter?: RentalCheckoutStringingAdapter) => (
-    <div className="min-h-full bg-background pb-[calc(96px+env(safe-area-inset-bottom))] lg:pb-0">
-      <div className="relative overflow-hidden border-b border-border bg-secondary/20 text-foreground">
-        <div className="absolute inset-0 bg-cross-line-pattern opacity-10" />
-        <div className="absolute right-0 top-0 h-64 w-64 translate-x-1/3 -translate-y-1/2 rounded-full bg-primary/[0.02] blur-3xl" />
-        <SiteContainer variant="wide" className="relative py-4 bp-sm:py-6 bp-md:py-7">
-          <div className="max-w-3xl space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 bp-sm:h-12 bp-sm:w-12">
-                <CreditCard className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="break-keep text-ui-page-title font-semibold leading-tight tracking-tight text-foreground bp-sm:text-ui-page-title-lg">
-                  대여 신청 정보 확인
-                </h1>
-                <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
-                  대여 라켓, 선택한 스트링 옵션, 수령 정보와 예상 금액을 확인한 뒤 대여 신청을
-                  완료하세요.
-                </p>
-              </div>
+    <div className="min-h-full bg-background pb-[calc(96px+env(safe-area-inset-bottom))] bp-lg:pb-0">
+      <CheckoutPageHeader
+        eyebrow="RENTAL CHECKOUT"
+        title="대여 신청 정보 확인"
+        description="대여 라켓, 선택한 스트링 옵션, 수령 정보와 예상 금액을 확인한 뒤 대여 신청을 완료하세요."
+        icon={<CreditCard className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
+      >
+        <nav aria-label="대여 신청 진행 단계">
+          <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-control border border-border/80 bg-card p-1.5 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2.5 [&::-webkit-scrollbar]:hidden">
+            <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+              <Badge
+                variant="secondary"
+                className="rounded-full px-3 py-1.5 text-ui-label font-medium"
+              >
+                1 대여 정보
+              </Badge>
+              <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+              <Badge
+                variant="secondary"
+                className="rounded-full px-3 py-1.5 text-ui-label font-medium"
+              >
+                2 스트링 선택
+              </Badge>
+              <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+              <Badge className="rounded-full px-3 py-1.5 text-ui-label font-medium shadow-sm">
+                3 신청 확인
+              </Badge>
             </div>
-            <nav aria-label="대여 신청 진행 단계">
-              <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-xl bg-card/75 p-1.5 ring-1 ring-border/50 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2.5 [&::-webkit-scrollbar]:hidden">
-                <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                  <Badge
-                    variant="secondary"
-                    className="rounded-full px-3 py-1.5 text-ui-label font-medium"
-                  >
-                    1 대여 정보
-                  </Badge>
-                  <div className="h-[2px] w-4 shrink-0 rounded-full bg-primary/30 bp-sm:w-8" />
-                  <Badge
-                    variant="secondary"
-                    className="rounded-full px-3 py-1.5 text-ui-label font-medium"
-                  >
-                    2 스트링 선택
-                  </Badge>
-                  <div className="h-[2px] w-4 shrink-0 rounded-full bg-primary/30 bp-sm:w-8" />
-                  <Badge className="rounded-full px-3 py-1.5 text-ui-label font-medium shadow-sm">
-                    3 신청 확인
-                  </Badge>
-                </div>
-              </div>
-            </nav>
           </div>
-        </SiteContainer>
-      </div>
+        </nav>
+      </CheckoutPageHeader>
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] bp-sm:gap-8">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-sm:gap-8">
           <div
             className={cn("space-y-5 bp-sm:space-y-6", loading && "pointer-events-none")}
             aria-busy={loading}
           >
             {/* 대여 상품 정보 */}
-            <Card className="group overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
-                  <Package className="h-5 w-5 text-primary" />
-                  대여 라켓 확인
-                </CardTitle>
-                <CardDescription className="mt-2 break-keep">
-                  신청할 대여 라켓과 기간, 기본 비용을 확인하세요.
-                </CardDescription>
-              </div>
-              <CardContent className="p-4 bp-sm:p-6">
+            <CheckoutSection
+              id="rental-checkout-racket"
+              icon={<Package className="h-5 w-5" />}
+              title="대여 라켓 확인"
+              description="신청할 대여 라켓과 기간, 기본 비용을 확인하세요."
+            >
                 <div className="flex min-w-0 flex-col gap-4 border-b border-border/50 py-4 last:border-b-0 sm:flex-row sm:items-center">
                   <div className="relative shrink-0">
                     {initial.racket?.image ? (
@@ -841,22 +822,16 @@ export default function RentalsCheckoutClient({
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </CheckoutSection>
 
             {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
-            <Card className="group overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center gap-3">
-                  <Truck className="h-5 w-5 text-primary" />
-                  라켓 수령 방식
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  라켓을 어떻게 수령하실지 선택해주세요.
-                </CardDescription>
-              </div>
-
-              <CardContent className="space-y-4 p-4 bp-sm:p-6">
+            <CheckoutSection
+              id="rental-checkout-delivery"
+              icon={<Truck className="h-5 w-5" />}
+              title="라켓 수령 방식"
+              description="라켓을 어떻게 수령하실지 선택해주세요."
+              contentClassName="space-y-4"
+            >
                 <RadioGroup
                   value={deliveryMethod}
                   onValueChange={(value) => setDeliveryMethod(value as any)}
@@ -987,23 +962,19 @@ export default function RentalsCheckoutClient({
                     adapter={rentalStringingAdapter}
                   />
                 )}
-              </CardContent>
-            </Card>
+            </CheckoutSection>
 
             {/* 배송 정보 */}
-            <Card className="group overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
-                  <MapPin className="h-5 w-5 text-foreground" />
-                  {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
-                </CardTitle>
-                <CardDescription className="mt-2 break-keep">
-                  {isVisitPickup
-                    ? "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요."
-                    : "라켓을 받으실 배송지 정보를 입력해주세요."}
-                </CardDescription>
-              </div>
-              <CardContent className="p-4 bp-sm:p-6">
+            <CheckoutSection
+              id="rental-checkout-shipping"
+              icon={<MapPin className="h-5 w-5" />}
+              title={isVisitPickup ? "수령/연락 정보" : "배송 정보"}
+              description={
+                isVisitPickup
+                  ? "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요."
+                  : "라켓을 받으실 배송지 정보를 입력해주세요."
+              }
+            >
                 <div className="space-y-4 md:space-y-6">
                   <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
                     <div className="space-y-2">
@@ -1114,20 +1085,14 @@ export default function RentalsCheckoutClient({
                     />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </CheckoutSection>
             {/* 결제 정보 */}
-            <Card className="group overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
-                  <CreditCard className="h-5 w-5 text-foreground" />
-                  결제/입금 안내
-                </CardTitle>
-                <CardDescription className="mt-2 break-keep">
-                  대여 신청에 필요한 결제 방법과 입금 정보를 입력해주세요.
-                </CardDescription>
-              </div>
-              <CardContent className="p-4 bp-sm:p-6">
+            <CheckoutSection
+              id="rental-checkout-payment"
+              icon={<CreditCard className="h-5 w-5" />}
+              title="결제/입금 안내"
+              description="대여 신청에 필요한 결제 방법과 입금 정보를 입력해주세요."
+            >
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
@@ -1300,19 +1265,14 @@ export default function RentalsCheckoutClient({
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="group overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center gap-3">
-                  <Undo2 className="h-5 w-5 text-foreground" />
-                  보증금 환급 계좌
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요.
-                </CardDescription>
-              </div>
-              <CardContent className="space-y-4 p-4 bp-sm:p-6">
+            </CheckoutSection>
+            <CheckoutSection
+              id="rental-checkout-refund"
+              icon={<Undo2 className="h-5 w-5" />}
+              title="보증금 환급 계좌"
+              description="반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요."
+              contentClassName="space-y-4"
+            >
                 {/* 환급 은행 */}
                 <div className="space-y-2">
                   <Label htmlFor="refund-bank">환급 은행</Label>
@@ -1350,18 +1310,14 @@ export default function RentalsCheckoutClient({
                     반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+            </CheckoutSection>
 
             {/* 대여 신청 동의 */}
-            <Card className="group overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="border-b border-border bg-secondary/30 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-destructive" />
-                  대여 신청 동의
-                </CardTitle>
-              </div>
-              <CardContent className="p-4 bp-sm:p-6">
+            <CheckoutSection
+              id="rental-checkout-agreements"
+              icon={<Shield className="h-5 w-5" />}
+              title="대여 신청 동의"
+            >
                 <div className="space-y-4">
                   <div
                     className={cn(
@@ -1455,23 +1411,22 @@ export default function RentalsCheckoutClient({
                     ))}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </CheckoutSection>
           </div>
 
           {/* 대여 신청 요약 */}
-          <aside className="lg:sticky lg:top-24">
+          <aside className="bp-lg:sticky bp-lg:top-24">
             <div>
-              <Card className="relative overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <div className="border-b border-border bg-secondary/30 p-4 text-foreground bp-sm:p-5">
-                  <CardTitle className="flex items-center gap-3 text-ui-section-title">
+              <div className="relative overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">
+                <div className="border-b border-border/80 bg-muted/20 p-4 text-foreground bp-sm:p-5">
+                  <h2 className="flex items-center gap-3 text-ui-section-title font-semibold">
                     <div className="rounded-full border border-border bg-card p-2">
                       <CreditCard className="h-5 w-5" />
                     </div>
                     대여 신청 요약
-                  </CardTitle>
+                  </h2>
                 </div>
-                <CardContent className="space-y-4 p-4 bp-sm:space-y-6 bp-sm:p-6">
+                <div className="space-y-4 p-4 bp-sm:space-y-6 bp-sm:p-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">대여료</span>
@@ -1519,9 +1474,11 @@ export default function RentalsCheckoutClient({
                     )}
 
                     <Separator />
-                    <div className="flex items-center justify-between text-ui-section-title font-semibold">
-                      <span>예상 결제 금액</span>
-                      <span className="text-foreground">{payableTotal.toLocaleString()}원</span>
+                    <div className="rounded-control bg-surface-inverse px-4 py-3 text-surface-inverse-foreground">
+                      <div className="flex items-center justify-between gap-3 text-ui-section-title font-semibold">
+                        <span>예상 결제 금액</span>
+                        <span className="text-brand-highlight tabular-nums">{payableTotal.toLocaleString()}원</span>
+                      </div>
                     </div>
                   </div>
 
@@ -1546,8 +1503,8 @@ export default function RentalsCheckoutClient({
                       <p>• 반납 기한을 꼭 지켜주세요.</p>
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter
+                </div>
+                <div
                   id={RENTAL_PAYMENT_ACTION_ID}
                   className="flex flex-col gap-4 border-t border-border/60 p-4 bp-sm:p-6"
                 >
@@ -1643,7 +1600,7 @@ export default function RentalsCheckoutClient({
                       onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                     />
                   )}
-                </CardFooter>
+                </div>
                 {loading && (
                   <div className="absolute inset-0 z-10 cursor-wait bg-overlay/20">
                     <div className="absolute inset-0 grid place-items-center">
@@ -1654,7 +1611,7 @@ export default function RentalsCheckoutClient({
                     </div>
                   </div>
                 )}
-              </Card>
+              </div>
             </div>
           </aside>
         </div>
