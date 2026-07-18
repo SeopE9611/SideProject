@@ -6,6 +6,57 @@ type NoticeDetailLoadingShellProps = {
   mode?: "notice" | "event";
 };
 
+export function NoticeDetailContentSkeleton() {
+  return (
+    <>
+      <PublicSurface padding="none" className="overflow-hidden">
+        <div className="space-y-4 p-5 sm:p-6">
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-6 w-10" />
+          </div>
+          <Skeleton className="h-9 w-4/5 max-w-3xl" />
+          <div className="grid gap-2 sm:flex sm:gap-4">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </div>
+
+        <div className="border-t border-border p-5 sm:p-6 md:p-8">
+          <div className="mx-auto max-w-3xl space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-11/12" />
+            <Skeleton className="h-4 w-10/12" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+
+        <div className="border-t border-border p-5 sm:p-6 md:p-8">
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+        </div>
+      </PublicSurface>
+
+      <PublicSurface padding="none" className="overflow-hidden">
+        <div className="grid divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
+          <div className="space-y-2 p-4">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-5 w-3/4" />
+          </div>
+          <div className="space-y-2 p-4">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-5 w-3/4" />
+          </div>
+        </div>
+      </PublicSurface>
+    </>
+  );
+}
+
 export default function NoticeDetailLoadingShell({
   mode = "notice",
 }: NoticeDetailLoadingShellProps) {
@@ -31,50 +82,7 @@ export default function NoticeDetailLoadingShell({
       />
 
       <SiteContainer className="space-y-5 py-7 sm:space-y-6 sm:py-9 md:py-10">
-        <PublicSurface padding="none" className="overflow-hidden">
-          <div className="space-y-4 p-5 sm:p-6">
-            <div className="flex gap-2">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-10" />
-            </div>
-            <Skeleton className="h-9 w-4/5 max-w-3xl" />
-            <div className="grid gap-2 sm:flex sm:gap-4">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </div>
-
-          <div className="border-t border-border p-5 sm:p-6 md:p-8">
-            <div className="mx-auto max-w-3xl space-y-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-11/12" />
-              <Skeleton className="h-4 w-10/12" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          </div>
-
-          <div className="border-t border-border p-5 sm:p-6 md:p-8">
-            <div className="space-y-3">
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-16 w-full" />
-            </div>
-          </div>
-        </PublicSurface>
-
-        <PublicSurface padding="none" className="overflow-hidden">
-          <div className="grid md:grid-cols-2 md:divide-x md:divide-border">
-            <div className="space-y-2 border-b border-border p-4 md:border-b-0">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-5 w-3/4" />
-            </div>
-            <div className="space-y-2 p-4">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-5 w-3/4" />
-            </div>
-          </div>
-        </PublicSurface>
+        <NoticeDetailContentSkeleton />
       </SiteContainer>
     </main>
   );
