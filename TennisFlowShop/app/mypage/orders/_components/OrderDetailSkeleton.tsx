@@ -1,209 +1,111 @@
 "use client";
 
+import SiteContainer from "@/components/layout/SiteContainer";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { mypageDetailLayout } from "../../_components/mypage-detail-style";
+
+const srLoadingLabel = "주문 상세 정보를 불러오는 중입니다.";
 
 export default function OrderDetailSkeleton() {
   return (
-    <div className="container py-8">
-      {/* ======================= */}
-      {/* 2. 오른쪽 콘텐츠 영역 */}
-      {/* ======================= */}
-      <div className="md:col-span-3 space-y-6">
-        {/* 2-1. 페이지 헤더 (뒤로가기 버튼 + 제목 + 주문 ID) */}
-        <div className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {/* 뒤로가기 버튼 스켈레톤 */}
-            <Skeleton className="h-8 w-28 rounded-md" />
-            {/* 제목 스켈레톤 */}
-            <Skeleton className="h-10 w-48 rounded-md" />
+    <div aria-busy="true" aria-live="polite" className="w-full">
+      <span className="sr-only">{srLoadingLabel}</span>
+
+      <section className="rounded-xl border border-brand-highlight-ink/25 bg-brand-highlight-muted/40 p-4 shadow-none bp-sm:p-5">
+        <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
+          <div className="min-w-0 space-y-2">
+            <Skeleton className="h-6 w-28 rounded-full" />
+            <Skeleton className="h-9 w-48 rounded-lg bp-sm:w-64" />
+            <Skeleton className="h-4 w-full max-w-md" />
           </div>
-          {/* 주문 ID 텍스트 스켈레톤 */}
-          <Skeleton className="h-4 w-1/4" />
+          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
+            <Skeleton className="h-9 w-full rounded-md bp-sm:w-36" />
+            <Skeleton className="h-9 w-full rounded-md bp-sm:w-28" />
+            <Skeleton className="h-9 w-full rounded-md bp-sm:w-24" />
+          </div>
         </div>
 
-        {/* 2-2. 주문 상태 / 고객 정보 / 배송 정보 / 결제 정보 등 그리드 */}
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* ----------------------- */}
-          {/* 2-2-1. 주문 상태 카드 (col-span-3) */}
-          {/* ----------------------- */}
-          <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                {/* “주문 상태” 텍스트 스켈레톤 */}
-                <Skeleton className="h-6 w-32" />
-                {/* 상태 배지 자리에 스켈레톤 (가로 직사각형) */}
-                <Skeleton className="h-6 w-20 rounded-full" />
-              </div>
-              {/* 날짜 설명 스켈레톤 */}
-              <Skeleton className="mt-2 h-4 w-1/3" />
-            </CardHeader>
-            <CardFooter className="pt-4">
-              {/* 아래 여분 공간 확보용 (실제 버튼/배지가 로드되기 전 레이아웃 유지) */}
-              <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </CardFooter>
-          </Card>
-
-          {/* ----------------------- */}
-          {/* 2-2-2. 고객 정보 카드 */}
-          {/* ----------------------- */}
-          <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                {/* 사용자 아이콘 스켈레톤 (원형) */}
-                <Skeleton className="h-5 w-5 rounded-full" />
-                {/* “내 정보” 텍스트 스켈레톤 */}
-                <Skeleton className="h-6 w-20" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* 필드 4개 (이름, 이메일, 전화번호, 주소) */}
-                {Array.from({ length: 4 }).map((_, idx) => (
-                  <div key={idx} className="space-y-1">
-                    {/* 라벨 스켈레톤 */}
-                    <Skeleton className="h-4 w-1/3" />
-                    {/* 값 스켈레톤 */}
-                    <Skeleton className="h-4 w-2/3" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* ----------------------- */}
-          {/* 2-2-3. 배송 정보 카드 */}
-          {/* ----------------------- */}
-          <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                {/* 트럭 아이콘 스켈레톤 (원형) */}
-                <Skeleton className="h-5 w-5 rounded-full" />
-                {/* “배송 정보” 텍스트 스켈레톤 */}
-                <Skeleton className="h-6 w-24" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* 필드 3개 (배송 방법, 예상 수령일, 택배사/운송장) */}
-                {Array.from({ length: 3 }).map((_, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* ----------------------- */}
-          {/* 2-2-4. 결제 정보 카드 */}
-          {/* ----------------------- */}
-          <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                {/* 신용카드 아이콘 스켈레톤 (원형) */}
-                <Skeleton className="h-5 w-5 rounded-full" />
-                {/* “결제 정보” 텍스트 스켈레톤 */}
-                <Skeleton className="h-6 w-24" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* 필드 4개 (결제 상태 배지, 결제 방법, 결제 금액, 기타) */}
-                {Array.from({ length: 4 }).map((_, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-4 w-2/3" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* ----------------------- */}
-          {/* 2-2-5. 주문 항목 테이블 카드 (col-span-3) */}
-          {/* ----------------------- */}
-          <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                {/* 장바구니 아이콘 스켈레톤 (원형) */}
-                <Skeleton className="h-5 w-5 rounded-full" />
-                {/* “주문 항목” 텍스트 스켈레톤 */}
-                <Skeleton className="h-6 w-32" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-xl border border-border shadow-sm overflow-hidden">
-                {/* 테이블 헤더 스켈레톤 */}
-                <div className="flex w-full bg-muted px-4 py-2">
-                  <Skeleton className="h-4 w-1/4" /> {/* 상품/서비스 */}
-                  <Skeleton className="h-4 w-1/4 ml-auto" /> {/* 수량 */}
-                  <Skeleton className="h-4 w-1/4 ml-auto" /> {/* 가격 */}
-                  <Skeleton className="h-4 w-1/4 ml-auto" /> {/* 합계 */}
+        <div className="mt-5 flex w-full flex-col gap-4 rounded-xl border border-brand-highlight-ink/20 bg-background/75 p-4 ring-1 ring-brand-highlight-ink/15 bp-sm:p-5">
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(300px,340px)] bp-lg:items-stretch">
+            <div className="flex min-w-0 items-start gap-3">
+              <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-5 w-40" />
                 </div>
-                {/* 테이블 바디 3개 행 분량 */}
-                {Array.from({ length: 3 }).map((_, rowIdx) => (
-                  <div key={rowIdx} className="flex items-center px-4 py-2 border-t border-border">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-4 w-1/4 ml-auto" />
-                    <Skeleton className="h-4 w-1/4 ml-auto" />
-                    <Skeleton className="h-4 w-1/4 ml-auto" />
-                  </div>
-                ))}
+                <Skeleton className="h-4 w-36" />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
 
-        {/* ======================= */}
-        {/* 3. 요청사항 카드 */}
-        {/* ======================= */}
-        <Card className="rounded-xl border-border bg-card shadow-md">
-          <CardHeader className="pb-3">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="mt-1 h-4 w-2/3" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-4 w-full" />
-          </CardContent>
-        </Card>
+            <div className="flex flex-col gap-3 rounded-xl border border-brand-highlight-ink/25 bg-brand-highlight-muted/55 p-3 bp-sm:p-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-9 w-full rounded-md" />
+            </div>
+          </div>
 
-        {/* ======================= */}
-        {/* 4. 처리 이력 스켈레톤 */}
-        {/* ======================= */}
-        <Card className="rounded-xl border-border bg-card shadow-md">
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* 이력 아이템 3개 분량: 아이콘 + 텍스트 */}
-            {Array.from({ length: 3 }).map((_, idx) => (
-              <div key={idx} className="flex items-center space-x-4">
-                {/* 아이콘 원형 스켈레톤 */}
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <div className="flex-1 space-y-1">
-                  {/* 상태 텍스트 스켈레톤 */}
-                  <Skeleton className="h-4 w-1/2" />
-                  {/* 날짜/설명 스켈레톤 */}
-                  <Skeleton className="h-3 w-1/3" />
-                </div>
+          <div className="grid grid-cols-1 gap-3 border-t border-border/60 pt-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-28" />
               </div>
             ))}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </section>
+
+      <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
+        <div className="w-full space-y-5">
+          <div className="space-y-5">
+            <section className="overflow-hidden rounded-2xl border border-brand-highlight-ink/20 bg-card shadow-none">
+              <div className="border-b border-border/60 bg-brand-highlight-muted/45 p-4 bp-sm:p-5">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-6 w-28" />
+                </div>
+                <Skeleton className="mt-2 h-4 w-56" />
+              </div>
+              <div className="divide-y divide-border/60 p-4 bp-sm:p-5">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div key={index} className="flex gap-3 py-4 first:pt-0 last:pb-0 bp-sm:gap-4">
+                    <Skeleton className="h-16 w-16 shrink-0 rounded-xl bp-sm:h-20 bp-sm:w-20" />
+                    <div className="min-w-0 flex-1 space-y-3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-5 w-32" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <aside className="grid gap-5 bp-lg:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <section key={index} className="overflow-hidden rounded-2xl border border-brand-highlight-ink/20 bg-card shadow-none">
+                <div className="border-b border-border/60 bg-brand-highlight-muted/45 p-4 bp-sm:p-5">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                    <Skeleton className="h-6 w-28" />
+                  </div>
+                  <Skeleton className="mt-2 h-4 w-44" />
+                </div>
+                <div className="space-y-4 p-4 bp-sm:p-5">
+                  {Array.from({ length: 4 }).map((__, fieldIndex) => (
+                    <div key={fieldIndex} className="space-y-2 border-b border-border/60 pb-3 last:border-b-0 last:pb-0">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-5 w-2/3" />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </aside>
+        </div>
+      </SiteContainer>
     </div>
   );
 }

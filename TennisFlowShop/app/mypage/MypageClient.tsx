@@ -5,6 +5,7 @@ import OrdersScopeTabs, {
 } from "@/app/mypage/_components/OrdersScopeTabs";
 import MypagePrimaryNavigation from "@/app/mypage/_components/MypagePrimaryNavigation";
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
+import OrderDetailSkeleton from "@/app/mypage/orders/_components/OrderDetailSkeleton";
 import MypageDashboardHero from "@/app/mypage/_components/MypageDashboardHero";
 import SiteContainer from "@/components/layout/SiteContainer";
 import StickyAside from "@/components/layout/StickyAside";
@@ -26,7 +27,7 @@ const ApplicationDetail = dynamic(
 );
 const OrderDetailClient = dynamic(
   () => import("@/app/mypage/orders/_components/OrderDetailClient"),
-  { loading: () => <TabPanelSkeleton rowCount={4} /> },
+  { loading: () => <OrderDetailSkeleton /> },
 );
 const RentalsDetailClient = dynamic(
   () => import("@/app/mypage/rentals/_components/RentalsDetailClient"),
