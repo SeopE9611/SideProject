@@ -6,13 +6,53 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { Heart, ShoppingCart, Trash2 } from "lucide-react";
+import { AlertCircle, Heart, ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 const LIMIT = 12;
+
+export function WishlistSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, idx) => (
+        <Card
+          key={`wishlist-skeleton-${idx}`}
+          variant="feature"
+          className="flex h-full flex-col overflow-hidden border-border/80 bg-card shadow-soft"
+        >
+          <CardContent className="flex h-full flex-col p-0">
+            <div className="border-b border-border/70 bg-muted/20 p-3">
+              <Skeleton className="aspect-[4/3] w-full rounded-control" />
+            </div>
+            <div className="flex flex-1 flex-col gap-3 p-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24 rounded-control" />
+                <Skeleton className="h-5 w-full rounded-control" />
+                <Skeleton className="h-5 w-4/5 rounded-control" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-32 rounded-control" />
+                <Skeleton className="h-4 w-40 rounded-control" />
+              </div>
+              <div className="space-y-2 rounded-control border border-border/70 bg-muted/20 p-3">
+                <Skeleton className="h-4 w-28 rounded-control" />
+                <Skeleton className="h-4 w-36 rounded-control" />
+                <Skeleton className="h-4 w-24 rounded-control" />
+              </div>
+              <div className="mt-auto grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                <Skeleton className="h-9 w-full rounded-control" />
+                <Skeleton className="h-9 w-full rounded-control" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 export default function Wishlist() {
   const { items, remove, isLoading, hasDataError, hasResolvedData } = useWishlist();
@@ -65,29 +105,20 @@ export default function Wishlist() {
   }
 
   if (isLoading && !hasResolvedData) {
-    return (
-      <Card className="border-border bg-card shadow-sm">
-        <CardContent className="space-y-3 p-4 md:p-6">
-          {Array.from({ length: 4 }).map((_, idx) => (
-            <div key={`wishlist-loading-${idx}`} className="rounded-lg border border-border/50 p-3">
-              <Skeleton className="h-28 w-full rounded-md" />
-              <Skeleton className="mt-3 h-4 w-2/3" />
-              <Skeleton className="mt-2 h-4 w-1/3" />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    );
+    return <WishlistSkeleton />;
   }
 
   if (hasDataError) {
     return (
-      <Card className="border-border bg-card shadow-sm">
-        <CardContent className="p-8 md:p-12 text-center">
-          <h3 className="mb-2 text-ui-section-title font-semibold">
+      <Card variant="feature" className="border-destructive/30 bg-card shadow-soft">
+        <CardContent className="p-8 text-center md:p-12">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-control bg-destructive/10 text-destructive">
+            <AlertCircle className="h-8 w-8" aria-hidden="true" />
+          </div>
+          <h3 className="mb-2 font-brand-heading text-ui-section-title font-semibold">
             위시리스트를 불러오지 못했습니다
           </h3>
-          <p className="text-muted-foreground">잠시 후 다시 시도해주세요.</p>
+          <p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해주세요.</p>
         </CardContent>
       </Card>
     );
@@ -95,16 +126,16 @@ export default function Wishlist() {
 
   if (shouldShowEmptyState) {
     return (
-      <Card className="border-border bg-card shadow-sm">
-        <CardContent className="p-8 md:p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-            <Heart className="h-10 w-10" />
+      <Card variant="feature" className="overflow-hidden border-border/80 bg-card shadow-soft">
+        <CardContent className="p-8 text-center md:p-12">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-control border border-brand-highlight-ink/20 bg-brand-highlight-muted text-brand-highlight-ink shadow-soft">
+            <Heart className="h-10 w-10" aria-hidden="true" />
           </div>
-          <h3 className="mb-2 text-ui-section-title font-semibold">위시리스트가 비어있습니다</h3>
-          <p className="mb-6 text-muted-foreground">
-            마음에 드는 상품을 위시리스트에 추가해보세요!
+          <h3 className="mb-2 font-brand-heading text-ui-section-title font-semibold">위시리스트가 비어있습니다</h3>
+          <p className="mx-auto mb-6 max-w-md text-ui-body-sm text-muted-foreground">
+            마음에 드는 상품을 저장해두고 언제든 다시 확인해보세요.
           </p>
-          <Button asChild variant="default" className="w-full shadow-sm sm:w-auto">
+          <Button asChild variant="highlight" wrap="responsive" className="w-full sm:w-auto">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -119,24 +150,27 @@ export default function Wishlist() {
           <Card
             key={it.id}
             variant="interactive"
-            className="flex h-full flex-col overflow-hidden border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md"
+            className="flex h-full flex-col overflow-hidden border-border/80 bg-card shadow-soft transition-[box-shadow,border-color,transform] duration-200 hover:border-brand-highlight-ink/35 hover:shadow-md focus-within:border-brand-highlight-ink/45 focus-within:shadow-md"
           >
-            <CardContent className="flex h-full flex-col p-4">
-              <Link href={`/products/${it.id}`} className="block">
-                <div className="relative h-44 w-full overflow-hidden rounded-xl bg-muted/30 sm:h-40">
+            <CardContent className="flex h-full flex-col p-0">
+              <Link
+                href={`/products/${it.id}`}
+                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-border/70 bg-muted/20">
                   <Image
                     src={it.image || "/placeholder.svg"}
                     alt={it.name}
                     fill
-                    sizes="(max-width:768px) 50vw, (max-width:1024px) 33vw, 25vw"
-                    className="rounded-xl border border-border/60 object-cover"
+                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, (max-width: 1279px) 33vw, 25vw"
+                    className="object-cover transition-transform duration-300 hover:scale-[1.03]"
                   />
                 </div>
-                <div className="mt-3">
-                  <div className="line-clamp-2 min-h-10 break-keep font-semibold text-foreground hover:underline">
+                <div className="space-y-3 p-4">
+                  <div className="line-clamp-2 min-h-12 break-keep font-brand-heading text-ui-card-title font-semibold text-foreground hover:underline">
                     {it.name}
                   </div>
-                  <div className="mt-1 text-ui-body-sm tabular-nums">
+                  <div className="text-ui-body-sm tabular-nums">
                     <span className="font-semibold text-foreground">
                       {it.price.toLocaleString()}원
                     </span>
@@ -149,7 +183,7 @@ export default function Wishlist() {
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 space-y-0.5 text-ui-label text-muted-foreground">
+                  <div className="space-y-1 rounded-control border border-border/70 bg-muted/20 p-3 text-ui-label text-muted-foreground">
                     {it.hasSelectedOption ? (
                       <>
                         {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
@@ -171,21 +205,24 @@ export default function Wishlist() {
                 </div>
               </Link>
 
-              <div className="mt-auto grid grid-cols-1 gap-2 pt-4 xl:grid-cols-2">
+              <div className="mt-auto grid grid-cols-1 gap-2 p-4 pt-0 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                 <Button
                   size="sm"
-                  variant="default"
-                  className="w-full min-w-0 whitespace-nowrap px-3 shadow-sm"
+                  variant="highlight"
+                  wrap="responsive"
+                  className="w-full min-w-0 px-3"
                   onClick={() => handleAddToCart(it)}
                   disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" />{" "}
+                  <ShoppingCart className="mr-2 h-4 w-4" aria-hidden="true" />{" "}
                   {it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "담기"}
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-full min-w-0 whitespace-nowrap border-destructive/40 px-3 hover:bg-destructive/10"
+                  wrap="responsive"
+                  className="w-full min-w-0 border-destructive/40 px-3 text-destructive hover:bg-destructive/10"
+                  aria-label={`${it.name} 위시리스트에서 삭제`}
                   onClick={() => {
                     remove(it.id).catch(() => {
                       showErrorToast("위시리스트 삭제에 실패했습니다.");
@@ -194,7 +231,7 @@ export default function Wishlist() {
                     setVisible((v) => Math.min(v, Math.max(0, resolvedItems.length - 1)));
                   }}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" /> 삭제
+                  <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" /> 삭제
                 </Button>
               </div>
             </CardContent>
