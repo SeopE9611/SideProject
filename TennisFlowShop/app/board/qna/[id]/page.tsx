@@ -370,8 +370,14 @@ export default function QnaDetailPage() {
                               alt={name}
                               className="h-52 w-full object-cover sm:h-48"
                             />
-                            <span className="absolute inset-0 flex items-center justify-center bg-overlay/0 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">
-                              <ExternalLink className="h-5 w-5 text-foreground" />
+                            <span
+                              className="absolute inset-0 flex items-center justify-center bg-overlay/0 opacity-0 group-hover:bg-overlay/30 group-hover:opacity-100 group-focus-visible:bg-overlay/30 group-focus-visible:opacity-100"
+                              aria-hidden="true"
+                            >
+                              <ExternalLink
+                                className="h-5 w-5 text-surface-inverse-foreground"
+                                aria-hidden="true"
+                              />
                             </span>
                           </button>
                         ) : (
@@ -427,6 +433,7 @@ export default function QnaDetailPage() {
                   <Textarea
                     value={answerText}
                     onChange={(e) => setAnswerText(e.target.value)}
+                    aria-label="관리자 답변 내용"
                     placeholder="답변 내용을 입력하세요"
                     className="min-h-[140px] border-border bg-card focus:border-ring focus:ring-ring"
                   />
@@ -536,6 +543,7 @@ export default function QnaDetailPage() {
                       <Textarea
                         value={answerText}
                         onChange={(e) => setAnswerText(e.target.value)}
+                        aria-label="관리자 답변 수정 내용"
                         className="min-h-[140px] border-border bg-card focus:border-ring focus:ring-ring"
                       />
                       <div className="flex justify-end gap-2">
@@ -601,7 +609,9 @@ export default function QnaDetailPage() {
 
       <Dialog
         open={lightbox.open}
-        onOpenChange={(open) => setLightbox(open ? lightbox : { open: false, src: "", alt: "" })}
+        onOpenChange={(open) => {
+          if (!open) setLightbox({ open: false, src: "", alt: "" });
+        }}
       >
         <DialogContent className="max-w-[calc(100%-2rem)] bg-card p-3 sm:max-w-5xl">
           <DialogTitle className="sr-only">이미지 확대 보기</DialogTitle>

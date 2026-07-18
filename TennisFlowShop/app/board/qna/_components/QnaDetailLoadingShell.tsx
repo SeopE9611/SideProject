@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";
@@ -94,12 +93,8 @@ export default function QnaDetailLoadingShell() {
         description="Q&A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다."
         actions={
           <>
-            <Button variant="highlight" size="sm" className="w-full sm:w-auto" disabled>
-              Q&amp;A 목록
-            </Button>
-            <Button variant="outline" size="sm" className="w-full sm:w-auto" disabled>
-              고객센터 홈
-            </Button>
+            <Skeleton className="h-9 w-full sm:w-28" />
+            <Skeleton className="h-9 w-full sm:w-24" />
           </>
         }
       />
