@@ -1,5 +1,5 @@
-import { ListPageSkeleton } from "@/components/system/loading";
+import NoticeListLoadingShell from "./_components/NoticeListLoadingShell";
 
 export default function Loading() {
-  return <ListPageSkeleton rows={10} />;
+  return <NoticeListLoadingShell mode="notice" />;
 }
