@@ -62,8 +62,8 @@ function AdminNoticeWriteButton({ href, label }: { href: string; label: string }
     <Button
       asChild
       size="sm"
-      variant="outline"
-      className="h-9 w-full shrink-0 whitespace-nowrap text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg"
+      variant="highlight"
+      className="h-9 w-full shrink-0 whitespace-nowrap rounded-control text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg"
     >
       <Link href={href}>
         <Plus className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
@@ -330,13 +330,17 @@ export default function NoticeListClient({
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
-        variant="standard"
-        eyebrow="Customer Support"
+        variant="feature"
+        eyebrow={
+          <Badge variant={isEventMode ? "success" : "highlight"} className="rounded-control">
+            {isEventMode ? "Event Board" : "Notice Board"}
+          </Badge>
+        }
         title={pageTitle}
         description={pageDescription}
         actions={
           <>
-            <Button asChild variant="outline" className="w-full bp-sm:w-auto">
+            <Button asChild variant="secondary" className="w-full rounded-control bp-sm:w-auto">
               <Link href="/support">
                 <ArrowLeft className="mr-2 h-4 w-4 shrink-0" />
                 고객센터 홈
@@ -348,9 +352,23 @@ export default function NoticeListClient({
       />
 
       <SiteContainer className="space-y-5 py-6 sm:space-y-6 sm:py-8 md:py-10">
-        <SectionHeader title={listTitle} />
+        <PublicSurface variant="feature" padding="md" className="overflow-hidden">
+          <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+          <div className="flex flex-col gap-3 bg-brand-highlight-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="space-y-1">
+              <Badge variant={isEventMode ? "success" : "brand"} className="rounded-control">
+                {isEventMode ? "진행 소식" : "중요 안내"}
+              </Badge>
+              <SectionHeader title={listTitle} variant="brand" />
+              <p className="text-ui-body-sm text-muted-foreground">{isEventMode ? "참여 가능한 이벤트와 지난 안내를 확인하세요." : "고정 공지부터 최신 안내까지 한눈에 확인하세요."}</p>
+            </div>
+            <div className="rounded-control border border-border bg-card px-4 py-3 text-ui-body-sm shadow-soft">
+              총 <strong className="font-brand-heading text-ui-section-title text-brand-highlight-ink">{total ?? initialTotal ?? 0}</strong>건
+            </div>
+          </div>
+        </PublicSurface>
 
-        <PublicSurface variant="muted" padding="md">
+        <PublicSurface variant="feature" padding="md" className="shadow-soft">
           <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
               <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground">
@@ -359,7 +377,7 @@ export default function NoticeListClient({
               <div className="w-full sm:w-[170px] sm:shrink-0">
                 <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
                   <SelectTrigger
-                    className="h-9 w-full bg-card text-ui-body-sm sm:h-10 sm:text-ui-body-lg"
+                    className="h-9 w-full rounded-control bg-card text-ui-body-sm sm:h-10 sm:text-ui-body-lg"
                     aria-label="검색 조건"
                   >
                     <SelectValue placeholder="검색 조건" />
@@ -390,7 +408,7 @@ export default function NoticeListClient({
                 <Input
                   type="search"
                   placeholder="검색어를 입력하세요"
-                  className="h-9 w-full min-w-0 bg-card pl-10 text-ui-body-sm sm:h-10 sm:pl-12 sm:text-ui-body-lg"
+                  className="h-9 w-full min-w-0 rounded-control bg-card pl-10 text-ui-body-sm sm:h-10 sm:pl-12 sm:text-ui-body-lg"
                   value={inputKeyword}
                   onChange={(e) => setInputKeyword(e.target.value)}
                 />
@@ -398,8 +416,8 @@ export default function NoticeListClient({
               <Button
                 type="submit"
                 size="sm"
-                variant="outline"
-                className="h-9 w-full shrink-0 whitespace-nowrap text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg lg:w-auto"
+                variant="highlight"
+                className="h-9 w-full shrink-0 whitespace-nowrap rounded-control text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg lg:w-auto"
                 disabled={isBusy}
               >
                 {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -409,7 +427,7 @@ export default function NoticeListClient({
           </div>
         </PublicSurface>
 
-        <PublicSurface padding="none" className="overflow-hidden">
+        <PublicSurface variant="feature" padding="none" className="overflow-hidden shadow-soft">
           {shouldShowLoadingState && renderListSkeleton()}
           {!shouldShowLoadingState && hasDataError && (
             <div className="p-4 sm:p-5 md:p-6">
@@ -478,7 +496,7 @@ export default function NoticeListClient({
                       href={buildDetailHref(notice._id)}
                       className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
-                      <article className="px-4 py-4 transition-colors hover:bg-muted/40 sm:px-5 sm:py-5">
+                      <article className="px-4 py-4 transition-colors hover:bg-brand-highlight-muted/30 focus-within:bg-brand-highlight-muted/20 sm:px-5 sm:py-5">
                         <div className="min-w-0 space-y-2">
                           <div className="flex min-w-0 flex-wrap items-start gap-2">
                             {notice.category && (
@@ -497,7 +515,7 @@ export default function NoticeListClient({
                                 title={pinnedLabel}
                                 aria-label={pinnedLabel}
                               >
-                                <Pin className="h-3 w-3" />
+                                <Pin className="h-3 w-3" aria-hidden="true" />
                               </Badge>
                             )}
                             <span className={`${noticeMobileTitleClampClass} text-foreground`}>
@@ -507,7 +525,7 @@ export default function NoticeListClient({
                           <div className={noticeMobileMetaWrapClass}>
                             <span>{fmt(notice.createdAt)}</span>
                             <span className="inline-flex items-center gap-1">
-                              <Eye className="h-3.5 w-3.5" />
+                              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                               {notice.viewCount ?? 0}
                             </span>
                             {(notice.hasImage || notice.hasFile) && (
@@ -542,7 +560,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
               onClick={() => movePage(1)}
               disabled={page <= 1 || isBusy}
             >
@@ -552,7 +570,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
               onClick={() => movePage(page - 1)}
               disabled={page <= 1 || isBusy}
             >
@@ -562,9 +580,9 @@ export default function NoticeListClient({
             {visiblePages.map((pageNumber) => (
               <Button
                 key={pageNumber}
-                variant={pageNumber === page ? "default" : "outline"}
+                variant={pageNumber === page ? "highlight" : "outline"}
                 size="sm"
-                className="h-10 w-10 text-ui-body-sm sm:h-12 sm:w-12 sm:text-ui-body-lg"
+                className="h-10 w-10 rounded-control text-ui-body-sm sm:h-12 sm:w-12 sm:text-ui-body-lg"
                 onClick={() => movePage(pageNumber)}
                 disabled={isBusy}
                 aria-current={pageNumber === page ? "page" : undefined}
@@ -575,7 +593,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
               onClick={() => movePage(page + 1)}
               disabled={page >= totalPages || isBusy}
             >
@@ -585,7 +603,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
               onClick={() => movePage(totalPages)}
               disabled={page >= totalPages || isBusy}
             >
@@ -600,13 +618,13 @@ export default function NoticeListClient({
                 value={pageJump}
                 onChange={(e) => setPageJump(e.target.value)}
                 placeholder="페이지"
-                className="h-10 w-20 bg-card px-2 text-ui-label sm:h-12 sm:text-ui-body-sm"
+                className="h-10 w-20 rounded-control bg-card px-2 text-ui-label sm:h-12 sm:text-ui-body-sm"
               />
               <Button
                 type="submit"
                 variant="outline"
                 size="sm"
-                className="h-10 bg-card px-2 sm:h-12"
+                className="h-10 rounded-control bg-card px-2 sm:h-12"
                 disabled={isBusy}
               >
                 이동

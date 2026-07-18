@@ -2,6 +2,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
@@ -22,12 +23,16 @@ export default function NoticeListLoadingShell({ mode = "notice" }: Props) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
-        variant="standard"
-        eyebrow="Customer Support"
+        variant="feature"
+        eyebrow={
+          <Badge variant={isEventMode ? "success" : "highlight"} className="rounded-control">
+            {isEventMode ? "Event Board" : "Notice Board"}
+          </Badge>
+        }
         title={pageTitle}
         description={pageDescription}
         actions={
-          <Button asChild variant="outline" className="w-full bp-sm:w-auto">
+          <Button asChild variant="secondary" className="w-full rounded-control bp-sm:w-auto">
             <Link href="/support">
               <ArrowLeft className="mr-2 h-4 w-4 shrink-0" />
               고객센터 홈
@@ -36,10 +41,20 @@ export default function NoticeListLoadingShell({ mode = "notice" }: Props) {
         }
       />
 
-      <SiteContainer className="space-y-5 py-6 sm:space-y-6 sm:py-8 md:py-10">
-        <SectionHeader title={listTitle} />
+      <SiteContainer className="space-y-5 py-6 sm:space-y-6 sm:py-8 md:py-10" aria-busy="true" aria-live="polite">
+        <PublicSurface variant="feature" padding="md" className="overflow-hidden">
+          <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+          <div className="flex flex-col gap-3 bg-brand-highlight-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-20 rounded-control" />
+              <SectionHeader title={listTitle} variant="brand" />
+              <Skeleton className="h-4 w-72 max-w-full" />
+            </div>
+            <Skeleton className="h-16 w-32 rounded-control" />
+          </div>
+        </PublicSurface>
 
-        <PublicSurface variant="muted" padding="md">
+        <PublicSurface variant="feature" padding="md" className="shadow-soft">
           <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
               <Skeleton className="h-4 w-12" />
@@ -52,7 +67,7 @@ export default function NoticeListLoadingShell({ mode = "notice" }: Props) {
           </div>
         </PublicSurface>
 
-        <PublicSurface padding="none" className="overflow-hidden">
+        <PublicSurface variant="feature" padding="none" className="overflow-hidden shadow-soft">
           <div className="divide-y divide-border">
             {Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="space-y-3 px-4 py-4 sm:px-5 sm:py-5">

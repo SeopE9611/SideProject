@@ -1,5 +1,8 @@
 "use client";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +26,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { ArrowLeft, Megaphone, ChevronLeft, ChevronRight, Pin, Upload, X } from "lucide-react";
+import { ArrowLeft, Megaphone, ChevronLeft, ChevronRight, FileText, ImageIcon, Pin, Tags, Upload, X } from "lucide-react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -68,15 +71,15 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
       ? "공지사항 수정"
       : "공지사항 작성";
   const pageDescription = isEventMode
-    ? "할인, 프로모션, 행사 소식을 회원들에게 전달하세요"
-    : "중요한 소식을 회원들에게 전달하세요";
+    ? "할인, 프로모션, 행사 소식을 회원들에게 전달하세요."
+    : "중요한 소식을 회원들에게 전달하세요.";
   const cardTitle = isEventMode
     ? editId
-      ? "이벤트 수정"
-      : "새 이벤트 작성"
+      ? "이벤트 정보 업데이트"
+      : "새 이벤트 구성"
     : editId
-      ? "공지사항 수정"
-      : "새 공지사항 작성";
+      ? "공지사항 정보 업데이트"
+      : "새 공지사항 구성";
   const fixedCategoryCode = isEventMode ? "event" : null;
 
   // 프리필은 한번만 실행
@@ -597,27 +600,23 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8">
+    <main className="min-h-screen bg-background text-foreground">
+      <PublicPageHero
+        variant="feature"
+        eyebrow={<Badge variant={isEventMode ? "success" : "highlight"} className="rounded-control">{isEventMode ? "Event Editor" : "Notice Editor"}</Badge>}
+        title={pageHeading}
+        description={pageDescription}
+        actions={
+          <Button variant="secondary" asChild className="w-full rounded-control bp-sm:w-auto">
+            <Link href={listHref} onClick={guardLeave}>
+              <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+              목록으로
+            </Link>
+          </Button>
+        }
+      />
+      <SiteContainer className="py-6 sm:py-8 md:py-10">
         <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" asChild className="p-2">
-              <Link href={listHref}>
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-                <Megaphone className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
-                  {pageHeading}
-                </h1>
-                <p className="text-ui-card-title-lg text-muted-foreground">{pageDescription}</p>
-              </div>
-            </div>
-          </div>
           {editId && detailError && (
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-ui-body-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
               {isEventMode
@@ -646,15 +645,18 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               </div>
             </div>
           )}
-          <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-            <CardHeader className="bg-muted/30 border-b">
-              <CardTitle className="flex items-center space-x-2">
-                <Megaphone className="h-5 w-5 text-primary" />
+          <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
+            <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+            <CardHeader className="border-b bg-brand-highlight-muted/30">
+              <CardTitle className="flex items-center space-x-2 font-brand-heading text-ui-section-title">
+                <Megaphone className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
                 <span>{cardTitle}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 p-4 md:space-y-8 md:p-8">
-              <div className="space-y-3">
+            <CardContent className="space-y-5 p-4 md:space-y-6 md:p-8">
+              <PublicSurface variant="feature" padding="md" className="space-y-3">
+                <div className="flex items-center gap-2"><Tags className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" /><h3 className="font-brand-heading text-ui-card-title-lg">분류 설정</h3></div>
+                <p className="text-ui-body-sm text-muted-foreground">게시판 성격에 맞는 의미 기반 카테고리를 지정합니다.</p>
                 <Label htmlFor="category" className="text-ui-body-lg font-semibold">
                   카테고리 <span className="text-destructive">*</span>
                 </Label>
@@ -700,9 +702,10 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                     </SelectContent>
                   </Select>
                 )}
-              </div>
+              </PublicSurface>
 
-              <div className="space-y-3">
+              <PublicSurface variant="feature" padding="md" className="space-y-3">
+                <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" /><h3 className="font-brand-heading text-ui-card-title-lg">본문 작성</h3></div>
                 <Label htmlFor="title" className="text-ui-body-lg font-semibold">
                   제목 <span className="text-destructive">*</span>
                 </Label>
@@ -713,12 +716,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   placeholder={
                     isEventMode ? "이벤트 제목을 입력해주세요" : "공지사항 제목을 입력해주세요"
                   }
-                  className="h-12 bg-card text-ui-body-lg"
+                  className="h-12 rounded-control bg-card text-ui-body-lg"
                 />
-              </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="content" className="text-ui-body-lg font-semibold">
+                <div className="space-y-3">
+                  <Label htmlFor="content" className="text-ui-body-lg font-semibold">
                   내용 <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
@@ -728,9 +730,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   placeholder={
                     isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"
                   }
-                  className="min-h-[300px] bg-card text-ui-body-lg resize-none"
+                  className="min-h-[300px] resize-none rounded-control bg-card text-ui-body-lg"
                 />
-              </div>
+                </div>
+                <p className="text-ui-label text-muted-foreground">제목 {title.trim().length}/{TITLE_MAX}자 · 내용 {content.trim().length}/{CONTENT_MAX}자</p>
+              </PublicSurface>
               {/* 기존 첨부 (수정 모드에서만 표시) */}
               {editId && existingAttachments.length > 0 && (
                 <div className="space-y-2">
@@ -797,13 +801,14 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                 </div>
               )}
 
-              <div className="space-y-3">
+              <PublicSurface variant="feature" padding="md" className="space-y-3">
+                <div className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" /><h3 className="font-brand-heading text-ui-card-title-lg">첨부 자료</h3></div>
                 <Label htmlFor="image" className="text-ui-body-lg font-semibold">
                   첨부파일 (선택사항)
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className="cursor-pointer rounded-lg border-2 border-dashed border-border p-4 text-center transition-colors hover:border-border md:p-6 dark:hover:border-border"
+                    className="cursor-pointer rounded-panel border-2 border-dashed border-border bg-brand-highlight-muted/20 p-4 text-center shadow-soft transition-colors hover:border-brand-highlight-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:p-6"
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -820,7 +825,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                       addFiles(Array.from(e.dataTransfer.files || []));
                     }}
                   >
-                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <Upload className="mx-auto mb-2 h-8 w-8 text-brand-highlight-ink" aria-hidden="true" />
                     <p className="text-ui-body-sm text-muted-foreground mb-2">
                       클릭하여 이미지 또는 파일을 선택하거나 드래그하여 업로드하세요
                     </p>
@@ -835,7 +840,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
 
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="highlight_soft"
                       onClick={(e) => {
                         e.stopPropagation(); // 부모 드롭존 onClick으로 버블링 금지
                         fileInputRef.current?.click(); // 파일창 열기
@@ -939,9 +944,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                     <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP), 문서(PDF/DOC/DOCX)
                   </div>
                 </div>
-              </div>
+              </PublicSurface>
 
-              <div className="flex items-start space-x-3 p-4 rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20">
+              <PublicSurface variant="feature" padding="md" className="flex items-start space-x-3 bg-brand-highlight-muted/30">
                 <Checkbox
                   id="pinned"
                   checked={isPinned}
@@ -962,12 +967,12 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                       : "중요한 공지사항을 게시판 상단에 고정하여 표시합니다."}
                   </p>
                 </div>
-              </div>
+              </PublicSurface>
             </CardContent>
 
             <CardFooter className="flex flex-col gap-2 border-t bg-card p-4 bp-sm:flex-row bp-sm:flex-wrap bp-sm:justify-between md:p-8">
               <Button
-                variant="outline"
+                variant="secondary"
                 asChild
                 size="lg"
                 className="w-full bg-transparent px-8 bp-sm:w-auto"
@@ -980,7 +985,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full border-border bg-transparent px-6 text-primary hover:bg-primary/10 bp-sm:w-auto dark:hover:bg-primary/20"
+                  className="w-full rounded-control border-border bg-transparent px-6 text-muted-foreground hover:bg-secondary bp-sm:w-auto"
                 >
                   임시저장
                 </Button>
@@ -988,7 +993,8 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   size="lg"
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="w-full bg-primary px-8 text-primary-foreground hover:bg-primary/90 disabled:opacity-60 bp-sm:w-auto"
+                  className="w-full rounded-control px-8 disabled:opacity-60 bp-sm:w-auto"
+                  variant="highlight"
                 >
                   {submitting
                     ? editId
@@ -1080,7 +1086,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
             </Dialog>
           </Card>
         </div>
-      </div>
-    </div>
+      </SiteContainer>
+    </main>
   );
 }
