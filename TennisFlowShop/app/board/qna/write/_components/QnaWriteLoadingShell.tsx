@@ -55,19 +55,6 @@ export function QnaWriteLoadingShell() {
               <section className="space-y-5">
                 <Skeleton className="h-7 w-56" />
                 <FieldSkeleton />
-                <div className="grid gap-4 bp-md:grid-cols-2">
-                  {Array.from({ length: 2 }).map((_, index) => (
-                    <div key={index} className="rounded-control border border-border bg-muted/30 p-4">
-                      <Skeleton className="h-6 w-32" />
-                      <Skeleton className="mt-4 h-11 w-full" />
-                      <div className="mt-4 space-y-2">
-                        <Skeleton className="h-14 w-full rounded-xl" />
-                        <Skeleton className="h-14 w-full rounded-xl" />
-                        <Skeleton className="h-14 w-full rounded-xl" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </section>
               <section className="space-y-5 border-t border-border pt-8">
                 <Skeleton className="h-7 w-48" />
@@ -77,11 +64,6 @@ export function QnaWriteLoadingShell() {
               <section className="space-y-5 border-t border-border pt-8">
                 <Skeleton className="h-7 w-40" />
                 <Skeleton className="h-36 w-full rounded-control" />
-                <div className="grid grid-cols-2 gap-3 bp-sm:grid-cols-3 bp-md:grid-cols-4">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton key={index} className="h-28 w-full rounded-control" />
-                  ))}
-                </div>
               </section>
               <section className="space-y-4 border-t border-border pt-8">
                 <Skeleton className="h-7 w-36" />

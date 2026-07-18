@@ -572,7 +572,7 @@ export default function QnaWritePage() {
                   role="alert"
                   className="flex gap-3 rounded-control border border-destructive/45 bg-destructive/10 p-4 text-ui-body-sm text-destructive"
                 >
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>{formError}</span>
                 </div>
               )}
@@ -657,6 +657,8 @@ export default function QnaWritePage() {
 
                     <div
                       className="grid gap-4 bp-md:grid-cols-2"
+                      role="group"
+                      aria-label="문의 상품 선택"
                       aria-invalid={!!fieldErrors.product}
                       aria-describedby={fieldErrors.product ? productErrorId : undefined}
                     >
@@ -701,11 +703,12 @@ export default function QnaWritePage() {
                           전체 상품 검색
                         </div>
                         <div className="relative mb-3">
-                          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                           <Input
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
                             placeholder="상품명으로 검색"
+                            aria-label="상품명으로 검색"
                             className="h-11 bg-card pl-9 text-ui-body focus-visible:ring-ring"
                           />
                         </div>
@@ -812,7 +815,7 @@ export default function QnaWritePage() {
                     fieldErrors.images ? "border-destructive" : "border-border hover:border-brand-highlight-ink/40",
                   )}
                 >
-                  <ImagePlus className="mx-auto mb-3 h-8 w-8 text-brand-highlight-ink" />
+                  <ImagePlus className="mx-auto mb-3 h-8 w-8 text-brand-highlight-ink" aria-hidden="true" />
                   <p className="text-ui-body-sm text-muted-foreground">
                     파일 선택 버튼을 눌러 문의에 필요한 이미지를 첨부하세요.
                   </p>
@@ -828,7 +831,7 @@ export default function QnaWritePage() {
                     className="sr-only"
                   />
                   <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="mt-4">
-                    <Upload className="h-4 w-4" />
+                    <Upload className="h-4 w-4" aria-hidden="true" />
                     파일 선택
                   </Button>
                 </div>
