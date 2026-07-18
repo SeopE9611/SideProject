@@ -1,10 +1,14 @@
 "use client";
 import ErrorBox from "@/app/board/_components/ErrorBox";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -15,7 +19,20 @@ import {
 import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
-import { ArrowLeft, Bell, Eye, Gift, ImageIcon, Paperclip, Pin, Plus, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Eye,
+  ImageIcon,
+  Loader2,
+  Paperclip,
+  Pin,
+  Plus,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -107,7 +124,6 @@ export default function NoticeListClient({
   const filterParam = isEventMode
     ? { key: "category", value: "event" }
     : { key: "excludeCategory", value: "event" };
-  const HeaderIcon = isEventMode ? Gift : Bell;
 
   const fmt = (v: string | Date) =>
     new Date(v)
@@ -292,370 +308,310 @@ export default function NoticeListClient({
     setPageJump("");
   };
 
-  const pinnedCount = items.filter((n) => n.isPinned).length;
-  const totalViews = items.reduce((sum, n) => sum + (n.viewCount ?? 0), 0);
-  const monthCount = items.filter((n) => {
-    const d = new Date(n.createdAt);
-    const now = new Date();
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  }).length;
+  const renderListSkeleton = () => (
+    <div className="divide-y divide-border">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="space-y-3 px-4 py-4 sm:px-5 sm:py-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-9 rounded-full" />
+            <Skeleton className="h-5 min-w-0 flex-1" />
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-14" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 py-7 sm:py-9 md:py-10 space-y-5 sm:space-y-7">
-        <div className="flex flex-col space-y-3 sm:space-y-5">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            {/* 고객센터 홈으로 돌아가는 Back 버튼 */}
-            <Button variant="ghost" asChild className="p-2">
+      <PublicPageHero
+        variant="standard"
+        eyebrow="Customer Support"
+        title={pageTitle}
+        description={pageDescription}
+        actions={
+          <>
+            <Button asChild variant="outline" className="w-full bp-sm:w-auto">
               <Link href="/support">
-                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                <ArrowLeft className="mr-2 h-4 w-4 shrink-0" />
+                고객센터 홈
               </Link>
             </Button>
+            <AdminNoticeWriteButton href={writeHref} label={writeLabel} />
+          </>
+        }
+      />
 
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                <HeaderIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-              </div>
-              <div>
-                <h1 className="break-keep text-ui-page-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title-lg md:text-ui-page-title-lg">
-                  {pageTitle}
-                </h1>
-                <p className="break-keep text-ui-body-sm text-muted-foreground sm:text-ui-body-lg">
-                  {pageDescription}
-                </p>
+      <SiteContainer className="space-y-5 py-6 sm:space-y-6 sm:py-8 md:py-10">
+        <SectionHeader title={listTitle} />
+
+        <PublicSurface variant="muted" padding="md">
+          <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+              <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground">
+                필터
+              </span>
+              <div className="w-full sm:w-[170px] sm:shrink-0">
+                <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
+                  <SelectTrigger
+                    className="h-9 w-full bg-card text-ui-body-sm sm:h-10 sm:text-ui-body-lg"
+                    aria-label="검색 조건"
+                  >
+                    <SelectValue placeholder="검색 조건" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체 검색</SelectItem>
+                    <SelectItem value="title">제목</SelectItem>
+                    <SelectItem value="content">내용</SelectItem>
+                    <SelectItem value="title_content">제목+내용</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </div>
-        </div>
 
-        <Card className="border border-border bg-card shadow-sm">
-          <CardHeader className="border-b bg-muted/30 p-4 sm:p-5 md:p-6">
-            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                <HeaderIcon className="h-5 w-5 shrink-0 text-primary sm:h-6 sm:w-6" />
-                <CardTitle className="whitespace-nowrap break-keep text-ui-card-title-lg font-semibold sm:text-ui-section-title md:text-ui-page-title">
-                  {listTitle}
-                </CardTitle>
-              </div>
-
-              <AdminNoticeWriteButton href={writeHref} label={writeLabel} />
-            </div>
-          </CardHeader>
-
-          <div className="border-b bg-muted/20 px-4 py-3 sm:px-5 md:px-6">
-            <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-                <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground">
-                  필터
-                </span>
-                <div className="w-full sm:w-[170px] sm:shrink-0">
-                  <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
-                    <SelectTrigger
-                      className="h-9 w-full bg-card text-ui-body-sm sm:h-10 sm:text-ui-body-lg"
-                      aria-label="검색 조건"
-                    >
-                      <SelectValue placeholder="검색 조건" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">전체 검색</SelectItem>
-                      <SelectItem value="title">제목</SelectItem>
-                      <SelectItem value="content">내용</SelectItem>
-                      <SelectItem value="title_content">제목+내용</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <form
-                className="flex w-full min-w-0 flex-col gap-2 sm:flex-row lg:ml-auto lg:max-w-xl"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const nextPage = 1;
-                  setPage(nextPage);
-                  setKeyword(inputKeyword);
-                  setField(inputField);
-                  pushUrlFromState({
-                    page: nextPage,
-                    keyword: inputKeyword,
-                    field: inputField,
-                  });
-                }}
-              >
-                <div className="relative min-w-0 flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
-                  <Input
-                    type="search"
-                    placeholder="검색어를 입력하세요"
-                    className="h-9 w-full min-w-0 bg-card pl-10 text-ui-body-sm sm:h-10 sm:pl-12 sm:text-ui-body-lg"
-                    value={inputKeyword}
-                    onChange={(e) => setInputKeyword(e.target.value)}
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  size="sm"
-                  variant="outline"
-                  className="h-9 w-full shrink-0 whitespace-nowrap text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg lg:w-auto"
-                  disabled={isBusy}
-                >
-                  {isBusy && (
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border/30 border-t-primary-foreground" />
-                  )}
-                  검색
-                </Button>
-              </form>
-            </div>
-          </div>
-
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="space-y-3.5 sm:space-y-4">
-              {!shouldShowLoadingState && hasDataError && (
-                <ErrorBox
-                  message={
-                    hasPreloadError
-                      ? initialErrorMessage || listLoadErrorMessage
-                      : listError.message
-                  }
-                  status={hasPreloadError ? 500 : listError.status}
-                  fallbackMessage={listLoadErrorMessage}
-                  onRetry={() => mutate()}
+            <form
+              className="flex w-full min-w-0 flex-col gap-2 sm:flex-row lg:ml-auto lg:max-w-xl"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const nextPage = 1;
+                setPage(nextPage);
+                setKeyword(inputKeyword);
+                setField(inputField);
+                pushUrlFromState({ page: nextPage, keyword: inputKeyword, field: inputField });
+              }}
+            >
+              <div className="relative min-w-0 flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
+                <Input
+                  type="search"
+                  placeholder="검색어를 입력하세요"
+                  className="h-9 w-full min-w-0 bg-card pl-10 text-ui-body-sm sm:h-10 sm:pl-12 sm:text-ui-body-lg"
+                  value={inputKeyword}
+                  onChange={(e) => setInputKeyword(e.target.value)}
                 />
-              )}
-              {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && (
-                <div className="space-y-3">
-                  <AsyncState
-                    kind="empty"
-                    variant="card"
-                    title={emptyTitle}
-                    description={emptyDescription}
-                  />
-                  <div className="mt-3">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href="/support">고객센터 홈으로</Link>
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {!shouldShowLoadingState &&
-                !hasDataError &&
-                !shouldShowActualEmptyState &&
-                shouldShowSearchEmptyState && (
-                  <div className="space-y-3">
-                    <AsyncState
-                      kind="empty"
-                      variant="card"
-                      title="검색 결과가 없습니다."
-                      description={searchEmptyDescription}
-                    />
-                    <div className="mt-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setInputKeyword("");
-                          setKeyword("");
-                          setInputField("all");
-                          setField("all");
-                          setPage(1);
-                          pushUrlFromState({
-                            page: 1,
-                            keyword: "",
-                            field: "all",
-                          });
-                        }}
-                      >
-                        {allListLabel}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              {!shouldShowLoadingState &&
-                !hasDataError &&
-                !shouldShowActualEmptyState &&
-                !shouldShowSearchEmptyState &&
-                items.map((notice) => {
+              </div>
+              <Button
+                type="submit"
+                size="sm"
+                variant="outline"
+                className="h-9 w-full shrink-0 whitespace-nowrap text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg lg:w-auto"
+                disabled={isBusy}
+              >
+                {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                검색
+              </Button>
+            </form>
+          </div>
+        </PublicSurface>
+
+        <PublicSurface padding="none" className="overflow-hidden">
+          {shouldShowLoadingState && renderListSkeleton()}
+          {!shouldShowLoadingState && hasDataError && (
+            <div className="p-4 sm:p-5 md:p-6">
+              <ErrorBox
+                message={
+                  hasPreloadError ? initialErrorMessage || listLoadErrorMessage : listError.message
+                }
+                status={hasPreloadError ? 500 : listError.status}
+                fallbackMessage={listLoadErrorMessage}
+                onRetry={() => mutate()}
+              />
+            </div>
+          )}
+          {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && (
+            <div className="space-y-3 p-4 sm:p-5 md:p-6">
+              <AsyncState
+                kind="empty"
+                variant="card"
+                title={emptyTitle}
+                description={emptyDescription}
+              />
+              <Button asChild variant="outline" size="sm">
+                <Link href="/support">고객센터 홈으로</Link>
+              </Button>
+            </div>
+          )}
+          {!shouldShowLoadingState &&
+            !hasDataError &&
+            !shouldShowActualEmptyState &&
+            shouldShowSearchEmptyState && (
+              <div className="space-y-3 p-4 sm:p-5 md:p-6">
+                <AsyncState
+                  kind="empty"
+                  variant="card"
+                  title="검색 결과가 없습니다."
+                  description={searchEmptyDescription}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setInputKeyword("");
+                    setKeyword("");
+                    setInputField("all");
+                    setField("all");
+                    setPage(1);
+                    pushUrlFromState({ page: 1, keyword: "", field: "all" });
+                  }}
+                >
+                  {allListLabel}
+                </Button>
+              </div>
+            )}
+          {!shouldShowLoadingState &&
+            !hasDataError &&
+            !shouldShowActualEmptyState &&
+            !shouldShowSearchEmptyState && (
+              <div className="divide-y divide-border">
+                {items.map((notice) => {
                   const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
 
                   return (
-                    <Link key={notice._id} href={buildDetailHref(notice._id)}>
-                      <Card className="border-border transition-colors hover:border-primary/25 hover:bg-muted/25">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
-                                <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
-                                  {notice.category && (
-                                    <Badge
-                                      variant={noticeCategoryBadge.variant}
-                                      className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
-                                      title={notice.category ?? undefined}
-                                    >
-                                      {notice.category}
-                                    </Badge>
-                                  )}
-
-                                  {notice.isPinned && (
-                                    <Badge
-                                      variant="brand"
-                                      className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
-                                      title={pinnedLabel}
-                                      aria-label={pinnedLabel}
-                                    >
-                                      <Pin className="h-3 w-3" />
-                                    </Badge>
-                                  )}
-
-                                  <span
-                                    className={`${noticeMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}
-                                  >
-                                    {notice.title}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className={noticeMobileMetaWrapClass}>
-                                <span>{fmt(notice.createdAt)}</span>
-                                <span className="inline-flex items-center gap-1">
-                                  <Eye className="h-3.5 w-3.5" />
-                                  {notice.viewCount ?? 0}
-                                </span>
-                                {(notice.hasImage || notice.hasFile) && (
-                                  <span
-                                    className="flex items-center gap-1.5"
-                                    aria-label="첨부 정보"
-                                  >
-                                    {notice.hasImage && (
-                                      <span title="이미지 첨부" aria-label="이미지 첨부">
-                                        <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                                      </span>
-                                    )}
-                                    {notice.hasFile && (
-                                      <span title="첨부파일 있음" aria-label="첨부파일 있음">
-                                        <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
-                                      </span>
-                                    )}
+                    <Link
+                      key={notice._id}
+                      href={buildDetailHref(notice._id)}
+                      className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <article className="px-4 py-4 transition-colors hover:bg-muted/40 sm:px-5 sm:py-5">
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex min-w-0 flex-wrap items-start gap-2">
+                            {notice.category && (
+                              <Badge
+                                variant={noticeCategoryBadge.variant}
+                                className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                                title={notice.category ?? undefined}
+                              >
+                                {notice.category}
+                              </Badge>
+                            )}
+                            {notice.isPinned && (
+                              <Badge
+                                variant="brand"
+                                className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                                title={pinnedLabel}
+                                aria-label={pinnedLabel}
+                              >
+                                <Pin className="h-3 w-3" />
+                              </Badge>
+                            )}
+                            <span className={`${noticeMobileTitleClampClass} text-foreground`}>
+                              {notice.title}
+                            </span>
+                          </div>
+                          <div className={noticeMobileMetaWrapClass}>
+                            <span>{fmt(notice.createdAt)}</span>
+                            <span className="inline-flex items-center gap-1">
+                              <Eye className="h-3.5 w-3.5" />
+                              {notice.viewCount ?? 0}
+                            </span>
+                            {(notice.hasImage || notice.hasFile) && (
+                              <span className="flex items-center gap-1.5" aria-label="첨부 정보">
+                                {notice.hasImage && (
+                                  <span title="이미지 첨부" aria-label="이미지 첨부">
+                                    <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
                                   </span>
                                 )}
-                              </div>
-                            </div>
+                                {notice.hasFile && (
+                                  <span title="첨부파일 있음" aria-label="첨부파일 있음">
+                                    <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                                  </span>
+                                )}
+                              </span>
+                            )}
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </article>
                     </Link>
                   );
                 })}
-            </div>
-
-            <div className="mt-8 sm:mt-10 flex items-center justify-center">
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(1)}
-                  disabled={page <= 1 || isBusy}
-                >
-                  <span className="sr-only">첫 페이지</span>«
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(page - 1)}
-                  disabled={page <= 1 || isBusy}
-                >
-                  <span className="sr-only">이전 페이지</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4 sm:h-5 sm:w-5"
-                  >
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </Button>
-                {visiblePages.map((pageNumber) => (
-                  <Button
-                    key={pageNumber}
-                    variant="outline"
-                    size="sm"
-                    className={
-                      pageNumber === page
-                        ? "h-10 w-10 sm:h-12 sm:w-12 bg-secondary text-foreground border-border text-ui-body-sm sm:text-ui-body-lg"
-                        : "h-10 w-10 sm:h-12 sm:w-12 bg-card text-ui-body-sm sm:text-ui-body-lg"
-                    }
-                    onClick={() => movePage(pageNumber)}
-                    disabled={isBusy}
-                  >
-                    {pageNumber}
-                  </Button>
-                ))}
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(page + 1)}
-                  disabled={page >= totalPages || isBusy}
-                >
-                  <span className="sr-only">다음 페이지</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4 sm:h-5 sm:w-5"
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(totalPages)}
-                  disabled={page >= totalPages || isBusy}
-                >
-                  <span className="sr-only">마지막 페이지</span>»
-                </Button>
-
-                <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">
-                  <input
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    value={pageJump}
-                    onChange={(e) => setPageJump(e.target.value)}
-                    placeholder="페이지"
-                    className="h-10 w-20 sm:h-12 rounded-md border border-border bg-card px-2 text-ui-label sm:text-ui-body-sm dark:border-border dark:bg-card"
-                  />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    size="sm"
-                    className="h-10 sm:h-12 px-2 bg-card"
-                    disabled={isBusy}
-                  >
-                    이동
-                  </Button>
-                </form>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            )}
+        </PublicSurface>
+
+        <nav className="flex items-center justify-center" aria-label="공지 및 이벤트 페이지네이션">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              onClick={() => movePage(1)}
+              disabled={page <= 1 || isBusy}
+            >
+              <span className="sr-only">첫 페이지</span>
+              <ChevronsLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              onClick={() => movePage(page - 1)}
+              disabled={page <= 1 || isBusy}
+            >
+              <span className="sr-only">이전 페이지</span>
+              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+            {visiblePages.map((pageNumber) => (
+              <Button
+                key={pageNumber}
+                variant={pageNumber === page ? "secondary" : "outline"}
+                size="sm"
+                className="h-10 w-10 bg-card text-ui-body-sm sm:h-12 sm:w-12 sm:text-ui-body-lg"
+                onClick={() => movePage(pageNumber)}
+                disabled={isBusy}
+                aria-current={pageNumber === page ? "page" : undefined}
+              >
+                {pageNumber}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              onClick={() => movePage(page + 1)}
+              disabled={page >= totalPages || isBusy}
+            >
+              <span className="sr-only">다음 페이지</span>
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 bg-card sm:h-12 sm:w-12"
+              onClick={() => movePage(totalPages)}
+              disabled={page >= totalPages || isBusy}
+            >
+              <span className="sr-only">마지막 페이지</span>
+              <ChevronsRight className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+            <form onSubmit={handlePageJump} className="flex items-center gap-1 sm:ml-1">
+              <Input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={pageJump}
+                onChange={(e) => setPageJump(e.target.value)}
+                placeholder="페이지"
+                className="h-10 w-20 bg-card px-2 text-ui-label sm:h-12 sm:text-ui-body-sm"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                size="sm"
+                className="h-10 bg-card px-2 sm:h-12"
+                disabled={isBusy}
+              >
+                이동
+              </Button>
+            </form>
+          </div>
+        </nav>
+      </SiteContainer>
     </div>
   );
 }
