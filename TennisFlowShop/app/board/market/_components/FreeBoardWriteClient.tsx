@@ -24,6 +24,8 @@ import {
 } from "@/app/board/market/_components/market.constants";
 import MarketMetaFields from "@/app/board/market/_components/MarketMetaFields";
 import ImageUploader from "@/components/admin/ImageUploader";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -593,34 +595,23 @@ export default function FreeBoardWriteClient() {
   const checklistDoneCount = checklist.filter((item) => item.ok).length;
 
   const selectCls =
-    "h-10 w-full rounded-md border border-input bg-background px-3 text-ui-body-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+    "h-10 w-full rounded-control border border-input bg-background px-3 text-ui-body-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8">
-        {/* ── 상단 헤더 ── */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="mb-1 text-ui-body-sm text-muted-foreground">
-              <span className="font-medium text-primary">게시판</span>
-              <span className="mx-1">{">"}</span>
-              <Link
-                href="/board/market"
-                onClick={guardLeave}
-                className="text-muted-foreground underline-offset-2 hover:underline"
-              >
-                중고 거래
-              </Link>
-              <span className="mx-1">{">"}</span>
-              <span className="text-foreground">상품 등록</span>
+    <main className="min-h-screen bg-background">
+      <SiteContainer variant="wide" className="max-w-7xl space-y-6 py-6 md:space-y-8 md:py-10">
+        <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="brand">중고 거래</Badge>
+                <span className="text-ui-label text-muted-foreground">상품 등록 · 새 판매글</span>
+              </div>
+              <div>
+                <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">상품 등록</h1>
+                <p className="mt-2 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">거래 정보를 정확히 작성해 안전하고 신뢰할 수 있는 거래를 시작하세요.</p>
+              </div>
             </div>
-            <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
-              상품 등록
-            </h1>
-            <p className="mt-1 text-ui-body-sm text-muted-foreground">
-              테니스 라켓, 스트링, 장비를 판매해 보세요.
-            </p>
-          </div>
           <div className="flex w-full gap-2 sm:w-auto">
             <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
               <Link href="/board/market" onClick={guardLeave}>
@@ -629,7 +620,8 @@ export default function FreeBoardWriteClient() {
               </Link>
             </Button>
           </div>
-        </div>
+          </div>
+        </section>
 
         <form onSubmit={handleSubmit}>
           {/* ── 2-column: 폼 + sticky 요약 ── */}
@@ -637,10 +629,10 @@ export default function FreeBoardWriteClient() {
             {/* ====== 왼쪽: 입력 폼 ====== */}
             <div className="flex-1 space-y-6 min-w-0">
               {/* ── 섹션 1: 상품 기본 정보 ── */}
-              <section className="rounded-xl border border-border bg-card shadow-sm">
-                <div className="flex items-center gap-3 border-b border-border px-5 py-4 md:px-6">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
-                    <Tag className="h-4 w-4" />
+              <section className="rounded-panel border border-border bg-card shadow-soft">
+                <div className="flex items-center gap-3 border-b border-border bg-brand-highlight-muted/35 px-5 py-4 md:px-6">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground">
+                    <Tag className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <div>
                     <h2 className="text-ui-body-sm font-semibold text-foreground">
@@ -678,8 +670,8 @@ export default function FreeBoardWriteClient() {
                           className={cn(
                             "rounded-full border px-4 py-1.5 text-ui-body-sm font-medium transition-colors",
                             category === opt.value
-                              ? "border-primary bg-secondary text-foreground"
-                              : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                              ? "border-border bg-brand-highlight text-brand-highlight-foreground"
+                              : "border-border text-muted-foreground hover:border-border hover:bg-muted",
                           )}
                         >
                           {opt.label}
@@ -746,10 +738,10 @@ export default function FreeBoardWriteClient() {
               />
 
               {/* ── 섹션 4: 게시글 내용 ── */}
-              <section className="rounded-xl border border-border bg-card shadow-sm">
-                <div className="flex items-center gap-3 border-b border-border px-5 py-4 md:px-6">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
-                    <FileText className="h-4 w-4" />
+              <section className="rounded-panel border border-border bg-card shadow-soft">
+                <div className="flex items-center gap-3 border-b border-border bg-brand-highlight-muted/35 px-5 py-4 md:px-6">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground">
+                    <FileText className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <div>
                     <h2 className="text-ui-body-sm font-semibold text-foreground">게시글 내용</h2>
@@ -839,12 +831,12 @@ export default function FreeBoardWriteClient() {
 
               {/* ── 섹션 5: 이미지 / 파일 첨부 ── */}
               <section
-                className="rounded-xl border border-border bg-card shadow-sm"
+                className="rounded-panel border border-border bg-card shadow-soft"
                 ref={attachmentsRef}
               >
-                <div className="flex items-center gap-3 border-b border-border px-5 py-4 md:px-6">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
-                    <ImageIcon className="h-4 w-4" />
+                <div className="flex items-center gap-3 border-b border-border bg-brand-highlight-muted/35 px-5 py-4 md:px-6">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground">
+                    <ImageIcon className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <div>
                     <h2 className="text-ui-body-sm font-semibold text-foreground">
@@ -892,7 +884,7 @@ export default function FreeBoardWriteClient() {
                     {/* 파일 */}
                     <TabsContent value="file" className="pt-4 space-y-4">
                       <div
-                        className="rounded-lg border-2 border-dashed border-border p-6 text-center transition-colors hover:border-primary/30 cursor-pointer bg-muted/20"
+                        className="rounded-control border-2 border-dashed border-border bg-brand-highlight-muted/20 p-6 text-center transition-colors hover:bg-muted cursor-pointer"
                         role="button"
                         tabIndex={0}
                         onClick={(e) => {
@@ -977,7 +969,7 @@ export default function FreeBoardWriteClient() {
                 </div>
               </section>
 
-              <section className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
+              <section className="rounded-panel border border-border bg-card px-5 py-4 shadow-soft md:px-6">
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-ui-body-sm font-semibold text-foreground">
@@ -1050,7 +1042,7 @@ export default function FreeBoardWriteClient() {
             <aside className="hidden flex-shrink-0 lg:sticky lg:top-24 lg:block lg:w-[300px] lg:self-start xl:w-[320px]">
               <div className={cn("space-y-4", isCompactSticky && "space-y-3")}>
                 {/* 입력 요약 */}
-                <div className="rounded-xl border border-border bg-card shadow-sm">
+                <div className="rounded-panel border border-border bg-card shadow-soft">
                   <div
                     className={cn(
                       "border-b border-border px-5 py-3",
@@ -1144,7 +1136,7 @@ export default function FreeBoardWriteClient() {
                 </div>
 
                 {/* 등록 전 확인: compact 모드에서는 접힘/펼침 */}
-                <div className="rounded-xl border border-border bg-card shadow-sm">
+                <div className="rounded-panel border border-border bg-card shadow-soft">
                   <button
                     type="button"
                     onClick={() => setIsChecklistOpen((prev) => !prev)}
@@ -1208,7 +1200,7 @@ export default function FreeBoardWriteClient() {
             </aside>
           </div>
         </form>
-      </div>
-    </div>
+      </SiteContainer>
+    </main>
   );
 }

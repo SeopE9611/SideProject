@@ -1,5 +1,5 @@
-import { FormPageSkeleton } from "@/components/system/loading";
+import CommunityBoardWriteLoadingShell from "@/app/board/_components/CommunityBoardWriteLoadingShell";
 
 export default function Loading() {
-  return <FormPageSkeleton fields={8} />;
+  return <CommunityBoardWriteLoadingShell boardLabel="중고 거래" isMarket />;
 }
