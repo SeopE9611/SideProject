@@ -13,6 +13,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import StickyAside from "@/components/layout/StickyAside";
 import { DashboardSectionPanel } from "@/components/public";
 import { TabPanelSkeleton } from "@/components/system/loading";
+import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/AcademyApplicationsListSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,7 +37,7 @@ const RentalsDetailClient = dynamic(
   { loading: () => <RentalDetailSkeleton /> },
 );
 const AcademyApplicationsTab = dynamic(() => import("@/app/mypage/tabs/AcademyApplicationsTab"), {
-  loading: () => <TabPanelSkeleton rowCount={4} />,
+  loading: () => <AcademyApplicationsListSkeleton />,
 });
 const MyPointsTab = dynamic(() => import("@/app/mypage/tabs/MyPointsTab"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,

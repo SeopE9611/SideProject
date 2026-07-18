@@ -4,10 +4,9 @@ import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/AcademyApplicationsListSkeleton";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
-  CalendarDays,
   ChevronDown,
   ChevronUp,
   Eye,
@@ -65,35 +64,6 @@ const LIMIT = 5;
 
 const fetcher = (url: string) => authenticatedSWRFetcher<AcademyApplicationsResponse>(url);
 
-function AcademyApplicationsListSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: count }).map((_, index) => (
-        <Card
-          key={`academy-applications-loading-${index}`}
-          className="border-border bg-card shadow-sm"
-        >
-          <CardContent className="space-y-4 p-4 md:p-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-5 w-56" />
-              </div>
-              <Skeleton className="h-7 w-20 rounded-full" />
-            </div>
-            <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
 function formatDateTime(iso?: string | null) {
   if (!iso) return "-";
   const date = new Date(iso);
@@ -137,11 +107,11 @@ function getStatusVariant(status: string) {
 
 function InfoItem({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-background p-3">
+    <div className="rounded-control border border-border/70 bg-card p-3">
       <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 break-words text-ui-body-sm font-medium text-foreground">
+      <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
         {value?.trim() || "-"}
       </p>
     </div>
@@ -227,19 +197,18 @@ export default function AcademyApplicationsTab() {
 
   if (applications.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-border bg-card shadow-sm">
+      <Card variant="feature" className="relative overflow-hidden border-brand-highlight/25 shadow-soft">
         <CardContent className="p-8 text-center md:p-12">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 md:mb-6">
-            <GraduationCap className="h-10 w-10 text-primary" />
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-highlight-muted text-brand-highlight-ink md:mb-6">
+            <GraduationCap className="h-10 w-10" aria-hidden="true" />
           </div>
-          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">
-            아직 신청한 아카데미 클래스가 없습니다.
+          <h3 className="mb-2 font-brand-heading text-ui-section-title font-semibold text-foreground">
+            아직 신청한 클래스가 없습니다.
           </h3>
-          <p className="mb-6 text-muted-foreground">
-            아카데미 페이지에서 원하는 클래스를 확인하고 상담 신청을 남겨보세요. 등록이 확정되면
-            현장에서 결제를 안내해드립니다.
+          <p className="mx-auto mb-6 max-w-md break-keep text-muted-foreground">
+            원하는 클래스를 둘러보고 상담 신청을 남겨보세요. 신청 내역은 이곳에서 확인할 수 있습니다.
           </p>
-          <Button asChild variant="default" className="shadow-sm">
+          <Button asChild variant="highlight" wrap="responsive">
             <Link href="/academy">아카데미 보러가기</Link>
           </Button>
         </CardContent>
@@ -252,31 +221,40 @@ export default function AcademyApplicationsTab() {
       {applications.map((application) => {
         const isCancelled = application.status === "cancelled";
         const isExpanded = expandedIds.has(application.id);
+        const expandedPanelId = `academy-application-expanded-${application.id}`;
 
         return (
           <Card
             key={application.id}
-            className="overflow-hidden border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md"
+            variant="feature"
+            className="overflow-hidden border-brand-highlight/25 shadow-soft transition-[box-shadow,border-color] duration-200 hover:border-brand-highlight/45 hover:shadow-md"
           >
-            <CardContent className="space-y-4 p-4 md:p-6">
-              <div className="flex flex-col gap-3 border-b border-border/60 pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                <div className="min-w-0 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2 text-ui-body-sm text-muted-foreground">
-                    <GraduationCap className="h-4 w-4 text-primary" />
-                    <span>클래스 신청</span>
-                    <span>·</span>
-                    <span>신청일 {formatDateTime(application.appliedAt)}</span>
+            <CardContent className="p-0">
+              <div className="border-b border-brand-highlight/20 bg-brand-highlight-muted p-4 bp-sm:p-5">
+                <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                  <div className="flex min-w-0 gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-card text-brand-highlight-ink shadow-sm">
+                      <GraduationCap className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2 text-ui-body-sm font-medium text-muted-foreground">
+                        <span className="text-brand-highlight-ink">클래스 신청</span>
+                        <span>·</span>
+                        <span>신청일 {formatDateTime(application.appliedAt)}</span>
+                      </div>
+                      <h3 className="line-clamp-2 break-keep font-brand-heading text-ui-card-title-lg font-semibold text-foreground">
+                        {application.classSnapshot?.name || "아카데미 클래스 신청"}
+                      </h3>
+                    </div>
                   </div>
-                  <h3 className="line-clamp-2 break-keep text-ui-card-title-lg font-semibold text-foreground">
-                    {application.classSnapshot?.name || "아카데미 클래스 신청"}
-                  </h3>
+                  <Badge variant={getStatusVariant(application.status)}>
+                    {application.statusLabel || application.status}
+                  </Badge>
                 </div>
-                <Badge variant={getStatusVariant(application.status)}>
-                  {application.statusLabel || application.status}
-                </Badge>
               </div>
 
-              <div className="grid gap-3 bp-sm:grid-cols-2">
+              <div className="space-y-4 p-4 bp-sm:p-5">
+                <div className="grid gap-3 bp-sm:grid-cols-2">
                 <InfoItem
                   label="수업 유형"
                   value={
@@ -305,38 +283,18 @@ export default function AcademyApplicationsTab() {
               ) : null}
 
               {isExpanded && application.classSnapshot ? (
-                <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+                <div id={expandedPanelId} className="rounded-control border border-border/70 bg-muted/20 p-3">
                   <div className="flex items-center gap-2 text-ui-body-sm font-semibold text-foreground">
-                    <GraduationCap className="h-4 w-4 text-primary" />
-                    선택 클래스
+                    <GraduationCap className="h-4 w-4 text-brand-highlight-ink" aria-hidden="true" />
+                    선택 클래스 상세
                   </div>
                   <p className="mt-2 break-keep font-semibold text-foreground">
                     {application.classSnapshot.name || "클래스명 미입력"}
                   </p>
                   <dl className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground bp-sm:grid-cols-2">
                     <div className="rounded-lg bg-background p-3">
-                      <dt className="text-ui-label uppercase tracking-wide">수업 유형</dt>
-                      <dd className="mt-0.5 font-medium text-foreground">
-                        {application.classSnapshot.lessonTypeLabel || "미선택"}
-                      </dd>
-                    </div>
-                    <div className="rounded-lg bg-background p-3">
-                      <dt className="text-ui-label uppercase tracking-wide">레벨</dt>
-                      <dd className="mt-0.5 font-medium text-foreground">
-                        {application.classSnapshot.levelLabel || "미선택"}
-                      </dd>
-                    </div>
-                    <div className="rounded-lg bg-background p-3">
                       <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
-                        <CalendarDays className="h-3.5 w-3.5" /> 일정
-                      </dt>
-                      <dd className="mt-0.5 break-keep font-medium text-foreground">
-                        {application.classSnapshot.scheduleText || "상담 후 조율"}
-                      </dd>
-                    </div>
-                    <div className="rounded-lg bg-background p-3">
-                      <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
-                        <MapPin className="h-3.5 w-3.5" /> 장소
+                        <MapPin className="h-3.5 w-3.5" aria-hidden="true" /> 장소
                       </dt>
                       <dd className="mt-0.5 break-keep font-medium text-foreground">
                         {application.classSnapshot.location || "상담 후 안내"}
@@ -344,7 +302,7 @@ export default function AcademyApplicationsTab() {
                     </div>
                     <div className="rounded-lg bg-background p-3 bp-sm:col-span-2">
                       <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
-                        <WalletCards className="h-3.5 w-3.5" /> 기준 수강료
+                        <WalletCards className="h-3.5 w-3.5" aria-hidden="true" /> 기준 수강료
                       </dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {formatPrice(application.classSnapshot.price)}
@@ -361,9 +319,8 @@ export default function AcademyApplicationsTab() {
               ) : null}
 
               {isExpanded ? (
-                <div className="grid gap-3 bp-sm:grid-cols-2">
+                <div id={!application.classSnapshot ? expandedPanelId : undefined} className="grid gap-3 bp-sm:grid-cols-2">
                   <InfoItem label="희망 레슨 유형" value={application.desiredLessonTypeLabel} />
-                  <InfoItem label="현재 실력" value={application.currentLevelLabel} />
                   <InfoItem
                     label="희망 요일"
                     value={
@@ -372,14 +329,14 @@ export default function AcademyApplicationsTab() {
                         : null
                     }
                   />
-                  <InfoItem label="희망 시간대" value={application.preferredTimeText} />
+                  <InfoItem label="희망 시간" value={application.preferredTimeText} />
                 </div>
               ) : null}
 
               {isExpanded && application.customerMessage ? (
                 <div className="rounded-xl border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
                   <div className="flex items-center gap-2 text-ui-body-sm font-semibold">
-                    <MessageSquareText className="h-4 w-4" />
+                    <MessageSquareText className="h-4 w-4" aria-hidden="true" />
                     관리자 안내
                   </div>
                   <p className="mt-2 whitespace-pre-wrap break-words text-ui-body-sm">
@@ -389,23 +346,26 @@ export default function AcademyApplicationsTab() {
               ) : null}
 
               <div className="flex flex-col gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
-                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                <Button asChild variant="highlight" size="sm" wrap="responsive" className="w-full sm:w-auto">
                   <Link href={`/mypage/academy-applications/${application.id}`}>
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4" aria-hidden="true" />
                     상세 보기
                   </Link>
                 </Button>
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="highlight_soft"
                   size="sm"
+                  wrap="responsive"
                   className="w-full sm:w-auto"
+                  aria-expanded={isExpanded}
+                  aria-controls={expandedPanelId}
                   onClick={() => toggleExpanded(application.id)}
                 >
                   {isExpanded ? (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4" aria-hidden="true" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   )}
                   {isExpanded ? "접기" : "펼쳐보기"}
                 </Button>
@@ -414,6 +374,7 @@ export default function AcademyApplicationsTab() {
                     type="button"
                     variant="destructive"
                     size="sm"
+                    wrap="responsive"
                     className="w-full sm:w-auto"
                     disabled={deletingId === application.id}
                     onClick={() => void handleDelete(application.id)}
@@ -422,6 +383,7 @@ export default function AcademyApplicationsTab() {
                     {deletingId === application.id ? "삭제 중..." : "기록 삭제"}
                   </Button>
                 ) : null}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -432,7 +394,8 @@ export default function AcademyApplicationsTab() {
         <div className="flex justify-center">
           <Button
             type="button"
-            variant="outline"
+            variant="highlight_soft"
+            wrap="responsive"
             onClick={() => setSize(size + 1)}
             disabled={isLoadingMore}
           >
