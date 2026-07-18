@@ -1,15 +1,16 @@
 "use client";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, PublicSurface } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowLeft,
   ArrowUp,
-  Bell,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -19,7 +20,6 @@ import {
   Eye,
   FileText,
   ImageIcon,
-  Megaphone,
   Paperclip,
   Pencil,
   Pin,
@@ -244,88 +244,90 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
     alt: "",
   });
 
+  const renderDetailSkeleton = () => (
+    <PublicSurface padding="none" className="overflow-hidden">
+      <div className="space-y-4 p-5 sm:p-6">
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-20" />
+        </div>
+        <Skeleton className="h-9 w-4/5 max-w-3xl" />
+        <div className="grid gap-2 sm:flex sm:gap-4">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      </div>
+      <div className="border-t border-border p-5 sm:p-6">
+        <div className="mx-auto max-w-3xl space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-10/12" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      </div>
+      <div className="border-t border-border p-5 sm:p-6">
+        <Skeleton className="h-20 w-full" />
+      </div>
+    </PublicSurface>
+  );
+
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 py-7 sm:py-9 md:py-10 space-y-5 sm:space-y-7">
-        <div className="space-y-3 sm:space-y-5">
-          <div className="text-ui-body-sm text-muted-foreground">
-            <span className="font-medium text-primary">고객센터</span>
-            <span className="mx-1">›</span>
-            <span>{sectionLabel}</span>
-            <span className="mx-1">›</span>
-            <span>상세</span>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-2.5 sm:gap-4">
-              <Button variant="ghost" asChild className="p-2">
-                <Link href={listHref}>
-                  <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-                </Link>
-              </Button>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-                  <Megaphone className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div>
-                  <h1 className="text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
-                    {pageTitle}
-                  </h1>
-                  <p className="text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body-lg">
-                    {pageDescription}
-                  </p>
-                </div>
+    <main className="min-h-screen bg-background text-foreground">
+      <PublicPageHero
+        variant="standard"
+        eyebrow="Customer Support"
+        title={pageTitle}
+        description={pageDescription}
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <Link href={listHref}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {isEventMode ? "이벤트 목록" : "공지사항 목록"}
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/support">고객센터 홈</Link>
+            </Button>
+          </>
+        }
+      />
+
+      <SiteContainer className="py-7 sm:py-9 md:py-10">
+        {isLoading || (notice && !isCurrentModeMatched) ? (
+          renderDetailSkeleton()
+        ) : error ? (
+          <PublicSurface padding="lg" className="mx-auto max-w-3xl text-center">
+            <div className="space-y-3">
+              <h2 className="text-ui-card-title-lg font-semibold text-foreground">{errorTitle}</h2>
+              <p className="text-ui-body-sm text-muted-foreground">{errorBody}</p>
+              <div className="grid grid-cols-1 gap-2 pt-2 sm:inline-flex sm:grid-cols-none sm:items-center sm:justify-center">
+                {(error as FetchError | undefined)?.status === 401 && (
+                  <Button asChild>
+                    <Link
+                      href={`/login?next=${encodeURIComponent(`${listBasePath}/${id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
+                    >
+                      로그인하고 다시 보기
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild variant="outline" size="sm">
+                  <Link href={listHref}>{sectionLabel} 목록으로</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/support">고객센터 홈으로</Link>
+                </Button>
               </div>
             </div>
-            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
-              <Button asChild variant="outline" size="sm" className="w-full">
-                <Link href={listHref}>{sectionLabel} 목록으로</Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="w-full">
-                <Link href="/support">고객센터 홈으로</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
-          <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-            <div className="space-y-4">
-              {isLoading && (
-                <div className="animate-pulse space-y-3">
-                  <div className="h-8 bg-muted rounded-lg w-3/4 dark:bg-card"></div>
-                  <div className="h-4 bg-muted rounded w-1/2 dark:bg-card"></div>
-                </div>
-              )}
-              {error && (
-                <div className="text-center py-8 space-y-3">
-                  <div className="text-destructive text-ui-card-title-lg font-semibold">
-                    {errorTitle}
-                  </div>
-                  <p className="text-ui-body-sm text-muted-foreground">{errorBody}</p>
-                  <div className="grid grid-cols-1 gap-2 sm:inline-flex sm:grid-cols-none sm:items-center sm:justify-center">
-                    {(error as FetchError | undefined)?.status === 401 && (
-                      <Button asChild>
-                        <Link
-                          href={`/login?next=${encodeURIComponent(`${listBasePath}/${id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
-                        >
-                          로그인하고 다시 보기
-                        </Link>
-                      </Button>
-                    )}
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={listHref}>{sectionLabel} 목록으로</Link>
-                    </Button>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href="/support">고객센터 홈으로</Link>
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {!isLoading && !error && notice && (
+          </PublicSurface>
+        ) : notice ? (
+          <div className="space-y-5 sm:space-y-6">
+            <PublicSurface padding="none" className="overflow-hidden">
+              <header className="p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  {/* 왼쪽: 배지 · 제목 · 메타 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="mb-4 flex flex-wrap items-center gap-2.5">
+                  <div className="min-w-0 flex-1 space-y-4">
+                    <div className="flex flex-wrap items-center gap-2.5">
                       {notice.isPinned && (
                         <Badge
                           variant="brand"
@@ -348,28 +350,17 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                           aria-label="첨부 정보"
                         >
                           {imageAtts.length > 0 && (
-                            <span title="이미지 첨부" aria-label="이미지 첨부">
-                              <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
+                            <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
                           )}
                           {fileAtts.length > 0 && (
-                            <span title="첨부파일 있음" aria-label="첨부파일 있음">
-                              <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
+                            <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
                           )}
                         </span>
                       )}
                     </div>
-
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex-shrink-0 mt-1">
-                        <Megaphone className="h-5 w-5" />
-                      </div>
-                      <h1 className="min-w-0 text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
-                        {notice.title}
-                      </h1>
-                    </div>
-
+                    <h2 className="min-w-0 break-words text-balance text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
+                      {notice.title}
+                    </h2>
                     <div className="grid gap-2 text-ui-body-sm text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
@@ -386,301 +377,228 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       <div className="flex items-center gap-2">
                         <Eye className="h-4 w-4" />
                         <span className="font-medium">조회수</span>
-                        <span className="font-semibold text-primary">{notice.viewCount ?? 0}</span>
+                        <span>{notice.viewCount ?? 0}</span>
                       </div>
                     </div>
                   </div>
-
-                  {/* 오른쪽: 관리자 액션 */}
                   {isAdmin && (
                     <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-1 sm:shrink-0">
                       <Button variant="outline" onClick={onEdit} className="w-full">
-                        <Pencil className="h-4 w-4 mr-1" />
+                        <Pencil className="mr-1 h-4 w-4" />
                         수정
                       </Button>
                       <Button variant="destructive" onClick={onDelete} className="w-full">
-                        <Trash2 className="h-4 w-4 mr-1" />
+                        <Trash2 className="mr-1 h-4 w-4" />
                         삭제
                       </Button>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          </CardHeader>
+              </header>
 
-          <CardContent className="p-4 sm:p-5 md:p-6 space-y-8">
-            {!isLoading && error && (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground">{errorBody}</p>
-              </div>
-            )}
-            {!isLoading && !error && notice && (
-              <>
-                <div className="prose max-w-none prose-gray dark:prose-invert sm:prose-lg">
-                  <div className="whitespace-pre-line break-words leading-relaxed text-foreground">
-                    {String(notice.content || "")}
-                  </div>
+              <div className="border-t border-border p-5 sm:p-6 md:p-8">
+                <div className="mx-auto max-w-3xl whitespace-pre-line break-words text-ui-body leading-8 text-foreground">
+                  {String(notice.content || "")}
                 </div>
-
-                {imageAtts.length > 0 && (
-                  <>
-                    <Separator className="my-8" />
-                    <section className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <ImageIcon className="h-5 w-5" />
-                        <h2 className="text-ui-section-title font-semibold text-foreground">
-                          이미지
-                        </h2>
-                      </div>
-
-                      {imageAtts.length === 1 ? (
-                        <div className="relative group">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setLightbox({
-                                open: true,
-                                src: (typeof imageAtts[0] === "string"
-                                  ? imageAtts[0]
-                                  : imageAtts[0].url) as string,
-                                alt: (imageAtts[0] as any)?.name || "image-1",
-                              })
-                            }
-                            className="block w-full overflow-hidden rounded-xl border-2 border-border hover:border-border transition-all duration-300 shadow-lg hover:shadow-xl dark:border-border dark:hover:border-border"
-                            aria-label="이미지 확대 보기"
-                          >
-                            <div className="relative">
-                              <img
-                                src={
-                                  (typeof imageAtts[0] === "string"
-                                    ? imageAtts[0]
-                                    : imageAtts[0].url) as string
-                                }
-                                alt={(imageAtts[0] as any)?.name || "image-1"}
-                                className="w-full h-auto max-h-[70vh] object-contain bg-muted/30"
-                              />
-                              <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/10 transition-colors duration-300 flex items-center justify-center">
-                                <ExternalLink className="h-8 w-8 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                              </div>
-                            </div>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                          {imageAtts.map((att: any, i: number) => {
-                            const url = typeof att === "string" ? att : att?.url;
-                            const name =
-                              typeof att === "string"
-                                ? `image-${i + 1}`
-                                : att?.name || `image-${i + 1}`;
-                            return (
-                              <div key={`img-${i}`} className="relative group">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setLightbox({
-                                      open: true,
-                                      src: url,
-                                      alt: name,
-                                    })
-                                  }
-                                  className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-border transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-border"
-                                  aria-label={`${name} 이미지 보기`}
-                                >
-                                  <img
-                                    src={url || "/placeholder.svg"}
-                                    alt={name}
-                                    className="h-56 w-full object-cover sm:h-52"
-                                  />
-                                  <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
-                                    <ExternalLink className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                  </div>
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </section>
-                  </>
-                )}
-
-                {fileAtts.length > 0 && (
-                  <>
-                    <Separator className="my-8" />
-                    <section className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        <h2 className="text-ui-section-title font-semibold text-foreground">
-                          첨부파일
-                        </h2>
-                      </div>
-
-                      <div className="grid gap-3">
-                        {fileAtts.map((att: any, i: number) => {
-                          const url = typeof att === "string" ? att : att?.url;
-                          const name =
-                            typeof att === "string"
-                              ? `attachment-${i + 1}`
-                              : att?.name || `attachment-${i + 1}`;
-                          const size = att?.size ? (att.size / 1024 / 1024).toFixed(2) + " MB" : "";
-                          const mime = (att?.mime || "") as string;
-                          const downloadUrl =
-                            typeof att === "object" && att?.downloadUrl
-                              ? att.downloadUrl
-                              : `${url}${url.includes("?") ? "&" : "?"}download=${encodeURIComponent(name)}`;
-                          const isPdf = mime === "application/pdf" || /\.pdf$/i.test(name);
-
-                          return (
-                            <div
-                              key={`file-${i}`}
-                              className="w-full min-w-0 overflow-hidden rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40 sm:flex sm:items-center sm:justify-between sm:gap-4"
-                            >
-                              <div className="flex min-w-0 items-center gap-3 sm:flex-1">
-                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-                                  <FileText className="h-5 w-5" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="line-clamp-2 break-words font-medium text-foreground">
-                                    {name}
-                                  </div>
-                                  {size && (
-                                    <div className="break-words text-ui-body-sm text-muted-foreground">
-                                      {size}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="mt-3 grid min-w-0 grid-cols-1 gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:grid-flow-col sm:auto-cols-max sm:justify-end">
-                                {isPdf && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    asChild
-                                    className="w-full min-w-0 sm:w-auto"
-                                  >
-                                    <a href={url} target="_blank" rel="noreferrer">
-                                      <ExternalLink className="h-4 w-4 mr-1" />
-                                      미리보기
-                                    </a>
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  asChild
-                                  className="w-full min-w-0 sm:w-auto"
-                                >
-                                  <a href={downloadUrl}>
-                                    <Download className="h-4 w-4 mr-1" />
-                                    다운로드
-                                  </a>
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  </>
-                )}
-              </>
-            )}
-          </CardContent>
-
-          {lightbox.open && (
-            <div
-              className="fixed inset-0 z-50 bg-overlay/80 backdrop-blur-sm flex items-center justify-center p-4"
-              onClick={() => setLightbox({ open: false, src: "", alt: "" })}
-              role="dialog"
-              aria-modal="true"
-            >
-              <div className="relative max-h-[90vh] max-w-[90vw]">
-                <img
-                  src={lightbox.src || "/placeholder.svg"}
-                  alt={lightbox.alt}
-                  className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
-                />
-                <button
-                  onClick={() => setLightbox({ open: false, src: "", alt: "" })}
-                  className="absolute top-4 right-4 w-10 h-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40 rounded-full flex items-center justify-center transition-colors duration-200"
-                  aria-label="닫기"
-                >
-                  ×
-                </button>
               </div>
-            </div>
-          )}
 
-          <CardFooter className="border-t border-border bg-muted/30 p-6">
-            <div className="w-full space-y-3">
-              <div className="grid gap-2 md:grid-cols-2">
-                {(
-                  [
-                    {
-                      key: "prev",
-                      label: "이전 글",
-                      icon: ChevronLeft,
-                      target: prevPost,
-                    },
-                    {
-                      key: "next",
-                      label: "다음 글",
-                      icon: ChevronRight,
-                      target: nextPost,
-                    },
-                  ] as const
-                ).map(({ key, label, icon: Icon, target }) => (
-                  <Button
-                    key={key}
-                    asChild={!!target}
-                    variant="outline"
-                    className="h-auto min-h-16 justify-start px-4 py-3 text-left"
-                    disabled={!target}
-                  >
-                    {target ? (
-                      <Link
-                        href={`${listBasePath}/${target._id}${listQuery ? `?${listQuery}` : ""}`}
-                      >
-                        <div className="flex w-full items-start gap-3">
-                          <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-ui-label text-muted-foreground">{label}</p>
-                            <p className="line-clamp-2 text-ui-body-sm font-medium text-foreground">
-                              {target.title}
-                            </p>
+              {imageAtts.length > 0 && (
+                <section className="border-t border-border p-5 sm:p-6 md:p-8">
+                  <div className="mb-4 flex items-center gap-2 text-foreground">
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-ui-card-title font-semibold">이미지</h3>
+                  </div>
+                  {imageAtts.length === 1 ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLightbox({
+                          open: true,
+                          src: (typeof imageAtts[0] === "string"
+                            ? imageAtts[0]
+                            : imageAtts[0].url) as string,
+                          alt: (imageAtts[0] as any)?.name || "image-1",
+                        })
+                      }
+                      className="block w-full overflow-hidden rounded-panel border border-border bg-muted/30 hover:bg-muted/50"
+                      aria-label="이미지 확대 보기"
+                    >
+                      <img
+                        src={
+                          (typeof imageAtts[0] === "string"
+                            ? imageAtts[0]
+                            : imageAtts[0].url) as string
+                        }
+                        alt={(imageAtts[0] as any)?.name || "image-1"}
+                        className="h-auto max-h-[70vh] w-full object-contain"
+                      />
+                    </button>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {imageAtts.map((att: any, i: number) => {
+                        const url = typeof att === "string" ? att : att?.url;
+                        const name =
+                          typeof att === "string"
+                            ? `image-${i + 1}`
+                            : att?.name || `image-${i + 1}`;
+                        return (
+                          <button
+                            key={`img-${i}`}
+                            type="button"
+                            onClick={() => setLightbox({ open: true, src: url, alt: name })}
+                            className="overflow-hidden rounded-control border border-border bg-muted/30 hover:bg-muted/50"
+                            aria-label={`${name} 이미지 보기`}
+                          >
+                            <img
+                              src={url || "/placeholder.svg"}
+                              alt={name}
+                              className="h-56 w-full object-cover sm:h-52"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {fileAtts.length > 0 && (
+                <section className="border-t border-border p-5 sm:p-6 md:p-8">
+                  <div className="mb-4 flex items-center gap-2 text-foreground">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-ui-card-title font-semibold">첨부파일</h3>
+                  </div>
+                  <div className="overflow-hidden rounded-control border border-border divide-y divide-border">
+                    {fileAtts.map((att: any, i: number) => {
+                      const url = typeof att === "string" ? att : att?.url;
+                      const name =
+                        typeof att === "string"
+                          ? `attachment-${i + 1}`
+                          : att?.name || `attachment-${i + 1}`;
+                      const size = att?.size ? (att.size / 1024 / 1024).toFixed(2) + " MB" : "";
+                      const mime = (att?.mime || "") as string;
+                      const downloadUrl =
+                        typeof att === "object" && att?.downloadUrl
+                          ? att.downloadUrl
+                          : `${url}${url.includes("?") ? "&" : "?"}download=${encodeURIComponent(name)}`;
+                      const isPdf = mime === "application/pdf" || /\.pdf$/i.test(name);
+                      return (
+                        <div
+                          key={`file-${i}`}
+                          className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                        >
+                          <div className="min-w-0 flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-border text-muted-foreground">
+                              <FileText className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="line-clamp-2 break-words font-medium text-foreground">
+                                {name}
+                              </div>
+                              {size && (
+                                <div className="text-ui-body-sm text-muted-foreground">{size}</div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-flow-col sm:auto-cols-max sm:justify-end">
+                            {isPdf && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="w-full sm:w-auto"
+                              >
+                                <a href={url} target="_blank" rel="noreferrer">
+                                  <ExternalLink className="mr-1 h-4 w-4" />
+                                  미리보기
+                                </a>
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              asChild
+                              className="w-full sm:w-auto"
+                            >
+                              <a href={downloadUrl}>
+                                <Download className="mr-1 h-4 w-4" />
+                                다운로드
+                              </a>
+                            </Button>
                           </div>
                         </div>
-                      </Link>
-                    ) : (
-                      <span className="flex w-full items-start gap-3 text-muted-foreground">
-                        <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-                        <span className="min-w-0">
-                          <span className="block text-ui-label">{label}</span>
-                          <span className="block line-clamp-1 text-ui-body-sm">
-                            이동할 글이 없습니다.
-                          </span>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </PublicSurface>
+
+            <PublicSurface padding="none" className="overflow-hidden">
+              <div className="grid md:grid-cols-2 md:divide-x md:divide-border">
+                {(
+                  [
+                    { key: "prev", label: "이전 글", icon: ChevronLeft, target: prevPost },
+                    { key: "next", label: "다음 글", icon: ChevronRight, target: nextPost },
+                  ] as const
+                ).map(({ key, label, icon: Icon, target }) =>
+                  target ? (
+                    <Link
+                      key={key}
+                      href={`${listBasePath}/${target._id}${listQuery ? `?${listQuery}` : ""}`}
+                      className="flex min-h-20 items-start gap-3 border-b border-border p-4 hover:bg-muted/30 md:border-b-0"
+                    >
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0">
+                        <span className="block text-ui-label text-muted-foreground">{label}</span>
+                        <span className="line-clamp-2 break-words text-ui-body-sm font-medium text-foreground">
+                          {target.title}
                         </span>
                       </span>
-                    )}
-                  </Button>
-                ))}
+                    </Link>
+                  ) : (
+                    <div
+                      key={key}
+                      className="flex min-h-20 items-start gap-3 border-b border-border p-4 text-muted-foreground md:border-b-0"
+                    >
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block text-ui-label">{label}</span>
+                        <span className="block line-clamp-1 text-ui-body-sm">
+                          이동할 글이 없습니다.
+                        </span>
+                      </span>
+                    </div>
+                  ),
+                )}
               </div>
+            </PublicSurface>
 
-              <div className="w-full flex justify-center">
-                <Button variant="outline" size="lg" asChild className="px-8">
-                  <Link href={listHref}>
-                    <ArrowUp className="mr-2 h-4 w-4" />
-                    {isEventMode ? "이벤트 목록으로" : "목록으로 돌아가기"}
-                  </Link>
-                </Button>
-              </div>
+            <div className="flex justify-center sm:justify-end">
+              <Button variant="outline" size="lg" asChild>
+                <Link href={listHref}>
+                  <ArrowUp className="mr-2 h-4 w-4" />
+                  {isEventMode ? "이벤트 목록으로" : "목록으로 돌아가기"}
+                </Link>
+              </Button>
             </div>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+          </div>
+        ) : null}
+      </SiteContainer>
+
+      <Dialog
+        open={lightbox.open}
+        onOpenChange={(open) => !open && setLightbox({ open: false, src: "", alt: "" })}
+      >
+        <DialogContent className="max-w-[calc(100vw-2rem)] border-0 bg-transparent p-0 shadow-none sm:max-w-[90vw]">
+          <DialogTitle className="sr-only">이미지 확대 보기</DialogTitle>
+          <img
+            src={lightbox.src || "/placeholder.svg"}
+            alt={lightbox.alt}
+            className="max-h-[85vh] max-w-[90vw] rounded-panel object-contain"
+          />
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }
