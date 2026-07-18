@@ -4,7 +4,6 @@ import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -21,14 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  badgeBaseOutlined,
-  badgeSizeSm,
-  getAnswerStatusBadgeSpec,
-  getQnaCategoryBadgeSpec,
-} from "@/lib/badge-style";
+import { badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
-import { ArrowLeft, Eye, Lock, MessageSquare, Plus, Search } from "lucide-react";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { Eye, Lock, MessageSquare, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -386,10 +383,6 @@ export default function QnaPageClient({
     movePage(parsed);
     setPageJump("");
   };
-  const answeredCount = serverItems.filter((q) => !!q.answer).length;
-  const waitingCount = serverItems.filter((q) => !q.answer).length;
-  const totalViews = serverItems.reduce((sum, q) => sum + (q.viewCount ?? 0), 0);
-
   // empty state는 "성공적으로 데이터가 확정된 경우"에만 노출
   const shouldShowActualEmptyState =
     !isBusy && !hasDataError && hasResolvedData && !keyword.trim() && items.length === 0;
@@ -397,107 +390,62 @@ export default function QnaPageClient({
     !isBusy && !hasDataError && hasResolvedData && !!keyword.trim() && items.length === 0;
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto max-w-6xl space-y-5 px-4 py-5 md:space-y-7 md:py-7">
-        <div className="flex flex-col space-y-3 md:space-y-5">
-          <div className="flex items-center space-x-3">
-            <Button variant="ghost" asChild className="p-2">
-              <Link href="/support">
-                <ArrowLeft className="h-5 w-5" />
+    <main className="min-h-screen bg-background text-foreground">
+      <PublicPageHero
+        variant="feature"
+        eyebrow={<Badge variant="signal">Q&amp;A</Badge>}
+        title="고객센터 · Q&A"
+        description="도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다."
+        actions={
+          <>
+            <Button asChild variant="highlight" className="w-full bp-sm:w-auto">
+              <Link href="/board/qna/write">
+                <Plus className="mr-2 h-4 w-4 shrink-0" />
+                문의하기
               </Link>
             </Button>
+            <Button asChild variant="outline" className="w-full bp-sm:w-auto">
+              <Link href="/support">고객센터 홈</Link>
+            </Button>
+          </>
+        }
+      />
 
-            <div className="flex items-center space-x-2.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                <MessageSquare className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-ui-page-title sm:text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
-                  고객센터 · Q&amp;A
-                </h1>
-                <p className="text-ui-body-sm sm:text-ui-body-lg text-muted-foreground">
-                  도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.
-                </p>
-              </div>
-            </div>
+      <SiteContainer className="space-y-5 py-6 sm:space-y-6 sm:py-8 md:py-10">
+        <PublicSurface variant="muted" padding="md" className="flex gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-highlight-muted text-brand-highlight-ink">
+            <MessageSquare className="h-4 w-4" />
           </div>
-
-          <div className="rounded-2xl border border-border bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm">
-            <p className="font-semibold text-foreground">문의 유형을 먼저 확인해주세요</p>
-            <p className="mt-1">
+          <div className="min-w-0">
+            <p className="text-ui-body-sm font-semibold text-foreground">
+              문의 유형을 먼저 확인해주세요
+            </p>
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               상품 문의, 주문/배송 문의, 교체서비스 문의, 아카데미 문의, 기타 문의 중 가까운 유형을
               선택하면 답변이 더 빨라집니다.
             </p>
           </div>
+        </PublicSurface>
 
-          {/* KPI 미사용 주석처리 (삭제는 일단 대기) */}
-          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-ui-body-sm font-medium text-foreground">전체 문의</p>
-                    <p className="text-ui-page-title font-semibold text-foreground">{total}</p>
-                  </div>
-                  <div className="bg-success/10 dark:bg-success/15 rounded-xl p-2">
-                    <MessageSquare className="h-5 w-5 text-success" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-ui-body-sm font-medium text-foreground">답변 완료</p>
-                    <p className="text-ui-page-title font-semibold text-foreground">{answeredCount}</p>
-                  </div>
-                  <div className="bg-success/10 dark:bg-success/15 rounded-xl p-2">
-                    <CheckCircle className="h-5 w-5 text-success" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-ui-body-sm font-medium text-foreground">답변 대기</p>
-                    <p className="text-ui-page-title font-semibold text-foreground">{waitingCount}</p>
-                  </div>
-                  <div className="bg-warning/10 dark:bg-warning/15 rounded-xl p-2">
-                    <Clock className="h-5 w-5 text-warning" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-ui-body-sm font-medium text-foreground">총 조회수</p>
-                    <p className="text-ui-page-title font-semibold text-foreground">{totalViews}</p>
-                  </div>
-                  <div className="bg-muted rounded-xl p-2">
-                    <Users className="h-5 w-5 text-foreground" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div> */}
-        </div>
-
-        <Card className="overflow-hidden border border-border bg-card shadow-sm">
-          <CardHeader className="border-b bg-muted/30 p-4 sm:p-5 md:p-6">
+        <PublicSurface
+          variant="feature"
+          padding="none"
+          className="overflow-hidden"
+          aria-busy={isBusy || isValidating}
+        >
+          <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+          <div className="border-b border-border bg-brand-highlight-muted/30 p-4 sm:p-5 md:p-6">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                <MessageSquare className="h-5 w-5 shrink-0 text-success sm:h-6 sm:w-6" />
-                <CardTitle className="whitespace-nowrap break-keep text-ui-card-title-lg font-semibold leading-tight sm:text-ui-section-title md:text-ui-page-title">
+                <MessageSquare className="h-5 w-5 shrink-0 text-brand-highlight-ink sm:h-6 sm:w-6" />
+                <h2 className="whitespace-nowrap break-keep font-brand-heading text-ui-card-title-lg font-semibold leading-tight sm:text-ui-section-title md:text-ui-page-title">
                   Q&amp;A 목록
-                </CardTitle>
+                </h2>
+                {total !== null && (
+                  <span className="text-ui-body-sm text-muted-foreground">
+                    총 {total.toLocaleString()}건
+                  </span>
+                )}
                 {(isBusy || isValidating) && (
                   <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-foreground" />
                 )}
@@ -505,7 +453,7 @@ export default function QnaPageClient({
 
               <Button
                 asChild
-                variant="outline"
+                variant="highlight_soft"
                 size="sm"
                 className="h-9 w-full shrink-0 whitespace-nowrap sm:w-auto md:h-10"
               >
@@ -515,9 +463,9 @@ export default function QnaPageClient({
                 </Link>
               </Button>
             </div>
-          </CardHeader>
+          </div>
 
-          <div className="border-b border-border bg-muted/20 px-4 py-4 sm:px-5 md:px-6">
+          <div className="border-b border-border bg-muted/30 px-4 py-4 sm:px-5 md:px-6">
             <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
                 <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground">
@@ -692,12 +640,12 @@ export default function QnaPageClient({
                         field: inputField,
                       });
                     }}
-                    variant="outline"
+                    variant="secondary"
                     className="h-9 shrink-0 whitespace-nowrap text-ui-body-sm md:h-10"
                     disabled={isBusy}
                   >
                     {isBusy && (
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border/30 border-t-primary-foreground" />
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border/30 border-t-foreground" />
                     )}
                     검색
                   </Button>
@@ -706,53 +654,52 @@ export default function QnaPageClient({
             </div>
           </div>
 
-          <CardContent className="p-4 md:p-5">
-            {/* 비밀글 1차 차단(안내 모달): 바깥 클릭 시 자동 닫힘(radix 기본) */}
-            <Dialog
-              open={secretBlock.open}
-              onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    비밀글 열람 안내
-                  </DialogTitle>
-                  <DialogDescription className="space-y-2">
-                    <span className="block">
-                      이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수
-                      있습니다.
-                    </span>
+          {/* 비밀글 1차 차단(안내 모달): 바깥 클릭 시 자동 닫힘(radix 기본) */}
+          <Dialog
+            open={secretBlock.open}
+            onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  비밀글 열람 안내
+                </DialogTitle>
+                <DialogDescription className="space-y-2">
+                  <span className="block">
+                    이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
+                  </span>
 
-                    {!viewerId ? (
-                      <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span>
-                    ) : (
-                      <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>
-                    )}
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="flex-wrap gap-2 sm:justify-end">
-                  <Button variant="outline" asChild>
-                    <Link href={listHref}>목록으로 돌아가기</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="/support">고객센터 홈</Link>
-                  </Button>
-                  {!viewerId && secretBlock.item?._id && (
-                    <Button asChild>
-                      <Link
-                        href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
-                      >
-                        로그인하고 확인
-                      </Link>
-                    </Button>
+                  {!viewerId ? (
+                    <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span>
+                  ) : (
+                    <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>
                   )}
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex-wrap gap-2 sm:justify-end">
+                <Button variant="outline" asChild>
+                  <Link href={listHref}>목록으로 돌아가기</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href="/support">고객센터 홈</Link>
+                </Button>
+                {!viewerId && secretBlock.item?._id && (
+                  <Button asChild>
+                    <Link
+                      href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
+                    >
+                      로그인하고 확인
+                    </Link>
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
-            <div className="space-y-3.5">
-              {hasDataError && (
+          <div className="divide-y divide-border/70">
+            {hasDataError && (
+              <div className="p-4 sm:p-6">
                 <ErrorBox
                   message={
                     hasPreloadError
@@ -763,167 +710,172 @@ export default function QnaPageClient({
                   fallbackMessage="Q&A 목록을 불러오지 못했습니다."
                   onRetry={() => mutate()}
                 />
-              )}
+              </div>
+            )}
 
-              <PinnedNoticeStrip items={pinnedNotices} />
+            {pinnedNotices.length > 0 && (
+              <div className="p-4 sm:p-5">
+                <PinnedNoticeStrip items={pinnedNotices} tone="signal" />
+              </div>
+            )}
 
-              {!isLoading &&
-                !hasDataError &&
-                items.map((qna) => {
-                  const canOpenSecret =
-                    !qna.isSecret ||
-                    isAdmin ||
-                    (viewerId && qna.authorId && viewerId === qna.authorId);
+            {!isLoading &&
+              !hasDataError &&
+              items.map((qna) => {
+                const canOpenSecret =
+                  !qna.isSecret ||
+                  isAdmin ||
+                  (viewerId && qna.authorId && viewerId === qna.authorId);
 
-                  const displayTitle = qna.isSecret && !canOpenSecret ? "비밀글입니다" : qna.title;
+                const displayTitle = qna.isSecret && !canOpenSecret ? "비밀글입니다" : qna.title;
 
-                  const CardInner = (
-                    <Card className="border-border shadow-sm transition-colors hover:border-border hover:bg-muted/25 focus-within:ring-2 focus-within:ring-ring">
-                      <CardContent className="p-4 sm:p-5">
-                        <div className="flex min-w-0 items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="mb-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                              <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
-                                <Badge
-                                  variant={getQnaCategoryBadgeSpec(qna.category).variant}
-                                  className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
-                                >
-                                  {qna.category ?? "일반문의"}
-                                </Badge>
+                const CardInner = (
+                  <div className="px-4 py-4 transition-colors sm:px-5 sm:py-5">
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
+                            <Badge
+                              variant={getQnaCategoryBadgeSpec(qna.category).variant}
+                              className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                            >
+                              {qna.category ?? "일반문의"}
+                            </Badge>
 
-                                {qna.isSecret && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="shrink-0 text-ui-label inline-flex items-center gap-1"
-                                  >
-                                    <Lock className="h-3 w-3" />
-                                    비밀글
-                                  </Badge>
-                                )}
+                            {qna.isSecret && (
+                              <Badge
+                                variant="secondary"
+                                className="shrink-0 text-ui-label inline-flex items-center gap-1"
+                              >
+                                <Lock className="h-3 w-3" />
+                                비밀글
+                              </Badge>
+                            )}
 
-                                <span
-                                  className={`${qnaMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}
-                                  title={displayTitle}
-                                >
-                                  {displayTitle}
-                                </span>
-                              </div>
+                            <span
+                              className={`${qnaMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}
+                              title={displayTitle}
+                            >
+                              {displayTitle}
+                            </span>
+                          </div>
 
-                              <div className={qnaStatusBadgeWrapClass}>
-                                <Badge
-                                  variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
-                                  className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
-                                >
-                                  {qna.answer ? "답변 완료" : "답변 대기"}
-                                </Badge>
-                              </div>
-                            </div>
-
-                            <div className={qnaMobileMetaWrapClass}>
-                              <span>{qna.authorName ?? "익명"}</span>
-                              <span>{fmt(qna.createdAt)}</span>
-
-                              <span className="inline-flex items-center gap-1">
-                                <MessageSquare className="h-3.5 w-3.5" />
-                                답변 {qna.answer ? 1 : 0}개
-                              </span>
-
-                              <span className="inline-flex items-center gap-1">
-                                <Eye className="h-3.5 w-3.5" />
-                                {qna.viewCount ?? 0}
-                              </span>
-                            </div>
+                          <div className={qnaStatusBadgeWrapClass}>
+                            <Badge
+                              variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
+                              className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                            >
+                              {qna.answer ? "답변 완료" : "답변 대기"}
+                            </Badge>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
 
-                  // 비밀글 + 권한없음: 상세로 보내지 않고 모달로 1차 차단
-                  if (qna.isSecret && !canOpenSecret) {
-                    return (
-                      <button
-                        key={qna._id}
-                        type="button"
-                        className="block w-full rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        onClick={() => setSecretBlock({ open: true, item: qna })}
-                      >
-                        {CardInner}
-                      </button>
-                    );
-                  }
+                        <div className={qnaMobileMetaWrapClass}>
+                          <span>{qna.authorName ?? "익명"}</span>
+                          <span>{fmt(qna.createdAt)}</span>
 
+                          <span className="inline-flex items-center gap-1">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            답변 {qna.answer ? 1 : 0}개
+                          </span>
+
+                          <span className="inline-flex items-center gap-1">
+                            <Eye className="h-3.5 w-3.5" />
+                            {qna.viewCount ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+
+                // 비밀글 + 권한없음: 상세로 보내지 않고 모달로 1차 차단
+                if (qna.isSecret && !canOpenSecret) {
                   return (
-                    <Link
+                    <button
                       key={qna._id}
-                      href={`/board/qna/${qna._id}${detailQuery ? `?${detailQuery}` : ""}`}
+                      type="button"
+                      className="block w-full text-left transition-colors hover:bg-brand-highlight-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                      onClick={() => setSecretBlock({ open: true, item: qna })}
                     >
                       {CardInner}
-                    </Link>
+                    </button>
                   );
-                })}
+                }
 
-              {shouldShowSearchEmptyState && (
-                <div className="space-y-3">
-                  <AsyncState
-                    kind="empty"
-                    variant="card"
-                    title="검색 결과가 없습니다."
-                    description="검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요."
-                  />
-                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setInputKeyword("");
-                        setKeyword("");
-                        setInputField("all");
-                        setField("all");
-                        const nextPage = 1;
-                        setPage(nextPage);
-                        pushUrl({
-                          page: nextPage,
-                          category,
-                          answerFilter,
-                          keyword: "",
-                          field: "all",
-                        });
-                      }}
-                    >
-                      검색 해제
-                    </Button>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href="/board/qna">전체 문의 보기</Link>
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {shouldShowActualEmptyState && (
-                <div className="space-y-3">
-                  <AsyncState
-                    kind="empty"
-                    variant="card"
-                    title="등록된 문의가 없습니다."
-                    description="궁금한 점이 있다면 첫 문의를 남겨 주세요."
-                  />
-                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                    <Button asChild size="sm">
-                      <Link href="/board/qna/write">
-                        <Plus className="mr-1 h-3.5 w-3.5" />
-                        문의하기
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href="/support">고객센터 홈</Link>
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+                return (
+                  <Link
+                    key={qna._id}
+                    href={`/board/qna/${qna._id}${detailQuery ? `?${detailQuery}` : ""}`}
+                    className="block transition-colors hover:bg-brand-highlight-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                  >
+                    {CardInner}
+                  </Link>
+                );
+              })}
 
-            <div className="mt-6 md:mt-8 flex items-center justify-center">
+            {shouldShowSearchEmptyState && (
+              <div className="space-y-3 p-4 sm:p-6">
+                <AsyncState
+                  kind="empty"
+                  variant="card"
+                  title="검색 결과가 없습니다."
+                  description="검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요."
+                />
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setInputKeyword("");
+                      setKeyword("");
+                      setInputField("all");
+                      setField("all");
+                      const nextPage = 1;
+                      setPage(nextPage);
+                      pushUrl({
+                        page: nextPage,
+                        category,
+                        answerFilter,
+                        keyword: "",
+                        field: "all",
+                      });
+                    }}
+                  >
+                    검색 해제
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/board/qna">전체 문의 보기</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+            {shouldShowActualEmptyState && (
+              <div className="space-y-3 p-4 sm:p-6">
+                <AsyncState
+                  kind="empty"
+                  variant="card"
+                  title="등록된 문의가 없습니다."
+                  description="궁금한 점이 있다면 첫 문의를 남겨 주세요."
+                />
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                  <Button asChild size="sm">
+                    <Link href="/board/qna/write">
+                      <Plus className="mr-1 h-3.5 w-3.5" />
+                      문의하기
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/support">고객센터 홈</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {!hasDataError && items.length > 0 && (
+            <div className="mt-6 flex items-center justify-center px-4 pb-5 md:mt-8">
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button
                   variant="outline"
@@ -961,13 +913,11 @@ export default function QnaPageClient({
                 {visiblePages.map((pageNumber) => (
                   <Button
                     key={pageNumber}
-                    variant="outline"
+                    variant={pageNumber === page ? "highlight_soft" : "outline"}
                     size="sm"
-                    className={
-                      pageNumber === page
-                        ? "h-10 w-10 bg-secondary text-foreground border-border"
-                        : "h-10 w-10 bg-card"
-                    }
+                    className="h-10 w-10"
+                    aria-current={pageNumber === page ? "page" : undefined}
+                    aria-label={`${pageNumber}페이지로 이동`}
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
                   >
@@ -1030,9 +980,9 @@ export default function QnaPageClient({
                 </form>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          )}
+        </PublicSurface>
+      </SiteContainer>
+    </main>
   );
 }
