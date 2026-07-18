@@ -132,20 +132,20 @@ function SectionCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
+        "overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft",
         className,
       )}
     >
       {(title || description) && (
-        <div className="border-b border-border bg-muted/30 px-5 py-4 md:px-6">
+        <div className="border-b border-border bg-brand-highlight-muted/45 px-5 py-4 md:px-6">
           <div className="flex items-start gap-3">
             {Icon && (
-              <div className="shrink-0 rounded-lg bg-primary/10 p-2">
-                <Icon className="h-4 w-4 text-primary" />
+              <div className="shrink-0 rounded-control bg-brand-highlight-muted p-2 text-brand-highlight-foreground">
+                <Icon className="h-4 w-4" aria-hidden />
               </div>
             )}
             <div className="min-w-0">
-              {title && <h2 className="text-ui-body-lg font-semibold text-foreground">{title}</h2>}
+              {title && <h2 className="font-brand-heading text-ui-body-lg font-semibold tracking-[-0.015em] text-foreground">{title}</h2>}
               {description && (
                 <p className="mt-0.5 text-ui-body-sm text-muted-foreground">{description}</p>
               )}
@@ -216,11 +216,11 @@ function CustomSelect({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={cn(
-          "flex w-full min-w-0 items-center justify-between rounded-xl border bg-background px-4 py-3 text-left text-ui-body-sm transition-all",
-          "hover:border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "flex w-full min-w-0 items-center justify-between rounded-control border bg-background px-4 py-3 text-left text-ui-body-sm transition-all",
+          "hover:border-brand-highlight/60 focus:outline-none focus:ring-2 focus:ring-brand-highlight focus:ring-offset-2",
           error ? "border-destructive" : "border-border/60",
           disabled && "cursor-not-allowed opacity-50",
-          isOpen && "ring-2 ring-ring ring-offset-2",
+          isOpen && "border-brand-highlight ring-2 ring-brand-highlight ring-offset-2",
         )}
       >
         <span className={cn(selectedOption ? "text-foreground" : "text-muted-foreground")}>
@@ -237,7 +237,7 @@ function CustomSelect({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-auto rounded-xl border border-border bg-popover p-1.5 shadow-lg">
+          <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-auto rounded-panel border border-border bg-popover p-1.5 shadow-soft">
             {options.map((option) => (
               <button
                 key={option.value}
@@ -248,8 +248,8 @@ function CustomSelect({
                 }}
                 className={cn(
                   "flex w-full flex-col items-start rounded-lg px-3 py-2.5 text-left transition-colors",
-                  "hover:bg-muted",
-                  option.value === value && "bg-muted",
+                  "hover:bg-brand-highlight-muted",
+                  option.value === value && "bg-brand-highlight-muted text-brand-highlight-foreground",
                 )}
               >
                 <span className="text-ui-body-sm font-medium text-foreground">{option.label}</span>
@@ -552,7 +552,7 @@ export default function AcademyApplyClient({
             >
               <FormField label="신청자명" required error={fieldErrors.applicantName}>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                   <Input
                     value={form.applicantName}
                     readOnly
@@ -574,7 +574,7 @@ export default function AcademyApplyClient({
             >
               <FormField label="연락처" required error={fieldErrors.phone}>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                   <Input
                     value={form.phone}
                     readOnly
@@ -592,7 +592,7 @@ export default function AcademyApplyClient({
             <div className="min-w-0 md:col-span-2">
               <FormField label="이메일">
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                   <Input
                     type="email"
                     value={form.email}
@@ -679,10 +679,10 @@ export default function AcademyApplyClient({
                         disabled={isSubmitting || isSelectedClassClosed}
                         className={cn(
                           "flex min-w-0 flex-col items-center justify-center rounded-xl border py-3 text-ui-body-sm font-medium transition-all",
-                          "hover:border-primary/50 hover:bg-primary/5",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          "hover:border-brand-highlight/60 hover:bg-brand-highlight-muted",
+                          "focus:outline-none focus:ring-2 focus:ring-brand-highlight focus:ring-offset-2",
                           isSelected
-                            ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                            ? "border-brand-highlight bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
                             : "border-border/60 bg-background text-muted-foreground",
                           (isSubmitting || isSelectedClassClosed) &&
                             "cursor-not-allowed opacity-50",
@@ -699,7 +699,7 @@ export default function AcademyApplyClient({
             {/* Preferred Time */}
             <FormField label="희망 시간대" hint="예: 평일 저녁, 주말 오전">
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                 <Input
                   value={form.preferredTimeText}
                   onChange={(e) => updateField("preferredTimeText", e.target.value)}
@@ -714,7 +714,7 @@ export default function AcademyApplyClient({
             {/* Lesson Goal */}
             <FormField label="레슨 목표" hint="원하시는 레슨 목표를 자유롭게 작성해 주세요">
               <div className="relative">
-                <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden />
                 <Textarea
                   value={form.lessonGoal}
                   onChange={(e) => updateField("lessonGoal", e.target.value)}
@@ -729,7 +729,7 @@ export default function AcademyApplyClient({
             {/* Request Memo */}
             <FormField label="요청사항" hint="추가로 궁금하신 점이나 요청사항을 남겨주세요">
               <div className="relative">
-                <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden />
                 <Textarea
                   value={form.requestMemo}
                   onChange={(e) => updateField("requestMemo", e.target.value)}
@@ -744,7 +744,7 @@ export default function AcademyApplyClient({
         </SectionCard>
 
         {/* Submit Section */}
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+        <div className="rounded-panel border border-border/80 bg-card p-5 shadow-soft md:p-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0 space-y-1.5">
               <p className="text-ui-body-sm font-medium text-foreground">
@@ -758,14 +758,15 @@ export default function AcademyApplyClient({
               <Button
                 asChild
                 variant="outline"
-                className="h-11 w-full gap-2 whitespace-nowrap rounded-xl sm:w-auto"
+                className="h-11 w-full gap-2 whitespace-nowrap rounded-control sm:w-auto"
               >
                 <Link href="/academy">아카데미로 돌아가기</Link>
               </Button>
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="h-11 w-full gap-2 whitespace-nowrap rounded-xl px-6 sm:w-auto"
+                variant="highlight"
+                className="h-11 w-full gap-2 whitespace-nowrap rounded-control px-6 sm:w-auto"
               >
                 {isSubmitting ? (
                   <>
