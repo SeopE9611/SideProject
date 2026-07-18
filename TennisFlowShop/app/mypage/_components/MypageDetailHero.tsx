@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { mypageDetailLayout } from "./mypage-detail-style";
 
@@ -53,7 +52,7 @@ export default function MypageDetailHero({
       <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
         <div className="min-w-0 space-y-1">
           <div className={cn("text-ui-label font-medium text-primary", isFeature && "text-brand-highlight-ink")}>
-            {isFeature ? <Badge variant="signal">ORDER DETAIL</Badge> : eyebrow}
+            {eyebrow}
           </div>
           <h2 className={cn("break-keep text-ui-card-title-lg font-medium text-foreground bp-sm:text-ui-section-title", isFeature && "font-brand-heading font-semibold tracking-[-0.015em]")}>
             {title}
