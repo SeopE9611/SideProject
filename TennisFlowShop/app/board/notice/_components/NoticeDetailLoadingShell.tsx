@@ -1,5 +1,6 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type NoticeDetailLoadingShellProps = {
@@ -9,8 +10,9 @@ type NoticeDetailLoadingShellProps = {
 export function NoticeDetailContentSkeleton() {
   return (
     <>
-      <PublicSurface padding="none" className="overflow-hidden">
-        <div className="space-y-4 p-5 sm:p-6">
+      <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+        <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+        <div className="space-y-4 bg-brand-highlight-muted/30 p-5 sm:p-6">
           <div className="flex gap-2">
             <Skeleton className="h-6 w-16" />
             <Skeleton className="h-6 w-20" />
@@ -24,7 +26,7 @@ export function NoticeDetailContentSkeleton() {
           </div>
         </div>
 
-        <div className="border-t border-border p-5 sm:p-6 md:p-8">
+        <div className="border-t border-border bg-card p-5 sm:p-6 md:p-8">
           <div className="mx-auto max-w-3xl space-y-3">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-11/12" />
@@ -61,6 +63,7 @@ export default function NoticeDetailLoadingShell({
   mode = "notice",
 }: NoticeDetailLoadingShellProps) {
   const isEventMode = mode === "event";
+  const sectionLabel = isEventMode ? "이벤트" : "공지사항";
   const pageTitle = isEventMode ? "고객센터 · 이벤트" : "고객센터 · 공지사항";
   const pageDescription = isEventMode
     ? "할인, 프로모션, 행사 소식을 확인하세요."
@@ -69,8 +72,8 @@ export default function NoticeDetailLoadingShell({
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
-        variant="standard"
-        eyebrow="Customer Support"
+        variant="feature"
+        eyebrow={<Badge variant="signal">{sectionLabel}</Badge>}
         title={pageTitle}
         description={pageDescription}
         actions={
