@@ -220,7 +220,7 @@ function CommentItem({
 
   return (
     <div
-      className={`group relative min-w-0 rounded-xl transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-3 border-l-2 border-border bg-muted/40 py-3 pl-4 sm:ml-8 dark:border-border" : "border border-border bg-card p-4 shadow-sm hover:border-border hover:bg-muted/20 sm:p-5 dark:hover:border-border"}`}
+      className={`group relative min-w-0 rounded-panel transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-3 border-l-2 border-brand-highlight bg-brand-highlight-muted/30 py-3 pl-4 sm:ml-8 dark:border-brand-highlight" : "border border-border bg-card p-4 shadow-soft hover:border-brand-highlight/50 hover:bg-brand-highlight-muted/20 sm:p-5 dark:hover:border-brand-highlight/50"}`}
     >
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
@@ -1404,7 +1404,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   }, [editingReplyId]);
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background text-foreground">
       {composeOpen && composeTo ? (
         <MessageComposeDialog
           open={composeOpen}
@@ -1432,8 +1432,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
-              {config.boardTitle} 글 상세
+            <h1 className="break-keep font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+              {item ? item.title : `${config.boardTitle} 글 상세`}
             </h1>
             <p className="mt-1 text-ui-body-sm text-foreground/80 md:text-ui-body-lg">
               {config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.
@@ -1461,7 +1461,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         </div>
 
         {/* 본문 카드 */}
-        {isLoading && <DetailSkeleton />}
+        {isLoading && (
+          <div aria-busy="true" aria-live="polite">
+            <span className="sr-only">게시글 상세를 불러오는 중입니다.</span>
+            <DetailSkeleton />
+          </div>
+        )}
 
         {!isLoading && error && (
           <Card className="border border-border bg-card shadow-sm">
@@ -1488,11 +1493,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         )}
 
         {!isLoading && !error && item && (
-          <Card className="overflow-hidden border border-border bg-card shadow-sm">
-            <CardHeader className="space-y-4 border-b bg-muted/30 p-4 sm:p-6">
+          <Card className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
+            <CardHeader className="space-y-4 border-b bg-brand-highlight-muted/45 p-4 sm:p-6">
               <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 space-y-2">
-                  <CardTitle className="min-w-0 break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
+                  <CardTitle className="min-w-0 break-keep font-brand-heading text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
                     {typeof item.postNo === "number" && (
                       <span className="mr-2 text-ui-body-sm font-semibold tabular-nums text-muted-foreground">
                         {item.postNo}
@@ -1667,7 +1672,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               {config.boardType === "market" && item.marketMeta && (
                 <div className="mb-6 space-y-4">
                   {/* ── 1. 거래 핵심 정보 ── */}
-                  <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                  <div className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
                     {/* 가격 헤더 영역 */}
                     <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
                       <p className="mb-1 text-ui-label font-medium text-muted-foreground">
@@ -1791,7 +1796,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               ).map(({ key, unit }) => (
                                 <div
                                   key={key}
-                                  className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
+                                  className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5"
                                 >
                                   <p className="text-ui-body-sm text-foreground/75">
                                     {getMarketRacketFieldLabel(key)}
@@ -1820,7 +1825,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               ).map(({ key, unit }) => (
                                 <div
                                   key={key}
-                                  className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
+                                  className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5"
                                 >
                                   <p className="text-ui-body-sm text-foreground/75">
                                     {getMarketRacketFieldLabel(key)}
@@ -1830,7 +1835,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                   </p>
                                 </div>
                               ))}
-                              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                              <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
                                 <p className="text-ui-body-sm text-foreground/75">
                                   {getMarketRacketFieldLabel("pattern")}
                                 </p>
@@ -1838,7 +1843,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                   {marketText(item.marketMeta.racketSpec?.pattern)}
                                 </p>
                               </div>
-                              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                              <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
                                 <p className="text-ui-body-sm text-foreground/75">
                                   {getMarketRacketFieldLabel("gripSize")}
                                 </p>
@@ -1852,26 +1857,26 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       ) : (
                         /* 스트링 스펙 */
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
                             <p className="text-ui-body-sm text-foreground/75">재질</p>
                             <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {getMarketStringMaterialLabel(item.marketMeta.stringSpec?.material) ||
                                 "-"}
                             </p>
                           </div>
-                          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
                             <p className="text-ui-body-sm text-foreground/75">게이지</p>
                             <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {marketText(item.marketMeta.stringSpec?.gauge)}
                             </p>
                           </div>
-                          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
                             <p className="text-ui-body-sm text-foreground/75">색상</p>
                             <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {getMarketStringColorLabel(item.marketMeta.stringSpec?.color) || "-"}
                             </p>
                           </div>
-                          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
                             <p className="text-ui-body-sm text-foreground/75">길이</p>
                             <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {getMarketStringLengthLabel(item.marketMeta.stringSpec?.length) ||
@@ -1908,7 +1913,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               )}
 
               {/* 본문 */}
-              <div className="whitespace-pre-wrap text-ui-body-sm leading-relaxed text-foreground">
+              <div className="rounded-panel border border-border bg-card px-4 py-5 text-ui-body-sm leading-relaxed text-foreground shadow-soft whitespace-pre-wrap sm:px-6">
                 {item.content}
               </div>
 
@@ -2145,7 +2150,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   {/* 추천 버튼 */}
                   <Button
                     type="button"
-                    variant={item.likedByMe ? "default" : "outline"}
+                    variant={item.likedByMe ? "highlight" : "outline"}
                     size="sm"
                     onClick={handleToggleLike}
                     disabled={isLiking}
@@ -2173,7 +2178,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     </Button>
                     <Button
                       asChild
-                      variant="default"
+                      variant="highlight"
                       size="sm"
                       className="h-10 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
                     >
@@ -2189,12 +2194,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         )}
         {/* ================== 댓글 카드 시작 ================== */}
         {!isLoading && !error && item && (
-          <Card className="overflow-hidden border border-border bg-card shadow-sm">
+          <Card className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
             <CardHeader className="border-b border-border bg-muted/50 px-4 py-4 sm:px-6">
               <CardTitle className="flex items-center gap-3 text-ui-body-lg font-semibold text-foreground">
                 <MessageSquare className="h-5 w-5 text-muted-foreground" />
                 <span>댓글</span>
-                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-ui-body-sm font-medium text-primary-foreground">
+                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-brand-highlight px-2.5 text-ui-body-sm font-medium text-primary-foreground">
                   {totalComments}
                 </span>
               </CardTitle>

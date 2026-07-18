@@ -1,5 +1,5 @@
-import { DetailPageSkeleton } from "@/components/system/loading";
+import CommunityBoardDetailLoadingShell from "@/app/board/_components/CommunityBoardDetailLoadingShell";
 
 export default function Loading() {
-  return <DetailPageSkeleton sectionCount={2} summaryCardCount={0} asideVariant="none" />;
+  return <CommunityBoardDetailLoadingShell boardLabel="자유 게시판" />;
 }
