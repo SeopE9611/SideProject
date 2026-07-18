@@ -15,14 +15,6 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { refreshOnce } from "@/lib/auth/refresh-mutex";
 import {
@@ -526,9 +518,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   if (isInitialLoading) {
     return (
       <main className="w-full">
-        <SiteContainer variant="wide" className="py-4 bp-sm:py-6 space-y-6">
-          <OrderDetailSkeleton />
-        </SiteContainer>
+        <OrderDetailSkeleton />
       </main>
     );
   }
@@ -920,6 +910,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             ? "주문 상품, 결제 상태, 교체서비스 진행 정보를 확인하세요."
             : "주문 상품, 결제 상태, 배송 정보를 확인하세요."
         }
+        eyebrow={<Badge variant="signal">ORDER DETAIL</Badge>}
         icon={<ShoppingCart className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
         status={
           <OrderStatusBadge
@@ -965,21 +956,21 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               variant="outline"
               size="sm"
               onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 bp-sm:w-auto"
             >
               <span className="bp-sm:hidden">목록</span>
               <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
             </Button>
 
             <Button
-              variant={isEditMode ? "destructive" : "outline"}
+              variant="outline"
               size="sm"
               onClick={() => setIsEditMode((m) => !m)}
               disabled={!canUserEdit}
               className={cn(
                 "h-9 w-full whitespace-nowrap bp-sm:w-auto",
                 !isEditMode &&
-                  "border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20",
+                  "border-border bg-background hover:bg-brand-highlight-muted/70",
               )}
             >
               {isEditMode ? "수정 종료" : "주문 정보 수정"}
@@ -1354,7 +1345,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       );
                     })
                   ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
-                    <div className="border-l-2 border-warning/60 bg-warning/10 px-3 py-3 text-warning dark:bg-warning/15">
+                    <div className="border-l-2 border-warning/60 bg-warning/10 px-3 py-3 text-warning">
                       <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
                       <p className="mt-1 text-ui-body-sm">
                         총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체
@@ -1380,78 +1371,72 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <aside className="space-y-5">
             {/* 결제 정보 */}
-            <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
-              <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="h-5 w-5 text-foreground" />
-                  <span>결제 요약</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 bp-sm:p-5">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
-                      {(() => {
-                        const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
-                        return (
-                          <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                            {getCustomerPaymentStatusLabel(orderDetail.paymentStatus)}
-                          </Badge>
-                        );
-                      })()}
-                    </div>
+            <MypageDetailCard
+              variant="feature"
+              title="결제 요약"
+              icon={<CreditCard className="h-5 w-5" aria-hidden="true" />}
+            >
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
+                    {(() => {
+                      const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
+                      return (
+                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                          {getCustomerPaymentStatusLabel(orderDetail.paymentStatus)}
+                        </Badge>
+                      );
+                    })()}
                   </div>
-
-                  <div className="space-y-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
-                    <MypageInfoField label="결제 방식" value={customerPaymentMethodLabel} />
-
-                    {isBankTransferPayment ? (
-                      <div className="rounded-xl bg-muted/15 p-3 ring-1 ring-border/40">
-                        <p className="text-ui-label font-medium text-muted-foreground">입금 계좌</p>
-                        <p className="mt-1 font-medium text-foreground">{bankAccountLabel}</p>
-                        <p className="mt-1 text-ui-body-sm text-muted-foreground">
-                          예금주: {bankAccountHolderLabel}
-                        </p>
-
-                        {depositorName ? (
-                          <p className="mt-2 text-ui-body-sm text-foreground">
-                            입금자명: {depositorName}
-                          </p>
-                        ) : null}
-
-                        {isPaymentWaiting ? (
-                          <p className="mt-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                            입금 확인 후 주문과 교체서비스 작업이 진행됩니다.
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : paymentApprovedAtLabel ? (
-                      <MypageInfoField label="결제 일시" value={paymentApprovedAtLabel} />
-                    ) : null}
-                  </div>
-
-                  <MypageInfoField
-                    className="rounded-xl bg-brand-highlight-muted/60 p-4 ring-1 ring-brand-highlight-ink/15"
-                    label="결제 금액"
-                    value={formatCurrency(orderDetail.total)}
-                    valueClassName="text-ui-section-title text-brand-highlight-ink"
-                  />
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="space-y-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
+                  <MypageInfoField label="결제 방식" value={customerPaymentMethodLabel} />
+
+                  {isBankTransferPayment ? (
+                    <div className="rounded-xl bg-muted/15 p-3 ring-1 ring-border/40">
+                      <p className="text-ui-label font-medium text-muted-foreground">입금 계좌</p>
+                      <p className="mt-1 font-medium text-foreground">{bankAccountLabel}</p>
+                      <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                        예금주: {bankAccountHolderLabel}
+                      </p>
+
+                      {depositorName ? (
+                        <p className="mt-2 text-ui-body-sm text-foreground">
+                          입금자명: {depositorName}
+                        </p>
+                      ) : null}
+
+                      {isPaymentWaiting ? (
+                        <p className="mt-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
+                          입금 확인 후 주문과 교체서비스 작업이 진행됩니다.
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : paymentApprovedAtLabel ? (
+                    <MypageInfoField label="결제 일시" value={paymentApprovedAtLabel} />
+                  ) : null}
+                </div>
+
+                <MypageInfoField
+                  className="rounded-xl bg-brand-highlight-muted/60 p-4 ring-1 ring-brand-highlight-ink/15"
+                  label="결제 금액"
+                  value={formatCurrency(orderDetail.total)}
+                  valueClassName="text-ui-section-title text-brand-highlight-ink"
+                />
+              </div>
+            </MypageDetailCard>
 
             {/* 배송/수령 요약 */}
-            <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
-              <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-                <CardTitle className="flex items-center space-x-2">
-                  <Truck className="h-5 w-5 text-primary" />
-                  <span>배송/수령 요약</span>
-                </CardTitle>
-                <CardDescription>수령·배송 핵심 정보입니다.</CardDescription>
-              </CardHeader>
+            <MypageDetailCard
+              variant="feature"
+              title="배송/수령 요약"
+              description="수령·배송 핵심 정보입니다."
+              icon={<Truck className="h-5 w-5" aria-hidden="true" />}
+            >
               {editingCustomer ? (
-                <CardContent className="p-4 bp-sm:p-5">
+                <div>
                   <CustomerEditForm
                     initialData={{
                       name: orderDetail.customer.name,
@@ -1474,9 +1459,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     }}
                     onCancel={() => setEditingCustomer(false)}
                   />
-                </CardContent>
+                </div>
               ) : (
-                <CardContent className="space-y-4 p-4 bp-sm:p-5">
+                <div className="space-y-4">
                   <div className="space-y-3">
                     <MypageInfoField label="수령 방법" value={shippingMethodLabel} />
 
@@ -1615,7 +1600,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                             size="sm"
                             variant="outline"
                             onClick={() => setEditingRequest(true)}
-                            className="h-8 w-full hover:bg-warning/10 dark:hover:bg-warning/15 bp-sm:w-auto"
+                            className="h-8 w-full hover:bg-warning/10 bp-sm:w-auto"
                           >
                             요청사항 수정
                           </Button>
@@ -1657,44 +1642,43 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       </div>
                     </div>
                   ) : null}
-                </CardContent>
+                </div>
               )}
               {isEditMode && canUserEdit && !editingCustomer && (
-                <CardFooter className="flex justify-center bg-muted/50 pt-3">
+                <div className="mt-4 flex justify-center border-t border-border/60 bg-muted/50 pt-3">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setEditingCustomer(true)}
-                    className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="border-border hover:bg-brand-highlight-muted/70"
                   >
                     {showDeliveryOnlyFields ? "배송지/연락처 수정" : "수령자 정보 수정"}
                   </Button>
-                </CardFooter>
+                </div>
               )}
-            </Card>
+            </MypageDetailCard>
 
             {packageUsedSlots > 0 ? (
-              <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]">
-                <CardHeader className="border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5">
-                  <CardTitle>패키지 사용</CardTitle>
-                  <CardDescription>이번 이용에 패키지 이용권이 사용되었습니다.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 p-4 text-ui-body-sm bp-lg:p-5">
-                  <div className="rounded-xl bg-muted/15 p-3 text-foreground">
-                    <p className="text-ui-body font-medium">
-                      사용 {packageUsedSlots}회 · 남은 {packageRemainingSlots}회
-                    </p>
-                    <p className="mt-1 text-muted-foreground">
-                      {packageRemainingSlots > 0
-                        ? `이번 이용에 패키지 ${packageUsedSlots}회가 차감되었습니다.`
-                        : "이번 이용으로 패키지를 모두 사용했습니다."}
-                    </p>
-                  </div>
-                  <Button asChild size="sm" variant="outline" className="w-full bp-sm:w-auto">
-                    <Link href="/mypage?tab=passes">패키지 관리로 이동</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <MypageDetailCard
+                variant="feature"
+                title="패키지 사용"
+                description="이번 이용에 패키지 이용권이 사용되었습니다."
+                contentClassName="space-y-4 text-ui-body-sm"
+              >
+                <div className="rounded-xl bg-muted/15 p-3 text-foreground">
+                  <p className="text-ui-body font-medium">
+                    사용 {packageUsedSlots}회 · 남은 {packageRemainingSlots}회
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {packageRemainingSlots > 0
+                      ? `이번 이용에 패키지 ${packageUsedSlots}회가 차감되었습니다.`
+                      : "이번 이용으로 패키지를 모두 사용했습니다."}
+                  </p>
+                </div>
+                <Button asChild size="sm" variant="outline" className="w-full bp-sm:w-auto">
+                  <Link href="/mypage?tab=passes">패키지 관리로 이동</Link>
+                </Button>
+              </MypageDetailCard>
             ) : null}
 
             {allReviewed ? (
