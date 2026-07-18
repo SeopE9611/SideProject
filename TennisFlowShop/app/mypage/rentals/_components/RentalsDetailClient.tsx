@@ -12,7 +12,6 @@ import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { racketBrandLabel } from "@/lib/constants";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
@@ -35,6 +34,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import MypageDetailHero from "../../_components/MypageDetailHero";
+import RentalDetailSkeleton from "./RentalDetailSkeleton";
 import { mypageDetailLayout } from "../../_components/mypage-detail-style";
 
 const CancelRentalDialog = dynamic(
@@ -396,17 +396,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     : null;
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <Card className="animate-pulse border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-          <CardContent className="p-6 md:p-8">
-            <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
-            <div className="h-4 bg-muted rounded w-2/3 mb-2"></div>
-            <div className="h-4 bg-muted rounded w-1/2"></div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <RentalDetailSkeleton />;
   }
 
   if (err) {
@@ -619,7 +609,9 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
       <MypageDetailHero
         title="대여 상세"
         description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
-        icon={<Briefcase className="h-6 w-6 text-primary" />}
+        variant="feature"
+        eyebrow={<Badge variant="signal">RENTAL SERVICE</Badge>}
+        icon={<Briefcase aria-hidden="true" className="h-6 w-6 text-brand-highlight-ink" />}
         status={getStatusIcon(data.status)}
         statusTitle={
           <Badge
@@ -637,7 +629,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 variant="outline"
                 size="sm"
                 asChild
-                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 hover:text-brand-highlight-ink bp-sm:w-auto"
               >
                 <Link href={returnShippingHref}>
                   {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
@@ -665,10 +657,36 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               variant="outline"
               size="sm"
               asChild
-              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 hover:text-brand-highlight-ink bp-sm:w-auto"
             >
               <Link href={backUrl}>목록으로 돌아가기</Link>
             </Button>
+          </>
+        }
+        nextActionTitle={canReceiveRental ? "수령 확인" : nextTodo?.label ?? rentalNextActionMessage}
+        nextActionDescription={canReceiveRental ? rentalNextActionMessage : nextTodo ? rentalNextActionMessage : null}
+        nextActionSlot={
+          <>
+            {canReceiveRental ? (
+              <Button
+                size="sm"
+                className="h-9 w-full whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
+                disabled={isReceiving}
+                onClick={handleReceiveRental}
+              >
+                {isReceiving ? "수령 확인 처리 중..." : "수령 확인"}
+              </Button>
+            ) : null}
+
+            {nextTodo?.ctaLabel && nextTodo.ctaHref ? (
+              <Button
+                size="sm"
+                asChild
+                className="h-9 w-full whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
+              >
+                <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
+              </Button>
+            ) : null}
           </>
         }
         summary={
@@ -681,50 +699,18 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             <MypageInfoField
               label={heroSecondaryTitle}
               value={heroSecondaryLabel}
-              valueClassName={isRentalActive ? "font-semibold text-primary" : "font-semibold"}
+              valueClassName={isRentalActive ? "font-semibold text-brand-highlight-ink" : "font-semibold"}
             />
+            <MypageInfoField label="총 결제금액" value={formatCurrency(total)} valueClassName="font-semibold" />
           </>
         }
       />
 
       <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
-        {(canReceiveRental || (nextTodo?.ctaLabel && nextTodo.ctaHref)) && (
-          <div className="mb-4 flex flex-col gap-3 border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <p className="break-keep text-muted-foreground">
-              {canReceiveRental
-                ? "상품을 받으셨다면 수령 확인으로 대여를 시작해 주세요."
-                : rentalNextActionMessage}
-            </p>
-            <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center">
-              {canReceiveRental ? (
-                <Button
-                  size="sm"
-                  className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
-                  disabled={isReceiving}
-                  onClick={handleReceiveRental}
-                >
-                  {isReceiving ? "수령 확인 처리 중..." : "수령 확인"}
-                </Button>
-              ) : null}
-
-              {nextTodo?.ctaLabel && nextTodo.ctaHref ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
-                >
-                  <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        )}
-
         {/* 대여 취소 상태 안내 배너 */}
         {cancelBanner && (
           <div
-            className={`mb-4 flex items-center justify-between border-l-2 px-3 py-3 text-ui-body-sm ${cancelBanner.status === "requested" ? "border-primary bg-primary/5 text-muted-foreground dark:bg-primary/10 dark:text-foreground" : "border-destructive/60 bg-destructive/5 text-foreground dark:bg-destructive/10 dark:text-foreground"}`}
+            className={`mb-4 flex items-center justify-between border-l-2 px-3 py-3 text-ui-body-sm ${cancelBanner.status === "requested" ? "border-warning bg-warning/10 text-muted-foreground dark:bg-warning/20 dark:text-foreground" : "border-destructive/60 bg-destructive/5 text-foreground dark:bg-destructive/10 dark:text-foreground"}`}
           >
             <div>
               <p className="font-medium">{cancelBanner.title}</p>
@@ -747,13 +733,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
         {banner && (
           <div
-            className={`border-l-2 px-3 py-3 ${banner.tone === "success" ? "border-success bg-success/10 text-success dark:bg-success/20 dark:text-success" : "border-primary bg-muted/20 text-foreground dark:bg-muted/20 dark:text-foreground"}`}
+            className={`border-l-2 px-3 py-3 ${banner.tone === "success" ? "border-success bg-success/10 text-success dark:bg-success/20 dark:text-success" : "border-brand-highlight-ink/40 bg-brand-highlight-muted/35 text-foreground dark:bg-brand-highlight-muted/20 dark:text-foreground"}`}
           >
             <div className="flex items-center gap-3">
               {banner.tone === "success" ? (
                 <CheckCircle className="h-6 w-6 text-success" />
               ) : (
-                <AlertCircle className="h-6 w-6 text-primary" />
+                <AlertCircle className="h-6 w-6 text-brand-highlight-ink" />
               )}
               <div>
                 <p className="font-semibold text-ui-card-title-lg">{banner.title}</p>
@@ -763,9 +749,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           </div>
         )}
 
-        <div className="w-full space-y-5">
-          <div className="space-y-5">
-            <MypageDetailCard title="대여상품" icon={<Package className="h-5 w-5 text-primary" />}>
+        <div className={mypageDetailLayout.contentGrid}>
+          <div className={mypageDetailLayout.mainColumn}>
+            <MypageDetailCard
+              variant="feature"
+              title="대여상품"
+              icon={<Package className="h-5 w-5" />}
+            >
               <div className="flex gap-3 py-1 bp-sm:gap-4">
                 {racketImageUrl ? (
                   <img
@@ -793,7 +783,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             <MypageDetailCard
               title="수령/반납 정보"
               description="지금 필요한 수령과 반납 정보만 확인하세요."
-              icon={<Truck className="h-5 w-5 text-primary" />}
+              variant="feature"
+              icon={<Truck className="h-5 w-5" />}
               contentClassName="space-y-5"
             >
               <div className="space-y-4">
@@ -839,7 +830,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         variant="outline"
                         size="sm"
                         asChild
-                        className="h-9 w-full bp-sm:w-fit"
+                        className="h-9 w-full bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-fit"
                       >
                         <Link href={returnShippingHref}>
                           {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
@@ -877,7 +868,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 <MypageDetailCard
                   title="연결된 교체서비스"
                   description="진행 상태와 핵심 일정을 요약했습니다."
-                  icon={<Wrench className="h-5 w-5 text-primary" />}
+                  variant="feature"
+                  icon={<Wrench className="h-5 w-5" />}
                   action={
                     linkedApplicationIsComplete ? <Badge variant="success">교체완료</Badge> : null
                   }
@@ -926,13 +918,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                       </div>
                     </>
                   ) : canApplyStringService ? (
-                    <div className="flex flex-col gap-3 border-l-2 border-primary bg-primary/5 px-3 py-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                    <div className="flex flex-col gap-3 border-l-2 border-brand-highlight-ink/50 bg-brand-highlight-muted/45 px-3 py-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                       <p className="text-muted-foreground">
                         대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
                       </p>
                       <Button
                         asChild
-                        className="h-9 w-full gap-2 whitespace-normal break-keep bp-sm:w-auto"
+                        className="h-9 w-full gap-2 whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
                       >
                         <Link href={applyHref}>교체서비스 신청하기</Link>
                       </Button>
@@ -947,10 +939,11 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             ) : null}
           </div>
 
-          <div>
+          <div className={mypageDetailLayout.sideColumn}>
             <MypageDetailCard
               title="결제/보증금 요약"
-              icon={<CreditCard className="h-5 w-5 text-primary" />}
+              variant="feature"
+              icon={<CreditCard className="h-5 w-5" />}
             >
               <div className="space-y-4">
                 <div className="space-y-1 text-ui-body-sm">
@@ -977,11 +970,11 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
                 <p className="text-ui-body-sm text-muted-foreground">{depositRefundLabel}</p>
 
-                <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
-                  <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <div className="flex items-start gap-3 rounded-xl bg-brand-highlight-muted/45 p-4 ring-1 ring-brand-highlight-ink/20">
+                  <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight-ink" />
                   <div className="flex-1">
                     <p className="text-ui-label font-medium text-muted-foreground">총 결제금액</p>
-                    <p className="mt-1 break-words text-ui-section-title font-semibold text-primary tabular-nums">
+                    <p className="mt-1 break-words text-ui-section-title font-semibold text-brand-highlight-ink tabular-nums">
                       {formatCurrency(total)}
                     </p>
                   </div>
