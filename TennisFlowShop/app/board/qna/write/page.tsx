@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -24,16 +23,19 @@ import {
 import { supabase } from "@/lib/supabase";
 import { showErrorToast } from "@/lib/toast";
 import {
-  ArrowLeft,
+  AlertCircle,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
+  ImagePlus,
   Search,
   Upload,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, PublicSurface, SectionHeader } from "@/components/public";
+import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
@@ -497,492 +499,452 @@ export default function QnaWritePage() {
     }
   }
 
+  const categoryErrorId = "qna-write-category-error";
+  const productErrorId = "qna-write-product-error";
+  const titleErrorId = "qna-write-title-error";
+  const contentErrorId = "qna-write-content-error";
+  const imagesErrorId = "qna-write-images-error";
+  const formErrorId = "qna-write-form-error";
+
+  const productButtonClass = (selected: boolean) =>
+    cn(
+      "w-full rounded-xl border px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      selected
+        ? "border-brand-highlight-ink/40 bg-brand-highlight-muted text-foreground"
+        : "border-border bg-card hover:bg-muted/60",
+    );
+
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" asChild className="p-2">
+    <main className="min-h-screen bg-background text-foreground">
+      <PublicPageHero
+        variant="feature"
+        eyebrow={<Badge variant="signal">Q&amp;A WRITE</Badge>}
+        title="문의하기"
+        description="상품, 주문, 서비스 이용 중 궁금한 점을 남겨주시면 확인 후 답변드릴게요."
+        actions={
+          <>
+            <Button asChild variant="highlight" size="sm" className="w-full bp-sm:w-auto">
               <Link href="/board/qna" onClick={guardLinkLeave}>
-                <ArrowLeft className="h-5 w-5" />
+                Q&amp;A 목록
               </Link>
             </Button>
-            <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                <MessageSquare className="h-6 w-6" />
+            <Button asChild variant="outline" size="sm" className="w-full bp-sm:w-auto">
+              <Link href="/support" onClick={guardLinkLeave}>
+                고객센터 홈
+              </Link>
+            </Button>
+          </>
+        }
+      />
+
+      <SiteContainer className="pb-12 bp-sm:pb-16">
+        <div className="mx-auto max-w-4xl space-y-5 bp-sm:space-y-6">
+          <PublicSurface variant="muted" padding="md" className="grid gap-4 bp-md:grid-cols-3">
+            {[
+              ["01", "답변 절차", "접수된 문의는 담당자가 확인한 뒤 Q&A 상세에서 답변 상태를 안내합니다."],
+              ["02", "필수 입력", "문의 유형, 제목, 내용은 필수이며 상품문의는 상품 선택이 필요합니다."],
+              ["03", "작성 주의", "비밀번호, 카드번호 등 민감 정보와 불필요한 주문 개인정보는 입력하지 마세요."],
+            ].map(([step, title, copy]) => (
+              <div key={step} className="rounded-control border border-border bg-card/70 p-4">
+                <span className="text-ui-kicker text-brand-highlight-ink">{step}</span>
+                <h2 className="mt-2 font-brand-heading text-ui-card-title font-semibold tracking-[-0.015em] text-foreground">
+                  {title}
+                </h2>
+                <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">{copy}</p>
               </div>
-              <div>
-                <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
-                  문의하기
-                </h1>
-                <p className="text-ui-card-title-lg text-muted-foreground">
-                  궁금한 점을 자세히 작성해주세요
-                </p>
-              </div>
+            ))}
+          </PublicSurface>
+
+          <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+            <div className="border-b border-border bg-brand-highlight-muted/40 p-5 bp-sm:p-6 bp-md:p-8">
+              <SectionHeader
+                variant="brand"
+                eyebrow="NEW QUESTION"
+                title="새 문의 작성"
+                description="아래 항목을 순서대로 작성해 주세요. 입력 오류가 있으면 첫 오류 위치로 이동합니다."
+              />
             </div>
-          </div>
 
-          <Card className="border border-border bg-card shadow-md">
-            <CardHeader className="bg-muted/30 border-b">
-              <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5 text-success" />
-                <span>새 문의 작성</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 md:p-8 space-y-6 md:space-y-8">
-              <div ref={categoryWrapRef} className="space-y-3">
-                <Label htmlFor="category" className="text-ui-body-lg font-semibold">
-                  카테고리 <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={category}
-                  onValueChange={(v) => {
-                    setCategory(v);
-                    clearErrors(["category", "product"]);
-                  }}
+            <div className="space-y-8 p-5 bp-sm:p-6 bp-md:p-8">
+              {formError && (
+                <div
+                  id={formErrorId}
+                  role="alert"
+                  className="flex gap-3 rounded-control border border-destructive/45 bg-destructive/10 p-4 text-ui-body-sm text-destructive"
                 >
-                  <SelectTrigger
-                    id="category"
-                    className={`h-12 bg-card dark:bg-muted ${fieldErrors.category ? "border-destructive focus:ring-ring" : ""}`}
-                  >
-                    <SelectValue placeholder="문의 카테고리를 선택해주세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="product">상품</SelectItem>
-                    <SelectItem value="order">주문/결제</SelectItem>
-                    <SelectItem value="delivery">배송</SelectItem>
-                    <SelectItem value="refund">환불/교환</SelectItem>
-                    <SelectItem value="service">서비스</SelectItem>
-                    <SelectItem value="academy">아카데미</SelectItem>
-                    <SelectItem value="member">회원</SelectItem>
-                  </SelectContent>
-                </Select>
-                {fieldErrors.category && (
-                  <p className="text-ui-body-sm text-destructive">{fieldErrors.category}</p>
-                )}
-
-                {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
-                {preProductId && (
-                  <div className="mt-2 text-ui-body-sm text-muted-foreground flex items-center gap-2">
-                    <Badge variant="secondary">프리필</Badge>
-                    <span>
-                      선택된 상품: <strong>{preProductName || preProductId}</strong>
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => confirmGoIfDirty(() => router.replace("/board/qna/write"))}
-                    >
-                      제거
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {category === "product" && !preProductId && (
-                <div ref={productWrapRef} className="space-y-4">
-                  <div className="text-ui-body-sm text-muted-foreground">
-                    <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체
-                    상품에서 선택하세요.
-                  </div>
-                  {fieldErrors.product && (
-                    <p className="text-ui-body-sm text-destructive">{fieldErrors.product}</p>
-                  )}
-
-                  {/* 탭처럼 보이는 간단한 토글 */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {/* 내 구매상품 */}
-                    <div className="rounded-lg border border-border p-4">
-                      <div className="font-semibold mb-3">내 구매상품</div>
-                      {!me && (
-                        <div className="mb-2 text-ui-label text-muted-foreground">
-                          로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.
-                        </div>
-                      )}
-                      {me && ordersError && (
-                        <div className="mb-2 text-ui-body-sm text-destructive">
-                          구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.
-                        </div>
-                      )}
-                      <div className="space-y-2 max-h-60 overflow-auto">
-                        {me && myProducts.length === 0 && (
-                          <div className="text-ui-body-sm text-muted-foreground">
-                            구매 이력이 없습니다.
-                          </div>
-                        )}
-                        {myProducts.map((p) => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => {
-                              setProduct(p);
-                              clearErrors("product");
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? "ring-2 ring-ring" : ""}`}
-                          >
-                            <div className="font-medium">{p.name}</div>
-                            <div className="text-ui-label text-muted-foreground">{p.id}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 전체 상품 검색 */}
-                    <div className="rounded-lg border border-border p-4">
-                      <div className="font-semibold mb-3">전체 상품 검색</div>
-                      <div className="relative mb-3">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          value={q}
-                          onChange={(e) => setQ(e.target.value)}
-                          placeholder="상품명으로 검색"
-                          className="pl-9 bg-card dark:bg-muted"
-                        />
-                      </div>
-                      <div className="space-y-2 max-h-60 overflow-auto">
-                        {!q.trim() && (
-                          <div className="text-ui-body-sm text-muted-foreground">
-                            검색어를 입력하세요.
-                          </div>
-                        )}
-                        {q.trim() && searchProducts.length === 0 && (
-                          <div className="text-ui-body-sm text-muted-foreground">
-                            검색 결과가 없습니다.
-                          </div>
-                        )}
-                        {searchProducts.map((p) => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => {
-                              setProduct(p);
-                              clearErrors("product");
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? "ring-2 ring-ring" : ""}`}
-                          >
-                            <div className="font-medium">{p.name}</div>
-                            <div className="text-ui-label text-muted-foreground">{p.id}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 현재 선택된 상품 미리보기/해제 */}
-                  {product && (
-                    <div className="flex items-center gap-2 text-ui-body-sm">
-                      <Badge variant="secondary">선택됨</Badge>
-                      <span>
-                        <strong>{product.name}</strong> ({product.id})
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setProduct(null)}
-                      >
-                        선택 해제
-                      </Button>
-                    </div>
-                  )}
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{formError}</span>
                 </div>
               )}
 
-              <div className="space-y-3">
-                <Label htmlFor="title" className="text-ui-body-lg font-semibold">
-                  제목 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="title"
-                  ref={titleRef}
-                  value={title}
-                  onChange={(e) => {
-                    setTitle(e.target.value);
-                    clearErrors("title");
-                  }}
-                  placeholder="문의 제목을 작성해주세요(4자이상)"
-                  className="h-12 bg-card dark:bg-muted text-ui-body-lg"
+              <section ref={categoryWrapRef} className="space-y-5 scroll-mt-24">
+                <SectionHeader
+                  variant="brand"
+                  eyebrow="TYPE & PRODUCT"
+                  title="문의 유형 및 상품 선택"
+                  description="문의 유형을 먼저 선택해 주세요. 상품문의는 관련 상품을 함께 지정해야 합니다."
                 />
-                {fieldErrors.title && (
-                  <p className="text-ui-body-sm text-destructive">{fieldErrors.title}</p>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="content" className="text-ui-body-lg font-semibold">
-                  문의 내용 <span className="text-destructive">*</span>
-                </Label>
-                <Textarea
-                  id="content"
-                  ref={contentRef}
-                  value={content}
-                  onChange={(e) => {
-                    setContent(e.target.value);
-                    clearErrors("content");
-                  }}
-                  placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
-                  className="min-h-[200px] bg-card dark:bg-muted text-ui-body-lg resize-none"
-                />
-                {fieldErrors.content && (
-                  <p className="text-ui-body-sm text-destructive">{fieldErrors.content}</p>
-                )}
-                <p className="text-ui-body-sm text-muted-foreground">
-                  상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.
-                </p>
-              </div>
-
-              <div ref={imagesWrapRef} className="space-y-3">
-                <Label htmlFor="image" className="text-ui-body-lg font-semibold">
-                  이미지 첨부 (선택사항)
-                </Label>
-                <div className="space-y-4">
-                  <div
-                    className={`border-2 border-dashed ${fieldErrors.images ? "border-destructive" : "border-border"} rounded-lg p-4 md:p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      if (e.target !== e.currentTarget) return; // 버튼 클릭 버블링 차단
-                      fileInputRef.current?.click();
-                    }}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" || e.key === " " ? fileInputRef.current?.click() : null
-                    }
-                  >
-                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-ui-body-sm text-muted-foreground mb-2">
-                      클릭하여 이미지를 선택하거나 드래그하여 업로드하세요
-                    </p>
-                    <Input
-                      ref={fileInputRef}
-                      id="image"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="sr-only"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation(); // 부모 onClick으로 버블링 방지
-                        fileInputRef.current?.click(); // 파일창 열기
+                <div className="rounded-control border border-border bg-muted/30 p-4 bp-sm:p-5">
+                  <div className="space-y-3">
+                    <Label htmlFor="category" className="text-ui-body font-semibold">
+                      카테고리 <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={category}
+                      onValueChange={(v) => {
+                        setCategory(v);
+                        clearErrors(["category", "product"]);
                       }}
-                      className="mt-2"
                     >
-                      <Upload className="h-4 w-4 mr-2" />
-                      파일 선택
-                    </Button>
-                  </div>
-                  {fieldErrors.images && (
-                    <p className="text-ui-body-sm text-destructive">{fieldErrors.images}</p>
-                  )}
-
-                  {/* 미리보기 썸네일 */}
-                  {selectedFiles.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-ui-body-sm font-medium text-foreground">
-                        첨부된 파일 ({selectedFiles.length}/3)
+                      <SelectTrigger
+                        id="category"
+                        aria-invalid={!!fieldErrors.category}
+                        aria-describedby={fieldErrors.category ? categoryErrorId : undefined}
+                        className={cn(
+                          "h-12 bg-card text-ui-body focus:ring-ring",
+                          fieldErrors.category && "border-destructive",
+                        )}
+                      >
+                        <SelectValue placeholder="문의 카테고리를 선택해주세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="product">상품</SelectItem>
+                        <SelectItem value="order">주문/결제</SelectItem>
+                        <SelectItem value="delivery">배송</SelectItem>
+                        <SelectItem value="refund">환불/교환</SelectItem>
+                        <SelectItem value="service">서비스</SelectItem>
+                        <SelectItem value="academy">아카데미</SelectItem>
+                        <SelectItem value="member">회원</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {fieldErrors.category && (
+                      <p id={categoryErrorId} className="text-ui-body-sm text-destructive">
+                        {fieldErrors.category}
                       </p>
+                    )}
+                    {preProductId && (
+                      <div className="flex flex-col gap-2 rounded-control border border-brand-highlight-ink/30 bg-brand-highlight-muted p-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center">
+                        <Badge variant="signal">프리필</Badge>
+                        <span className="min-w-0 flex-1 break-keep">
+                          선택된 상품: <strong>{preProductName || preProductId}</strong>
+                        </span>
+                        <Button
+                          type="button"
+                          variant="highlight_soft"
+                          size="sm"
+                          onClick={() => confirmGoIfDirty(() => router.replace("/board/qna/write"))}
+                        >
+                          제거
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {selectedFiles.map((file, index) => {
-                          const isImage = file.type?.startsWith("image/");
-                          const previewUrl = isImage ? previews[index] : null;
-                          return (
-                            <div
-                              key={index}
-                              className="group relative rounded-lg overflow-hidden bg-card dark:bg-muted shadow-sm ring-1 ring-border/60 hover:ring-2 hover:ring-ring transition"
+                {category === "product" && !preProductId && (
+                  <div ref={productWrapRef} className="space-y-4 scroll-mt-24">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-ui-body-sm text-muted-foreground">
+                        본인이 구매했던 상품 또는 전체 상품에서 선택하세요.
+                      </p>
+                      {product && <Badge variant="signal">선택됨</Badge>}
+                    </div>
+                    {fieldErrors.product && (
+                      <p id={productErrorId} className="text-ui-body-sm text-destructive">
+                        {fieldErrors.product}
+                      </p>
+                    )}
+
+                    <div
+                      className="grid gap-4 bp-md:grid-cols-2"
+                      aria-invalid={!!fieldErrors.product}
+                      aria-describedby={fieldErrors.product ? productErrorId : undefined}
+                    >
+                      <div className="rounded-control border border-border bg-muted/30 p-4">
+                        <div className="mb-3 font-brand-heading text-ui-card-title font-semibold tracking-[-0.015em]">
+                          내 구매상품
+                        </div>
+                        {!me && (
+                          <div className="mb-2 text-ui-label text-muted-foreground">
+                            로그인하면 내 구매상품 목록을 불러와 빠르게 선택할 수 있어요.
+                          </div>
+                        )}
+                        {me && ordersError && (
+                          <div className="mb-2 text-ui-body-sm text-destructive">
+                            구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.
+                          </div>
+                        )}
+                        <div className="max-h-64 space-y-2 overflow-auto pr-1">
+                          {me && myProducts.length === 0 && (
+                            <div className="text-ui-body-sm text-muted-foreground">구매 이력이 없습니다.</div>
+                          )}
+                          {myProducts.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              aria-pressed={product?.id === p.id}
+                              onClick={() => {
+                                setProduct(p);
+                                clearErrors("product");
+                              }}
+                              className={productButtonClass(product?.id === p.id)}
                             >
-                              {/* 콘텐츠 */}
-                              {isImage ? (
-                                previewUrl ? (
-                                  <img
-                                    src={previewUrl || "/placeholder.svg"}
-                                    alt={file.name}
-                                    className="w-full h-28 object-cover transition-transform duration-150 group-hover:scale-[1.02]"
-                                    onClick={() => openViewerFromIndex(index)}
-                                    role="button"
-                                  />
-                                ) : (
-                                  <div className="h-28 rounded bg-muted dark:bg-card animate-pulse" />
-                                )
-                              ) : (
-                                <div className="h-28 flex items-center justify-center text-ui-label text-muted-foreground px-2 text-center">
-                                  {file.name}
-                                </div>
-                              )}
+                              <div className="font-medium">{p.name}</div>
+                              <div className="text-ui-label text-muted-foreground">{p.id}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                              {/* 파일 크기 */}
-                              <div className="absolute left-2 bottom-2 text-ui-caption px-1.5 py-0.5 rounded bg-card dark:bg-card">
-                                {(file.size / 1024 / 1024).toFixed(2)} MB
-                              </div>
-
-                              {/* 삭제 버튼 */}
-                              <button
-                                type="button"
-                                className="absolute top-1.5 right-1.5 rounded-full bg-card dark:bg-card shadow p-1 opacity-90 hover:opacity-100"
-                                onClick={() => removeFile(index)}
-                                aria-label="첨부 제거"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-
-                              {/* 확대 안내 오버레이 (이미지일 때만) */}
-                              {isImage && previewUrl && (
-                                <div className="pointer-events-none absolute bottom-1.5 right-1.5">
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 ">
-                                    {/* lucide-react 사용 시 */}
-                                    <svg
-                                      viewBox="0 0 24 24"
-                                      className="h-3.5 w-3.5 text-foreground"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <path d="M21 21l-4.35-4.35" />
-                                      <circle cx="11" cy="11" r="8" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                      <div className="rounded-control border border-border bg-muted/30 p-4">
+                        <div className="mb-3 font-brand-heading text-ui-card-title font-semibold tracking-[-0.015em]">
+                          전체 상품 검색
+                        </div>
+                        <div className="relative mb-3">
+                          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder="상품명으로 검색"
+                            className="h-11 bg-card pl-9 text-ui-body focus-visible:ring-ring"
+                          />
+                        </div>
+                        <div className="max-h-64 space-y-2 overflow-auto pr-1">
+                          {!q.trim() && (
+                            <div className="text-ui-body-sm text-muted-foreground">검색어를 입력하세요.</div>
+                          )}
+                          {q.trim() && searchProducts.length === 0 && (
+                            <div className="text-ui-body-sm text-muted-foreground">검색 결과가 없습니다.</div>
+                          )}
+                          {searchProducts.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              aria-pressed={product?.id === p.id}
+                              onClick={() => {
+                                setProduct(p);
+                                clearErrors("product");
+                              }}
+                              className={productButtonClass(product?.id === p.id)}
+                            >
+                              <div className="font-medium">{p.name}</div>
+                              <div className="text-ui-label text-muted-foreground">{p.id}</div>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  )}
-                  {/* 제한 안내 뱃지 */}
-                  <div className="text-ui-label text-muted-foreground">
-                    • 최대 3개 / 파일당 최대 5MB
-                    <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP)
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex items-start space-x-3 p-4 bg-muted/50 rounded-lg">
-                <Checkbox
-                  id="private"
-                  checked={isPrivate}
-                  onCheckedChange={(checked) => setIsPrivate(checked as boolean)}
-                  className="mt-1"
-                />
-                <div className="space-y-1">
-                  <label
-                    htmlFor="private"
-                    className="text-ui-body-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    비공개 문의로 작성
-                  </label>
-                  <p className="text-ui-label text-muted-foreground">
-                    비공개로 설정하면 작성자와 관리자만 내용을 볼 수 있습니다.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-
-            <CardFooter className="flex flex-col gap-2 border-t bg-muted/50 p-4 bp-sm:flex-row bp-sm:flex-wrap bp-sm:justify-between md:p-8 dark:bg-muted/20">
-              <Button
-                variant="outline"
-                asChild
-                size="lg"
-                className="w-full bg-transparent px-8 bp-sm:w-auto"
-              >
-                <Link href="/board/qna" onClick={guardLinkLeave}>
-                  취소
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                className="w-full bg-primary px-8 text-primary-foreground hover:bg-primary/90 disabled:opacity-60 bp-sm:w-auto"
-                onClick={handleSubmit}
-                disabled={submitting}
-              >
-                {submitting ? "등록 중…" : "문의 등록하기"}
-              </Button>
-            </CardFooter>
-
-            <Dialog
-              open={viewerOpen}
-              onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}
-            >
-              <DialogContent className="sm:max-w-4xl p-0 bg-background/90 text-foreground border border-border">
-                {/* 접근성용 제목(시각적으로 숨김) */}
-                <DialogHeader className="sr-only">
-                  <DialogTitle>이미지 확대 보기</DialogTitle>
-                </DialogHeader>
-
-                <div className="relative w-full aspect-video">
-                  {viewerImages[viewerIndex] && (
-                    <Image
-                      src={viewerImages[viewerIndex] || "/placeholder.svg"}
-                      alt={`첨부 이미지 ${viewerIndex + 1}`}
-                      fill
-                      className="object-contain"
-                      priority
-                    />
-                  )}
-
-                  {/* 좌우 이동 */}
-                  {viewerImages.length > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={prevViewer}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-card/20 dark:bg-card/30 hover:bg-card/30 dark:hover:bg-card/40"
-                        aria-label="이전"
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={nextViewer}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-card/20 dark:bg-card/30 hover:bg-card/30 dark:hover:bg-card/40"
-                        aria-label="다음"
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* 닫기 */}
-                  <button
-                    type="button"
-                    onClick={closeViewer}
-                    className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-card/20 dark:bg-card/30 hover:bg-card/30 dark:hover:bg-card/40"
-                    aria-label="닫기"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                {/* 썸네일 네비게이션 */}
-                {viewerImages.length > 1 && (
-                  <div className="p-3 flex flex-wrap gap-2 justify-center bg-overlay/70">
-                    {viewerImages.map((thumb, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setViewerIndex(i)}
-                        className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? "ring-2 ring-ring" : ""}`}
-                        aria-label={`썸네일 ${i + 1}`}
-                      >
-                        <Image
-                          src={thumb || "/placeholder.svg"}
-                          alt={`썸네일 ${i + 1}`}
-                          fill
-                          className="object-cover"
-                        />
-                      </button>
-                    ))}
+                    {product && (
+                      <div className="flex flex-col gap-2 rounded-control border border-brand-highlight-ink/30 bg-brand-highlight-muted p-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center">
+                        <span className="min-w-0 flex-1 break-keep">
+                          <strong>{product.name}</strong> ({product.id})
+                        </span>
+                        <Button type="button" variant="highlight_soft" size="sm" onClick={() => setProduct(null)}>
+                          선택 해제
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
-              </DialogContent>
-            </Dialog>
-          </Card>
+              </section>
+
+              <section className="space-y-5 border-t border-border pt-8">
+                <SectionHeader variant="brand" eyebrow="QUESTION" title="제목 및 문의 내용" />
+                <div className="space-y-3">
+                  <Label htmlFor="title" className="text-ui-body font-semibold">
+                    제목 <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="title"
+                    ref={titleRef}
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      clearErrors("title");
+                    }}
+                    placeholder="문의 제목을 작성해주세요(4자 이상)"
+                    aria-invalid={!!fieldErrors.title}
+                    aria-describedby={fieldErrors.title ? titleErrorId : undefined}
+                    className={cn("h-12 bg-card text-ui-body focus-visible:ring-ring", fieldErrors.title && "border-destructive")}
+                  />
+                  {fieldErrors.title && (
+                    <p id={titleErrorId} className="text-ui-body-sm text-destructive">{fieldErrors.title}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="content" className="text-ui-body font-semibold">
+                    문의 내용 <span className="text-destructive">*</span>
+                  </Label>
+                  <Textarea
+                    id="content"
+                    ref={contentRef}
+                    value={content}
+                    onChange={(e) => {
+                      setContent(e.target.value);
+                      clearErrors("content");
+                    }}
+                    placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
+                    aria-invalid={!!fieldErrors.content}
+                    aria-describedby={fieldErrors.content ? contentErrorId : undefined}
+                    className={cn("min-h-[220px] resize-none bg-card text-ui-body leading-relaxed focus-visible:ring-ring", fieldErrors.content && "border-destructive")}
+                  />
+                  {fieldErrors.content && (
+                    <p id={contentErrorId} className="text-ui-body-sm text-destructive">{fieldErrors.content}</p>
+                  )}
+                  <p className="text-ui-body-sm text-muted-foreground">
+                    상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.
+                  </p>
+                </div>
+              </section>
+
+              <section ref={imagesWrapRef} className="space-y-5 scroll-mt-24 border-t border-border pt-8">
+                <SectionHeader
+                  variant="brand"
+                  eyebrow="ATTACHMENT"
+                  title="이미지 첨부"
+                  description="선택 사항이며 최대 3개, 파일당 최대 5MB까지 등록할 수 있습니다."
+                />
+                <div
+                  className={cn(
+                    "rounded-control border border-dashed bg-muted/30 p-5 text-center transition-colors",
+                    fieldErrors.images ? "border-destructive" : "border-border hover:border-brand-highlight-ink/40",
+                  )}
+                >
+                  <ImagePlus className="mx-auto mb-3 h-8 w-8 text-brand-highlight-ink" />
+                  <p className="text-ui-body-sm text-muted-foreground">
+                    파일 선택 버튼을 눌러 문의에 필요한 이미지를 첨부하세요.
+                  </p>
+                  <Input
+                    ref={fileInputRef}
+                    id="image"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    aria-invalid={!!fieldErrors.images}
+                    aria-describedby={fieldErrors.images ? imagesErrorId : undefined}
+                    className="sr-only"
+                  />
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="mt-4">
+                    <Upload className="h-4 w-4" />
+                    파일 선택
+                  </Button>
+                </div>
+                {fieldErrors.images && (
+                  <p id={imagesErrorId} className="text-ui-body-sm text-destructive">{fieldErrors.images}</p>
+                )}
+
+                {selectedFiles.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-ui-body-sm font-medium text-foreground">첨부된 파일 ({selectedFiles.length}/3)</p>
+                    <div className="grid grid-cols-2 gap-3 bp-sm:grid-cols-3 bp-md:grid-cols-4">
+                      {selectedFiles.map((file, index) => {
+                        const isImage = file.type?.startsWith("image/");
+                        const previewUrl = isImage ? previews[index] : null;
+                        return (
+                          <div key={index} className="group relative overflow-hidden rounded-control border border-border bg-card shadow-sm">
+                            {isImage && previewUrl ? (
+                              <button
+                                type="button"
+                                onClick={() => openViewerFromIndex(index)}
+                                className="block w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                aria-label={`${file.name} 이미지 확대 보기`}
+                              >
+                                <img src={previewUrl || "/placeholder.svg"} alt={file.name} className="h-28 w-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" />
+                              </button>
+                            ) : isImage ? (
+                              <div className="h-28 rounded bg-muted animate-pulse" />
+                            ) : (
+                              <div className="flex h-28 items-center justify-center px-2 text-center text-ui-label text-muted-foreground">{file.name}</div>
+                            )}
+                            <div className="absolute bottom-2 left-2 rounded bg-card/90 px-1.5 py-0.5 text-ui-caption">
+                              {(file.size / 1024 / 1024).toFixed(2)} MB
+                            </div>
+                            <button
+                              type="button"
+                              className="absolute right-1.5 top-1.5 rounded-full bg-card p-1 shadow-sm opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              onClick={() => removeFile(index)}
+                              aria-label={`${file.name} 첨부 이미지 삭제`}
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="rounded-control border border-border bg-muted/30 p-3 text-ui-label text-muted-foreground">
+                  • 최대 3개 / 파일당 최대 5MB<br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP)
+                </div>
+              </section>
+
+              <section className="space-y-4 border-t border-border pt-8">
+                <SectionHeader variant="brand" eyebrow="VISIBILITY" title="공개 범위" />
+                <div className="flex items-start gap-3 rounded-control border border-border bg-muted/30 p-4">
+                  <Checkbox
+                    id="private"
+                    checked={isPrivate}
+                    onCheckedChange={(checked) => setIsPrivate(checked as boolean)}
+                    className="mt-1"
+                  />
+                  <div className="space-y-1">
+                    <label htmlFor="private" className="cursor-pointer text-ui-body-sm font-medium leading-none">
+                      비공개 문의로 작성
+                    </label>
+                    <p className="text-ui-label text-muted-foreground">
+                      비공개로 설정하면 작성자와 관리자만 내용을 볼 수 있습니다.
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-border bg-muted/30 p-5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6 bp-md:p-8">
+              <Button variant="outline" asChild size="lg" className="w-full bg-card bp-sm:w-auto">
+                <Link href="/board/qna" onClick={guardLinkLeave}>취소</Link>
+              </Button>
+              <Button size="lg" variant="highlight" className="w-full bp-sm:w-auto" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? "등록 중…" : "문의 등록하기"}
+              </Button>
+            </div>
+          </PublicSurface>
         </div>
-      </div>
-    </div>
+      </SiteContainer>
+
+      <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
+        <DialogContent className="border border-border bg-background/95 p-0 text-foreground sm:max-w-4xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>이미지 확대 보기</DialogTitle>
+          </DialogHeader>
+          <div className="relative aspect-video w-full bg-muted/30">
+            {viewerImages[viewerIndex] && (
+              <Image src={viewerImages[viewerIndex] || "/placeholder.svg"} alt={`첨부 이미지 ${viewerIndex + 1}`} fill className="object-contain" priority />
+            )}
+            {viewerImages.length > 1 && (
+              <>
+                <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/90 shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="이전 이미지 보기">
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/90 shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="다음 이미지 보기">
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </>
+            )}
+          </div>
+          {viewerImages.length > 1 && (
+            <div className="flex flex-wrap justify-center gap-2 border-t border-border bg-muted/30 p-3">
+              {viewerImages.map((thumb, i) => (
+                <button key={i} type="button" onClick={() => setViewerIndex(i)} className={cn("relative h-16 w-16 overflow-hidden rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", i === viewerIndex ? "border-brand-highlight-ink bg-brand-highlight-muted" : "border-border bg-card")} aria-label={`첨부 이미지 ${i + 1} 보기`} aria-pressed={i === viewerIndex}>
+                  <Image src={thumb || "/placeholder.svg"} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }
