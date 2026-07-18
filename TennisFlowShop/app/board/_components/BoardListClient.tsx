@@ -23,6 +23,8 @@ import useSWR from "swr";
 import type { BoardTypeConfig } from "@/app/board/_components/board-config";
 import { getCategoryBadgeText } from "@/app/board/_components/board-config";
 import ErrorBox from "@/app/board/_components/ErrorBox";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
 import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -784,8 +786,15 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setPageJump("");
   };
 
+  const boardEyebrow =
+    config.boardType === "market"
+      ? "Dokkaebi Market"
+      : config.boardType === "gear"
+        ? "Dokkaebi Gear Review"
+        : "Dokkaebi Community";
+
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background text-foreground">
       {composeOpen && composeTo ? (
         <MessageComposeDialog
           open={composeOpen}
@@ -797,53 +806,47 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           toName={composeTo.name}
         />
       ) : null}
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* 헤더 영역 */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            {/* 브레드크럼: 게시판 > 자유 게시판 */}
-            <div className="mb-1 text-ui-body-sm text-foreground">
-              <span className="font-medium text-success">게시판</span>
-              <span className="mx-1">›</span>
-              <span>{config.boardTitle}</span>
-            </div>
-            <h1 className="font-semibold text-ui-page-title tracking-normal text-foreground md:text-ui-page-title-lg">
-              {config.boardTitle}
-            </h1>
-            <p className="mt-1 text-ui-body-sm text-foreground md:text-ui-body-lg">
-              {config.boardDescription}
-            </p>
+      <PublicPageHero
+        variant="feature"
+        eyebrow={
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="brand">{boardEyebrow}</Badge>
+            <span>게시판 › {config.boardTitle}</span>
           </div>
+        }
+        title={config.boardTitle}
+        description={config.boardDescription}
+        actions={
+          <Button
+            type="button"
+            size="lg"
+            variant="highlight"
+            className="w-full gap-1 sm:w-auto"
+            disabled={loading}
+            onClick={() => {
+              if (!user) {
+                const redirectTo =
+                  typeof window !== "undefined"
+                    ? window.location.pathname + window.location.search
+                    : config.routePrefix;
+                router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+                return;
+              }
 
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              className="gap-1"
-              disabled={loading}
-              onClick={() => {
-                if (!user) {
-                  // 비회원: 로그인 페이지로 이동
-                  const redirectTo =
-                    typeof window !== "undefined"
-                      ? window.location.pathname + window.location.search
-                      : config.routePrefix;
-                  router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
-                  return;
-                }
+              router.push(`${config.routePrefix}/write`);
+            }}
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            <span>글쓰기</span>
+          </Button>
+        }
+      />
 
-                router.push(`${config.routePrefix}/write`);
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              <span>글쓰기</span>
-            </Button>
-          </div>
-        </div>
+      <SiteContainer className="space-y-8 pb-12">
 
         {config.boardType === "market" ? (
-          <Card className="border border-border bg-card shadow-sm">
-            <CardContent className="px-4 py-3 sm:px-5">
+          <Card variant="feature" className="border-warning/35 bg-warning/10">
+            <CardContent className="px-4 py-4 sm:px-5">
               <div className="flex flex-col gap-2 text-ui-body-sm text-muted-foreground sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="font-semibold text-foreground">중고거래 이용 안내</p>
@@ -852,7 +855,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     가격, 배송 방식, 환불 가능 여부를 거래 전에 확인해 주세요.
                   </p>
                 </div>
-                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-ui-label sm:max-w-xs">
+                <div className="rounded-control border border-warning/35 bg-card px-3 py-2 text-ui-label sm:max-w-xs">
                   <span className="font-semibold text-foreground">거래 금지 품목: </span>
                   도난품, 위조품/가품, 불법 복제품, 개인정보 포함 물품, 법령상 제한 물품, 위험물·무기류·의약품·주류·담배
                 </div>
@@ -862,11 +865,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
         ) : null}
 
         {/* 리스트 카드 */}
-        <Card className="overflow-hidden border border-border bg-card shadow-sm">
-          <CardHeader className="flex flex-col gap-3 border-b border-border bg-muted/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <Card variant="feature" className="overflow-hidden">
+          <CardHeader className="flex flex-col gap-3 border-b border-border bg-brand-highlight-muted/45 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex items-center gap-3">
               <div>
-                <CardTitle className="text-ui-body-sm font-semibold md:text-ui-body-lg">
+                <CardTitle className="font-brand-heading text-ui-section-title font-semibold md:text-ui-section-title-lg">
                   {config.boardTitle}
                 </CardTitle>
                 <p className="mt-0.5 text-ui-label text-foreground/75">{config.cardDescription}</p>
@@ -2161,7 +2164,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             )}
           </CardContent>
         </Card>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

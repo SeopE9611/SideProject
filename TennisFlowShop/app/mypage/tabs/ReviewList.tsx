@@ -118,7 +118,11 @@ const fetcher = (url: string) => authenticatedSWRFetcher<ApiMineResponse>(url);
 
 // 별점 렌더링
 const Stars = ({ rating }: { rating: number }) => (
-  <div className="flex items-center gap-1" aria-label={`별점 ${Number(rating).toFixed(1)}점 / 5점`}>
+  <div
+    className="flex items-center gap-1"
+    role="img"
+    aria-label={`별점 ${Number(rating).toFixed(1)}점 / 5점`}
+  >
     {Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
@@ -478,9 +482,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
   const isInitialLoading = !data && isValidating;
 
+  if (isInitialLoading) {
+    return <ReviewListSkeleton count={3} />;
+  }
+
   return (
     <div className="space-y-4 md:space-y-5">
-      {isInitialLoading ? <ReviewListSkeleton count={3} /> : null}
       {/* 필터 */}
       <Card variant="feature" className="border-brand-highlight/20 bg-brand-highlight-muted/55 shadow-soft">
         <CardContent className="flex flex-col gap-3 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-4">
@@ -702,7 +709,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         ) : null}
       </div>
 
-      {itemsToRender.length && hasMore && isValidating ? (
+      {itemsToRender.length > 0 && hasMore && isValidating ? (
         <ReviewListSkeleton count={2} />
       ) : null}
 
