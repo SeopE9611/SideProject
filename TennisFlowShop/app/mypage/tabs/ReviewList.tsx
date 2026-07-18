@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 import AsyncState from "@/components/system/AsyncState";
-import { StackedCardListSkeleton } from "@/components/system/loading";
+import ReviewListSkeleton from "@/app/mypage/tabs/_components/ReviewListSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -118,12 +118,13 @@ const fetcher = (url: string) => authenticatedSWRFetcher<ApiMineResponse>(url);
 
 // 별점 렌더링
 const Stars = ({ rating }: { rating: number }) => (
-  <div className="flex items-center gap-1">
+  <div className="flex items-center gap-1" aria-label={`별점 ${Number(rating).toFixed(1)}점 / 5점`}>
     {Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
         className={`h-4 w-4 ${i < rating ? "text-warning" : "text-muted-foreground/60 dark:text-muted-foreground"}`}
         fill="currentColor"
+        aria-hidden="true"
       />
     ))}
   </div>
@@ -141,7 +142,7 @@ const StarsInput = ({ value, onChange }: { value: number; onChange: (v: number) 
           onClick={() => onChange(n)}
           className={`text-ui-section-title leading-none transition-transform hover:scale-[1.06] ${value >= n ? "text-warning" : "text-muted-foreground/60 dark:text-muted-foreground"}`}
         >
-          ★
+          <span aria-hidden="true">★</span>
         </button>
       ))}
     </div>
@@ -479,88 +480,78 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
   return (
     <div className="space-y-4 md:space-y-5">
-      {isInitialLoading ? (
-        <StackedCardListSkeleton
-          count={3}
-          cardContentClassName="space-y-4 p-4 md:p-6"
-          showLeadingVisual
-          titleLineWidthClassName="w-48"
-          subtitleLineWidthClassName="w-24"
-          showHeaderBadge={false}
-          headerActionCount={2}
-          headerActionWidths={["w-16", "w-16"]}
-          showInsetBlock
-          showMetaDivider
-          metaLayout="twoColumn"
-          metaLineWidths={["w-24", "w-20"]}
-          actionCount={0}
-        />
-      ) : null}
+      {isInitialLoading ? <ReviewListSkeleton count={3} /> : null}
       {/* 필터 */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-        <Select
-          value={statusFilter}
-          onValueChange={(v) => {
-            setStatusFilter(v as "all" | "visible" | "hidden");
-            setSize(1);
-          }}
-        >
-          <SelectTrigger className="h-9 w-full sm:w-36">
-            <SelectValue placeholder="상태" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체 상태</SelectItem>
-            <SelectItem value="visible">공개</SelectItem>
-            <SelectItem value="hidden">비공개</SelectItem>
-          </SelectContent>
-        </Select>
+      <Card variant="feature" className="border-brand-highlight/20 bg-brand-highlight-muted/55 shadow-soft">
+        <CardContent className="flex flex-col gap-3 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-4">
+          <div>
+            <p className="font-brand-heading text-ui-section-title text-foreground">후기 필터</p>
+            <p className="mt-0.5 text-ui-label text-muted-foreground">공개 상태와 후기 유형을 선택해 관리 대상을 좁혀보세요.</p>
+          </div>
+          <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center">
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v as "all" | "visible" | "hidden");
+                setSize(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-full sm:w-36">
+                <SelectValue placeholder="상태" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 상태</SelectItem>
+                <SelectItem value="visible">공개</SelectItem>
+                <SelectItem value="hidden">비공개</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <Select
-          value={categoryFilter}
-          onValueChange={(v) => {
-            setCategoryFilter(v as "all" | ReviewManagementCategory);
-            setSize(1);
-          }}
-        >
-          <SelectTrigger className="h-9 w-full sm:w-36">
-            <SelectValue placeholder="유형" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체 유형</SelectItem>
-            <SelectItem value="product">상품 관련</SelectItem>
-            <SelectItem value="stringing">교체서비스</SelectItem>
-            <SelectItem value="rental">대여 관련</SelectItem>
-          </SelectContent>
-        </Select>
+            <Select
+              value={categoryFilter}
+              onValueChange={(v) => {
+                setCategoryFilter(v as "all" | ReviewManagementCategory);
+                setSize(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-full sm:w-36">
+                <SelectValue placeholder="유형" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 유형</SelectItem>
+                <SelectItem value="product">상품 관련</SelectItem>
+                <SelectItem value="stringing">교체서비스</SelectItem>
+                <SelectItem value="rental">대여 관련</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setStatusFilter("all");
-            setCategoryFilter("all");
-            setSize(1);
-          }}
-        >
-          필터 초기화
-        </Button>
-      </div>
+            <Button
+              variant="secondary"
+              wrap="responsive"
+              onClick={() => {
+                setStatusFilter("all");
+                setCategoryFilter("all");
+                setSize(1);
+              }}
+            >
+              필터 초기화
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 목록 */}
       {itemsToRender.length ? (
         itemsToRender.map((it) => (
           <Card
             key={it._id}
-            className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
+            variant="interactive"
+            className="group relative overflow-hidden rounded-panel border-border/80 bg-card shadow-soft hover:border-brand-highlight/35"
           >
-            <div className="pointer-events-none absolute inset-0 border border-border/40 bg-muted/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="h-full w-full bg-card rounded-lg" />
-            </div>
-
             <CardContent className="relative space-y-4 p-4 md:p-5">
               {/* 헤더 영역 */}
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="flex min-w-0 items-start gap-3">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-border bg-muted/20">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-control border border-brand-highlight/20 bg-brand-highlight-muted">
                     {it.cover ? (
                       <Image
                         src={it.cover}
@@ -571,12 +562,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center">
-                        <Award className="h-6 w-6 text-warning" />
+                        <Award className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />
                       </div>
                     )}
                   </div>
                   <div>
-                    <h3 className="mb-1 line-clamp-2 break-keep font-semibold text-foreground">
+                    <h3 className="mb-1 line-clamp-2 break-keep font-brand-heading text-ui-card-title text-foreground">
                       {it.title}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
@@ -584,19 +575,19 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                       <span className="text-ui-body-sm font-medium text-warning">
                         {Number(it.rating).toFixed(1)}
                       </span>
-                      {it.status === "hidden" && (
-                        <Badge variant="secondary" className="ml-2">
-                          비공개
-                        </Badge>
-                      )}
+                      <Badge variant={it.status === "visible" ? "success" : "neutral"}>
+                        {it.status === "visible" ? "공개" : "비공개"}
+                      </Badge>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="grid grid-cols-1 gap-2 xs:grid-cols-3 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="highlight_soft"
+                    wrap="responsive"
+                    aria-label={`${it.title} 후기를 ${it.status === "visible" ? "비공개로 전환" : "공개로 전환"}`}
                     onClick={async () => {
                       setBusyId(it._id);
                       await toggleVisibility(it).finally(() => setBusyId(null));
@@ -605,35 +596,37 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                   >
                     {it.status === "visible" ? (
                       <>
-                        <EyeOff className="h-3.5 w-3.5 mr-1" /> 비공개
+                        <EyeOff className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> 비공개
                       </>
                     ) : (
                       <>
-                        <Eye className="h-3.5 w-3.5 mr-1" /> 공개
+                        <Eye className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> 공개
                       </>
                     )}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => openEdit(it)}>
-                    <Edit3 className="h-3.5 w-3.5 mr-1" />
+                  <Button size="sm" variant="secondary" wrap="responsive" onClick={() => openEdit(it)}>
+                    <Edit3 className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                     수정
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
+                    wrap="responsive"
+                    aria-label={`${it.title} 후기 삭제`}
                     onClick={async () => {
                       setBusyId(it._id);
                       await removeReview(it).finally(() => setBusyId(null));
                     }}
                     disabled={busyId === it._id}
                   >
-                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    <Trash2 className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                     삭제
                   </Button>
                 </div>
               </div>
 
               {/* 본문 */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3 md:p-4">
+              <div className="rounded-control border border-border/70 bg-muted/20 p-3 md:p-4">
                 <p className="text-foreground leading-relaxed whitespace-pre-wrap break-words">
                   {it.content}
                 </p>
@@ -662,7 +655,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               {/* 푸터 */}
               <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 text-ui-body-sm text-foreground/80">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4" aria-hidden="true" />
                   <span>{(it.createdAt || "").slice(0, 10)}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -681,10 +674,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           </Card>
         ))
       ) : (
-        <Card className="border-border bg-card shadow-sm">
+        <Card variant="feature" className="border-brand-highlight/20 bg-card shadow-soft">
           <CardContent className="p-5 text-center md:p-6">
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/20">
-              <Star className="h-6 w-6 text-warning" />
+              <Star className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />
             </div>
             <h3 className="mb-2 text-ui-card-title-lg font-semibold text-foreground">
               {hasActiveFilter ? "조건에 맞는 후기가 없습니다" : "작성한 후기가 없습니다"}
@@ -710,21 +703,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       </div>
 
       {itemsToRender.length && hasMore && isValidating ? (
-        <StackedCardListSkeleton
-          count={2}
-          cardContentClassName="space-y-4 p-4 md:p-6"
-          showLeadingVisual
-          titleLineWidthClassName="w-48"
-          subtitleLineWidthClassName="w-24"
-          showHeaderBadge={false}
-          headerActionCount={2}
-          headerActionWidths={["w-16", "w-16"]}
-          showInsetBlock
-          showMetaDivider
-          metaLayout="twoColumn"
-          metaLineWidths={["w-24", "w-20"]}
-          actionCount={0}
-        />
+        <ReviewListSkeleton count={2} />
       ) : null}
 
       {/* 수정 다이얼로그 */}
@@ -732,9 +711,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         open={!!editing}
         onOpenChange={(open) => !open && !uploadingEditPhotos && closeEdit()}
       >
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="rounded-panel border-border/80 bg-card shadow-soft sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>후기 수정</DialogTitle>
+            <DialogTitle className="font-brand-heading text-ui-section-title">후기 수정</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -786,6 +765,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               취소
             </Button>
             <Button
+              variant="highlight"
+              wrap="responsive"
               onClick={submitEdit}
               disabled={
                 saving ||
@@ -808,7 +789,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" /> 저장 중…
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" aria-hidden="true" /> 저장 중…
                 </>
               ) : uploadingEditPhotos ? (
                 "사진 업로드 중…"
