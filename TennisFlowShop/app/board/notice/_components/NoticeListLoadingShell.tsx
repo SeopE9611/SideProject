@@ -20,7 +20,7 @@ export default function NoticeListLoadingShell({ mode = "notice" }: Props) {
   const listTitle = isEventMode ? "이벤트 목록" : "공지사항 목록";
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="standard"
         eyebrow="Customer Support"
@@ -71,6 +71,6 @@ export default function NoticeListLoadingShell({ mode = "notice" }: Props) {
           </div>
         </PublicSurface>
       </SiteContainer>
-    </div>
+    </main>
   );
 }
