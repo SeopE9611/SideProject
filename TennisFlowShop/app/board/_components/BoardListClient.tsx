@@ -1015,7 +1015,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           상세 필터
                         </span>
                         {activeMarketFilterCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-highlight px-1.5 text-ui-caption font-semibold tabular-nums text-primary-foreground">
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-highlight px-1.5 text-ui-caption font-semibold tabular-nums text-brand-highlight-foreground">
                             {activeMarketFilterCount}
                           </span>
                         )}

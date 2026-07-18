@@ -21,6 +21,7 @@ import useSWR from "swr";
 import type { BoardTypeConfig } from "@/app/board/_components/board-config";
 import { getCategoryBadgeText } from "@/app/board/_components/board-config";
 import ErrorBox from "@/app/board/_components/ErrorBox";
+import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1416,49 +1417,53 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
           toName={composeTo.name}
         />
       ) : null}
-      <div className="container mx-auto max-w-5xl px-4 py-6 md:space-y-8 md:py-8 space-y-6">
-        {/* 상단 헤더 (브레드크럼 + 버튼) */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="mb-1 text-ui-body-sm text-foreground/80">
-              <span className="font-medium text-success">게시판</span>
-              <span className="mx-1">›</span>
-              <Link
-                href={listHref}
-                className="text-muted-foreground underline-offset-2 hover:underline"
-              >
-                {config.boardTitle}
-              </Link>
-              <span className="mx-1">›</span>
-              <span>글 상세</span>
+      <SiteContainer className="space-y-6 py-6 md:space-y-8 md:py-8">
+        <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="brand">게시판</Badge>
+                <span className="text-ui-label text-muted-foreground">
+                  {config.boardTitle} › 글 상세
+                </span>
+                {item && (
+                  <Badge variant={getBoardCategoryTone(config.boardType, item.category)}>
+                    {config.categoryMap[item.category ?? ""]
+                      ? getCategoryBadgeText(config.categoryMap[item.category ?? ""])
+                      : "분류 없음"}
+                  </Badge>
+                )}
+              </div>
+              <h1 className="break-keep text-balance font-brand-heading text-ui-page-title font-semibold tracking-[-0.015em] text-foreground md:text-ui-page-title-lg">
+                {item ? item.title : `${config.boardTitle} 글 상세`}
+              </h1>
+              <p className="text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
+                {item
+                  ? `${item.nickname || "회원"} · ${fmtDateTime(item.createdAt)}`
+                  : `${config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.`}
+              </p>
             </div>
-            <h1 className="break-keep font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
-              {item ? item.title : `${config.boardTitle} 글 상세`}
-            </h1>
-            <p className="mt-1 text-ui-body-sm text-foreground/80 md:text-ui-body-lg">
-              {config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.
-            </p>
-          </div>
 
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full gap-1 bg-transparent sm:w-auto"
-              onClick={() => {
-                if (!confirmLeaveIfDirty()) return;
-                router.push(listHref);
-              }}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>이전으로</span>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
-              <Link href={listHref}>목록으로</Link>
-            </Button>
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full gap-1 bg-transparent sm:w-auto"
+                onClick={() => {
+                  if (!confirmLeaveIfDirty()) return;
+                  router.push(listHref);
+                }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>이전으로</span>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                <Link href={listHref}>목록으로</Link>
+              </Button>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* 본문 카드 */}
         {isLoading && (
@@ -1497,32 +1502,18 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             <CardHeader className="space-y-4 border-b bg-brand-highlight-muted/45 p-4 sm:p-6">
               <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 space-y-2">
-                  <CardTitle className="min-w-0 break-keep font-brand-heading text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
+                  <div className="flex flex-wrap items-center gap-2">
                     {typeof item.postNo === "number" && (
-                      <span className="mr-2 text-ui-body-sm font-semibold tabular-nums text-muted-foreground">
-                        {item.postNo}
+                      <span className="text-ui-body-sm font-semibold tabular-nums text-muted-foreground">
+                        게시글 {item.postNo}
                       </span>
                     )}
-
-                    {/* 카테고리 뱃지 */}
-                    <Badge
-                      variant={getBoardCategoryTone(config.boardType, item.category)}
-                      className={`mr-2 ${badgeSizeSm} shrink-0 whitespace-nowrap`}
-                    >
-                      {config.categoryMap[item.category ?? ""]
-                        ? getCategoryBadgeText(config.categoryMap[item.category ?? ""])
-                        : "분류 없음"}
-                    </Badge>
-
                     {config.brandOptionsByCategory?.[item.category ?? ""] && item.brand ? (
-                      <span className="mr-2 inline-flex max-w-[10rem] shrink-0 items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-ui-caption font-semibold text-muted-foreground dark:text-muted">
+                      <span className="inline-flex max-w-[10rem] items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-ui-caption font-semibold text-muted-foreground dark:text-muted">
                         {config.brandLabelMap?.[item.brand] ?? item.brand}
                       </span>
                     ) : null}
-
-                    {item.title}
-                  </CardTitle>
-
+                  </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-ui-label leading-relaxed text-muted-foreground md:text-ui-body-sm [&>span]:shrink-0 [&>span]:whitespace-nowrap">
                     {/* 작성자 */}
                     <DropdownMenu>
@@ -2199,7 +2190,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               <CardTitle className="flex items-center gap-3 text-ui-body-lg font-semibold text-foreground">
                 <MessageSquare className="h-5 w-5 text-muted-foreground" />
                 <span>댓글</span>
-                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-brand-highlight px-2.5 text-ui-body-sm font-medium text-primary-foreground">
+                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-brand-highlight px-2.5 text-ui-body-sm font-medium text-brand-highlight-foreground">
                   {totalComments}
                 </span>
               </CardTitle>
@@ -2792,7 +2783,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </SiteContainer>
     </div>
   );
 }
