@@ -20,7 +20,7 @@ import {
   getMarketStringMaterialLabel,
 } from "@/lib/market";
 import { cn } from "@/lib/utils";
-import { CircleDollarSign, Package, Racket } from "lucide-react";
+import { CircleDollarSign, Gauge, Package } from "lucide-react";
 import { RefObject } from "react";
 
 type Props = {
@@ -178,7 +178,7 @@ export default function MarketMetaFields({
         <section className="rounded-panel border border-border bg-card shadow-soft">
           <div className="flex items-center gap-3 border-b border-border bg-brand-highlight-muted/35 px-5 py-4 md:px-6">
             <div className="flex h-8 w-8 items-center justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground">
-              <Racket className="h-4 w-4" aria-hidden="true" />
+              <Gauge className="h-4 w-4" aria-hidden="true" />
             </div>
             <div>
               <h2 className="text-ui-body-sm font-semibold text-foreground">라켓 상세 정보</h2>
