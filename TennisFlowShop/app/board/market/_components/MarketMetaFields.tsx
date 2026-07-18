@@ -20,6 +20,7 @@ import {
   getMarketStringMaterialLabel,
 } from "@/lib/market";
 import { cn } from "@/lib/utils";
+import { CircleDollarSign, Package, Racket } from "lucide-react";
 import { RefObject } from "react";
 
 type Props = {
@@ -42,7 +43,7 @@ const onNum = (v: string) => {
 };
 
 const selectCls =
-  "h-10 w-full rounded-md border border-input bg-background px-3 text-ui-body-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-10 w-full rounded-control border border-input bg-background px-3 text-ui-body-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
 
 export default function MarketMetaFields({
   category,
@@ -62,12 +63,15 @@ export default function MarketMetaFields({
   return (
     <div className="space-y-6">
       {/* ── 섹션 1: 거래 핵심 정보 ── */}
-      <div className="rounded-xl border border-border bg-card shadow-sm">
-        <div className="border-b border-border px-5 py-4 md:px-6">
-          <h3 className="text-ui-body-sm font-semibold text-foreground">거래 핵심 정보</h3>
-          <p className="mt-0.5 text-ui-caption text-muted-foreground">
-            구매자가 가장 먼저 확인하는 판매 조건입니다.
-          </p>
+      <section className="rounded-panel border border-border bg-card shadow-soft">
+        <div className="flex items-center gap-3 border-b border-border bg-brand-highlight-muted/35 px-5 py-4 md:px-6">
+          <div className="flex h-8 w-8 items-center justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground">
+            <CircleDollarSign className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 className="text-ui-body-sm font-semibold text-foreground">거래 핵심 정보</h2>
+            <p className="text-ui-body-sm text-foreground/75">구매자가 가장 먼저 확인하는 판매 조건입니다.</p>
+          </div>
         </div>
 
         <div className="px-5 py-5 md:px-6 space-y-5">
@@ -90,7 +94,7 @@ export default function MarketMetaFields({
                 }
                 disabled={disabled}
                 className={cn(
-                  "h-12 pr-10 text-ui-card-title-lg font-semibold placeholder:text-muted-foreground/60",
+                  "h-12 rounded-control pr-10 text-ui-card-title-lg font-semibold placeholder:text-muted-foreground/60",
                   fieldErrors?.price ? "border-destructive focus-visible:border-destructive" : "",
                 )}
               />
@@ -159,7 +163,7 @@ export default function MarketMetaFields({
               value={value.conditionNote ?? ""}
               onChange={(e) => onChange({ ...value, conditionNote: e.target.value })}
               disabled={disabled}
-              className="min-h-[100px] resize-y placeholder:text-muted-foreground/60"
+              className="min-h-[100px] rounded-control resize-y placeholder:text-muted-foreground/60"
               placeholder="ex: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
             />
             <p className="text-ui-caption text-muted-foreground">
@@ -167,16 +171,19 @@ export default function MarketMetaFields({
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* ── 섹션 2: 라켓 상세 스펙 ── */}
       {category === "racket" && (
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border px-5 py-4 md:px-6">
-            <h3 className="text-ui-body-sm font-semibold text-foreground">라켓 상세 정보</h3>
-            <p className="mt-0.5 text-ui-caption text-muted-foreground">
-              모델명은 필수이며, 나머지 스펙은 아는 범위에서만 입력하면 됩니다.
-            </p>
+        <section className="rounded-panel border border-border bg-card shadow-soft">
+          <div className="flex items-center gap-3 border-b border-border bg-brand-highlight-muted/35 px-5 py-4 md:px-6">
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground">
+              <Racket className="h-4 w-4" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 className="text-ui-body-sm font-semibold text-foreground">라켓 상세 정보</h2>
+              <p className="text-ui-body-sm text-foreground/75">모델명은 필수이며, 나머지 스펙은 아는 범위에서만 입력하면 됩니다.</p>
+            </div>
           </div>
 
           <div className="px-5 py-5 md:px-6 space-y-6">
@@ -206,7 +213,7 @@ export default function MarketMetaFields({
                     }
                     disabled={disabled}
                     className={cn(
-                      "placeholder:text-muted-foreground/60",
+                      "h-10 rounded-control placeholder:text-muted-foreground/60",
                       fieldErrors?.modelName
                         ? "border-destructive focus-visible:border-destructive"
                         : "",
@@ -240,6 +247,7 @@ export default function MarketMetaFields({
                         })
                       }
                       disabled={disabled}
+                      className="h-10 rounded-control"
                     />
                   </div>
                 ))}
@@ -279,6 +287,7 @@ export default function MarketMetaFields({
                         })
                       }
                       disabled={disabled}
+                      className="h-10 rounded-control"
                     />
                   </div>
                 ))}
@@ -335,17 +344,20 @@ export default function MarketMetaFields({
               </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
       {/* ── 섹션 2: 스트링 상세 스펙 ── */}
       {category === "string" && (
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border px-5 py-4 md:px-6">
-            <h3 className="text-ui-body-sm font-semibold text-foreground">스트링 상세 정보</h3>
-            <p className="mt-0.5 text-ui-caption text-muted-foreground">
-              모델명은 필수이며, 세부 옵션은 아는 범위에서만 작성해도 됩니다.
-            </p>
+        <section className="rounded-panel border border-border bg-card shadow-soft">
+          <div className="flex items-center gap-3 border-b border-border bg-brand-highlight-muted/35 px-5 py-4 md:px-6">
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground">
+              <Package className="h-4 w-4" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 className="text-ui-body-sm font-semibold text-foreground">스트링 상세 정보</h2>
+              <p className="text-ui-body-sm text-foreground/75">모델명은 필수이며, 세부 옵션은 아는 범위에서만 작성해도 됩니다.</p>
+            </div>
           </div>
 
           <div className="px-5 py-5 md:px-6">
@@ -370,7 +382,7 @@ export default function MarketMetaFields({
                   }
                   disabled={disabled}
                   className={cn(
-                    "placeholder:text-muted-foreground/60",
+                    "h-10 rounded-control placeholder:text-muted-foreground/60",
                     fieldErrors?.modelName
                       ? "border-destructive focus-visible:border-destructive"
                       : "",
@@ -482,7 +494,7 @@ export default function MarketMetaFields({
               </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );
