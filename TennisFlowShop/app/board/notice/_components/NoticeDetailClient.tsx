@@ -4,7 +4,7 @@ import { PublicPageHero, PublicSurface } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { NoticeDetailContentSkeleton } from "./NoticeDetailLoadingShell";
 import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -222,6 +222,12 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
       !!url && (mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url));
     return !!url && !isImg;
   });
+  const attachmentInfoLabel =
+    imageAtts.length > 0 && fileAtts.length > 0
+      ? "첨부 이미지 및 첨부파일 있음"
+      : imageAtts.length > 0
+        ? "첨부 이미지 있음"
+        : "첨부파일 있음";
 
   const fmt = (v?: string | Date) =>
     v
@@ -243,34 +249,6 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
     src: "",
     alt: "",
   });
-
-  const renderDetailSkeleton = () => (
-    <PublicSurface padding="none" className="overflow-hidden">
-      <div className="space-y-4 p-5 sm:p-6">
-        <div className="flex gap-2">
-          <Skeleton className="h-6 w-16" />
-          <Skeleton className="h-6 w-20" />
-        </div>
-        <Skeleton className="h-9 w-4/5 max-w-3xl" />
-        <div className="grid gap-2 sm:flex sm:gap-4">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-      </div>
-      <div className="border-t border-border p-5 sm:p-6">
-        <div className="mx-auto max-w-3xl space-y-3">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-11/12" />
-          <Skeleton className="h-4 w-10/12" />
-          <Skeleton className="h-4 w-3/4" />
-        </div>
-      </div>
-      <div className="border-t border-border p-5 sm:p-6">
-        <Skeleton className="h-20 w-full" />
-      </div>
-    </PublicSurface>
-  );
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -296,7 +274,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
 
       <SiteContainer className="py-7 sm:py-9 md:py-10">
         {isLoading || (notice && !isCurrentModeMatched) ? (
-          renderDetailSkeleton()
+          <NoticeDetailContentSkeleton />
         ) : error ? (
           <PublicSurface padding="lg" className="mx-auto max-w-3xl text-center">
             <div className="space-y-3">
@@ -347,7 +325,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       {(imageAtts.length > 0 || fileAtts.length > 0) && (
                         <span
                           className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-muted-foreground"
-                          aria-label="첨부 정보"
+                          aria-label={attachmentInfoLabel}
                         >
                           {imageAtts.length > 0 && (
                             <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -420,7 +398,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                           alt: (imageAtts[0] as any)?.name || "image-1",
                         })
                       }
-                      className="block w-full overflow-hidden rounded-panel border border-border bg-muted/30 hover:bg-muted/50"
+                      className="block w-full overflow-hidden rounded-panel border border-border bg-muted/30 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       aria-label="이미지 확대 보기"
                     >
                       <img
@@ -446,7 +424,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                             key={`img-${i}`}
                             type="button"
                             onClick={() => setLightbox({ open: true, src: url, alt: name })}
-                            className="overflow-hidden rounded-control border border-border bg-muted/30 hover:bg-muted/50"
+                            className="overflow-hidden rounded-control border border-border bg-muted/30 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             aria-label={`${name} 이미지 보기`}
                           >
                             <img
@@ -535,7 +513,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
             </PublicSurface>
 
             <PublicSurface padding="none" className="overflow-hidden">
-              <div className="grid md:grid-cols-2 md:divide-x md:divide-border">
+              <div className="grid divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
                 {(
                   [
                     { key: "prev", label: "이전 글", icon: ChevronLeft, target: prevPost },
@@ -546,7 +524,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     <Link
                       key={key}
                       href={`${listBasePath}/${target._id}${listQuery ? `?${listQuery}` : ""}`}
-                      className="flex min-h-20 items-start gap-3 border-b border-border p-4 hover:bg-muted/30 md:border-b-0"
+                      className="flex min-h-20 items-start gap-3 p-4 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                     >
                       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0">
@@ -559,7 +537,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                   ) : (
                     <div
                       key={key}
-                      className="flex min-h-20 items-start gap-3 border-b border-border p-4 text-muted-foreground md:border-b-0"
+                      className="flex min-h-20 items-start gap-3 p-4 text-muted-foreground"
                     >
                       <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                       <span className="min-w-0">
