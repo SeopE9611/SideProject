@@ -7,6 +7,7 @@ import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
 
 import ImageUploader from "@/components/admin/ImageUploader";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -384,37 +385,27 @@ export default function FreeBoardWriteClient() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <main className="min-h-screen bg-background">
       <SiteContainer
         variant="wide"
         className="max-w-5xl space-y-6 py-6 bp-sm:py-8 bp-md:space-y-8 bp-md:py-10"
       >
-        {/* 상단 헤더 영역 */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            {/* 브레드크럼: 게시판 > 자유 게시판 > 글쓰기 */}
-            <div className="mb-1 text-ui-body-sm text-muted-foreground">
-              <span className="font-medium text-success">게시판</span>
-              <span className="mx-1">›</span>
-              <Link
-                href="/board/free"
-                onClick={guardLeave}
-                className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground"
-              >
-                자유 게시판
-              </Link>
-              <span className="mx-1">›</span>
-              <span>글쓰기</span>
+        <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="brand">커뮤니티</Badge>
+                <span className="text-ui-label text-muted-foreground">자유 게시판 · 새 글</span>
+              </div>
+              <div>
+                <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+                  자유 게시판 글쓰기
+                </h1>
+                <p className="mt-2 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
+                  질문, 정보, 일상을 자유롭게 나누고 테니스 이야기를 이어가세요.
+                </p>
+              </div>
             </div>
-            <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
-              자유 게시판 글쓰기
-            </h1>
-            <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
-              테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.
-            </p>
-          </div>
-
-          {/* 우측 버튼들: 목록으로 */}
           <div className="flex w-full gap-2 sm:w-auto">
             <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
               <Link href="/board/free" onClick={guardLeave}>
@@ -423,11 +414,12 @@ export default function FreeBoardWriteClient() {
               </Link>
             </Button>
           </div>
-        </div>
+          </div>
+        </section>
 
         {/* 글쓰기 카드 */}
-        <Card className="overflow-hidden border border-border bg-card shadow-sm dark:bg-card">
-          <CardHeader className="border-b bg-muted/30 p-4 sm:p-6">
+        <Card variant="feature" className="overflow-hidden rounded-panel border-border shadow-soft">
+          <CardHeader className="border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
             {/* 제목 입력 */}
             <div className="space-y-2">
               <Label htmlFor="title">제목</Label>
@@ -456,7 +448,7 @@ export default function FreeBoardWriteClient() {
               {/* 분류 선택 */}
               <div className="space-y-2" ref={categoryRef}>
                 <Label>분류</Label>
-                <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-muted/30 p-3 text-ui-body-sm">
+                <div className="flex flex-wrap gap-2 rounded-control border border-border bg-brand-highlight-muted/35 p-3 text-ui-body-sm">
                   {CATEGORY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -470,9 +462,9 @@ export default function FreeBoardWriteClient() {
                           }));
                       }}
                       className={cn(
-                        "rounded-full border px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "rounded-control border px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         category === opt.value
-                          ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
+                          ? "border-border bg-brand-highlight text-brand-highlight-foreground"
                           : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
                       )}
                     >
@@ -486,7 +478,11 @@ export default function FreeBoardWriteClient() {
               </div>
 
               {/* 내용 입력 */}
-              <div className="space-y-2">
+              <section className="space-y-2 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5">
+                <div className="border-b border-border pb-3">
+                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">본문 작성</h2>
+                  <p className="mt-1 text-ui-label text-muted-foreground">다른 이용자가 이해하기 쉽도록 구체적으로 작성해 주세요.</p>
+                </div>
                 <Label htmlFor="content">내용</Label>
                 <Textarea
                   id="content"
@@ -515,10 +511,14 @@ export default function FreeBoardWriteClient() {
                   신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
                   주세요.
                 </p>
-              </div>
+              </section>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
-              <div className="space-y-3" ref={attachmentsRef}>
+              <section className="space-y-3 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5" ref={attachmentsRef}>
+                <div className="border-b border-border pb-3">
+                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">첨부 파일</h2>
+                  <p className="mt-1 text-ui-label text-muted-foreground">이미지와 문서를 나누어 안전하게 첨부할 수 있습니다.</p>
+                </div>
                 <Label>첨부 (선택)</Label>
                 {fieldErrors.attachments ? (
                   <p className="text-ui-label text-destructive">{fieldErrors.attachments}</p>
@@ -631,7 +631,7 @@ export default function FreeBoardWriteClient() {
                     )}
                   </TabsContent>
                 </Tabs>
-              </div>
+              </section>
 
               {/* 버튼 영역 */}
               <div className="flex flex-col-reverse items-stretch justify-end gap-2 border-t border-border pt-4 sm:flex-row sm:items-center">
@@ -665,6 +665,6 @@ export default function FreeBoardWriteClient() {
           </CardContent>
         </Card>
       </SiteContainer>
-    </div>
+    </main>
   );
 }
