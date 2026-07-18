@@ -1,10 +1,11 @@
 import { Bell, Megaphone, Pin } from "lucide-react";
 import Link from "next/link";
 
-const pinnedNoticeMobileTitleClampClass =
-  "line-clamp-2 text-ui-label font-medium leading-snug text-foreground group-hover:text-primary sm:line-clamp-1";
-
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+const pinnedNoticeMobileTitleClampClass =
+  "line-clamp-2 text-ui-label font-medium leading-snug text-foreground sm:line-clamp-1";
 
 export type PinnedNoticeItem = {
   _id: string;
@@ -77,7 +78,16 @@ export default function PinnedNoticeStrip({
               <Pin className="h-3 w-3" />
             </Badge>
             <div className="min-w-0 flex-1">
-              <p className={pinnedNoticeMobileTitleClampClass}>{notice.title}</p>
+              <p
+                className={cn(
+                  pinnedNoticeMobileTitleClampClass,
+                  tone === "signal"
+                    ? "group-hover:text-brand-highlight-ink"
+                    : "group-hover:text-primary",
+                )}
+              >
+                {notice.title}
+              </p>
               <p className="mt-0 text-ui-micro leading-tight text-muted-foreground">
                 {fmtDate(notice.createdAt)}
               </p>

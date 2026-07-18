@@ -1,6 +1,7 @@
 "use client";
 import ErrorBox from "@/app/board/_components/ErrorBox";
 import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
+import { QnaRowSkeleton } from "@/app/board/qna/_components/QnaListLoadingShell";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -447,7 +448,12 @@ export default function QnaPageClient({
                   </span>
                 )}
                 {(isBusy || isValidating) && (
-                  <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-foreground" />
+                  <>
+                    <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-foreground" />
+                    <span className="sr-only" role="status" aria-live="polite">
+                      문의 목록을 불러오는 중입니다.
+                    </span>
+                  </>
                 )}
               </div>
 
@@ -719,7 +725,11 @@ export default function QnaPageClient({
               </div>
             )}
 
-            {!isLoading &&
+            {isInitialLoading &&
+              !hasDataError &&
+              Array.from({ length: 5 }).map((_, index) => <QnaRowSkeleton key={index} />)}
+
+            {!isInitialLoading &&
               !hasDataError &&
               items.map((qna) => {
                 const canOpenSecret =
@@ -875,7 +885,10 @@ export default function QnaPageClient({
           </div>
 
           {!hasDataError && items.length > 0 && (
-            <div className="mt-6 flex items-center justify-center px-4 pb-5 md:mt-8">
+            <nav
+              className="mt-6 flex items-center justify-center px-4 pb-5 md:mt-8"
+              aria-label="Q&A 목록 페이지 이동"
+            >
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button
                   variant="outline"
@@ -966,6 +979,7 @@ export default function QnaPageClient({
                     value={pageJump}
                     onChange={(e) => setPageJump(e.target.value)}
                     placeholder="페이지"
+                    aria-label="이동할 페이지 번호"
                     className="h-10 w-20"
                   />
                   <Button
@@ -979,7 +993,7 @@ export default function QnaPageClient({
                   </Button>
                 </form>
               </div>
-            </div>
+            </nav>
           )}
         </PublicSurface>
       </SiteContainer>
