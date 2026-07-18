@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import {
-  ArrowLeft,
   ArrowUp,
   MessageCircle,
   Pencil,
@@ -15,28 +14,24 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import useSWR from "swr";
 import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  badgeBaseOutlined,
-  badgeSizeSm,
-  getQnaCategoryBadgeSpec,
-  getAnswerStatusBadgeSpec,
-  badgeToneClass,
-} from "@/lib/badge-style";
+import { badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec } from "@/lib/badge-style";
 import type { BoardPost } from "@/lib/types/board";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { communityFetch } from "@/lib/community/communityFetch.client";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, PublicSurface } from "@/components/public";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { QnaDetailContentSkeleton } from "../_components/QnaDetailLoadingShell";
 
 type QnaItem = BoardPost & { type: "qna" };
 
@@ -201,475 +196,422 @@ export default function QnaDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-5 md:py-7 space-y-5 md:space-y-7">
-        <div className="space-y-3 md:space-y-5">
-          <div className="text-ui-body-sm text-muted-foreground">
-            <span className="font-medium text-primary">고객센터</span>
-            <span className="mx-1">›</span>
-            <span>Q&amp;A</span>
-            <span className="mx-1">›</span>
-            <span>상세</span>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-2.5 sm:gap-4">
-              <Button variant="ghost" asChild className="p-2">
-                <Link href={listHref} onClick={confirmLeave}>
-                  <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-                </Link>
-              </Button>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div>
-                  <h1 className="text-ui-page-title sm:text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
-                    고객센터 · Q&amp;A
-                  </h1>
-                  <p className="text-ui-body-sm sm:text-ui-body-lg text-muted-foreground">
-                    Q&amp;A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
-              <Button asChild variant="outline" size="sm">
-                <Link href={listHref} onClick={confirmLeave}>
-                  Q&amp;A 목록으로
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link href={supportHref} onClick={confirmLeave}>
-                  고객센터 홈으로
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+    <main className="min-h-screen bg-background text-foreground">
+      <PublicPageHero
+        variant="feature"
+        eyebrow={<Badge variant="signal">Q&amp;A</Badge>}
+        title="고객센터 · Q&A"
+        description="Q&A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다."
+        actions={
+          <>
+            <Button asChild variant="highlight" size="sm" className="w-full sm:w-auto">
+              <Link href={listHref} onClick={confirmLeave}>
+                Q&amp;A 목록
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+              <Link href={supportHref} onClick={confirmLeave}>
+                고객센터 홈
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
-        <Card className="shadow-md border border-border bg-card dark:bg-card">
-          <CardHeader className="bg-muted/30 border-b p-4 md:p-5">
-            <div className="space-y-4">
-              {isLoading && (
-                <div className="animate-pulse space-y-3">
-                  <div className="h-8 bg-muted rounded-lg w-3/4 dark:bg-card"></div>
-                  <div className="h-4 bg-muted rounded w-1/2 dark:bg-card"></div>
-                </div>
+      <SiteContainer className="space-y-6 py-6 md:space-y-8 md:py-8">
+        {isLoading && <QnaDetailContentSkeleton />}
+
+        {!isLoading && error && (
+          <PublicSurface variant="feature" padding="lg" className="space-y-5">
+            <div className="space-y-2">
+              <h2 className="text-balance font-brand-heading text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
+                {errorTitle}
+              </h2>
+              <p className="whitespace-pre-line break-words text-ui-body leading-relaxed text-muted-foreground">
+                {errorBody}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              {(error as FetchError | undefined)?.status === 401 && (
+                <Button asChild variant="highlight" className="w-full sm:w-auto">
+                  <Link
+                    href={`/login?next=${encodeURIComponent(`/board/qna/${id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
+                  >
+                    로그인하고 다시 보기
+                  </Link>
+                </Button>
               )}
-              {!isLoading && error && (
-                <div className="space-y-3">
-                  <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
-                    {errorTitle}
-                  </h1>
-                </div>
-              )}
-              {!isLoading && !error && qna && (
-                <>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
+              <Button variant="outline" asChild className="w-full sm:w-auto">
+                <Link href={listHref}>Q&amp;A 목록으로</Link>
+              </Button>
+              <Button variant="outline" asChild className="w-full sm:w-auto">
+                <Link href={supportHref}>고객센터 홈</Link>
+              </Button>
+            </div>
+          </PublicSurface>
+        )}
+
+        {!isLoading && !error && qna && (
+          <>
+            <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+              <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+              <div className="space-y-4 border-b border-border bg-brand-highlight-muted/30 p-4 md:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <Badge
+                      variant={getQnaCategoryBadgeSpec(qna.category).variant}
+                      className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                    >
+                      {qna.category ?? "일반문의"}
+                    </Badge>
+                    {qna.isSecret && (
                       <Badge
-                        variant={getQnaCategoryBadgeSpec(qna.category).variant}
-                        className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                        variant="secondary"
+                        className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-ui-label"
                       >
-                        {qna.category ?? "일반문의"}
+                        <Lock className="h-3 w-3" /> 비밀글
                       </Badge>
-                      {qna.isSecret && (
+                    )}
+                    {qna.productRef?.productId && (
+                      <Link
+                        href={
+                          qna.productRef.targetType === "racket"
+                            ? `/rackets/${qna.productRef.productId}`
+                            : `/products/${qna.productRef.productId}`
+                        }
+                        className="min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
                         <Badge
                           variant="secondary"
-                          className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-ui-label"
+                          className={`${badgeSizeSm} max-w-[12rem] shrink-0 truncate whitespace-nowrap`}
                         >
-                          <Lock className="h-3 w-3" /> 비밀글
+                          {qna.productRef.targetType === "racket" ? "라켓" : "상품"}:{" "}
+                          {qna.productRef.name ?? "상품"}
                         </Badge>
-                      )}
-                      {qna.productRef?.productId && (
-                        <Link
-                          href={
-                            qna.productRef.targetType === "racket"
-                              ? `/rackets/${qna.productRef.productId}`
-                              : `/products/${qna.productRef.productId}`
-                          }
-                        >
-                          <Badge
-                            variant="secondary"
-                            className={`${badgeSizeSm} max-w-[12rem] shrink-0 truncate whitespace-nowrap`}
-                          >
-                            {qna.productRef.targetType === "racket" ? "라켓" : "상품"}:{" "}
-                            {qna.productRef.name ?? "상품"}
-                          </Badge>
-                        </Link>
-                      )}
-                    </div>
-                    <Badge
-                      variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
-                      className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
-                    >
-                      {qna.answer ? "답변 완료" : "답변 대기"}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground shadow-sm flex-shrink-0 mt-1">
-                      <MessageSquare className="h-5 w-5" />
-                    </div>
-                    <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
-                      {qna.title}
-                    </h1>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-ui-label text-muted-foreground sm:text-ui-body-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
-                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
-                      <Avatar className="h-7 w-7 border-2 border-border">
-                        <AvatarFallback className="text-ui-label font-medium bg-muted text-foreground">
-                          {(qna.authorName ?? "익명").slice(0, 1)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{qna.authorName ?? "익명"}</span>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
-                      <Calendar className="h-4 w-4" />
-                      <span className="font-medium">작성일</span>
-                      <span>{fmt(qna.createdAt)}</span>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
-                      <Eye className="h-4 w-4" />
-                      <span className="font-medium">조회수</span>
-                      <span className="font-semibold text-primary">{qna.viewCount ?? 0}</span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-4 md:p-5 space-y-4 md:space-y-5">
-            {!isLoading && error && (
-              <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                <div className="whitespace-pre-line break-words leading-relaxed text-foreground">
-                  {errorBody}
-                </div>
-                <div className="not-prose mt-5 flex flex-wrap gap-2">
-                  {(error as FetchError | undefined)?.status === 401 && (
-                    <Button asChild>
-                      <Link
-                        href={`/login?next=${encodeURIComponent(`/board/qna/${id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
-                      >
-                        로그인하고 다시 보기
                       </Link>
-                    </Button>
-                  )}
-                  <Button variant="outline" asChild>
-                    <Link href={listHref}>Q&amp;A 목록으로</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href={supportHref}>고객센터 홈</Link>
-                  </Button>
+                    )}
+                  </div>
+                  <Badge
+                    variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
+                    className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                  >
+                    {qna.answer ? "답변 완료" : "답변 대기"}
+                  </Badge>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-control border border-border bg-secondary text-foreground">
+                    <MessageSquare className="h-5 w-5" />
+                  </div>
+                  <h2 className="break-words text-balance font-brand-heading text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
+                    {qna.title}
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ui-label text-muted-foreground sm:text-ui-body-sm md:gap-x-6">
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <Avatar className="h-7 w-7 border border-border">
+                      <AvatarFallback className="bg-muted text-ui-label font-medium text-foreground">
+                        {(qna.authorName ?? "익명").slice(0, 1)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{qna.authorName ?? "익명"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <Calendar className="h-4 w-4" />
+                    <span className="font-medium">작성일</span>
+                    <span>{fmt(qna.createdAt)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <Eye className="h-4 w-4" />
+                    <span className="font-medium">조회수</span>
+                    <span className="font-semibold text-foreground">{qna.viewCount ?? 0}</span>
+                  </div>
                 </div>
               </div>
-            )}
-            {!isLoading && !error && qna && (
-              <>
-                <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                  <div className="whitespace-pre-line break-words leading-relaxed text-foreground">
+
+              <div className="space-y-6 p-4 md:p-6">
+                <div className="max-w-3xl rounded-panel bg-card text-ui-body leading-8 text-foreground">
+                  <div className="whitespace-pre-line break-words p-4 md:p-6">
                     {String(qna.content || "")}
                   </div>
                 </div>
 
                 {Array.isArray(qna.attachments) && qna.attachments.length > 0 && (
-                  <>
-                    <Separator className="my-6" />
-                    <section className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-primary" />
-                        <h3 className="text-ui-card-title-lg font-semibold text-foreground">
-                          첨부파일
-                        </h3>
-                        <Badge variant="secondary">{qna.attachments.length}개</Badge>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
-                        {qna.attachments.map((att: any, i: number) => {
-                          const url = typeof att === "string" ? att : att?.url;
-                          const name =
-                            typeof att === "string"
-                              ? `attachment-${i}`
-                              : att?.name || `attachment-${i}`;
-                          if (!url) return null;
-                          const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
-
-                          return isImage ? (
-                            <div key={i} className="relative group">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setLightbox({
-                                    open: true,
-                                    src: url,
-                                    alt: name,
-                                  })
-                                }
-                                className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-primary"
-                              >
-                                <img
-                                  src={url || "/placeholder.svg"}
-                                  alt={name}
-                                  className="h-52 w-full object-cover sm:h-48"
-                                />
-                                <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
-                                  <ExternalLink className="h-5 w-5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                </div>
-                              </button>
-                            </div>
-                          ) : (
-                            <div
-                              key={i}
-                              className="rounded-lg border border-border bg-card p-3 transition-colors duration-200 hover:bg-muted/40 sm:p-4"
-                            >
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-2 text-ui-body-sm font-medium text-primary hover:text-primary"
-                              >
-                                <FileText className="h-4 w-4 flex-shrink-0" />
-                                <span className="truncate">{name}</span>
-                              </a>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  </>
-                )}
-              </>
-            )}
-          </CardContent>
-
-          {lightbox.open && (
-            <div
-              className="fixed inset-0 z-50 bg-overlay/80 flex items-center justify-center p-4"
-              onClick={() => setLightbox({ open: false, src: "", alt: "" })}
-              role="dialog"
-              aria-modal="true"
-            >
-              <div className="relative max-h-[90vh] max-w-[90vw]">
-                <img
-                  src={lightbox.src || "/placeholder.svg"}
-                  alt={lightbox.alt}
-                  className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-lg"
-                />
-                <button
-                  onClick={() => setLightbox({ open: false, src: "", alt: "" })}
-                  className="absolute top-4 right-4 w-10 h-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40 rounded-full flex items-center justify-center transition-colors duration-200"
-                  aria-label="닫기"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          )}
-
-          {(isAuthor || isAdmin) && qna && (
-            <CardFooter className="flex flex-wrap justify-end gap-2 border-t border-border bg-muted/50 p-4 md:p-6">
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/board/qna/write?id=${qna._id}`} onClick={confirmLeave}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  수정
-                </Link>
-              </Button>
-              <Button variant="destructive" size="sm" onClick={handleDelete}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                삭제
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
-
-        {isAdmin && qna && !qna.answer && (
-          <Card className="shadow-md border border-border bg-card dark:bg-card">
-            <CardHeader className="border-b border-border bg-muted/50">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5 text-primary" />
-                <h2 className="text-ui-card-title-lg font-semibold text-foreground">
-                  관리자 답변 작성
-                </h2>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6 space-y-4">
-              <Textarea
-                value={answerText}
-                onChange={(e) => setAnswerText(e.target.value)}
-                placeholder="답변 내용을 입력하세요"
-                className="min-h-[140px] bg-card border-border focus:border-ring focus:ring-ring"
-              />
-              <div className="flex justify-end">
-                <Button
-                  onClick={async () => {
-                    const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      credentials: "include",
-                      body: JSON.stringify({ content: answerText }),
-                    });
-                    const j = await res.json().catch(() => ({}));
-                    if (!res.ok || !j?.ok) return alert("등록 실패");
-                    setAnswerText("");
-                    await mutate();
-                  }}
-                  disabled={!answerText.trim()}
-                  className="px-6 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  답변 등록
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {qna?.answer && (
-          <Card className="shadow-lg border-2 border-border bg-muted/40">
-            <CardHeader className="border-b border-border bg-muted/60">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                      <MessageCircle className="h-4 w-4 text-primary" />
-                    </div>
-                    <h2 className="text-ui-section-title font-semibold text-foreground">
-                      관리자 답변
-                    </h2>
-                    <Badge
-                      variant="success"
-                      className={`${badgeBaseOutlined} ${badgeSizeSm} ${badgeToneClass("success")}`}
-                    >
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      답변 완료
-                    </Badge>
-                  </div>
-                  {isAdmin && !isEditing && (
+                  <section className="space-y-4 border-t border-border pt-6">
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setAnswerText(qna.answer?.content ?? "");
-                          setIsEditing(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4 mr-1" />
-                        수정
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={async () => {
-                          if (!confirm("답변을 삭제할까요?")) return;
-                          const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
-                            method: "DELETE",
-                            credentials: "include",
-                          });
-                          const j = await res.json().catch(() => ({}));
-                          if (!res.ok || !j?.ok) return alert("삭제 실패");
-                          setAnswerText("");
-                          setIsEditing(false);
-                          await mutate();
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        삭제
-                      </Button>
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <h3 className="text-ui-card-title-lg font-semibold text-foreground">
+                        첨부파일
+                      </h3>
+                      <Badge variant="secondary">{qna.attachments.length}개</Badge>
                     </div>
-                  )}
-                </div>
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-ui-label text-muted-foreground sm:text-ui-body-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6 border border-border">
-                      <AvatarFallback className="text-ui-label font-medium bg-muted text-foreground">
-                        {(qna.answer.authorName ?? "관리자").slice(0, 1)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{qna.answer.authorName ?? "관리자"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span className="font-medium">답변일</span>
-                    <span>{fmt(qna.answer.createdAt)}</span>
-                  </div>
-                </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
+                      {qna.attachments.map((att: any, i: number) => {
+                        const url = typeof att === "string" ? att : att?.url;
+                        const name =
+                          typeof att === "string"
+                            ? `attachment-${i}`
+                            : att?.name || `attachment-${i}`;
+                        if (!url) return null;
+                        const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
+
+                        return isImage ? (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setLightbox({ open: true, src: url, alt: name })}
+                            className="group relative block w-full overflow-hidden rounded-panel border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            aria-label={`${name} 이미지 확대 보기`}
+                          >
+                            <img
+                              src={url || "/placeholder.svg"}
+                              alt={name}
+                              className="h-52 w-full object-cover sm:h-48"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center bg-overlay/0 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+                              <ExternalLink className="h-5 w-5 text-foreground" />
+                            </span>
+                          </button>
+                        ) : (
+                          <div
+                            key={i}
+                            className="rounded-panel border border-border bg-card p-3 sm:p-4"
+                          >
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-2 text-ui-body-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                              <FileText className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{name}</span>
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
               </div>
-            </CardHeader>
 
-            <CardContent className="p-4 md:p-6">
-              {!isEditing ? (
-                <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                  <div className="whitespace-pre-line break-words leading-relaxed text-foreground">
-                    {String(qna.answer.content || "")}
+              {(isAuthor || isAdmin) && (
+                <div className="flex flex-wrap justify-end gap-2 border-t border-border bg-muted/30 p-4 md:p-6">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/board/qna/write?id=${qna._id}`} onClick={confirmLeave}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      수정
+                    </Link>
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={handleDelete}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    삭제
+                  </Button>
+                </div>
+              )}
+            </PublicSurface>
+
+            {isAdmin && !qna.answer && (
+              <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+                <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+                <div className="border-b border-border bg-brand-highlight-muted/30 p-4 md:p-6">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="h-5 w-5 text-foreground" />
+                    <h2 className="font-brand-heading text-ui-card-title-lg font-semibold text-foreground">
+                      관리자 답변 작성
+                    </h2>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 p-4 md:p-6">
                   <Textarea
                     value={answerText}
                     onChange={(e) => setAnswerText(e.target.value)}
-                    className="min-h-[140px] bg-card border-border focus:border-ring focus:ring-ring"
+                    placeholder="답변 내용을 입력하세요"
+                    className="min-h-[140px] border-border bg-card focus:border-ring focus:ring-ring"
                   />
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>
-                      취소
-                    </Button>
+                  <div className="flex justify-end">
                     <Button
+                      variant="highlight"
                       onClick={async () => {
                         const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
-                          method: "PATCH",
+                          method: "POST",
                           headers: { "Content-Type": "application/json" },
                           credentials: "include",
                           body: JSON.stringify({ content: answerText }),
                         });
                         const j = await res.json().catch(() => ({}));
-                        if (!res.ok || !j?.ok) return alert("수정 실패");
-                        setIsEditing(false);
+                        if (!res.ok || !j?.ok) return alert("등록 실패");
+                        setAnswerText("");
                         await mutate();
                       }}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={!answerText.trim()}
                     >
-                      저장
+                      답변 등록
                     </Button>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+              </PublicSurface>
+            )}
 
-        <div className="pt-4 space-y-3 border-t border-border">
-          <p className="text-ui-body-sm text-muted-foreground">
-            Q&amp;A는 비밀글/권한 정책이 있어 이전 글/다음 글 이동 대신 목록 중심으로 이동을
-            제공합니다.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2.5">
-            <Button
-              variant="outline"
-              size="default"
-              asChild
-              className="w-full sm:w-auto justify-center px-4"
-            >
-              <Link href={listHref} onClick={confirmLeave}>
-                <ArrowUp className="mr-2 h-4 w-4" />
-                목록으로 돌아가기
-              </Link>
-            </Button>
-            <Button
-              size="default"
-              asChild
-              className="w-full sm:w-auto justify-center px-4 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Link href="/board/qna/write" onClick={confirmLeave}>
-                <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+            {qna.answer && (
+              <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+                <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+                <div className="space-y-3 border-b border-border bg-brand-highlight-muted/30 p-4 md:p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card">
+                        <MessageCircle className="h-4 w-4 text-foreground" />
+                      </div>
+                      <h2 className="font-brand-heading text-ui-section-title font-semibold text-foreground">
+                        관리자 답변
+                      </h2>
+                      <Badge variant="success" className={badgeSizeSm}>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        답변 완료
+                      </Badge>
+                    </div>
+                    {isAdmin && !isEditing && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setAnswerText(qna.answer?.content ?? "");
+                            setIsEditing(true);
+                          }}
+                        >
+                          <Pencil className="mr-1 h-4 w-4" />
+                          수정
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={async () => {
+                            if (!confirm("답변을 삭제할까요?")) return;
+                            const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
+                              method: "DELETE",
+                              credentials: "include",
+                            });
+                            const j = await res.json().catch(() => ({}));
+                            if (!res.ok || !j?.ok) return alert("삭제 실패");
+                            setAnswerText("");
+                            setIsEditing(false);
+                            await mutate();
+                          }}
+                        >
+                          <Trash2 className="mr-1 h-4 w-4" />
+                          삭제
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ui-label text-muted-foreground sm:text-ui-body-sm md:gap-x-6">
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                      <Avatar className="h-6 w-6 border border-border">
+                        <AvatarFallback className="bg-muted text-ui-label font-medium text-foreground">
+                          {(qna.answer.authorName ?? "관리자").slice(0, 1)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">{qna.answer.authorName ?? "관리자"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                      <Calendar className="h-4 w-4" />
+                      <span className="font-medium">답변일</span>
+                      <span>{fmt(qna.answer.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 md:p-6">
+                  {!isEditing ? (
+                    <div className="max-w-3xl rounded-panel bg-card text-ui-body leading-8 text-foreground">
+                      <div className="whitespace-pre-line break-words p-4 md:p-6">
+                        {String(qna.answer.content || "")}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <Textarea
+                        value={answerText}
+                        onChange={(e) => setAnswerText(e.target.value)}
+                        className="min-h-[140px] border-border bg-card focus:border-ring focus:ring-ring"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>
+                          취소
+                        </Button>
+                        <Button
+                          variant="highlight"
+                          onClick={async () => {
+                            const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              credentials: "include",
+                              body: JSON.stringify({ content: answerText }),
+                            });
+                            const j = await res.json().catch(() => ({}));
+                            if (!res.ok || !j?.ok) return alert("수정 실패");
+                            setIsEditing(false);
+                            await mutate();
+                          }}
+                        >
+                          저장
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </PublicSurface>
+            )}
+
+            <PublicSurface variant="muted" padding="md" className="space-y-4">
+              <p className="text-ui-body-sm text-muted-foreground">
+                Q&amp;A는 비밀글/권한 정책이 있어 이전 글/다음 글 이동 대신 목록 중심으로 이동을
+                제공합니다.
+              </p>
+              <div className="flex flex-col items-center justify-center gap-2.5 sm:flex-row">
+                <Button
+                  variant="highlight_soft"
+                  size="default"
+                  asChild
+                  className="w-full justify-center px-4 sm:w-auto"
+                >
+                  <Link href={listHref} onClick={confirmLeave}>
+                    <ArrowUp className="mr-2 h-4 w-4" />
+                    목록으로 돌아가기
+                  </Link>
+                </Button>
+                <Button
+                  variant="highlight"
+                  size="default"
+                  asChild
+                  className="w-full justify-center px-4 sm:w-auto"
+                >
+                  <Link href="/board/qna/write" onClick={confirmLeave}>
+                    <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
+                  </Link>
+                </Button>
+              </div>
+            </PublicSurface>
+          </>
+        )}
+      </SiteContainer>
+
+      <Dialog
+        open={lightbox.open}
+        onOpenChange={(open) => setLightbox(open ? lightbox : { open: false, src: "", alt: "" })}
+      >
+        <DialogContent className="max-w-[calc(100%-2rem)] bg-card p-3 sm:max-w-5xl">
+          <DialogTitle className="sr-only">이미지 확대 보기</DialogTitle>
+          <img
+            src={lightbox.src || "/placeholder.svg"}
+            alt={lightbox.alt}
+            className="max-h-[80vh] w-full rounded-panel object-contain"
+          />
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }
