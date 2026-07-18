@@ -170,9 +170,9 @@ function conditionGradeBadgeVariant(
 
 // 공통 폼 컨트롤 스타일
 const selectClass =
-  "h-8 w-full rounded-md border border-border bg-background px-2.5 text-ui-label text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  "h-8 w-full rounded-control border border-border bg-card px-2.5 text-ui-label text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 const inputClass =
-  "h-8 w-full rounded-md border border-border bg-background px-2.5 text-ui-label text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  "h-8 w-full rounded-control border border-border bg-card px-2.5 text-ui-label text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
 // 범위형 필터 그룹 컴포넌트
 function RangeFilterGroup({
@@ -211,14 +211,14 @@ function RangeFilterGroup({
       <div className="flex items-center gap-1">
         <input
           placeholder={minPlaceholder}
-          className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="h-8 w-full min-w-0 rounded-control border border-border bg-card px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
           value={minValue}
           onChange={handleMin}
         />
         <span className="shrink-0 text-ui-label text-foreground/75">~</span>
         <input
           placeholder={maxPlaceholder}
-          className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="h-8 w-full min-w-0 rounded-control border border-border bg-card px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
           value={maxValue}
           onChange={handleMax}
         />
@@ -362,11 +362,11 @@ function getActiveFilterChips(
 // 목록 스켈레톤 UI
 function ListSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, idx) => (
         <div
           key={idx}
-          className="flex items-start justify-between gap-3 border-b border-border pb-4 last:border-0"
+          className="rounded-panel border border-border bg-card p-4 shadow-soft"
         >
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" />
@@ -891,7 +891,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   </div>
                   <div className="flex items-center gap-2 text-ui-label">
                     <span className="hidden text-muted-foreground sm:inline">정렬:</span>
-                    <div className="inline-flex overflow-hidden rounded-md border border-border bg-background">
+                    <div className="inline-flex overflow-hidden rounded-control border border-border bg-card">
                       {[
                         { value: "latest", label: "최신순" },
                         { value: "views", label: "조회순" },
@@ -1002,7 +1002,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 )}
 
                 {config.boardType === "market" && (
-                  <div className="rounded-lg border border-border bg-card">
+                  <div className="rounded-panel border border-border bg-card shadow-soft">
                     {/* 필터 헤더 */}
                     <button
                       type="button"
@@ -1015,7 +1015,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           상세 필터
                         </span>
                         {activeMarketFilterCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-ui-caption font-semibold tabular-nums text-primary-foreground">
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-highlight px-1.5 text-ui-caption font-semibold tabular-nums text-primary-foreground">
                             {activeMarketFilterCount}
                           </span>
                         )}
@@ -1385,6 +1385,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           <Button
                             type="button"
                             size="sm"
+                            variant="highlight"
                             className="h-7 gap-1 px-3 text-ui-label"
                             onClick={applyMarketFilters}
                           >
@@ -1414,7 +1415,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             <PinnedNoticeStrip items={pinnedNotices} />
 
             {/* 로딩/에러/빈 상태 처리 */}
-            {isLoading && <ListSkeleton />}
+            {isLoading && (
+              <div aria-busy="true" aria-live="polite">
+                <span className="sr-only">게시글 목록을 불러오는 중입니다.</span>
+                <ListSkeleton />
+              </div>
+            )}
             {error && !isLoading && (
               <ErrorBox
                 message={listError.message}
@@ -1840,7 +1846,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         key={post.id}
                         href={buildDetailHref(post.postNo ?? post.id)}
                         className={[
-                          "block rounded-lg border border-border bg-card px-3 py-3.5 transition-colors active:bg-muted/30",
+                          "block rounded-panel border border-border bg-card shadow-soft px-3 py-3.5 transition-colors active:bg-muted/30",
                           isSold ? "opacity-45" : "",
                         ].join(" ")}
                       >
@@ -1952,7 +1958,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       <Link
                         key={post.id}
                         href={buildDetailHref(post.postNo ?? post.id)}
-                        className="block rounded-lg border border-border bg-card px-3 py-3 transition-colors hover:border-primary/30 active:bg-muted/40"
+                        className="block rounded-panel border border-border bg-card shadow-soft px-3 py-3 transition-colors hover:border-primary/30 active:bg-muted/40"
                       >
                         {/* 1줄: 번호 + 분류 뱃지 */}
                         <div className="flex items-center gap-2 text-ui-label text-foreground/75">
@@ -2020,14 +2026,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     {/* 검색 폼 */}
                     <form
                       onSubmit={handleSearchSubmit}
-                      className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 px-3 py-3 sm:flex-row sm:items-center"
+                      className="flex flex-col gap-2 rounded-panel border border-border bg-brand-highlight-muted/35 px-3 py-3 shadow-soft sm:flex-row sm:items-center"
                     >
                       <select
                         value={searchType}
                         onChange={(e) =>
                           setSearchType(e.target.value as "title" | "author" | "title_content")
                         }
-                        className="h-9 w-full rounded-md border border-border bg-background px-2 text-ui-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:w-32"
+                        className="h-9 w-full rounded-control border border-border bg-card px-2 text-ui-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:w-32"
                       >
                         <option value="title_content">제목+내용</option>
                         <option value="title">제목</option>
@@ -2036,11 +2042,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       <input
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        className="h-9 w-full flex-1 rounded-md border border-border bg-background px-3 text-ui-body-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="h-9 w-full flex-1 rounded-control border border-border bg-card px-3 text-ui-body-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="검색어를 입력하세요"
                       />
                       <div className="flex shrink-0 items-center gap-2">
-                        <Button type="submit" size="sm" className="gap-1 px-3">
+                        <Button type="submit" size="sm" variant="highlight" className="gap-1 px-3">
                           <Search className="h-3.5 w-3.5" />
                           검색
                         </Button>
@@ -2098,7 +2104,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {visiblePages.map((pageNumber) => (
                           <Button
                             key={pageNumber}
-                            variant={pageNumber === page ? "default" : "outline"}
+                            variant={pageNumber === page ? "highlight" : "outline"}
                             size="sm"
                             className="h-10 w-10"
                             onClick={() => movePage(pageNumber)}
@@ -2150,7 +2156,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             value={pageJump}
                             onChange={(e) => setPageJump(e.target.value)}
                             placeholder="페이지"
-                            className="h-10 w-20 rounded-md border border-border bg-background px-2 text-ui-label focus:ring-2 focus:ring-ring focus:border-border"
+                            className="h-10 w-20 rounded-control border border-border bg-card px-2 text-ui-label focus:ring-2 focus:ring-ring focus:border-border"
                           />
                           <Button type="submit" variant="outline" size="sm" className="h-10 px-2">
                             이동
