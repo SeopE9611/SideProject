@@ -310,7 +310,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       {notice.isPinned && (
                         <Badge
                           variant="signal"
-                          className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
+                          className={`${badgeSizeSm} shrink-0 gap-1`}
                           title={`고정 ${sectionLabel}`}
                           aria-label={`고정 ${sectionLabel}`}
                         >
