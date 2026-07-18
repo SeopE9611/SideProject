@@ -1481,7 +1481,14 @@ export default function StringingApplicationDetailClient({
           }
         >
           {isLoading ? (
-            <div className="mx-auto w-full max-w-[1500px] border-l-2 border-brand-highlight-ink/30 bg-brand-highlight-muted/35 px-4 py-2 text-ui-body-sm text-foreground/80">
+            <div
+              className={cn(
+                "mx-auto w-full max-w-[1500px] px-4 py-2 text-ui-body-sm text-foreground/80",
+                isAdmin
+                  ? "border-l-2 border-primary/30 bg-primary/5"
+                  : "border-l-2 border-brand-highlight-ink/30 bg-brand-highlight-muted/35",
+              )}
+            >
               최신 상태를 확인하고 있습니다...
             </div>
           ) : null}
@@ -1503,7 +1510,14 @@ export default function StringingApplicationDetailClient({
                       isAdmin ? "items-center" : "items-start",
                     )}
                   >
-                    <div className="shrink-0 rounded-xl bg-primary/10 p-3 ring-1 ring-primary/10">
+                    <div
+                      className={cn(
+                        "shrink-0 rounded-xl p-3 ring-1",
+                        isAdmin
+                          ? "bg-primary/10 ring-primary/10"
+                          : "bg-brand-highlight-muted/45 ring-brand-highlight-ink/15",
+                      )}
+                    >
                       {isAdmin ? (
                         <Settings className="h-8 w-8 text-foreground" />
                       ) : (
@@ -2266,9 +2280,9 @@ export default function StringingApplicationDetailClient({
                     )}
                   >
                     <ShoppingCart
-                      className={cn("text-foreground", isAdmin ? "h-5 w-5" : "w-6 h-6")}
+                      className={cn(isAdmin ? "h-5 w-5 text-foreground" : "w-6 h-6", !isAdmin && detailIconClass)}
                     />
-                    <CardTitle className={cn("text-ui-card-title font-medium", !isAdmin && "mt-2")}>
+                    <CardTitle className={cn("text-ui-card-title font-medium", !isAdmin && "mt-2", detailCardTitleClass)}>
                       {isAdmin ? "신청 스트링 정보" : "신청 서비스"}
                     </CardTitle>
                   </CardHeader>
@@ -2278,7 +2292,7 @@ export default function StringingApplicationDetailClient({
                       "mx-4 mb-3 mt-3 px-3 py-3 bp-sm:mx-6 bp-sm:mt-4 bp-sm:px-4",
                       isAdmin
                         ? "border-y border-border/70 bg-muted/30 dark:bg-background"
-                        : "rounded-xl border border-primary/10 bg-primary/5",
+                        : "rounded-xl border border-brand-highlight-ink/15 bg-brand-highlight-muted/35",
                     )}
                   >
                     <div className="flex flex-col gap-3 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
@@ -2613,7 +2627,7 @@ export default function StringingApplicationDetailClient({
                                   </p>
                                   <p className="break-keep">
                                     <span className="text-muted-foreground">소계:</span>{" "}
-                                    <span className="font-semibold text-brand-highlight-ink">
+                                    <span className="font-semibold text-primary">
                                       {item.subtotal.toLocaleString()}원
                                     </span>
                                   </p>
@@ -2903,7 +2917,7 @@ export default function StringingApplicationDetailClient({
                       <CardDescription>이번 이용에 패키지 이용권이 사용되었습니다.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3 p-4 bp-sm:p-5">
-                      <div className="rounded-xl bg-primary/5 p-3 text-ui-body-sm text-foreground/80 ring-1 ring-primary/10">
+                      <div className="rounded-xl border border-brand-highlight-ink/15 bg-brand-highlight-muted/35 p-3 text-ui-body-sm text-foreground/80 ring-1 ring-brand-highlight-ink/15">
                         <p className="font-semibold text-foreground">
                           사용 {packageUsedCount}회
                           {typeof packageRemainingCount === "number"
@@ -2935,7 +2949,7 @@ export default function StringingApplicationDetailClient({
                       !isAdmin && "pb-2",
                     )}
                   >
-                    <CardTitle className="text-ui-card-title font-medium flex items-center gap-2">
+                    <CardTitle className={cn("text-ui-card-title font-medium flex items-center gap-2", detailCardTitleClass)}>
                       <CreditCard className={cn("h-5 w-5", detailIconClass)} />{" "}
                       {isAdmin ? "결제 정보" : "결제 요약"}
                     </CardTitle>
@@ -3013,7 +3027,7 @@ export default function StringingApplicationDetailClient({
                               <p>서비스비/장착비 {totalPrice.toLocaleString()}원</p>
                               {packageApplied && <p>패키지 {packageUsedCount}회 사용</p>}
                             </div>
-                            <div className="mt-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
+                            <div className="mt-3 rounded-xl border border-brand-highlight-ink/15 bg-brand-highlight-muted/35 p-4 ring-1 ring-brand-highlight-ink/15">
                               <p className="text-ui-label text-muted-foreground">최종 결제금액</p>
                               <p className="mt-1 text-right text-ui-title-sm font-semibold text-brand-highlight-ink">
                                 {data.totalPrice.toLocaleString()}원
