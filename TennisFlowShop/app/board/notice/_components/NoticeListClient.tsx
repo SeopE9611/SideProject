@@ -328,7 +328,7 @@ export default function NoticeListClient({
   );
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="standard"
         eyebrow="Customer Support"
@@ -534,7 +534,10 @@ export default function NoticeListClient({
             )}
         </PublicSurface>
 
-        <nav className="flex items-center justify-center" aria-label="공지 및 이벤트 페이지네이션">
+        <nav
+          className="flex items-center justify-center"
+          aria-label={isEventMode ? "이벤트 페이지네이션" : "공지사항 페이지네이션"}
+        >
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             <Button
               variant="outline"
@@ -559,9 +562,9 @@ export default function NoticeListClient({
             {visiblePages.map((pageNumber) => (
               <Button
                 key={pageNumber}
-                variant={pageNumber === page ? "secondary" : "outline"}
+                variant={pageNumber === page ? "default" : "outline"}
                 size="sm"
-                className="h-10 w-10 bg-card text-ui-body-sm sm:h-12 sm:w-12 sm:text-ui-body-lg"
+                className="h-10 w-10 text-ui-body-sm sm:h-12 sm:w-12 sm:text-ui-body-lg"
                 onClick={() => movePage(pageNumber)}
                 disabled={isBusy}
                 aria-current={pageNumber === page ? "page" : undefined}
@@ -612,6 +615,6 @@ export default function NoticeListClient({
           </div>
         </nav>
       </SiteContainer>
-    </div>
+    </main>
   );
 }
