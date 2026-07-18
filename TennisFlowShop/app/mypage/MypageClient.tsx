@@ -14,6 +14,7 @@ import StickyAside from "@/components/layout/StickyAside";
 import { DashboardSectionPanel } from "@/components/public";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/AcademyApplicationsListSkeleton";
+import QnaListSkeleton from "@/app/mypage/tabs/_components/QnaListSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +50,7 @@ const PassList = dynamic(() => import("@/app/mypage/tabs/PassList"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
 const QnAList = dynamic(() => import("@/app/mypage/tabs/QnAList"), {
-  loading: () => <TabPanelSkeleton rowCount={4} />,
+  loading: () => <QnaListSkeleton />,
 });
 const ReviewList = dynamic(() => import("@/app/mypage/tabs/ReviewList"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
