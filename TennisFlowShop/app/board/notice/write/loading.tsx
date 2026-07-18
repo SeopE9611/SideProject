@@ -1,5 +1,5 @@
-import { FormPageSkeleton } from "@/components/system/loading";
+import NoticeWriteLoadingShell from "../_components/NoticeWriteLoadingShell";
 
 export default function NoticeWriteLoading() {
-  return <FormPageSkeleton className="py-8" fields={5} />;
+  return <NoticeWriteLoadingShell mode="notice" />;
 }
