@@ -10,6 +10,7 @@ import {
   getCustomerPaymentStatusLabel,
 } from "@/app/mypage/_lib/flow-display";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
+import OrderDetailSkeleton from "@/app/mypage/orders/_components/OrderDetailSkeleton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -526,19 +527,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     return (
       <main className="w-full">
         <SiteContainer variant="wide" className="py-4 bp-sm:py-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-9 w-44" />
-            <Skeleton className="h-9 w-24" />
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="h-24 rounded-xl" />
-            ))}
-          </div>
-          <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-            <Skeleton className="h-[440px] rounded-xl" />
-            <Skeleton className="h-[440px] rounded-xl" />
-          </div>
+          <OrderDetailSkeleton />
         </SiteContainer>
       </main>
     );
@@ -924,13 +913,14 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   return (
     <main className="w-full">
       <MypageDetailHero
+        variant="feature"
         title={serviceLinkedOrder ? "상품 구매 + 교체서비스 상세" : "주문 상세"}
         description={
           serviceLinkedOrder
             ? "주문 상품, 결제 상태, 교체서비스 진행 정보를 확인하세요."
             : "주문 상품, 결제 상태, 배송 정보를 확인하세요."
         }
-        icon={<ShoppingCart className="h-6 w-6 text-primary" />}
+        icon={<ShoppingCart className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
         status={
           <OrderStatusBadge
             orderId={orderId}
@@ -940,6 +930,35 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         }
         statusTitle={customerStatusLabel}
         identifier={`주문번호: #${orderId.slice(-6).toUpperCase()}`}
+        summary={
+          <>
+            <MypageInfoField label="주문일" value={formatDate(orderDetail.date)} />
+            <MypageInfoField
+              label="총 결제금액"
+              value={formatCurrency(orderDetail.total)}
+              valueClassName="text-brand-highlight-ink"
+            />
+            <MypageInfoField label="배송/수령" value={shippingMethodLabel} />
+          </>
+        }
+        nextActionTitle={nextTodo ? nextActionCopy.title : undefined}
+        nextActionDescription={nextTodo ? nextActionCopy.description : undefined}
+        nextActionSlot={
+          nextTodo ? (
+            <Button
+              asChild={Boolean(nextTodo.ctaHref)}
+              onClick={nextTodo.onCtaClick}
+              disabled={isConfirmingPurchase}
+              className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
+            >
+              {nextTodo.ctaHref ? (
+                <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
+              ) : (
+                nextTodo.ctaLabel
+              )}
+            </Button>
+          ) : undefined
+        }
         actions={
           <>
             <Button
@@ -983,7 +1002,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
         {/* 취소 요청 상태 안내 배너 */}
         {cancelLabel && (
-          <div className="mb-4 flex flex-col gap-3 border-l-2 border-destructive/50 bg-muted/20 px-3 py-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+          <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-warning/35 bg-warning/10 px-3 py-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
             <span className="min-w-0 break-words">{cancelLabel}</span>
 
             {canWithdrawCancelRequest && (
@@ -1009,42 +1028,14 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           </div>
         )}
 
-        {nextTodo ? (
-          <div className="mb-5 flex w-full flex-col gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-sm shadow-foreground/[0.02] bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-5">
-            <div className="min-w-0 space-y-1">
-              <p className="text-ui-label font-medium text-muted-foreground">다음 할 일</p>
-              <p className="break-keep text-ui-body-sm font-medium text-foreground">
-                {nextActionCopy.title}
-              </p>
-              {nextActionCopy.description ? (
-                <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
-                  {nextActionCopy.description}
-                </p>
-              ) : null}
-            </div>
-
-            <Button
-              asChild={Boolean(nextTodo.ctaHref)}
-              onClick={nextTodo.onCtaClick}
-              disabled={isConfirmingPurchase}
-              className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto"
-            >
-              {nextTodo.ctaHref ? (
-                <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
-              ) : (
-                nextTodo.ctaLabel
-              )}
-            </Button>
-          </div>
-        ) : null}
-
         <div className="w-full space-y-5">
           <div className="space-y-5">
             {/* 주문 항목 */}
             <MypageDetailCard
               title="주문상품"
               description="구매한 상품과 선택 옵션을 확인하세요."
-              icon={<ShoppingCart className="h-5 w-5 text-warning" />}
+              icon={<ShoppingCart className="h-5 w-5" aria-hidden="true" />}
+              variant="feature"
             >
               <div className="divide-y divide-border/60">
                 {orderDetail.items.map((item, idx) => {
@@ -1132,7 +1123,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 <MypageDetailCard
                   title="연결된 교체서비스"
                   description="진행 상태와 핵심 일정을 요약했습니다."
+                  icon={<Truck className="h-5 w-5" aria-hidden="true" />}
                   contentClassName="space-y-4"
+                  variant="feature"
                 >
                   {hasLinkedStringingApps ? (
                     linkedStringingApps.map((app, appIndex) => {
@@ -1200,9 +1193,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           </div>
 
                           <details className="group mt-4 rounded-xl bg-muted/15 p-3">
-                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-ui-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                               <span>라켓·스트링 상세</span>
-                              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
                             </summary>
                             <div className="mt-3 space-y-2">
                               {displayLines.map((line, lineIndex) => {
@@ -1439,10 +1432,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   </div>
 
                   <MypageInfoField
-                    className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
+                    className="rounded-xl bg-brand-highlight-muted/60 p-4 ring-1 ring-brand-highlight-ink/15"
                     label="결제 금액"
                     value={formatCurrency(orderDetail.total)}
-                    valueClassName="text-ui-section-title text-primary"
+                    valueClassName="text-ui-section-title text-brand-highlight-ink"
                   />
                 </div>
               </CardContent>
@@ -1512,9 +1505,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
                   {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber ? (
                     <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                         <span>운송장·배송조회 상세</span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
                       </summary>
                       <div className="space-y-3 border-t border-border/60 p-3 bp-sm:p-4">
                         <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
@@ -1537,7 +1530,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           </div>
                         )}
                         {!isTrackingLoading && !trackingError && trackingData && (
-                          <div className="space-y-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
+                          <div className="space-y-2 border-l-2 border-success/40 bg-success/10 px-3 py-3 text-ui-body-sm">
                             {trackingData.success && trackingData.supported ? (
                               <>
                                 <p className="text-foreground">
@@ -1557,7 +1550,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                   </p>
                                 )}
                                 {shouldShowTrackingStatusNotice && (
-                                  <div className="space-y-0.5 border-l-2 border-border bg-background/60 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
+                                  <div className="space-y-0.5 border-l-2 border-warning/50 bg-warning/10 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
                                     <p>실시간 배송 상태는 택배사 기준이며,</p>
                                     <p>주문 상태와 다를 수 있습니다.</p>
                                   </div>
@@ -1595,7 +1588,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   ) : null}
 
                   {showDeliveryOnlyFields && isEditMode && canUserEdit ? (
-                    <div className="rounded-xl bg-muted/10 p-3 ring-1 ring-border/40">
+                    <div className="rounded-xl border border-warning/35 bg-warning/10 p-3 ring-0">
                       {editingRequest ? (
                         <RequestEditForm
                           initialData={orderDetail.shippingInfo.deliveryRequest || ""}
