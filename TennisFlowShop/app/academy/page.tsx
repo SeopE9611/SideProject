@@ -345,6 +345,7 @@ export default async function AcademyPage() {
           </p>
         }
         variant="feature"
+        className="bg-brand-highlight-muted/30"
         actions={
           <>
             <Button
@@ -389,6 +390,7 @@ export default async function AcademyPage() {
           <SectionHeader
             eyebrow="Lesson Program"
             title={<span id="lesson-fees-heading">레슨 프로그램 & 기준 수강료</span>}
+            variant="brand"
             description={
               <p className="break-keep leading-relaxed">
                 레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다. 수강료는 레슨 유형과
@@ -403,6 +405,7 @@ export default async function AcademyPage() {
               return (
                 <PublicSurface
                   key={program.category}
+                  variant="feature"
                   className="flex h-full min-w-0 flex-col gap-5"
                 >
                   <div className="flex min-w-0 items-start justify-between gap-3">
@@ -452,6 +455,7 @@ export default async function AcademyPage() {
           <SectionHeader
             eyebrow="Contact"
             title={<span id="academy-contact-heading">상담 문의</span>}
+            variant="brand"
             description={
               <p className="break-keep leading-relaxed">
                 레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요. 상담 후
@@ -460,7 +464,7 @@ export default async function AcademyPage() {
             }
           />
 
-          <PublicSurface padding="none" className="overflow-hidden">
+          <PublicSurface variant="feature" padding="none" className="overflow-hidden">
             <div className="grid divide-y divide-border bp-lg:grid-cols-2 bp-lg:divide-x bp-lg:divide-y-0">
               {academyContacts.map((contact) => (
                 <div
@@ -505,6 +509,7 @@ export default async function AcademyPage() {
           <SectionHeader
             eyebrow="Classes"
             title="현재 모집 중인 클래스"
+            variant="brand"
             description={
               <p className="break-keep leading-relaxed">
                 목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청
@@ -525,11 +530,12 @@ export default async function AcademyPage() {
                 return (
                   <PublicSurface
                     key={academyClass._id}
-                    className={`flex h-full min-w-0 flex-col gap-4 ${isClosed ? "opacity-75" : ""}`}
+                    variant="feature"
+                    className={`flex h-full min-w-0 flex-col gap-4 ${isClosed ? "border-warning/30 bg-muted/40" : ""}`}
                   >
                     <div className="space-y-4">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <Badge variant={isClosed ? "secondary" : "info"}>
+                        <Badge variant={isClosed ? "secondary" : "highlight"}>
                           {academyClass.statusLabel}
                         </Badge>
                         <Badge variant="outline" className="break-keep">
@@ -551,7 +557,7 @@ export default async function AcademyPage() {
 
                       <dl className="divide-y divide-border/80 border-y border-border">
                         <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 py-3 text-ui-body-sm">
-                          <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <User className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                           <dt className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             강사
                           </dt>
@@ -560,7 +566,7 @@ export default async function AcademyPage() {
                           </dd>
                         </div>
                         <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 py-3 text-ui-body-sm">
-                          <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                           <dt className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             장소
                           </dt>
@@ -569,7 +575,7 @@ export default async function AcademyPage() {
                           </dd>
                         </div>
                         <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] items-start gap-3 py-3 text-ui-body-sm">
-                          <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                          <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                           <dt className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             일정
                           </dt>
@@ -585,7 +591,7 @@ export default async function AcademyPage() {
                           </dd>
                         </div>
                         <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 py-3 text-ui-body-sm">
-                          <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <Users className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                           <dt className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             정원
                           </dt>
@@ -594,7 +600,7 @@ export default async function AcademyPage() {
                           </dd>
                         </div>
                         <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 py-3 text-ui-body-sm">
-                          <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                           <dt className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             가격
                           </dt>
@@ -613,7 +619,7 @@ export default async function AcademyPage() {
                             className="w-full"
                           >
                             <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
-                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              <CheckCircle2 className="mr-2 h-4 w-4" aria-hidden />
                               신청 완료
                             </Link>
                           </Button>

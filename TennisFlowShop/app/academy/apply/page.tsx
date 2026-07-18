@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 
 import AcademyApplyClient from "@/app/academy/apply/_components/AcademyApplyClient";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero, ResultState, SummaryCard } from "@/components/public";
+import { PublicPageHero, PublicSurface, ResultState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import { getAcademyScheduleDisplay } from "@/lib/academy-display";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
@@ -307,6 +307,8 @@ export default async function AcademyApplyPage({
         eyebrow="도깨비테니스 아카데미"
         title="아카데미 신청서"
         description="신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다."
+        variant="feature"
+        className="bg-brand-highlight-muted/30"
         actions={
           <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
             <Link href="/academy">
@@ -322,6 +324,8 @@ export default async function AcademyApplyPage({
         <div className="mx-auto max-w-5xl space-y-6">
           {/* Notice Card */}
           <SummaryCard
+            variant="feature"
+            eyebrow="Step 1 · Before you apply"
             title="신청 전 안내사항"
             description="신청 전 아래 내용을 확인해 주세요."
             contentClassName="pt-0"
@@ -390,8 +394,10 @@ export default async function AcademyApplyPage({
             <>
               {/* Selected Class Info */}
               {selectedClass && (
-                <div
-                  className={`overflow-hidden rounded-2xl border shadow-sm ${selectedClass.status === "closed" ? "border-border bg-muted/30" : "border-border bg-card"}`}
+                <PublicSurface
+                  variant="feature"
+                  padding="none"
+                  className={selectedClass.status === "closed" ? "overflow-hidden border-warning/30 bg-muted/30" : "overflow-hidden"}
                 >
                   {/* Class Header */}
                   <div className="border-b border-border bg-muted/30 px-5 py-4 md:px-6">
@@ -400,9 +406,9 @@ export default async function AcademyApplyPage({
                         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-ui-label font-medium ${selectedClass.status === "closed" ? "bg-muted text-muted-foreground" : "bg-success/10 text-success"}`}
                       >
                         {selectedClass.status === "closed" ? (
-                          <Clock className="h-3 w-3" />
+                          <Clock className="h-3 w-3" aria-hidden />
                         ) : (
-                          <CheckCircle2 className="h-3 w-3" />
+                          <CheckCircle2 className="h-3 w-3" aria-hidden />
                         )}
                         {selectedClass.statusLabel}
                       </span>
@@ -421,7 +427,7 @@ export default async function AcademyApplyPage({
                       <p className="mb-1 text-ui-label font-medium uppercase tracking-wider text-muted-foreground">
                         선택한 클래스
                       </p>
-                      <h3 className="text-ui-section-title font-semibold text-foreground">
+                      <h3 className="font-brand-heading text-ui-section-title font-semibold tracking-[-0.015em] text-foreground">
                         {selectedClass.name}
                       </h3>
                       {selectedClass.description && (
@@ -434,7 +440,7 @@ export default async function AcademyApplyPage({
                     {/* Class Details Grid */}
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                        <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <Users className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             정원
@@ -448,7 +454,7 @@ export default async function AcademyApplyPage({
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                        <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             장소
@@ -459,7 +465,7 @@ export default async function AcademyApplyPage({
                         </div>
                       </div>
                       <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                        <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                        <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                         <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
                           <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             일정
@@ -475,7 +481,7 @@ export default async function AcademyApplyPage({
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                        <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             수강료
@@ -500,7 +506,7 @@ export default async function AcademyApplyPage({
                       </div>
                     )}
                   </div>
-                </div>
+                </PublicSurface>
               )}
 
               {/* Application Form */}
