@@ -6,6 +6,7 @@ import OrdersScopeTabs, {
 import MypagePrimaryNavigation from "@/app/mypage/_components/MypagePrimaryNavigation";
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import OrderDetailSkeleton from "@/app/mypage/orders/_components/OrderDetailSkeleton";
+import StringingApplicationDetailSkeleton from "@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton";
 import MypageDashboardHero from "@/app/mypage/_components/MypageDashboardHero";
 import SiteContainer from "@/components/layout/SiteContainer";
 import StickyAside from "@/components/layout/StickyAside";
@@ -23,7 +24,7 @@ import useSWR from "swr";
 
 const ApplicationDetail = dynamic(
   () => import("@/app/mypage/applications/_components/ApplicationDetail"),
-  { loading: () => <TabPanelSkeleton rowCount={3} /> },
+  { loading: () => <StringingApplicationDetailSkeleton /> },
 );
 const OrderDetailClient = dynamic(
   () => import("@/app/mypage/orders/_components/OrderDetailClient"),

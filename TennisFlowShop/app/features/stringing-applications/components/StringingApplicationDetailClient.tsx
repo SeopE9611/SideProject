@@ -8,6 +8,7 @@ import PaymentMethodDetail from "@/app/features/stringing-applications/component
 import RequirementsEditForm from "@/app/features/stringing-applications/components/RequirementsEditForm";
 import StringInfoEditForm from "@/app/features/stringing-applications/components/StringInfoEditForm";
 import StringingApplicationHistory from "@/app/features/stringing-applications/components/StringingApplicationHistory";
+import StringingApplicationDetailSkeleton from "@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import {
   collectionMethodLabel,
@@ -732,7 +733,10 @@ export default function StringingApplicationDetailClient({
     setIsLineDetailsExpanded(isAdmin ? lineCount <= 3 : false);
   }, [applicationId, data?.lines, isAdmin]);
 
-  const renderInitialLoading = () => (
+  const renderInitialLoading = () => {
+    if (!isAdmin) return <StringingApplicationDetailSkeleton />;
+
+    return (
     <main className="w-full">
       <div
         className={cn(
@@ -800,6 +804,7 @@ export default function StringingApplicationDetailClient({
       </div>
     </main>
   );
+  };
 
   if (error)
     return (
@@ -1326,8 +1331,9 @@ export default function StringingApplicationDetailClient({
             }
           : null;
 
-  const summaryCardClass =
-    "flex min-h-[108px] flex-col items-start justify-between gap-2 rounded-xl bg-muted/15 p-3 bp-sm:p-4";
+  const summaryCardClass = isAdmin
+    ? "flex min-h-[108px] flex-col items-start justify-between gap-2 rounded-xl bg-muted/15 p-3 bp-sm:p-4"
+    : "flex min-h-[108px] flex-col items-start justify-between gap-2 rounded-xl border border-brand-highlight-ink/15 bg-brand-highlight-muted/25 p-3 bp-sm:p-4";
   const summaryBadgeClass = cn(badgeBase, badgeSizeSm, "inline-flex w-fit self-start");
   const inboundStatusLabel = !inboundRequired
     ? "별도 발송 불필요"
@@ -1356,17 +1362,21 @@ export default function StringingApplicationDetailClient({
   const detailColumnClass = isAdmin ? "contents" : "space-y-5";
   const detailCardClass = isAdmin
     ? "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
-    : "overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]";
+    : "overflow-hidden rounded-2xl border border-brand-highlight-ink/20 bg-card shadow-soft";
   const detailCardHeaderClass = isAdmin
     ? "border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5 lg:p-6"
-    : "border-b border-border/60 bg-secondary/20 px-4 py-4 bp-sm:px-5";
+    : "border-b border-brand-highlight-ink/15 bg-brand-highlight-muted/45 px-4 py-4 bp-sm:px-5";
+  const detailCardTitleClass = !isAdmin ? "font-brand-heading font-semibold tracking-[-0.015em]" : undefined;
+  const detailIconClass = !isAdmin ? "text-brand-highlight-ink" : "text-primary";
   return (
     <main className="w-full">
       {!isAdmin && (
         <MypageDetailHero
+          variant="feature"
+          eyebrow={<Badge variant="signal">STRINGING SERVICE</Badge>}
           title="교체서비스 신청 상세"
           description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
-          icon={<Target className="h-6 w-6 text-primary" />}
+          icon={<Target className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
           status={<ApplicationStatusBadge status={data.status} />}
           statusTitle={customerStatusLabel}
           identifier={`신청번호: #${toShortApplicationId(data.id)}`}
@@ -1376,7 +1386,7 @@ export default function StringingApplicationDetailClient({
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 bp-sm:w-auto"
               >
                 <Link href={backUrl}>
                   <span className="bp-sm:hidden">목록</span>
@@ -1385,12 +1395,12 @@ export default function StringingApplicationDetailClient({
               </Button>
 
               <Button
-                variant={isEditMode ? "destructive" : "outline"}
+                variant="outline"
                 size="sm"
                 disabled={!isEditableAllowed}
                 className={cn(
                   "h-9 w-full whitespace-nowrap bp-sm:w-auto",
-                  !isEditMode && "border-border bg-background hover:bg-primary/10",
+                  !isEditMode && "border-brand-highlight-ink/20 bg-brand-highlight-muted/35 hover:bg-brand-highlight-muted/55",
                 )}
                 onClick={() => {
                   if (!isEditableAllowed) return;
@@ -1419,17 +1429,39 @@ export default function StringingApplicationDetailClient({
                   size="sm"
                   onClick={handleWithdrawCancelRequest}
                   disabled={isWithdrawingCancel}
-                  className="h-9 w-full whitespace-nowrap border-border text-primary hover:bg-muted hover:text-primary bp-sm:w-auto"
+                  className="h-9 w-full whitespace-nowrap border-warning/40 text-warning hover:bg-warning/10 bp-sm:w-auto"
                 >
                   {isWithdrawingCancel ? "철회 중..." : "취소 요청 철회"}
                 </Button>
               )}
             </>
           }
+          nextActionTitle={userNextActionLabel}
+          nextActionDescription={userNextTodo?.description}
+          nextActionSlot={
+            userNextTodo?.ctaLabel ? (
+              <Button
+                asChild={Boolean(userNextTodo.ctaHref)}
+                onClick={userNextTodo.onCtaClick}
+                disabled={isConfirmSubmitting}
+                className="w-full shrink-0 whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
+              >
+                {userNextTodo.ctaHref ? (
+                  <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
+                ) : (
+                  userNextTodo.ctaLabel
+                )}
+              </Button>
+            ) : null
+          }
           summary={
             <>
               <MypageInfoField label="신청 유형" value={applicationContext.label} />
               <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
+              <MypageInfoField
+                label={totalPrice > 0 ? "총 서비스 금액" : "접수 방식"}
+                value={totalPrice > 0 ? `${totalPrice.toLocaleString()}원` : inboundStatusLabel}
+              />
             </>
           }
         />
@@ -1449,7 +1481,7 @@ export default function StringingApplicationDetailClient({
           }
         >
           {isLoading ? (
-            <div className="mx-auto w-full max-w-[1500px] border-l-2 border-primary/30 bg-primary/5 px-4 py-2 text-ui-body-sm text-foreground/80">
+            <div className="mx-auto w-full max-w-[1500px] border-l-2 border-brand-highlight-ink/30 bg-brand-highlight-muted/35 px-4 py-2 text-ui-body-sm text-foreground/80">
               최신 상태를 확인하고 있습니다...
             </div>
           ) : null}
@@ -1480,7 +1512,7 @@ export default function StringingApplicationDetailClient({
                     </div>
                     <div className={cn("min-w-0", !isAdmin && "space-y-2")}>
                       {!isAdmin && (
-                        <div className="text-ui-label font-medium text-primary">마이페이지</div>
+                        <div className="text-ui-label font-medium text-brand-highlight-ink">마이페이지</div>
                       )}
                       <h1
                         className={cn(
@@ -2034,24 +2066,6 @@ export default function StringingApplicationDetailClient({
               </div>
             )}
 
-            {!isAdmin && userNextTodo?.ctaLabel && (
-              <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-primary/15 bg-primary/5 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                <p className="text-ui-body-sm font-medium text-foreground">{userNextActionLabel}</p>
-                <Button
-                  asChild={Boolean(userNextTodo.ctaHref)}
-                  onClick={userNextTodo.onCtaClick}
-                  disabled={isConfirmSubmitting}
-                  className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto"
-                >
-                  {userNextTodo.ctaHref ? (
-                    <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
-                  ) : (
-                    userNextTodo.ctaLabel
-                  )}
-                </Button>
-              </div>
-            )}
-
             {!isAdmin && !userNextTodo?.ctaLabel && (
               <div className="mb-4 flex justify-end">
                 <ServiceReviewCTA
@@ -2064,7 +2078,7 @@ export default function StringingApplicationDetailClient({
             )}
 
             {showUserCancelStatusBanner && (
-              <div className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-ui-body-sm text-foreground">
+              <div className="mb-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-ui-body-sm text-foreground">
                 취소 요청을 확인 중입니다.
               </div>
             )}
@@ -2599,7 +2613,7 @@ export default function StringingApplicationDetailClient({
                                   </p>
                                   <p className="break-keep">
                                     <span className="text-muted-foreground">소계:</span>{" "}
-                                    <span className="font-semibold text-primary">
+                                    <span className="font-semibold text-brand-highlight-ink">
                                       {item.subtotal.toLocaleString()}원
                                     </span>
                                   </p>
@@ -2697,8 +2711,8 @@ export default function StringingApplicationDetailClient({
                 {!isAdmin && (
                   <Card className={cn(detailCardClass, "order-2")}>
                     <CardHeader className={detailCardHeaderClass}>
-                      <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
-                        <Truck className="h-5 w-5 text-primary" />
+                      <CardTitle className={cn("flex items-center gap-2 text-ui-card-title font-medium", detailCardTitleClass)}>
+                        <Truck className={cn("h-5 w-5", detailIconClass)} />
                         접수/수령 정보
                       </CardTitle>
                       <CardDescription>발송·수령 상태만 간단히 확인하세요.</CardDescription>
@@ -2827,15 +2841,15 @@ export default function StringingApplicationDetailClient({
                     )}
                   >
                     <CardHeader className={detailCardHeaderClass}>
-                      <CardTitle className="flex items-center justify-between">
+                      <CardTitle className={cn("flex items-center justify-between", detailCardTitleClass)}>
                         <span>요청사항</span>
                         {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                       </CardTitle>
                     </CardHeader>
                     <details className="group bp-md:block">
-                      <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 bp-md:hidden [&::-webkit-details-marker]:hidden">
+                      <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:hidden [&::-webkit-details-marker]:hidden">
                         <span>요청사항</span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
                       </summary>
                       <CardContent className="hidden p-4 bp-sm:p-5 group-open:block bp-md:block">
                         {editingRequirements ? (
@@ -2882,8 +2896,8 @@ export default function StringingApplicationDetailClient({
                 {!isAdmin && packageApplied && (
                   <Card className={cn(detailCardClass, "order-2")}>
                     <CardHeader className={detailCardHeaderClass}>
-                      <CardTitle className="flex items-center gap-2 text-ui-card-title font-medium">
-                        <Ticket className="h-5 w-5 text-primary" />
+                      <CardTitle className={cn("flex items-center gap-2 text-ui-card-title font-medium", detailCardTitleClass)}>
+                        <Ticket className={cn("h-5 w-5", detailIconClass)} />
                         패키지 사용
                       </CardTitle>
                       <CardDescription>이번 이용에 패키지 이용권이 사용되었습니다.</CardDescription>
@@ -2922,7 +2936,7 @@ export default function StringingApplicationDetailClient({
                     )}
                   >
                     <CardTitle className="text-ui-card-title font-medium flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-primary" />{" "}
+                      <CreditCard className={cn("h-5 w-5", detailIconClass)} />{" "}
                       {isAdmin ? "결제 정보" : "결제 요약"}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
@@ -2961,7 +2975,7 @@ export default function StringingApplicationDetailClient({
                               label="총 결제 금액"
                               className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
                               value={`${data.totalPrice.toLocaleString()}원`}
-                              valueClassName="font-semibold text-primary"
+                              valueClassName={isAdmin ? "font-semibold text-primary" : "font-semibold text-brand-highlight-ink"}
                             />
                             <AdminCompactField
                               label="결제 상태"
@@ -3001,7 +3015,7 @@ export default function StringingApplicationDetailClient({
                             </div>
                             <div className="mt-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
                               <p className="text-ui-label text-muted-foreground">최종 결제금액</p>
-                              <p className="mt-1 text-right text-ui-title-sm font-semibold text-primary">
+                              <p className="mt-1 text-right text-ui-title-sm font-semibold text-brand-highlight-ink">
                                 {data.totalPrice.toLocaleString()}원
                               </p>
                             </div>
@@ -3215,9 +3229,9 @@ export default function StringingApplicationDetailClient({
                   className={cn(detailCardClass, "xl:col-span-6")}
                 >
                   <CardHeader className={detailCardHeaderClass}>
-                    <CardTitle className="flex items-center justify-between">
+                    <CardTitle className={cn("flex items-center justify-between", detailCardTitleClass)}>
                       <div className="flex items-center space-x-2">
-                        <User className="h-5 w-5 text-primary" />
+                        <User className={cn("h-5 w-5", detailIconClass)} />
                         <span>고객 정보</span>
                       </div>
                       {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
