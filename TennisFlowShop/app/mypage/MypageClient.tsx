@@ -15,6 +15,7 @@ import { DashboardSectionPanel } from "@/components/public";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/AcademyApplicationsListSkeleton";
 import QnaListSkeleton from "@/app/mypage/tabs/_components/QnaListSkeleton";
+import { WishlistSkeleton } from "@/app/mypage/tabs/Wishlist";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -56,7 +57,7 @@ const ReviewList = dynamic(() => import("@/app/mypage/tabs/ReviewList"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
 const Wishlist = dynamic(() => import("@/app/mypage/tabs/Wishlist"), {
-  loading: () => <TabPanelSkeleton rowCount={4} />,
+  loading: () => <WishlistSkeleton />,
 });
 
 const MYPAGE_TABS = [
