@@ -624,19 +624,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         identifier={`대여번호: ${data.id}`}
         actions={
           <>
-            {isReturnShippingAvailable ? (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 hover:text-brand-highlight-ink bp-sm:w-auto"
-              >
-                <Link href={returnShippingHref}>
-                  {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
-                </Link>
-              </Button>
-            ) : null}
-
             {canRequestCancel ? (
               <Button
                 variant="destructive"
@@ -669,8 +656,10 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
           <>
             {canReceiveRental ? (
               <Button
+                variant="highlight"
                 size="sm"
-                className="h-9 w-full whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
+                wrap="responsive"
+                className="w-full bp-sm:w-auto"
                 disabled={isReceiving}
                 onClick={handleReceiveRental}
               >
@@ -680,9 +669,11 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
 
             {nextTodo?.ctaLabel && nextTodo.ctaHref ? (
               <Button
+                variant="highlight"
                 size="sm"
+                wrap="responsive"
                 asChild
-                className="h-9 w-full whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
+                className="w-full bp-sm:w-auto"
               >
                 <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
               </Button>
@@ -827,10 +818,11 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     </p>
                     {isReturnShippingAvailable ? (
                       <Button
-                        variant="outline"
+                        variant="highlight_soft"
                         size="sm"
+                        wrap="responsive"
                         asChild
-                        className="h-9 w-full bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-fit"
+                        className="w-full bp-sm:w-fit"
                       >
                         <Link href={returnShippingHref}>
                           {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
@@ -923,8 +915,10 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
                       </p>
                       <Button
+                        variant="highlight_soft"
                         asChild
-                        className="h-9 w-full gap-2 whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
+                        wrap="responsive"
+                        className="w-full gap-2 bp-sm:w-auto"
                       >
                         <Link href={applyHref}>교체서비스 신청하기</Link>
                       </Button>
