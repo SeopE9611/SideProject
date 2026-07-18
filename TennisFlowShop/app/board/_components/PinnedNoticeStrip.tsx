@@ -23,16 +23,32 @@ function fmtDate(value: string | Date) {
     .replace(/\.$/, "");
 }
 
-export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[] }) {
+export default function PinnedNoticeStrip({
+  items,
+  tone = "default",
+}: {
+  items: PinnedNoticeItem[];
+  tone?: "default" | "signal";
+}) {
   if (!items.length) return null;
 
   return (
     <section
-      className="rounded-lg border border-primary/25 bg-primary/[0.04] px-3 py-2.5 sm:px-3.5"
+      className={
+        tone === "signal"
+          ? "rounded-lg border border-brand-highlight-ink/25 bg-brand-highlight-muted/40 px-3 py-2.5 sm:px-3.5"
+          : "rounded-lg border border-primary/25 bg-primary/[0.04] px-3 py-2.5 sm:px-3.5"
+      }
       aria-label="운영 공지"
     >
       <div className="flex items-center gap-2">
-        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-primary dark:bg-primary/25">
+        <div
+          className={
+            tone === "signal"
+              ? "flex h-6 w-6 items-center justify-center rounded-md bg-brand-highlight text-brand-highlight-foreground"
+              : "flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-primary dark:bg-primary/25"
+          }
+        >
           <Megaphone className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0">
@@ -48,9 +64,16 @@ export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[]
           <Link
             key={notice._id}
             href={`/board/notice/${notice._id}`}
-            className="group flex items-start gap-2 rounded-md border border-primary/15 bg-background/70 px-2.5 py-1.5 transition-colors hover:bg-primary/[0.07] dark:bg-background/60"
+            className={
+              tone === "signal"
+                ? "group flex items-start gap-2 rounded-md border border-brand-highlight-ink/25 bg-background/70 px-2.5 py-1.5 transition-colors hover:bg-brand-highlight-muted/60 dark:bg-background/60"
+                : "group flex items-start gap-2 rounded-md border border-primary/15 bg-background/70 px-2.5 py-1.5 transition-colors hover:bg-primary/[0.07] dark:bg-background/60"
+            }
           >
-            <Badge variant="brand" className="mt-0.5 shrink-0 px-1.5 py-0 text-ui-micro leading-4">
+            <Badge
+              variant={tone === "signal" ? "signal" : "brand"}
+              className="mt-0.5 shrink-0 px-1.5 py-0 text-ui-micro leading-4"
+            >
               <Pin className="h-3 w-3" />
             </Badge>
             <div className="min-w-0 flex-1">
