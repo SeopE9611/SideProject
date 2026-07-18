@@ -1,7 +1,7 @@
 "use client";
 
 import AsyncState from "@/components/system/AsyncState";
-import { StackedCardListSkeleton } from "@/components/system/loading";
+import QnaListSkeleton from "@/app/mypage/tabs/_components/QnaListSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -79,24 +79,24 @@ export default function QnAList() {
   // 빈 상태
   if (!isInitialLoading && !isValidating && qnas.length === 0) {
     return (
-      <Card className="border-border bg-muted/20 shadow-none">
-        <CardContent className="flex flex-col items-center justify-center px-4 py-8 text-center bp-sm:py-10">
-          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card">
-            <MessageCircleQuestion className="h-7 w-7 text-muted-foreground" />
+      <Card variant="feature" className="relative overflow-hidden border-brand-highlight/25 shadow-soft">
+        <CardContent className="flex flex-col items-center justify-center px-4 py-8 text-center bp-sm:py-10 md:py-12">
+          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-highlight-muted text-brand-highlight-ink">
+            <MessageCircleQuestion className="h-10 w-10" aria-hidden="true" />
           </div>
 
-          <h3 className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-            문의 내역이 없습니다
+          <h3 className="font-brand-heading text-ui-section-title font-semibold text-foreground">
+            아직 문의 내역이 없습니다.
           </h3>
 
-          <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground">
-            궁금한 점이 있다면 문의를 남겨주세요.
+          <p className="mt-2 max-w-md break-keep text-ui-body-sm text-muted-foreground">
+            상품, 주문, 서비스 이용 중 궁금한 점을 남기면 답변 상태를 이곳에서 확인할 수 있습니다.
           </p>
 
-          <Button asChild size="sm" variant="default" className="mt-4">
-            <Link href="/board/qna/write" className="inline-flex items-center gap-1.5">
+          <Button asChild size="sm" variant="highlight" wrap="responsive" className="mt-5">
+            <Link href="/board/qna/write">
               문의하기
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           </Button>
         </CardContent>
@@ -107,81 +107,66 @@ export default function QnAList() {
   // 목록
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? (
-        <StackedCardListSkeleton
-          count={4}
-          cardContentClassName="space-y-4 p-4 md:p-6"
-          showLeadingVisual
-          titleLineWidthClassName="w-20"
-          subtitleLineWidthClassName="w-64"
-          badgeWidthClassName="w-16"
-          showMetaDivider
-          metaLineWidths={["w-28"]}
-          actionCount={1}
-          actionWidths={["w-20"]}
-        />
-      ) : null}
+      {isInitialLoading ? <QnaListSkeleton /> : null}
       {qnas.map((qna) => (
         <Card
           key={qna.id}
-          className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
+          variant="feature"
+          className="group overflow-hidden border-brand-highlight/25 shadow-soft transition-[box-shadow,border-color] duration-200 hover:border-brand-highlight/45 hover:shadow-md"
         >
-          <div
-            className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            style={{ padding: "1px" }}
-          >
-            <div className="h-full w-full bg-card rounded-lg" />
-          </div>
-
-          <CardContent className="relative p-4 md:p-6">
-            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div className="flex min-w-0 items-start gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">
-                  <MessageCircleQuestion className="h-6 w-6 text-primary" />
+          <CardContent className="p-0">
+            <div className="border-b border-brand-highlight/20 bg-brand-highlight-muted p-4 bp-sm:p-5">
+              <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                <div className="flex min-w-0 gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-card text-brand-highlight-ink shadow-sm">
+                    <MessageCircleQuestion className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 space-y-2">
+                    {(() => {
+                      const c = getQnaCategoryBadgeSpec(qna.category);
+                      return <Badge variant={c.variant}>{qna.category}</Badge>;
+                    })()}
+                    <h3 className="line-clamp-2 break-keep font-brand-heading text-ui-card-title-lg font-semibold text-foreground">
+                      {qna.title}
+                    </h3>
+                  </div>
                 </div>
-                <div>
+
+                <div className="flex shrink-0 items-center gap-2 self-start">
+                  {qna.status === "답변 완료" ? (
+                    <CheckCircle className="h-4 w-4 text-success" aria-hidden="true" />
+                  ) : (
+                    <Clock className="h-4 w-4 text-warning" aria-hidden="true" />
+                  )}
                   {(() => {
-                    const c = getQnaCategoryBadgeSpec(qna.category);
-                    return (
-                      <Badge variant={c.variant} className="mb-2">
-                        {qna.category}
-                      </Badge>
-                    );
+                    const st = getAnswerStatusBadgeSpec(qna.status === "답변 완료");
+                    return <Badge variant={st.variant}>{qna.status}</Badge>;
                   })()}
-                  <h3 className="line-clamp-2 break-keep font-semibold text-foreground">
-                    {qna.title}
-                  </h3>
                 </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
-                {qna.status === "답변 완료" ? (
-                  <CheckCircle className="h-5 w-5 text-success" />
-                ) : (
-                  <Clock className="h-5 w-5 text-warning" />
-                )}
-                {(() => {
-                  const st = getAnswerStatusBadgeSpec(qna.status === "답변 완료");
-                  return <Badge variant={st.variant}>{qna.status}</Badge>;
-                })()}
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2 text-ui-body-sm text-foreground/80">
-                <Calendar className="h-4 w-4" />
-                <span>{qna.date}</span>
+            <div className="grid gap-4 p-4 bp-sm:grid-cols-[1fr_auto] bp-sm:items-center bp-sm:p-5">
+              <div className="rounded-control border border-border/70 bg-card p-3">
+                <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
+                  작성일
+                </p>
+                <div className="mt-1 flex items-center gap-2 text-ui-body-sm font-semibold text-foreground">
+                  <Calendar className="h-4 w-4 text-brand-highlight-ink" aria-hidden="true" />
+                  <span>{qna.date}</span>
+                </div>
               </div>
 
               <Button
                 size="sm"
-                variant="outline"
+                variant="highlight_soft"
+                wrap="responsive"
                 asChild
-                className="w-full border-border bg-background transition-colors hover:bg-card sm:w-auto"
+                className="w-full bp-sm:w-auto"
               >
-                <Link href={`/board/qna/${qna.id}`} className="inline-flex items-center gap-1">
+                <Link href={`/board/qna/${qna.id}`}>
                   상세 보기
-                  <ArrowRight className="h-3 w-3" />
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </Button>
             </div>
@@ -190,30 +175,24 @@ export default function QnAList() {
       ))}
 
       {/* '더 보기' */}
-      <div className="mt-6 flex justify-center items-center">
+      <div className="mt-6 flex items-center justify-center">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
-            더 보기
+          <Button
+            type="button"
+            variant="highlight_soft"
+            wrap="responsive"
+            onClick={() => setSize(size + 1)}
+            disabled={isValidating}
+            aria-label={isValidating ? "문의 내역을 더 불러오는 중입니다" : "문의 내역 더 보기"}
+          >
+            {isValidating ? "불러오는 중..." : "더 보기"}
           </Button>
         ) : qnas.length ? (
           <span className="text-ui-body-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 
-      {hasMore && isValidating ? (
-        <StackedCardListSkeleton
-          count={2}
-          cardContentClassName="space-y-4 p-4 md:p-6"
-          showLeadingVisual
-          titleLineWidthClassName="w-20"
-          subtitleLineWidthClassName="w-64"
-          badgeWidthClassName="w-16"
-          showMetaDivider
-          metaLineWidths={["w-28"]}
-          actionCount={1}
-          actionWidths={["w-20"]}
-        />
-      ) : null}
+      {hasMore && isValidating ? <QnaListSkeleton count={2} /> : null}
     </div>
   );
 }
