@@ -8,6 +8,8 @@ import {
 } from "@/app/board/market/_components/market.constants";
 import MarketMetaFields from "@/app/board/market/_components/MarketMetaFields";
 import ImageUploader from "@/components/admin/ImageUploader";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -642,8 +644,8 @@ export default function FreeBoardEditClient({ id }: Props) {
   if (error || isNotFound) {
     return (
       <div className="min-h-screen bg-muted/30">
-        <div className="container mx-auto px-4 py-8">
-          <Card className="border border-border bg-card shadow-md dark:bg-card">
+        <SiteContainer variant="wide" className="max-w-7xl py-8">
+          <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
             <CardContent className="space-y-4 p-6">
               <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui-body-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
                 해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.
@@ -655,7 +657,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </SiteContainer>
       </div>
     );
   }
@@ -664,13 +666,14 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8">
+      <SiteContainer variant="wide" className="max-w-7xl py-8">
         {/* 상단 헤더 */}
+        <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 > 글 수정 */}
             <div className="mb-1 text-ui-body-sm text-muted-foreground">
-              <span className="font-medium text-success">게시판</span>
+              <Badge variant="brand">중고 거래</Badge>
               <span className="mx-1">›</span>
               <Link
                 href="/board/market"
@@ -682,15 +685,15 @@ export default function FreeBoardEditClient({ id }: Props) {
               <span className="mx-1">›</span>
               <span>글 수정</span>
             </div>
-            <h1 className="text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+            <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
               중고 거래 글 수정
             </h1>
             <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
               기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.
             </p>
             {/* 이탈 경고(고정 노출) */}
-            <div className="mb-3 mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
-              <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
+            <div className="mb-3 mt-3 flex items-start gap-2 rounded-panel border border-border bg-brand-highlight-muted/35 px-3 py-2 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+              <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
                 <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나
                 새로고침하면 입력한 내용이{" "}
@@ -718,16 +721,17 @@ export default function FreeBoardEditClient({ id }: Props) {
               className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
             >
               <Link href="/board/market" onClick={onLeaveLinkClick}>
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare aria-hidden="true" className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>
             </Button>
           </div>
         </div>
+        </section>
 
         {isLoading ? (
-          <Card className="border border-border bg-card shadow-md dark:bg-card">
-            <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+          <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
+            <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
               <CardTitle className="text-ui-body-lg font-semibold">글 내용 수정</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-6">
@@ -769,7 +773,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                 )}
 
                 {conflictOpen && (
-                  <div className="rounded-lg border border-border bg-muted px-4 py-4 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+                  <div className="rounded-panel border border-border bg-brand-highlight-muted/35 px-4 py-4 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                     <p className="font-semibold text-foreground">
                       동시 수정 충돌이 감지되었습니다.
                     </p>
@@ -803,10 +807,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                 )}
 
                 {/* 상품 기본 정보 카드 */}
-                <Card className="border border-border bg-card shadow-md dark:bg-card">
-                  <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
+                  <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <Package className="h-4 w-4 text-success" />
+                      <Package aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
                       <span>상품 기본 정보</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -867,7 +871,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                           }}
                           disabled={isSubmitting}
                           className={cn(
-                            "h-10 w-full rounded-md border bg-card px-3 text-ui-body-sm shadow-sm",
+                            "h-10 w-full rounded-control border bg-card px-3 text-ui-body-sm shadow-soft",
                             fieldErrors.brand ? "border-destructive focus:border-destructive" : "",
                           )}
                         >
@@ -890,17 +894,17 @@ export default function FreeBoardEditClient({ id }: Props) {
                 </Card>
 
                 {/* 거래 핵심 정보 카드 */}
-                <Card className="border border-border bg-card shadow-md dark:bg-card">
-                  <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
+                  <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <Package className="h-4 w-4 text-success" />
+                      <Package aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
                       <span>거래 핵심 정보</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
                       판매가, 상태, 세부 스펙을 최신 상태로 정리해 주세요.
                     </p>
                   </CardHeader>
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     <MarketMetaFields
                       category={category}
                       value={marketMeta}
@@ -917,10 +921,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                 </Card>
 
                 {/* 게시글 내용 카드 */}
-                <Card className="border border-border bg-card shadow-md dark:bg-card">
-                  <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
+                  <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <MessageSquare className="h-4 w-4 text-success" />
+                      <MessageSquare aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
                       <span>게시글 내용</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -994,12 +998,12 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                 {/* 판매 이미지 / 파일 카드 */}
                 <Card
-                  className="border border-border bg-card shadow-md dark:bg-card"
+                  className="border border-border bg-card rounded-panel shadow-soft dark:bg-card"
                   ref={attachmentsRef}
                 >
-                  <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                  <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <Upload className="h-4 w-4 text-success" />
+                      <Upload aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
                       <span>판매 이미지 / 파일</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -1012,19 +1016,19 @@ export default function FreeBoardEditClient({ id }: Props) {
                    상단에 현재 상태를 한 번 요약해서 보여준다.
                   */}
                     <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+                      <div className="rounded-panel border border-border bg-brand-highlight-muted/30 px-3 py-3">
                         <p className="text-ui-body-sm text-foreground/75">현재 이미지</p>
                         <p className="mt-1 text-ui-body-sm font-semibold text-foreground">
                           {images.length}장
                         </p>
                       </div>
-                      <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+                      <div className="rounded-panel border border-border bg-brand-highlight-muted/30 px-3 py-3">
                         <p className="text-ui-body-sm text-foreground/75">기존 첨부 파일</p>
                         <p className="mt-1 text-ui-body-sm font-semibold text-foreground">
                           {existingAttachmentCount}개
                         </p>
                       </div>
-                      <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+                      <div className="rounded-panel border border-border bg-brand-highlight-muted/30 px-3 py-3">
                         <p className="text-ui-body-sm text-foreground/75">새로 추가한 파일</p>
                         <p className="mt-1 text-ui-body-sm font-semibold text-foreground">
                           {newAttachmentCount}개
@@ -1056,7 +1060,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                       <TabsContent value="file" className="space-y-4 pt-4">
                         {attachments.length > 0 && (
-                          <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+                          <div className="space-y-3 rounded-panel border border-border bg-brand-highlight-muted/20 p-4">
                             <div className="flex items-center justify-between">
                               <p className="text-ui-body-sm font-medium text-foreground">
                                 현재 보관된 첨부 파일
@@ -1112,7 +1116,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                             addFiles(Array.from(e.dataTransfer.files || []));
                           }}
                         >
-                          <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                          <Upload aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                           <p className="text-ui-body-sm text-muted-foreground">
                             클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                           </p>
@@ -1130,7 +1134,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                               fileInputRef.current?.click();
                             }}
                           >
-                            <Upload className="mr-2 h-4 w-4" />
+                            <Upload aria-hidden="true" className="mr-2 h-4 w-4" />
                             파일 선택
                           </Button>
                           <input
@@ -1209,7 +1213,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <aside className="hidden flex-shrink-0 lg:sticky lg:top-24 lg:block lg:w-[300px] lg:self-start xl:w-[320px]">
                 <div className={cn("space-y-4", isCompactSticky && "space-y-3")}>
                   {/* 수정 요약 */}
-                  <div className="rounded-xl border border-border bg-card shadow-sm">
+                  <div className="rounded-panel border border-border bg-card shadow-soft">
                     <div
                       className={cn(
                         "border-b border-border px-5 py-3",
@@ -1294,7 +1298,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                         </>
                       ) : (
                         <>
-                          <Package className="h-4 w-4" />
+                          <Package aria-hidden="true" className="h-4 w-4" />
                           수정 내용 저장
                         </>
                       )}
@@ -1319,7 +1323,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                     </p>
                   </div>
                   {/* 수정 전 확인: compact 모드에서는 접힘/펼침 */}
-                  <div className="rounded-xl border border-border bg-card shadow-sm">
+                  <div className="rounded-panel border border-border bg-card shadow-soft">
                     <button
                       type="button"
                       onClick={() => setIsChecklistOpen((prev) => !prev)}
@@ -1380,7 +1384,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             </div>
           </form>
         )}
-      </div>
+      </SiteContainer>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { MessageSquare, ArrowLeft, Loader2, Upload, X, AlertTriangle } from "luc
 import useSWR, { mutate as globalMutate } from "swr";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { CommunityPost } from "@/lib/types/community";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { CommunityBoardEditLoadingShell } from "@/components/system/CommunityBoardEditLoadingShell";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { CATEGORY_OPTIONS } from "@/app/board/gear/_components/FreeBoardWriteClient";
@@ -331,31 +333,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 로딩/에러 UI ----------------------------------------------------
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-muted/30">
-        <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
-          <div className="flex items-center gap-2 text-ui-body-sm text-muted-foreground">
-            <Skeleton className="h-4 w-16" />
-            <span>›</span>
-            <Skeleton className="h-4 w-20" />
-            <span>›</span>
-            <Skeleton className="h-4 w-16" />
-          </div>
-          <Card className="border border-border bg-card shadow-md dark:bg-card">
-            <CardHeader className="space-y-1">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-64" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-40 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-        </SiteContainer>
-      </div>
-    );
+    return <CommunityBoardEditLoadingShell boardLabel="장비 사용기" />;
   }
 
   const isNotFound = data && !data.ok && data.error === "not_found";
@@ -363,7 +341,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     return (
       <div className="min-h-screen bg-muted/30">
         <div className="container mx-auto px-4 py-8">
-          <Card className="border border-border bg-card shadow-md dark:bg-card">
+          <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
             <CardContent className="space-y-4 p-6">
               <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui-body-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
                 해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.
@@ -385,12 +363,13 @@ export default function FreeBoardEditClient({ id }: Props) {
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* 상단 헤더 */}
+        {/* V2 수정 화면 Hero */}
+        <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 장비 사용기 > 글 수정 */}
             <div className="mb-1 text-ui-body-sm text-muted-foreground">
-              <span className="font-medium text-success">게시판</span>
+              <Badge variant="brand">장비 사용기</Badge>
               <span className="mx-1">›</span>
               <Link
                 href="/board/gear"
@@ -402,15 +381,15 @@ export default function FreeBoardEditClient({ id }: Props) {
               <span className="mx-1">›</span>
               <span>글 수정</span>
             </div>
-            <h1 className="text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+            <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
               장비 사용기 글 수정
             </h1>
             <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
               기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.
             </p>
             {/* 이탈 경고(고정 노출) */}
-            <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
-              <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
+            <div className="mt-3 flex items-start gap-2 rounded-panel border border-border bg-brand-highlight-muted/35 px-4 py-3 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+              <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
                 <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나
                 새로고침하면 입력한 내용이{" "}
@@ -438,23 +417,24 @@ export default function FreeBoardEditClient({ id }: Props) {
               className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
             >
               <Link href="/board/gear" onClick={onLeaveLinkClick}>
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare aria-hidden="true" className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>
             </Button>
           </div>
         </div>
+        </section>
 
         {/* 본문 카드 (수정 폼) */}
-        <Card className="border border-border bg-card shadow-md dark:bg-card">
-          <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+        <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
+          <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
             <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-              <MessageSquare className="h-4 w-4 text-success" />
+              <MessageSquare aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
               <span>글 내용 수정</span>
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <form className="space-y-6" onSubmit={handleSubmit}>
               {/* 분류 선택 */}
               <div className="space-y-2">
@@ -466,10 +446,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                       type="button"
                       onClick={() => setCategory(opt.value)}
                       className={cn(
-                        "rounded-full border px-2 py-0.5 text-ui-caption",
+                        "rounded-control border px-3 py-1 text-ui-caption",
                         category === opt.value
-                          ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
-                          : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
+                          ? "border-border bg-brand-highlight text-brand-highlight-foreground"
+                          : "border-border bg-card text-muted-foreground",
                       )}
                     >
                       {opt.label}
@@ -533,7 +513,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card"
+                      className="rounded-control border-2 border-dashed border-border bg-brand-highlight-muted/20 p-6 text-center transition-colors hover:bg-muted cursor-pointer"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -592,7 +572,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
+                              className="group relative flex flex-col justify-between rounded-control border border-border bg-card px-3 py-2 shadow-soft transition hover:bg-muted/40"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-ui-label">
                                 <span className="font-medium truncate" title={file.name}>
@@ -627,7 +607,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               )}
 
               {conflictOpen && (
-                <div className="rounded-md border border-border bg-muted px-3 py-3 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+                <div className="rounded-panel border border-border bg-brand-highlight-muted/35 px-4 py-4 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                   <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
                   <p className="mt-1">
                     최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해
