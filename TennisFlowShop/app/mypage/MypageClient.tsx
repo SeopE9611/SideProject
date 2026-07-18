@@ -15,7 +15,7 @@ import { DashboardSectionPanel } from "@/components/public";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/AcademyApplicationsListSkeleton";
 import QnaListSkeleton from "@/app/mypage/tabs/_components/QnaListSkeleton";
-import { WishlistSkeleton } from "@/app/mypage/tabs/Wishlist";
+import WishlistSkeleton from "@/app/mypage/tabs/_components/WishlistSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
