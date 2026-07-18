@@ -253,13 +253,13 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
-        variant="standard"
-        eyebrow="Customer Support"
+        variant="feature"
+        eyebrow={<Badge variant="signal">{sectionLabel}</Badge>}
         title={pageTitle}
         description={pageDescription}
         actions={
           <>
-            <Button asChild variant="outline">
+            <Button asChild variant="highlight">
               <Link href={listHref}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {isEventMode ? "이벤트 목록" : "공지사항 목록"}
@@ -276,7 +276,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
         {isLoading || (notice && !isCurrentModeMatched) ? (
           <NoticeDetailContentSkeleton />
         ) : error ? (
-          <PublicSurface padding="lg" className="mx-auto max-w-3xl text-center">
+          <PublicSurface variant="feature" padding="lg" className="mx-auto max-w-3xl text-center">
             <div className="space-y-3">
               <h2 className="text-ui-card-title-lg font-semibold text-foreground">{errorTitle}</h2>
               <p className="text-ui-body-sm text-muted-foreground">{errorBody}</p>
@@ -301,14 +301,15 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
           </PublicSurface>
         ) : notice ? (
           <div className="space-y-5 sm:space-y-6">
-            <PublicSurface padding="none" className="overflow-hidden">
-              <header className="p-5 sm:p-6">
+            <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+              <div className="h-1 bg-brand-highlight" aria-hidden="true" />
+              <header className="bg-brand-highlight-muted/30 p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1 space-y-4">
                     <div className="flex flex-wrap items-center gap-2.5">
                       {notice.isPinned && (
                         <Badge
-                          variant="brand"
+                          variant="signal"
                           className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
                           title={`고정 ${sectionLabel}`}
                           aria-label={`고정 ${sectionLabel}`}
@@ -336,7 +337,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                         </span>
                       )}
                     </div>
-                    <h2 className="min-w-0 break-words text-balance text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
+                    <h2 className="min-w-0 break-words text-balance font-brand-heading text-ui-section-title font-semibold leading-tight tracking-[-0.015em] text-foreground sm:text-ui-page-title">
                       {notice.title}
                     </h2>
                     <div className="grid gap-2 text-ui-body-sm text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
@@ -374,7 +375,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                 </div>
               </header>
 
-              <div className="border-t border-border p-5 sm:p-6 md:p-8">
+              <div className="border-t border-border bg-card p-5 sm:p-6 md:p-8">
                 <div className="mx-auto max-w-3xl whitespace-pre-line break-words text-ui-body leading-8 text-foreground">
                   {String(notice.content || "")}
                 </div>
@@ -524,7 +525,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     <Link
                       key={key}
                       href={`${listBasePath}/${target._id}${listQuery ? `?${listQuery}` : ""}`}
-                      className="flex min-h-20 items-start gap-3 p-4 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                      className="flex min-h-20 items-start gap-3 p-4 hover:bg-brand-highlight-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                     >
                       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0">
@@ -553,7 +554,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
             </PublicSurface>
 
             <div className="flex justify-center sm:justify-end">
-              <Button variant="outline" size="lg" asChild>
+              <Button variant="highlight_soft" size="lg" asChild>
                 <Link href={listHref}>
                   <ArrowUp className="mr-2 h-4 w-4" />
                   {isEventMode ? "이벤트 목록으로" : "목록으로 돌아가기"}
