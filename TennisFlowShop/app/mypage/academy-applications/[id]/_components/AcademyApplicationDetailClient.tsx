@@ -185,7 +185,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
       icon={<GraduationCap className="h-5 w-5" aria-hidden="true" />}
       contentClassName="space-y-3"
     >
-        <div className="border-l-2 border-brand-highlight-ink/40 bg-brand-highlight-muted/35 px-3 py-2.5">
+        <div className="border-l-2 border-brand-highlight-ink/40 bg-brand-highlight-muted/45 px-3 py-2.5">
           <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0">
               <p className="break-keep text-ui-card-title font-medium leading-snug text-foreground">
