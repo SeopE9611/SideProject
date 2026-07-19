@@ -79,22 +79,26 @@ export default async function PrivatePaymentSuccessPage({
         >
           <div className="w-full space-y-3 rounded-control border border-border bg-muted/40 p-4 text-left text-ui-body-sm sm:p-5">
             <div className="flex items-start justify-between gap-4">
-              <span className="text-muted-foreground">결제명</span>
-              <span className="text-right font-medium">{item.title || "-"}</span>
+              <span className="shrink-0 text-muted-foreground">결제명</span>
+              <span className="min-w-0 break-words text-right font-medium">{item.title || "-"}</span>
             </div>
             <div className="flex items-start justify-between gap-4">
-              <span className="text-muted-foreground">결제금액</span>
-              <span className="text-right font-semibold text-brand-highlight-ink">
+              <span className="shrink-0 text-muted-foreground">결제금액</span>
+              <span className="min-w-0 break-words text-right font-semibold text-brand-highlight-ink">
                 {item.amount?.toLocaleString("ko-KR") || "0"}원
               </span>
             </div>
             <div className="flex items-start justify-between gap-4">
-              <span className="text-muted-foreground">결제상태</span>
-              <span className="text-right font-medium">{paymentStatusLabel}</span>
+              <span className="shrink-0 text-muted-foreground">결제상태</span>
+              <span className="min-w-0 break-words text-right font-medium text-success">
+                {paymentStatusLabel}
+              </span>
             </div>
             <div className="flex items-start justify-between gap-4">
-              <span className="text-muted-foreground">결제일</span>
-              <span className="text-right">{formatKoreanDateTime(item.paidAt)}</span>
+              <span className="shrink-0 text-muted-foreground">결제일</span>
+              <span className="min-w-0 break-words text-right">
+                {formatKoreanDateTime(item.paidAt)}
+              </span>
             </div>
           </div>
           <Button asChild variant="outline" className="w-full rounded-control sm:w-auto">
