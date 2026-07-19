@@ -6,7 +6,7 @@ import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership"
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { PublicPageHero, PublicSurface, ResultState } from "@/components/public";
 import { loadPackageSettings } from "@/app/features/packages/api/db";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
@@ -87,26 +87,37 @@ export default async function Page({
   if (blocking) {
     const isPendingOrder = blocking.kind === "pending_order";
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-        <Card className="w-full max-w-xl border border-border bg-card shadow-sm">
-          <CardContent className="space-y-6 p-6 text-center sm:p-8">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <AlertTriangle className="h-8 w-8" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-ui-body-sm font-semibold text-primary">패키지권 확인 필요</p>
-              <h2 className="text-ui-page-title font-semibold">
-                현재 패키지 추가 구매가 제한됩니다
-              </h2>
-              <p className="break-keep text-ui-body text-muted-foreground">
-                {isPendingOrder
-                  ? "입금 확인 대기 중인 패키지 주문이 있어 새 패키지를 바로 구매할 수 없습니다."
-                  : "사용 가능한 패키지권이 남아 있어 기존 패키지권을 먼저 이용해 주세요."}
-              </p>
-            </div>
-            <div className="grid gap-3 rounded-xl border border-border bg-muted/30 p-4 text-left text-ui-body-sm sm:grid-cols-2">
+      <main className="min-h-screen bg-background pb-10">
+        <PublicPageHero
+          variant="feature"
+          eyebrow="패키지 결제"
+          title="현재 패키지 추가 구매가 제한됩니다"
+          description={
+            isPendingOrder
+              ? "입금 확인 대기 중인 패키지 주문이 있어 새 패키지를 바로 구매할 수 없습니다."
+              : "사용 가능한 패키지권이 남아 있어 기존 패키지권을 먼저 이용해 주세요."
+          }
+        />
+        <div className="mx-auto max-w-2xl px-4 pt-6">
+          <ResultState
+            status="warning"
+            icon={<AlertTriangle className="h-6 w-6" aria-hidden="true" />}
+            title="패키지권 확인이 필요합니다"
+            description="아래 현재 상태와 다음 행동을 확인해 주세요."
+            actions={
+              <>
+                <Button asChild className="rounded-control">
+                  <Link href="/mypage?tab=passes">내 패키지권 확인</Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-control">
+                  <Link href="/services/packages">패키지 목록으로 이동</Link>
+                </Button>
+              </>
+            }
+          >
+            <PublicSurface variant="muted" padding="sm" className="grid gap-3 text-ui-body-sm sm:grid-cols-2">
               <div className="flex items-start gap-2">
-                <Clock className="mt-0.5 h-4 w-4 text-primary" />
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
                 <div>
                   <p className="font-semibold text-foreground">현재 상태</p>
                   <p className="mt-1 text-muted-foreground">
@@ -115,7 +126,7 @@ export default async function Page({
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div>
                   <p className="font-semibold text-foreground">다음 행동</p>
                   <p className="mt-1 text-muted-foreground">
@@ -125,18 +136,10 @@ export default async function Page({
                   </p>
                 </div>
               </div>
-            </div>
-            <div className="flex flex-col-reverse justify-center gap-3 sm:flex-row">
-              <Button asChild variant="outline" className="h-11">
-                <Link href="/services/packages">패키지 목록으로 이동</Link>
-              </Button>
-              <Button asChild className="h-11">
-                <Link href="/mypage?tab=passes">내 패키지권 확인</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </PublicSurface>
+          </ResultState>
+        </div>
+      </main>
     );
   }
 

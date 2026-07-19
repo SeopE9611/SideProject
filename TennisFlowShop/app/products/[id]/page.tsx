@@ -10,6 +10,8 @@ import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { PublicPageHero, ResultState } from "@/components/public";
+import { Button } from "@/components/ui/button";
 
 import type { Metadata } from "next";
 
@@ -72,39 +74,53 @@ async function withRetry<T>(
   throw lastError;
 }
 
-function ProductDetailLoadError({ id }: { id: string }) {
+function ProductDetailResult({
+  id,
+  status,
+}: {
+  id?: string;
+  status: "not-found" | "load-error";
+}) {
+  const isLoadError = status === "load-error";
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <div className="rounded-lg border border-border bg-card p-6 text-card-foreground">
-        <p className="font-semibold text-destructive">
-          상품 정보를 불러오지 못했습니다. 일시적인 연결 문제일 수 있어요.
-        </p>
-        <p className="mt-2 text-ui-body-sm text-muted-foreground">
-          잠시 후 다시 시도해 주세요. 문제가 계속되면 관리자에게 문의해 주세요.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href={`/products/${id}`}
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-ui-body-sm font-medium text-primary-foreground"
-          >
-            다시 시도
-          </Link>
-          <Link
-            href="/products"
-            className="inline-flex items-center rounded-md border border-border px-3 py-2 text-ui-body-sm font-medium"
-          >
-            스트링 목록으로 돌아가기
-          </Link>
-        </div>
+    <main className="min-h-screen bg-background pb-10">
+      <PublicPageHero
+        variant="feature"
+        eyebrow="상품 상세"
+        title={isLoadError ? "상품 정보를 불러오지 못했습니다" : "상품을 찾을 수 없습니다"}
+        description={
+          isLoadError
+            ? "일시적인 연결 문제일 수 있어요. 잠시 후 다시 시도해 주세요. 문제가 계속되면 관리자에게 문의해 주세요."
+            : "요청하신 상품이 없거나 현재 공개되어 있지 않습니다."
+        }
+      />
+      <div className="mx-auto max-w-2xl px-4 pt-6">
+        <ResultState
+          status={isLoadError ? "error" : "warning"}
+          title={isLoadError ? "다시 확인해 주세요" : "다른 상품을 둘러보세요"}
+          description={isLoadError ? "상품 정보를 다시 불러올 수 있습니다." : "상품 목록에서 원하는 상품을 찾아보세요."}
+          actions={
+            <>
+              {id && (
+                <Button asChild className="rounded-control">
+                  <Link href={`/products/${id}`}>다시 시도</Link>
+                </Button>
+              )}
+              <Button asChild variant="outline" className="rounded-control">
+                <Link href="/products">상품 목록으로 이동</Link>
+              </Button>
+            </>
+          }
+        />
       </div>
-    </div>
+    </main>
   );
 }
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
-    return <div className="p-6 text-destructive font-semibold">상품을 찾을 수 없습니다</div>;
+    return <ProductDetailResult status="not-found" />;
   }
   const productObjectId = new ObjectId(id);
   let db;
@@ -128,7 +144,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       stage: "connect-db",
       error: normalizeErrorForLog(error),
     });
-    return <ProductDetailLoadError id={id} />;
+    return <ProductDetailResult id={id} status="load-error" />;
   }
 
   const token = (await cookies()).get("accessToken")?.value;
@@ -169,11 +185,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       stage: "find-product",
       error: normalizeErrorForLog(error),
     });
-    return <ProductDetailLoadError id={id} />;
+    return <ProductDetailResult id={id} status="load-error" />;
   }
 
-  if (!product)
-    return <div className="p-6 text-destructive font-semibold">상품을 찾을 수 없습니다</div>;
+  if (!product) return <ProductDetailResult id={id} status="not-found" />;
 
   let reviewSurface: PublicReviewSurfacePayload = {
     items: [],
