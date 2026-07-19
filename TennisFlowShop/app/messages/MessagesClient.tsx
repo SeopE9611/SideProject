@@ -187,7 +187,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                 onClick={() => setBroadcastOpen(true)}
                 className="w-full gap-2 sm:w-auto"
               >
-                <Megaphone className="h-4 w-4" />
+                <Megaphone aria-hidden="true" className="h-4 w-4" />
                 전체 공지 보내기
               </Button>
             )}
@@ -212,17 +212,17 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           >
             <TabsList className="mb-4 grid w-full grid-cols-3 rounded-control border border-border bg-brand-highlight-muted/45 p-1 md:mb-6">
               <TabsTrigger value="inbox" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
-                <Mail className="h-4 w-4" />
+                <Mail aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">받은쪽지</span>
                 <span className="sm:hidden">받은</span>
               </TabsTrigger>
               <TabsTrigger value="send" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
-                <Send className="h-4 w-4" />
+                <Send aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">보낸쪽지</span>
                 <span className="sm:hidden">보낸</span>
               </TabsTrigger>
               <TabsTrigger value="admin" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
-                <Megaphone className="h-4 w-4" />
+                <Megaphone aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">관리자</span>
                 <span className="sm:hidden">관리</span>
               </TabsTrigger>
@@ -277,14 +277,21 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                     <div className="space-y-2 p-3 sm:p-4">
                       {showListSkeleton && (
-                        <div className="space-y-2 rounded-lg border border-border/30 bg-card p-3">
+                        <div className="space-y-2">
                           {Array.from({ length: 6 }).map((_, idx) => (
                             <div
                               key={`messages-list-skeleton-${idx}`}
-                              className="rounded-md border border-border/40 p-3"
+                              className="flex items-start gap-3 rounded-control border border-border bg-card p-4"
                             >
-                              <Skeleton className="h-4 w-1/2" />
-                              <Skeleton className="mt-2 h-3 w-2/3" />
+                              <Skeleton className="mt-0.5 h-5 w-5 shrink-0 rounded-sm" />
+                              <div className="min-w-0 flex-1">
+                                <Skeleton className="h-4 w-3/5" />
+                                <div className="mt-2 flex gap-2">
+                                  <Skeleton className="h-3 w-20" />
+                                  <Skeleton className="h-3 w-28" />
+                                </div>
+                                <Skeleton className="mt-2 h-3 w-full" />
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -301,7 +308,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                       {shouldShowEmptyState && (
                         <EmptyState
-                          icon={<Mail className="h-8 w-8" />}
+                          icon={<Mail aria-hidden="true" className="h-8 w-8" />}
                           title="아직 쪽지가 없습니다"
                           description="고객센터 답변이나 회원 간 쪽지가 도착하면 이곳에 표시됩니다."
                         />
@@ -339,9 +346,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                     )}
                                   >
                                     {isUnread ? (
-                                      <Mail className="h-5 w-5" />
+                                      <Mail aria-hidden="true" className="h-5 w-5" />
                                     ) : (
-                                      <MailOpen className="h-5 w-5" />
+                                      <MailOpen aria-hidden="true" className="h-5 w-5" />
                                     )}
                                   </div>
 
@@ -359,14 +366,14 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                                     <div className="flex items-center gap-2 mt-1 text-ui-label text-muted-foreground">
                                       <div className="flex items-center gap-1">
-                                        <User className="h-3 w-3" />
+                                        <User aria-hidden="true" className="h-3 w-3" />
                                         <span className="max-w-[120px] truncate sm:max-w-[160px]">
                                           {counterpart}
                                         </span>
                                       </div>
                                       <span>·</span>
                                       <div className="flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
+                                        <Clock aria-hidden="true" className="h-3 w-3" />
                                         <span className="whitespace-nowrap">
                                           {formatKST(m.createdAt)}
                                         </span>
@@ -399,7 +406,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                   <section className="min-h-[400px] overflow-hidden rounded-panel border border-border bg-card shadow-soft">
                     {!selectedId && (
                       <EmptyState
-                        icon={<Mail className="h-8 w-8" />}
+                        icon={<Mail aria-hidden="true" className="h-8 w-8" />}
                         title="쪽지를 선택해 주세요"
                         description="쪽지를 선택하면 이곳에서 상세 내용을 볼 수 있습니다."
                         className="h-[400px] justify-center border-0 bg-transparent"
@@ -434,7 +441,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex flex-col gap-1.5 text-ui-body-sm text-muted-foreground">
                               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                                <User className="h-4 w-4" />
+                                <User aria-hidden="true" className="h-4 w-4" />
                                 <span>
                                   {tab === "send"
                                     ? `받는 사람: ${detail.toName}`
@@ -443,7 +450,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               </div>
 
                               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                                <Clock className="h-4 w-4" />
+                                <Clock aria-hidden="true" className="h-4 w-4" />
                                 <span>{formatKST(detail.createdAt)}</span>
                                 {tab !== "send" && (
                                   <>
@@ -468,9 +475,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                   variant="highlight_soft"
                                   size="sm"
                                   onClick={openReply}
-                                  className="w-full gap-2 bg-transparent sm:w-auto"
+                                  className="w-full gap-2 sm:w-auto"
                                 >
-                                  <Reply className="h-4 w-4" />
+                                  <Reply aria-hidden="true" className="h-4 w-4" />
                                   답장
                                 </Button>
                               )}
@@ -481,7 +488,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 onClick={() => setDeleteOpen(true)}
                                 className="w-full gap-2 sm:w-auto"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 aria-hidden="true" className="h-4 w-4" />
                                 삭제
                               </Button>
                             </div>

@@ -122,12 +122,12 @@ export default function MessageComposeDialog({
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-control border border-brand-highlight-ink/20 bg-brand-highlight-muted">
-              <Send className="h-5 w-5 text-brand-highlight-ink" />
+              <Send aria-hidden="true" className="h-5 w-5 text-brand-highlight-ink" />
             </div>
             <div>
               <DialogTitle className="text-ui-card-title-lg">쪽지 보내기</DialogTitle>
               <DialogDescription className="flex items-center gap-1.5 text-ui-body-sm mt-1">
-                <User className="h-3.5 w-3.5" />
+                <User aria-hidden="true" className="h-3.5 w-3.5" />
                 <span>
                   받는 사람: <span className="font-medium text-foreground">{receiverLabel}</span>
                 </span>
@@ -185,12 +185,12 @@ export default function MessageComposeDialog({
           >
             {isSending ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
                 전송 중
               </>
             ) : (
               <>
-                <Send className="h-4 w-4" />
+                <Send aria-hidden="true" className="h-4 w-4" />
                 보내기
               </>
             )}
