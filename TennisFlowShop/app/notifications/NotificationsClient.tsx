@@ -212,7 +212,7 @@ export default function NotificationsClient() {
               onClick={markAllAsRead}
               className="w-full gap-2 sm:w-auto"
             >
-              {isMarkingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isMarkingAll && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}
               모두 읽음
             </Button>
             <AlertDialog
@@ -228,7 +228,7 @@ export default function NotificationsClient() {
                   disabled={items.length <= 0 || isDeletingAll}
                   className="w-full gap-2 sm:w-auto"
                 >
-                  {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {isDeletingAll && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}
                   전체 삭제
                 </Button>
               </AlertDialogTrigger>
@@ -243,13 +243,13 @@ export default function NotificationsClient() {
                   <AlertDialogCancel disabled={isDeletingAll}>취소</AlertDialogCancel>
                   <AlertDialogAction
                     disabled={isDeletingAll}
-                    className="gap-2"
+                    className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     onClick={(event) => {
                       event.preventDefault();
                       void deleteAllNotifications();
                     }}
                   >
-                    {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {isDeletingAll && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}
                     전체 삭제
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -263,10 +263,19 @@ export default function NotificationsClient() {
           {status === "loading" ? (
             <div className="space-y-3 p-3 md:p-5">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="space-y-2 rounded-lg px-3 py-3">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-3/5" />
-                  <Skeleton className="h-3 w-4/5" />
+                <div
+                  key={index}
+                  className="flex items-start gap-3 rounded-control border border-border bg-card p-4 sm:px-5"
+                >
+                  <Skeleton className="mt-2 h-2 w-2 shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-5 w-14 rounded-full" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                    <Skeleton className="h-5 w-3/5" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -279,7 +288,7 @@ export default function NotificationsClient() {
             />
           ) : showEmpty ? (
             <EmptyState
-              icon={<Bell className="h-8 w-8" />}
+              icon={<Bell aria-hidden="true" className="h-8 w-8" />}
               title="새 알림이 없습니다"
               description="주문 상태, 쪽지, 고객센터 답변 등 새 소식이 도착하면 이곳에 표시됩니다."
               className="m-4"
@@ -301,7 +310,7 @@ export default function NotificationsClient() {
                   disabled={isLoadingMore}
                   onClick={loadMore}
                 >
-                  {isLoadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {isLoadingMore && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}
                   더보기
                 </Button>
               </div>
