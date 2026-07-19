@@ -48,7 +48,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "주문 완료",
+  title: "주문 접수 결과",
 };
 
 type PopulatedItem = {
@@ -342,6 +342,33 @@ export default async function CheckoutSuccessPage({
     const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
     const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
     const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
+
+    // ======= 무통장 입금 여부 계산
+    const normalizedPaymentMethod = String(order.paymentInfo?.method ?? "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+
+    const normalizedPaymentProvider = String(order.paymentInfo?.provider ?? "")
+      .trim()
+      .toLowerCase();
+
+    const isOnlinePaymentOrder =
+      normalizedPaymentProvider === "tosspayments" ||
+      normalizedPaymentProvider === "toss" ||
+      normalizedPaymentProvider === "nicepay";
+
+    const successPayableAmount = Number(order.totalPrice ?? 0);
+    const isZeroPaymentOrder = Number.isFinite(successPayableAmount) && successPayableAmount <= 0;
+
+    const isBankTransferOrder =
+      !isZeroPaymentOrder &&
+      !isOnlinePaymentOrder &&
+      (normalizedPaymentMethod.includes("무통장") ||
+        normalizedPaymentMethod === "bank_transfer" ||
+        normalizedPaymentMethod === "bank-transfer" ||
+        normalizedPaymentMethod === "manual_bank_transfer");
+    // ======= 무통장 입금 여부 계산 끝
+
     const representativeApp = (orderLinkedSubmittedApp ?? latestSubmittedByOrderApp) as any;
     const orderHasPurchasedRacket = Array.isArray(order.items)
       ? order.items.some((it: any) => ["racket", "used_racket"].includes(String(it?.kind ?? "")))
@@ -408,13 +435,19 @@ export default async function CheckoutSuccessPage({
         };
       }
       return {
-        status: isVisitPickup ? "결제 완료" : "결제 완료",
-        todo: isVisitPickup
-          ? "수령 준비가 완료되면 방문 수령 안내를 확인해주세요."
-          : "현재 추가로 진행할 작업은 없습니다.",
-        next: isVisitPickup
-          ? "매장에서 상품 수령 준비 후 수령정보 확인이 가능하도록 안내합니다."
-          : "배송이 시작되면 배송정보를 확인할 수 있습니다.",
+        status: isBankTransferOrder ? "입금 확인 대기" : "결제 완료",
+        todo: isBankTransferOrder
+          ? "안내된 계좌로 주문 금액을 입금해주세요."
+          : isVisitPickup
+            ? "수령 준비가 완료되면 방문 수령 안내를 확인해주세요."
+            : "현재 추가로 진행할 작업은 없습니다.",
+        next: isBankTransferOrder
+          ? isVisitPickup
+            ? "입금 확인 후 상품을 준비하고 방문 수령 일정을 안내합니다."
+            : "입금 확인 후 상품을 준비하며, 배송이 시작되면 배송정보를 확인할 수 있습니다."
+          : isVisitPickup
+            ? "매장에서 상품 수령 준비 후 수령정보 확인이 가능하도록 안내합니다."
+            : "배송이 시작되면 배송정보를 확인할 수 있습니다.",
         primaryLabel: "마이페이지의 주문 내역 확인",
         primaryHref: orderDetailHref,
       };
@@ -594,8 +627,7 @@ export default async function CheckoutSuccessPage({
       normalizedOriginalTotal - normalizedServiceFee - normalizedShippingFee,
     );
     // 0원 결제 시 입금 안내 오해 방지
-    const isZeroPayment =
-      normalizedTotalPrice <= 0 || normalizedOriginalTotal - normalizedPointsUsed <= 0;
+    const isZeroPayment = isZeroPaymentOrder;
     const paymentProvider = String(order.paymentInfo?.provider ?? "")
       .trim()
       .toLowerCase();
@@ -636,14 +668,33 @@ export default async function CheckoutSuccessPage({
             <ResultState
               status="success"
               icon={<CheckCircle className="h-6 w-6" />}
-              title="주문이 완료되었습니다"
+              title={
+                withStringService && hasSubmittedApplication
+                  ? "주문과 교체서비스 신청이 접수되었습니다"
+                  : "주문이 접수되었습니다"
+              }
               description={
-                withStringService
-                  ? "주문과 연결된 교체서비스 진행 상태를 함께 확인해주세요."
-                  : "주문 번호와 결제 상태, 다음 단계를 확인해주세요."
+                isBankTransferOrder
+                  ? withStringService && hasSubmittedApplication
+                    ? "입금 확인 후 상품 준비와 교체 작업이 진행됩니다. 아래에서 입금 계좌와 다음 단계를 확인해주세요."
+                    : withStringService
+                      ? "주문이 접수되었습니다. 아래에서 입금 계좌와 교체서비스 신청서 작성 단계를 확인해주세요."
+                      : "입금 확인 후 상품 준비가 시작됩니다. 아래에서 입금 계좌와 다음 단계를 확인해주세요."
+                  : isZeroPaymentOrder
+                    ? withStringService && hasSubmittedApplication
+                      ? "결제 금액이 0원으로 확인되었으며, 교체서비스 신청도 함께 접수되었습니다."
+                      : withStringService
+                        ? "결제 금액이 0원으로 확인되어 주문이 접수되었습니다. 아래에서 교체서비스 신청서를 작성해주세요."
+                        : "결제 금액이 0원으로 확인되어 추가 입금 없이 주문이 접수되었습니다."
+                    : withStringService && hasSubmittedApplication
+                      ? "결제가 완료되었으며, 주문과 연결된 교체서비스 진행 상태를 확인할 수 있습니다."
+                      : withStringService
+                        ? "결제가 완료되어 주문이 접수되었습니다. 아래에서 교체서비스 신청서를 작성해주세요."
+                        : "결제가 완료되었습니다. 주문 번호와 다음 단계를 확인해주세요."
               }
               className="py-8 sm:py-10"
             />
+
             <div className="mx-auto mt-6 max-w-4xl">
               <RacketCareSuccessFeedback
                 enabled={withStringService}
@@ -820,7 +871,11 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <h3 className="font-semibold text-foreground">
-                          {isTossPayment || isNicePayment ? "결제 완료 정보" : "입금 계좌 정보"}
+                          {isZeroPayment
+                            ? "결제 안내"
+                            : isTossPayment || isNicePayment
+                              ? "결제 완료 정보"
+                              : "입금 계좌 정보"}
                         </h3>
                       </div>
                       {isZeroPayment ? (
@@ -1263,9 +1318,20 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-start gap-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                         <CreditCard className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
-                          <h4 className="mb-1 font-semibold text-foreground">입금 안내</h4>
+                          <h4 className="mb-1 font-semibold text-foreground">
+                            {isZeroPayment
+                              ? "결제 안내"
+                              : isBankTransferOrder
+                                ? "입금 안내"
+                                : "결제 완료 안내"}
+                          </h4>
+
                           <p className="text-ui-body-sm text-muted-foreground">
-                            주문하신 상품의 결제 금액을 위 계좌로 입금해주세요.
+                            {isZeroPayment
+                              ? "결제 금액이 0원으로 확인되어 추가 입금이 필요하지 않습니다."
+                              : isBankTransferOrder
+                                ? "주문하신 상품의 결제 금액을 위 계좌로 입금해주세요."
+                                : "결제가 정상 완료되어 추가 입금이 필요하지 않습니다."}
                           </p>
                         </div>
                       </div>
@@ -1276,9 +1342,13 @@ export default async function CheckoutSuccessPage({
                             {isVisitPickup ? "방문 수령 안내" : "배송 안내"}
                           </h4>
                           <p className="text-ui-body-sm text-muted-foreground">
-                            {isVisitPickup
-                              ? "입금 확인 후 매장에서 수령 준비가 진행됩니다."
-                              : "입금 확인 후 배송이 시작됩니다."}
+                            {isBankTransferOrder
+                              ? isVisitPickup
+                                ? "입금 확인 후 매장에서 수령 준비가 진행됩니다."
+                                : "입금 확인 후 상품을 준비하며 배송이 시작되면 배송정보를 안내합니다."
+                              : isVisitPickup
+                                ? "매장에서 상품 수령 준비가 진행됩니다."
+                                : "상품 준비 후 배송이 시작되면 배송정보를 안내합니다."}
                           </p>
                         </div>
                       </div>
