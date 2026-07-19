@@ -3,6 +3,13 @@ import { useWishlist } from "@/app/features/wishlist/useWishlist";
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
+import { CatalogPrice, CatalogRating } from "@/components/commerce";
+import {
+  CommerceDetailTabs,
+  CommerceDetailTopBar,
+  CommercePurchaseActions,
+  CommercePurchasePanel,
+} from "@/components/commerce/detail";
 import type { HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Button } from "@/components/ui/button";
@@ -67,13 +74,6 @@ import {
   buildProductDetailDisplaySpec,
   buildProductDetailHybridDisplay,
 } from "./ProductDetailDisplaySpec.utils";
-import { CatalogPrice, CatalogRating } from "@/components/commerce";
-import {
-  CommerceDetailTabs,
-  CommerceDetailTopBar,
-  CommercePurchaseActions,
-  CommercePurchasePanel,
-} from "@/components/commerce/detail";
 import ProductDetailImageGallery from "./ProductDetailImageGallery";
 import { getProductDetailLoginRedirectTarget } from "./ProductDetailLoginTarget.utils";
 import {
@@ -760,8 +760,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
 
     if (isStandalonePausedMountableString) {
-      toast("장착 신청용으로 담았습니다.", {
-        description: "장바구니에서 교체서비스 신청을 이어갈 수 있어요.",
+      toast("교체서비스용 스트링을 담았습니다.", {
+        description: "장바구니에서 상품을 확인한 뒤 결제 화면에서 장착 정보를 입력할 수 있어요.",
         ...(!user
           ? {
               action: {
@@ -1254,10 +1254,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {isStringProduct && (
                     <div className="rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm leading-relaxed text-muted-foreground">
                       <p className="font-semibold text-foreground">
-                        교체서비스 신청용 스트링입니다.
+                        교체서비스와 함께 주문하는 스트링입니다.
                       </p>
                       <p className="mt-1 break-keep">
-                        게이지(굵기)·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.
+                        게이지(굵기)·색상·수량을 선택한 뒤 결제 화면에서 라켓 정보, 텐션, 전달
+                        방식을 입력하세요.
                       </p>
                     </div>
                   )}
@@ -1290,7 +1291,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           size="tall"
                           className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14"
                           wrap="nowrap"
-                          aria-label="교체서비스 신청하기"
+                          aria-label="교체서비스 포함 주문하기"
                           disabled={
                             loading ||
                             quantity > effectiveStock ||
@@ -1300,7 +1301,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           onClick={handleBuyNowWithService}
                         >
                           <Wrench className="mr-2 h-5 w-5 shrink-0" />
-                          <span className="whitespace-nowrap">교체서비스 신청</span>
+                          <span className="whitespace-nowrap">교체서비스 포함 주문하기</span>
                         </Button>
                       ) : ENABLE_STRING_STANDALONE_ORDER ? (
                         <Button
@@ -1510,16 +1511,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <ProductDetailRelatedProductsSection
           HorizontalProducts={HorizontalProducts}
           relatedSectionRef={relatedSectionRef}
-          relatedProducts={relatedFiltered.map((rp: any): HItem => ({
-            _id: String(rp._id),
-            name: rp.name,
-            price: Number(rp.price ?? 0),
-            images: rp.images ?? [],
-            brand: displayBrandLabel(rp.brand) || rp.brand,
-            href: `/products/${rp._id}`,
-            merchandisingBadges: getProductDetailBadges(rp),
-            inventory: rp.inventory,
-          }))}
+          relatedProducts={relatedFiltered.map(
+            (rp: any): HItem => ({
+              _id: String(rp._id),
+              name: rp.name,
+              price: Number(rp.price ?? 0),
+              images: rp.images ?? [],
+              brand: displayBrandLabel(rp.brand) || rp.brand,
+              href: `/products/${rp._id}`,
+              merchandisingBadges: getProductDetailBadges(rp),
+              inventory: rp.inventory,
+            }),
+          )}
           loadingRelated={loadingRelated}
         >
           <RecentViewedItems currentType="product" currentId={productId} />

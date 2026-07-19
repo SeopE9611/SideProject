@@ -21,11 +21,8 @@ import ApplyStepFooter from "@/app/services/apply/_components/steps/ApplyStepFoo
 import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
-import { SectionHeader } from "@/components/public/SectionHeader";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import LoginGate from "@/components/system/LoginGate";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
@@ -37,9 +34,7 @@ import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import type { Order } from "@/lib/types/order";
-import { File, Grid2X2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -221,6 +216,15 @@ export default function StringServiceApplyPage() {
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
   const pdpProductId = !isOrderBased && !isRentalBased ? selectedStringProductIdFromQuery : null;
+
+  const shouldRedirectToServiceStart =
+    !isOrderBased && !isRentalBased && !pdpProductId && mode !== "single";
+
+  useEffect(() => {
+    if (!shouldRedirectToServiceStart) return;
+
+    router.replace("/services#service-start");
+  }, [router, shouldRedirectToServiceStart]);
 
   /**
    * 옵션 A: 교체 서비스 신청은 "주문(orderId)" 기반으로만 진행합니다.
@@ -1666,6 +1670,25 @@ export default function StringServiceApplyPage() {
     }
   };
 
+  if (shouldRedirectToServiceStart) {
+    return (
+      <div className="min-h-full bg-card bp-lg:bg-background">
+        <ApplyHero />
+
+        <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-lg:py-10">
+          <PublicSurface className="mx-auto max-w-xl" padding="md">
+            <p className="text-ui-body-sm font-medium text-foreground">
+              교체서비스 시작 화면으로 이동하고 있습니다.
+            </p>
+            <p className="mt-2 text-ui-body-sm text-muted-foreground">
+              현재 보유한 장비와 이용 방식에 맞는 신청 경로를 안내합니다.
+            </p>
+          </PublicSurface>
+        </SiteContainer>
+      </div>
+    );
+  }
+
   // ===== 비회원 주문/신청 차단(LoginGate) =====
   // - 게스트 모드가 꺼져 있을 때: 인증 체크 완료 후 미로그인이라면 LoginGate로 진입 차단
   if (!allowGuestCheckout && !authChecked) {
@@ -1691,8 +1714,6 @@ export default function StringServiceApplyPage() {
 
   if (blockedByLoginGate) return <LoginGate next={nextUrl} variant="default" />;
 
-  const shouldShowEntryChooser =
-    !isOrderBased && !isRentalBased && !pdpProductId && mode !== "single";
   const entryLabel = isOrderBased
     ? "주문 상품으로 신청"
     : isRentalBased
@@ -1701,163 +1722,6 @@ export default function StringServiceApplyPage() {
   const compactSummaryText = `라켓 ${requiredPassCount || "-"}대 · ${collectionMethodLabel(
     formData.collectionMethod,
   )} · ${won(checkoutTotal)}`;
-
-  if (shouldShowEntryChooser)
-    return (
-      <div className="min-h-full bg-card bp-lg:bg-background">
-        {/* Hero Section */}
-        <ApplyHero />
-
-        {/* Main Content */}
-        <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-lg:py-10">
-          {/* Section Header */}
-          <SectionHeader
-            title="신청 방식을 선택해 주세요"
-            description="구매 후 장착할지, 보유한 라켓·스트링으로 작업만 신청할지 선택합니다."
-            align="center"
-            className="mx-auto mb-6 max-w-3xl break-keep bp-sm:mb-8"
-          />
-
-          {/* Option Cards */}
-          <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-sm:gap-5 max-w-4xl mx-auto">
-            {[
-              {
-                badge: "상품 구매 후 신청",
-                stepLabel: "선택 01",
-                icon: <Grid2X2 className="h-7 w-7" />,
-                title: "스트링 구매 후 장착",
-                target: "상품을 먼저 고르고 구매 흐름에서 장착 신청으로 이어집니다.",
-                steps: "스트링 선택 → 주문·결제 → 장착 정보 입력",
-                cta: "스트링 고르고 신청하기",
-                href: "/products?from=apply",
-              },
-              {
-                badge: "보유 장비",
-                stepLabel: "선택 02",
-                icon: <File className="h-8 w-8" />,
-                title: "보유 라켓·보유 스트링 장착",
-                target: "보유한 라켓과 스트링을 직접 보내거나 매장에 가져오는 흐름입니다.",
-                steps: "신청서 작성 → 라켓 전달 → 작업 접수",
-                cta: "보유 장비로 신청하기",
-                href: "/services/apply?mode=single",
-              },
-            ].map((item, index) => (
-              <button
-                key={item.title}
-                type="button"
-                onClick={() => safePush(item.href)}
-                className={`group flex h-full min-w-0 flex-col rounded-panel border p-4 text-left transition-[border-color,background-color,box-shadow] duration-200 hover:border-brand-highlight/45 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-brand-highlight/45 bg-brand-highlight-muted" : "border-border bg-card"}`}
-              >
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="text-ui-label font-semibold text-muted-foreground">
-                    {item.stepLabel}
-                  </span>
-                  <Badge
-                    variant={index === 0 ? "signal_solid" : "secondary"}
-                    className="shrink-0 whitespace-nowrap"
-                  >
-                    {item.badge}
-                  </Badge>
-                </div>
-                <div className="mb-4 flex items-start gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted">
-                    {item.icon}
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="break-keep text-ui-body-lg font-semibold leading-snug text-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
-                      {item.target}
-                    </p>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <p className="text-ui-label font-semibold text-brand-highlight-foreground">
-                    다음 진행
-                  </p>
-                  <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
-                    {item.steps}
-                  </p>
-                </div>
-                <div className="mt-auto pt-4">
-                  <span className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-control border border-border bg-card px-3 py-2 text-center text-ui-body-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
-                    <span className="break-keep whitespace-normal">{item.cta}</span>
-                    <svg
-                      className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                      />
-                    </svg>
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6 bp-sm:mt-8 grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-sm:gap-5 max-w-6xl mx-auto">
-            <PublicSurface variant="muted" padding="none">
-              <div className="flex h-full flex-col gap-4 p-4 bp-sm:p-5">
-                <div className="space-y-1.5">
-                  <p className="text-ui-body-sm font-semibold text-foreground break-keep">
-                    이미 구매하거나 대여한 내역이 있나요?
-                  </p>
-                  <p className="text-ui-body-sm text-muted-foreground leading-relaxed break-keep">
-                    마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해 교체서비스를 이어서
-                    신청할 수 있습니다.
-                  </p>
-                </div>
-                <div className="mt-auto flex flex-col gap-2 bp-sm:flex-row">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => safePush("/mypage?tab=orders&scope=order")}
-                    className="flex-1 whitespace-normal break-keep"
-                  >
-                    주문 내역 보기
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => safePush("/mypage?tab=orders&scope=rental")}
-                    className="flex-1 whitespace-normal break-keep"
-                  >
-                    대여 내역 보기
-                  </Button>
-                </div>
-              </div>
-            </PublicSurface>
-
-            <PublicSurface variant="muted" padding="none">
-              <div className="flex h-full flex-col gap-4 p-4 bp-sm:p-5 bp-md:flex-row bp-md:items-center bp-md:justify-between">
-                <div className="space-y-1.5">
-                  <p className="text-ui-body-sm font-semibold text-foreground break-keep">
-                    어떤 스트링을 골라야 할지 고민된다면
-                  </p>
-                  <p className="text-ui-body-sm text-muted-foreground leading-relaxed break-keep">
-                    스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저 확인해보세요.
-                  </p>
-                </div>
-                <Button
-                  asChild
-                  variant="highlight"
-                  className="w-full shrink-0 whitespace-normal break-keep text-center bp-md:w-auto"
-                >
-                  <Link href="/products/recommend">스트링 추천받기</Link>
-                </Button>
-              </div>
-            </PublicSurface>
-          </div>
-        </SiteContainer>
-      </div>
-    );
 
   return (
     <div className="min-h-full bg-card bp-lg:bg-background">

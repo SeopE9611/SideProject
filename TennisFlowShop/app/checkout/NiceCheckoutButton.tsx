@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import {
   hasStringingServiceInCheckout,
   STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE,
   validateStringingApplicationInputForOrder,
 } from "@/lib/checkout-stringing-guard";
+import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 declare global {
@@ -43,6 +43,8 @@ export default function NiceCheckoutButton({
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
   buttonId,
+  label = "결제하기",
+  loadingLabel = "결제 요청 중...",
 }: {
   disabled: boolean;
   payload: Record<string, unknown>;
@@ -50,6 +52,8 @@ export default function NiceCheckoutButton({
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
   buttonId?: string;
+  label?: string;
+  loadingLabel?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -211,10 +215,10 @@ export default function NiceCheckoutButton({
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            결제 요청 중...
+            {loadingLabel}
           </>
         ) : (
-          "결제하기"
+          label
         )}
       </Button>
       {!scriptError && !scriptReady && (

@@ -8,11 +8,7 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { CatalogCardFrame, CatalogPrice, CatalogRating } from "@/components/commerce";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  badgeToneClass,
-  merchandisingImageBadgeClass,
-  merchandisingImageBadgeVariant,
-} from "@/lib/badge-style";
+import { merchandisingImageBadgeClass, merchandisingImageBadgeVariant } from "@/lib/badge-style";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
@@ -375,7 +371,7 @@ const ProductCard = React.memo(
             variant="secondary"
             disabled
             aria-disabled="true"
-            aria-label="교체서비스 신청 불가: 품절된 상품입니다."
+            aria-label="상품 선택 불가: 품절된 상품입니다."
             title="품절된 상품입니다."
             className="h-10 w-full cursor-not-allowed whitespace-nowrap rounded-control border border-border bg-muted/70 text-ui-body-sm text-muted-foreground opacity-100 disabled:opacity-100"
           >
@@ -391,7 +387,7 @@ const ProductCard = React.memo(
           >
             <Link href={detailHref}>
               <Eye className="mr-1.5 h-4 w-4 shrink-0" />
-              <span>교체서비스 신청</span>
+              <span>상세·옵션 보기</span>
             </Link>
           </Button>
         )}

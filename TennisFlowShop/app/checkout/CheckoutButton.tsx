@@ -1,10 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { CartItem, useCartStore } from "@/app/store/cartStore";
-import { useState, useEffect, useRef } from "react";
+import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type { User } from "@/app/store/authStore";
+import { CartItem } from "@/app/store/cartStore";
+import { Button } from "@/components/ui/button";
 import { getMyInfo } from "@/lib/auth.client";
 import {
   hasStringingServiceInCheckout,
@@ -13,7 +12,8 @@ import {
 } from "@/lib/checkout-stringing-guard";
 import { showErrorToast } from "@/lib/toast";
 import { CreditCard, Loader2 } from "lucide-react";
-import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 // 제출 직전 최종 유효성 가드
 type Bank = "kakao" | "shinhan" | "kookmin" | "woori";
@@ -141,6 +141,8 @@ export default function CheckoutButton({
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
   buttonId,
+  label = "주문 접수하기",
+  loadingLabel = "주문 접수 중...",
 }: {
   disabled: boolean;
   name: string;
@@ -168,6 +170,8 @@ export default function CheckoutButton({
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
   buttonId?: string;
+  label?: string;
+  loadingLabel?: string;
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -519,12 +523,12 @@ export default function CheckoutButton({
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-5 w-5 animate-spin bp-sm:mr-3" />
-            주문 처리중...
+            {loadingLabel}
           </>
         ) : (
           <>
             <CreditCard className="mr-2 h-5 w-5 bp-sm:mr-3" />
-            주문 완료하기
+            {label}
           </>
         )}
       </Button>

@@ -2,10 +2,6 @@
 import CheckoutButton from "@/app/checkout/CheckoutButton";
 import NiceCheckoutButton from "@/app/checkout/NiceCheckoutButton";
 import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
-import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
-import CheckoutLoadingShell from "@/components/checkout/CheckoutLoadingShell";
-import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
-import CheckoutSection from "@/components/checkout/CheckoutSection";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import {
@@ -17,6 +13,10 @@ import { useAuthStore, type User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
+import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
+import CheckoutLoadingShell from "@/components/checkout/CheckoutLoadingShell";
+import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
+import CheckoutSection from "@/components/checkout/CheckoutSection";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
@@ -38,6 +38,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyInfo } from "@/lib/auth.client";
+import { hasEnoughStringingApplicationInputForOrder } from "@/lib/checkout-stringing-guard";
 import { bankLabelMap } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
@@ -45,7 +46,6 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
-import { hasEnoughStringingApplicationInputForOrder } from "@/lib/checkout-stringing-guard";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
@@ -127,7 +127,12 @@ type CheckoutField =
   | "composition";
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 type CheckoutTouchedField =
-  "name" | "phone" | "email" | "postalCode" | "addressDetail" | "depositor";
+  | "name"
+  | "phone"
+  | "email"
+  | "postalCode"
+  | "addressDetail"
+  | "depositor";
 type CheckoutTouchedFields = Partial<Record<CheckoutTouchedField, boolean>>;
 type CheckoutPrefillUser = User & {
   phone?: string | null;
@@ -326,7 +331,9 @@ function FinalPaymentConfirmCard({
       <PriceSummary rows={priceSummaryRows} />
       {withStringService && (
         <p className="border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
-          결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
+          {paymentMethod === "bank-transfer"
+            ? "주문을 접수하면 교체서비스 신청 정보도 함께 저장됩니다. 입금 확인 후 상품 준비와 장착 작업이 진행됩니다."
+            : "결제가 완료되면 상품 주문과 교체서비스 신청이 함께 접수됩니다."}
         </p>
       )}
       {paymentMethod === "bank-transfer" && (
@@ -1342,6 +1349,18 @@ export default function CheckoutPage() {
       !stringingApplicationMissing &&
       !checkoutStringingAdapter?.packagePreviewLoading;
 
+    const checkoutActionLabel =
+      paymentMethod === "bank-transfer"
+        ? withStringService
+          ? "주문·신청 접수하기"
+          : "주문 접수하기"
+        : withStringService
+          ? "결제하고 신청 접수하기"
+          : "결제하기";
+
+    const checkoutActionLoadingLabel =
+      paymentMethod === "bank-transfer" ? "주문 접수 중..." : "결제 요청 중...";
+
     if (isInitialLoading) {
       return <CheckoutLoadingShell layout="linear" />;
     }
@@ -1359,8 +1378,11 @@ export default function CheckoutPage() {
         <CheckoutPageHeader
           eyebrow="CHECKOUT"
           title="주문/결제"
-          description="주문 상품, 배송 정보, 결제수단을 확인한 뒤 결제를 진행하세요."
-          icon={<CreditCard className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
+          description={
+            withStringService
+              ? "상품 주문과 교체서비스 신청 정보를 확인한 뒤 결제수단에 맞게 접수하세요."
+              : "주문 상품, 배송 정보, 결제수단을 확인한 뒤 결제를 진행하세요."
+          }
         >
           {(lockServiceMode || withStringService) && (
             <nav aria-label="장착 서비스 진행 단계">
@@ -1470,12 +1492,15 @@ export default function CheckoutPage() {
                         !withStringService && "text-ui-body-sm font-medium",
                       )}
                     >
-                      {withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}
+                      {withStringService
+                        ? "상품 주문과 교체서비스 신청을 함께 진행합니다"
+                        : "일반 상품 주문입니다"}
                     </h2>
                     {withStringService ? (
                       <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
                         <p className="break-keep">
-                          작업 정보와 수령/배송 방식을 확인하면 함께 접수됩니다.
+                          상품·장착 정보와 수령 방식을 확인하세요. 최종 버튼을 누르면 선택한
+                          결제수단에 따라 주문과 교체서비스 신청이 함께 처리됩니다.
                         </p>
                         {isStringOnlyServiceFlow && (
                           <p className="break-keep">{stringStandalonePausedNotice}</p>
@@ -2391,7 +2416,7 @@ export default function CheckoutPage() {
               <CheckoutBottomStickyBar
                 amount={payableTotalPrice}
                 amountLabel="결제 예정 금액"
-                label={paymentMethod === "bank-transfer" ? "주문 완료하기" : "결제하기"}
+                label={checkoutActionLabel}
                 disabled={!resolvedCanSubmit || isCheckoutSubmitting}
                 loading={isCheckoutSubmitting}
                 ariaLabel="하단 결제 버튼"
@@ -2467,6 +2492,8 @@ export default function CheckoutPage() {
                       >
                         <CheckoutButton
                           buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                          label={checkoutActionLabel}
+                          loadingLabel={checkoutActionLoadingLabel}
                           disabled={!resolvedCanSubmit}
                           name={name}
                           phone={phone}
@@ -2501,6 +2528,8 @@ export default function CheckoutPage() {
                       >
                         <NiceCheckoutButton
                           buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                          label={checkoutActionLabel}
+                          loadingLabel={checkoutActionLoadingLabel}
                           disabled={!resolvedCanSubmit}
                           onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                           onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
