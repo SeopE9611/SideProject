@@ -8,6 +8,7 @@ export type CheckoutBottomStickyBarProps = {
   amountLabel: string;
   disabled?: boolean;
   loading?: boolean;
+  loadingLabel?: string;
   onClick: () => void;
   helperText?: string;
   ariaLabel?: string;
@@ -19,6 +20,7 @@ export default function CheckoutBottomStickyBar({
   amountLabel,
   disabled = false,
   loading = false,
+  loadingLabel = "처리 중...",
   onClick,
   helperText,
   ariaLabel,
@@ -50,7 +52,7 @@ export default function CheckoutBottomStickyBar({
           aria-label={ariaLabel ?? label}
           onClick={onClick}
         >
-          {loading ? "처리 중..." : label}
+          {loading ? loadingLabel : label}
         </Button>
       </div>
     </div>

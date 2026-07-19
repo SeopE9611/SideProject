@@ -2417,9 +2417,10 @@ export default function CheckoutPage() {
                 amount={payableTotalPrice}
                 amountLabel="결제 예정 금액"
                 label={checkoutActionLabel}
+                loadingLabel={checkoutActionLoadingLabel}
                 disabled={!resolvedCanSubmit || isCheckoutSubmitting}
                 loading={isCheckoutSubmitting}
-                ariaLabel="하단 결제 버튼"
+                ariaLabel={checkoutActionLabel}
                 onClick={() => {
                   requestStringingValidationMessages();
                   const target = document.getElementById(CHECKOUT_PRIMARY_PAY_BUTTON_ID);
