@@ -571,7 +571,12 @@ export default function TennisProfileForm() {
 
             {/* 저장 버튼 */}
             <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={isSaving} className="rounded-control bg-brand-highlight px-6 text-brand-highlight-foreground hover:bg-brand-highlight/90">
+              <Button
+                variant="highlight"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="rounded-control px-6"
+              >
                 {isSaving ? "저장 중..." : "저장"}
               </Button>
             </div>
