@@ -3,7 +3,7 @@ import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Clock, Mail, MapPin, Phone, Train } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Clock, Mail, MapPin, Phone, Train } from "lucide-react";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -298,7 +298,13 @@ export default function LocationsPage() {
                   wrap="responsive"
                   className="w-full bp-sm:w-auto"
                 >
-                  <Link href="/services/apply">교체서비스 신청하기</Link>
+                  <Link href="/services#service-start" className="group">
+                    교체서비스 시작하기
+                    <ArrowRight
+                      className="transition-transform group-hover:translate-x-1"
+                      aria-hidden
+                    />
+                  </Link>
                 </Button>
                 <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
                   <Link href="/services">서비스 안내로 돌아가기</Link>

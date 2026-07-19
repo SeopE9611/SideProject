@@ -3,14 +3,14 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertTriangle,
@@ -1130,8 +1130,8 @@ export default function TensionGuidePage() {
           </div>
           <div className="flex w-full flex-col gap-3 bp-sm:flex-row bp-lg:w-auto">
             <Button asChild variant="highlight" size="lg" className="w-full bp-sm:w-auto">
-              <Link href="/services/apply">
-                스트링 신청하기
+              <Link href="/services#service-start">
+                교체서비스 시작하기
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
               </Link>
             </Button>

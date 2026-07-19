@@ -3,15 +3,15 @@ import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPacka
 import { normalizePackageCardData } from "@/app/services/packages/_lib/packageCard";
 import { toPackageVariant } from "@/app/services/packages/_lib/packageVariant";
 import DevMarkPaidButton from "@/app/services/packages/success/DevMarkPaidButton";
-import LoginGate from "@/components/system/LoginGate";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface, ResultState, SummaryCard } from "@/components/public";
+import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
-import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
-import { formatKoreanPhone } from "@/lib/phone";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
+import { formatKoreanPhone } from "@/lib/phone";
 import jwt from "jsonwebtoken";
 import {
   ArrowRight,
@@ -226,8 +226,8 @@ export default async function PackageSuccessPage({
                     className="h-12 flex-1 font-semibold"
                     asChild
                   >
-                    <Link href="/services/apply" className="flex items-center gap-2">
-                      교체서비스 신청하기
+                    <Link href="/services#service-start" className="flex items-center gap-2">
+                      교체서비스 시작하기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>

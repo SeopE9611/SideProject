@@ -83,9 +83,12 @@ export default async function RacketsPage({
                 wrap="responsive"
                 className="w-full bp-sm:w-auto"
               >
-                <Link href="/services/apply" className="flex items-center justify-center gap-1.5">
+                <Link
+                  href="/services#service-start"
+                  className="flex items-center justify-center gap-1.5"
+                >
                   <span aria-hidden="true">←</span>
-                  신청 화면으로
+                  신청 방식 다시 선택
                 </Link>
               </Button>
             </div>

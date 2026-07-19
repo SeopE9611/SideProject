@@ -100,7 +100,7 @@ export default async function ProductsPage({
 
               <div className="flex w-full flex-col gap-2 bp-sm:flex-row bp-sm:justify-end">
                 <Button asChild variant="outline" wrap="responsive" className="w-full bp-sm:w-auto">
-                  <Link href="/services/apply">신청 방식 다시 선택</Link>
+                  <Link href="/services#service-start">신청 방식 다시 선택</Link>
                 </Button>
                 <Button asChild wrap="responsive" className="w-full bp-sm:w-auto">
                   <Link href="/services/pricing">가격표 보기</Link>

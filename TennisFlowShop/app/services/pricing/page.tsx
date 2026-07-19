@@ -511,8 +511,8 @@ export default async function PricingPage() {
               wrap="responsive"
               className="w-full bp-sm:w-auto"
             >
-              <Link href="/services/apply" className="group">
-                교체 서비스 신청하기
+              <Link href="/services#service-start" className="group">
+                교체서비스 시작하기
                 <ArrowRight
                   className="transition-transform group-hover:translate-x-1"
                   aria-hidden

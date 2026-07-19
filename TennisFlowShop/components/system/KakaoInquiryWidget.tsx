@@ -14,7 +14,7 @@ declare global {
 }
 
 const guideLinks = [
-  { label: "스트링 교체 신청하기", href: "/services/apply" },
+  { label: "교체서비스 시작하기", href: "/services#service-start" },
   { label: "새 스트링 고르고 장착 신청", href: "/products?from=apply" },
   { label: "라켓 구매/대여 + 장착", href: "/rackets?from=apply" },
   { label: "아카데미 신청", href: "/academy" },
