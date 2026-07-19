@@ -12,7 +12,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,10 +19,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
-import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { cn } from "@/lib/utils";
 import {
@@ -779,14 +779,13 @@ const Header = () => {
                       </AccordionItem>
                     </Accordion>
                   </div>
-
                   <Button
                     variant="ghost"
-                    className={mobileMenuItemClass(isMobileRouteCurrent("/services/apply"))}
-                    aria-current={isMobileRouteCurrent("/services/apply") ? "page" : undefined}
+                    className={mobileMenuItemClass(isMobileRouteCurrent("/services"))}
+                    aria-current={isMobileRouteCurrent("/services") ? "page" : undefined}
                     onClick={() => {
                       setOpen(false);
-                      router.push("/services/apply");
+                      router.push("/services#service-start");
                     }}
                   >
                     <span className="min-w-0 truncate">교체서비스 시작하기</span>
