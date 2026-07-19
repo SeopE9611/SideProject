@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
         e.preventDefault();
       }}
     >
-      <ArrowLeft className="mr-2 h-4 w-4" />
+      <ArrowLeft aria-hidden="true" className="mr-2 h-4 w-4" />
       로그인으로 돌아가기
     </Link>
   );
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
       title="비밀번호 찾기"
       description="가입하신 이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다."
       footer={backLink}
-      className="bg-muted/30"
+      variant="feature"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {!isSubmitted ? (
@@ -94,7 +94,7 @@ export default function ForgotPasswordPage() {
             </Label>
 
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Mail aria-hidden="true" className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
@@ -103,14 +103,14 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-12 border-border bg-background pl-10 focus:border-border focus:ring-ring dark:focus:border-border"
+                className="h-12 rounded-control border-border bg-background pl-10 focus:border-border focus:ring-ring dark:focus:border-border"
               />
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-muted p-4 text-center md:p-6">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
-              <CheckCircle className="h-8 w-8" />
+          <div className="rounded-panel border border-success/30 bg-success/10 p-4 text-center md:p-6">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success text-success-foreground">
+              <CheckCircle aria-hidden="true" className="h-8 w-8" />
             </div>
 
             {/*
@@ -129,7 +129,7 @@ export default function ForgotPasswordPage() {
         {!isSubmitted ? (
           <Button
             type="submit"
-            className="h-12 w-full font-semibold"
+            className="h-12 w-full rounded-control font-semibold"
             disabled={isSubmitting || !email.trim()}
           >
             {isSubmitting ? "전송 중..." : "비밀번호 재설정 링크 전송"}
@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
           <Button
             type="button"
             variant="outline"
-            className="h-12 w-full border-border bg-transparent hover:bg-muted"
+            className="h-12 w-full rounded-control border-border bg-transparent hover:bg-muted"
             onClick={() => {
               setEmail("");
               setIsSubmitted(false);
