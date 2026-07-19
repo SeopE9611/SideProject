@@ -4,9 +4,10 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import HorizontalProducts from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
+import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
+import { badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 import type {
   HomePreviewData,
@@ -20,7 +21,6 @@ import {
   SIGNUP_BONUS_POINTS,
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
-import { badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
@@ -215,7 +215,7 @@ const PROCESS_STEPS = [
     mockTitle: "수령 안내",
     question: "완료 후 어떤 안내를 받을까요?",
     options: ["수령 안내", "교체 이력", "라켓 케어 연결"],
-    cta: "교체서비스 신청하기",
+    cta: "신청 방식 선택하기",
   },
 ] as const;
 
@@ -383,16 +383,19 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     );
   }, [getNextBrandRailState]);
 
-  const scrollBrandRail = useCallback((railRef: { current: HTMLDivElement | null }, direction: -1 | 1) => {
-    const rail = railRef.current;
-    if (!rail) return;
+  const scrollBrandRail = useCallback(
+    (railRef: { current: HTMLDivElement | null }, direction: -1 | 1) => {
+      const rail = railRef.current;
+      if (!rail) return;
 
-    const distance = Math.max(180, rail.clientWidth * 0.7) * direction;
-    const reduceMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    rail.scrollBy({ left: distance, behavior: reduceMotion ? "auto" : "smooth" });
-  }, []);
+      const distance = Math.max(180, rail.clientWidth * 0.7) * direction;
+      const reduceMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      rail.scrollBy({ left: distance, behavior: reduceMotion ? "auto" : "smooth" });
+    },
+    [],
+  );
 
   useEffect(() => {
     const rails = [stringBrandRailRef.current, racketBrandRailRef.current].filter(
@@ -470,11 +473,12 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     }
   }, [activeStringBrand]);
 
-
   useEffect(() => {
     const rail = racketBrandRailRef.current;
     if (!rail) return;
-    const activeButton = rail.querySelector<HTMLButtonElement>(`[data-racket-brand="${activeBrand}"]`);
+    const activeButton = rail.querySelector<HTMLButtonElement>(
+      `[data-racket-brand="${activeBrand}"]`,
+    );
     if (!activeButton) return;
 
     const railStart = rail.scrollLeft;
@@ -822,8 +826,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   안내해드려요.
                 </p>
                 <div className="mt-7 grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-                  <Link className={homeCtaHighlight} href="/services/apply">
-                    교체서비스 신청하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  <Link className={homeCtaHighlight} href="/services#service-start">
+                    교체서비스 시작하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </Link>
                   <Link className={homeCtaDefault} href="/products/recommend">
                     내게 맞는 스트링 찾기
@@ -1080,7 +1084,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             }
           />
           <div className={styles.bento}>
-            <Link href="/services/apply" className={styles.bentoMain}>
+            <Link href="/services#service-start" className={styles.bentoMain}>
               <div className={styles.bentoMainInner}>
                 <div className={styles.bentoImageWrap}>
                   <Image
@@ -1125,7 +1129,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   )}
                 >
                   <span>
-                    <strong className="block text-ui-card-title-lg font-medium text-foreground">{title}</strong>
+                    <strong className="block text-ui-card-title-lg font-medium text-foreground">
+                      {title}
+                    </strong>
                     <span className="mt-2 block break-keep text-ui-body-sm text-muted-foreground">
                       {desc}
                     </span>
@@ -1208,8 +1214,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     다음 단계 보기
                   </button>
                 ) : (
-                  <Link className={cn(homeCtaDefault, "mt-7")} href="/services/apply">
-                    교체서비스 신청하기
+                  <Link className={cn(homeCtaDefault, "mt-7")} href="/services#service-start">
+                    신청 방식 선택하기
                   </Link>
                 )}
               </div>
@@ -1602,18 +1608,31 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 </button>
               </div>
               {visibleRackets.length > 0 ? (
-                <RacketInventoryList activeBrand={activeBrand} rackets={visibleRackets} total={racketTotal} />
+                <RacketInventoryList
+                  activeBrand={activeBrand}
+                  rackets={visibleRackets}
+                  total={racketTotal}
+                />
               ) : usedRacketsError ? (
                 <EmptyPanel
                   title="중고 라켓을 불러오지 못했어요"
-                  action={usedRacketsError ? () => loadUsedRackets(activeBrand, { force: true }) : undefined}
+                  action={
+                    usedRacketsError
+                      ? () => loadUsedRackets(activeBrand, { force: true })
+                      : undefined
+                  }
                 />
               ) : usedRacketsLoading || !shouldLoadRackets ? (
                 <RacketInventorySkeleton />
               ) : (
                 <div className={styles.racketEmpty}>
                   <div className={styles.racketEmptyCopy}>
-                    <h3 className={cn(styles.marketingTitle, "text-ui-section-title-lg text-foreground")}>
+                    <h3
+                      className={cn(
+                        styles.marketingTitle,
+                        "text-ui-section-title-lg text-foreground",
+                      )}
+                    >
                       {activeBrand === "all"
                         ? "검수된 중고 라켓을 준비 중입니다."
                         : `현재 ${racketBrandLabel(activeBrand)} 중고 라켓이 없습니다.`}
@@ -1625,7 +1644,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     </p>
                     <div className="mt-6 flex flex-wrap gap-2">
                       {activeBrand !== "all" && (
-                        <button type="button" className={homeCtaOutline} onClick={() => setActiveBrand("all")}>
+                        <button
+                          type="button"
+                          className={homeCtaOutline}
+                          onClick={() => setActiveBrand("all")}
+                        >
                           전체 브랜드 보기
                         </button>
                       )}
@@ -1658,9 +1681,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <div className={styles.utilityGrid}>
               {[
                 [
-                  "방문·택배 접수 방법",
-                  "접수 전 준비사항과 진행 절차를 확인합니다.",
-                  "/services/apply",
+                  "교체서비스 시작 방식",
+                  "새 스트링·라켓 구매/대여·보유 장비 중 이용 방식을 선택합니다.",
+                  "/services#service-start",
                 ],
                 ["비용 기준 확인", "장착비와 서비스 비용을 안내합니다.", "/services/pricing"],
                 ["영업시간·매장 위치", "운영시간과 위치를 확인합니다.", "/services/locations"],
@@ -1846,7 +1869,9 @@ function RacketInventoryList({
     activeBrand === "all" ? "/rackets" : `/rackets?brand=${encodeURIComponent(activeBrand)}`;
   const remainingCount = Math.max(0, total - rackets.length);
   const moreLabel =
-    activeBrand === "all" ? "중고 라켓 전체 보기" : `${racketBrandLabel(activeBrand)} 중고 라켓 전체 보기`;
+    activeBrand === "all"
+      ? "중고 라켓 전체 보기"
+      : `${racketBrandLabel(activeBrand)} 중고 라켓 전체 보기`;
 
   return (
     <>
@@ -1867,7 +1892,11 @@ function RacketInventoryList({
 }
 
 function getRacketRowBadges(racket: RItem) {
-  const badges: Array<{ key: string; label: string; tone: Parameters<typeof badgeToneVariant>[0] }> = [];
+  const badges: Array<{
+    key: string;
+    label: string;
+    tone: Parameters<typeof badgeToneVariant>[0];
+  }> = [];
 
   if (racket.status === "sold") badges.push({ key: "sold", label: "판매 완료", tone: "neutral" });
   if (racket.status === "rented") badges.push({ key: "rented", label: "대여 중", tone: "warning" });
@@ -1927,7 +1956,9 @@ function RacketInventoryRow({ racket }: { racket: RItem }) {
           <strong>{formatPrice(effectivePrice)}</strong>
           {hasDiscount && <span>{discountRate}% 할인</span>}
         </div>
-        {hasDiscount && <del className={styles.racketInventoryOriginalPrice}>{formatPrice(racket.price)}</del>}
+        {hasDiscount && (
+          <del className={styles.racketInventoryOriginalPrice}>{formatPrice(racket.price)}</del>
+        )}
         {rentalLabel && <p className={styles.racketInventoryRental}>{rentalLabel}</p>}
       </div>
       <ArrowRight className={styles.racketInventoryArrow} aria-hidden="true" />
