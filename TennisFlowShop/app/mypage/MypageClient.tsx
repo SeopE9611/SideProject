@@ -17,6 +17,7 @@ import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/Acade
 import QnaListSkeleton from "@/app/mypage/tabs/_components/QnaListSkeleton";
 import ReviewListSkeleton from "@/app/mypage/tabs/_components/ReviewListSkeleton";
 import WishlistSkeleton from "@/app/mypage/tabs/_components/WishlistSkeleton";
+import PassListSkeleton from "@/app/mypage/tabs/PassListSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,13 +44,13 @@ const AcademyApplicationsTab = dynamic(() => import("@/app/mypage/tabs/AcademyAp
   loading: () => <AcademyApplicationsListSkeleton />,
 });
 const MyPointsTab = dynamic(() => import("@/app/mypage/tabs/MyPointsTab"), {
-  loading: () => <TabPanelSkeleton rowCount={4} />,
+  loading: () => <TabPanelSkeleton rowCount={5} />,
 });
 const TransactionFlowList = dynamic(() => import("@/app/mypage/tabs/TransactionFlowList"), {
   loading: () => <TabPanelSkeleton rowCount={5} />,
 });
 const PassList = dynamic(() => import("@/app/mypage/tabs/PassList"), {
-  loading: () => <TabPanelSkeleton rowCount={4} />,
+  loading: () => <PassListSkeleton />,
 });
 const QnAList = dynamic(() => import("@/app/mypage/tabs/QnAList"), {
   loading: () => <QnaListSkeleton />,

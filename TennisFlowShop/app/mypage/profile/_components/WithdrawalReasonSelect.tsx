@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -53,13 +54,13 @@ export default function WithdrawalReasonSelect({ onSubmit }: WithdrawalReasonSel
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-control bg-destructive/5 p-4">
       {/* 셀렉트 레이블 */}
       <Label>탈퇴 사유 (선택)</Label>
 
       {/* 셀렉트 박스 */}
       <Select value={selectedReason} onValueChange={(value) => setSelectedReason(value)}>
-        <SelectTrigger>
+        <SelectTrigger className="rounded-control border-destructive/20">
           <SelectValue placeholder="사유 선택" />
         </SelectTrigger>
         <SelectContent>
@@ -78,17 +79,20 @@ export default function WithdrawalReasonSelect({ onSubmit }: WithdrawalReasonSel
           value={customReason}
           onChange={(e) => setCustomReason(e.target.value)}
           placeholder="자세한 사유를 입력해주세요 (선택사항)"
+          className="rounded-control border-destructive/20"
         />
       )}
 
       {/* 제출 버튼 */}
-      <button
+      <Button
+        type="button"
         onClick={handleSubmit}
         disabled={submitting}
-        className={`px-4 py-2 text-ui-body-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-md ${submitting ? "opacity-60 cursor-not-allowed" : ""}`}
+        variant="destructive"
+        className="rounded-control"
       >
-        탈퇴하기
-      </button>
+        {submitting ? "탈퇴 처리 중..." : "탈퇴하기"}
+      </Button>
     </div>
   );
 }
