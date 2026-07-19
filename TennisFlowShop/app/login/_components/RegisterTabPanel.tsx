@@ -558,7 +558,7 @@ export default function RegisterTabPanel({
   };
 
   return (
-    <TabsContent value="register" className="mt-0 p-4 md:p-5">
+    <TabsContent value="register" className="mt-0">
       <div className="space-y-5">
         <div className="text-center">
           <h2 className="text-ui-page-title font-semibold text-foreground">회원가입</h2>
@@ -570,7 +570,7 @@ export default function RegisterTabPanel({
         </div>
 
         {!isSocialOauthRegister && (
-          <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+          <div className="space-y-3 rounded-control border border-border bg-brand-highlight-muted/35 p-4">
             <p className="text-center text-ui-body-sm font-semibold text-foreground">
               SNS 계정으로 빠르게 가입
             </p>
@@ -598,17 +598,19 @@ export default function RegisterTabPanel({
         <form onSubmit={handleRegister} className="space-y-5">
           {registerFormError && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-ui-label text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
               <span className="break-keep">{registerFormError}</span>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 rounded-xl border border-border bg-card p-4 md:grid-cols-2 md:gap-5 md:p-5">
+          <section className="space-y-4">
+            <div><p className="text-ui-kicker text-brand-highlight-ink">01 · 계정 정보</p><h3 className="mt-1 text-ui-body-sm font-semibold text-foreground">로그인에 사용할 정보를 입력해주세요.</h3></div>
+          <div className="grid grid-cols-1 gap-4 rounded-panel border border-border bg-card p-4 shadow-sm md:grid-cols-2 md:gap-5 md:p-5">
             <div className="md:col-span-2 space-y-2">
               <Label
                 htmlFor="register-email-id"
                 className="flex items-center gap-2 text-ui-label font-medium text-foreground"
               >
-                <Mail className="h-4 w-4 text-foreground" />
+                <Mail aria-hidden="true" className="h-4 w-4 text-foreground" />
                 이메일 주소
               </Label>
 
@@ -632,7 +634,7 @@ export default function RegisterTabPanel({
                         autoComplete="email"
                         disabled={isSocialOauthRegister}
                       />
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Mail aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     </div>
 
                     <span className="hidden text-muted-foreground sm:inline">@</span>
@@ -658,7 +660,7 @@ export default function RegisterTabPanel({
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-12 w-full shrink-0 sm:w-auto"
+                            className="h-12 w-full rounded-control shrink-0 sm:w-auto"
                             onClick={() => {
                               setIsCustomDomain(false);
                               setEmailDomain("gmail.com");
@@ -711,7 +713,7 @@ export default function RegisterTabPanel({
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-12 w-full shrink-0 px-4 sm:w-auto"
+                      className="h-12 w-full rounded-control shrink-0 px-4 sm:w-auto"
                       onClick={checkEmailAvailability}
                       disabled={
                         !emailRegex.test(`${emailId.trim()}@${emailDomain.trim()}`) || checkingEmail
@@ -719,7 +721,7 @@ export default function RegisterTabPanel({
                     >
                       {checkingEmail ? (
                         <span className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
                           확인 중
                         </span>
                       ) : (
@@ -733,13 +735,13 @@ export default function RegisterTabPanel({
                   <div className="space-y-1">
                     {registerFieldErrors.emailId && (
                       <p className="flex items-center gap-1 text-ui-label text-destructive">
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircle aria-hidden="true" className="h-4 w-4" />
                         {registerFieldErrors.emailId}
                       </p>
                     )}
                     {registerFieldErrors.emailDomain && (
                       <p className="flex items-center gap-1 text-ui-label text-destructive">
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircle aria-hidden="true" className="h-4 w-4" />
                         {registerFieldErrors.emailDomain}
                       </p>
                     )}
@@ -748,19 +750,19 @@ export default function RegisterTabPanel({
 
                 {isSocialOauthRegister && (
                   <div className="flex items-center gap-2 text-ui-label text-foreground">
-                    <CheckCircle className="h-4 w-4" />
+                    <CheckCircle aria-hidden="true" className="h-4 w-4" />
                     소셜 로그인 이메일이 자동으로 입력되었습니다.
                   </div>
                 )}
 
                 {!isSocialOauthRegister && isEmailAvailable !== null && (
                   <div
-                    className={`flex items-center gap-2 text-ui-label ${isEmailAvailable ? "text-foreground" : "text-destructive"}`}
+                    className={`flex items-center gap-2 text-ui-label ${isEmailAvailable ? "text-success" : "text-destructive"}`}
                   >
                     {isEmailAvailable ? (
-                      <CheckCircle className="h-4 w-4" />
+                      <CheckCircle aria-hidden="true" className="h-4 w-4" />
                     ) : (
-                      <AlertCircle className="h-4 w-4" />
+                      <AlertCircle aria-hidden="true" className="h-4 w-4" />
                     )}
                     {isEmailAvailable
                       ? "사용 가능한 이메일입니다."
@@ -774,7 +776,7 @@ export default function RegisterTabPanel({
                 <div className="space-y-2">
                   <Label className="text-foreground font-medium">비밀번호</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Lock aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
                     <Input
                       id="register-password"
                       type={showRegisterPassword ? "text" : "password"}
@@ -788,25 +790,26 @@ export default function RegisterTabPanel({
                         setRegisterFormError("");
                       }}
                       placeholder="비밀번호를 입력하세요"
-                      className="pl-10 pr-10 h-12 border-border focus:border-border dark:focus:border-border"
+                      className="h-12 rounded-control pl-10 pr-10 border-border focus:border-border dark:focus:border-border"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
+                      aria-label={showRegisterPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
                       onClick={() => setShowRegisterPassword(!showRegisterPassword)}
                     >
                       {showRegisterPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff aria-hidden="true" className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Eye aria-hidden="true" className="h-4 w-4" />
                       )}
                     </Button>
                   </div>
                   {registerFieldErrors.password && (
                     <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                      <AlertCircle className="h-4 w-4" />
+                      <AlertCircle aria-hidden="true" className="h-4 w-4" />
                       <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
                     </div>
                   )}
@@ -815,7 +818,7 @@ export default function RegisterTabPanel({
                 <div className="space-y-2">
                   <Label className="text-foreground font-medium">비밀번호 확인</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Lock aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
                     <Input
                       id="register-confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
@@ -829,25 +832,26 @@ export default function RegisterTabPanel({
                         setRegisterFormError("");
                       }}
                       placeholder="비밀번호를 다시 입력하세요"
-                      className="pl-10 pr-10 h-12 border-border focus:border-border dark:focus:border-border"
+                      className="h-12 rounded-control pl-10 pr-10 border-border focus:border-border dark:focus:border-border"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
+                      aria-label={showConfirmPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff aria-hidden="true" className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Eye aria-hidden="true" className="h-4 w-4" />
                       )}
                     </Button>
                   </div>
                   {password && confirmPassword && password !== confirmPassword && (
                     <div className="flex items-center gap-2 text-ui-label text-destructive">
-                      <AlertCircle className="h-4 w-4" />
+                      <AlertCircle aria-hidden="true" className="h-4 w-4" />
                       비밀번호가 일치하지 않습니다.
                     </div>
                   )}
@@ -857,7 +861,7 @@ export default function RegisterTabPanel({
             <div className="space-y-2">
               <Label className="text-foreground font-medium">이름</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                <User aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
                 <Input
                   id="register-name"
                   value={name}
@@ -872,12 +876,12 @@ export default function RegisterTabPanel({
                     setRegisterFormError(reservedNameError ?? "");
                   }}
                   placeholder="이름을 입력하세요"
-                  className="pl-10 h-12 border-border focus:border-border dark:focus:border-border"
+                  className="h-12 rounded-control pl-10 border-border focus:border-border dark:focus:border-border"
                 />
               </div>
               {registerFieldErrors.name && (
                 <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.name}</span>
                 </div>
               )}
@@ -886,7 +890,7 @@ export default function RegisterTabPanel({
             <div className="space-y-2">
               <Label className="text-foreground font-medium">연락처</Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                <Phone aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
                 <Input
                   id="register-phone"
                   value={phone}
@@ -901,12 +905,12 @@ export default function RegisterTabPanel({
                   placeholder="연락처를 입력하세요 ('-' 제외)"
                   inputMode="numeric"
                   maxLength={13}
-                  className="pl-10 h-12 border-border focus:border-border dark:focus:border-border"
+                  className="h-12 rounded-control pl-10 border-border focus:border-border dark:focus:border-border"
                 />
               </div>
               {registerFieldErrors.phone && (
                 <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.phone}</span>
                 </div>
               )}
@@ -926,16 +930,16 @@ export default function RegisterTabPanel({
                   id="register-find-postcode"
                   type="button"
                   variant="outline"
-                  className="h-12 w-full border-border bg-transparent text-foreground hover:bg-muted dark:hover:bg-muted sm:w-auto"
+                  className="h-12 w-full rounded-control border-border bg-transparent text-foreground hover:bg-muted dark:hover:bg-muted sm:w-auto"
                   onClick={handleFindPostcode}
                 >
-                  <MapPin className="mr-2 h-4 w-4" />
+                  <MapPin aria-hidden="true" className="mr-2 h-4 w-4" />
                   우편번호 찾기
                 </Button>
               </div>
               {registerFieldErrors.postalCode && (
                 <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
                 </div>
               )}
@@ -948,11 +952,11 @@ export default function RegisterTabPanel({
                 value={address}
                 placeholder="기본 주소를 입력하세요"
                 readOnly
-                className="bg-muted cursor-not-allowed h-12 border-border"
+                className="h-12 rounded-control bg-muted cursor-not-allowed border-border"
               />
               {registerFieldErrors.address && (
                 <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.address}</span>
                 </div>
               )}
@@ -972,16 +976,18 @@ export default function RegisterTabPanel({
                   setRegisterFormError("");
                 }}
                 placeholder="상세 주소를 입력하세요"
-                className="h-12 border-border focus:border-border dark:focus:border-border"
+                className="h-12 rounded-control border-border focus:border-border dark:focus:border-border"
               />
             </div>
           </div>
           {registerFieldErrors.addressDetail && (
             <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle aria-hidden="true" className="h-4 w-4" />
               <span className="whitespace-pre-line">{registerFieldErrors.addressDetail}</span>
             </div>
           )}
+
+          </section>
 
           <Button
             type="submit"
@@ -996,7 +1002,7 @@ export default function RegisterTabPanel({
           >
             {submitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
                 가입 중...
               </>
             ) : isSocialOauthRegister ? (

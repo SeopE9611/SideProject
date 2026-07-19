@@ -28,34 +28,37 @@ export function AuthShell({
       aria-labelledby={titleId}
       className={cn(
         "flex min-h-[calc(100vh-8rem)] items-center justify-center bg-background px-4 py-6 sm:px-6 sm:py-8",
-        variant === "feature" && "bg-muted/20",
+        variant === "feature" && "bg-brand-highlight-muted/35",
         className,
       )}
     >
       <div
         className={cn(
-          "w-full max-w-md rounded-xl border border-border bg-card p-4 shadow-sm sm:p-8",
-          variant === "feature" && "rounded-panel border-border/80 shadow-soft",
+          "w-full max-w-md overflow-hidden rounded-panel border border-border bg-card shadow-soft",
           panelClassName,
         )}
       >
-        <header className="mb-5 space-y-2 text-center sm:mb-6">
+        <header
+          className={cn(
+            "border-b border-border px-4 py-6 text-center sm:px-8 sm:py-8",
+            variant === "feature" && "bg-brand-highlight-muted/45",
+          )}
+        >
           <h1
             id={titleId}
-            className={cn(
-              "text-ui-section-title font-semibold tracking-tight text-foreground",
-              variant === "feature" && "font-brand-heading tracking-[-0.015em]",
-            )}
+            className="font-brand-heading text-ui-section-title font-semibold tracking-[-0.015em] text-foreground"
           >
             {title}
           </h1>
           {description && (
-            <div className="text-ui-body-sm text-muted-foreground">{description}</div>
+            <div className="mx-auto mt-2 max-w-lg break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+              {description}
+            </div>
           )}
         </header>
-        {children}
+        <div className="p-4 sm:p-6">{children}</div>
         {footer && (
-          <footer className="mt-6 border-t border-border pt-5 text-center text-ui-body-sm text-muted-foreground">
+          <footer className="border-t border-border px-4 py-5 text-center text-ui-body-sm text-muted-foreground sm:px-6">
             {footer}
           </footer>
         )}

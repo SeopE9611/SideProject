@@ -32,28 +32,7 @@ function getGuestOrderModeClient(): GuestOrderMode {
 type LoginField = "email" | "password";
 
 function RegisterTabPanelSkeleton() {
-  return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <Skeleton className="h-11 w-full" />
-    </div>
-  );
-}
+  return <div className="space-y-5" aria-busy="true" aria-live="polite"><p className="sr-only">회원가입 양식을 불러오는 중입니다.</p><Skeleton className="mx-auto h-7 w-24" /><Skeleton className="h-28 w-full rounded-control" /><Skeleton className="h-4 w-full" /><div className="space-y-4 rounded-panel border border-border p-4"><Skeleton className="h-4 w-32" /><Skeleton className="h-12 w-full rounded-control" /><div className="grid gap-4 sm:grid-cols-2"><Skeleton className="h-12 w-full rounded-control" /><Skeleton className="h-12 w-full rounded-control" /></div><Skeleton className="h-12 w-full rounded-control" /></div><div className="space-y-3 rounded-panel border border-border p-4"><Skeleton className="h-4 w-28" /><Skeleton className="h-12 w-full rounded-control" /><Skeleton className="h-12 w-full rounded-control" /></div><Skeleton className="h-12 w-full rounded-control" /></div>; }
 
 const RegisterTabPanel = dynamic(() => import("@/app/login/_components/RegisterTabPanel"), {
   loading: () => <RegisterTabPanelSkeleton />,
@@ -301,17 +280,18 @@ export default function LoginPageClient() {
         </span>
       }
       description="로그인 또는 회원가입을 선택해 계속 진행하세요"
+      variant="feature"
       panelClassName={activeTab === "register" ? "max-w-2xl" : "max-w-md"}
     >
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b border-border px-4 py-3 md:px-5">
-          <TabsList className="grid h-11 w-full grid-cols-2">
-            <TabsTrigger value="login">로그인</TabsTrigger>
-            <TabsTrigger value="register">회원가입</TabsTrigger>
+        <div className="mb-5 rounded-control border border-border bg-muted/50 p-1">
+          <TabsList className="grid h-11 w-full grid-cols-2 bg-transparent">
+            <TabsTrigger value="login" className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm">로그인</TabsTrigger>
+            <TabsTrigger value="register" className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm">회원가입</TabsTrigger>
           </TabsList>
         </div>
         {activeTab === "login" && (
-          <TabsContent value="login" forceMount className="mt-0 p-4 md:p-5">
+          <TabsContent value="login" forceMount className="mt-0">
             <div className="space-y-4">
               <div className="text-center">
                 <h2 className="text-ui-page-title font-semibold text-foreground">로그인</h2>
@@ -320,7 +300,7 @@ export default function LoginPageClient() {
                 </p>
               </div>
 
-              <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+              <div className="space-y-3 rounded-control border border-border bg-brand-highlight-muted/35 p-4">
                 <p className="text-ui-body-sm font-semibold text-foreground text-center">
                   간편 로그인
                 </p>
@@ -351,7 +331,7 @@ export default function LoginPageClient() {
               >
                 {loginFormError && (
                   <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-ui-label text-destructive">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
                     <div className="whitespace-pre-line break-keep">{loginFormError}</div>
                   </div>
                 )}
@@ -360,7 +340,7 @@ export default function LoginPageClient() {
                     이메일
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Mail aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
                     <Input
                       id="email"
                       data-cy="login-email"
@@ -377,7 +357,7 @@ export default function LoginPageClient() {
                           "";
                         setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
                       }}
-                      className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
+                      className="h-12 rounded-control pl-10 border-border focus:border-border focus:ring-ring dark:focus:border-border"
                     />
                   </div>
                   {loginFieldErrors.email && (
@@ -393,7 +373,7 @@ export default function LoginPageClient() {
                     비밀번호
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Lock aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
                     <Input
                       id="password"
                       data-cy="login-password"
@@ -410,16 +390,17 @@ export default function LoginPageClient() {
                           "";
                         setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
                       }}
-                      className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
+                      className="h-12 rounded-control pl-10 pr-10 border-border focus:border-border focus:ring-ring dark:focus:border-border"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
+                      aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground hover:text-foreground dark:hover:text-foreground"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? <EyeOff aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />}
                     </Button>
                   </div>
                   {loginFieldErrors.password && (
@@ -456,7 +437,7 @@ export default function LoginPageClient() {
 
                 <Button
                   type="submit"
-                  className="h-12 w-full font-semibold"
+                  className="h-12 w-full rounded-control font-semibold"
                   disabled={loginLoading}
                   data-cy="login-submit"
                 >
