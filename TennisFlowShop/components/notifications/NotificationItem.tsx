@@ -35,9 +35,11 @@ function relativeTime(value: string) {
 export function NotificationItem({
   item,
   onClick,
+  variant = "page",
 }: {
   item: NotificationListItem;
   onClick: () => void;
+  variant?: "page" | "panel";
 }) {
   const unread = !item.readAt;
   return (
@@ -45,14 +47,15 @@ export function NotificationItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full gap-3 rounded-xl border border-border/60 bg-card px-4 py-4 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-5",
-        unread && "border-primary/40 bg-primary/5 shadow-sm",
+        "flex w-full min-w-0 gap-3 rounded-control border border-border bg-card px-4 py-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        variant === "page" && "sm:px-5",
+        unread && "border-brand-highlight-ink/35 bg-brand-highlight-muted shadow-soft",
       )}
     >
       <span
         className={cn(
           "mt-2 h-2 w-2 shrink-0 rounded-full",
-          unread ? "bg-primary" : "bg-transparent",
+          unread ? "bg-brand-highlight" : "bg-transparent",
         )}
       />
       <span className="min-w-0 flex-1 space-y-1">
@@ -67,7 +70,7 @@ export function NotificationItem({
             {relativeTime(item.createdAt)}
           </span>
           {unread && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-ui-label font-semibold text-primary">
+            <span className="rounded-full bg-brand-highlight-muted px-2 py-0.5 text-ui-label font-semibold text-brand-highlight-ink">
               읽지 않음
             </span>
           )}

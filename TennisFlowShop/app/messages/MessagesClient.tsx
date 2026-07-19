@@ -33,7 +33,6 @@ import {
   User,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { mutate as globalMutate } from "swr";
 
@@ -176,6 +175,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   return (
     <div className="min-h-full bg-background">
       <PublicPageHero
+        variant="feature"
         eyebrow="쪽지"
         title="쪽지함"
         description="알림보다 자세한 1:1 안내와 답장을 확인하세요"
@@ -183,7 +183,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           <>
             {user.role === "admin" && (
               <Button
-                variant="default"
+                variant="highlight"
                 onClick={() => setBroadcastOpen(true)}
                 className="w-full gap-2 sm:w-auto"
               >
@@ -195,7 +195,11 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
         }
       />
       <SiteContainer className="py-6 md:py-8" variant="wide">
-        <SummaryCard className="mx-auto max-w-7xl" contentClassName="p-4 md:p-6">
+        <SummaryCard
+          variant="feature"
+          className="mx-auto max-w-7xl rounded-panel"
+          contentClassName="p-3 sm:p-4 md:p-6"
+        >
           <Tabs
             value={tab}
             onValueChange={(v) => {
@@ -206,18 +210,18 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             }}
             className="w-full"
           >
-            <TabsList className="mb-4 grid w-full max-w-md grid-cols-3 bg-secondary/80 md:mb-6">
-              <TabsTrigger value="inbox" className="gap-2">
+            <TabsList className="mb-4 grid w-full grid-cols-3 rounded-control border border-border bg-brand-highlight-muted/45 p-1 md:mb-6">
+              <TabsTrigger value="inbox" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
                 <Mail className="h-4 w-4" />
                 <span className="hidden sm:inline">받은쪽지</span>
                 <span className="sm:hidden">받은</span>
               </TabsTrigger>
-              <TabsTrigger value="send" className="gap-2">
+              <TabsTrigger value="send" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
                 <Send className="h-4 w-4" />
                 <span className="hidden sm:inline">보낸쪽지</span>
                 <span className="sm:hidden">보낸</span>
               </TabsTrigger>
-              <TabsTrigger value="admin" className="gap-2">
+              <TabsTrigger value="admin" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
                 <Megaphone className="h-4 w-4" />
                 <span className="hidden sm:inline">관리자</span>
                 <span className="sm:hidden">관리</span>
@@ -227,168 +231,172 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             <TabsContent value={tab} className="mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
                 <div className="lg:col-span-5">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
-                    <div className="break-keep text-ui-body-sm font-medium text-muted-foreground">
-                      총{" "}
-                      <span className="text-foreground font-semibold">
-                        {typeof total === "number" ? total : "-"}
-                      </span>
-                      개
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-ui-label text-muted-foreground hidden sm:inline">
-                        {page} / {totalPages}
-                      </span>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page <= 1}
-                          onClick={() => {
-                            setPage((p) => Math.max(1, p - 1));
-                            setSelectedId(null);
-                          }}
-                          className="h-8 w-8 p-0"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page >= totalPages}
-                          onClick={() => {
-                            setPage((p) => Math.min(totalPages, p + 1));
-                            setSelectedId(null);
-                          }}
-                          className="h-8 w-8 p-0"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
+                  <section className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
+                    <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3 sm:px-5">
+                      <div className="break-keep text-ui-body-sm font-medium text-muted-foreground">
+                        총{" "}
+                        <span className="text-foreground font-semibold">
+                          {typeof total === "number" ? total : "-"}
+                        </span>
+                        개
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    {showListSkeleton && (
-                      <div className="space-y-2 rounded-lg border border-border/30 bg-card p-3">
-                        {Array.from({ length: 6 }).map((_, idx) => (
-                          <div
-                            key={`messages-list-skeleton-${idx}`}
-                            className="rounded-md border border-border/40 p-3"
-                          >
-                            <Skeleton className="h-4 w-1/2" />
-                            <Skeleton className="mt-2 h-3 w-2/3" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {hasDataError && (
-                      <ResultState
-                        status="error"
-                        title="쪽지 목록을 불러오지 못했습니다"
-                        description={errorMessage || "잠시 후 다시 확인해주세요."}
-                        className="py-8"
-                      />
-                    )}
-
-                    {shouldShowEmptyState && (
-                      <EmptyState
-                        icon={<Mail className="h-8 w-8" />}
-                        title="아직 쪽지가 없습니다"
-                        description="고객센터 답변이나 회원 간 쪽지가 도착하면 이곳에 표시됩니다."
-                      />
-                    )}
-
-                    {!isLoading &&
-                      !hasDataError &&
-                      Array.isArray(items) &&
-                      items.map((m) => {
-                        const active = selectedId === m.id;
-                        const counterpart = tab === "send" ? m.toName : m.fromName;
-                        const isUnread = tab !== "send" && !m.isRead;
-
-                        return (
-                          <button
-                            key={m.id}
-                            className={cn(
-                              "w-full rounded-xl border border-border/60 bg-card p-4 text-left transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-sm sm:p-5",
-                              isUnread && !active && "border-primary/35 bg-primary/5",
-                              active && "border-border bg-secondary shadow-sm",
-                              !active && "hover:bg-secondary/60 hover:text-foreground",
-                            )}
-                            onClick={async () => {
-                              setSelectedId(m.id);
-                              setTimeout(afterOpenDetail, 250);
+                      <div className="flex items-center gap-2">
+                        <span className="text-ui-label text-muted-foreground hidden sm:inline">
+                          {page} / {totalPages}
+                        </span>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page <= 1}
+                            onClick={() => {
+                              setPage((p) => Math.max(1, p - 1));
+                              setSelectedId(null);
                             }}
+                            className="h-8 w-8 rounded-control p-0"
+                            aria-label="이전 쪽지 페이지"
                           >
-                            <div className="flex items-start justify-between gap-3 mb-2">
-                              <div className="flex items-start gap-3 min-w-0 flex-1">
-                                <div
-                                  className={cn(
-                                    "mt-0.5 shrink-0",
-                                    isUnread && "text-primary",
-                                    !isUnread && "text-muted-foreground",
-                                  )}
-                                >
-                                  {isUnread ? (
-                                    <Mail className="h-5 w-5" />
-                                  ) : (
-                                    <MailOpen className="h-5 w-5" />
-                                  )}
-                                </div>
+                            <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page >= totalPages}
+                            onClick={() => {
+                              setPage((p) => Math.min(totalPages, p + 1));
+                              setSelectedId(null);
+                            }}
+                            className="h-8 w-8 rounded-control p-0"
+                            aria-label="다음 쪽지 페이지"
+                          >
+                            <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
 
-                                <div className="min-w-0 flex-1">
+                    <div className="space-y-2 p-3 sm:p-4">
+                      {showListSkeleton && (
+                        <div className="space-y-2 rounded-lg border border-border/30 bg-card p-3">
+                          {Array.from({ length: 6 }).map((_, idx) => (
+                            <div
+                              key={`messages-list-skeleton-${idx}`}
+                              className="rounded-md border border-border/40 p-3"
+                            >
+                              <Skeleton className="h-4 w-1/2" />
+                              <Skeleton className="mt-2 h-3 w-2/3" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {hasDataError && (
+                        <ResultState
+                          status="error"
+                          title="쪽지 목록을 불러오지 못했습니다"
+                          description={errorMessage || "잠시 후 다시 확인해주세요."}
+                          className="py-8"
+                        />
+                      )}
+
+                      {shouldShowEmptyState && (
+                        <EmptyState
+                          icon={<Mail className="h-8 w-8" />}
+                          title="아직 쪽지가 없습니다"
+                          description="고객센터 답변이나 회원 간 쪽지가 도착하면 이곳에 표시됩니다."
+                        />
+                      )}
+
+                      {!isLoading &&
+                        !hasDataError &&
+                        Array.isArray(items) &&
+                        items.map((m) => {
+                          const active = selectedId === m.id;
+                          const counterpart = tab === "send" ? m.toName : m.fromName;
+                          const isUnread = tab !== "send" && !m.isRead;
+
+                          return (
+                            <button
+                              key={m.id}
+                              className={cn(
+                                "w-full rounded-control border border-border bg-card p-4 text-left transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-sm",
+                                isUnread && !active && "border-brand-highlight-ink/35 bg-brand-highlight-muted",
+                                active && "border-brand-highlight-ink/45 bg-brand-highlight-muted shadow-soft",
+                                !active && "hover:bg-muted hover:text-foreground",
+                              )}
+                              onClick={async () => {
+                                setSelectedId(m.id);
+                                setTimeout(afterOpenDetail, 250);
+                              }}
+                            >
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex items-start gap-3 min-w-0 flex-1">
                                   <div
                                     className={cn(
-                                      "line-clamp-2 break-keep text-ui-body-sm leading-tight",
-                                      isUnread
-                                        ? "font-semibold text-foreground"
-                                        : "font-medium text-foreground/90",
+                                      "mt-0.5 shrink-0",
+                                      isUnread && "text-brand-highlight-ink",
+                                      !isUnread && "text-muted-foreground",
                                     )}
                                   >
-                                    {m.title || "(제목 없음)"}
+                                    {isUnread ? (
+                                      <Mail className="h-5 w-5" />
+                                    ) : (
+                                      <MailOpen className="h-5 w-5" />
+                                    )}
                                   </div>
 
-                                  <div className="flex items-center gap-2 mt-1 text-ui-label text-muted-foreground">
-                                    <div className="flex items-center gap-1">
-                                      <User className="h-3 w-3" />
-                                      <span className="max-w-[120px] truncate sm:max-w-[160px]">
-                                        {counterpart}
-                                      </span>
+                                  <div className="min-w-0 flex-1">
+                                    <div
+                                      className={cn(
+                                        "line-clamp-2 break-keep text-ui-body-sm leading-tight",
+                                        isUnread
+                                          ? "font-semibold text-foreground"
+                                          : "font-medium text-foreground/90",
+                                      )}
+                                    >
+                                      {m.title || "(제목 없음)"}
                                     </div>
-                                    <span>·</span>
-                                    <div className="flex items-center gap-1">
-                                      <Clock className="h-3 w-3" />
-                                      <span className="whitespace-nowrap">
-                                        {formatKST(m.createdAt)}
-                                      </span>
-                                    </div>
-                                  </div>
 
-                                  <p className="mt-2 text-ui-label text-muted-foreground line-clamp-2 leading-relaxed">
-                                    {m.snippet}
-                                  </p>
+                                    <div className="flex items-center gap-2 mt-1 text-ui-label text-muted-foreground">
+                                      <div className="flex items-center gap-1">
+                                        <User className="h-3 w-3" />
+                                        <span className="max-w-[120px] truncate sm:max-w-[160px]">
+                                          {counterpart}
+                                        </span>
+                                      </div>
+                                      <span>·</span>
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        <span className="whitespace-nowrap">
+                                          {formatKST(m.createdAt)}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <p className="mt-2 text-ui-label text-muted-foreground line-clamp-2 leading-relaxed">
+                                      {m.snippet}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
 
-                              {isUnread && (
-                                <Badge
-                                  variant="brand"
-                                  className="shrink-0 px-2 py-1 text-ui-label font-semibold leading-none"
-                                >
-                                  읽지 않음
-                                </Badge>
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                  </div>
+                                {isUnread && (
+                                  <Badge
+                                    variant="brand"
+                                    className="shrink-0 px-2 py-1 text-ui-label font-semibold leading-none"
+                                  >
+                                    읽지 않음
+                                  </Badge>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </section>
                 </div>
 
                 <div className="lg:col-span-7">
-                  <div className="min-h-[400px] rounded-lg border border-border/60 bg-card">
+                  <section className="min-h-[400px] overflow-hidden rounded-panel border border-border bg-card shadow-soft">
                     {!selectedId && (
                       <EmptyState
                         icon={<Mail className="h-8 w-8" />}
@@ -399,7 +407,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     )}
 
                     {selectedId && detailLoading && (
-                      <div className="p-4 md:p-6 space-y-4">
+                      <div className="space-y-4 p-5 md:p-6">
                         <Skeleton className="h-7 w-2/3" />
                         <Skeleton className="h-4 w-1/2" />
                         <div className="pt-4 border-t">
@@ -417,9 +425,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     )}
 
                     {detail && (
-                      <div className="p-4 md:p-6">
+                      <div className="p-5 md:p-6">
                         <div className="pb-4 border-b border-border/40">
-                          <h2 className="text-ui-section-title font-semibold text-foreground leading-tight mb-3">
+                          <h2 className="mb-3 font-brand-heading text-ui-section-title font-semibold leading-tight text-foreground">
                             {detail.title || "(제목 없음)"}
                           </h2>
 
@@ -444,7 +452,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                       className={cn(
                                         detail.readAt
                                           ? "text-muted-foreground"
-                                          : "text-primary font-medium",
+                                          : "font-medium text-brand-highlight-ink",
                                       )}
                                     >
                                       {detail.readAt ? "읽음" : "읽지 않음"}
@@ -457,7 +465,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                               {tab !== "send" && (
                                 <Button
-                                  variant="outline"
+                                  variant="highlight_soft"
                                   size="sm"
                                   onClick={openReply}
                                   className="w-full gap-2 bg-transparent sm:w-auto"
@@ -468,10 +476,10 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               )}
 
                               <Button
-                                variant="outline"
+                                variant="destructive"
                                 size="sm"
                                 onClick={() => setDeleteOpen(true)}
-                                className="w-full gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 dark:hover:bg-destructive/15 sm:w-auto"
+                                className="w-full gap-2 sm:w-auto"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 삭제
@@ -489,7 +497,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </section>
                 </div>
               </div>
             </TabsContent>

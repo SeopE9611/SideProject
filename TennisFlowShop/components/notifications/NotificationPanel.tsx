@@ -72,6 +72,7 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
               key={item.id}
               item={item}
               onClick={() => handleItemClick(item.id, item.href)}
+              variant="panel"
             />
           ))
         )}

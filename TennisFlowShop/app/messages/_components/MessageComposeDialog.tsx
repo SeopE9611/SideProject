@@ -118,11 +118,11 @@ export default function MessageComposeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="rounded-panel sm:max-w-[600px]">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
-              <Send className="h-5 w-5 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-control border border-brand-highlight-ink/20 bg-brand-highlight-muted">
+              <Send className="h-5 w-5 text-brand-highlight-ink" />
             </div>
             <div>
               <DialogTitle className="text-ui-card-title-lg">쪽지 보내기</DialogTitle>
@@ -149,7 +149,7 @@ export default function MessageComposeDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력하세요"
-              className="h-10"
+              className="h-10 rounded-control"
             />
           </div>
 
@@ -163,7 +163,7 @@ export default function MessageComposeDialog({
               onChange={(e) => setBody(e.target.value)}
               placeholder="내용을 입력하세요"
               rows={10}
-              className="resize-none"
+              className="resize-none rounded-control"
             />
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function MessageComposeDialog({
             취소
           </Button>
           <Button
-            variant="outline"
+            variant="highlight"
             onClick={handleSend}
             disabled={isSending}
             className="min-w-[100px] gap-2"
