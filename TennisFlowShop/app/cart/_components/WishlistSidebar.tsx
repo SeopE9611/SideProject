@@ -41,11 +41,14 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
 
   if (hasDataError) {
     return (
-      <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
+      <PublicSurface
+        variant="muted"
+        padding="none"
+        className={clsx("mt-6 overflow-hidden", className)}
+      >
         <CardHeader className="border-b border-border">
           <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
-            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />
-            내 위시리스트
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />내 위시리스트
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
@@ -57,11 +60,14 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
 
   if (isLoading && !hasResolvedData) {
     return (
-      <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
+      <PublicSurface
+        variant="muted"
+        padding="none"
+        className={clsx("mt-6 overflow-hidden", className)}
+      >
         <CardHeader className="border-b border-border">
           <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
-            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />
-            내 위시리스트
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />내 위시리스트
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 p-4" role="status" aria-live="polite">
@@ -120,7 +126,11 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   }
 
   return (
-    <PublicSurface variant="muted" padding="none" className={clsx("mt-6 overflow-hidden", className)}>
+    <PublicSurface
+      variant="muted"
+      padding="none"
+      className={clsx("mt-6 overflow-hidden", className)}
+    >
       <CardHeader
         className={clsx(
           "rounded-t-lg",
@@ -158,8 +168,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                 variant === "inline"
                   ? clsx(
                       "border-b border-border p-4 last:border-b-0",
-                      index >= list.length - (list.length % 2 === 0 ? 2 : 1) &&
-                        "bp-xl:border-b-0",
+                      index >= list.length - (list.length % 2 === 0 ? 2 : 1) && "bp-xl:border-b-0",
                       index % 2 === 0 && "bp-xl:border-r bp-xl:border-border",
                       list.length % 2 === 1 && index === list.length - 1 && "bp-xl:border-r-0",
                     )

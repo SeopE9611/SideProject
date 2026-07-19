@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type SortOption<T extends string> = { value: T; label: string };
 
@@ -79,10 +85,24 @@ export default function RacketFinderToolbar<T extends string>({
           <span className="break-keep">{summary}</span>
         </div>
         <div className="col-start-2 row-start-2 flex justify-end bp-md:col-auto bp-md:row-auto bp-md:order-4">
-          <Button variant="ghost" size="icon" disabled={!canGoPrevious} onClick={onPrevious} className="h-10 w-10 rounded-r-none" aria-label="이전 결과 페이지">
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={!canGoPrevious}
+            onClick={onPrevious}
+            className="h-10 w-10 rounded-r-none"
+            aria-label="이전 결과 페이지"
+          >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
-          <Button variant="ghost" size="icon" disabled={!canGoNext} onClick={onNext} className="h-10 w-10 rounded-l-none" aria-label="다음 결과 페이지">
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={!canGoNext}
+            onClick={onNext}
+            className="h-10 w-10 rounded-l-none"
+            aria-label="다음 결과 페이지"
+          >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>

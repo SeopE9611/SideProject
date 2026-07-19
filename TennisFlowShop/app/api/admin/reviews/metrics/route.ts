@@ -20,10 +20,16 @@ export async function GET(req: Request) {
           avg: { $avg: "$rating" },
           five: { $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] } },
           product: { $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "product"] }, 1, 0] } },
-          product_stringing: { $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "product_stringing"] }, 1, 0] } },
-          standalone_stringing: { $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "standalone_stringing"] }, 1, 0] } },
+          product_stringing: {
+            $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "product_stringing"] }, 1, 0] },
+          },
+          standalone_stringing: {
+            $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "standalone_stringing"] }, 1, 0] },
+          },
           rental: { $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "rental"] }, 1, 0] } },
-          rental_stringing: { $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "rental_stringing"] }, 1, 0] } },
+          rental_stringing: {
+            $sum: { $cond: [{ $eq: ["$resolvedReviewContext", "rental_stringing"] }, 1, 0] },
+          },
         },
       },
     ])

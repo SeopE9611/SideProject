@@ -406,14 +406,14 @@ export default function FreeBoardWriteClient() {
                 </p>
               </div>
             </div>
-          <div className="flex w-full gap-2 sm:w-auto">
-            <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
-              <Link href="/board/free" onClick={guardLeave}>
-                <ArrowLeft className="h-4 w-4" />
-                <span>목록으로</span>
-              </Link>
-            </Button>
-          </div>
+            <div className="flex w-full gap-2 sm:w-auto">
+              <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
+                <Link href="/board/free" onClick={guardLeave}>
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>목록으로</span>
+                </Link>
+              </Button>
+            </div>
           </div>
         </section>
 
@@ -480,8 +480,12 @@ export default function FreeBoardWriteClient() {
               {/* 내용 입력 */}
               <section className="space-y-2 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5">
                 <div className="border-b border-border pb-3">
-                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">본문 작성</h2>
-                  <p className="mt-1 text-ui-label text-muted-foreground">다른 이용자가 이해하기 쉽도록 구체적으로 작성해 주세요.</p>
+                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">
+                    본문 작성
+                  </h2>
+                  <p className="mt-1 text-ui-label text-muted-foreground">
+                    다른 이용자가 이해하기 쉽도록 구체적으로 작성해 주세요.
+                  </p>
                 </div>
                 <Label htmlFor="content">내용</Label>
                 <Textarea
@@ -514,10 +518,17 @@ export default function FreeBoardWriteClient() {
               </section>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
-              <section className="space-y-3 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5" ref={attachmentsRef}>
+              <section
+                className="space-y-3 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5"
+                ref={attachmentsRef}
+              >
                 <div className="border-b border-border pb-3">
-                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">첨부 파일</h2>
-                  <p className="mt-1 text-ui-label text-muted-foreground">이미지와 문서를 나누어 안전하게 첨부할 수 있습니다.</p>
+                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">
+                    첨부 파일
+                  </h2>
+                  <p className="mt-1 text-ui-label text-muted-foreground">
+                    이미지와 문서를 나누어 안전하게 첨부할 수 있습니다.
+                  </p>
                 </div>
                 <Label>첨부 (선택)</Label>
                 {fieldErrors.attachments ? (

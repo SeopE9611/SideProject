@@ -49,7 +49,10 @@ const fmt = (n: number) => new Intl.NumberFormat("ko-KR").format(n);
 const PointsSummarySkeleton = () => (
   <div className="grid gap-3 bp-sm:gap-5 bp-md:grid-cols-2 bp-lg:grid-cols-3">
     {Array.from({ length: 3 }).map((_, idx) => (
-      <Card key={`points-summary-skeleton-${idx}`} className="rounded-panel border-border/80 shadow-soft">
+      <Card
+        key={`points-summary-skeleton-${idx}`}
+        className="rounded-panel border-border/80 shadow-soft"
+      >
         <CardContent className="space-y-3 p-4 bp-sm:p-5">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-8 w-28" />
@@ -63,7 +66,10 @@ const PointsSummarySkeleton = () => (
 const PointsListSkeleton = ({ count = 5 }: { count?: number }) => (
   <div className="space-y-2 px-4 py-4">
     {Array.from({ length: count }).map((_, idx) => (
-      <div key={`points-list-skeleton-${idx}`} className="rounded-control border border-border/60 p-4">
+      <div
+        key={`points-list-skeleton-${idx}`}
+        className="rounded-control border border-border/60 p-4"
+      >
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="mt-2 h-3 w-1/2" />
       </div>
@@ -154,7 +160,6 @@ export default function MyPointsTab() {
         <>
           <div className="grid gap-3 bp-sm:gap-5 bp-md:grid-cols-2 bp-lg:grid-cols-3">
             <Card className="group relative overflow-hidden rounded-panel border border-brand-highlight/30 bg-brand-muted/55 shadow-soft transition-shadow hover:shadow-md text-foreground">
-
               <CardContent className="relative p-4 bp-sm:p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="rounded-control bg-brand-highlight p-2 text-brand-highlight-foreground">
@@ -198,7 +203,10 @@ export default function MyPointsTab() {
               <CardContent className="relative p-4 bp-sm:p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="bg-muted/30 rounded-lg p-2 shadow-md">
-                    <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" aria-hidden="true" />
+                    <ArrowUpRight
+                      className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success"
+                      aria-hidden="true"
+                    />
                   </div>
                   <TrendingUp className="h-4 w-4 text-primary opacity-50" />
                 </div>
@@ -289,7 +297,10 @@ export default function MyPointsTab() {
                         <div className="flex items-start gap-3 bp-sm:gap-4 flex-1 min-w-0">
                           <div className="shrink-0 rounded-xl p-2 bp-sm:p-2.5 shadow-sm bg-muted/30">
                             {it.amount >= 0 ? (
-                              <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" aria-hidden="true" />
+                              <ArrowUpRight
+                                className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success"
+                                aria-hidden="true"
+                              />
                             ) : (
                               <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-destructive" />
                             )}

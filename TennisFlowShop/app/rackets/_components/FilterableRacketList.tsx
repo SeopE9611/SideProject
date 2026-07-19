@@ -551,12 +551,73 @@ export default function FilterableRacketList({
   };
 
   const activeFilterItems: ActiveFilterItem[] = [
-    ...(submittedQuery ? [{ id: "search", label: `검색어 “${submittedQuery}”`, removeLabel: "검색어 필터 해제", onRemove: () => { setSearchQuery(""); setSubmittedQuery(""); mutate(); } }] : []),
-    ...(selectedBrand ? [{ id: "brand", label: `브랜드 ${racketBrandLabel(selectedBrand)}`, removeLabel: "브랜드 필터 해제", onRemove: () => setSelectedBrand(null) }] : []),
-    ...(selectedCondition ? [{ id: "condition", label: `상태 ${selectedCondition}`, removeLabel: "상태 필터 해제", onRemove: () => setSelectedCondition(null) }] : []),
-    ...(priceChanged ? [{ id: "price", label: `가격 ${priceMin !== null ? `${priceMin.toLocaleString()}원` : "0원"}~${priceMax !== null ? `${priceMax.toLocaleString()}원` : "제한 없음"}`, removeLabel: "가격 필터 해제", onRemove: () => { setPriceMin(null); setPriceMax(null); } }] : []),
-    ...(exposureLabel ? [{ id: "benefit", label: exposureLabel, removeLabel: "혜택 필터 해제", onRemove: () => setExposureFilter([]) }] : []),
-    ...(rentOnly ? [{ id: "rent", label: "대여 가능", removeLabel: "대여 가능 필터 해제", onRemove: () => setRentOnly(false) }] : []),
+    ...(submittedQuery
+      ? [
+          {
+            id: "search",
+            label: `검색어 “${submittedQuery}”`,
+            removeLabel: "검색어 필터 해제",
+            onRemove: () => {
+              setSearchQuery("");
+              setSubmittedQuery("");
+              mutate();
+            },
+          },
+        ]
+      : []),
+    ...(selectedBrand
+      ? [
+          {
+            id: "brand",
+            label: `브랜드 ${racketBrandLabel(selectedBrand)}`,
+            removeLabel: "브랜드 필터 해제",
+            onRemove: () => setSelectedBrand(null),
+          },
+        ]
+      : []),
+    ...(selectedCondition
+      ? [
+          {
+            id: "condition",
+            label: `상태 ${selectedCondition}`,
+            removeLabel: "상태 필터 해제",
+            onRemove: () => setSelectedCondition(null),
+          },
+        ]
+      : []),
+    ...(priceChanged
+      ? [
+          {
+            id: "price",
+            label: `가격 ${priceMin !== null ? `${priceMin.toLocaleString()}원` : "0원"}~${priceMax !== null ? `${priceMax.toLocaleString()}원` : "제한 없음"}`,
+            removeLabel: "가격 필터 해제",
+            onRemove: () => {
+              setPriceMin(null);
+              setPriceMax(null);
+            },
+          },
+        ]
+      : []),
+    ...(exposureLabel
+      ? [
+          {
+            id: "benefit",
+            label: exposureLabel,
+            removeLabel: "혜택 필터 해제",
+            onRemove: () => setExposureFilter([]),
+          },
+        ]
+      : []),
+    ...(rentOnly
+      ? [
+          {
+            id: "rent",
+            label: "대여 가능",
+            removeLabel: "대여 가능 필터 해제",
+            onRemove: () => setRentOnly(false),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -587,9 +648,7 @@ export default function FilterableRacketList({
                   <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-primary">
                     Racket Finder
                   </p>
-                  <h2 className="text-ui-card-title-lg font-semibold text-foreground">
-                    라켓 목록
-                  </h2>
+                  <h2 className="text-ui-card-title-lg font-semibold text-foreground">라켓 목록</h2>
                   <p className="max-w-2xl text-ui-body-sm leading-6 text-muted-foreground">
                     브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요.
                   </p>
@@ -678,8 +737,28 @@ export default function FilterableRacketList({
                   <div />
                   <div className="flex items-center justify-end gap-2">
                     <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
-                      <Button type="button" variant={effectiveViewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={effectiveViewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
-                      <Button type="button" variant={effectiveViewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={effectiveViewMode === "list"}><List className="h-4 w-4" /></Button>
+                      <Button
+                        type="button"
+                        variant={effectiveViewMode === "grid" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("grid")}
+                        className="h-8 w-9 p-0"
+                        aria-label="그리드 보기"
+                        aria-pressed={effectiveViewMode === "grid"}
+                      >
+                        <Grid3X3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={effectiveViewMode === "list" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("list")}
+                        className="h-8 w-9 p-0"
+                        aria-label="리스트 보기"
+                        aria-pressed={effectiveViewMode === "list"}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
                     </div>
                     <Select value={sortOption} onValueChange={setSortOption}>
                       <SelectTrigger className="h-9 w-[150px] rounded-control border border-border bg-card text-ui-body-sm focus:border-border bp-lg:w-[180px] dark:focus:border-border">

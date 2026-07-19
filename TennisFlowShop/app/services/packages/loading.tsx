@@ -43,9 +43,7 @@ export default function ServicesPackagesLoading() {
                   <li key={step} className="flex min-w-0 items-center gap-3">
                     <Skeleton
                       className={`h-7 w-7 shrink-0 rounded-full ${
-                        index === 0
-                          ? "bg-brand-highlight"
-                          : "bg-surface-inverse-foreground/15"
+                        index === 0 ? "bg-brand-highlight" : "bg-surface-inverse-foreground/15"
                       }`}
                     />
                     <Skeleton className="h-4 w-40 bg-surface-inverse-foreground/15" />

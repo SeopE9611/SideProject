@@ -25,7 +25,10 @@ export default function TensionGuideLoading() {
           <PublicSurface variant="feature" className="space-y-4">
             <Skeleton className="h-4 w-20" />
             {[0, 1, 2].map((item) => (
-              <div key={item} className="flex items-center gap-3 border-t border-border pt-4 first:border-t-0 first:pt-0">
+              <div
+                key={item}
+                className="flex items-center gap-3 border-t border-border pt-4 first:border-t-0 first:pt-0"
+              >
                 <Skeleton className="h-7 w-7 rounded-full" />
                 <Skeleton className="h-5 flex-1" />
               </div>
@@ -52,13 +55,19 @@ export default function TensionGuideLoading() {
             <div className="space-y-6 p-4 bp-sm:p-6 bp-lg:p-8">
               <Skeleton className="h-7 w-48" />
               <div className="grid grid-cols-2 gap-2">
-                {[0, 1].map((item) => <Skeleton key={item} className="h-20 rounded-xl" />)}
+                {[0, 1].map((item) => (
+                  <Skeleton key={item} className="h-20 rounded-xl" />
+                ))}
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {[0, 1, 2].map((item) => <Skeleton key={item} className="h-16 rounded-xl" />)}
+                {[0, 1, 2].map((item) => (
+                  <Skeleton key={item} className="h-16 rounded-xl" />
+                ))}
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-xl" />)}
+                {[0, 1, 2, 3].map((item) => (
+                  <Skeleton key={item} className="h-20 rounded-xl" />
+                ))}
               </div>
             </div>
             <div className="space-y-6 bg-surface-inverse p-4 bp-sm:p-6 bp-lg:p-8">
@@ -70,7 +79,9 @@ export default function TensionGuideLoading() {
                 <Skeleton className="h-14 bg-surface-inverse-foreground/15" />
               </div>
               <div className="space-y-3">
-                {[0, 1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-5 bg-surface-inverse-foreground/15" />)}
+                {[0, 1, 2, 3, 4].map((item) => (
+                  <Skeleton key={item} className="h-5 bg-surface-inverse-foreground/15" />
+                ))}
               </div>
             </div>
           </div>

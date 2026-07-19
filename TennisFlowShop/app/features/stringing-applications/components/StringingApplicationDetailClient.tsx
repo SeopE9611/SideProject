@@ -737,73 +737,73 @@ export default function StringingApplicationDetailClient({
     if (!isAdmin) return <StringingApplicationDetailSkeleton />;
 
     return (
-    <main className="w-full">
-      <div
-        className={cn(
-          isAdmin &&
-            "mx-auto w-full max-w-[1280px] px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5",
-        )}
-      >
-        <SiteContainer
-          variant={isAdmin ? "full" : "wide"}
-          className={
-            isAdmin
-              ? "space-y-6 px-0 bp-sm:px-0 bp-md:px-0 bp-lg:px-0"
-              : mypageDetailLayout.contentContainer
-          }
+      <main className="w-full">
+        <div
+          className={cn(
+            isAdmin &&
+              "mx-auto w-full max-w-[1280px] px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5",
+          )}
         >
-          <div className={cn("mx-auto w-full", isAdmin && "max-w-[1500px]")}>
-            <div className="mb-6 rounded-2xl border border-border/60 bg-card p-4 shadow-sm shadow-foreground/[0.02] bp-sm:mb-8 bp-sm:p-5">
-              <div className="space-y-3">
-                <Skeleton className="h-8 w-52" />
-                <Skeleton className="h-4 w-72 max-w-full" />
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <Skeleton className="h-9 w-40" />
-                  <Skeleton className="h-9 w-32" />
+          <SiteContainer
+            variant={isAdmin ? "full" : "wide"}
+            className={
+              isAdmin
+                ? "space-y-6 px-0 bp-sm:px-0 bp-md:px-0 bp-lg:px-0"
+                : mypageDetailLayout.contentContainer
+            }
+          >
+            <div className={cn("mx-auto w-full", isAdmin && "max-w-[1500px]")}>
+              <div className="mb-6 rounded-2xl border border-border/60 bg-card p-4 shadow-sm shadow-foreground/[0.02] bp-sm:mb-8 bp-sm:p-5">
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-52" />
+                  <Skeleton className="h-4 w-72 max-w-full" />
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Skeleton className="h-9 w-40" />
+                    <Skeleton className="h-9 w-32" />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className={cn("grid gap-4 md:grid-cols-2", isAdmin && "xl:grid-cols-12")}>
-              <Card
-                className={cn(
-                  "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
-                  isAdmin && "xl:col-span-8",
-                )}
-              >
-                <CardHeader className="space-y-2 border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-4 w-72 max-w-full" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-[90%]" />
-                  <Skeleton className="h-4 w-[75%]" />
-                </CardContent>
-              </Card>
+              <div className={cn("grid gap-4 md:grid-cols-2", isAdmin && "xl:grid-cols-12")}>
+                <Card
+                  className={cn(
+                    "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
+                    isAdmin && "xl:col-span-8",
+                  )}
+                >
+                  <CardHeader className="space-y-2 border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-72 max-w-full" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-[90%]" />
+                    <Skeleton className="h-4 w-[75%]" />
+                  </CardContent>
+                </Card>
 
-              <Card
-                className={cn(
-                  "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
-                  isAdmin && "xl:col-span-4",
-                )}
-              >
-                <CardHeader className="space-y-2 border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5">
-                  <Skeleton className="h-6 w-40" />
-                  <Skeleton className="h-4 w-56 max-w-full" />
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-[85%]" />
-                  <Skeleton className="h-4 w-[70%]" />
-                </CardContent>
-              </Card>
+                <Card
+                  className={cn(
+                    "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
+                    isAdmin && "xl:col-span-4",
+                  )}
+                >
+                  <CardHeader className="space-y-2 border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5">
+                    <Skeleton className="h-6 w-40" />
+                    <Skeleton className="h-4 w-56 max-w-full" />
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-[85%]" />
+                    <Skeleton className="h-4 w-[70%]" />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        </SiteContainer>
-      </div>
-    </main>
-  );
+          </SiteContainer>
+        </div>
+      </main>
+    );
   };
 
   if (error)
@@ -1041,13 +1041,11 @@ export default function StringingApplicationDetailClient({
   const isUserConfirmed = Boolean((data as any).userConfirmedAt);
   const completedLikeStatuses = ["교체완료", `${"반"}송완료`, "완료", "DONE", "취소"];
   const isCustomerCancelableStatus =
-    (userEditableStatuses ?? []).includes(data.status) && !completedLikeStatuses.includes(data.status);
+    (userEditableStatuses ?? []).includes(data.status) &&
+    !completedLikeStatuses.includes(data.status);
   const canShowUserCancelAction = !isAdmin && !isRentalLinkedApplication && !isCancelled;
   const canUserRequestCancel =
-    canShowUserCancelAction &&
-    !isCancelRequested &&
-    !isUserConfirmed &&
-    isCustomerCancelableStatus;
+    canShowUserCancelAction && !isCancelRequested && !isUserConfirmed && isCustomerCancelableStatus;
   const canUserWithdrawCancelRequest = canShowUserCancelAction && isCancelRequested;
 
   // 확정 버튼 노출/활성 조건 (ApplicationsClient 규칙에 맞게 "상태 기반"으로 단순화)
@@ -1179,11 +1177,7 @@ export default function StringingApplicationDetailClient({
   // - handleGetStringingApplication에서 linkedOrderPickupMethod를 내려주므로,
   // 신청서 상세에서도 같은 수령방식을 표시할 수 있다.
   const linkedOrderPickupMethod = (data as any)?.linkedOrderPickupMethod as
-    | "visit"
-    | "delivery"
-    | "quick"
-    | null
-    | undefined;
+    "visit" | "delivery" | "quick" | null | undefined;
   const linkedOrderPickupBadge = linkedOrderPickupMethod
     ? getShippingMethodBadge({
         shippingInfo: { shippingMethod: linkedOrderPickupMethod },
@@ -1356,9 +1350,7 @@ export default function StringingApplicationDetailClient({
             : "매장 확인 대기");
   const showUserCancelStatusBanner = !isAdmin && isCancelRequested;
 
-  const detailGridClass = isAdmin
-    ? "grid gap-4 xl:grid-cols-12"
-    : "w-full space-y-5";
+  const detailGridClass = isAdmin ? "grid gap-4 xl:grid-cols-12" : "w-full space-y-5";
   const detailColumnClass = isAdmin ? "contents" : "space-y-5";
   const detailCardClass = isAdmin
     ? "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
@@ -1366,7 +1358,9 @@ export default function StringingApplicationDetailClient({
   const detailCardHeaderClass = isAdmin
     ? "border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5 lg:p-6"
     : "border-b border-brand-highlight-ink/15 bg-brand-highlight-muted/45 px-4 py-4 bp-sm:px-5";
-  const detailCardTitleClass = !isAdmin ? "font-brand-heading font-semibold tracking-[-0.015em]" : undefined;
+  const detailCardTitleClass = !isAdmin
+    ? "font-brand-heading font-semibold tracking-[-0.015em]"
+    : undefined;
   const detailIconClass = !isAdmin ? "text-brand-highlight-ink" : "text-primary";
   return (
     <main className="w-full">
@@ -1400,7 +1394,8 @@ export default function StringingApplicationDetailClient({
                 disabled={!isEditableAllowed}
                 className={cn(
                   "h-9 w-full whitespace-nowrap bp-sm:w-auto",
-                  !isEditMode && "border-brand-highlight-ink/20 bg-brand-highlight-muted/35 hover:bg-brand-highlight-muted/55",
+                  !isEditMode &&
+                    "border-brand-highlight-ink/20 bg-brand-highlight-muted/35 hover:bg-brand-highlight-muted/55",
                 )}
                 onClick={() => {
                   if (!isEditableAllowed) return;
@@ -1526,7 +1521,9 @@ export default function StringingApplicationDetailClient({
                     </div>
                     <div className={cn("min-w-0", !isAdmin && "space-y-2")}>
                       {!isAdmin && (
-                        <div className="text-ui-label font-medium text-brand-highlight-ink">마이페이지</div>
+                        <div className="text-ui-label font-medium text-brand-highlight-ink">
+                          마이페이지
+                        </div>
                       )}
                       <h1
                         className={cn(
@@ -2099,157 +2096,159 @@ export default function StringingApplicationDetailClient({
 
             {/* 상태 카드 */}
             {isAdmin && (
-            <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
-              {isAdmin && (
-                <CardHeader className={detailCardHeaderClass}>
-                  <div className="flex items-center justify-between gap-3">
-                    <CardTitle>작업 상태 관리</CardTitle>
-                    <ApplicationStatusBadge status={data.status} />
-                  </div>
-                  <CardDescription>
-                    {isLinkedApplication
-                      ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
-                      : "단독 신청서는 접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 직접 관리합니다."}
-                  </CardDescription>
-                </CardHeader>
-                )}
-              <CardContent className={cn(isAdmin ? "p-4 lg:p-5" : "p-4 bp-sm:p-5")}>
+              <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
                 {isAdmin && (
-                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
-                    <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-ui-body-sm font-semibold text-foreground">
-                            교체 작업 상태
-                          </p>
-                          <p className="mt-1 text-ui-label text-foreground/75">
-                            {isLinkedApplication
-                              ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
-                              : "이 신청서의 접수·작업·완성 라켓 배송/수령 단계를 확인하고 필요한 경우 상태를 변경합니다."}
-                          </p>
-                        </div>
-
-                        <div className="max-w-[280px]">
-                          <ApplicationStatusSelect
-                            applicationId={data.id}
-                            currentStatus={data.status}
-                            onUpdated={async () => {
-                              await mutate();
-                              if (historyMutateRef.current) {
-                                await historyMutateRef.current();
-                              }
-                            }}
-                            disabled={isCancelled || isLinkedApplication}
-                          />
-                        </div>
-
-                        {isLinkedApplication && linkedAdminHref && (
-                          <div className="border-l-2 border-primary/30 bg-primary/5 px-3 py-2 text-ui-label text-foreground/80">
-                            <p>
-                              {linkedRentalId
-                                ? "이 작업은 대여에 포함되어 있습니다. 대여 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
-                                : "이 작업은 주문에 포함되어 있습니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."}
+                  <CardHeader className={detailCardHeaderClass}>
+                    <div className="flex items-center justify-between gap-3">
+                      <CardTitle>작업 상태 관리</CardTitle>
+                      <ApplicationStatusBadge status={data.status} />
+                    </div>
+                    <CardDescription>
+                      {isLinkedApplication
+                        ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
+                        : "단독 신청서는 접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 직접 관리합니다."}
+                    </CardDescription>
+                  </CardHeader>
+                )}
+                <CardContent className={cn(isAdmin ? "p-4 lg:p-5" : "p-4 bp-sm:p-5")}>
+                  {isAdmin && (
+                    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
+                      <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-ui-body-sm font-semibold text-foreground">
+                              교체 작업 상태
                             </p>
-                            <Button asChild size="sm" variant="outline" className="mt-2">
-                              <Link href={linkedAdminHref}>{linkedStageCtaLabel}</Link>
-                            </Button>
+                            <p className="mt-1 text-ui-label text-foreground/75">
+                              {isLinkedApplication
+                                ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
+                                : "이 신청서의 접수·작업·완성 라켓 배송/수령 단계를 확인하고 필요한 경우 상태를 변경합니다."}
+                            </p>
                           </div>
-                        )}
 
-                        <div className="text-ui-label text-foreground/75 space-y-1">
-                          {isCancelled ? (
-                            <p>취소된 신청서입니다. 상태 변경 및 추가 운영 액션이 제한됩니다.</p>
-                          ) : isCancelRequested ? (
-                            <p>취소 요청 처리 중입니다. 승인 또는 거절 후 이력에 반영됩니다.</p>
-                          ) : (
-                            <>
+                          <div className="max-w-[280px]">
+                            <ApplicationStatusSelect
+                              applicationId={data.id}
+                              currentStatus={data.status}
+                              onUpdated={async () => {
+                                await mutate();
+                                if (historyMutateRef.current) {
+                                  await historyMutateRef.current();
+                                }
+                              }}
+                              disabled={isCancelled || isLinkedApplication}
+                            />
+                          </div>
+
+                          {isLinkedApplication && linkedAdminHref && (
+                            <div className="border-l-2 border-primary/30 bg-primary/5 px-3 py-2 text-ui-label text-foreground/80">
                               <p>
-                                {new Date(data.requestedAt).toLocaleDateString()}에 접수된
-                                신청입니다.
+                                {linkedRentalId
+                                  ? "이 작업은 대여에 포함되어 있습니다. 대여 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
+                                  : "이 작업은 주문에 포함되어 있습니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."}
                               </p>
-                              <p>
-                                {isOrderLinkedApplication
-                                  ? "이 교체서비스는 연결된 주문의 구매 확정과 함께 처리됩니다."
-                                  : isRentalLinkedApplication
-                                    ? "이 교체서비스는 연결된 대여의 수령 확인과 함께 처리됩니다."
-                                    : "단독 교체서비스는 이 화면에서 확정할 수 있습니다."}
-                              </p>
-                            </>
+                              <Button asChild size="sm" variant="outline" className="mt-2">
+                                <Link href={linkedAdminHref}>{linkedStageCtaLabel}</Link>
+                              </Button>
+                            </div>
                           )}
+
+                          <div className="text-ui-label text-foreground/75 space-y-1">
+                            {isCancelled ? (
+                              <p>취소된 신청서입니다. 상태 변경 및 추가 운영 액션이 제한됩니다.</p>
+                            ) : isCancelRequested ? (
+                              <p>취소 요청 처리 중입니다. 승인 또는 거절 후 이력에 반영됩니다.</p>
+                            ) : (
+                              <>
+                                <p>
+                                  {new Date(data.requestedAt).toLocaleDateString()}에 접수된
+                                  신청입니다.
+                                </p>
+                                <p>
+                                  {isOrderLinkedApplication
+                                    ? "이 교체서비스는 연결된 주문의 구매 확정과 함께 처리됩니다."
+                                    : isRentalLinkedApplication
+                                      ? "이 교체서비스는 연결된 대여의 수령 확인과 함께 처리됩니다."
+                                      : "단독 교체서비스는 이 화면에서 확정할 수 있습니다."}
+                                </p>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-ui-body-sm font-semibold text-foreground">운영 액션</p>
-                          <p className="mt-1 text-ui-label text-foreground/75">
-                            고객 취소 요청 승인/거절을 처리합니다. 처리 후 신청 상태와 연결
-                            주문·패키지 이력이 변경될 수 있으니 처리 전 확인해주세요.
-                          </p>
-                        </div>
+                      <div className="rounded-xl bg-muted/15 p-3 bp-sm:p-4">
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-ui-body-sm font-semibold text-foreground">
+                              운영 액션
+                            </p>
+                            <p className="mt-1 text-ui-label text-foreground/75">
+                              고객 취소 요청 승인/거절을 처리합니다. 처리 후 신청 상태와 연결
+                              주문·패키지 이력이 변경될 수 있으니 처리 전 확인해주세요.
+                            </p>
+                          </div>
 
-                        <div className="flex min-h-[40px] flex-wrap items-center gap-2">
-                          {isCancelled ? (
-                            <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
-                              취소된 신청서입니다. 추가 액션이 불가능합니다.
-                            </div>
-                          ) : isCancelRequested &&
-                            !hasOrderCancelRequested &&
-                            !isLinkedApplication ? (
-                            <>
+                          <div className="flex min-h-[40px] flex-wrap items-center gap-2">
+                            {isCancelled ? (
+                              <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
+                                취소된 신청서입니다. 추가 액션이 불가능합니다.
+                              </div>
+                            ) : isCancelRequested &&
+                              !hasOrderCancelRequested &&
+                              !isLinkedApplication ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => setIsApproveCancelDialogOpen(true)}
+                                  disabled={isPending}
+                                >
+                                  <XCircle className="mr-1 h-4 w-4" />
+                                  취소 승인
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={handleAdminRejectCancel}
+                                  disabled={isPending}
+                                >
+                                  취소 거절
+                                </Button>
+                              </>
+                            ) : canAdminDirectCancel ? (
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => setIsApproveCancelDialogOpen(true)}
+                                onClick={() => setIsAdminCancelDialogOpen(true)}
                                 disabled={isPending}
                               >
                                 <XCircle className="mr-1 h-4 w-4" />
-                                취소 승인
+                                신청 직접 취소
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleAdminRejectCancel}
-                                disabled={isPending}
-                              >
-                                취소 거절
-                              </Button>
-                            </>
-                          ) : canAdminDirectCancel ? (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => setIsAdminCancelDialogOpen(true)}
-                              disabled={isPending}
-                            >
-                              <XCircle className="mr-1 h-4 w-4" />
-                              신청 직접 취소
-                            </Button>
-                          ) : (
-                            <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
-                              {isLinkedApplication
-                                ? "연결 신청서의 취소/환불은 연결된 주문/대여 상세에서 처리해야 합니다."
-                                : hasOrderCancelRequested
-                                  ? "연결 주문에 취소 요청이 있어 주문 상세에서 최종 처리해야 합니다."
-                                  : "현재 진행 가능한 관리자 취소 액션이 없습니다."}
-                            </div>
+                            ) : (
+                              <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
+                                {isLinkedApplication
+                                  ? "연결 신청서의 취소/환불은 연결된 주문/대여 상세에서 처리해야 합니다."
+                                  : hasOrderCancelRequested
+                                    ? "연결 주문에 취소 요청이 있어 주문 상세에서 최종 처리해야 합니다."
+                                    : "현재 진행 가능한 관리자 취소 액션이 없습니다."}
+                              </div>
+                            )}
+                          </div>
+
+                          {hasOrderCancelRequested && !isCancelled && (
+                            <p className="text-ui-label text-destructive">
+                              이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소
+                              승인/거절은 주문 상세 화면에서 처리해 주세요.
+                            </p>
                           )}
                         </div>
-
-                        {hasOrderCancelRequested && !isCancelled && (
-                          <p className="text-ui-label text-destructive">
-                            이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소
-                            승인/거절은 주문 상세 화면에서 처리해 주세요.
-                          </p>
-                        )}
                       </div>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
             )}
 
             {!isAdmin && linkedDocs.length > 0 && (
@@ -2280,9 +2279,18 @@ export default function StringingApplicationDetailClient({
                     )}
                   >
                     <ShoppingCart
-                      className={cn(isAdmin ? "h-5 w-5 text-foreground" : "w-6 h-6", !isAdmin && detailIconClass)}
+                      className={cn(
+                        isAdmin ? "h-5 w-5 text-foreground" : "w-6 h-6",
+                        !isAdmin && detailIconClass,
+                      )}
                     />
-                    <CardTitle className={cn("text-ui-card-title font-medium", !isAdmin && "mt-2", detailCardTitleClass)}>
+                    <CardTitle
+                      className={cn(
+                        "text-ui-card-title font-medium",
+                        !isAdmin && "mt-2",
+                        detailCardTitleClass,
+                      )}
+                    >
                       {isAdmin ? "신청 스트링 정보" : "신청 서비스"}
                     </CardTitle>
                   </CardHeader>
@@ -2481,7 +2489,9 @@ export default function StringingApplicationDetailClient({
                         <section className="space-y-3">
                           <div className="flex items-center gap-2 text-foreground">
                             <Target className="w-5 h-5" />
-                            <span className="font-medium">{isAdmin ? "라켓·스트링별 작업 정보" : "스트링/텐션 요약"}</span>
+                            <span className="font-medium">
+                              {isAdmin ? "라켓·스트링별 작업 정보" : "스트링/텐션 요약"}
+                            </span>
                           </div>
                           <div
                             className={cn(
@@ -2495,7 +2505,9 @@ export default function StringingApplicationDetailClient({
                               <p>라켓 {lineSummary.racketCount}자루</p>
                               <p>스트링 {lineSummary.stringTypeCount}종</p>
                               {isAdmin && <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>}
-                              {(isAdmin || lineSummary.notedCount > 0) && <p>메모 {lineSummary.notedCount}자루</p>}
+                              {(isAdmin || lineSummary.notedCount > 0) && (
+                                <p>메모 {lineSummary.notedCount}자루</p>
+                              )}
                             </div>
                             <Button
                               type="button"
@@ -2505,8 +2517,12 @@ export default function StringingApplicationDetailClient({
                               onClick={() => setIsLineDetailsExpanded((prev) => !prev)}
                             >
                               {isLineDetailsExpanded
-                                ? isAdmin ? "작업 상세 접기" : "라켓별 상세 접기"
-                                : isAdmin ? `작업 상세 ${lineCount}건 보기` : "라켓별 상세 보기"}
+                                ? isAdmin
+                                  ? "작업 상세 접기"
+                                  : "라켓별 상세 접기"
+                                : isAdmin
+                                  ? `작업 상세 ${lineCount}건 보기`
+                                  : "라켓별 상세 보기"}
                             </Button>
                           </div>
 
@@ -2517,7 +2533,9 @@ export default function StringingApplicationDetailClient({
                                   key={line.id ?? index}
                                   className={cn(
                                     "min-w-0 py-3 first:pt-0 last:pb-0 bp-sm:py-3.5",
-                                    isAdmin ? "border-t border-border/70 first:border-t-0" : "border-t border-border/50 first:border-t-0",
+                                    isAdmin
+                                      ? "border-t border-border/70 first:border-t-0"
+                                      : "border-t border-border/50 first:border-t-0",
                                   )}
                                 >
                                   {/* 라켓 이름 + 순번 */}
@@ -2658,15 +2676,15 @@ export default function StringingApplicationDetailClient({
 
                       {/* 섹션 4: 라켓 종류 요약 */}
                       {(isAdmin || isLineDetailsExpanded) && (
-                      <section className="flex flex-col gap-2 border-t border-dashed border-border pt-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                        <div className="flex items-center gap-2 text-foreground">
-                          <Target className="w-5 h-5" />
-                          <span className="font-medium">라켓 종류</span>
-                        </div>
-                        <div className="w-full break-keep text-ui-body-sm text-foreground bp-sm:max-w-xs bp-sm:text-right">
-                          {racketTypeSummary}
-                        </div>
-                      </section>
+                        <section className="flex flex-col gap-2 border-t border-dashed border-border pt-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                          <div className="flex items-center gap-2 text-foreground">
+                            <Target className="w-5 h-5" />
+                            <span className="font-medium">라켓 종류</span>
+                          </div>
+                          <div className="w-full break-keep text-ui-body-sm text-foreground bp-sm:max-w-xs bp-sm:text-right">
+                            {racketTypeSummary}
+                          </div>
+                        </section>
                       )}
                     </div>
                   </CardContent>
@@ -2725,122 +2743,124 @@ export default function StringingApplicationDetailClient({
                 {!isAdmin && (
                   <Card className={cn(detailCardClass, "order-2")}>
                     <CardHeader className={detailCardHeaderClass}>
-                      <CardTitle className={cn("flex items-center gap-2 text-ui-card-title font-medium", detailCardTitleClass)}>
+                      <CardTitle
+                        className={cn(
+                          "flex items-center gap-2 text-ui-card-title font-medium",
+                          detailCardTitleClass,
+                        )}
+                      >
                         <Truck className={cn("h-5 w-5", detailIconClass)} />
                         접수/수령 정보
                       </CardTitle>
                       <CardDescription>발송·수령 상태만 간단히 확인하세요.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 p-4 bp-sm:p-5 bp-xl:grid-cols-2">
-                        <div className="min-w-0 rounded-xl border border-border/60 px-3 py-3 leading-relaxed bp-sm:px-4">
-                          <p className="text-ui-body-sm font-semibold text-foreground">라켓 접수</p>
-                          <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
+                      <div className="min-w-0 rounded-xl border border-border/60 px-3 py-3 leading-relaxed bp-sm:px-4">
+                        <p className="text-ui-body-sm font-semibold text-foreground">라켓 접수</p>
+                        <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
+                          <p>
+                            접수 방식:{" "}
+                            <span className="font-medium text-foreground">
+                              {inboundRequired
+                                ? collectionMethodLabel(collectionMethodRaw)
+                                : "별도 발송 불필요"}
+                            </span>
+                          </p>
+                          {isVisit && (
                             <p>
-                              접수 방식:{" "}
-                              <span className="font-medium text-foreground">
-                                {inboundRequired
-                                  ? collectionMethodLabel(collectionMethodRaw)
-                                  : "별도 발송 불필요"}
-                              </span>
+                              방문 예약:{" "}
+                              <span className="font-medium text-foreground">{visitTimeLabel}</span>
                             </p>
-                            {isVisit && (
-                              <p>
-                                방문 예약:{" "}
-                                <span className="font-medium text-foreground">
-                                  {visitTimeLabel}
-                                </span>
-                              </p>
-                            )}
-                            {isSelfShip &&
-                              inboundRequired &&
-                              (hasTracking ? (
-                                <p>
-                                  운송장:{" "}
-                                  <a
-                                    href={
-                                      buildTrackingUrl(selfShip?.courier, selfShip?.trackingNo) ??
-                                      "#"
-                                    }
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="break-all underline underline-offset-2"
-                                  >
-                                    {selfShip?.trackingNo}
-                                  </a>
-                                </p>
-                              ) : (
-                                <p>운송장: 등록 필요</p>
-                              ))}
-                          </div>
-                          {needsInboundTracking && (
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="outline"
-                              className="mt-3 w-full bp-sm:w-auto"
-                            >
-                              <Link href={inboundTrackingHref}>
-                                {hasTracking ? "운송장 수정" : "운송장 등록"}
-                              </Link>
-                            </Button>
                           )}
-                        </div>
-
-                        <div className="min-w-0 rounded-xl border border-border/60 px-3 py-3 leading-relaxed bp-sm:px-4">
-                          <p className="text-ui-body-sm font-semibold text-foreground">
-                            완성 라켓 수령
-                          </p>
-                          <p className="mt-1 text-ui-label text-foreground/75">
-                            {shouldShowReturnMethod
-                              ? shippingMethodBadge.label === "선택 없음"
-                                ? "확인 중"
-                                : shippingMethodBadge.label
-                              : "연결 주문 기준"}
-                          </p>
-                          <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
-                            <p>
-                              수령 방식:{" "}
-                              <span className="font-medium text-foreground">
-                                {shouldShowReturnMethod
-                                  ? shippingMethodBadge.label === "선택 없음"
-                                    ? "확인 중"
-                                    : shippingMethodBadge.label
-                                  : "연결 주문 기준"}
-                              </span>
-                            </p>
-                            {isCourierShipping && invoice?.trackingNumber ? (
+                          {isSelfShip &&
+                            inboundRequired &&
+                            (hasTracking ? (
                               <p>
-                                완성 라켓 배송 운송장:{" "}
+                                운송장:{" "}
                                 <a
                                   href={
-                                    buildTrackingUrl(invoice.courier, invoice.trackingNumber) ??
-                                    undefined
+                                    buildTrackingUrl(selfShip?.courier, selfShip?.trackingNo) ?? "#"
                                   }
                                   target="_blank"
                                   rel="noreferrer"
                                   className="break-all underline underline-offset-2"
                                 >
-                                  {invoice.trackingNumber}
+                                  {selfShip?.trackingNo}
                                 </a>
                               </p>
-                            ) : hasStoreShippingInfo ? (
-                              <p>
-                                예정일:{" "}
-                                {data.shippingInfo?.estimatedDate
-                                  ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString(
-                                      "ko-KR",
-                                    )
-                                  : "-"}
-                              </p>
                             ) : (
-                              <p className="text-muted-foreground">배송 정보: 준비 중</p>
-                            )}
-                            {data.shippingInfo?.deliveryRequest && (
-                              <p>배송 요청사항: {data.shippingInfo.deliveryRequest}</p>
-                            )}
-                          </div>
+                              <p>운송장: 등록 필요</p>
+                            ))}
                         </div>
-                      </CardContent>
+                        {needsInboundTracking && (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="mt-3 w-full bp-sm:w-auto"
+                          >
+                            <Link href={inboundTrackingHref}>
+                              {hasTracking ? "운송장 수정" : "운송장 등록"}
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 rounded-xl border border-border/60 px-3 py-3 leading-relaxed bp-sm:px-4">
+                        <p className="text-ui-body-sm font-semibold text-foreground">
+                          완성 라켓 수령
+                        </p>
+                        <p className="mt-1 text-ui-label text-foreground/75">
+                          {shouldShowReturnMethod
+                            ? shippingMethodBadge.label === "선택 없음"
+                              ? "확인 중"
+                              : shippingMethodBadge.label
+                            : "연결 주문 기준"}
+                        </p>
+                        <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
+                          <p>
+                            수령 방식:{" "}
+                            <span className="font-medium text-foreground">
+                              {shouldShowReturnMethod
+                                ? shippingMethodBadge.label === "선택 없음"
+                                  ? "확인 중"
+                                  : shippingMethodBadge.label
+                                : "연결 주문 기준"}
+                            </span>
+                          </p>
+                          {isCourierShipping && invoice?.trackingNumber ? (
+                            <p>
+                              완성 라켓 배송 운송장:{" "}
+                              <a
+                                href={
+                                  buildTrackingUrl(invoice.courier, invoice.trackingNumber) ??
+                                  undefined
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="break-all underline underline-offset-2"
+                              >
+                                {invoice.trackingNumber}
+                              </a>
+                            </p>
+                          ) : hasStoreShippingInfo ? (
+                            <p>
+                              예정일:{" "}
+                              {data.shippingInfo?.estimatedDate
+                                ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString(
+                                    "ko-KR",
+                                  )
+                                : "-"}
+                            </p>
+                          ) : (
+                            <p className="text-muted-foreground">배송 정보: 준비 중</p>
+                          )}
+                          {data.shippingInfo?.deliveryRequest && (
+                            <p>배송 요청사항: {data.shippingInfo.deliveryRequest}</p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
                   </Card>
                 )}
 
@@ -2855,7 +2875,9 @@ export default function StringingApplicationDetailClient({
                     )}
                   >
                     <CardHeader className={detailCardHeaderClass}>
-                      <CardTitle className={cn("flex items-center justify-between", detailCardTitleClass)}>
+                      <CardTitle
+                        className={cn("flex items-center justify-between", detailCardTitleClass)}
+                      >
                         <span>요청사항</span>
                         {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                       </CardTitle>
@@ -2863,7 +2885,10 @@ export default function StringingApplicationDetailClient({
                     <details className="group bp-md:block">
                       <summary className="mx-3 my-2 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-ui-body-sm font-semibold text-foreground shadow-sm ring-1 ring-border/50 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:hidden [&::-webkit-details-marker]:hidden">
                         <span>요청사항</span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+                        <ChevronDown
+                          className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                          aria-hidden="true"
+                        />
                       </summary>
                       <CardContent className="hidden p-4 bp-sm:p-5 group-open:block bp-md:block">
                         {editingRequirements ? (
@@ -2903,14 +2928,18 @@ export default function StringingApplicationDetailClient({
                     )}
                   </Card>
                 )}
-
               </div>
 
               <div className={detailColumnClass}>
                 {!isAdmin && packageApplied && (
                   <Card className={cn(detailCardClass, "order-2")}>
                     <CardHeader className={detailCardHeaderClass}>
-                      <CardTitle className={cn("flex items-center gap-2 text-ui-card-title font-medium", detailCardTitleClass)}>
+                      <CardTitle
+                        className={cn(
+                          "flex items-center gap-2 text-ui-card-title font-medium",
+                          detailCardTitleClass,
+                        )}
+                      >
                         <Ticket className={cn("h-5 w-5", detailIconClass)} />
                         패키지 사용
                       </CardTitle>
@@ -2949,7 +2978,12 @@ export default function StringingApplicationDetailClient({
                       !isAdmin && "pb-2",
                     )}
                   >
-                    <CardTitle className={cn("text-ui-card-title font-medium flex items-center gap-2", detailCardTitleClass)}>
+                    <CardTitle
+                      className={cn(
+                        "text-ui-card-title font-medium flex items-center gap-2",
+                        detailCardTitleClass,
+                      )}
+                    >
                       <CreditCard className={cn("h-5 w-5", detailIconClass)} />{" "}
                       {isAdmin ? "결제 정보" : "결제 요약"}
                     </CardTitle>
@@ -2989,27 +3023,45 @@ export default function StringingApplicationDetailClient({
                               label="총 결제 금액"
                               className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
                               value={`${data.totalPrice.toLocaleString()}원`}
-                              valueClassName={isAdmin ? "font-semibold text-primary" : "font-semibold text-brand-highlight-ink"}
+                              valueClassName={
+                                isAdmin
+                                  ? "font-semibold text-primary"
+                                  : "font-semibold text-brand-highlight-ink"
+                              }
                             />
                             <AdminCompactField
                               label="결제 상태"
                               value={(() => {
                                 const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
                                 return (
-                                  <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                                  <Badge
+                                    variant={pay.variant}
+                                    className={cn(badgeBase, badgeSizeSm)}
+                                  >
                                     {paymentHeaderBadgeLabel}
                                   </Badge>
                                 );
                               })()}
                             />
-                            <AdminCompactField label="결제 방식" value={getCustomerPaymentMethodLabel(paymentMethodForDisplay, packageApplied)} />
+                            <AdminCompactField
+                              label="결제 방식"
+                              value={getCustomerPaymentMethodLabel(
+                                paymentMethodForDisplay,
+                                packageApplied,
+                              )}
+                            />
                           </div>
                         ) : (
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-center gap-2 text-ui-body-sm font-medium text-foreground">
                               <span>{paymentHeaderBadgeLabel}</span>
                               <span className="text-muted-foreground">·</span>
-                              <span>{getCustomerPaymentMethodLabel(paymentMethodForDisplay, packageApplied)}</span>
+                              <span>
+                                {getCustomerPaymentMethodLabel(
+                                  paymentMethodForDisplay,
+                                  packageApplied,
+                                )}
+                              </span>
                             </div>
                             {shouldShowCustomerBankAccount && standaloneBankInfo && (
                               <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-ui-body-sm text-foreground/85">
@@ -3017,9 +3069,13 @@ export default function StringingApplicationDetailClient({
                                 <p className="mt-1">
                                   {standaloneBankInfo.label} {standaloneBankInfo.account}
                                 </p>
-                                <p className="text-muted-foreground">예금주: {standaloneBankInfo.holder}</p>
+                                <p className="text-muted-foreground">
+                                  예금주: {standaloneBankInfo.holder}
+                                </p>
                                 {standaloneDepositor && (
-                                  <p className="text-muted-foreground">입금자명: {standaloneDepositor}</p>
+                                  <p className="text-muted-foreground">
+                                    입금자명: {standaloneDepositor}
+                                  </p>
                                 )}
                               </div>
                             )}
@@ -3239,39 +3295,39 @@ export default function StringingApplicationDetailClient({
 
                 {/* 고객 정보 */}
                 {isAdmin && (
-                <Card
-                  className={cn(detailCardClass, "xl:col-span-6")}
-                >
-                  <CardHeader className={detailCardHeaderClass}>
-                    <CardTitle className={cn("flex items-center justify-between", detailCardTitleClass)}>
-                      <div className="flex items-center space-x-2">
-                        <User className={cn("h-5 w-5", detailIconClass)} />
-                        <span>고객 정보</span>
-                      </div>
-                      {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 bp-sm:p-5">
-                    {editingCustomer ? (
-                      <CustomerEditForm
-                        initialData={{
-                          name: data.customer.name ?? "이름 미입력",
-                          email: data.customer.email ?? "이메일 미입력",
-                          phone: data.customer?.phone ?? "전화번호 미입력",
-                          address: data.customer?.address ?? "주소 미입력",
-                          addressDetail: data.customer?.addressDetail ?? "상세 주소 미입력",
-                          postalCode: data.customer?.postalCode ?? "우편번호 미입력",
-                        }}
-                        resourcePath={`${baseUrl}/api/applications/stringing`}
-                        entityId={data.id}
-                        onSuccess={() => {
-                          mutate(); // 상세 데이터 갱신
-                          historyMutateRef.current?.(); // 이력 갱신
-                          setEditingCustomer(false); // 폼 닫기
-                        }}
-                        onCancel={() => setEditingCustomer(false)}
-                      />
-                    ) : (
+                  <Card className={cn(detailCardClass, "xl:col-span-6")}>
+                    <CardHeader className={detailCardHeaderClass}>
+                      <CardTitle
+                        className={cn("flex items-center justify-between", detailCardTitleClass)}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <User className={cn("h-5 w-5", detailIconClass)} />
+                          <span>고객 정보</span>
+                        </div>
+                        {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 bp-sm:p-5">
+                      {editingCustomer ? (
+                        <CustomerEditForm
+                          initialData={{
+                            name: data.customer.name ?? "이름 미입력",
+                            email: data.customer.email ?? "이메일 미입력",
+                            phone: data.customer?.phone ?? "전화번호 미입력",
+                            address: data.customer?.address ?? "주소 미입력",
+                            addressDetail: data.customer?.addressDetail ?? "상세 주소 미입력",
+                            postalCode: data.customer?.postalCode ?? "우편번호 미입력",
+                          }}
+                          resourcePath={`${baseUrl}/api/applications/stringing`}
+                          entityId={data.id}
+                          onSuccess={() => {
+                            mutate(); // 상세 데이터 갱신
+                            historyMutateRef.current?.(); // 이력 갱신
+                            setEditingCustomer(false); // 폼 닫기
+                          }}
+                          onCancel={() => setEditingCustomer(false)}
+                        />
+                      ) : (
                         <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2">
                           <AdminCompactField
                             label="이름"
@@ -3289,45 +3345,45 @@ export default function StringingApplicationDetailClient({
                             value={data.customer?.phone}
                             emptyValue="전화번호 미등록"
                           />
-                        <AdminCompactField
-                          label={customerAddressLabel}
-                          value={
-                            customerAddressValue && customerAddressValue !== "정보 없음" ? (
-                              <>
-                                <span>{customerAddressValue}</span>
-                                {!isVisit && data.customer?.addressDetail ? (
-                                  <span className="mt-1 block text-foreground/80">
-                                    {data.customer.addressDetail}
-                                  </span>
-                                ) : null}
-                                {customerAddressSubValue ? (
-                                  <span className="mt-1 block text-foreground/70">
-                                    {customerAddressSubLabel}: {customerAddressSubValue}
-                                  </span>
-                                ) : null}
-                              </>
-                            ) : null
-                          }
-                          emptyValue="주소 미등록"
-                          className="bp-md:col-span-2"
-                        />
+                          <AdminCompactField
+                            label={customerAddressLabel}
+                            value={
+                              customerAddressValue && customerAddressValue !== "정보 없음" ? (
+                                <>
+                                  <span>{customerAddressValue}</span>
+                                  {!isVisit && data.customer?.addressDetail ? (
+                                    <span className="mt-1 block text-foreground/80">
+                                      {data.customer.addressDetail}
+                                    </span>
+                                  ) : null}
+                                  {customerAddressSubValue ? (
+                                    <span className="mt-1 block text-foreground/70">
+                                      {customerAddressSubLabel}: {customerAddressSubValue}
+                                    </span>
+                                  ) : null}
+                                </>
+                              ) : null
+                            }
+                            emptyValue="주소 미등록"
+                            className="bp-md:col-span-2"
+                          />
                         </div>
-                    )}
-                  </CardContent>
+                      )}
+                    </CardContent>
 
-                  {!editingCustomer && isEditMode && (
-                    <CardFooter className="pt-2 flex justify-center bg-muted/20">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingCustomer(true)}
-                        className="hover:bg-muted border-border"
-                      >
-                        고객 정보 수정
-                      </Button>
-                    </CardFooter>
-                  )}
-                </Card>
+                    {!editingCustomer && isEditMode && (
+                      <CardFooter className="pt-2 flex justify-center bg-muted/20">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingCustomer(true)}
+                          className="hover:bg-muted border-border"
+                        >
+                          고객 정보 수정
+                        </Button>
+                      </CardFooter>
+                    )}
+                  </Card>
                 )}
               </div>
             </div>
@@ -3623,7 +3679,9 @@ export default function StringingApplicationDetailClient({
   );
 }
 const isBankTransferMethod = (method?: string | null) => {
-  const normalized = String(method ?? "").trim().toLowerCase();
+  const normalized = String(method ?? "")
+    .trim()
+    .toLowerCase();
   return (
     normalized.includes("무통장") ||
     normalized.includes("bank") ||
@@ -3633,7 +3691,10 @@ const isBankTransferMethod = (method?: string | null) => {
 };
 
 const isWaitingPaymentStatus = (status?: string | null) => {
-  const normalized = String(status ?? "").trim().toLowerCase().replace(/\s+/g, "");
+  const normalized = String(status ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
   return ["결제대기", "입금확인대기", "waiting", "pending", "ready", "unpaid"].some((keyword) =>
     normalized.includes(keyword),
   );
@@ -3641,7 +3702,9 @@ const isWaitingPaymentStatus = (status?: string | null) => {
 
 const getCustomerPaymentMethodLabel = (method?: string | null, packageApplied?: boolean) => {
   if (packageApplied || method === "package") return "패키지 사용";
-  const normalized = String(method ?? "").trim().toLowerCase();
+  const normalized = String(method ?? "")
+    .trim()
+    .toLowerCase();
   if (!normalized) return "결제 정보 확인 중";
   if (
     normalized === ["bank", "transfer"].join("_") ||
@@ -3650,7 +3713,8 @@ const getCustomerPaymentMethodLabel = (method?: string | null, packageApplied?: 
   ) {
     return "무통장입금";
   }
-  if (normalized === "nicepay" || normalized === "card" || normalized === "nicepay/card") return "카드결제";
+  if (normalized === "nicepay" || normalized === "card" || normalized === "nicepay/card")
+    return "카드결제";
   if (normalized.includes("pay") || normalized.includes("card")) return "카드/간편결제";
   return "결제 정보 확인 중";
 };

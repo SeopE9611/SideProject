@@ -22,7 +22,9 @@ export default function RentalReviewCTA({
   status,
   className,
 }: Props) {
-  const normalizedStatus = String(status ?? "").trim().toLowerCase();
+  const normalizedStatus = String(status ?? "")
+    .trim()
+    .toLowerCase();
   const allowFetch =
     Boolean(rentalId) ||
     Boolean(userConfirmedAt) ||
@@ -50,7 +52,8 @@ export default function RentalReviewCTA({
   }
   if (data?.eligible === false) return null;
 
-  const isRentalStringing = data?.reviewContext === "rental_stringing" || data?.targetType === "rental_stringing";
+  const isRentalStringing =
+    data?.reviewContext === "rental_stringing" || data?.targetType === "rental_stringing";
   const href = isRentalStringing
     ? `/reviews/write?reviewContext=rental_stringing&rentalId=${rentalId}${data?.suggestedApplicationId ? `&applicationId=${data.suggestedApplicationId}` : ""}`
     : `/reviews/write?rentalId=${rentalId}`;

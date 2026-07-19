@@ -48,7 +48,8 @@ export async function validateAndClaimReviewPhotoUploadSession({
   const sessions = getReviewPhotoUploadSessionCollection(db);
   const session = await sessions.findOne({ _id: uploadSessionId });
   if (!session) return { ok: false, reason: "uploadSessionNotFound" };
-  if (String(session.userId) !== String(userId)) return { ok: false, reason: "uploadSessionForbidden" };
+  if (String(session.userId) !== String(userId))
+    return { ok: false, reason: "uploadSessionForbidden" };
   if (!(session.expiresAt instanceof Date) || session.expiresAt.getTime() <= Date.now()) {
     return { ok: false, reason: "uploadSessionExpired" };
   }
@@ -66,7 +67,11 @@ export async function validateAndClaimReviewPhotoUploadSession({
   return { ok: true, session: { ...session, status: "committing", committingAt: new Date() } };
 }
 
-export async function markReviewPhotoUploadSessionCommitted(db: Db, userId: ObjectId, uploadSessionId: string | null | undefined) {
+export async function markReviewPhotoUploadSessionCommitted(
+  db: Db,
+  userId: ObjectId,
+  uploadSessionId: string | null | undefined,
+) {
   if (!uploadSessionId) return;
   await getReviewPhotoUploadSessionCollection(db).updateOne(
     { _id: uploadSessionId, userId, status: "committing" },
@@ -94,7 +99,11 @@ export async function markReviewPhotoUploadSessionCommittedBestEffort(
   }
 }
 
-export async function rollbackReviewPhotoUploadSessionClaim(db: Db, userId: ObjectId, uploadSessionId: string | null | undefined) {
+export async function rollbackReviewPhotoUploadSessionClaim(
+  db: Db,
+  userId: ObjectId,
+  uploadSessionId: string | null | undefined,
+) {
   if (!uploadSessionId) return;
   await getReviewPhotoUploadSessionCollection(db).updateOne(
     { _id: uploadSessionId, userId, status: "committing" },

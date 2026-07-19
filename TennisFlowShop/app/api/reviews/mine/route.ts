@@ -1,7 +1,14 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
-import { getReviewContextLabel, getReviewManagementCategory, inferReviewContext } from "@/lib/reviews/review-target";
-import { buildResolvedReviewContextExpression, contextCategoryMatch } from "@/lib/reviews/review-context.server";
+import {
+  getReviewContextLabel,
+  getReviewManagementCategory,
+  inferReviewContext,
+} from "@/lib/reviews/review-target";
+import {
+  buildResolvedReviewContextExpression,
+  contextCategoryMatch,
+} from "@/lib/reviews/review-context.server";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -48,12 +55,10 @@ export async function GET(req: Request) {
       if (!c || typeof c !== "object" || Array.isArray(c)) throw new Error("invalidCursor");
       const createdAt = new Date(String(c?.createdAt ?? ""));
       const idStr = String(c?.id ?? "");
-      if (!Number.isFinite(createdAt.getTime()) || !ObjectId.isValid(idStr)) throw new Error("invalidCursor");
+      if (!Number.isFinite(createdAt.getTime()) || !ObjectId.isValid(idStr))
+        throw new Error("invalidCursor");
       cursorMatch = {
-        $or: [
-          { createdAt: { $lt: createdAt } },
-          { createdAt, _id: { $lt: new ObjectId(idStr) } },
-        ],
+        $or: [{ createdAt: { $lt: createdAt } }, { createdAt, _id: { $lt: new ObjectId(idStr) } }],
       };
     } catch {
       return NextResponse.json(
@@ -69,7 +74,15 @@ export async function GET(req: Request) {
       { $match: { userId, isDeleted: { $ne: true } } },
       ...(status === "all" ? [] : [{ $match: { status } }]),
       { $addFields: { resolvedReviewContext: buildResolvedReviewContextExpression() } },
-      ...(category === "all" ? [] : [{ $match: { $expr: contextCategoryMatch(category as "product" | "stringing" | "rental") } }]),
+      ...(category === "all"
+        ? []
+        : [
+            {
+              $match: {
+                $expr: contextCategoryMatch(category as "product" | "stringing" | "rental"),
+              },
+            },
+          ]),
       { $match: cursorMatch },
       { $sort: { createdAt: -1, _id: -1 } },
       { $limit: limit + 1 },
@@ -127,7 +140,6 @@ export async function GET(req: Request) {
       },
       { $unwind: { path: "$racket", preserveNullAndEmptyArrays: true } },
 
-
       {
         $addFields: {
           rentalIdObj: {
@@ -136,7 +148,12 @@ export async function GET(req: Request) {
               "$rentalId",
               {
                 $cond: [
-                  { $and: [{ $eq: [{ $type: "$rentalId" }, "string"] }, { $regexMatch: { input: "$rentalId", regex: /^[0-9a-fA-F]{24}$/ } }] },
+                  {
+                    $and: [
+                      { $eq: [{ $type: "$rentalId" }, "string"] },
+                      { $regexMatch: { input: "$rentalId", regex: /^[0-9a-fA-F]{24}$/ } },
+                    ],
+                  },
                   { $toObjectId: "$rentalId" },
                   null,
                 ],
@@ -163,7 +180,12 @@ export async function GET(req: Request) {
               "$rental.racketId",
               {
                 $cond: [
-                  { $and: [{ $eq: [{ $type: "$rental.racketId" }, "string"] }, { $regexMatch: { input: "$rental.racketId", regex: /^[0-9a-fA-F]{24}$/ } }] },
+                  {
+                    $and: [
+                      { $eq: [{ $type: "$rental.racketId" }, "string"] },
+                      { $regexMatch: { input: "$rental.racketId", regex: /^[0-9a-fA-F]{24}$/ } },
+                    ],
+                  },
                   { $toObjectId: "$rental.racketId" },
                   null,
                 ],
@@ -190,13 +212,23 @@ export async function GET(req: Request) {
           serviceApplicationIdResolved: { $ifNull: ["$serviceApplicationId", "$applicationId"] },
           serviceAppIdObj: {
             $cond: [
-              { $eq: [{ $type: { $ifNull: ["$serviceApplicationId", "$applicationId"] } }, "objectId"] },
+              {
+                $eq: [
+                  { $type: { $ifNull: ["$serviceApplicationId", "$applicationId"] } },
+                  "objectId",
+                ],
+              },
               { $ifNull: ["$serviceApplicationId", "$applicationId"] },
               {
                 $cond: [
                   {
                     $and: [
-                      { $eq: [{ $type: { $ifNull: ["$serviceApplicationId", "$applicationId"] } }, "string"] },
+                      {
+                        $eq: [
+                          { $type: { $ifNull: ["$serviceApplicationId", "$applicationId"] } },
+                          "string",
+                        ],
+                      },
                       {
                         $regexMatch: {
                           input: { $ifNull: ["$serviceApplicationId", "$applicationId"] },
@@ -229,7 +261,12 @@ export async function GET(req: Request) {
       {
         $addFields: {
           // service 필드가 없던 과거 문서도 커버 (serviceApplicationId가 있으면 서비스 리뷰로 간주)
-          isStringingReview: { $in: ["$resolvedReviewContext", ["product_stringing", "standalone_stringing", "rental_stringing"]] },
+          isStringingReview: {
+            $in: [
+              "$resolvedReviewContext",
+              ["product_stringing", "standalone_stringing", "rental_stringing"],
+            ],
+          },
           serviceTargetName: {
             $let: {
               vars: {
@@ -324,8 +361,14 @@ export async function GET(req: Request) {
             type: {
               $switch: {
                 branches: [
-                  { case: { $in: ["$resolvedReviewContext", ["rental", "rental_stringing"]] }, then: "rental" },
-                  { case: { $eq: ["$resolvedReviewContext", "standalone_stringing"] }, then: "stringing" },
+                  {
+                    case: { $in: ["$resolvedReviewContext", ["rental", "rental_stringing"]] },
+                    then: "rental",
+                  },
+                  {
+                    case: { $eq: ["$resolvedReviewContext", "standalone_stringing"] },
+                    then: "stringing",
+                  },
                 ],
                 default: "product",
               },
@@ -353,7 +396,23 @@ export async function GET(req: Request) {
                     },
                   ],
                 },
-                { $ifNull: ["$serviceTitle", { $ifNull: [{ $concat: [{ $ifNull: ["$rental.brand", ""] }, " ", { $ifNull: ["$rental.model", ""] }] }, "교체서비스"] }] },
+                {
+                  $ifNull: [
+                    "$serviceTitle",
+                    {
+                      $ifNull: [
+                        {
+                          $concat: [
+                            { $ifNull: ["$rental.brand", ""] },
+                            " ",
+                            { $ifNull: ["$rental.model", ""] },
+                          ],
+                        },
+                        "교체서비스",
+                      ],
+                    },
+                  ],
+                },
               ],
             },
             detailHref: null,
@@ -373,7 +432,12 @@ export async function GET(req: Request) {
                 {
                   $cond: [
                     { $in: ["$resolvedReviewContext", ["rental", "rental_stringing"]] },
-                    { $ifNull: ["$rentalRacket.thumbnail", { $arrayElemAt: ["$rentalRacket.images", 0] }] },
+                    {
+                      $ifNull: [
+                        "$rentalRacket.thumbnail",
+                        { $arrayElemAt: ["$rentalRacket.images", 0] },
+                      ],
+                    },
                     null,
                   ],
                 },
@@ -398,11 +462,17 @@ export async function GET(req: Request) {
 
   // target.name 보정(라켓/레거시): Mongo 집계에서 브랜드 라벨(헤드/윌슨 등) 매핑이 어려워 서버에서 최종 보정
   const toStr = (value: unknown) => (value == null ? null : String(value));
-  const cleanIds = (value: unknown) => Array.isArray(value) ? Array.from(new Set(value.map((v) => String(v ?? "").trim()).filter(Boolean))) : [];
+  const cleanIds = (value: unknown) =>
+    Array.isArray(value)
+      ? Array.from(new Set(value.map((v) => String(v ?? "").trim()).filter(Boolean)))
+      : [];
   const items = rows.map((row: any) => {
     const reviewContext = inferReviewContext(row);
     row.reviewContext = reviewContext;
-    row.contextLabel = typeof row?.contextLabel === "string" && row.contextLabel.trim() ? row.contextLabel : getReviewContextLabel(reviewContext);
+    row.contextLabel =
+      typeof row?.contextLabel === "string" && row.contextLabel.trim()
+        ? row.contextLabel
+        : getReviewContextLabel(reviewContext);
     row.category = getReviewManagementCategory(reviewContext);
     row.productId = toStr(row.productId);
     row.racketId = toStr(row.racketId);
@@ -413,16 +483,27 @@ export async function GET(req: Request) {
     row.relatedRacketIds = cleanIds(row.relatedRacketIds);
     if (row.target) {
       row.target.type = row.category;
-      if (row.orderId) row.target.detailHref = `/mypage?tab=orders&flowType=order&flowId=${row.orderId}&from=reviews`;
-      else if (row.rentalId) row.target.detailHref = `/mypage?tab=orders&flowType=rental&flowId=${row.rentalId}&from=reviews`;
-      else if (row.serviceApplicationId) row.target.detailHref = `/mypage?tab=orders&flowType=application&flowId=${row.serviceApplicationId}&from=reviews`;
-      else if (row.productId) row.target.detailHref = row?.__racketModel ? `/rackets/${row.productId}?tab=reviews` : `/products/${row.productId}?tab=reviews`;
-      if ((reviewContext === "rental" || reviewContext === "rental_stringing") && (!row.target.name || row.target.name === "상품" || row.target.name === "교체서비스")) row.target.name = "라켓 대여";
+      if (row.orderId)
+        row.target.detailHref = `/mypage?tab=orders&flowType=order&flowId=${row.orderId}&from=reviews`;
+      else if (row.rentalId)
+        row.target.detailHref = `/mypage?tab=orders&flowType=rental&flowId=${row.rentalId}&from=reviews`;
+      else if (row.serviceApplicationId)
+        row.target.detailHref = `/mypage?tab=orders&flowType=application&flowId=${row.serviceApplicationId}&from=reviews`;
+      else if (row.productId)
+        row.target.detailHref = row?.__racketModel
+          ? `/rackets/${row.productId}?tab=reviews`
+          : `/products/${row.productId}?tab=reviews`;
+      if (
+        (reviewContext === "rental" || reviewContext === "rental_stringing") &&
+        (!row.target.name || row.target.name === "상품" || row.target.name === "교체서비스")
+      )
+        row.target.name = "라켓 대여";
     }
     const rentalBrand = row?.__rentalRacketBrand ?? row?.__rentalBrand;
     const rentalModel = row?.__rentalRacketModel ?? row?.__rentalModel;
     if ((reviewContext === "rental" || reviewContext === "rental_stringing") && rentalModel) {
-      row.target.name = `${racketBrandLabel(String(rentalBrand ?? "").trim())} ${String(rentalModel).trim()}`.trim();
+      row.target.name =
+        `${racketBrandLabel(String(rentalBrand ?? "").trim())} ${String(rentalModel).trim()}`.trim();
     }
     const brand = row?.__racketBrand;
     const model = row?.__racketModel;

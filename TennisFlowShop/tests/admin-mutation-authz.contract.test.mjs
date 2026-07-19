@@ -44,10 +44,7 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
       relPath: toPosixPath(relative(REPO_ROOT, fullPath)),
       src: read(fullPath),
     }))
-    .filter(
-      ({ relPath, src }) =>
-        relPath.startsWith("app/api/admin/") && hasMutationMethod(src),
-    );
+    .filter(({ relPath, src }) => relPath.startsWith("app/api/admin/") && hasMutationMethod(src));
 
   assert.ok(files.length > 0, "관리자 변경성 API 라우트가 발견되어야 합니다.");
 

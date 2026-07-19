@@ -32,7 +32,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!doc) return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
 
   // 반납완료 상태에서만 처리 허용
-  const rawStatus = String((doc as any).status ?? "").trim().toLowerCase();
+  const rawStatus = String((doc as any).status ?? "")
+    .trim()
+    .toLowerCase();
   const isReturned = rawStatus === "returned" || rawStatus.includes("반납완료");
 
   if (!isReturned) {

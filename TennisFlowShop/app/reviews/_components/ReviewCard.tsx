@@ -75,7 +75,10 @@ export default function ReviewCard({
   const [count, setCount] = useState<number>(item.helpfulCount ?? 0);
   const [open, setOpen] = useState(false); // 사진 Dialog
   const [busy, setBusy] = useState(false); // 카드 액션 로딩(토글/수정/삭제)
-  const { isAdminModeration, managedStatus, nextStatus } = getReviewManagedVisibilityStatus(item, isAdmin);
+  const { isAdminModeration, managedStatus, nextStatus } = getReviewManagedVisibilityStatus(
+    item,
+    isAdmin,
+  );
 
   // 수정
   const [editOpen, setEditOpen] = useState(false);
@@ -183,7 +186,9 @@ export default function ReviewCard({
           item.serviceTargetName ||
           (item.service === "stringing" ? "교체서비스 후기" : "서비스 후기");
 
-  const typeLabel = item.contextLabel || item.serviceContextLabel ||
+  const typeLabel =
+    item.contextLabel ||
+    item.serviceContextLabel ||
     (item.type === "product"
       ? "상품 후기"
       : item.type === "rental"
@@ -214,7 +219,11 @@ export default function ReviewCard({
   }, []);
 
   // 실제 요청 전송(멱등 desired 사용)
-  const sendIntent = async (desired: boolean, previousVotedByMe: boolean, previousHelpfulCount: number) => {
+  const sendIntent = async (
+    desired: boolean,
+    previousVotedByMe: boolean,
+    previousHelpfulCount: number,
+  ) => {
     setPending(true);
     const mySeq = ++reqSeqRef.current;
 
@@ -301,18 +310,26 @@ export default function ReviewCard({
                 <p className="line-clamp-2 break-words text-ui-card-title font-semibold text-foreground">
                   {headerTitle}
                 </p>
-                {targetMeta && <p className="mt-1 line-clamp-1 break-words text-ui-label text-muted-foreground">{targetMeta}</p>}
+                {targetMeta && (
+                  <p className="mt-1 line-clamp-1 break-words text-ui-label text-muted-foreground">
+                    {targetMeta}
+                  </p>
+                )}
               </div>
             )}
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-ui-body-sm">
               <span className="font-medium text-muted-foreground">{displayName}</span>
-              <span aria-hidden="true" className="text-muted-foreground">·</span>
+              <span aria-hidden="true" className="text-muted-foreground">
+                ·
+              </span>
               <ReviewRatingDisplay rating={item.rating ?? 0} />
             </div>
           </div>
 
           <div className="flex shrink-0 items-start gap-2">
-            <time className="whitespace-nowrap pt-1 text-ui-label text-muted-foreground tabular-nums">{fmt(item.createdAt)}</time>
+            <time className="whitespace-nowrap pt-1 text-ui-label text-muted-foreground tabular-nums">
+              {fmt(item.createdAt)}
+            </time>
             {(item.ownedByMe || isAdmin) && !isMasked && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -331,13 +348,32 @@ export default function ReviewCard({
                       try {
                         setBusy(true);
                         if (isAdminModeration) {
-                          await adminMutator(`/api/admin/reviews/${item._id}`, { method: "PATCH", body: JSON.stringify({ moderationStatus: nextStatus }) });
+                          await adminMutator(`/api/admin/reviews/${item._id}`, {
+                            method: "PATCH",
+                            body: JSON.stringify({ moderationStatus: nextStatus }),
+                          });
                         } else {
-                          const res = await fetch(`/api/reviews/${item._id}`, { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: nextStatus }) });
+                          const res = await fetch(`/api/reviews/${item._id}`, {
+                            method: "PATCH",
+                            credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ status: nextStatus }),
+                          });
                           if (!res.ok) throw new Error("상태 변경 실패");
                         }
-                        try { await onMutate?.(); } catch (revalidateError) { console.error("[reviews] failed to revalidate after successful mutation", revalidateError); }
-                        showSuccessToast(nextStatus === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
+                        try {
+                          await onMutate?.();
+                        } catch (revalidateError) {
+                          console.error(
+                            "[reviews] failed to revalidate after successful mutation",
+                            revalidateError,
+                          );
+                        }
+                        showSuccessToast(
+                          nextStatus === "hidden"
+                            ? "비공개로 전환했습니다."
+                            : "공개로 전환했습니다.",
+                        );
                       } catch (err: any) {
                         showErrorToast(err?.message || "상태 변경 중 오류");
                       } finally {
@@ -346,10 +382,26 @@ export default function ReviewCard({
                     }}
                     className="cursor-pointer"
                   >
-                    {managedStatus === "visible" ? <><EyeOff className="mr-2 h-4 w-4" />비공개로 전환</> : <><Eye className="mr-2 h-4 w-4" />공개로 전환</>}
+                    {managedStatus === "visible" ? (
+                      <>
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        비공개로 전환
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="mr-2 h-4 w-4" />
+                        공개로 전환
+                      </>
+                    )}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(); }}>
-                    <Pencil className="mr-2 h-4 w-4" />수정
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit();
+                    }}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    수정
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={async (e) => {
@@ -357,12 +409,25 @@ export default function ReviewCard({
                       if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
                       try {
                         setBusy(true);
-                        if (isAdmin && !item.ownedByMe) await adminMutator(`/api/admin/reviews/${item._id}`, { method: "DELETE" });
+                        if (isAdmin && !item.ownedByMe)
+                          await adminMutator(`/api/admin/reviews/${item._id}`, {
+                            method: "DELETE",
+                          });
                         else {
-                          const res = await fetch(`/api/reviews/${item._id}`, { method: "DELETE", credentials: "include" });
+                          const res = await fetch(`/api/reviews/${item._id}`, {
+                            method: "DELETE",
+                            credentials: "include",
+                          });
                           if (!res.ok) throw new Error("삭제 실패");
                         }
-                        try { await onMutate?.(); } catch (revalidateError) { console.error("[reviews] failed to revalidate after successful mutation", revalidateError); }
+                        try {
+                          await onMutate?.();
+                        } catch (revalidateError) {
+                          console.error(
+                            "[reviews] failed to revalidate after successful mutation",
+                            revalidateError,
+                          );
+                        }
                         showSuccessToast("삭제했습니다.");
                         setBusy(false);
                       } catch (err: any) {
@@ -372,7 +437,8 @@ export default function ReviewCard({
                     }}
                     className="cursor-pointer text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />삭제
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    삭제
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -380,12 +446,22 @@ export default function ReviewCard({
           </div>
         </div>
 
-        {isMasked ? <MaskedBlock className="mt-1" /> : (
-          <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-foreground">{item.content}</p>
+        {isMasked ? (
+          <MaskedBlock className="mt-1" />
+        ) : (
+          <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-foreground">
+            {item.content}
+          </p>
         )}
 
         {!isMasked && Array.isArray(item.photos) && item.photos.length > 0 && (
-          <ReviewPhotoStrip photos={item.photos} onOpen={(idx) => { setViewerIndex(idx); setOpen(true); }} />
+          <ReviewPhotoStrip
+            photos={item.photos}
+            onOpen={(idx) => {
+              setViewerIndex(idx);
+              setOpen(true);
+            }}
+          />
         )}
 
         <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
@@ -397,9 +473,20 @@ export default function ReviewCard({
             className="min-h-9 rounded-control px-4 font-medium data-[voted=true]:bg-brand-highlight-muted data-[voted=true]:text-brand-highlight-foreground dark:data-[voted=true]:text-brand-highlight"
             data-voted={voted}
             aria-pressed={voted}
-            aria-label={item.ownedByMe ? "내 후기에는 도움돼요를 누를 수 없습니다." : `도움돼요 ${count ? `(${count})` : ""}`}
+            aria-label={
+              item.ownedByMe
+                ? "내 후기에는 도움돼요를 누를 수 없습니다."
+                : `도움돼요 ${count ? `(${count})` : ""}`
+            }
           >
-            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ThumbsUp className="mr-2 h-4 w-4 transition-transform duration-150 data-[voted=true]:scale-110 motion-reduce:transition-none" data-voted={voted} />}
+            {pending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <ThumbsUp
+                className="mr-2 h-4 w-4 transition-transform duration-150 data-[voted=true]:scale-110 motion-reduce:transition-none"
+                data-voted={voted}
+              />
+            )}
             {item.ownedByMe ? "내 후기" : `도움돼요 ${count ? `(${count})` : ""}`}
           </Button>
         </div>
@@ -518,7 +605,12 @@ export default function ReviewCard({
               type="button"
               className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
               onClick={submitEdit}
-              disabled={busy || uploadingEditPhotos || editForm.rating === "" || String(editForm.content ?? "").trim().length < 5}
+              disabled={
+                busy ||
+                uploadingEditPhotos ||
+                editForm.rating === "" ||
+                String(editForm.content ?? "").trim().length < 5
+              }
             >
               {uploadingEditPhotos ? "사진 업로드 중…" : "저장"}
             </button>

@@ -84,7 +84,9 @@ export default function AdminReviewMaintenancePanel() {
           );
         }
         if (json?.reason === "indexDefinitionMismatch") {
-          throw new Error("후기 인덱스 정의가 현재 정책과 다릅니다. 자동으로 삭제하거나 교체하지 않았습니다.");
+          throw new Error(
+            "후기 인덱스 정의가 현재 정책과 다릅니다. 자동으로 삭제하거나 교체하지 않았습니다.",
+          );
         }
         throw new Error(json?.message || json?.error || "실행 실패");
       }
@@ -244,8 +246,8 @@ export default function AdminReviewMaintenancePanel() {
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <span className="font-medium">후기 요약 재집계</span> — 상품과 라켓의 공개 후기 평점·개수를 다시 계산하여
-              목록용 후기 요약 캐시를 갱신합니다.
+              <span className="font-medium">후기 요약 재집계</span> — 상품과 라켓의 공개 후기
+              평점·개수를 다시 계산하여 목록용 후기 요약 캐시를 갱신합니다.
             </div>
           </div>
         </div>

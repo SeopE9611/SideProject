@@ -9,7 +9,6 @@ import {
   rebuildPublicReviewSummaryCaches,
 } from "@/lib/reviews.maintenance";
 
-
 // 공통: 관리자 토큰 체크
 export async function POST(req: Request) {
   const guard = await requireAdmin(req);
@@ -70,7 +69,9 @@ export async function POST(req: Request) {
       result.rebuildSummary && typeof result.rebuildSummary === "object"
         ? result.rebuildSummary
         : {};
-    const dedupAffectedCount = Number((dedupResult as any).softDeleted ?? (dedupResult as any).affectedCount ?? 0);
+    const dedupAffectedCount = Number(
+      (dedupResult as any).softDeleted ?? (dedupResult as any).affectedCount ?? 0,
+    );
     const rebuildAffectedCount =
       Number((rebuildResult as any).productsUpdated ?? 0) +
       Number((rebuildResult as any).racketsUpdated ?? 0);

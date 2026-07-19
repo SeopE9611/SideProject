@@ -425,7 +425,9 @@ export function buildOrderReviewTargetBundleFromLoadedData(
             primaryProductId: productId,
             primaryRacketId: isRacketProduct ? productId : null,
             relatedItems: [
-              isRacketProduct ? buildRacketItem(ctx, productId, order) : buildProductItem(ctx, productId, order),
+              isRacketProduct
+                ? buildRacketItem(ctx, productId, order)
+                : buildProductItem(ctx, productId, order),
             ],
           }),
         ),

@@ -249,7 +249,9 @@ export default function NotificationsClient() {
                       void deleteAllNotifications();
                     }}
                   >
-                    {isDeletingAll && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}
+                    {isDeletingAll && (
+                      <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                    )}
                     전체 삭제
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -259,7 +261,11 @@ export default function NotificationsClient() {
         }
       />
       <SiteContainer className="py-6 md:py-8">
-        <SummaryCard variant="feature" className="mx-auto max-w-5xl rounded-panel" contentClassName="p-0">
+        <SummaryCard
+          variant="feature"
+          className="mx-auto max-w-5xl rounded-panel"
+          contentClassName="p-0"
+        >
           {status === "loading" ? (
             <div className="space-y-3 p-3 md:p-5">
               {Array.from({ length: 6 }).map((_, index) => (

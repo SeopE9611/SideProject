@@ -84,7 +84,12 @@ export function SummaryCard({
       )}
       {children && <div className={cn("p-5 sm:p-6", contentClassName)}>{children}</div>}
       {footer && (
-        <div className={cn("border-t border-border p-5 sm:p-6", inverse && "border-surface-inverse-foreground/15")}>
+        <div
+          className={cn(
+            "border-t border-border p-5 sm:p-6",
+            inverse && "border-surface-inverse-foreground/15",
+          )}
+        >
           {footer}
         </div>
       )}

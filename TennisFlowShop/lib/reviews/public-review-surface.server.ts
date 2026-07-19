@@ -7,8 +7,7 @@ import { ObjectId, type Db } from "mongodb";
 import { collectOrderRacketIds } from "./review-target.server";
 
 export type PublicReviewSurfaceTarget =
-  | { type: "product"; id: string }
-  | { type: "racket"; id: string };
+  { type: "product"; id: string } | { type: "racket"; id: string };
 export type PublicReviewSummary = { average: number; count: number };
 export type PublicReviewSurfaceItem = {
   _id: string;
@@ -306,20 +305,19 @@ export async function getPublicReviewSurface(
       {
         $facet: {
           items: [
-            { $match: viewerIsAdmin
-              ? { status: { $in: ["visible", "hidden"] } }
-              : viewerUserId
-                ? {
-                    status: { $in: ["visible", "hidden"] },
-                    $or: [
-                      { moderationStatus: { $ne: "hidden" } },
-                      { userId: viewerUserId },
-                    ],
-                  }
-                : {
-                    status: { $in: ["visible", "hidden"] },
-                    moderationStatus: { $ne: "hidden" },
-                  } },
+            {
+              $match: viewerIsAdmin
+                ? { status: { $in: ["visible", "hidden"] } }
+                : viewerUserId
+                  ? {
+                      status: { $in: ["visible", "hidden"] },
+                      $or: [{ moderationStatus: { $ne: "hidden" } }, { userId: viewerUserId }],
+                    }
+                  : {
+                      status: { $in: ["visible", "hidden"] },
+                      moderationStatus: { $ne: "hidden" },
+                    },
+            },
             { $sort: { createdAt: -1, _id: -1 } },
             { $limit: limit },
             {
@@ -361,7 +359,8 @@ export async function getPublicReviewSurface(
     const masked = authorHidden && !ownedByMe && !viewerIsAdmin;
     const authorStatus = authorHidden ? "hidden" : "visible";
     const moderationStatus = row.moderationStatus === "hidden" ? "hidden" : "visible";
-    const effectiveStatus = authorStatus === "visible" && moderationStatus === "visible" ? "visible" : "hidden";
+    const effectiveStatus =
+      authorStatus === "visible" && moderationStatus === "visible" ? "visible" : "hidden";
     const reviewContext = inferPublicReviewContext(row);
     return {
       _id: String(row._id),

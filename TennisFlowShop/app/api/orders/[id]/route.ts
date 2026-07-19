@@ -215,8 +215,7 @@ function buildOrderLineSnapshotFallback(
   return {
     id: normalizedId ?? String(item?.productId ?? ""),
     name:
-      getSnapshotString(item?.name) ??
-      (kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품"),
+      getSnapshotString(item?.name) ?? (kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품"),
     price: snapshotPrice ?? 0,
     regularPrice: toFiniteNonNegativeNumber(item?.regularPrice),
     salePrice: toFiniteNonNegativeNumber(item?.salePrice),

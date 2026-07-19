@@ -20,7 +20,9 @@ export default function Loading() {
                 </div>
               </div>
               <div className="grid gap-3 bp-sm:grid-cols-3 bp-lg:grid-cols-1">
-                {Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-16 rounded-control" />)}
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-16 rounded-control" />
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -35,7 +37,9 @@ export default function Loading() {
             </CardContent>
           </Card>
           <div className="grid grid-cols-1 gap-4 bp-lg:grid-cols-2">
-            {Array.from({ length: 4 }).map((_, index) => <ReviewSkeleton key={index} />)}
+            {Array.from({ length: 4 }).map((_, index) => (
+              <ReviewSkeleton key={index} />
+            ))}
           </div>
         </div>
       </SiteContainer>

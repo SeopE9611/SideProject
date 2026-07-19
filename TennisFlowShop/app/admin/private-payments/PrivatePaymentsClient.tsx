@@ -565,198 +565,198 @@ export default function PrivatePaymentsClient() {
 
                     return (
                       <tr key={item.id} className={adminSurface.tableRow}>
-                      <td className={adminSurface.tableCell}>
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(item.id)}
-                          onChange={(e) =>
-                            setSelected(
-                              e.target.checked
-                                ? [...selected, item.id]
-                                : selected.filter((id) => id !== item.id),
-                            )
-                          }
-                        />
-                      </td>
-                      <td className={adminSurface.tableCell}>
-                        <div className={adminSurface.tablePrimaryText}>{item.title}</div>
-                        {item.description && (
-                          <div className="mt-1 line-clamp-2 max-w-[280px] text-xs leading-5 text-muted-foreground">
-                            {item.description}
-                          </div>
-                        )}
-                        <div className="mt-2 max-w-[280px] break-all text-[11px] text-muted-foreground/70">
-                          ID {item.id}
-                        </div>
-                      </td>
-                      <td className={adminSurface.tableCell}>
-                        <div className="font-medium text-foreground">
-                          {item.customerName || "-"}
-                        </div>
-                        <div className="mt-1 space-y-0.5 text-xs leading-5 text-muted-foreground">
-                          <div>{item.customerPhone || "-"}</div>
-                          <div>{item.customerEmail || "-"}</div>
-                        </div>
-                      </td>
-                      <td className={cn(adminSurface.tableCell, "text-right")}>
-                        <div className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                          {money(item.amount)}
-                        </div>
-                      </td>
-                      <td className={adminSurface.tableCell}>
-                        <div className="flex flex-wrap gap-1.5">
-                          <Badge
-                            variant={
-                              paymentStatusLabel === "결제완료"
-                                ? "default"
-                                : paymentStatusLabel === "결제취소" ||
-                                    paymentStatusLabel === "환불완료"
-                                  ? "destructive"
-                                  : "outline"
+                        <td className={adminSurface.tableCell}>
+                          <input
+                            type="checkbox"
+                            checked={selected.includes(item.id)}
+                            onChange={(e) =>
+                              setSelected(
+                                e.target.checked
+                                  ? [...selected, item.id]
+                                  : selected.filter((id) => id !== item.id),
+                              )
                             }
-                          >
-                            {paymentStatusLabel}
-                          </Badge>
-                          <Badge variant={item.status === "active" ? "secondary" : "outline"}>
-                            {statusLabel(item.status)}
-                          </Badge>
-                          {now !== null && isExpired(item, now) && (
-                            <Badge variant="destructive">만료됨</Badge>
+                          />
+                        </td>
+                        <td className={adminSurface.tableCell}>
+                          <div className={adminSurface.tablePrimaryText}>{item.title}</div>
+                          {item.description && (
+                            <div className="mt-1 line-clamp-2 max-w-[280px] text-xs leading-5 text-muted-foreground">
+                              {item.description}
+                            </div>
                           )}
-                          {item.archivedAt && <Badge variant="outline">보관됨</Badge>}
-                          {item.offlineLink?.status === "linked" && (
-                            <Badge variant="secondary">오프라인 연결됨</Badge>
-                          )}
-                        </div>
-                      </td>
-                      <td
-                        className={cn(
-                          adminSurface.tableCell,
-                          "whitespace-nowrap text-xs leading-5 text-muted-foreground",
-                        )}
-                      >
-                        <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 gap-y-1">
-                          <span className="text-muted-foreground">만료</span>
-                          <span className="whitespace-nowrap text-foreground/80">
-                            {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}
-                          </span>
-                          <span className="text-muted-foreground">생성</span>
-                          <span className="whitespace-nowrap text-foreground/80">
-                            {formatKoreanDateTime(item.createdAt)}
-                          </span>
-                          {item.paidAt && (
-                            <>
-                              <span className="text-muted-foreground">완료</span>
-                              <span className="whitespace-nowrap text-foreground/80">
-                                {formatKoreanDateTime(item.paidAt)}
-                              </span>
-                            </>
-                          )}
-                          {item.canceledAt && (
-                            <>
-                              <span className="text-muted-foreground">취소</span>
-                              <span className="whitespace-nowrap text-foreground/80">
-                                {formatKoreanDateTime(item.canceledAt)}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                      <td className={cn(adminSurface.tableCell, "text-right")}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              className="h-8 w-8 p-0"
-                              size="icon"
-                              variant="outline"
-                              aria-label={`${item.title || "개인결제"} 작업 메뉴`}
+                          <div className="mt-2 max-w-[280px] break-all text-[11px] text-muted-foreground/70">
+                            ID {item.id}
+                          </div>
+                        </td>
+                        <td className={adminSurface.tableCell}>
+                          <div className="font-medium text-foreground">
+                            {item.customerName || "-"}
+                          </div>
+                          <div className="mt-1 space-y-0.5 text-xs leading-5 text-muted-foreground">
+                            <div>{item.customerPhone || "-"}</div>
+                            <div>{item.customerEmail || "-"}</div>
+                          </div>
+                        </td>
+                        <td className={cn(adminSurface.tableCell, "text-right")}>
+                          <div className="whitespace-nowrap font-semibold tabular-nums text-foreground">
+                            {money(item.amount)}
+                          </div>
+                        </td>
+                        <td className={adminSurface.tableCell}>
+                          <div className="flex flex-wrap gap-1.5">
+                            <Badge
+                              variant={
+                                paymentStatusLabel === "결제완료"
+                                  ? "default"
+                                  : paymentStatusLabel === "결제취소" ||
+                                      paymentStatusLabel === "환불완료"
+                                    ? "destructive"
+                                    : "outline"
+                              }
                             >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onSelect={(event) => {
-                                event.preventDefault();
-                                copy(item.id).catch((e) => setMessage(e.message));
-                              }}
-                            >
-                              링크 복사
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onSelect={(event) => {
-                                event.preventDefault();
-                                edit(item);
-                              }}
-                            >
-                              상세/수정
-                            </DropdownMenuItem>
-                            {item.paymentStatus === "결제완료" &&
-                              item.offlineLink?.status !== "linked" && (
+                              {paymentStatusLabel}
+                            </Badge>
+                            <Badge variant={item.status === "active" ? "secondary" : "outline"}>
+                              {statusLabel(item.status)}
+                            </Badge>
+                            {now !== null && isExpired(item, now) && (
+                              <Badge variant="destructive">만료됨</Badge>
+                            )}
+                            {item.archivedAt && <Badge variant="outline">보관됨</Badge>}
+                            {item.offlineLink?.status === "linked" && (
+                              <Badge variant="secondary">오프라인 연결됨</Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td
+                          className={cn(
+                            adminSurface.tableCell,
+                            "whitespace-nowrap text-xs leading-5 text-muted-foreground",
+                          )}
+                        >
+                          <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 gap-y-1">
+                            <span className="text-muted-foreground">만료</span>
+                            <span className="whitespace-nowrap text-foreground/80">
+                              {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}
+                            </span>
+                            <span className="text-muted-foreground">생성</span>
+                            <span className="whitespace-nowrap text-foreground/80">
+                              {formatKoreanDateTime(item.createdAt)}
+                            </span>
+                            {item.paidAt && (
+                              <>
+                                <span className="text-muted-foreground">완료</span>
+                                <span className="whitespace-nowrap text-foreground/80">
+                                  {formatKoreanDateTime(item.paidAt)}
+                                </span>
+                              </>
+                            )}
+                            {item.canceledAt && (
+                              <>
+                                <span className="text-muted-foreground">취소</span>
+                                <span className="whitespace-nowrap text-foreground/80">
+                                  {formatKoreanDateTime(item.canceledAt)}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                        <td className={cn(adminSurface.tableCell, "text-right")}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                className="h-8 w-8 p-0"
+                                size="icon"
+                                variant="outline"
+                                aria-label={`${item.title || "개인결제"} 작업 메뉴`}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onSelect={(event) => {
+                                  event.preventDefault();
+                                  copy(item.id).catch((e) => setMessage(e.message));
+                                }}
+                              >
+                                링크 복사
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={(event) => {
+                                  event.preventDefault();
+                                  edit(item);
+                                }}
+                              >
+                                상세/수정
+                              </DropdownMenuItem>
+                              {item.paymentStatus === "결제완료" &&
+                                item.offlineLink?.status !== "linked" && (
+                                  <DropdownMenuItem
+                                    onSelect={(event) => {
+                                      event.preventDefault();
+                                      openOfflineLinkDialog(item);
+                                    }}
+                                  >
+                                    오프라인 연결
+                                  </DropdownMenuItem>
+                                )}
+                              {item.offlineLink?.status === "linked" && (
+                                <DropdownMenuItem disabled>오프라인 연결됨</DropdownMenuItem>
+                              )}
+                              {item.paymentStatus !== "결제대기" &&
+                                (item.archivedAt ? (
+                                  <DropdownMenuItem
+                                    onSelect={(event) => {
+                                      event.preventDefault();
+                                      runItemAction(item, "unarchive").catch((e) =>
+                                        setMessage(e.message),
+                                      );
+                                    }}
+                                  >
+                                    보관 해제
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem
+                                    onSelect={(event) => {
+                                      event.preventDefault();
+                                      runItemAction(item, "archive").catch((e) =>
+                                        setMessage(e.message),
+                                      );
+                                    }}
+                                  >
+                                    보관
+                                  </DropdownMenuItem>
+                                ))}
+                              {(item.paymentStatus === "결제완료" ||
+                                item.paymentStatus === "결제대기") && <DropdownMenuSeparator />}
+                              {item.paymentStatus === "결제완료" && (
                                 <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  disabled={cancelingId === item.id}
                                   onSelect={(event) => {
                                     event.preventDefault();
-                                    openOfflineLinkDialog(item);
+                                    openCancelDialog(item);
                                   }}
                                 >
-                                  오프라인 연결
+                                  {cancelingId === item.id ? "취소 처리 중..." : "결제취소"}
                                 </DropdownMenuItem>
                               )}
-                            {item.offlineLink?.status === "linked" && (
-                              <DropdownMenuItem disabled>오프라인 연결됨</DropdownMenuItem>
-                            )}
-                            {item.paymentStatus !== "결제대기" &&
-                              (item.archivedAt ? (
+                              {item.paymentStatus === "결제대기" && (
                                 <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
                                   onSelect={(event) => {
                                     event.preventDefault();
-                                    runItemAction(item, "unarchive").catch((e) =>
-                                      setMessage(e.message),
-                                    );
+                                    openDeleteDialog(item);
                                   }}
                                 >
-                                  보관 해제
+                                  결제대기 삭제
                                 </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem
-                                  onSelect={(event) => {
-                                    event.preventDefault();
-                                    runItemAction(item, "archive").catch((e) =>
-                                      setMessage(e.message),
-                                    );
-                                  }}
-                                >
-                                  보관
-                                </DropdownMenuItem>
-                              ))}
-                            {(item.paymentStatus === "결제완료" ||
-                              item.paymentStatus === "결제대기") && <DropdownMenuSeparator />}
-                            {item.paymentStatus === "결제완료" && (
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                disabled={cancelingId === item.id}
-                                onSelect={(event) => {
-                                  event.preventDefault();
-                                  openCancelDialog(item);
-                                }}
-                              >
-                                {cancelingId === item.id ? "취소 처리 중..." : "결제취소"}
-                              </DropdownMenuItem>
-                            )}
-                            {item.paymentStatus === "결제대기" && (
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onSelect={(event) => {
-                                  event.preventDefault();
-                                  openDeleteDialog(item);
-                                }}
-                              >
-                                결제대기 삭제
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
                       </tr>
                     );
                   })

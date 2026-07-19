@@ -62,9 +62,12 @@ export function ApplyPriceSummaryMobile(props: PriceSummaryCommonProps) {
         <div className="flex min-w-0 items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-ui-body-sm font-semibold text-foreground">
-              라켓 {racketCount || "-"}대 · {collectionLabel(props.collectionMethod)} · {won(props.total)}
+              라켓 {racketCount || "-"}대 · {collectionLabel(props.collectionMethod)} ·{" "}
+              {won(props.total)}
             </p>
-            <p className="mt-1 text-ui-label text-muted-foreground">신청 요약을 접어 두고 입력을 이어갈 수 있습니다.</p>
+            <p className="mt-1 text-ui-label text-muted-foreground">
+              신청 요약을 접어 두고 입력을 이어갈 수 있습니다.
+            </p>
           </div>
           <Button
             type="button"
@@ -79,7 +82,11 @@ export function ApplyPriceSummaryMobile(props: PriceSummaryCommonProps) {
         </div>
         {open ? (
           <div className="mt-4 border-t border-border pt-4">
-            <PriceSummaryCard {...props} preferredDate={props.preferredDate ?? undefined} preferredTime={props.preferredTime ?? undefined} />
+            <PriceSummaryCard
+              {...props}
+              preferredDate={props.preferredDate ?? undefined}
+              preferredTime={props.preferredTime ?? undefined}
+            />
           </div>
         ) : null}
       </div>

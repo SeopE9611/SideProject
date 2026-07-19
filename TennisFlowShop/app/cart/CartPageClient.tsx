@@ -876,12 +876,15 @@ export default function CartPageClient() {
                 장바구니
               </h1>
               <p className="max-w-2xl break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
-                담은 상품과 옵션, 수량을 확인한 뒤 주문을 진행하세요. 선택한 상품만 주문 단계로 이동합니다.
+                담은 상품과 옵션, 수량을 확인한 뒤 주문을 진행하세요. 선택한 상품만 주문 단계로
+                이동합니다.
               </p>
             </div>
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-ui-label text-muted-foreground shadow-soft">
               <span>담긴 상품 {cartItems.length}개</span>
-              <span aria-hidden="true" className="text-border">/</span>
+              <span aria-hidden="true" className="text-border">
+                /
+              </span>
               <span>선택 {selectedCartItems.length}개</span>
             </div>
           </div>
@@ -1460,12 +1463,20 @@ export default function CartPageClient() {
                           )}
                         </>
                       ) : loading ? (
-                        <Button variant="inverse" className="h-12 w-full font-semibold opacity-70" disabled>
+                        <Button
+                          variant="inverse"
+                          className="h-12 w-full font-semibold opacity-70"
+                          disabled
+                        >
                           <Loader2 className="h-5 w-5 animate-spin" />
                           로그인 확인 중...
                         </Button>
                       ) : !isCartPriceReady ? (
-                        <Button variant="inverse" className="h-12 w-full font-semibold opacity-70" disabled>
+                        <Button
+                          variant="inverse"
+                          className="h-12 w-full font-semibold opacity-70"
+                          disabled
+                        >
                           <Loader2 className="h-5 w-5 animate-spin" />
                           금액 계산 중...
                         </Button>
@@ -1588,7 +1599,9 @@ export default function CartPageClient() {
         >
           <div className="mx-auto flex max-w-[1240px] items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-ui-label text-muted-foreground">선택 {selectedCartItems.length}개 · 주문 예상 금액</p>
+              <p className="text-ui-label text-muted-foreground">
+                선택 {selectedCartItems.length}개 · 주문 예상 금액
+              </p>
               <p className="truncate text-ui-card-title-lg font-semibold tabular-nums text-foreground">
                 {!isCartPriceReady ? "계산 중" : `${formatKRW(total)}원`}
               </p>
@@ -1596,10 +1609,20 @@ export default function CartPageClient() {
             <Button
               variant="highlight"
               className="h-11 min-w-[140px] font-semibold"
-              disabled={!hasSelectedItems || loading || !isCartPriceReady || isCheckingCheckoutStock}
+              disabled={
+                !hasSelectedItems || loading || !isCartPriceReady || isCheckingCheckoutStock
+              }
               onClick={handleCheckoutClick}
             >
-              {isCheckingCheckoutStock ? "재고 확인 중" : loading ? "로그인 확인 중" : !isCartPriceReady ? "금액 계산 중" : !hasSelectedItems ? "상품 선택" : `주문하기 ${selectedCartItems.length}`}
+              {isCheckingCheckoutStock
+                ? "재고 확인 중"
+                : loading
+                  ? "로그인 확인 중"
+                  : !isCartPriceReady
+                    ? "금액 계산 중"
+                    : !hasSelectedItems
+                      ? "상품 선택"
+                      : `주문하기 ${selectedCartItems.length}`}
             </Button>
           </div>
         </div>

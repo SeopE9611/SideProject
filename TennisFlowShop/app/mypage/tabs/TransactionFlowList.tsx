@@ -27,17 +27,18 @@ import {
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
-import {
-  getMypageTodoReasonMeta,
-  type MypageTodoReasonCode,
-} from "@/lib/mypage/activity-todo";
+import { getMypageTodoReasonMeta, type MypageTodoReasonCode } from "@/lib/mypage/activity-todo";
 import {
   isOrderConfirmedStatus,
   isOrderDeliveredStatus,
   isRentalReturnedStatus,
   isStringingCompletedStatus,
 } from "@/lib/status/flow-status";
-import { buildReviewWriteHref, type CanonicalReviewTarget, type ReviewContext } from "@/lib/reviews/review-target";
+import {
+  buildReviewWriteHref,
+  type CanonicalReviewTarget,
+  type ReviewContext,
+} from "@/lib/reviews/review-target";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -412,7 +413,8 @@ const getFlowNextActionText = (
         ? "수령 준비 상태를 확인해주세요."
         : "완성 라켓 배송 중입니다. 배송정보를 확인해주세요.";
     }
-    if (isOrderDeliveredStatus(group.order?.status)) return "상품을 받으셨다면 구매 확정을 진행해주세요.";
+    if (isOrderDeliveredStatus(group.order?.status))
+      return "상품을 받으셨다면 구매 확정을 진행해주세요.";
     if (isOrderConfirmedStatus(group.order?.status)) {
       const hasPendingOrderReview =
         Boolean(group.order?.hasPendingReview) || (group.order?.reviewPendingCount ?? 0) > 0;
@@ -539,7 +541,9 @@ const getRepresentativeImage = (
 
 const canShowOrderShippingInfo = (status?: string | null) => {
   const normalized = getMypageNormalizedStatus(status);
-  return normalized === "배송중" || isOrderDeliveredStatus(status) || isOrderConfirmedStatus(status);
+  return (
+    normalized === "배송중" || isOrderDeliveredStatus(status) || isOrderConfirmedStatus(status)
+  );
 };
 
 function FlowListSkeleton() {
@@ -725,8 +729,7 @@ export default function TransactionFlowList() {
               if (item.order?.id !== orderId) return item;
 
               const patchConfirmedApp = (app: ActivityApplicationSummary) => {
-                if (app.userConfirmedAt || !isStringingCompletedStatus(app.status))
-                  return app;
+                if (app.userConfirmedAt || !isStringingCompletedStatus(app.status)) return app;
                 return { ...app, userConfirmedAt: optimisticConfirmedAt };
               };
 
@@ -1150,15 +1153,16 @@ export default function TransactionFlowList() {
                   </p>
 
                   <Link href={detailHref} className="block min-w-0">
-                    <span id={`transaction-flow-${g.key}`} className="line-clamp-2 break-keep text-ui-card-title font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-ui-card-title-lg">
+                    <span
+                      id={`transaction-flow-${g.key}`}
+                      className="line-clamp-2 break-keep text-ui-card-title font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-ui-card-title-lg"
+                    >
                       {displayTitle}
                     </span>
                   </Link>
 
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-ui-label bp-sm:text-ui-body-sm">
-                    <span className="tabular-nums text-muted-foreground">
-                      {displayDateText}
-                    </span>
+                    <span className="tabular-nums text-muted-foreground">{displayDateText}</span>
                     {amountText ? (
                       <>
                         <span aria-hidden="true" className="text-muted-foreground">
@@ -1176,27 +1180,33 @@ export default function TransactionFlowList() {
                       {secondaryMetaText}
                     </p>
                   ) : null}
-
                 </div>
 
-                {nextActionText ? (() => {
-                  const isRequiredAction = reasonMeta?.kind === "required";
-                  const actionLabel = reasonMeta?.label ?? "진행 안내";
+                {nextActionText
+                  ? (() => {
+                      const isRequiredAction = reasonMeta?.kind === "required";
+                      const actionLabel = reasonMeta?.label ?? "진행 안내";
 
-                  return (
-                    <div
-                      className={cn(
-                        "col-span-2 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border-l-2 py-1 pl-2 text-ui-label leading-relaxed md:col-start-2 md:col-end-3",
-                        isRequiredAction ? "border-warning/55" : "border-border",
-                      )}
-                    >
-                      <span className={cn("shrink-0 whitespace-nowrap font-semibold", isRequiredAction ? "text-warning" : "text-muted-foreground")}>
-                        {actionLabel}
-                      </span>
-                      <span className="min-w-0 text-muted-foreground">{nextActionText}</span>
-                    </div>
-                  );
-                })() : null}
+                      return (
+                        <div
+                          className={cn(
+                            "col-span-2 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border-l-2 py-1 pl-2 text-ui-label leading-relaxed md:col-start-2 md:col-end-3",
+                            isRequiredAction ? "border-warning/55" : "border-border",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "shrink-0 whitespace-nowrap font-semibold",
+                              isRequiredAction ? "text-warning" : "text-muted-foreground",
+                            )}
+                          >
+                            {actionLabel}
+                          </span>
+                          <span className="min-w-0 text-muted-foreground">{nextActionText}</span>
+                        </div>
+                      );
+                    })()
+                  : null}
 
                 {/* 오른쪽(상태 배지 + 액션 버튼) + 펼침 패널 */}
                 {(() => {
@@ -1239,7 +1249,13 @@ export default function TransactionFlowList() {
                   const detailAction: CardAction = {
                     key: "flow-detail",
                     node: (
-                      <Button asChild size="sm" variant="outline" wrap="nowrap" className="min-h-11 w-full min-w-0 whitespace-nowrap bg-transparent md:min-h-9">
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        wrap="nowrap"
+                        className="min-h-11 w-full min-w-0 whitespace-nowrap bg-transparent md:min-h-9"
+                      >
                         <Link href={resolvedDetailHref} aria-label={`${displayTitle} 상세 보기`}>
                           상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                         </Link>
@@ -1260,11 +1276,17 @@ export default function TransactionFlowList() {
                   }): CardAction | null => {
                     if ((params.reviewPendingCount ?? 0) <= 0) return null;
                     const target = params.nextReviewTarget;
-                    const reviewContext = (target?.reviewContext ?? params.reviewContext) as ReviewContext | null;
+                    const reviewContext = (target?.reviewContext ??
+                      params.reviewContext) as ReviewContext | null;
                     const productId = target?.primaryProductId ?? params.fallbackProductId ?? null;
                     const applicationId =
-                      target?.primaryApplicationId ?? params.fallbackApplicationId ?? params.applicationId ?? null;
-                    const hasTarget = Boolean(target || productId || applicationId || params.rentalId);
+                      target?.primaryApplicationId ??
+                      params.fallbackApplicationId ??
+                      params.applicationId ??
+                      null;
+                    const hasTarget = Boolean(
+                      target || productId || applicationId || params.rentalId,
+                    );
                     if (!reviewContext || !hasTarget) return null;
                     const href = buildReviewWriteHref({
                       reviewContext,
@@ -1276,7 +1298,13 @@ export default function TransactionFlowList() {
                     return {
                       key: params.key,
                       node: (
-                        <Button size="sm" asChild variant="secondary" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap">
+                        <Button
+                          size="sm"
+                          asChild
+                          variant="secondary"
+                          wrap="nowrap"
+                          className="w-full min-w-0 whitespace-nowrap"
+                        >
                           <Link href={href}>
                             <MessageSquarePlus className="mr-1 h-3.5 w-3.5" />
                             후기 작성
@@ -1291,8 +1319,16 @@ export default function TransactionFlowList() {
                       addSecondaryAction({
                         key: "application-linked-order",
                         node: (
-                          <Button asChild size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`}>
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap bg-transparent"
+                          >
+                            <Link
+                              href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`}
+                            >
                               주문 상세 보기
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
@@ -1304,8 +1340,16 @@ export default function TransactionFlowList() {
                       addSecondaryAction({
                         key: "application-linked-rental",
                         node: (
-                          <Button asChild size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}&focus=stringing`}>
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap bg-transparent"
+                          >
+                            <Link
+                              href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}&focus=stringing`}
+                            >
                               대여 상세 보기
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
@@ -1316,13 +1360,23 @@ export default function TransactionFlowList() {
                   }
 
                   if (g.kind === "order" && orderId && !prefersApplicationView) {
-                    const actionableOrderApplication = linkedApps.find((app) => isApplicationTrackingNeeded(app));
+                    const actionableOrderApplication = linkedApps.find((app) =>
+                      isApplicationTrackingNeeded(app),
+                    );
                     if (actionableOrderApplication?.id) {
                       addPrimaryActionCandidate({
                         key: "application-shipping",
                         node: (
-                          <Button asChild size="sm" variant="highlight_soft" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap">
-                            <Link href={`/services/applications/${actionableOrderApplication.id}/shipping?return=${encodeURIComponent(resolvedDetailHref)}`}>
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="highlight_soft"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap"
+                          >
+                            <Link
+                              href={`/services/applications/${actionableOrderApplication.id}/shipping?return=${encodeURIComponent(resolvedDetailHref)}`}
+                            >
                               라켓 발송 운송장 등록
                             </Link>
                           </Button>
@@ -1332,13 +1386,23 @@ export default function TransactionFlowList() {
                       addPrimaryActionCandidate({
                         key: "order-confirm",
                         node: (
-                          <Button size="sm" variant="highlight_soft" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
+                          <Button
+                            size="sm"
+                            variant="highlight_soft"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap"
+                            disabled={confirmingOrderId === orderId}
+                            onClick={() => handleConfirmPurchase(orderId)}
+                          >
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
                             {confirmingOrderId === orderId ? "처리 중..." : "구매 확정"}
                           </Button>
                         ),
                       });
-                    } else if (Boolean(g.order?.userConfirmedAt) || isOrderConfirmedStatus(g.order?.status)) {
+                    } else if (
+                      Boolean(g.order?.userConfirmedAt) ||
+                      isOrderConfirmedStatus(g.order?.status)
+                    ) {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "order-review",
                         orderId,
@@ -1352,26 +1416,110 @@ export default function TransactionFlowList() {
                     }
 
                     if (canShowOrderShippingInfo(status)) {
-                      const isVisitPickup = isVisitPickupOrder({ shippingMethod: g.order?.shippingMethod });
-                      const shippingInfoLabel = isVisitPickup ? "수령정보 확인" : linkedCount > 0 ? "완성 라켓 배송정보 확인" : "배송정보 확인";
+                      const isVisitPickup = isVisitPickupOrder({
+                        shippingMethod: g.order?.shippingMethod,
+                      });
+                      const shippingInfoLabel = isVisitPickup
+                        ? "수령정보 확인"
+                        : linkedCount > 0
+                          ? "완성 라켓 배송정보 확인"
+                          : "배송정보 확인";
                       addSecondaryAction({
                         key: "order-shipping-info",
-                        node: <Button size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap bg-transparent" onClick={() => setShippingInfoDialogTarget({ orderId, triggerLabel: shippingInfoLabel, shippingMethod: g.order?.shippingMethod })}>{shippingInfoLabel}</Button>,
+                        node: (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap bg-transparent"
+                            onClick={() =>
+                              setShippingInfoDialogTarget({
+                                orderId,
+                                triggerLabel: shippingInfoLabel,
+                                shippingMethod: g.order?.shippingMethod,
+                              })
+                            }
+                          >
+                            {shippingInfoLabel}
+                          </Button>
+                        ),
                       });
                     }
                     if (g.order?.cancelStatus === "requested") {
-                      addSecondaryAction({ key: "order-cancel-withdraw", node: <Button size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-foreground shadow-none hover:bg-muted hover:text-foreground" disabled={withdrawingOrderCancelId === orderId} onClick={() => handleOrderCancelWithdraw(orderId)}><Undo2 className="mr-1 h-3.5 w-3.5" />{withdrawingOrderCancelId === orderId ? "철회 중..." : "취소 요청 철회"}</Button> });
+                      addSecondaryAction({
+                        key: "order-cancel-withdraw",
+                        node: (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-foreground shadow-none hover:bg-muted hover:text-foreground"
+                            disabled={withdrawingOrderCancelId === orderId}
+                            onClick={() => handleOrderCancelWithdraw(orderId)}
+                          >
+                            <Undo2 className="mr-1 h-3.5 w-3.5" />
+                            {withdrawingOrderCancelId === orderId ? "철회 중..." : "취소 요청 철회"}
+                          </Button>
+                        ),
+                      });
                     } else if (["대기중", "결제완료"].includes(normalizedStatus)) {
-                      addSecondaryAction({ key: "order-cancel-request", node: <Button size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelOrderDialogId(orderId)}><XCircle className="mr-1 h-3.5 w-3.5" />취소 요청</Button> });
+                      addSecondaryAction({
+                        key: "order-cancel-request",
+                        node: (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => setCancelOrderDialogId(orderId)}
+                          >
+                            <XCircle className="mr-1 h-3.5 w-3.5" />
+                            취소 요청
+                          </Button>
+                        ),
+                      });
                     }
                   }
 
                   if (g.kind === "rental" && rentalId && !prefersApplicationView) {
                     if (g.todoReasonCode === "rental_return_shipping_register") {
-                      addPrimaryActionCandidate({ key: "rental-return-shipping", node: <Button asChild size="sm" variant="highlight_soft" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 등록</Link></Button> });
+                      addPrimaryActionCandidate({
+                        key: "rental-return-shipping",
+                        node: (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="highlight_soft"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap"
+                          >
+                            <Link href={`/mypage/rentals/${rentalId}/return-shipping`}>
+                              반납 운송장 등록
+                            </Link>
+                          </Button>
+                        ),
+                      });
                     } else if (g.todoReasonCode === "rental_confirm") {
-                      addPrimaryActionCandidate({ key: "rental-confirm", node: <Button size="sm" variant="highlight_soft" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap" disabled={confirmingRentalId === rentalId} onClick={() => handleConfirmRental(rentalId)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}</Button> });
-                    } else if (g.todoReasonCode === "product_review" || g.todoReasonCode === "product_stringing_review") {
+                      addPrimaryActionCandidate({
+                        key: "rental-confirm",
+                        node: (
+                          <Button
+                            size="sm"
+                            variant="highlight_soft"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap"
+                            disabled={confirmingRentalId === rentalId}
+                            onClick={() => handleConfirmRental(rentalId)}
+                          >
+                            <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                            {confirmingRentalId === rentalId ? "처리 중..." : "수령 확인"}
+                          </Button>
+                        ),
+                      });
+                    } else if (
+                      g.todoReasonCode === "product_review" ||
+                      g.todoReasonCode === "product_stringing_review"
+                    ) {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "rental-review",
                         rentalId,
@@ -1383,14 +1531,62 @@ export default function TransactionFlowList() {
                       });
                       if (reviewAction) addPrimaryActionCandidate(reviewAction);
                     } else if (g.todoReasonCode === "rental_stringing_apply") {
-                      addPrimaryActionCandidate({ key: "rental-apply-stringing", node: <Button asChild size="sm" variant="highlight_soft" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap"><Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
+                      addPrimaryActionCandidate({
+                        key: "rental-apply-stringing",
+                        node: (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="highlight_soft"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap"
+                          >
+                            <Link href={`/services/apply?rentalId=${rentalId}`}>
+                              교체서비스 신청
+                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        ),
+                      });
                     }
 
                     if (g.rental?.returnShippingWindowOpen && g.rental?.hasReturnShipping) {
-                      addSecondaryAction({ key: "rental-return-shipping-edit", node: <Button asChild size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap bg-transparent"><Link href={`/mypage/rentals/${rentalId}/return-shipping`}>반납 운송장 수정</Link></Button> });
+                      addSecondaryAction({
+                        key: "rental-return-shipping-edit",
+                        node: (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap bg-transparent"
+                          >
+                            <Link href={`/mypage/rentals/${rentalId}/return-shipping`}>
+                              반납 운송장 수정
+                            </Link>
+                          </Button>
+                        ),
+                      });
                     }
-                    if (["pending", "paid", "대기중", "결제완료"].includes(normalizedStatus) && !g.rental?.hasOutboundShipping) {
-                      addSecondaryAction({ key: "rental-cancel-request", node: <Button size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelRentalDialogId(rentalId)}><XCircle className="mr-1 h-3.5 w-3.5" />취소 요청</Button> });
+                    if (
+                      ["pending", "paid", "대기중", "결제완료"].includes(normalizedStatus) &&
+                      !g.rental?.hasOutboundShipping
+                    ) {
+                      addSecondaryAction({
+                        key: "rental-cancel-request",
+                        node: (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => setCancelRentalDialogId(rentalId)}
+                          >
+                            <XCircle className="mr-1 h-3.5 w-3.5" />
+                            취소 요청
+                          </Button>
+                        ),
+                      });
                     }
                   }
 
@@ -1401,32 +1597,134 @@ export default function TransactionFlowList() {
                         ? `/mypage?tab=orders&flowType=rental&flowId=${applicationActionTarget.rentalId}&${flowQuery}&focus=stringing`
                         : `/mypage?tab=orders&flowType=application&flowId=${applicationActionTarget.id}&${flowQuery}`;
 
-                    if (!isRentalLinkedApplicationAction && isApplicationTrackingNeeded(applicationActionTarget)) {
-                      const action = { key: "application-shipping", node: <Button asChild size="sm" variant={applicationActionTarget.hasTracking ? "outline" : "highlight_soft"} wrap="nowrap" className={cn("w-full min-w-0 whitespace-nowrap", applicationActionTarget.hasTracking && "bg-transparent")}><Link href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(applicationShippingReturnHref)}`}>{applicationActionTarget.hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}</Link></Button> };
+                    if (
+                      !isRentalLinkedApplicationAction &&
+                      isApplicationTrackingNeeded(applicationActionTarget)
+                    ) {
+                      const action = {
+                        key: "application-shipping",
+                        node: (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant={
+                              applicationActionTarget.hasTracking ? "outline" : "highlight_soft"
+                            }
+                            wrap="nowrap"
+                            className={cn(
+                              "w-full min-w-0 whitespace-nowrap",
+                              applicationActionTarget.hasTracking && "bg-transparent",
+                            )}
+                          >
+                            <Link
+                              href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(applicationShippingReturnHref)}`}
+                            >
+                              {applicationActionTarget.hasTracking
+                                ? "라켓 발송 운송장 수정"
+                                : "라켓 발송 운송장 등록"}
+                            </Link>
+                          </Button>
+                        ),
+                      };
                       if (applicationActionTarget.hasTracking) addSecondaryAction(action);
                       else addPrimaryActionCandidate(action);
                     }
-                    if (isDirectApplicationCard && ["접수완료", "검토 중"].includes(getMypageNormalizedStatus(applicationActionTarget.status))) {
-                      addSecondaryAction({ key: "application-cancel-request", node: <Button size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}><XCircle className="mr-1 h-3.5 w-3.5" />취소 요청</Button> });
+                    if (
+                      isDirectApplicationCard &&
+                      ["접수완료", "검토 중"].includes(
+                        getMypageNormalizedStatus(applicationActionTarget.status),
+                      )
+                    ) {
+                      addSecondaryAction({
+                        key: "application-cancel-request",
+                        node: (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap border-transparent bg-transparent text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}
+                          >
+                            <XCircle className="mr-1 h-3.5 w-3.5" />
+                            취소 요청
+                          </Button>
+                        ),
+                      });
                     }
-                    if (isStringingCompletedStatus(applicationActionTarget.status) && !applicationActionTarget.userConfirmedAt && !isLinkedApplicationConfirmSuppressed) {
-                      addPrimaryActionCandidate({ key: "application-confirm", node: <Button size="sm" variant="highlight_soft" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}><CheckCircle className="mr-1 h-3.5 w-3.5" />{confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체서비스 확정"}</Button> });
-                    } else if (!applicationActionTarget.orderId && !applicationActionTarget.rentalId && applicationActionTarget.userConfirmedAt) {
+                    if (
+                      isStringingCompletedStatus(applicationActionTarget.status) &&
+                      !applicationActionTarget.userConfirmedAt &&
+                      !isLinkedApplicationConfirmSuppressed
+                    ) {
+                      addPrimaryActionCandidate({
+                        key: "application-confirm",
+                        node: (
+                          <Button
+                            size="sm"
+                            variant="highlight_soft"
+                            wrap="nowrap"
+                            className="w-full min-w-0 whitespace-nowrap"
+                            disabled={confirmingApplicationId === applicationActionTarget.id}
+                            onClick={() => handleConfirmApplication(applicationActionTarget.id)}
+                          >
+                            <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                            {confirmingApplicationId === applicationActionTarget.id
+                              ? "처리 중..."
+                              : "교체서비스 확정"}
+                          </Button>
+                        ),
+                      });
+                    } else if (
+                      !applicationActionTarget.orderId &&
+                      !applicationActionTarget.rentalId &&
+                      applicationActionTarget.userConfirmedAt
+                    ) {
                       const reviewAction = buildCanonicalReviewAction({
                         key: "application-review",
                         applicationId: applicationActionTarget.id,
                         reviewPendingCount: applicationActionTarget.reviewPendingCount,
-                        reviewContext: applicationActionTarget.reviewContext ?? "standalone_stringing",
+                        reviewContext:
+                          applicationActionTarget.reviewContext ?? "standalone_stringing",
                         nextReviewTarget: applicationActionTarget.nextReviewTarget,
                         fallbackProductId: applicationActionTarget.reviewNextTargetProductId,
-                        fallbackApplicationId: applicationActionTarget.reviewNextApplicationId ?? applicationActionTarget.id,
+                        fallbackApplicationId:
+                          applicationActionTarget.reviewNextApplicationId ??
+                          applicationActionTarget.id,
                       });
                       if (reviewAction) addPrimaryActionCandidate(reviewAction);
                     }
                   }
 
-                  if (needsTrackingAction && actionableApplicationId && !isDirectApplicationCard && (!primaryLinkedApplicationId || primaryLinkedApplicationId !== actionableApplicationId)) {
-                    addSecondaryAction({ key: "application-open-sheet", node: <Button asChild size="sm" variant="outline" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap bg-transparent"><Link href={applicationActionTarget ? getStringingDetailHref(applicationActionTarget, flowQuery) : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>교체서비스 상태<ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button> });
+                  if (
+                    needsTrackingAction &&
+                    actionableApplicationId &&
+                    !isDirectApplicationCard &&
+                    (!primaryLinkedApplicationId ||
+                      primaryLinkedApplicationId !== actionableApplicationId)
+                  ) {
+                    addSecondaryAction({
+                      key: "application-open-sheet",
+                      node: (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          wrap="nowrap"
+                          className="w-full min-w-0 whitespace-nowrap bg-transparent"
+                        >
+                          <Link
+                            href={
+                              applicationActionTarget
+                                ? getStringingDetailHref(applicationActionTarget, flowQuery)
+                                : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`
+                            }
+                          >
+                            교체서비스 상태
+                            <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                          </Link>
+                        </Button>
+                      ),
+                    });
                   }
 
                   const primaryAction = primaryActionCandidates[0] ?? null;
@@ -1435,7 +1733,10 @@ export default function TransactionFlowList() {
                   return (
                     <div className="col-span-2 flex w-full shrink-0 flex-col items-start gap-2 md:col-span-1 md:w-[220px] md:items-stretch md:self-start">
                       <div className="hidden flex-wrap items-center gap-1.5 md:flex md:justify-end">
-                        <Badge variant={representativeStatusBadgeSpec.variant} className="shrink-0 whitespace-nowrap">
+                        <Badge
+                          variant={representativeStatusBadgeSpec.variant}
+                          className="shrink-0 whitespace-nowrap"
+                        >
                           {representativeStatusLabel}
                         </Badge>
                       </div>
@@ -1443,24 +1744,40 @@ export default function TransactionFlowList() {
                       <ResponsiveActionGroup
                         primaryAction={primaryAction?.node}
                         detailAction={detailAction.node}
-                        overflowAction={hasSecondaryActions ? (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-control border-border bg-background px-0 text-muted-foreground hover:bg-muted hover:text-foreground md:h-9 md:w-10" aria-label={`${secondaryActions.length}개 추가 작업 보기`} title="더보기">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 max-w-[calc(100vw-2rem)] p-1">
-                              <div className="grid gap-1 [&_a]:h-8 [&_a]:w-full [&_a]:justify-start [&_a]:px-3 [&_a]:text-ui-label [&_a]:font-medium [&_button]:h-8 [&_button]:w-full [&_button]:justify-start [&_button]:px-3 [&_button]:text-ui-label [&_button]:font-medium">
-                                {secondaryActions.map((action) => (
-                                  <DropdownMenuItem key={action.key} asChild className="p-0 focus:bg-transparent">
-                                    {action.node}
-                                  </DropdownMenuItem>
-                                ))}
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        ) : undefined}
+                        overflowAction={
+                          hasSecondaryActions ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-11 w-11 shrink-0 rounded-control border-border bg-background px-0 text-muted-foreground hover:bg-muted hover:text-foreground md:h-9 md:w-10"
+                                  aria-label={`${secondaryActions.length}개 추가 작업 보기`}
+                                  title="더보기"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="w-56 max-w-[calc(100vw-2rem)] p-1"
+                              >
+                                <div className="grid gap-1 [&_a]:h-8 [&_a]:w-full [&_a]:justify-start [&_a]:px-3 [&_a]:text-ui-label [&_a]:font-medium [&_button]:h-8 [&_button]:w-full [&_button]:justify-start [&_button]:px-3 [&_button]:text-ui-label [&_button]:font-medium">
+                                  {secondaryActions.map((action) => (
+                                    <DropdownMenuItem
+                                      key={action.key}
+                                      asChild
+                                      className="p-0 focus:bg-transparent"
+                                    >
+                                      {action.node}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </div>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : undefined
+                        }
                       />
                     </div>
                   );

@@ -23,7 +23,10 @@ export default function ServicesLoading() {
 
             <PublicSurface variant="inverse" className="space-y-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="flex items-start justify-between gap-4 border-b border-surface-inverse-foreground/15 pb-3 last:border-b-0 last:pb-0">
+                <div
+                  key={index}
+                  className="flex items-start justify-between gap-4 border-b border-surface-inverse-foreground/15 pb-3 last:border-b-0 last:pb-0"
+                >
                   <Skeleton className="h-5 w-full max-w-24 rounded-control bg-surface-inverse-foreground/15" />
                   <div className="flex min-w-0 flex-1 justify-end">
                     <Skeleton className="h-5 w-3/4 max-w-32 rounded-control bg-surface-inverse-foreground/15" />
@@ -35,7 +38,10 @@ export default function ServicesLoading() {
         </SiteContainer>
       </header>
 
-      <section className="scroll-mt-[calc(var(--header-h)+1rem)] py-8 bp-sm:py-10 bp-lg:py-12" id="service-start">
+      <section
+        className="scroll-mt-[calc(var(--header-h)+1rem)] py-8 bp-sm:py-10 bp-lg:py-12"
+        id="service-start"
+      >
         <SiteContainer>
           <div className="mb-5 space-y-2 bp-sm:mb-7">
             <Skeleton className="h-8 w-full max-w-sm rounded-control" />
@@ -43,7 +49,10 @@ export default function ServicesLoading() {
           </div>
           <div className="grid gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-12">
             {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className={`flex h-full min-w-0 flex-col rounded-panel border border-border/80 p-5 ${index === 0 ? "bg-muted/40 bp-sm:col-span-2 bp-lg:col-span-6" : "bg-card bp-lg:col-span-3"}`}>
+              <div
+                key={index}
+                className={`flex h-full min-w-0 flex-col rounded-panel border border-border/80 p-5 ${index === 0 ? "bg-muted/40 bp-sm:col-span-2 bp-lg:col-span-6" : "bg-card bp-lg:col-span-3"}`}
+              >
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <Skeleton className="h-12 w-12 shrink-0 rounded-control bg-muted/40" />
                   <Skeleton className="h-6 w-full max-w-20 rounded-control" />
@@ -72,7 +81,10 @@ export default function ServicesLoading() {
           <PublicSurface padding="none" className="overflow-hidden">
             <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="flex min-w-0 items-start gap-3 border-b border-border p-4 bp-sm:border-r bp-lg:[&:nth-child(3n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:[&:nth-last-child(-n+3)]:border-b-0">
+                <div
+                  key={index}
+                  className="flex min-w-0 items-start gap-3 border-b border-border p-4 bp-sm:border-r bp-lg:[&:nth-child(3n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:[&:nth-last-child(-n+3)]:border-b-0"
+                >
                   <Skeleton className="mt-0.5 h-5 w-5 shrink-0 rounded-control" />
                   <div className="min-w-0 flex-1 space-y-2">
                     <Skeleton className="h-5 w-full max-w-32 rounded-control" />
@@ -89,7 +101,10 @@ export default function ServicesLoading() {
         </SiteContainer>
       </section>
 
-      <section className="scroll-mt-[calc(var(--header-h)+1rem)] bg-muted/30 py-8 bp-sm:py-10 bp-lg:py-12" id="pricing">
+      <section
+        className="scroll-mt-[calc(var(--header-h)+1rem)] bg-muted/30 py-8 bp-sm:py-10 bp-lg:py-12"
+        id="pricing"
+      >
         <SiteContainer>
           <div className="grid gap-6 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-start">
             <div className="space-y-4">
@@ -112,7 +127,10 @@ export default function ServicesLoading() {
                 ))}
               </div>
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="grid gap-2 border-b border-border px-4 py-3 last:border-b-0 bp-sm:grid-cols-[1.1fr_0.7fr_1fr_1fr]">
+                <div
+                  key={index}
+                  className="grid gap-2 border-b border-border px-4 py-3 last:border-b-0 bp-sm:grid-cols-[1.1fr_0.7fr_1fr_1fr]"
+                >
                   <Skeleton className="h-5 w-full max-w-28 rounded-control" />
                   <Skeleton className="h-5 w-full max-w-16 rounded-control" />
                   <Skeleton className="h-5 w-full max-w-24 rounded-control" />
@@ -137,7 +155,10 @@ export default function ServicesLoading() {
             </div>
             <ol className="grid gap-0 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
               {Array.from({ length: 4 }).map((_, index) => (
-                <li key={index} className="border-t border-surface-inverse-foreground/15 py-4 bp-sm:px-4 bp-sm:[&:nth-child(2n)]:border-l bp-lg:border-l bp-lg:first:border-l-0">
+                <li
+                  key={index}
+                  className="border-t border-surface-inverse-foreground/15 py-4 bp-sm:px-4 bp-sm:[&:nth-child(2n)]:border-l bp-lg:border-l bp-lg:first:border-l-0"
+                >
                   <div className="mb-3 flex items-center gap-3">
                     <Skeleton className="h-9 w-9 rounded-full bg-surface-inverse-foreground/15" />
                     <Skeleton className="h-6 w-6 rounded-control bg-surface-inverse-foreground/15" />

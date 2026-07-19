@@ -41,7 +41,11 @@ export default function NoticeListLoadingShell({ mode = "notice" }: Props) {
         }
       />
 
-      <SiteContainer className="space-y-5 py-6 sm:space-y-6 sm:py-8 md:py-10" aria-busy="true" aria-live="polite">
+      <SiteContainer
+        className="space-y-5 py-6 sm:space-y-6 sm:py-8 md:py-10"
+        aria-busy="true"
+        aria-live="polite"
+      >
         <PublicSurface variant="feature" padding="md" className="overflow-hidden">
           <div className="h-1 bg-brand-highlight" aria-hidden="true" />
           <div className="flex flex-col gap-3 bg-brand-highlight-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">

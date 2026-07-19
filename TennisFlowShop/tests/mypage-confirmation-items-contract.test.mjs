@@ -20,7 +20,10 @@ test("shared resolver exposes structured confirmation item policy", () => {
   assert.match(todo, /resolveApplicationTodoReason/);
   assert.match(todo, /resolveOrderTodoReason/);
   assert.match(todo, /resolveRentalTodoReason/);
-  assert.match(todo, /isApplicationTodoActionable[\s\S]*resolveApplicationTodoReason\(app\) !== null/);
+  assert.match(
+    todo,
+    /isApplicationTodoActionable[\s\S]*resolveApplicationTodoReason\(app\) !== null/,
+  );
   assert.match(todo, /isOrderTodoActionable[\s\S]*resolveOrderTodoReason\(params\) !== null/);
   assert.match(todo, /isRentalTodoActionable[\s\S]*resolveRentalTodoReason\(params\) !== null/);
 });
@@ -45,7 +48,10 @@ test("APIs use resolver SSOT and KST date", () => {
   assert.match(activity, /scope === "todo"[\s\S]*group\.todoReasonCode !== null/);
   assert.match(summary, /resolveOrderTodoReason\([\s\S]*!== null/);
   assert.match(counts, /resolveRentalTodoReason\([\s\S]*!== null/);
-  assert.match(counts, /serviceReviewPending:\s*\(reviewBundlesByApplicationId\.get\(String\(app\._id\)\)\?\.counts\.remaining \?\? 0\) > 0/);
+  assert.match(
+    counts,
+    /serviceReviewPending:\s*\(reviewBundlesByApplicationId\.get\(String\(app\._id\)\)\?\.counts\.remaining \?\? 0\) > 0/,
+  );
 });
 
 test("client uses server reason codes and metadata instead of Korean string keys", () => {

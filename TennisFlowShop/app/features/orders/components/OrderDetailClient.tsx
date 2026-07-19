@@ -658,7 +658,8 @@ export default function OrderDetailClient({ orderId }: Props) {
       for (const app of apps) {
         if (!app?.id) continue;
         const parts: string[] = [];
-        if (app.status) parts.push(`상태: ${getCommonApplicationStatusLabel(app.status) ?? app.status}`);
+        if (app.status)
+          parts.push(`상태: ${getCommonApplicationStatusLabel(app.status) ?? app.status}`);
         if (app.createdAt) parts.push(formatDate(app.createdAt));
         parts.push(`라켓 ${app.racketCount ?? 0}개`);
         docs.push({
@@ -981,8 +982,12 @@ export default function OrderDetailClient({ orderId }: Props) {
   const cancelRequestAny: any = (orderDetail as any).cancelRequest ?? {};
   const pgCancelBlocked = cancelRequestAny.pgCancelBlocked ?? null;
   const paymentNiceSync = orderDetail.paymentNiceSync ?? orderDetail.paymentInfo?.niceSync ?? null;
-  const paymentInfoStatus = String(orderDetail.paymentInfo?.status ?? "").trim().toLowerCase();
-  const paymentNicePgStatus = String(paymentNiceSync?.pgStatus ?? "").trim().toLowerCase();
+  const paymentInfoStatus = String(orderDetail.paymentInfo?.status ?? "")
+    .trim()
+    .toLowerCase();
+  const paymentNicePgStatus = String(paymentNiceSync?.pgStatus ?? "")
+    .trim()
+    .toLowerCase();
   const isPgCancelCompleted =
     orderDetail.paymentStatus === "결제취소" ||
     paymentInfoStatus === "canceled" ||
@@ -1369,7 +1374,10 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 {latestLinkedApplication?.id && latestLinkedApplication?.status && (
                   <div className="grid gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
                     <p className={adminTypography.bodyStrong}>
-                      연결 진행 단계: {orderGuide.stage || getCommonApplicationStatusLabel(latestLinkedApplication.status) || latestLinkedApplication.status}
+                      연결 진행 단계:{" "}
+                      {orderGuide.stage ||
+                        getCommonApplicationStatusLabel(latestLinkedApplication.status) ||
+                        latestLinkedApplication.status}
                     </p>
                     <p className={cn("md:text-right", adminTypography.meta)}>
                       다음 할 일:{" "}
@@ -1462,7 +1470,8 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         <p>
                           <span className="text-muted-foreground">작업 상태:</span>{" "}
                           <span className="font-medium text-foreground">
-                            {getCommonApplicationStatusLabel(latestLinkedApplication.status) ?? latestLinkedApplication.status}
+                            {getCommonApplicationStatusLabel(latestLinkedApplication.status) ??
+                              latestLinkedApplication.status}
                           </span>
                         </p>
                       )}
@@ -2178,10 +2187,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                           );
                         })()}
                       />
-                      <AdminCompactField
-                        label="결제 방식"
-                        value={paymentMethodDisplayLabel}
-                      />
+                      <AdminCompactField label="결제 방식" value={paymentMethodDisplayLabel} />
                     </div>
 
                     <details className="group rounded-lg border border-border/60 bg-background/70 p-1">
@@ -2233,7 +2239,9 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         NICE 자동 카드취소 불가
                       </CardTitle>
                       <CardDescription className="text-muted-foreground">
-                        가맹점 미정산금액이 취소금액보다 부족해 NICE 자동취소가 거절되었습니다. NICE 입금 후 취소 절차를 진행한 뒤, 강제취소 완료 후 이 화면에서 PG 상태를 다시 확인하세요.
+                        가맹점 미정산금액이 취소금액보다 부족해 NICE 자동취소가 거절되었습니다. NICE
+                        입금 후 취소 절차를 진행한 뒤, 강제취소 완료 후 이 화면에서 PG 상태를 다시
+                        확인하세요.
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-0">

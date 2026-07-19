@@ -28,7 +28,8 @@ export function labelPaymentStatus(raw?: string) {
   if (v === "취소" || lower === "canceled" || lower === "cancelled") return "취소";
   if (v === "환불" || lower === "refunded" || lower === "refund") return "환불";
   if (lower === "refund_completed") return "환불";
-  if (["partial_canceled", "partialcanceled", "partial_cancelled"].includes(lower)) return "부분취소";
+  if (["partial_canceled", "partialcanceled", "partial_cancelled"].includes(lower))
+    return "부분취소";
   return v;
 }
 
@@ -37,15 +38,30 @@ export function labelOrderStatus(raw?: string) {
   if (!v) return "대기중";
   const lower = v.toLowerCase();
 
-  if (["대기중", "배송준비중", "배송중", "배송완료", "구매확정", "취소", "환불", "환불완료", "부분취소"].includes(v)) return v;
+  if (
+    [
+      "대기중",
+      "배송준비중",
+      "배송중",
+      "배송완료",
+      "구매확정",
+      "취소",
+      "환불",
+      "환불완료",
+      "부분취소",
+    ].includes(v)
+  )
+    return v;
 
   const commonLabel = getCommonOrderStatusLabel(v);
   if (commonLabel) return commonLabel;
 
-  if (lower === "preparing" || lower === "processing" || lower === "shipping_pending") return "배송준비중";
+  if (lower === "preparing" || lower === "processing" || lower === "shipping_pending")
+    return "배송준비중";
   if (lower === "in_transit") return "배송중";
   if (lower === "refund_completed") return "환불완료";
-  if (["partial_canceled", "partialcanceled", "partial_cancelled"].includes(lower)) return "부분취소";
+  if (["partial_canceled", "partialcanceled", "partial_cancelled"].includes(lower))
+    return "부분취소";
   if (lower === "completed") return "배송완료";
   return v;
 }
@@ -55,7 +71,12 @@ export function labelStringingStatus(raw?: string) {
   if (!v) return "접수완료";
   const lower = v.toLowerCase();
 
-  if (["접수완료", "검토 중", "검토중", "작업 중", "작업 대기", "완료", "교체완료", "취소"].includes(v)) return v;
+  if (
+    ["접수완료", "검토 중", "검토중", "작업 중", "작업 대기", "완료", "교체완료", "취소"].includes(
+      v,
+    )
+  )
+    return v;
 
   const commonLabel = getCommonApplicationStatusLabel(v);
   if (commonLabel === "접수완료") return "접수완료";

@@ -40,7 +40,10 @@ import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { shortenId } from "@/lib/shorten";
-import { getCommonApplicationStatusLabel, getCommonRentalStatusLabel } from "@/lib/status-labels/base";
+import {
+  getCommonApplicationStatusLabel,
+  getCommonRentalStatusLabel,
+} from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -509,7 +512,9 @@ export default function AdminRentalDetailClient() {
   ).trim();
   const hasLinkedApplication = hasRentalStringingService(data);
   const isStringingComplete = isRentalStringingComplete(linkedApplicationStatus);
-  const normalizedStatus = String(data?.status ?? "").trim().toLowerCase();
+  const normalizedStatus = String(data?.status ?? "")
+    .trim()
+    .toLowerCase();
   const isOut = normalizedStatus === "out" || normalizedStatus.includes("대여중");
   const isReturned = normalizedStatus === "returned" || normalizedStatus.includes("반납완료");
   const hasStatusOrderMismatch =
@@ -795,13 +800,7 @@ export default function AdminRentalDetailClient() {
               density="compact"
               title="대여 상태"
               icon={Package}
-              tone={
-                hasStatusOrderMismatch
-                  ? "warning"
-                  : isReturned
-                    ? "success"
-                    : "neutral"
-              }
+              tone={hasStatusOrderMismatch ? "warning" : isReturned ? "success" : "neutral"}
               value={(() => {
                 const rentalLabel =
                   data.status === "paid" && hasOutboundTracking
@@ -1026,7 +1025,8 @@ export default function AdminRentalDetailClient() {
                 {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
                   <p className="sm:col-span-2">
                     <span className="font-medium text-foreground">상태 변화:</span>{" "}
-                    {formatRentalHistoryStatus(latestProcessingHistory?.from)} → {formatRentalHistoryStatus(latestProcessingHistory?.to)}
+                    {formatRentalHistoryStatus(latestProcessingHistory?.from)} →{" "}
+                    {formatRentalHistoryStatus(latestProcessingHistory?.to)}
                   </p>
                 ) : null}
               </div>

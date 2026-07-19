@@ -467,9 +467,7 @@ function isCancelApproved(item: OpItem) {
 
 function isCancelProcessingStatus(status?: string | null) {
   const s = normalizeStatusText(status);
-  return (
-    s === "취소처리중" || s === "cancel_processing" || s === "approved_pending_pg_cancel"
-  );
+  return s === "취소처리중" || s === "cancel_processing" || s === "approved_pending_pg_cancel";
 }
 
 function isCancelProcessingItem(item: OpItem) {
@@ -666,7 +664,8 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
   }
   for (const reason of item.pendingReasons ?? []) {
     const isRentalDepositRefundRequired =
-      item.kind === "rental" && reason === "대여가 반납완료 상태지만 보증금 환불 완료 기록이 없습니다.";
+      item.kind === "rental" &&
+      reason === "대여가 반납완료 상태지만 보증금 환불 완료 기록이 없습니다.";
     const isStringingShippingFollowupRequired =
       item.kind === "stringing_application" &&
       item.shippingFollowupRequired &&
@@ -684,7 +683,7 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
       description: reason,
       nextAction: isRentalDepositRefundRequired
         ? "환불 계좌/결제 수단과 실제 환불 여부를 확인한 뒤 보증금 환불 처리하세요."
-        : item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
+        : (item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요."),
     });
   }
   if ((item.cancel?.status ?? "none") === "approved_pending_pg_cancel") {
@@ -1919,8 +1918,7 @@ export async function handleAdminOperationsGet(
       reviewActionReasons.length > 0 ? "action" : reviewInfoReasons.length > 0 ? "info" : "none";
 
     const shippingFollowupRequired = needsStringingShippingFollowup(a);
-    const stringingShippingPendingReason =
-      "교체완료 상태지만 배송/반송 운송장 정보가 없습니다.";
+    const stringingShippingPendingReason = "교체완료 상태지만 배송/반송 운송장 정보가 없습니다.";
     const stringingShippingNextAction = "배송/반송 운송장 등록 여부를 확인하세요.";
 
     const amountNote = (() => {
@@ -2342,8 +2340,7 @@ export async function handleAdminOperationsGet(
   };
   const hasDepositRefundSignal = (item: OpItem) =>
     item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED") === true;
-  const hasDepositRefundKeyword = (item: OpItem) =>
-    item.nextAction?.includes("보증금") === true;
+  const hasDepositRefundKeyword = (item: OpItem) => item.nextAction?.includes("보증금") === true;
   const isRentalDepositRefundRequiredItem = (item: OpItem): boolean =>
     item.kind === "rental" &&
     !item.depositRefundedAt &&
@@ -2380,7 +2377,8 @@ export async function handleAdminOperationsGet(
       groupHas(
         group,
         (item) =>
-          (item.kind === "rental" && Boolean(item.rentalDueAt || item.nextAction?.includes("반납"))) ||
+          (item.kind === "rental" &&
+            Boolean(item.rentalDueAt || item.nextAction?.includes("반납"))) ||
           isRentalDepositRefundRequiredItem(item),
       ),
     ).length,

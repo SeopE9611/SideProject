@@ -280,7 +280,8 @@ function statusHeadlineOf(item: OpItem) {
 
   if (item.kind === "rental") {
     if (isCancelRequested) return "취소 요청 접수 대여 건";
-    if (lowerStatus.includes("반납완료") && !item.depositRefundedAt) return "보증금 환불 확인 필요 대여 건";
+    if (lowerStatus.includes("반납완료") && !item.depositRefundedAt)
+      return "보증금 환불 확인 필요 대여 건";
     if (lowerStatus.includes("반납완료")) return "대여 완료 건";
     if (lowerStatus.includes("대여중") || lowerStatus.includes("out")) return "대여 진행 건";
     if (lowerStatus.includes("대기") || lowerStatus.includes("결제완료"))
@@ -374,8 +375,7 @@ function isTodayQueueGroup(group: { groupQueueBucket: string }) {
 function isCancelRequestedGroup(group: { items: OpItem[] }) {
   return group.items.some(
     (item) =>
-      item.cancel?.status === "requested" ||
-      item.cancel?.status === "approved_pending_pg_cancel",
+      item.cancel?.status === "requested" || item.cancel?.status === "approved_pending_pg_cancel",
   );
 }
 

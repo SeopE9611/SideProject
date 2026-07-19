@@ -4,7 +4,10 @@ import { cn } from "@/lib/utils";
 
 export default function MypagePrimaryNavigation() {
   return (
-    <TabsList aria-label="마이페이지 주요 탭" className="grid h-auto grid-cols-12 gap-1 bg-transparent p-0 bp-sm:grid-cols-7">
+    <TabsList
+      aria-label="마이페이지 주요 탭"
+      className="grid h-auto grid-cols-12 gap-1 bg-transparent p-0 bp-sm:grid-cols-7"
+    >
       {MYPAGE_NAV_ITEMS.map((item, index) => {
         const Icon = item.icon;
         return (
@@ -19,7 +22,9 @@ export default function MypagePrimaryNavigation() {
             )}
           >
             <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 truncate text-ui-label font-medium leading-tight">{item.shortLabel}</span>
+            <span className="min-w-0 truncate text-ui-label font-medium leading-tight">
+              {item.shortLabel}
+            </span>
           </TabsTrigger>
         );
       })}

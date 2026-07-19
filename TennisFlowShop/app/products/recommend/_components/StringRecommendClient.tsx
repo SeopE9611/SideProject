@@ -35,12 +35,22 @@ const answerLabels = {
   freq: "플레이 빈도",
   budget: "예산 성향",
 } as const;
-const freqLabels: Record<string, string> = { monthly: "월 1~2회", weekly: "주 1회", biweekly_plus: "주 2~3회", heavy: "주 4회 이상" };
+const freqLabels: Record<string, string> = {
+  monthly: "월 1~2회",
+  weekly: "주 1회",
+  biweekly_plus: "주 2~3회",
+  heavy: "주 4회 이상",
+};
 type CareContext = {
   nickname: string;
   racket: { brand?: string | null; model?: string | null };
   playFrequency: string;
-  stringSnapshot: { name?: string | null; gauge?: string | null; tensionMain?: string | null; tensionCross?: string | null } | null;
+  stringSnapshot: {
+    name?: string | null;
+    gauge?: string | null;
+    tensionMain?: string | null;
+    tensionCross?: string | null;
+  } | null;
 };
 function ntrpToRecommendLevel(level: string): StringRecommendAnswers["level"] {
   if (level === "1.0" || level === "1.5") return "beginner";
@@ -54,7 +64,9 @@ export default function StringRecommendClient() {
   const searchParams = useSearchParams();
   const initialFreq = searchParams.get("freq");
   const rawCareItemId = searchParams.get("careItemId");
-  const isValidInitialFreq = RECOMMEND_QUESTIONS.find((q) => q.id === "freq")?.options.some((option) => option.value === initialFreq);
+  const isValidInitialFreq = RECOMMEND_QUESTIONS.find((q) => q.id === "freq")?.options.some(
+    (option) => option.value === initialFreq,
+  );
   const [answers, setAnswers] = useState<StringRecommendAnswers>({
     ...initialAnswers,
     freq: isValidInitialFreq ? (initialFreq as StringRecommendAnswers["freq"]) : null,
@@ -67,7 +79,6 @@ export default function StringRecommendClient() {
   const [careItemId, setCareItemId] = useState<string | null>(null);
   const [careContext, setCareContext] = useState<CareContext | null>(null);
 
-
   useEffect(() => {
     if (!rawCareItemId) {
       setCareItemId(null);
@@ -76,7 +87,9 @@ export default function StringRecommendClient() {
     }
     let ignore = false;
     const verify = async () => {
-      const response = await fetch(`/api/users/me/racket-care/${rawCareItemId}`, { credentials: "include" });
+      const response = await fetch(`/api/users/me/racket-care/${rawCareItemId}`, {
+        credentials: "include",
+      });
       const data: unknown = response.ok ? await response.json().catch(() => null) : null;
       const item = data && typeof data === "object" ? (data as { item?: CareContext }).item : null;
       if (!ignore) {
@@ -90,18 +103,25 @@ export default function StringRecommendClient() {
     };
   }, [rawCareItemId]);
 
-
   useEffect(() => {
     if (!rawCareItemId) return;
     let ignore = false;
-    fetch("/api/users/me/racket-care", { credentials: "include" }).then(async (res) => {
-      if (!res.ok || ignore) return;
-      const data: unknown = await res.json();
-      const profileLevel = data && typeof data === "object" ? String((data as { profileLevel?: unknown }).profileLevel ?? "") : "";
-      const mappedLevel = ntrpToRecommendLevel(profileLevel);
-      if (mappedLevel) setAnswers((prev) => prev.level ? prev : { ...prev, level: mappedLevel });
-    }).catch(() => undefined);
-    return () => { ignore = true; };
+    fetch("/api/users/me/racket-care", { credentials: "include" })
+      .then(async (res) => {
+        if (!res.ok || ignore) return;
+        const data: unknown = await res.json();
+        const profileLevel =
+          data && typeof data === "object"
+            ? String((data as { profileLevel?: unknown }).profileLevel ?? "")
+            : "";
+        const mappedLevel = ntrpToRecommendLevel(profileLevel);
+        if (mappedLevel)
+          setAnswers((prev) => (prev.level ? prev : { ...prev, level: mappedLevel }));
+      })
+      .catch(() => undefined);
+    return () => {
+      ignore = true;
+    };
   }, [rawCareItemId]);
 
   useEffect(() => {
@@ -165,13 +185,20 @@ export default function StringRecommendClient() {
   );
   const careSummary = useMemo(() => {
     if (!careContext) return [];
-    const racketName = [careContext.racket?.brand, careContext.racket?.model].map((value) => String(value ?? "").trim()).filter(Boolean).join(" ");
-    const tension = careContext.stringSnapshot?.tensionMain || careContext.stringSnapshot?.tensionCross
-      ? `${careContext.stringSnapshot?.tensionMain ?? "-"} / ${careContext.stringSnapshot?.tensionCross ?? "-"}LB`
-      : "";
+    const racketName = [careContext.racket?.brand, careContext.racket?.model]
+      .map((value) => String(value ?? "").trim())
+      .filter(Boolean)
+      .join(" ");
+    const tension =
+      careContext.stringSnapshot?.tensionMain || careContext.stringSnapshot?.tensionCross
+        ? `${careContext.stringSnapshot?.tensionMain ?? "-"} / ${careContext.stringSnapshot?.tensionCross ?? "-"}LB`
+        : "";
     return [
       { label: "라켓", value: racketName || careContext.nickname },
-      { label: "플레이 빈도", value: freqLabels[careContext.playFrequency] ?? careContext.playFrequency },
+      {
+        label: "플레이 빈도",
+        value: freqLabels[careContext.playFrequency] ?? careContext.playFrequency,
+      },
       { label: "최근 스트링", value: careContext.stringSnapshot?.name ?? "" },
       { label: "게이지", value: careContext.stringSnapshot?.gauge ?? "" },
       { label: "텐션", value: tension },
@@ -235,7 +262,12 @@ export default function StringRecommendClient() {
             </p>
             <div className="flex flex-wrap gap-2">
               {careSummary.map((item) => (
-                <Badge key={item.label} variant="outline" wrap="normal" className="bg-background/80">
+                <Badge
+                  key={item.label}
+                  variant="outline"
+                  wrap="normal"
+                  className="bg-background/80"
+                >
                   {item.label}: {item.value}
                 </Badge>
               ))}
@@ -247,9 +279,7 @@ export default function StringRecommendClient() {
         <CardContent className="p-3.5 sm:p-4 md:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-ui-kicker text-muted-foreground">
-                RECOMMENDATION PROGRESS
-              </p>
+              <p className="text-ui-kicker text-muted-foreground">RECOMMENDATION PROGRESS</p>
               <p className="mt-1 break-keep text-ui-body-sm font-medium text-foreground">
                 {isComplete
                   ? "모든 조건을 선택했어요."
@@ -347,7 +377,12 @@ export default function StringRecommendClient() {
       {hasSubmitted && results.length > 0 ? (
         <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
           {results.map((result, idx) => (
-            <StringRecommendResultCard key={result.product.id} result={result} rank={idx + 1} careItemId={careItemId} />
+            <StringRecommendResultCard
+              key={result.product.id}
+              result={result}
+              rank={idx + 1}
+              careItemId={careItemId}
+            />
           ))}
         </div>
       ) : null}
@@ -355,7 +390,8 @@ export default function StringRecommendClient() {
         <Card className="rounded-2xl">
           <CardContent className="p-5 sm:p-6">
             <p className="break-keep text-ui-body-sm text-muted-foreground">
-              지금 조건에 딱 맞는 추천 상품을 찾지 못했어요. 조건을 조금 바꾸거나 전체 스트링을 확인해보세요.
+              지금 조건에 딱 맞는 추천 상품을 찾지 못했어요. 조건을 조금 바꾸거나 전체 스트링을
+              확인해보세요.
             </p>
             <Button asChild variant="outline" className="mt-3 w-full sm:w-auto" type="button">
               <Link href="/products?from=apply">전체 스트링 보기</Link>

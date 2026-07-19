@@ -29,7 +29,10 @@ export default function RentalSelectStringClient({
     () => racketConditionLabel(racket.condition) || racket.condition,
     [racket.condition],
   );
-  const racketName = useMemo(() => `${brandLabel} ${racket.model}`.trim(), [brandLabel, racket.model]);
+  const racketName = useMemo(
+    () => `${brandLabel} ${racket.model}`.trim(),
+    [brandLabel, racket.model],
+  );
 
   // Navigate to checkout when string is selected
   const handleSelectString = ({

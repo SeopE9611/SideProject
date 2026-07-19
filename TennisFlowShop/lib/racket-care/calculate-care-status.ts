@@ -28,10 +28,16 @@ export function calculateRacketCareStatus(params: {
   const rawProgress = Math.round((elapsedDays / intervalDays) * 100);
   const elapsedPercent = Math.max(0, Math.min(100, rawProgress));
   const lifeScore = Math.max(0, Math.min(100, 100 - elapsedPercent));
-  const state = daysRemaining <= 0 ? "due" : daysRemaining <= intervalDays * 0.2 ? "prepare" : "good";
+  const state =
+    daysRemaining <= 0 ? "due" : daysRemaining <= intervalDays * 0.2 ? "prepare" : "good";
   const nextRecommendedAt = new Date(nextTime).toISOString();
   const lastDate = params.lastStringingAt.toISOString().slice(0, 10);
-  const dueText = daysRemaining > 0 ? `예상 교체일까지 ${daysRemaining}일 남았습니다.` : daysRemaining === 0 ? "오늘이 예상 교체일입니다." : `예상 교체일이 ${Math.abs(daysRemaining)}일 지났습니다.`;
+  const dueText =
+    daysRemaining > 0
+      ? `예상 교체일까지 ${daysRemaining}일 남았습니다.`
+      : daysRemaining === 0
+        ? "오늘이 예상 교체일입니다."
+        : `예상 교체일이 ${Math.abs(daysRemaining)}일 지났습니다.`;
 
   return {
     intervalDays,

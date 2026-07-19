@@ -21,7 +21,9 @@ function One({
   return (
     <CatalogCardFrame
       viewMode={viewMode}
-      media={<Skeleton aria-hidden="true" className={cn("w-full rounded-none", mediaAspectClassName)} />}
+      media={
+        <Skeleton aria-hidden="true" className={cn("w-full rounded-none", mediaAspectClassName)} />
+      }
       content={
         <div className="space-y-3">
           <Skeleton className="h-4 w-20" />
@@ -30,8 +32,19 @@ function One({
           <Skeleton className="h-16 w-full rounded-xl" />
         </div>
       }
-      price={<div className="space-y-2"><Skeleton className="h-6 w-28 bp-md:ml-auto" /><Skeleton className="h-4 w-20 bp-md:ml-auto" /></div>}
-      actions={<div className="grid w-full gap-2">{Array.from({ length: actionCount }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-control" />)}</div>}
+      price={
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-28 bp-md:ml-auto" />
+          <Skeleton className="h-4 w-20 bp-md:ml-auto" />
+        </div>
+      }
+      actions={
+        <div className="grid w-full gap-2">
+          {Array.from({ length: actionCount }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-control" />
+          ))}
+        </div>
+      }
     />
   );
 }
@@ -42,5 +55,16 @@ export function CatalogCardSkeleton({
   actionCount = 2,
   mediaAspectClassName = "aspect-[4/3]",
 }: Props) {
-  return <>{Array.from({ length: count }).map((_, i) => <One key={i} viewMode={viewMode} actionCount={actionCount} mediaAspectClassName={mediaAspectClassName} />)}</>;
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <One
+          key={i}
+          viewMode={viewMode}
+          actionCount={actionCount}
+          mediaAspectClassName={mediaAspectClassName}
+        />
+      ))}
+    </>
+  );
 }

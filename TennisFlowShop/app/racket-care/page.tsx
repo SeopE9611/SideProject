@@ -16,9 +16,7 @@ export const metadata: Metadata = {
 export default async function PublicRacketCarePage() {
   const userId = await getCurrentUserId();
   const dashboardHref = "/mypage/racket-care";
-  const primaryHref = userId
-    ? dashboardHref
-    : `/login?next=${encodeURIComponent(dashboardHref)}`;
+  const primaryHref = userId ? dashboardHref : `/login?next=${encodeURIComponent(dashboardHref)}`;
   const primaryLabel = userId ? "내 라켓 관리하기" : "로그인하고 시작하기";
 
   return (

@@ -9,7 +9,11 @@ import FinderRacketCardSkeleton from "@/app/rackets/finder/_components/FinderRac
 import RacketCompareTray from "@/app/rackets/finder/_components/RacketCompareTray";
 import RacketFinderHeader from "@/app/rackets/finder/_components/RacketFinderHeader";
 import RacketFinderToolbar from "@/app/rackets/finder/_components/RacketFinderToolbar";
-import { ActiveFilterBar, CatalogFilterPanelShell, type ActiveFilterItem } from "@/components/commerce";
+import {
+  ActiveFilterBar,
+  CatalogFilterPanelShell,
+  type ActiveFilterItem,
+} from "@/components/commerce";
 import StickyAside from "@/components/layout/StickyAside";
 import { EmptyState } from "@/components/public/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -42,13 +46,7 @@ import {
 } from "@/lib/constants";
 import { racketConditionLabel } from "@/lib/racket-condition";
 import { cn } from "@/lib/utils";
-import {
-  Filter,
-  RotateCcw,
-  Search,
-  SlidersHorizontal,
-  Sparkles,
-} from "lucide-react";
+import { Filter, RotateCcw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 
@@ -117,7 +115,9 @@ function rangeEq(a: Range, b: Range) {
 }
 
 function getFinderConditionFilterLabel(condition: string): string {
-  const code = String(condition ?? "").trim().toUpperCase();
+  const code = String(condition ?? "")
+    .trim()
+    .toUpperCase();
   const label = racketConditionLabel(code);
 
   if (!code) return "";
@@ -539,7 +539,10 @@ export default function RacketFinderClient() {
       <div className="space-y-2">
         <SectionLabel>모델/키워드 검색</SectionLabel>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <Search
+            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
           <Input
             value={draft.q}
             onChange={(e) => setDraft((p) => ({ ...p, q: e.target.value }))}
@@ -550,7 +553,8 @@ export default function RacketFinderClient() {
               }
             }}
             placeholder="예) ezone, vcore, blade..."
-            className="min-h-11 rounded-control pl-9 bg-background/50 dark:bg-background/30 focus-visible:ring-primary/50" aria-label="모델 또는 키워드 검색"
+            className="min-h-11 rounded-control pl-9 bg-background/50 dark:bg-background/30 focus-visible:ring-primary/50"
+            aria-label="모델 또는 키워드 검색"
           />
         </div>
       </div>
@@ -772,13 +776,14 @@ export default function RacketFinderClient() {
           {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
         </label>
       </div>
-
     </div>
   );
 
   const draftActiveCount = countActiveFinderFilters(draft);
-  const canGoPrevious = hasSearched && !isLoading && !hasDataError && hasResolvedTotalPages && page > 1;
-  const canGoNext = hasSearched && !isLoading && !hasDataError && hasResolvedTotalPages && page < totalPages;
+  const canGoPrevious =
+    hasSearched && !isLoading && !hasDataError && hasResolvedTotalPages && page > 1;
+  const canGoNext =
+    hasSearched && !isLoading && !hasDataError && hasResolvedTotalPages && page < totalPages;
   const handlePrevious = () => {
     const nextPage = Math.max(1, page - 1);
     setPage(nextPage);
@@ -797,7 +802,12 @@ export default function RacketFinderClient() {
 
   const filterControls = renderFilterControls();
   const filterTrigger = (
-    <Button type="button" variant="outline" onClick={() => setFilterSheetOpen(true)} className="h-10 min-h-10 justify-center whitespace-nowrap rounded-control px-3">
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => setFilterSheetOpen(true)}
+      className="h-10 min-h-10 justify-center whitespace-nowrap rounded-control px-3"
+    >
       <Filter className="mr-2 h-4 w-4" aria-hidden="true" />
       필터 {draftActiveCount > 0 ? draftActiveCount : ""}
     </Button>
@@ -808,7 +818,10 @@ export default function RacketFinderClient() {
       <RacketFinderHeader />
 
       <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-        <SheetContent side="bottom" className="h-[88dvh] max-h-[88dvh] overflow-hidden rounded-t-3xl p-0">
+        <SheetContent
+          side="bottom"
+          className="h-[88dvh] max-h-[88dvh] overflow-hidden rounded-t-3xl p-0"
+        >
           <SheetHeader className="sr-only">
             <SheetTitle>라켓 필터</SheetTitle>
             <SheetDescription>원하는 조건을 선택한 뒤 검색하기를 눌러주세요.</SheetDescription>
@@ -858,17 +871,29 @@ export default function RacketFinderClient() {
               <header className="flex items-center justify-between gap-3 border-b border-border p-4">
                 <div>
                   <h2 className="text-ui-section-title font-semibold text-foreground">라켓 필터</h2>
-                  <p className="text-ui-label text-muted-foreground">적용 조건 {draftActiveCount}개</p>
+                  <p className="text-ui-label text-muted-foreground">
+                    적용 조건 {draftActiveCount}개
+                  </p>
                 </div>
                 <Filter className="h-4 w-4 text-primary" aria-hidden="true" />
               </header>
               <div className="p-4">{filterControls}</div>
               <footer className="sticky bottom-0 flex gap-2 border-t border-border bg-card/95 p-4 backdrop-blur">
-                <Button type="button" variant="outline" onClick={reset} className="h-11 min-h-11 flex-1 rounded-control whitespace-nowrap">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={reset}
+                  className="h-11 min-h-11 flex-1 rounded-control whitespace-nowrap"
+                >
                   <RotateCcw className="mr-2 h-4 w-4" aria-hidden="true" />
                   초기화
                 </Button>
-                <Button type="button" variant="highlight_soft" onClick={apply} className="h-11 min-h-11 flex-1 rounded-control whitespace-nowrap">
+                <Button
+                  type="button"
+                  variant="highlight_soft"
+                  onClick={apply}
+                  className="h-11 min-h-11 flex-1 rounded-control whitespace-nowrap"
+                >
                   <Search className="mr-2 h-4 w-4" aria-hidden="true" />
                   검색하기
                 </Button>
@@ -882,8 +907,23 @@ export default function RacketFinderClient() {
             <EmptyState
               icon={<Search className="h-8 w-8" />}
               title="라켓 검색을 시작해보세요"
-              description={<>가격과 원하는 스펙을 선택한 뒤 검색하기를 눌러주세요.<br />정확도 모드를 켜면 스펙 정보가 없는 라켓은 제외됩니다.</>}
-              action={<Button type="button" variant="outline" onClick={() => setFilterSheetOpen(true)} className="bp-lg:hidden">필터 열기</Button>}
+              description={
+                <>
+                  가격과 원하는 스펙을 선택한 뒤 검색하기를 눌러주세요.
+                  <br />
+                  정확도 모드를 켜면 스펙 정보가 없는 라켓은 제외됩니다.
+                </>
+              }
+              action={
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setFilterSheetOpen(true)}
+                  className="bp-lg:hidden"
+                >
+                  필터 열기
+                </Button>
+              }
             />
           ) : isLoading ? (
             <FinderRacketCardSkeleton count={6} />
@@ -892,7 +932,11 @@ export default function RacketFinderClient() {
               icon={<Search className="h-8 w-8" />}
               title="라켓 목록을 불러오지 못했습니다"
               description="잠시 후 다시 시도해주세요."
-              action={<Button type="button" variant="outline" onClick={() => void mutate()}>다시 시도</Button>}
+              action={
+                <Button type="button" variant="outline" onClick={() => void mutate()}>
+                  다시 시도
+                </Button>
+              }
               className="border-destructive/30 bg-destructive/10 dark:bg-destructive/15"
             />
           ) : items.length === 0 ? (
@@ -900,7 +944,11 @@ export default function RacketFinderClient() {
               icon={<Search className="h-8 w-8" />}
               title="조건에 맞는 라켓이 없습니다"
               description="가격이나 스펙 범위를 넓히거나 정확도 모드를 해제해보세요."
-              action={<Button type="button" variant="outline" onClick={reset}>필터 초기화</Button>}
+              action={
+                <Button type="button" variant="outline" onClick={reset}>
+                  필터 초기화
+                </Button>
+              }
             />
           ) : (
             <div className="space-y-4">

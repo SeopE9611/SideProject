@@ -34,9 +34,13 @@ export default function StringRecommendResultCard({
     <Card className="flex h-full flex-col overflow-hidden rounded-2xl border-border/80 bg-card shadow-soft">
       <CardHeader className="space-y-3 p-4 sm:p-5">
         <div className="flex items-center justify-between gap-2">
-          <Badge variant={rank === 1 ? "signal" : "secondary"} className="shrink-0">추천 {rank}순위</Badge>
+          <Badge variant={rank === 1 ? "signal" : "secondary"} className="shrink-0">
+            추천 {rank}순위
+          </Badge>
           {careItemId ? (
-            <span className="break-keep text-ui-label text-muted-foreground">라켓 케어에서 시작</span>
+            <span className="break-keep text-ui-label text-muted-foreground">
+              라켓 케어에서 시작
+            </span>
           ) : null}
         </div>
         <div className="relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-muted">
@@ -128,7 +132,11 @@ export default function StringRecommendResultCard({
       </CardContent>
       <CardFooter className="flex-col items-start gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="mt-1 w-full">
-          <Button asChild variant="highlight" className="min-h-10 w-full overflow-hidden whitespace-nowrap">
+          <Button
+            asChild
+            variant="highlight"
+            className="min-h-10 w-full overflow-hidden whitespace-nowrap"
+          >
             <Link href={productHref}>
               <span className="min-w-0 truncate">이 스트링으로 교체서비스 이어가기</span>
             </Link>

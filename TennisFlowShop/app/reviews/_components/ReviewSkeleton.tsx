@@ -21,7 +21,9 @@ export default function ReviewSkeleton() {
           <Skeleton className="h-4 w-2/3 rounded-control" />
         </div>
         <div className="flex gap-2 overflow-hidden">
-          {Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-20 w-20 shrink-0 rounded-control" />)}
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-20 w-20 shrink-0 rounded-control" />
+          ))}
         </div>
         <Skeleton className="h-9 w-32 rounded-control" />
       </CardContent>

@@ -74,13 +74,7 @@ async function withRetry<T>(
   throw lastError;
 }
 
-function ProductDetailResult({
-  id,
-  status,
-}: {
-  id?: string;
-  status: "not-found" | "load-error";
-}) {
+function ProductDetailResult({ id, status }: { id?: string; status: "not-found" | "load-error" }) {
   const isLoadError = status === "load-error";
   return (
     <main className="min-h-screen bg-background pb-10">
@@ -98,7 +92,11 @@ function ProductDetailResult({
         <ResultState
           status={isLoadError ? "error" : "warning"}
           title={isLoadError ? "다시 확인해 주세요" : "다른 상품을 둘러보세요"}
-          description={isLoadError ? "상품 정보를 다시 불러올 수 있습니다." : "상품 목록에서 원하는 상품을 찾아보세요."}
+          description={
+            isLoadError
+              ? "상품 정보를 다시 불러올 수 있습니다."
+              : "상품 목록에서 원하는 상품을 찾아보세요."
+          }
           actions={
             <>
               {id && (

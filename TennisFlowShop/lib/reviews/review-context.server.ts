@@ -57,7 +57,9 @@ export function buildResolvedReviewContextExpression() {
 }
 
 export function contextCategoryMatch(category: "product" | "stringing" | "rental") {
-  if (category === "product") return { $in: ["$resolvedReviewContext", ["product", "product_stringing"]] };
-  if (category === "rental") return { $in: ["$resolvedReviewContext", ["rental", "rental_stringing"]] };
+  if (category === "product")
+    return { $in: ["$resolvedReviewContext", ["product", "product_stringing"]] };
+  if (category === "rental")
+    return { $in: ["$resolvedReviewContext", ["rental", "rental_stringing"]] };
   return { $eq: ["$resolvedReviewContext", "standalone_stringing"] };
 }

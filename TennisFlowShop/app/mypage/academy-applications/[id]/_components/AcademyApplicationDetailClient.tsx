@@ -75,16 +75,37 @@ function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTon
 function getNextActionCopy(status: AcademyLessonApplicationStatus) {
   switch (status) {
     case "reviewing":
-      return { title: "신청 검토 중 · 상담 연락 확인", description: "담당자가 신청 내용을 검토하고 있습니다. 연락을 받으면 상담 일정을 확인해 주세요.", showInquiry: true };
+      return {
+        title: "신청 검토 중 · 상담 연락 확인",
+        description:
+          "담당자가 신청 내용을 검토하고 있습니다. 연락을 받으면 상담 일정을 확인해 주세요.",
+        showInquiry: true,
+      };
     case "contacted":
-      return { title: "상담 완료 · 등록 여부 확인", description: "상담 내용을 바탕으로 등록 가능 여부와 세부 안내를 확인해 주세요.", showInquiry: true };
+      return {
+        title: "상담 완료 · 등록 여부 확인",
+        description: "상담 내용을 바탕으로 등록 가능 여부와 세부 안내를 확인해 주세요.",
+        showInquiry: true,
+      };
     case "confirmed":
-      return { title: "등록 확정 · 클래스 일정 확인", description: "확정된 클래스 일정과 수강료 안내를 확인하고 수업을 준비해 주세요.", showInquiry: false };
+      return {
+        title: "등록 확정 · 클래스 일정 확인",
+        description: "확정된 클래스 일정과 수강료 안내를 확인하고 수업을 준비해 주세요.",
+        showInquiry: false,
+      };
     case "cancelled":
-      return { title: "신청 취소 완료", description: "취소된 신청입니다. 다시 수강을 원하시면 아카데미 홈에서 새로 신청해 주세요.", showInquiry: false };
+      return {
+        title: "신청 취소 완료",
+        description: "취소된 신청입니다. 다시 수강을 원하시면 아카데미 홈에서 새로 신청해 주세요.",
+        showInquiry: false,
+      };
     case "submitted":
     default:
-      return { title: "신청 접수 완료 · 담당자 검토 대기", description: "접수된 신청을 담당자가 확인한 뒤 상담 연락을 드립니다.", showInquiry: true };
+      return {
+        title: "신청 접수 완료 · 담당자 검토 대기",
+        description: "접수된 신청을 담당자가 확인한 뒤 상담 연락을 드립니다.",
+        showInquiry: true,
+      };
   }
 }
 
@@ -185,69 +206,69 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
       icon={<GraduationCap className="h-5 w-5" aria-hidden="true" />}
       contentClassName="space-y-3"
     >
-        <div className="border-l-2 border-brand-highlight-ink/40 bg-brand-highlight-muted/45 px-3 py-2.5">
-          <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-            <div className="min-w-0">
-              <p className="break-keep text-ui-card-title font-medium leading-snug text-foreground">
-                {displayValue(classSnapshot.name)}
-              </p>
-              {description ? (
-                <div className="mt-1.5">
-                  <p
-                    className={`whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-muted-foreground ${
-                      isDescriptionExpanded ? "" : "line-clamp-2"
-                    }`}
+      <div className="border-l-2 border-brand-highlight-ink/40 bg-brand-highlight-muted/45 px-3 py-2.5">
+        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+          <div className="min-w-0">
+            <p className="break-keep text-ui-card-title font-medium leading-snug text-foreground">
+              {displayValue(classSnapshot.name)}
+            </p>
+            {description ? (
+              <div className="mt-1.5">
+                <p
+                  className={`whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-muted-foreground ${
+                    isDescriptionExpanded ? "" : "line-clamp-2"
+                  }`}
+                >
+                  {description}
+                </p>
+                {shouldShowDescriptionToggle ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-1 h-auto px-0 py-0.5 text-ui-label font-medium text-brand-highlight-ink hover:bg-transparent hover:text-brand-highlight-ink"
+                    onClick={() => setIsDescriptionExpanded((current) => !current)}
                   >
-                    {description}
-                  </p>
-                  {shouldShowDescriptionToggle ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="mt-1 h-auto px-0 py-0.5 text-ui-label font-medium text-brand-highlight-ink hover:bg-transparent hover:text-brand-highlight-ink"
-                      onClick={() => setIsDescriptionExpanded((current) => !current)}
-                    >
-                      {isDescriptionExpanded ? "설명 접기" : "설명 더보기"}
-                    </Button>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-            {classSnapshot.statusLabel ? (
-              <Badge variant="neutral" className="w-fit shrink-0">
-                {classSnapshot.statusLabel}
-              </Badge>
+                    {isDescriptionExpanded ? "설명 접기" : "설명 더보기"}
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
           </div>
+          {classSnapshot.statusLabel ? (
+            <Badge variant="neutral" className="w-fit shrink-0">
+              {classSnapshot.statusLabel}
+            </Badge>
+          ) : null}
         </div>
+      </div>
 
-        <dl className="grid gap-2 bp-sm:grid-cols-2">
-          <InfoBox label="수업 유형" value={classSnapshot.lessonTypeLabel} />
-          <InfoBox label="레벨" value={classSnapshot.levelLabel} />
-          <InfoBox label="일정" value={classSnapshot.scheduleText || "상담 후 조율"} multiline />
-          <InfoBox label="장소" value={classSnapshot.location || "상담 후 안내"} />
-          {classSnapshot.instructorName?.trim() ? (
-            <InfoBox label="강사" value={classSnapshot.instructorName} />
-          ) : null}
-          {typeof classSnapshot.capacity === "number" ? (
-            <InfoBox label="정원" value={`${classSnapshot.capacity}명`} />
-          ) : null}
-          <InfoBox
-            label="기준 수강료"
-            value={formatPrice(classSnapshot.price)}
-            className="bp-sm:border-t bp-sm:border-border/60"
-          />
-          <div className="py-3 bp-sm:border-t bp-sm:border-border/60 bp-sm:px-3">
-            <dt className="flex items-center gap-1 text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
-              <WalletCards className="h-3.5 w-3.5" /> 현장결제 안내
-            </dt>
-            <dd className="mt-1 break-keep text-ui-label leading-5 text-muted-foreground">
-              수강료는 상담 후 확정되며, 등록 확정 후 현장에서 결제합니다.
-            </dd>
-          </div>
-        </dl>
-      </MypageDetailCard>
+      <dl className="grid gap-2 bp-sm:grid-cols-2">
+        <InfoBox label="수업 유형" value={classSnapshot.lessonTypeLabel} />
+        <InfoBox label="레벨" value={classSnapshot.levelLabel} />
+        <InfoBox label="일정" value={classSnapshot.scheduleText || "상담 후 조율"} multiline />
+        <InfoBox label="장소" value={classSnapshot.location || "상담 후 안내"} />
+        {classSnapshot.instructorName?.trim() ? (
+          <InfoBox label="강사" value={classSnapshot.instructorName} />
+        ) : null}
+        {typeof classSnapshot.capacity === "number" ? (
+          <InfoBox label="정원" value={`${classSnapshot.capacity}명`} />
+        ) : null}
+        <InfoBox
+          label="기준 수강료"
+          value={formatPrice(classSnapshot.price)}
+          className="bp-sm:border-t bp-sm:border-border/60"
+        />
+        <div className="py-3 bp-sm:border-t bp-sm:border-border/60 bp-sm:px-3">
+          <dt className="flex items-center gap-1 text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
+            <WalletCards className="h-3.5 w-3.5" /> 현장결제 안내
+          </dt>
+          <dd className="mt-1 break-keep text-ui-label leading-5 text-muted-foreground">
+            수강료는 상담 후 확정되며, 등록 확정 후 현장에서 결제합니다.
+          </dd>
+        </div>
+      </dl>
+    </MypageDetailCard>
   );
 }
 
@@ -266,12 +287,12 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
       title="신청 내용"
       icon={<UserRound className="h-5 w-5" aria-hidden="true" />}
     >
-        <dl className="grid gap-3 bp-sm:grid-cols-2">
-          <InfoBox label="신청자명" value={item.applicantName} />
-          <InfoBox label="연락처" value={item.phone} />
-          <InfoBox label="이메일" value={item.email} />
-          <InfoBox label="신청일" value={formatDateTime(item.createdAt)} />
-        </dl>
+      <dl className="grid gap-3 bp-sm:grid-cols-2">
+        <InfoBox label="신청자명" value={item.applicantName} />
+        <InfoBox label="연락처" value={item.phone} />
+        <InfoBox label="이메일" value={item.email} />
+        <InfoBox label="신청일" value={formatDateTime(item.createdAt)} />
+      </dl>
     </MypageDetailCard>
   );
 }
@@ -285,8 +306,8 @@ function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
       icon={<MessageSquareText className="h-5 w-5" aria-hidden="true" />}
       contentClassName="grid gap-3"
     >
-        {item.lessonGoal ? <InfoBox label="레슨 목표" value={item.lessonGoal} multiline /> : null}
-        {item.requestMemo ? <InfoBox label="요청사항" value={item.requestMemo} multiline /> : null}
+      {item.lessonGoal ? <InfoBox label="레슨 목표" value={item.lessonGoal} multiline /> : null}
+      {item.requestMemo ? <InfoBox label="요청사항" value={item.requestMemo} multiline /> : null}
     </MypageDetailCard>
   );
 }
@@ -567,7 +588,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
   const heroActions = (
     <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap">
-      <Button asChild variant="outline" size="sm" className="h-9 w-full border-brand-highlight-ink/30 hover:bg-brand-highlight-muted hover:text-brand-highlight-ink bp-sm:w-auto">
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className="h-9 w-full border-brand-highlight-ink/30 hover:bg-brand-highlight-muted hover:text-brand-highlight-ink bp-sm:w-auto"
+      >
         <Link href="/mypage?tab=academy">
           <ArrowLeft className="h-4 w-4" />
           클래스 신청 목록
@@ -623,16 +649,20 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         actions={heroActions}
         nextActionTitle={nextActionCopy.title}
         nextActionDescription={nextActionCopy.description}
-        nextActionSlot={nextActionCopy.showInquiry ? (
-          <Button asChild variant="highlight" size="sm" className="h-9 w-full bp-sm:w-auto">
-            <Link href="/board/qna/write?category=academy">문의하기</Link>
-          </Button>
-        ) : null}
+        nextActionSlot={
+          nextActionCopy.showInquiry ? (
+            <Button asChild variant="highlight" size="sm" className="h-9 w-full bp-sm:w-auto">
+              <Link href="/board/qna/write?category=academy">문의하기</Link>
+            </Button>
+          ) : null
+        }
         summary={
           <>
             <MypageInfoField
               label="신청 클래스"
-              value={item.classSnapshot?.name ?? item.desiredLessonTypeLabel ?? "아카데미 클래스 신청"}
+              value={
+                item.classSnapshot?.name ?? item.desiredLessonTypeLabel ?? "아카데미 클래스 신청"
+              }
             />
             <MypageInfoField label="희망 일정" value={getPreferredScheduleText(item)} />
             <MypageInfoField label="기준 수강료" value={formatPrice(item.classSnapshot?.price)} />
@@ -646,16 +676,16 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           {item.lessonGoal || item.requestMemo ? <RequestInfoCard item={item} /> : null}
 
           {item.customerMessage ? (
-        <MypageDetailCard
-          variant="feature"
-          title="관리자 안내"
-          description="도깨비테니스 담당자가 남긴 안내입니다."
-          icon={<MessageSquareText className="h-5 w-5" aria-hidden="true" />}
-        >
-          <p className="whitespace-pre-wrap break-words rounded-xl bg-muted/15 p-3 text-ui-body-sm leading-relaxed text-foreground">
-            {item.customerMessage}
-          </p>
-        </MypageDetailCard>
+            <MypageDetailCard
+              variant="feature"
+              title="관리자 안내"
+              description="도깨비테니스 담당자가 남긴 안내입니다."
+              icon={<MessageSquareText className="h-5 w-5" aria-hidden="true" />}
+            >
+              <p className="whitespace-pre-wrap break-words rounded-xl bg-muted/15 p-3 text-ui-body-sm leading-relaxed text-foreground">
+                {item.customerMessage}
+              </p>
+            </MypageDetailCard>
           ) : null}
         </div>
 
@@ -663,184 +693,185 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <ApplicationInfoCard item={item} />
 
           {isEditing ? (
-        <MypageDetailCard
-          variant="feature"
-          title="신청 정보 수정"
-          icon={<UserRound className="h-5 w-5" aria-hidden="true" />}
-          contentClassName="space-y-4"
-        >
-            <div className="grid gap-3 bp-sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-ui-body-sm font-medium">희망 레슨 유형</label>
-                <Select
-                  value={editForm.desiredLessonType}
-                  onValueChange={(value) =>
-                    setEditForm((current) => ({ ...current, desiredLessonType: value }))
-                  }
-                  disabled={isSavingEdit}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACADEMY_LESSON_TYPES.map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {getAcademyLessonTypeLabel(value)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-ui-body-sm font-medium">현재 실력</label>
-                <Select
-                  value={editForm.currentLevel}
-                  onValueChange={(value) =>
-                    setEditForm((current) => ({ ...current, currentLevel: value }))
-                  }
-                  disabled={isSavingEdit}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACADEMY_CURRENT_LEVELS.map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {getAcademyCurrentLevelLabel(value)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-ui-body-sm font-medium">희망 요일</label>
-              <div className="flex flex-wrap gap-2">
-                {ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => (
-                  <label
-                    key={day}
-                    className={cn(
-                      "flex items-center gap-2 rounded-lg border px-3 py-2 text-ui-body-sm transition-colors",
-                      editForm.preferredDays.includes(day)
-                        ? "border-brand-highlight-ink bg-brand-highlight-muted text-brand-highlight-ink"
-                        : "border-border bg-background text-foreground",
-                    )}
+            <MypageDetailCard
+              variant="feature"
+              title="신청 정보 수정"
+              icon={<UserRound className="h-5 w-5" aria-hidden="true" />}
+              contentClassName="space-y-4"
+            >
+              <div className="grid gap-3 bp-sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-ui-body-sm font-medium">희망 레슨 유형</label>
+                  <Select
+                    value={editForm.desiredLessonType}
+                    onValueChange={(value) =>
+                      setEditForm((current) => ({ ...current, desiredLessonType: value }))
+                    }
+                    disabled={isSavingEdit}
                   >
-                    <input
-                      type="checkbox"
-                      checked={editForm.preferredDays.includes(day)}
-                      onChange={() => toggleEditDay(day)}
-                      disabled={isSavingEdit}
-                    />
-                    {day}
-                  </label>
-                ))}
+                    <SelectTrigger>
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACADEMY_LESSON_TYPES.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {getAcademyLessonTypeLabel(value)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-ui-body-sm font-medium">현재 실력</label>
+                  <Select
+                    value={editForm.currentLevel}
+                    onValueChange={(value) =>
+                      setEditForm((current) => ({ ...current, currentLevel: value }))
+                    }
+                    disabled={isSavingEdit}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACADEMY_CURRENT_LEVELS.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {getAcademyCurrentLevelLabel(value)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-            <Input
-              value={editForm.preferredTimeText}
-              maxLength={100}
-              onChange={(event) =>
-                setEditForm((current) => ({
-                  ...current,
-                  preferredTimeText: event.target.value,
-                }))
-              }
-              placeholder="희망 시간대"
-              disabled={isSavingEdit}
-            />
-            <Textarea
-              value={editForm.lessonGoal}
-              maxLength={500}
-              onChange={(event) =>
-                setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))
-              }
-              placeholder="레슨 목표"
-              disabled={isSavingEdit}
-            />
-            <Textarea
-              value={editForm.requestMemo}
-              maxLength={1000}
-              onChange={(event) =>
-                setEditForm((current) => ({ ...current, requestMemo: event.target.value }))
-              }
-              placeholder="요청사항"
-              disabled={isSavingEdit}
-            />
-            <div className="flex flex-col gap-2 bp-sm:flex-row">
-              <Button
-                type="button"
-                variant="highlight"
-                onClick={handleSaveEdit}
-                disabled={isSavingEdit || editForm.preferredDays.length === 0}
-              >
-                {isSavingEdit ? "저장 중..." : "저장"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsEditing(false)}
+              <div className="space-y-2">
+                <label className="text-ui-body-sm font-medium">희망 요일</label>
+                <div className="flex flex-wrap gap-2">
+                  {ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => (
+                    <label
+                      key={day}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg border px-3 py-2 text-ui-body-sm transition-colors",
+                        editForm.preferredDays.includes(day)
+                          ? "border-brand-highlight-ink bg-brand-highlight-muted text-brand-highlight-ink"
+                          : "border-border bg-background text-foreground",
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={editForm.preferredDays.includes(day)}
+                        onChange={() => toggleEditDay(day)}
+                        disabled={isSavingEdit}
+                      />
+                      {day}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <Input
+                value={editForm.preferredTimeText}
+                maxLength={100}
+                onChange={(event) =>
+                  setEditForm((current) => ({
+                    ...current,
+                    preferredTimeText: event.target.value,
+                  }))
+                }
+                placeholder="희망 시간대"
                 disabled={isSavingEdit}
-              >
-                취소
-              </Button>
-            </div>
-        </MypageDetailCard>
+              />
+              <Textarea
+                value={editForm.lessonGoal}
+                maxLength={500}
+                onChange={(event) =>
+                  setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))
+                }
+                placeholder="레슨 목표"
+                disabled={isSavingEdit}
+              />
+              <Textarea
+                value={editForm.requestMemo}
+                maxLength={1000}
+                onChange={(event) =>
+                  setEditForm((current) => ({ ...current, requestMemo: event.target.value }))
+                }
+                placeholder="요청사항"
+                disabled={isSavingEdit}
+              />
+              <div className="flex flex-col gap-2 bp-sm:flex-row">
+                <Button
+                  type="button"
+                  variant="highlight"
+                  onClick={handleSaveEdit}
+                  disabled={isSavingEdit || editForm.preferredDays.length === 0}
+                >
+                  {isSavingEdit ? "저장 중..." : "저장"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSavingEdit}
+                >
+                  취소
+                </Button>
+              </div>
+            </MypageDetailCard>
           ) : null}
 
           {!isCancelled && !canEditApplication ? (
-        <p className="rounded-2xl border border-border/60 bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm shadow-foreground/[0.02]">
-          상담이 진행된 신청은 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요.
-        </p>
+            <p className="rounded-2xl border border-border/60 bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm shadow-foreground/[0.02]">
+              상담이 진행된 신청은 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요.
+            </p>
           ) : null}
 
           {isCancelled ? (
-        <div className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-ui-body-sm text-destructive shadow-sm shadow-foreground/[0.02]">
-          <div className="space-y-2">
-            <p className="font-medium">취소된 신청입니다.</p>
-            {item.cancelReasonLabel ? (
-              <p className="text-ui-label leading-5 text-destructive/85">
-                취소 사유: {item.cancelReasonLabel}
-                {item.cancelReasonDetail ? ` - ${item.cancelReasonDetail}` : ""}
-              </p>
-            ) : null}
-          </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                type="button"
-                variant="destructive"
-                wrap="responsive"
-                className="w-full bp-sm:w-auto"
-                disabled={isDeleting}
-              >
-                <Trash2 className="h-4 w-4" />
-                {isDeleting ? "삭제 중..." : "기록 삭제"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>취소 신청 기록을 삭제할까요?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은 보존됩니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  disabled={isDeleting}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    void handleDeleteApplication();
-                  }}
-                >
-                  {isDeleting ? "삭제 중..." : "기록 삭제"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+            <div className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-ui-body-sm text-destructive shadow-sm shadow-foreground/[0.02]">
+              <div className="space-y-2">
+                <p className="font-medium">취소된 신청입니다.</p>
+                {item.cancelReasonLabel ? (
+                  <p className="text-ui-label leading-5 text-destructive/85">
+                    취소 사유: {item.cancelReasonLabel}
+                    {item.cancelReasonDetail ? ` - ${item.cancelReasonDetail}` : ""}
+                  </p>
+                ) : null}
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    wrap="responsive"
+                    className="w-full bp-sm:w-auto"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {isDeleting ? "삭제 중..." : "기록 삭제"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>취소 신청 기록을 삭제할까요?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은
+                      보존됩니다.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      disabled={isDeleting}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        void handleDeleteApplication();
+                      }}
+                    >
+                      {isDeleting ? "삭제 중..." : "기록 삭제"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           ) : null}
         </div>
       </div>

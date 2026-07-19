@@ -37,7 +37,9 @@ export default function CheckoutBottomStickyBar({
             {safeAmount.toLocaleString()}원
           </p>
           {helperText && (
-            <p className="mt-0.5 line-clamp-1 text-ui-label leading-tight text-muted-foreground">{helperText}</p>
+            <p className="mt-0.5 line-clamp-1 text-ui-label leading-tight text-muted-foreground">
+              {helperText}
+            </p>
           )}
         </div>
         <Button

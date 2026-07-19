@@ -15,7 +15,9 @@ export default function ReviewHubHero() {
     <Card variant="feature" className="overflow-hidden rounded-hero">
       <CardContent className="grid gap-7 p-5 bp-sm:p-8 bp-lg:grid-cols-[1.08fr_0.92fr] bp-lg:items-center bp-lg:p-10">
         <div className="min-w-0">
-          <Badge variant="signal" className="w-fit">VERIFIED REVIEW</Badge>
+          <Badge variant="signal" className="w-fit">
+            VERIFIED REVIEW
+          </Badge>
           <h1 className="mt-5 break-keep font-brand-heading text-ui-section-title font-bold tracking-[-0.01em] bp-lg:text-[3.25rem] bp-lg:leading-[1.05]">
             실제 플레이에서 나온 후기
           </h1>
@@ -35,11 +37,16 @@ export default function ReviewHubHero() {
           <p className="text-ui-kicker text-muted-foreground">VERIFIED PLAY LOG</p>
           <div className="grid gap-3 bp-sm:grid-cols-3 bp-lg:grid-cols-1">
             {trustItems.map(({ label, icon: Icon }) => (
-              <div key={label} className="flex min-h-16 items-center gap-3 rounded-control border border-border bg-card p-4 shadow-sm">
+              <div
+                key={label}
+                className="flex min-h-16 items-center gap-3 rounded-control border border-border bg-card p-4 shadow-sm"
+              >
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-highlight-muted text-brand-highlight-foreground dark:text-brand-highlight">
                   <Icon className="h-4 w-4" />
                 </span>
-                <span className="break-keep text-ui-body-sm font-semibold text-foreground">{label}</span>
+                <span className="break-keep text-ui-body-sm font-semibold text-foreground">
+                  {label}
+                </span>
               </div>
             ))}
           </div>

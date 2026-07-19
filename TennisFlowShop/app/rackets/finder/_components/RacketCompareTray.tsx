@@ -11,7 +11,13 @@ import { racketBrandLabel } from "@/lib/constants";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
-function SelectedCompareItem({ item, onRemove }: { item: CompareRacketItem; onRemove: (id: string) => void }) {
+function SelectedCompareItem({
+  item,
+  onRemove,
+}: {
+  item: CompareRacketItem;
+  onRemove: (id: string) => void;
+}) {
   const title = `${item.model}${item.year ? ` (${item.year})` : ""}`;
   const brandText = racketBrandLabel(item.brand);
 
@@ -19,7 +25,13 @@ function SelectedCompareItem({ item, onRemove }: { item: CompareRacketItem; onRe
     <div className="relative flex min-w-[168px] max-w-[200px] flex-1 items-center gap-2 rounded-lg border border-border bg-background px-2 py-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:shadow-md bp-md:w-full bp-md:min-w-0 bp-md:max-w-none">
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 ring-1 ring-border/10">
         {item.image ? (
-          <Image src={item.image || "/placeholder.svg"} alt={title} fill className="object-contain p-1" unoptimized />
+          <Image
+            src={item.image || "/placeholder.svg"}
+            alt={title}
+            fill
+            className="object-contain p-1"
+            unoptimized
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-ui-micro text-muted-foreground">
             No Image
@@ -77,7 +89,11 @@ export default function RacketCompareTray() {
     <>
       <div aria-hidden="true" style={{ height: trayHeight ? trayHeight + 12 : 164 }} />
 
-      <div ref={trayRef} data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div
+        ref={trayRef}
+        data-bottom-sticky="1"
+        className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+      >
         <div className="mx-auto w-full bp-sm:px-1 bp-md:px-3 bp-lg:max-w-[1200px]">
           <div className="rounded-xl border border-border bg-card/95 shadow-md backdrop-blur-sm">
             <div className="p-3 bp-sm:p-4">
@@ -88,7 +104,10 @@ export default function RacketCompareTray() {
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-ui-body-sm font-semibold">
-                      라켓 비교 <span className="text-primary" aria-live="polite">선택 {items.length} / 4</span>
+                      라켓 비교{" "}
+                      <span className="text-primary" aria-live="polite">
+                        선택 {items.length} / 4
+                      </span>
                     </div>
                     <div className="hidden text-ui-label text-muted-foreground bp-sm:block">
                       최소 2개부터 비교 가능
@@ -97,11 +116,22 @@ export default function RacketCompareTray() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1 bp-sm:gap-2">
-                  <Button variant="ghost" size="sm" onClick={clear} className="h-10 min-h-10 px-2 text-muted-foreground hover:text-destructive">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clear}
+                    className="h-10 min-h-10 px-2 text-muted-foreground hover:text-destructive"
+                  >
                     <Trash2 className="h-3.5 w-3.5 bp-sm:mr-1" aria-hidden="true" />
                     <span className="sr-only bp-sm:not-sr-only">모두 삭제</span>
                   </Button>
-                  <Button size="sm" variant="highlight_soft" onClick={goCompare} disabled={!canCompare} className="h-10 min-h-10 gap-1.5 rounded-lg px-3">
+                  <Button
+                    size="sm"
+                    variant="highlight_soft"
+                    onClick={goCompare}
+                    disabled={!canCompare}
+                    className="h-10 min-h-10 gap-1.5 rounded-lg px-3"
+                  >
                     비교하기
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>

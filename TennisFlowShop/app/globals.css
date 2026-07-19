@@ -126,7 +126,7 @@ html body[data-scroll-locked] {
   --identity-naver-muted: 145 34% 90%;
   --identity-naver-foreground: 145 48% 25%;
   --outline-text: 120 10% 8%;
-  --shadow-soft: 0 20px 60px hsl(120 10% 8% / 0.10);
+  --shadow-soft: 0 20px 60px hsl(120 10% 8% / 0.1);
   --shadow-float: 0 16px 40px hsl(120 10% 8% / 0.14);
 
   --border: 40 6% 88%;

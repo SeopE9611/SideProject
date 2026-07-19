@@ -274,10 +274,17 @@ const ProductCard = React.memo(
           className="absolute inset-0 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Image
-            src={(product.images?.[0] as string) || "/placeholder.svg?height=300&width=300&query=tennis+string"}
+            src={
+              (product.images?.[0] as string) ||
+              "/placeholder.svg?height=300&width=300&query=tennis+string"
+            }
             alt={product.name}
             fill
-            sizes={viewMode === "list" ? "(max-width: 768px) 100vw, 260px" : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+            sizes={
+              viewMode === "list"
+                ? "(max-width: 768px) 100vw, 260px"
+                : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            }
             className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.01]"
           />
         </Link>
@@ -285,7 +292,12 @@ const ProductCard = React.memo(
         {merchandisingBadges.length > 0 && (
           <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
             {merchandisingBadges.map((badge) => (
-              <Badge key={`${product._id}-${badge}`} variant={merchandisingImageBadgeVariant(badge)} shape="pill" className={cn(merchandisingImageBadgeClass)}>
+              <Badge
+                key={`${product._id}-${badge}`}
+                variant={merchandisingImageBadgeVariant(badge)}
+                shape="pill"
+                className={cn(merchandisingImageBadgeClass)}
+              >
                 {badge}
               </Badge>
             ))}
@@ -300,7 +312,9 @@ const ProductCard = React.memo(
               e.stopPropagation();
               try {
                 await toggle(product._id);
-                showSuccessToast(inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
+                showSuccessToast(
+                  inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.",
+                );
               } catch (e: any) {
                 if (e?.message === "unauthorized") {
                   router.push(`/login?next=${encodeURIComponent(detailHref)}`);
@@ -317,20 +331,36 @@ const ProductCard = React.memo(
 
     const content = (
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground" title={brandLabel}>
+        <div
+          className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+          title={brandLabel}
+        >
           {brandLabel}
         </div>
-        <Link href={detailHref} className="block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-          <h3 className="mb-2 line-clamp-2 break-words text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3" title={product.name}>
+        <Link
+          href={detailHref}
+          className="block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <h3
+            className="mb-2 line-clamp-2 break-words text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3"
+            title={product.name}
+          >
             {product.name}
           </h3>
         </Link>
         <div className="mb-3 flex items-center gap-1.5">
-          <CatalogRating average={ratingAvg} count={ratingCount} size={viewMode === "list" ? "md" : "sm"} />
+          <CatalogRating
+            average={ratingAvg}
+            count={ratingCount}
+            size={viewMode === "list" ? "md" : "sm"}
+          />
         </div>
         <PerformanceSummary entries={featureEntries} />
         {shouldShowStandaloneServiceBadge && (
-          <Badge variant="secondary" className="mt-3 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-ui-caption">
+          <Badge
+            variant="secondary"
+            className="mt-3 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-ui-caption"
+          >
             교체서비스 전용
           </Badge>
         )}
@@ -353,7 +383,12 @@ const ProductCard = React.memo(
             품절
           </Button>
         ) : (
-          <Button asChild type="button" variant="highlight_soft" className="h-10 whitespace-nowrap rounded-control text-ui-body-sm">
+          <Button
+            asChild
+            type="button"
+            variant="highlight_soft"
+            className="h-10 whitespace-nowrap rounded-control text-ui-body-sm"
+          >
             <Link href={detailHref}>
               <Eye className="mr-1.5 h-4 w-4 shrink-0" />
               <span>교체서비스 신청</span>
@@ -361,7 +396,13 @@ const ProductCard = React.memo(
           </Button>
         )}
         {ENABLE_STRING_STANDALONE_ORDER && (
-          <Button type="button" variant="outline" className="h-10 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm" onClick={handleStringSingleBuy} disabled={isSoldOut}>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm"
+            onClick={handleStringSingleBuy}
+            disabled={isSoldOut}
+          >
             스트링만 구매
           </Button>
         )}

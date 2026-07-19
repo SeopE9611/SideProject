@@ -5,7 +5,9 @@ import FinderRacketCardSkeleton from "@/app/rackets/finder/_components/FinderRac
 export default function RacketFinderPageSkeleton() {
   return (
     <SiteContainer variant="wide" className="py-6">
-      <p className="sr-only" role="status" aria-live="polite">라켓 찾기 화면을 불러오는 중입니다.</p>
+      <p className="sr-only" role="status" aria-live="polite">
+        라켓 찾기 화면을 불러오는 중입니다.
+      </p>
       <div className="space-y-5 bp-md:space-y-6" aria-hidden="true">
         <div className="space-y-2">
           <Skeleton className="h-3 w-28" />

@@ -324,18 +324,22 @@ export default function FreeBoardWriteClient() {
                 <span className="text-ui-label text-muted-foreground">장비 게시판 · 새 글</span>
               </div>
               <div>
-                <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">장비 사용기 글쓰기</h1>
-                <p className="mt-2 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">실제 라켓, 스트링, 장비 경험을 공유해 다음 선택에 도움을 주세요.</p>
+                <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+                  장비 사용기 글쓰기
+                </h1>
+                <p className="mt-2 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
+                  실제 라켓, 스트링, 장비 경험을 공유해 다음 선택에 도움을 주세요.
+                </p>
               </div>
             </div>
-          <div className="flex w-full gap-2 sm:w-auto">
-            <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
-              <Link href="/board/gear" onClick={guardLeave}>
-                <ArrowLeft className="h-4 w-4" />
-                <span>목록으로</span>
-              </Link>
-            </Button>
-          </div>
+            <div className="flex w-full gap-2 sm:w-auto">
+              <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
+                <Link href="/board/gear" onClick={guardLeave}>
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>목록으로</span>
+                </Link>
+              </Button>
+            </div>
           </div>
         </section>
 
@@ -385,8 +389,12 @@ export default function FreeBoardWriteClient() {
               {/* 내용 입력 */}
               <section className="space-y-2 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5">
                 <div className="border-b border-border pb-3">
-                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">사용 경험</h2>
-                  <p className="mt-1 text-ui-label text-muted-foreground">사용 환경과 느낀 점을 함께 남겨 주세요.</p>
+                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">
+                    사용 경험
+                  </h2>
+                  <p className="mt-1 text-ui-label text-muted-foreground">
+                    사용 환경과 느낀 점을 함께 남겨 주세요.
+                  </p>
                 </div>
                 <Label htmlFor="content">내용</Label>
                 <Textarea
@@ -409,8 +417,12 @@ export default function FreeBoardWriteClient() {
               {/* 첨부 영역: 이미지 / 파일 탭 */}
               <section className="space-y-3 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5">
                 <div className="border-b border-border pb-3">
-                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">첨부 파일</h2>
-                  <p className="mt-1 text-ui-label text-muted-foreground">이미지와 문서를 나누어 첨부할 수 있습니다.</p>
+                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">
+                    첨부 파일
+                  </h2>
+                  <p className="mt-1 text-ui-label text-muted-foreground">
+                    이미지와 문서를 나누어 첨부할 수 있습니다.
+                  </p>
                 </div>
                 <Label>첨부 (선택)</Label>
 

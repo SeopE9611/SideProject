@@ -8,11 +8,17 @@ export default function ReviewRatingDisplay({ rating }: { rating: number }) {
         {Array.from({ length: 5 }).map((_, index) => (
           <Star
             key={index}
-            className={index < safeRating ? "h-4 w-4 fill-current text-warning" : "h-4 w-4 fill-transparent text-muted-foreground"}
+            className={
+              index < safeRating
+                ? "h-4 w-4 fill-current text-warning"
+                : "h-4 w-4 fill-transparent text-muted-foreground"
+            }
           />
         ))}
       </span>
-      <span className="text-ui-label font-semibold text-foreground tabular-nums">{safeRating.toFixed(1)}</span>
+      <span className="text-ui-label font-semibold text-foreground tabular-nums">
+        {safeRating.toFixed(1)}
+      </span>
     </span>
   );
 }

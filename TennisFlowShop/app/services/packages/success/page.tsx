@@ -185,7 +185,9 @@ export default async function PackageSuccessPage({
           <SiteContainer className="py-8 md:py-12">
             <ResultState
               status={isPaid ? "success" : "info"}
-              title={isOnlinePayment ? "패키지 결제가 완료되었습니다" : "패키지 주문이 접수되었습니다"}
+              title={
+                isOnlinePayment ? "패키지 결제가 완료되었습니다" : "패키지 주문이 접수되었습니다"
+              }
               description={
                 isOnlinePayment
                   ? "결제가 확인되어 패키지가 즉시 활성화되었습니다. 아래에서 주문 요약과 다음 행동을 확인해주세요."
@@ -219,13 +221,21 @@ export default async function PackageSuccessPage({
                   </div>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button variant={isPaid ? "default" : "outline"} className="h-12 flex-1 font-semibold" asChild>
+                  <Button
+                    variant={isPaid ? "default" : "outline"}
+                    className="h-12 flex-1 font-semibold"
+                    asChild
+                  >
                     <Link href="/services/apply" className="flex items-center gap-2">
                       교체서비스 신청하기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant={isPaid ? "outline" : "default"} className="h-12 flex-1 font-semibold" asChild>
+                  <Button
+                    variant={isPaid ? "outline" : "default"}
+                    className="h-12 flex-1 font-semibold"
+                    asChild
+                  >
                     <Link href={lookupHref} className="flex items-center gap-2">
                       <Package className="h-4 w-4" />
                       패키지권 확인
@@ -259,11 +269,7 @@ export default async function PackageSuccessPage({
               }
               footer={
                 <div className="flex w-full flex-col gap-3 sm:flex-row md:gap-4">
-                  <Button
-                    variant="default"
-                    className="h-12 flex-1"
-                    asChild
-                  >
+                  <Button variant="default" className="h-12 flex-1" asChild>
                     <Link href={lookupHref} className="flex items-center gap-2">
                       <Package className="h-5 w-5" />
                       패키지권 확인

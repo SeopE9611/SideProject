@@ -41,5 +41,8 @@ export async function POST() {
     committedAt: null,
   });
 
-  return NextResponse.json({ ok: true, uploadSessionId }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(
+    { ok: true, uploadSessionId },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

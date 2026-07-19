@@ -25,7 +25,9 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
             variant="ghost"
             className={cn(
               "group relative h-10 w-full justify-start gap-2.5 rounded-control px-3 transition-colors",
-              isActive ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground before:absolute before:left-0 before:top-2 before:h-6 before:w-[3px] before:rounded-full before:bg-brand-highlight" : "text-foreground hover:bg-muted dark:hover:bg-card",
+              isActive
+                ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground before:absolute before:left-0 before:top-2 before:h-6 before:w-[3px] before:rounded-full before:bg-brand-highlight"
+                : "text-foreground hover:bg-muted dark:hover:bg-card",
             )}
             asChild
           >

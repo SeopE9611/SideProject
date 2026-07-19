@@ -31,7 +31,9 @@ export function PublicPageHero({
   if (variant === "standard") {
     return (
       <header className={cn("border-b border-border bg-muted/30 py-10 bp-sm:py-14", className)}>
-        <SiteContainer className={cn("flex flex-col gap-6", centered && "items-center text-center")}>
+        <SiteContainer
+          className={cn("flex flex-col gap-6", centered && "items-center text-center")}
+        >
           <div className={cn("max-w-3xl space-y-3", centered && "mx-auto")}>
             {eyebrow && <div className="text-ui-label font-medium text-primary">{eyebrow}</div>}
             <h1 className="text-balance text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:text-ui-page-title-lg">

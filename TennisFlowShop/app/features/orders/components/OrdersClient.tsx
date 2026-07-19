@@ -1494,7 +1494,8 @@ export default function OrdersClient() {
                             </div>
                             <div className="mt-1.5 flex w-full items-baseline justify-end gap-3 tabular-nums">
                               <span className="text-ui-label text-foreground/70">
-                                {getCommonPaymentStatusLabel(order.paymentStatus) ?? order.paymentStatus}
+                                {getCommonPaymentStatusLabel(order.paymentStatus) ??
+                                  order.paymentStatus}
                               </span>
                               <span className="whitespace-nowrap text-ui-body-sm font-medium text-foreground">
                                 {formatCurrency(order.total)}

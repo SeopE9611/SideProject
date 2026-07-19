@@ -10,7 +10,10 @@ function CompactRows({ count = 2 }: { count?: 2 | 3 }) {
   return (
     <div className="grid gap-3">
       {Array.from({ length: count }, (_, index) => `compact-row-${index + 1}`).map((key) => (
-        <div key={key} className="flex items-center rounded-control border border-border/70 bg-muted/20 p-4">
+        <div
+          key={key}
+          className="flex items-center rounded-control border border-border/70 bg-muted/20 p-4"
+        >
           <Skeleton className="mr-3 h-5 w-5 shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-3 w-16" />
@@ -169,7 +172,10 @@ export default function StringServiceSuccessLoading() {
             <SummaryCard variant="feature" title={<Skeleton className="h-6 w-28" />}>
               <div className="space-y-4">
                 {featureRows.map((row) => (
-                  <div key={row} className="flex items-center rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div
+                    key={row}
+                    className="flex items-center rounded-control border border-border/70 bg-muted/20 p-3"
+                  >
                     <Skeleton className="mr-3 h-6 w-6 shrink-0 rounded-full" />
                     <div className="min-w-0 flex-1 space-y-2">
                       <Skeleton className="h-4 w-24" />

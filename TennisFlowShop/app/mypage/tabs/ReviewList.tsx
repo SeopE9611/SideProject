@@ -226,21 +226,24 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   } | null>(null);
   const editPhotoSession = useReviewPhotoUploadSession();
 
-  const openEdit = useCallback((it: UiItem) => {
-    setUploadingEditPhotos(false);
-    void editPhotoSession.cleanupUncommittedPhotos();
-    editPhotoSession.resetSession();
-    void editPhotoSession.startSession();
-    setEditing(it);
-    setEditContent(it.content);
-    setEditRating(it.rating);
-    setEditPhotos(it.photos || []);
-    setOriginalEdit({
-      content: it.content,
-      rating: it.rating,
-      photos: it.photos || [],
-    }); // ★ 추가
-  }, [editPhotoSession]);
+  const openEdit = useCallback(
+    (it: UiItem) => {
+      setUploadingEditPhotos(false);
+      void editPhotoSession.cleanupUncommittedPhotos();
+      editPhotoSession.resetSession();
+      void editPhotoSession.startSession();
+      setEditing(it);
+      setEditContent(it.content);
+      setEditRating(it.rating);
+      setEditPhotos(it.photos || []);
+      setOriginalEdit({
+        content: it.content,
+        rating: it.rating,
+        photos: it.photos || [],
+      }); // ★ 추가
+    },
+    [editPhotoSession],
+  );
 
   const closeEdit = useCallback(() => {
     void editPhotoSession.cleanupUncommittedPhotos();
@@ -308,22 +311,19 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     // 낙관적 업데이트: 변경된 필드만 반영
     await mutate((pages?: ApiMineResponse[]) => {
       if (!pages) return pages;
-      return pages.map(
-        (p): ApiMineResponse => ({
-          ...p,
-          items: p.items.map(
-            (a): ApiMineItem =>
-              a._id !== editing._id
-                ? a
-                : {
-                    ...a,
-                    ...(payload.content !== undefined ? { content: payload.content } : {}),
-                    ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
-                    ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
-                  },
-          ),
-        }),
-      );
+      return pages.map((p): ApiMineResponse => ({
+        ...p,
+        items: p.items.map((a): ApiMineItem =>
+          a._id !== editing._id
+            ? a
+            : {
+                ...a,
+                ...(payload.content !== undefined ? { content: payload.content } : {}),
+                ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
+                ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
+              },
+        ),
+      }));
     }, false);
 
     try {
@@ -403,7 +403,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         try {
           await mutate();
         } catch (revalidateError) {
-          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+          console.error(
+            "[reviews] failed to revalidate after successful mutation",
+            revalidateError,
+          );
         }
         showSuccessToast(
           nextStatus === "visible" ? "후기가 공개되었습니다." : "후기가 비공개로 전환되었습니다.",
@@ -439,7 +442,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         try {
           await mutate();
         } catch (revalidateError) {
-          console.error("[reviews] failed to revalidate after successful mutation", revalidateError);
+          console.error(
+            "[reviews] failed to revalidate after successful mutation",
+            revalidateError,
+          );
         }
         showSuccessToast("후기가 삭제되었습니다.");
       } catch (e: any) {
@@ -489,11 +495,16 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   return (
     <div className="space-y-4 md:space-y-5">
       {/* 필터 */}
-      <Card variant="feature" className="border-brand-highlight/20 bg-brand-highlight-muted/55 shadow-soft">
+      <Card
+        variant="feature"
+        className="border-brand-highlight/20 bg-brand-highlight-muted/55 shadow-soft"
+      >
         <CardContent className="flex flex-col gap-3 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-4">
           <div>
             <p className="font-brand-heading text-ui-section-title text-foreground">후기 필터</p>
-            <p className="mt-0.5 text-ui-label text-muted-foreground">공개 상태와 후기 유형을 선택해 관리 대상을 좁혀보세요.</p>
+            <p className="mt-0.5 text-ui-label text-muted-foreground">
+              공개 상태와 후기 유형을 선택해 관리 대상을 좁혀보세요.
+            </p>
           </div>
           <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center">
             <Select
@@ -611,7 +622,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                       </>
                     )}
                   </Button>
-                  <Button size="sm" variant="secondary" wrap="responsive" onClick={() => openEdit(it)}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    wrap="responsive"
+                    onClick={() => openEdit(it)}
+                  >
                     <Edit3 className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                     수정
                   </Button>
@@ -720,7 +736,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       >
         <DialogContent className="rounded-panel border-border/80 bg-card shadow-soft sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-brand-heading text-ui-section-title">후기 수정</DialogTitle>
+            <DialogTitle className="font-brand-heading text-ui-section-title">
+              후기 수정
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">

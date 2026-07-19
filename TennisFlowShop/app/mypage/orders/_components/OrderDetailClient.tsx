@@ -260,12 +260,7 @@ type OrderTrackingResponse =
   | {
       success: false;
       errorCode?:
-        | "NOT_FOUND"
-        | "BAD_REQUEST"
-        | "UNAUTHENTICATED"
-        | "FORBIDDEN"
-        | "INTERNAL"
-        | "UNKNOWN";
+        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
       message: string;
     };
 
@@ -371,7 +366,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     });
   }, [searchParams, orderDetail?._id]);
 
-
   // 완료 상태
   const isVisitPickup = isVisitPickupOrder(orderDetail?.shippingInfo);
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail?.shippingInfo);
@@ -414,9 +408,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const reviewTotal =
     typeof reviewItemsData?.counts?.total === "number" ? reviewItemsData.counts.total : null;
   const reviewRemaining =
-    typeof reviewItemsData?.counts?.remaining === "number" ? reviewItemsData.counts.remaining : null;
-  const reviewsReady =
-    !isReviewItemsLoading && reviewTotal !== null && reviewRemaining !== null;
+    typeof reviewItemsData?.counts?.remaining === "number"
+      ? reviewItemsData.counts.remaining
+      : null;
+  const reviewsReady = !isReviewItemsLoading && reviewTotal !== null && reviewRemaining !== null;
   const hasReviewTargets = reviewsReady && reviewTotal > 0;
   const allReviewed = hasReviewTargets && reviewRemaining === 0;
   const nextReviewContext = reviewItemsData?.nextReviewContext ?? null;
@@ -678,16 +673,19 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const isShipped = ["shipped", "배송중"].some((keyword) => normalizedStatus.includes(keyword));
   const isDelivered = isOrderDeliveredStatus(orderDetail.status);
   const isCompleted =
-    Boolean(orderDetail?.userConfirmedAt) ||
-    isOrderConfirmedStatus(orderDetail.status);
+    Boolean(orderDetail?.userConfirmedAt) || isOrderConfirmedStatus(orderDetail.status);
 
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelRequestAny = (orderDetail as any)?.cancelRequest ?? {};
   const cancelStatus = cancelRequestAny?.status;
   const pgCancelBlocked = cancelRequestAny?.pgCancelBlocked ?? null;
   const paymentNiceSync = orderDetail.paymentNiceSync ?? orderDetail.paymentInfo?.niceSync ?? null;
-  const paymentInfoStatus = String(orderDetail.paymentInfo?.status ?? "").trim().toLowerCase();
-  const paymentNicePgStatus = String(paymentNiceSync?.pgStatus ?? "").trim().toLowerCase();
+  const paymentInfoStatus = String(orderDetail.paymentInfo?.status ?? "")
+    .trim()
+    .toLowerCase();
+  const paymentNicePgStatus = String(paymentNiceSync?.pgStatus ?? "")
+    .trim()
+    .toLowerCase();
   const isPgCancelCompleted =
     orderDetail.paymentStatus === "결제취소" ||
     paymentInfoStatus === "canceled" ||
@@ -733,7 +731,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     !isDelivered &&
     !isCompleted &&
     !canConfirmPurchase &&
-    !(canShowProductReviewCTA && Boolean(firstUnreviewed)) && !canShowIntegratedOrderReviewCTA;
+    !(canShowProductReviewCTA && Boolean(firstUnreviewed)) &&
+    !canShowIntegratedOrderReviewCTA;
 
   const nextTodo: {
     label: string;
@@ -969,8 +968,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               disabled={!canUserEdit}
               className={cn(
                 "h-9 w-full whitespace-nowrap bp-sm:w-auto",
-                !isEditMode &&
-                  "border-border bg-background hover:bg-brand-highlight-muted/70",
+                !isEditMode && "border-border bg-background hover:bg-brand-highlight-muted/70",
               )}
             >
               {isEditMode ? "수정 종료" : "주문 정보 수정"}
@@ -1186,7 +1184,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           <details className="group mt-4 rounded-xl bg-muted/15 p-3">
                             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-ui-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                               <span>라켓·스트링 상세</span>
-                              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+                              <ChevronDown
+                                className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180"
+                                aria-hidden="true"
+                              />
                             </summary>
                             <div className="mt-3 space-y-2">
                               {displayLines.map((line, lineIndex) => {
@@ -1492,7 +1493,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     <details className="group overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40">
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                         <span>운송장·배송조회 상세</span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+                        <ChevronDown
+                          className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                          aria-hidden="true"
+                        />
                       </summary>
                       <div className="space-y-3 border-t border-border/60 p-3 bp-sm:p-4">
                         <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
@@ -1689,9 +1693,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="h-4 w-4 text-success" aria-hidden="true" />
                   <div>
-                    <p className="text-ui-body-sm font-medium text-foreground">
-                      후기 작성 완료
-                    </p>
+                    <p className="text-ui-body-sm font-medium text-foreground">후기 작성 완료</p>
                     <p className="text-ui-label text-muted-foreground">
                       작성한 후기는 후기 관리에서 확인할 수 있어요.
                     </p>

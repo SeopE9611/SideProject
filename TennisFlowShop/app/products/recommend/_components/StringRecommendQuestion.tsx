@@ -22,13 +22,8 @@ export default function StringRecommendQuestion({
     <section className="rounded-panel border border-border bg-card p-4 shadow-soft sm:p-5 md:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2 break-keep">
-          <Badge
-            variant={answered ? "signal" : "secondary"}
-            className="shrink-0"
-          >
-            {answered ? (
-              <Check className="mr-1 h-3 w-3" aria-hidden="true" />
-            ) : null}
+          <Badge variant={answered ? "signal" : "secondary"} className="shrink-0">
+            {answered ? <Check className="mr-1 h-3 w-3" aria-hidden="true" /> : null}
             QUESTION {String(index + 1).padStart(2, "0")}
           </Badge>
           <h2 className="text-ui-card-title-lg font-semibold leading-snug text-foreground">

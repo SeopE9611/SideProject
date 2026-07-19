@@ -33,7 +33,9 @@ export async function POST(req: Request) {
   if (!Array.isArray(body?.urls)) {
     return NextResponse.json({ ok: false, reason: "invalidUrls" }, { status: 400 });
   }
-  const urls = Array.from(new Set(body.urls.filter((url: unknown): url is string => typeof url === "string"))).slice(0, 10);
+  const urls = Array.from(
+    new Set(body.urls.filter((url: unknown): url is string => typeof url === "string")),
+  ).slice(0, 10);
   if (!urls.length) return NextResponse.json({ ok: true });
 
   const db = await getDb();

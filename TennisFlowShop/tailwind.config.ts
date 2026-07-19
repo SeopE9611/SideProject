@@ -50,8 +50,14 @@ const config: Config = {
       "ui-price-lg": ["1.5rem", { lineHeight: "1.875rem" }], // 24px
       "ui-input": ["1rem", { lineHeight: "1.5rem" }], // 16px
       "ui-kicker": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.16em" }],
-      "ui-display": ["clamp(2.75rem, 12vw, 5.5rem)", { lineHeight: "0.95", letterSpacing: "-0.06em" }],
-      "ui-display-lg": ["clamp(4.5rem, 10vw, 9rem)", { lineHeight: "0.9", letterSpacing: "-0.07em" }],
+      "ui-display": [
+        "clamp(2.75rem, 12vw, 5.5rem)",
+        { lineHeight: "0.95", letterSpacing: "-0.06em" },
+      ],
+      "ui-display-lg": [
+        "clamp(4.5rem, 10vw, 9rem)",
+        { lineHeight: "0.9", letterSpacing: "-0.07em" },
+      ],
     },
     extend: {
       /**

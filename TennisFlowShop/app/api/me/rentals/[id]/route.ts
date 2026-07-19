@@ -198,14 +198,17 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     }
   }
 
-  const racketImageUrl = doc.racketId && ObjectId.isValid(String(doc.racketId))
-    ? pickUsedRacketImage(
-        await db.collection("used_rackets").findOne(
-          { _id: new ObjectId(String(doc.racketId)) },
-          { projection: { images: 1, image: 1, thumbnail: 1, thumbnailUrl: 1 } },
-        ),
-      )
-    : null;
+  const racketImageUrl =
+    doc.racketId && ObjectId.isValid(String(doc.racketId))
+      ? pickUsedRacketImage(
+          await db
+            .collection("used_rackets")
+            .findOne(
+              { _id: new ObjectId(String(doc.racketId)) },
+              { projection: { images: 1, image: 1, thumbnail: 1, thumbnailUrl: 1 } },
+            ),
+        )
+      : null;
 
   const paymentInfo = (
     (doc as any)?.paymentInfo && typeof (doc as any).paymentInfo === "object"

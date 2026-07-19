@@ -3,17 +3,20 @@
 ## 상세 레이아웃
 
 ### 360~767px
+
 - 1열
 - gallery
 - purchase panel
 - detail tabs
 
 ### 768~1199px
+
 - 2열
 - gallery minmax(0, 1fr)
 - purchase panel 320~380px
 
 ### 1200px 이상
+
 - 2열
 - gallery 약 1.2~1.35fr
 - purchase panel 380~440px

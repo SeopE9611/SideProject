@@ -227,30 +227,58 @@ export default function PhotosUploader({
     };
   }, []);
 
-  const picker = variant === "dropzone" ? (
-    <div
-      role="button"
-      tabIndex={uploadBlocked || !hasRoom ? -1 : 0}
-      aria-disabled={uploadBlocked || !hasRoom}
-      onClick={onPick}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(); } }}
-      onDragEnter={(e) => { e.preventDefault(); if (!uploadBlocked && hasRoom) setIsDragActive(true); }}
-      onDragOver={(e) => { e.preventDefault(); }}
-      onDragLeave={(e) => { e.preventDefault(); setIsDragActive(false); }}
-      onDrop={(e) => { e.preventDefault(); setIsDragActive(false); if (!uploadBlocked && hasRoom) void handleFiles(e.dataTransfer.files); }}
-      onPaste={(e) => { if (!uploadBlocked && hasRoom) void handleFiles(e.clipboardData.files); }}
-      className={`flex min-h-36 flex-col items-center justify-center rounded-panel border border-dashed p-5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isDragActive ? "border-brand-highlight bg-brand-highlight-muted" : "border-border bg-background"} ${uploadBlocked || !hasRoom ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-    >
-      {isUploading ? <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /> : <UploadCloud className="h-7 w-7 text-muted-foreground" />}
-      <p className="mt-2 text-ui-body-sm font-semibold text-foreground">{isUploading ? "사진을 업로드하고 있어요" : "사진을 끌어오거나 눌러서 추가"}</p>
-      <p className="mt-1 text-ui-label text-muted-foreground">남은 업로드 {Math.max(0, max - totalCount)}장 · 10MB 이하 이미지</p>
-    </div>
-  ) : (
-    <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || uploadBlocked}>
-      <ImagePlus className="h-4 w-4 mr-2" />
-      이미지 추가 ({totalCount}/{max})
-    </Button>
-  );
+  const picker =
+    variant === "dropzone" ? (
+      <div
+        role="button"
+        tabIndex={uploadBlocked || !hasRoom ? -1 : 0}
+        aria-disabled={uploadBlocked || !hasRoom}
+        onClick={onPick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onPick();
+          }
+        }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          if (!uploadBlocked && hasRoom) setIsDragActive(true);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setIsDragActive(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragActive(false);
+          if (!uploadBlocked && hasRoom) void handleFiles(e.dataTransfer.files);
+        }}
+        onPaste={(e) => {
+          if (!uploadBlocked && hasRoom) void handleFiles(e.clipboardData.files);
+        }}
+        className={`flex min-h-36 flex-col items-center justify-center rounded-panel border border-dashed p-5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isDragActive ? "border-brand-highlight bg-brand-highlight-muted" : "border-border bg-background"} ${uploadBlocked || !hasRoom ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+      >
+        {isUploading ? (
+          <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
+        ) : (
+          <UploadCloud className="h-7 w-7 text-muted-foreground" />
+        )}
+        <p className="mt-2 text-ui-body-sm font-semibold text-foreground">
+          {isUploading ? "사진을 업로드하고 있어요" : "사진을 끌어오거나 눌러서 추가"}
+        </p>
+        <p className="mt-1 text-ui-label text-muted-foreground">
+          남은 업로드 {Math.max(0, max - totalCount)}장 · 10MB 이하 이미지
+        </p>
+      </div>
+    ) : (
+      <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || uploadBlocked}>
+        <ImagePlus className="h-4 w-4 mr-2" />
+        이미지 추가 ({totalCount}/{max})
+      </Button>
+    );
 
   return (
     <div className="space-y-2">

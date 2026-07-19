@@ -79,7 +79,10 @@ export default function QnAList() {
   // 빈 상태
   if (!isInitialLoading && !isValidating && qnas.length === 0) {
     return (
-      <Card variant="feature" className="relative overflow-hidden border-brand-highlight/25 shadow-soft">
+      <Card
+        variant="feature"
+        className="relative overflow-hidden border-brand-highlight/25 shadow-soft"
+      >
         <CardContent className="flex flex-col items-center justify-center px-4 py-8 text-center bp-sm:py-10 md:py-12">
           <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-highlight-muted text-brand-highlight-ink">
             <MessageCircleQuestion className="h-10 w-10" aria-hidden="true" />

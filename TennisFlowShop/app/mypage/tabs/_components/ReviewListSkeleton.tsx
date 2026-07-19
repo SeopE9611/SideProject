@@ -36,7 +36,10 @@ export default function ReviewListSkeleton({ count = 3 }: { count?: number }) {
               <Skeleton className="mt-2 h-4 w-2/3" />
               <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {Array.from({ length: 3 }).map((__, photoIndex) => (
-                  <Skeleton key={`review-photo-loading-${index}-${photoIndex}`} className="aspect-square rounded-md" />
+                  <Skeleton
+                    key={`review-photo-loading-${index}-${photoIndex}`}
+                    className="aspect-square rounded-md"
+                  />
                 ))}
               </div>
             </div>

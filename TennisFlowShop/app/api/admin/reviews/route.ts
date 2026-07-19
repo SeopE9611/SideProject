@@ -18,7 +18,16 @@ const querySchema = z.object({
   page: z.coerce.number().int().min(1).max(10_000).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(10),
   status: z.enum(["all", "visible", "hidden"]).default("all"),
-  context: z.enum(["all", "product", "product_stringing", "standalone_stringing", "rental", "rental_stringing"]).default("all"),
+  context: z
+    .enum([
+      "all",
+      "product",
+      "product_stringing",
+      "standalone_stringing",
+      "rental",
+      "rental_stringing",
+    ])
+    .default("all"),
   type: z.enum(["all", "product", "service"]).optional(),
   q: z.string().trim().default(""),
   withDeleted: z.enum(["0", "1", "false", "true"]).optional(),
@@ -45,7 +54,8 @@ export async function GET(req: Request) {
   if (parsed.withDeleted === "1" || parsed.withDeleted === "true") delete match.isDeleted;
   if (parsed.status === "visible") match.moderationStatus = { $ne: "hidden" };
   if (parsed.status === "hidden") match.moderationStatus = "hidden";
-  if (parsed.q) match.content = { $regex: parsed.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
+  if (parsed.q)
+    match.content = { $regex: parsed.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
 
   const basePipeline: Record<string, unknown>[] = [
     { $match: match },
@@ -56,11 +66,22 @@ export async function GET(req: Request) {
   const lookups = buildAdminReviewRelationStages();
 
   const [items, totalRows] = await Promise.all([
-    col.aggregate([...basePipeline, { $sort: { createdAt: -1 } }, { $skip: (parsed.page - 1) * parsed.limit }, { $limit: parsed.limit }, ...lookups]).toArray(),
+    col
+      .aggregate([
+        ...basePipeline,
+        { $sort: { createdAt: -1 } },
+        { $skip: (parsed.page - 1) * parsed.limit },
+        { $limit: parsed.limit },
+        ...lookups,
+      ])
+      .toArray(),
     col.aggregate([...basePipeline, { $count: "total" }]).toArray(),
   ]);
 
   const shaped: AdminReviewListItemDto[] = items.map((d) => shapeAdminReview(d, 200));
-  const response: AdminReviewsListResponseDto = { items: shaped, total: Number(totalRows[0]?.total ?? 0) };
+  const response: AdminReviewsListResponseDto = {
+    items: shaped,
+    total: Number(totalRows[0]?.total ?? 0),
+  };
   return NextResponse.json(response);
 }

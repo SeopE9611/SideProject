@@ -397,7 +397,11 @@ export default async function AcademyApplyPage({
                 <PublicSurface
                   variant="feature"
                   padding="none"
-                  className={selectedClass.status === "closed" ? "overflow-hidden border-warning/30 bg-muted/30" : "overflow-hidden"}
+                  className={
+                    selectedClass.status === "closed"
+                      ? "overflow-hidden border-warning/30 bg-muted/30"
+                      : "overflow-hidden"
+                  }
                 >
                   {/* Class Header */}
                   <div className="border-b border-border bg-muted/30 px-5 py-4 md:px-6">
@@ -465,7 +469,10 @@ export default async function AcademyApplyPage({
                         </div>
                       </div>
                       <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                        <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                        <Calendar
+                          className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                          aria-hidden
+                        />
                         <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
                           <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             일정

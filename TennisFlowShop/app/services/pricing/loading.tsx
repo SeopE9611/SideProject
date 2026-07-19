@@ -31,7 +31,10 @@ export default function PricingLoading() {
           <div className="overflow-hidden rounded-2xl border border-border">
             <div className="grid bp-md:grid-cols-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="space-y-4 border-b border-border p-5 last:border-b-0 bp-md:border-b-0 bp-md:border-r bp-md:last:border-r-0 bp-md:p-6">
+                <div
+                  key={index}
+                  className="space-y-4 border-b border-border p-5 last:border-b-0 bp-md:border-b-0 bp-md:border-r bp-md:last:border-r-0 bp-md:p-6"
+                >
                   <Skeleton className="h-10 w-10 rounded-full" />
                   <Skeleton className="h-6 w-4/5" />
                   <Skeleton className="h-8 w-32" />
@@ -47,10 +50,15 @@ export default function PricingLoading() {
           <Skeleton className="h-8 w-64 max-w-full" />
           <div className="overflow-hidden rounded-2xl border border-border">
             <div className="hidden border-b border-border bg-muted/30 p-4 bp-md:grid bp-md:grid-cols-4 bp-md:gap-4">
-              {Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-4 w-24" />)}
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-4 w-24" />
+              ))}
             </div>
             {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="space-y-4 border-b border-border p-5 last:border-b-0 bp-md:p-6">
+              <div
+                key={index}
+                className="space-y-4 border-b border-border p-5 last:border-b-0 bp-md:p-6"
+              >
                 <div className="grid gap-4 bp-md:grid-cols-[1.4fr_0.8fr_1fr_1fr]">
                   <Skeleton className="h-14 w-full" />
                   <Skeleton className="h-5 w-20" />
@@ -68,7 +76,10 @@ export default function PricingLoading() {
 
         <section className="grid gap-4 bp-lg:grid-cols-2">
           {Array.from({ length: 2 }).map((_, index) => (
-            <div key={index} className="space-y-4 rounded-2xl border border-border bg-card p-5 bp-sm:p-6">
+            <div
+              key={index}
+              className="space-y-4 rounded-2xl border border-border bg-card p-5 bp-sm:p-6"
+            >
               <Skeleton className="h-7 w-40" />
               <div className="grid gap-3 bp-sm:grid-cols-3">
                 <Skeleton className="h-14 w-full" />
@@ -82,10 +93,15 @@ export default function PricingLoading() {
 
         <section className="grid gap-4 bp-lg:grid-cols-2">
           {Array.from({ length: 2 }).map((_, index) => (
-            <div key={index} className="space-y-4 rounded-2xl border border-border bg-card p-5 bp-sm:p-6">
+            <div
+              key={index}
+              className="space-y-4 rounded-2xl border border-border bg-card p-5 bp-sm:p-6"
+            >
               <Skeleton className="h-7 w-48" />
               <div className="grid gap-3 bp-sm:grid-cols-2">
-                {Array.from({ length: 4 }).map((__, itemIndex) => <Skeleton key={itemIndex} className="h-16 w-full" />)}
+                {Array.from({ length: 4 }).map((__, itemIndex) => (
+                  <Skeleton key={itemIndex} className="h-16 w-full" />
+                ))}
               </div>
             </div>
           ))}

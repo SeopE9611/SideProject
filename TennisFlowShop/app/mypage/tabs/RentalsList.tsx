@@ -46,7 +46,9 @@ const getKey = (index: number, prev: any) => {
 };
 
 const isRentalCanceledStatus = (status?: string | null) => {
-  const normalized = String(status ?? "").trim().toLowerCase();
+  const normalized = String(status ?? "")
+    .trim()
+    .toLowerCase();
   return normalized === "canceled" || normalized === "cancelled" || normalized.includes("취소");
 };
 

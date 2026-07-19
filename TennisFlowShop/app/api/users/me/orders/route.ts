@@ -276,7 +276,8 @@ export async function GET(req: NextRequest) {
 
       const targetBundle = reviewBundlesByOrderId.get(String(order._id));
       const nextTarget = targetBundle?.nextTarget ?? null;
-      const reviewContext: string | null = nextTarget?.reviewContext ?? targetBundle?.targets[0]?.reviewContext ?? "product";
+      const reviewContext: string | null =
+        nextTarget?.reviewContext ?? targetBundle?.targets[0]?.reviewContext ?? "product";
       const reviewNextApplicationId: string | null = nextTarget?.primaryApplicationId ?? null;
       const unreviewedCount = targetBundle?.counts.remaining ?? validProductIds.length;
       const reviewNextTargetProductId: string | null = nextTarget?.primaryProductId ?? null;

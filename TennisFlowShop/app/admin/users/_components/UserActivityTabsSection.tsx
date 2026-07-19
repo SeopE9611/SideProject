@@ -45,10 +45,7 @@ export function UserActivityTabsSection({
             <Row
               title={o?.title || o?.number || `주문 #${o?._id || o?.id || "-"}`}
               subtitle={
-                o?.computedStatus ||
-                getCommonOrderStatusLabel(o?.status) ||
-                o?.status ||
-                "—"
+                o?.computedStatus || getCommonOrderStatusLabel(o?.status) || o?.status || "—"
               }
               right={o?.totalPrice ? `${o.totalPrice.toLocaleString()}원` : ""}
               href={o?._id || o?.id ? `/admin/orders/${o._id || o.id}` : undefined}

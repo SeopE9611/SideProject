@@ -561,7 +561,9 @@ export default function RegisterTabPanel({
     <TabsContent value="register" className="mt-0">
       <div className="space-y-5">
         <div className="text-center">
-          <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">회원가입</h2>
+          <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">
+            회원가입
+          </h2>
           <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
             {isSocialOauthRegister
               ? "가입 완료를 위해 필요한 정보만 입력해주세요."
@@ -603,390 +605,410 @@ export default function RegisterTabPanel({
             </div>
           )}
           <section className="space-y-4">
-            <div><p className="text-ui-kicker text-brand-highlight-ink">01 · 계정 정보</p><h3 className="mt-1 text-ui-body-sm font-semibold text-foreground">로그인에 사용할 정보를 입력해주세요.</h3></div>
-          <div className="grid grid-cols-1 gap-4 rounded-panel border border-border bg-card p-4 shadow-soft md:grid-cols-2 md:gap-5 md:p-5">
-            <div className="md:col-span-2 space-y-2">
-              <Label
-                htmlFor="register-email-id"
-                className="flex items-center gap-2 text-ui-label font-medium text-foreground"
-              >
-                <Mail aria-hidden="true" className="h-4 w-4 text-foreground" />
-                이메일 주소
-              </Label>
+            <div>
+              <p className="text-ui-kicker text-brand-highlight-ink">01 · 계정 정보</p>
+              <h3 className="mt-1 text-ui-body-sm font-semibold text-foreground">
+                로그인에 사용할 정보를 입력해주세요.
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 gap-4 rounded-panel border border-border bg-card p-4 shadow-soft md:grid-cols-2 md:gap-5 md:p-5">
+              <div className="md:col-span-2 space-y-2">
+                <Label
+                  htmlFor="register-email-id"
+                  className="flex items-center gap-2 text-ui-label font-medium text-foreground"
+                >
+                  <Mail aria-hidden="true" className="h-4 w-4 text-foreground" />
+                  이메일 주소
+                </Label>
 
-              <div className="space-y-2">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="relative w-full min-w-0 sm:flex-1">
-                      <Input
-                        id="register-email-id"
-                        value={emailId}
-                        onChange={(e) => {
-                          setEmailId(e.target.value);
-                          setIsEmailAvailable(null);
-                          setRegisterFieldErrors((prev) => ({
-                            ...prev,
-                            emailId: undefined,
-                          }));
-                        }}
-                        placeholder="아이디 입력"
-                        className={`h-12 rounded-control pl-10 pr-4 ${registerFieldErrors.emailId ? "border-destructive focus:border-destructive" : ""}`}
-                        autoComplete="email"
-                        disabled={isSocialOauthRegister}
-                      />
-                      <Mail aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    </div>
-
-                    <span className="hidden text-muted-foreground sm:inline">@</span>
-
-                    {isCustomDomain ? (
-                      <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:flex-1">
+                <div className="space-y-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                    <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                      <div className="relative w-full min-w-0 sm:flex-1">
                         <Input
-                          id="register-email-domain"
-                          value={emailDomain}
+                          id="register-email-id"
+                          value={emailId}
                           onChange={(e) => {
-                            setEmailDomain(e.target.value);
+                            setEmailId(e.target.value);
                             setIsEmailAvailable(null);
                             setRegisterFieldErrors((prev) => ({
                               ...prev,
-                              emailDomain: undefined,
+                              emailId: undefined,
                             }));
                           }}
-                          placeholder="도메인 직접 입력"
-                          className={`h-12 w-full min-w-0 rounded-control ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                          placeholder="아이디 입력"
+                          className={`h-12 rounded-control pl-10 pr-4 ${registerFieldErrors.emailId ? "border-destructive focus:border-destructive" : ""}`}
+                          autoComplete="email"
                           disabled={isSocialOauthRegister}
                         />
-                        {!isSocialOauthRegister && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="h-12 w-full rounded-control shrink-0 sm:w-auto"
-                            onClick={() => {
-                              setIsCustomDomain(false);
-                              setEmailDomain("gmail.com");
-                              setIsEmailAvailable(null);
-                            }}
-                          >
-                            선택
-                          </Button>
-                        )}
+                        <Mail
+                          aria-hidden="true"
+                          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                        />
                       </div>
-                    ) : (
-                      <div className="flex w-full min-w-0 sm:flex-1">
-                        <Select
-                          value={emailDomain}
-                          onValueChange={(v) => {
-                            setEmailDomain(v);
-                            setIsEmailAvailable(null);
-                            setRegisterFieldErrors((prev) => ({
-                              ...prev,
-                              emailDomain: undefined,
-                            }));
-                            if (v === "custom") {
-                              setIsCustomDomain(true);
-                              setEmailDomain("");
-                            } else {
-                              setIsCustomDomain(false);
-                            }
-                          }}
-                          disabled={isSocialOauthRegister}
-                        >
-                          <SelectTrigger
+
+                      <span className="hidden text-muted-foreground sm:inline">@</span>
+
+                      {isCustomDomain ? (
+                        <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:flex-1">
+                          <Input
                             id="register-email-domain"
+                            value={emailDomain}
+                            onChange={(e) => {
+                              setEmailDomain(e.target.value);
+                              setIsEmailAvailable(null);
+                              setRegisterFieldErrors((prev) => ({
+                                ...prev,
+                                emailDomain: undefined,
+                              }));
+                            }}
+                            placeholder="도메인 직접 입력"
                             className={`h-12 w-full min-w-0 rounded-control ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                            disabled={isSocialOauthRegister}
+                          />
+                          {!isSocialOauthRegister && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-12 w-full rounded-control shrink-0 sm:w-auto"
+                              onClick={() => {
+                                setIsCustomDomain(false);
+                                setEmailDomain("gmail.com");
+                                setIsEmailAvailable(null);
+                              }}
+                            >
+                              선택
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex w-full min-w-0 sm:flex-1">
+                          <Select
+                            value={emailDomain}
+                            onValueChange={(v) => {
+                              setEmailDomain(v);
+                              setIsEmailAvailable(null);
+                              setRegisterFieldErrors((prev) => ({
+                                ...prev,
+                                emailDomain: undefined,
+                              }));
+                              if (v === "custom") {
+                                setIsCustomDomain(true);
+                                setEmailDomain("");
+                              } else {
+                                setIsCustomDomain(false);
+                              }
+                            }}
+                            disabled={isSocialOauthRegister}
                           >
-                            <SelectValue placeholder="도메인 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="gmail.com">gmail.com</SelectItem>
-                            <SelectItem value="naver.com">naver.com</SelectItem>
-                            <SelectItem value="daum.net">daum.net</SelectItem>
-                            <SelectItem value="kakao.com">kakao.com</SelectItem>
-                            <SelectItem value="custom">직접 입력</SelectItem>
-                          </SelectContent>
-                        </Select>
+                            <SelectTrigger
+                              id="register-email-domain"
+                              className={`h-12 w-full min-w-0 rounded-control ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                            >
+                              <SelectValue placeholder="도메인 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="gmail.com">gmail.com</SelectItem>
+                              <SelectItem value="naver.com">naver.com</SelectItem>
+                              <SelectItem value="daum.net">daum.net</SelectItem>
+                              <SelectItem value="kakao.com">kakao.com</SelectItem>
+                              <SelectItem value="custom">직접 입력</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+
+                    {!isSocialOauthRegister && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-12 w-full rounded-control shrink-0 px-4 sm:w-auto"
+                        onClick={checkEmailAvailability}
+                        disabled={
+                          !emailRegex.test(`${emailId.trim()}@${emailDomain.trim()}`) ||
+                          checkingEmail
+                        }
+                      >
+                        {checkingEmail ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                            확인 중
+                          </span>
+                        ) : (
+                          "중복 확인"
+                        )}
+                      </Button>
+                    )}
+                  </div>
+
+                  {(registerFieldErrors.emailId || registerFieldErrors.emailDomain) && (
+                    <div className="space-y-1">
+                      {registerFieldErrors.emailId && (
+                        <p className="flex items-center gap-1 text-ui-label text-destructive">
+                          <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                          {registerFieldErrors.emailId}
+                        </p>
+                      )}
+                      {registerFieldErrors.emailDomain && (
+                        <p className="flex items-center gap-1 text-ui-label text-destructive">
+                          <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                          {registerFieldErrors.emailDomain}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {isSocialOauthRegister && (
+                    <div className="flex items-center gap-2 text-ui-label text-foreground">
+                      <CheckCircle aria-hidden="true" className="h-4 w-4" />
+                      소셜 로그인 이메일이 자동으로 입력되었습니다.
+                    </div>
+                  )}
+
+                  {!isSocialOauthRegister && isEmailAvailable !== null && (
+                    <div
+                      className={`flex items-center gap-2 text-ui-label ${isEmailAvailable ? "text-success" : "text-destructive"}`}
+                    >
+                      {isEmailAvailable ? (
+                        <CheckCircle aria-hidden="true" className="h-4 w-4" />
+                      ) : (
+                        <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                      )}
+                      {isEmailAvailable
+                        ? "사용 가능한 이메일입니다."
+                        : "이미 사용 중인 이메일입니다."}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {!isSocialOauthRegister && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-foreground font-medium">비밀번호</Label>
+                    <div className="relative">
+                      <Lock
+                        aria-hidden="true"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground"
+                      />
+                      <Input
+                        id="register-password"
+                        type={showRegisterPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setRegisterFieldErrors((prev) => ({
+                            ...prev,
+                            password: undefined,
+                          }));
+                          setRegisterFormError("");
+                        }}
+                        placeholder="비밀번호를 입력하세요"
+                        className="h-12 rounded-control pl-10 pr-10 border-border focus:border-border dark:focus:border-border"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={showRegisterPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
+                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                      >
+                        {showRegisterPassword ? (
+                          <EyeOff aria-hidden="true" className="h-4 w-4" />
+                        ) : (
+                          <Eye aria-hidden="true" className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    {registerFieldErrors.password && (
+                      <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
+                        <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                        <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
                       </div>
                     )}
                   </div>
 
-                  {!isSocialOauthRegister && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-12 w-full rounded-control shrink-0 px-4 sm:w-auto"
-                      onClick={checkEmailAvailability}
-                      disabled={
-                        !emailRegex.test(`${emailId.trim()}@${emailDomain.trim()}`) || checkingEmail
-                      }
-                    >
-                      {checkingEmail ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-                          확인 중
-                        </span>
-                      ) : (
-                        "중복 확인"
-                      )}
-                    </Button>
-                  )}
-                </div>
-
-                {(registerFieldErrors.emailId || registerFieldErrors.emailDomain) && (
-                  <div className="space-y-1">
-                    {registerFieldErrors.emailId && (
-                      <p className="flex items-center gap-1 text-ui-label text-destructive">
-                        <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                        {registerFieldErrors.emailId}
-                      </p>
-                    )}
-                    {registerFieldErrors.emailDomain && (
-                      <p className="flex items-center gap-1 text-ui-label text-destructive">
-                        <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                        {registerFieldErrors.emailDomain}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {isSocialOauthRegister && (
-                  <div className="flex items-center gap-2 text-ui-label text-foreground">
-                    <CheckCircle aria-hidden="true" className="h-4 w-4" />
-                    소셜 로그인 이메일이 자동으로 입력되었습니다.
-                  </div>
-                )}
-
-                {!isSocialOauthRegister && isEmailAvailable !== null && (
-                  <div
-                    className={`flex items-center gap-2 text-ui-label ${isEmailAvailable ? "text-success" : "text-destructive"}`}
-                  >
-                    {isEmailAvailable ? (
-                      <CheckCircle aria-hidden="true" className="h-4 w-4" />
-                    ) : (
-                      <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                    )}
-                    {isEmailAvailable
-                      ? "사용 가능한 이메일입니다."
-                      : "이미 사용 중인 이메일입니다."}
-                  </div>
-                )}
-              </div>
-            </div>
-            {!isSocialOauthRegister && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-foreground font-medium">비밀번호</Label>
-                  <div className="relative">
-                    <Lock aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
-                    <Input
-                      id="register-password"
-                      type={showRegisterPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setRegisterFieldErrors((prev) => ({
-                          ...prev,
-                          password: undefined,
-                        }));
-                        setRegisterFormError("");
-                      }}
-                      placeholder="비밀번호를 입력하세요"
-                      className="h-12 rounded-control pl-10 pr-10 border-border focus:border-border dark:focus:border-border"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label={showRegisterPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
-                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                    >
-                      {showRegisterPassword ? (
-                        <EyeOff aria-hidden="true" className="h-4 w-4" />
-                      ) : (
-                        <Eye aria-hidden="true" className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  {registerFieldErrors.password && (
-                    <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                      <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                      <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
+                  <div className="space-y-2">
+                    <Label className="text-foreground font-medium">비밀번호 확인</Label>
+                    <div className="relative">
+                      <Lock
+                        aria-hidden="true"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground"
+                      />
+                      <Input
+                        id="register-confirm-password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          setRegisterFieldErrors((prev) => ({
+                            ...prev,
+                            confirmPassword: undefined,
+                          }));
+                          setRegisterFormError("");
+                        }}
+                        placeholder="비밀번호를 다시 입력하세요"
+                        className="h-12 rounded-control pl-10 pr-10 border-border focus:border-border dark:focus:border-border"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={showConfirmPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff aria-hidden="true" className="h-4 w-4" />
+                        ) : (
+                          <Eye aria-hidden="true" className="h-4 w-4" />
+                        )}
+                      </Button>
                     </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground font-medium">비밀번호 확인</Label>
-                  <div className="relative">
-                    <Lock aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
-                    <Input
-                      id="register-confirm-password"
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        setRegisterFieldErrors((prev) => ({
-                          ...prev,
-                          confirmPassword: undefined,
-                        }));
-                        setRegisterFormError("");
-                      }}
-                      placeholder="비밀번호를 다시 입력하세요"
-                      className="h-12 rounded-control pl-10 pr-10 border-border focus:border-border dark:focus:border-border"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label={showConfirmPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff aria-hidden="true" className="h-4 w-4" />
-                      ) : (
-                        <Eye aria-hidden="true" className="h-4 w-4" />
-                      )}
-                    </Button>
+                    {password && confirmPassword && password !== confirmPassword && (
+                      <div className="flex items-center gap-2 text-ui-label text-destructive">
+                        <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                        비밀번호가 일치하지 않습니다.
+                      </div>
+                    )}
                   </div>
-                  {password && confirmPassword && password !== confirmPassword && (
-                    <div className="flex items-center gap-2 text-ui-label text-destructive">
-                      <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                      비밀번호가 일치하지 않습니다.
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-            <div className="space-y-2">
-              <Label className="text-foreground font-medium">이름</Label>
-              <div className="relative">
-                <User aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
-                <Input
-                  id="register-name"
-                  value={name}
-                  onChange={(e) => {
-                    const nextName = e.target.value;
-                    setName(nextName);
-                    const reservedNameError = getReservedDisplayNameErrorMessage(nextName.trim());
-                    setRegisterFieldErrors((prev) => ({
-                      ...prev,
-                      name: reservedNameError ?? undefined,
-                    }));
-                    setRegisterFormError(reservedNameError ?? "");
-                  }}
-                  placeholder="이름을 입력하세요"
-                  className="h-12 rounded-control pl-10 border-border focus:border-border dark:focus:border-border"
-                />
-              </div>
-              {registerFieldErrors.name && (
-                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                  <span className="whitespace-pre-line">{registerFieldErrors.name}</span>
-                </div>
+                </>
               )}
-            </div>
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">이름</Label>
+                <div className="relative">
+                  <User
+                    aria-hidden="true"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground"
+                  />
+                  <Input
+                    id="register-name"
+                    value={name}
+                    onChange={(e) => {
+                      const nextName = e.target.value;
+                      setName(nextName);
+                      const reservedNameError = getReservedDisplayNameErrorMessage(nextName.trim());
+                      setRegisterFieldErrors((prev) => ({
+                        ...prev,
+                        name: reservedNameError ?? undefined,
+                      }));
+                      setRegisterFormError(reservedNameError ?? "");
+                    }}
+                    placeholder="이름을 입력하세요"
+                    className="h-12 rounded-control pl-10 border-border focus:border-border dark:focus:border-border"
+                  />
+                </div>
+                {registerFieldErrors.name && (
+                  <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
+                    <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                    <span className="whitespace-pre-line">{registerFieldErrors.name}</span>
+                  </div>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label className="text-foreground font-medium">연락처</Label>
-              <div className="relative">
-                <Phone aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">연락처</Label>
+                <div className="relative">
+                  <Phone
+                    aria-hidden="true"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground"
+                  />
+                  <Input
+                    id="register-phone"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(formatKoreanPhone(e.target.value));
+                      setRegisterFieldErrors((prev) => ({
+                        ...prev,
+                        phone: undefined,
+                      }));
+                      setRegisterFormError("");
+                    }}
+                    placeholder="연락처를 입력하세요 ('-' 제외)"
+                    inputMode="numeric"
+                    maxLength={13}
+                    className="h-12 rounded-control pl-10 border-border focus:border-border dark:focus:border-border"
+                  />
+                </div>
+                {registerFieldErrors.phone && (
+                  <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
+                    <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                    <span className="whitespace-pre-line">{registerFieldErrors.phone}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-foreground font-medium">우편번호</Label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    id="register-postal-code"
+                    value={postalCode}
+                    placeholder="우편번호를 입력하세요"
+                    readOnly
+                    className="h-12 max-w-none rounded-control cursor-not-allowed border-border bg-muted sm:max-w-xs"
+                  />
+                  <Button
+                    id="register-find-postcode"
+                    type="button"
+                    variant="outline"
+                    className="h-12 w-full rounded-control border-border bg-transparent text-foreground hover:bg-muted dark:hover:bg-muted sm:w-auto"
+                    onClick={handleFindPostcode}
+                  >
+                    <MapPin aria-hidden="true" className="mr-2 h-4 w-4" />
+                    우편번호 찾기
+                  </Button>
+                </div>
+                {registerFieldErrors.postalCode && (
+                  <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
+                    <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                    <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-foreground font-medium">기본 배송지 주소</Label>
                 <Input
-                  id="register-phone"
-                  value={phone}
+                  id="register-address"
+                  value={address}
+                  placeholder="기본 주소를 입력하세요"
+                  readOnly
+                  className="h-12 rounded-control bg-muted cursor-not-allowed border-border"
+                />
+                {registerFieldErrors.address && (
+                  <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
+                    <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                    <span className="whitespace-pre-line">{registerFieldErrors.address}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-foreground font-medium">상세 주소</Label>
+                <Input
+                  id="register-address-detail"
+                  value={addressDetail}
                   onChange={(e) => {
-                    setPhone(formatKoreanPhone(e.target.value));
+                    setAddressDetail(e.target.value);
                     setRegisterFieldErrors((prev) => ({
                       ...prev,
-                      phone: undefined,
+                      addressDetail: undefined,
                     }));
                     setRegisterFormError("");
                   }}
-                  placeholder="연락처를 입력하세요 ('-' 제외)"
-                  inputMode="numeric"
-                  maxLength={13}
-                  className="h-12 rounded-control pl-10 border-border focus:border-border dark:focus:border-border"
+                  placeholder="상세 주소를 입력하세요"
+                  className="h-12 rounded-control border-border focus:border-border dark:focus:border-border"
                 />
               </div>
-              {registerFieldErrors.phone && (
-                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                  <span className="whitespace-pre-line">{registerFieldErrors.phone}</span>
-                </div>
-              )}
             </div>
-
-            <div className="md:col-span-2 space-y-2">
-              <Label className="text-foreground font-medium">우편번호</Label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Input
-                  id="register-postal-code"
-                  value={postalCode}
-                  placeholder="우편번호를 입력하세요"
-                  readOnly
-                  className="h-12 max-w-none rounded-control cursor-not-allowed border-border bg-muted sm:max-w-xs"
-                />
-                <Button
-                  id="register-find-postcode"
-                  type="button"
-                  variant="outline"
-                  className="h-12 w-full rounded-control border-border bg-transparent text-foreground hover:bg-muted dark:hover:bg-muted sm:w-auto"
-                  onClick={handleFindPostcode}
-                >
-                  <MapPin aria-hidden="true" className="mr-2 h-4 w-4" />
-                  우편번호 찾기
-                </Button>
+            {registerFieldErrors.addressDetail && (
+              <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
+                <AlertCircle aria-hidden="true" className="h-4 w-4" />
+                <span className="whitespace-pre-line">{registerFieldErrors.addressDetail}</span>
               </div>
-              {registerFieldErrors.postalCode && (
-                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                  <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="md:col-span-2 space-y-2">
-              <Label className="text-foreground font-medium">기본 배송지 주소</Label>
-              <Input
-                id="register-address"
-                value={address}
-                placeholder="기본 주소를 입력하세요"
-                readOnly
-                className="h-12 rounded-control bg-muted cursor-not-allowed border-border"
-              />
-              {registerFieldErrors.address && (
-                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-                  <AlertCircle aria-hidden="true" className="h-4 w-4" />
-                  <span className="whitespace-pre-line">{registerFieldErrors.address}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="md:col-span-2 space-y-2">
-              <Label className="text-foreground font-medium">상세 주소</Label>
-              <Input
-                id="register-address-detail"
-                value={addressDetail}
-                onChange={(e) => {
-                  setAddressDetail(e.target.value);
-                  setRegisterFieldErrors((prev) => ({
-                    ...prev,
-                    addressDetail: undefined,
-                  }));
-                  setRegisterFormError("");
-                }}
-                placeholder="상세 주소를 입력하세요"
-                className="h-12 rounded-control border-border focus:border-border dark:focus:border-border"
-              />
-            </div>
-          </div>
-          {registerFieldErrors.addressDetail && (
-            <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
-              <AlertCircle aria-hidden="true" className="h-4 w-4" />
-              <span className="whitespace-pre-line">{registerFieldErrors.addressDetail}</span>
-            </div>
-          )}
-
+            )}
           </section>
 
           <Button

@@ -1,11 +1,7 @@
 export type ReviewSubjectType = "order" | "rental" | "application";
 
 export type ReviewContext =
-  | "product"
-  | "product_stringing"
-  | "standalone_stringing"
-  | "rental"
-  | "rental_stringing";
+  "product" | "product_stringing" | "standalone_stringing" | "rental" | "rental_stringing";
 
 export type ReviewWriteTarget = {
   reviewContext?: ReviewContext | null;
@@ -77,7 +73,6 @@ export function getReviewContextLabel(context: unknown) {
   return REVIEW_CONTEXT_LABELS[normalized];
 }
 
-
 export type ReviewContextRecord = {
   reviewContext?: unknown;
   rentalId?: unknown;
@@ -102,11 +97,13 @@ export function inferReviewContext(record: ReviewContextRecord): ReviewContext {
   if (normalized) return normalized;
   const hasServiceRelation = Boolean(
     hasReviewRelationValue(record?.serviceApplicationId) ||
-      hasReviewRelationValue(record?.applicationId) ||
-      record?.service === "stringing" ||
-      record?.reviewType === "service",
+    hasReviewRelationValue(record?.applicationId) ||
+    record?.service === "stringing" ||
+    record?.reviewType === "service",
   );
-  const hasRentalRelation = Boolean(hasReviewRelationValue(record?.rentalId) || record?.reviewType === "rental");
+  const hasRentalRelation = Boolean(
+    hasReviewRelationValue(record?.rentalId) || record?.reviewType === "rental",
+  );
   const hasOrderRelation = hasReviewRelationValue(record?.orderId);
   if (hasRentalRelation && hasServiceRelation) return "rental_stringing";
   if (hasOrderRelation && hasServiceRelation) return "product_stringing";
@@ -115,9 +112,7 @@ export function inferReviewContext(record: ReviewContextRecord): ReviewContext {
   return "product";
 }
 
-export function getReviewManagementCategory(
-  context: ReviewContext,
-): ReviewManagementCategory {
+export function getReviewManagementCategory(context: ReviewContext): ReviewManagementCategory {
   if (context === "standalone_stringing") return "stringing";
   if (context === "rental" || context === "rental_stringing") return "rental";
   return "product";

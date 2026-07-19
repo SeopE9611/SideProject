@@ -774,54 +774,54 @@ export default function RentalsCheckoutClient({
               title="대여 라켓 확인"
               description="신청할 대여 라켓과 기간, 기본 비용을 확인하세요."
             >
-                <div className="flex min-w-0 flex-col gap-4 border-b border-border/50 py-4 last:border-b-0 sm:flex-row sm:items-center">
-                  <div className="relative shrink-0">
-                    {initial.racket?.image ? (
-                      <Image
-                        src={initial.racket.image || "/placeholder.svg"}
-                        alt="racket"
-                        width={80}
-                        height={80}
-                        className="h-20 w-20 rounded-xl object-cover ring-2 ring-border/50"
-                      />
-                    ) : (
-                      <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-muted/40 ring-2 ring-border/50">
-                        <Package className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    )}
+              <div className="flex min-w-0 flex-col gap-4 border-b border-border/50 py-4 last:border-b-0 sm:flex-row sm:items-center">
+                <div className="relative shrink-0">
+                  {initial.racket?.image ? (
+                    <Image
+                      src={initial.racket.image || "/placeholder.svg"}
+                      alt="racket"
+                      width={80}
+                      height={80}
+                      className="h-20 w-20 rounded-xl object-cover ring-2 ring-border/50"
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-muted/40 ring-2 ring-border/50">
+                      <Package className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-ui-body-sm text-muted-foreground">대여 라켓</div>
+                  <h3 className="min-w-0 break-words font-semibold text-foreground">
+                    {rentalRacketName}
+                  </h3>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant={badgeToneVariant("neutral")}
+                      className="px-2 py-0.5 text-ui-label"
+                    >
+                      상태 {initial.racket?.condition}
+                    </Badge>
+                    <span className="text-ui-label text-foreground/75">
+                      대여 기간 {initial.period}일
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-ui-body-sm text-muted-foreground">대여 라켓</div>
-                    <h3 className="min-w-0 break-words font-semibold text-foreground">
-                      {rentalRacketName}
-                    </h3>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant={badgeToneVariant("neutral")}
-                        className="px-2 py-0.5 text-ui-label"
-                      >
-                        상태 {initial.racket?.condition}
-                      </Badge>
-                      <span className="text-ui-label text-foreground/75">
-                        대여 기간 {initial.period}일
+                  <div className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground bp-sm:grid-cols-2">
+                    <span className="flex items-center justify-between gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
+                      <span>대여료</span>
+                      <span className="tabular-nums text-foreground">
+                        {initial.fee.toLocaleString()}원
                       </span>
-                    </div>
-                    <div className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground bp-sm:grid-cols-2">
-                      <span className="flex items-center justify-between gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
-                        <span>대여료</span>
-                        <span className="tabular-nums text-foreground">
-                          {initial.fee.toLocaleString()}원
-                        </span>
+                    </span>
+                    <span className="flex items-center justify-between gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
+                      <span>보증금</span>
+                      <span className="tabular-nums text-foreground">
+                        {initial.deposit.toLocaleString()}원
                       </span>
-                      <span className="flex items-center justify-between gap-3 border-l-2 border-border bg-muted/20 px-3 py-2">
-                        <span>보증금</span>
-                        <span className="tabular-nums text-foreground">
-                          {initial.deposit.toLocaleString()}원
-                        </span>
-                      </span>
-                    </div>
+                    </span>
                   </div>
                 </div>
+              </div>
             </CheckoutSection>
 
             {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
@@ -832,129 +832,129 @@ export default function RentalsCheckoutClient({
               description="라켓을 어떻게 수령하실지 선택해주세요."
               contentClassName="space-y-4"
             >
-                <RadioGroup
-                  value={deliveryMethod}
-                  onValueChange={(value) => setDeliveryMethod(value as any)}
-                  className="space-y-3"
-                >
-                  <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
-                    <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
-                    <Label
-                      htmlFor="rentals-delivery-courier"
-                      className="flex-1 cursor-pointer font-medium"
-                    >
-                      택배 수령 (자택 또는 지정 장소로 배송)
-                      <div className="text-ui-label text-foreground/75 mt-1">
-                        대여 신청 완료 후 택배 발송으로 진행됩니다.
-                      </div>
-                    </Label>
-                    <Truck className="h-5 w-5 text-primary" />
-                  </div>
-
-                  <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
-                    <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
-                    <Label
-                      htmlFor="rentals-delivery-visit"
-                      className="flex-1 cursor-pointer font-medium"
-                    >
-                      오프라인 매장 방문 (도깨비테니스 샵에서 직접 수령)
-                      <div className="text-ui-label text-foreground/75 mt-1">
-                        스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.
-                      </div>
-                    </Label>
-                    <Building2 className="h-5 w-5 text-primary" />
-                  </div>
-                </RadioGroup>
-
-                {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 "스트링 교체 옵션"을 같이 묶어 표시 */}
-                <div className="border-l-2 border-border bg-muted/20 px-3 py-3">
-                  <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                    <div className="min-w-0 space-y-1">
-                      <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
-                      <p className="text-ui-body-sm text-foreground">
-                        {deliveryMethod === "방문수령"
-                          ? "매장에서 대여 라켓에 스트링을 장착한 뒤 방문 수령으로 준비합니다."
-                          : "매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다."}
-                      </p>
+              <RadioGroup
+                value={deliveryMethod}
+                onValueChange={(value) => setDeliveryMethod(value as any)}
+                className="space-y-3"
+              >
+                <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                  <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
+                  <Label
+                    htmlFor="rentals-delivery-courier"
+                    className="flex-1 cursor-pointer font-medium"
+                  >
+                    택배 수령 (자택 또는 지정 장소로 배송)
+                    <div className="text-ui-label text-foreground/75 mt-1">
+                      대여 신청 완료 후 택배 발송으로 진행됩니다.
                     </div>
-
-                    <Button
-                      type="button"
-                      variant={selectedString ? "outline" : "default"}
-                      className="w-full bp-sm:w-auto"
-                      onClick={() =>
-                        pushIfSafe(
-                          `/rentals/${initial.racketId}/select-string?period=${initial.period}`,
-                        )
-                      }
-                    >
-                      {selectedString ? "스트링 변경" : "스트링 선택"}
-                    </Button>
-                  </div>
-
-                  <div className="mt-3 border-t border-border/60 pt-3">
-                    {selectedString ? (
-                      <div className="space-y-1">
-                        <div className="text-ui-label font-medium text-muted-foreground">
-                          선택한 스트링
-                        </div>
-                        <div className="min-w-0 break-words font-semibold text-foreground">
-                          {selectedString.name}
-                        </div>
-                        {selectedGauge ? (
-                          <div className="text-ui-body-sm text-foreground/80">
-                            게이지(굵기): {formatGaugeLabel(selectedGauge)}
-                          </div>
-                        ) : null}
-                        {normalizedSelectedColor ? (
-                          <div className="text-ui-body-sm text-foreground/80">
-                            색상: {normalizedSelectedColor}
-                          </div>
-                        ) : null}
-                        <div className="mt-2 grid gap-1 text-ui-body-sm text-foreground/80 bp-sm:grid-cols-2">
-                          <span>
-                            스트링{" "}
-                            {selectedString.regularPrice &&
-                            selectedString.regularPrice > selectedString.price
-                              ? "할인가"
-                              : "구매가"}
-                            : {selectedString.price.toLocaleString()}원
-                          </span>
-                          {selectedString.regularPrice &&
-                            selectedString.regularPrice > selectedString.price && (
-                              <>
-                                <span className="tabular-nums text-muted-foreground">
-                                  정가{" "}
-                                  <span className="line-through">
-                                    {selectedString.regularPrice.toLocaleString()}원
-                                  </span>
-                                </span>
-                                <Badge
-                                  variant="destructive"
-                                  className="w-fit text-ui-micro tabular-nums"
-                                >
-                                  {selectedString.discountRate}% OFF
-                                </Badge>
-                              </>
-                            )}
-                          <span>
-                            교체서비스 장착비: {selectedString.mountingFee.toLocaleString()}원
-                          </span>
-                        </div>
-
-                        <div className="mt-3 border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5 text-ui-label text-foreground/80">
-                          대여 라켓은 반납 대상이며, 선택한 스트링은 구매 상품으로 결제됩니다.
-                          교체서비스 비용은 스트링 장착 작업 비용입니다.
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-ui-body-sm text-foreground/80">
-                        현재는 <b>교체서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러
-                        교체서비스를 함께 진행할 수 있습니다.
-                      </div>
-                    )}
-                  </div>
+                  </Label>
+                  <Truck className="h-5 w-5 text-primary" />
                 </div>
+
+                <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                  <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
+                  <Label
+                    htmlFor="rentals-delivery-visit"
+                    className="flex-1 cursor-pointer font-medium"
+                  >
+                    오프라인 매장 방문 (도깨비테니스 샵에서 직접 수령)
+                    <div className="text-ui-label text-foreground/75 mt-1">
+                      스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.
+                    </div>
+                  </Label>
+                  <Building2 className="h-5 w-5 text-primary" />
+                </div>
+              </RadioGroup>
+
+              {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 "스트링 교체 옵션"을 같이 묶어 표시 */}
+              <div className="border-l-2 border-border bg-muted/20 px-3 py-3">
+                <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                  <div className="min-w-0 space-y-1">
+                    <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
+                    <p className="text-ui-body-sm text-foreground">
+                      {deliveryMethod === "방문수령"
+                        ? "매장에서 대여 라켓에 스트링을 장착한 뒤 방문 수령으로 준비합니다."
+                        : "매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다."}
+                    </p>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant={selectedString ? "outline" : "default"}
+                    className="w-full bp-sm:w-auto"
+                    onClick={() =>
+                      pushIfSafe(
+                        `/rentals/${initial.racketId}/select-string?period=${initial.period}`,
+                      )
+                    }
+                  >
+                    {selectedString ? "스트링 변경" : "스트링 선택"}
+                  </Button>
+                </div>
+
+                <div className="mt-3 border-t border-border/60 pt-3">
+                  {selectedString ? (
+                    <div className="space-y-1">
+                      <div className="text-ui-label font-medium text-muted-foreground">
+                        선택한 스트링
+                      </div>
+                      <div className="min-w-0 break-words font-semibold text-foreground">
+                        {selectedString.name}
+                      </div>
+                      {selectedGauge ? (
+                        <div className="text-ui-body-sm text-foreground/80">
+                          게이지(굵기): {formatGaugeLabel(selectedGauge)}
+                        </div>
+                      ) : null}
+                      {normalizedSelectedColor ? (
+                        <div className="text-ui-body-sm text-foreground/80">
+                          색상: {normalizedSelectedColor}
+                        </div>
+                      ) : null}
+                      <div className="mt-2 grid gap-1 text-ui-body-sm text-foreground/80 bp-sm:grid-cols-2">
+                        <span>
+                          스트링{" "}
+                          {selectedString.regularPrice &&
+                          selectedString.regularPrice > selectedString.price
+                            ? "할인가"
+                            : "구매가"}
+                          : {selectedString.price.toLocaleString()}원
+                        </span>
+                        {selectedString.regularPrice &&
+                          selectedString.regularPrice > selectedString.price && (
+                            <>
+                              <span className="tabular-nums text-muted-foreground">
+                                정가{" "}
+                                <span className="line-through">
+                                  {selectedString.regularPrice.toLocaleString()}원
+                                </span>
+                              </span>
+                              <Badge
+                                variant="destructive"
+                                className="w-fit text-ui-micro tabular-nums"
+                              >
+                                {selectedString.discountRate}% OFF
+                              </Badge>
+                            </>
+                          )}
+                        <span>
+                          교체서비스 장착비: {selectedString.mountingFee.toLocaleString()}원
+                        </span>
+                      </div>
+
+                      <div className="mt-3 border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5 text-ui-label text-foreground/80">
+                        대여 라켓은 반납 대상이며, 선택한 스트링은 구매 상품으로 결제됩니다.
+                        교체서비스 비용은 스트링 장착 작업 비용입니다.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-ui-body-sm text-foreground/80">
+                      현재는 <b>교체서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러
+                      교체서비스를 함께 진행할 수 있습니다.
+                    </div>
+                  )}
+                </div>
+              </div>
             </CheckoutSection>
 
             {requestStringing && rentalStringingAdapter && (
@@ -975,116 +975,116 @@ export default function RentalsCheckoutClient({
                   : "라켓을 받으실 배송지 정보를 입력해주세요."
               }
             >
-                <div className="space-y-4 md:space-y-6">
-                  <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="flex items-center gap-2">
-                        <UserIcon className="h-4 w-4 text-primary" />
-                        수령인 이름
-                      </Label>
-                      <Input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="수령인 이름을 입력하세요"
-                        className="border-border focus-visible:ring-ring transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-primary" />
-                        이메일
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="예: user@example.com"
-                        className="border-border focus-visible:ring-ring transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-2 bp-sm:col-span-2">
-                      <Label htmlFor="phone" className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-primary" />
-                        연락처
-                      </Label>
-                      <Input
-                        id="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="연락처를 입력하세요 ('-' 제외)"
-                        className="border-border focus-visible:ring-ring transition-colors"
-                      />
-                    </div>
-                  </div>
-                  {!isVisitPickup && (
-                    <>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="postal" className="flex items-center gap-2">
-                            <Home className="h-4 w-4 text-foreground" />
-                            우편번호
-                          </Label>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={openPostcode}
-                            className="bg-background text-foreground border border-border hover:bg-secondary"
-                          >
-                            <MapPin className="h-4 w-4 mr-2" />
-                            우편번호 검색
-                          </Button>
-                        </div>
-                        <Input
-                          id="postal"
-                          readOnly
-                          value={postalCode}
-                          placeholder="우편번호"
-                          className="bg-muted cursor-not-allowed max-w-[200px] border-2"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="address-main">기본 주소</Label>
-                        <Input
-                          id="address-main"
-                          readOnly
-                          value={address}
-                          placeholder="기본 주소"
-                          className="min-w-0 bg-muted cursor-not-allowed border-2"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="address-detail">상세 주소</Label>
-                        <Input
-                          id="address-detail"
-                          value={addressDetail}
-                          onChange={(e) => setAddressDetail(e.target.value)}
-                          placeholder="동/호수 등"
-                          className="border-border focus-visible:ring-ring transition-colors"
-                        />
-                      </div>
-                    </>
-                  )}
+              <div className="space-y-4 md:space-y-6">
+                <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="request" className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-foreground" />
-                      {isVisitPickup ? "방문 수령 요청사항" : "배송 요청사항"}
+                    <Label htmlFor="name" className="flex items-center gap-2">
+                      <UserIcon className="h-4 w-4 text-primary" />
+                      수령인 이름
                     </Label>
-                    <Textarea
-                      id="request"
-                      value={deliveryRequest}
-                      onChange={(e) => setRequest(e.target.value)}
-                      placeholder={
-                        isVisitPickup
-                          ? "방문 수령 시 요청사항을 입력하세요"
-                          : "배송 시 요청사항을 입력하세요"
-                      }
-                      className="min-h-24 border-border leading-relaxed focus-visible:ring-ring transition-colors"
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="수령인 이름을 입력하세요"
+                      className="border-border focus-visible:ring-ring transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-primary" />
+                      이메일
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="예: user@example.com"
+                      className="border-border focus-visible:ring-ring transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2 bp-sm:col-span-2">
+                    <Label htmlFor="phone" className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-primary" />
+                      연락처
+                    </Label>
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="연락처를 입력하세요 ('-' 제외)"
+                      className="border-border focus-visible:ring-ring transition-colors"
                     />
                   </div>
                 </div>
+                {!isVisitPickup && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="postal" className="flex items-center gap-2">
+                          <Home className="h-4 w-4 text-foreground" />
+                          우편번호
+                        </Label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={openPostcode}
+                          className="bg-background text-foreground border border-border hover:bg-secondary"
+                        >
+                          <MapPin className="h-4 w-4 mr-2" />
+                          우편번호 검색
+                        </Button>
+                      </div>
+                      <Input
+                        id="postal"
+                        readOnly
+                        value={postalCode}
+                        placeholder="우편번호"
+                        className="bg-muted cursor-not-allowed max-w-[200px] border-2"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address-main">기본 주소</Label>
+                      <Input
+                        id="address-main"
+                        readOnly
+                        value={address}
+                        placeholder="기본 주소"
+                        className="min-w-0 bg-muted cursor-not-allowed border-2"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="address-detail">상세 주소</Label>
+                      <Input
+                        id="address-detail"
+                        value={addressDetail}
+                        onChange={(e) => setAddressDetail(e.target.value)}
+                        placeholder="동/호수 등"
+                        className="border-border focus-visible:ring-ring transition-colors"
+                      />
+                    </div>
+                  </>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="request" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-foreground" />
+                    {isVisitPickup ? "방문 수령 요청사항" : "배송 요청사항"}
+                  </Label>
+                  <Textarea
+                    id="request"
+                    value={deliveryRequest}
+                    onChange={(e) => setRequest(e.target.value)}
+                    placeholder={
+                      isVisitPickup
+                        ? "방문 수령 시 요청사항을 입력하세요"
+                        : "배송 시 요청사항을 입력하세요"
+                    }
+                    className="min-h-24 border-border leading-relaxed focus-visible:ring-ring transition-colors"
+                  />
+                </div>
+              </div>
             </CheckoutSection>
             {/* 결제 정보 */}
             <CheckoutSection
@@ -1093,178 +1093,170 @@ export default function RentalsCheckoutClient({
               title="결제/입금 안내"
               description="대여 신청에 필요한 결제 방법과 입금 정보를 입력해주세요."
             >
-                <div className="space-y-4 md:space-y-6">
-                  <div className="space-y-3">
-                    <Label>결제 방법</Label>
-                    <RadioGroup
-                      value={paymentMethod}
-                      onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
-                      className="space-y-3"
-                    >
-                      <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
-                        <RadioGroupItem value="bank_transfer" id="bank-transfer" />
-                        <Label
-                          htmlFor="bank-transfer"
-                          className="flex-1 cursor-pointer font-medium"
-                        >
-                          무통장입금
-                        </Label>
-                        <Building2 className="h-5 w-5 text-foreground" />
-                      </div>
-                      {nicePaymentsEnabled && (
-                        <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
-                          <RadioGroupItem value="nicepay" id="nicepay" />
-                          <Label htmlFor="nicepay" className="flex-1 cursor-pointer font-medium">
-                            카드/간편결제
-                          </Label>
-                          <CreditCard className="h-5 w-5 text-foreground" />
-                        </div>
-                      )}
-                    </RadioGroup>
-                  </div>
-
-                  {paymentMethod === "bank_transfer" && (
-                    <>
-                      <div className="space-y-3">
-                        <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                        <Select
-                          value={selectedBank}
-                          onValueChange={(v) => setSelectedBank(v as any)}
-                        >
-                          <SelectTrigger
-                            id="bank-account"
-                            className="border-border focus-visible:ring-ring"
-                          >
-                            <SelectValue placeholder="입금 계좌를 선택하세요" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="kakao">
-                              카카오뱅크 {bankLabelMap.kakao.account} (예금주:{" "}
-                              {bankLabelMap.kakao.holder})
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="depositor-name">입금자명</Label>
-                        <Input
-                          id="depositor-name"
-                          value={depositor}
-                          onChange={(e) => setDepositor(e.target.value)}
-                          placeholder="입금자명을 입력하세요"
-                          className="border-border focus-visible:ring-ring transition-colors"
-                        />
-                      </div>
-
-                      <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Shield className="h-5 w-5 text-primary" />
-                          <p className="font-semibold text-foreground">무통장입금 안내</p>
-                        </div>
-                        <ul className="space-y-2 text-ui-body-sm text-foreground">
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4" />
-                            대여 신청 후 24시간 이내에 입금해 주셔야 신청이 정상 처리됩니다.
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4" />
-                            입금자명이 신청자명과 다를 경우, 고객센터로 연락 부탁드립니다.
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4" />
-                            입금 확인 후 배송이 시작됩니다.
-                          </li>
-                        </ul>
-                      </div>
-                    </>
-                  )}
-
-                  <div className="space-y-3">
-                    <Label className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-primary" />
-                      공통 혜택/차감
-                    </Label>
-                    <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-ui-body-sm font-semibold text-foreground">
-                          포인트 사용
-                        </span>
-                        <span className="text-ui-label text-foreground/75">
-                          {pointsStatus === "ready"
-                            ? `사용 가능 ${pointsAvailable.toLocaleString()}P`
-                            : pointsStatus === "loading"
-                              ? "포인트 조회 중"
-                              : pointsStatus === "error"
-                                ? "포인트 조회 실패"
-                                : "로그인 시 조회"}
-                        </span>
-                      </div>
-
-                      {!userId ? (
-                        <div className="text-ui-body-sm text-foreground/80">
-                          로그인 시 포인트 사용이 가능합니다.
-                        </div>
-                      ) : pointsStatus === "loading" ? (
-                        <div className="text-ui-body-sm text-foreground/80">
-                          포인트를 불러오는 중입니다.
-                        </div>
-                      ) : pointsStatus === "error" ? (
-                        <div className="text-ui-body-sm text-destructive">
-                          포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="use-all-points"
-                              checked={useAllPoints}
-                              onCheckedChange={(v) => {
-                                const checked = !!v;
-                                setUseAllPoints(checked);
-                                if (!checked) {
-                                  setPointsToUse(0);
-                                  setPointsInput("0");
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor="use-all-points"
-                              className="text-ui-body-sm text-foreground cursor-pointer"
-                            >
-                              전액 사용 (보증금 제외)
-                            </label>
-                          </div>
-
-                          <Input
-                            value={pointsInput}
-                            disabled={
-                              pointsStatus !== "ready" || useAllPoints || maxPointsToUse <= 0
-                            }
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^\d]/g, "");
-                              setPointsInput(raw);
-                              setUseAllPoints(false);
-                              setPointsToUse(Number(raw || 0));
-                            }}
-                            onBlur={() => {
-                              const v = clampPoints(Number(pointsInput || 0));
-                              setPointsToUse(v);
-                              setPointsInput(String(v));
-                            }}
-                            placeholder="0"
-                            className="border-border"
-                          />
-
-                          <div className="text-ui-label text-foreground/75">
-                            보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지
-                            않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
-                          </div>
-                        </>
-                      )}
+              <div className="space-y-4 md:space-y-6">
+                <div className="space-y-3">
+                  <Label>결제 방법</Label>
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
+                    className="space-y-3"
+                  >
+                    <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                      <RadioGroupItem value="bank_transfer" id="bank-transfer" />
+                      <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
+                        무통장입금
+                      </Label>
+                      <Building2 className="h-5 w-5 text-foreground" />
                     </div>
+                    {nicePaymentsEnabled && (
+                      <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                        <RadioGroupItem value="nicepay" id="nicepay" />
+                        <Label htmlFor="nicepay" className="flex-1 cursor-pointer font-medium">
+                          카드/간편결제
+                        </Label>
+                        <CreditCard className="h-5 w-5 text-foreground" />
+                      </div>
+                    )}
+                  </RadioGroup>
+                </div>
+
+                {paymentMethod === "bank_transfer" && (
+                  <>
+                    <div className="space-y-3">
+                      <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                      <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
+                        <SelectTrigger
+                          id="bank-account"
+                          className="border-border focus-visible:ring-ring"
+                        >
+                          <SelectValue placeholder="입금 계좌를 선택하세요" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="kakao">
+                            카카오뱅크 {bankLabelMap.kakao.account} (예금주:{" "}
+                            {bankLabelMap.kakao.holder})
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="depositor-name">입금자명</Label>
+                      <Input
+                        id="depositor-name"
+                        value={depositor}
+                        onChange={(e) => setDepositor(e.target.value)}
+                        placeholder="입금자명을 입력하세요"
+                        className="border-border focus-visible:ring-ring transition-colors"
+                      />
+                    </div>
+
+                    <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Shield className="h-5 w-5 text-primary" />
+                        <p className="font-semibold text-foreground">무통장입금 안내</p>
+                      </div>
+                      <ul className="space-y-2 text-ui-body-sm text-foreground">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          대여 신청 후 24시간 이내에 입금해 주셔야 신청이 정상 처리됩니다.
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          입금자명이 신청자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          입금 확인 후 배송이 시작됩니다.
+                        </li>
+                      </ul>
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-primary" />
+                    공통 혜택/차감
+                  </Label>
+                  <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-ui-body-sm font-semibold text-foreground">
+                        포인트 사용
+                      </span>
+                      <span className="text-ui-label text-foreground/75">
+                        {pointsStatus === "ready"
+                          ? `사용 가능 ${pointsAvailable.toLocaleString()}P`
+                          : pointsStatus === "loading"
+                            ? "포인트 조회 중"
+                            : pointsStatus === "error"
+                              ? "포인트 조회 실패"
+                              : "로그인 시 조회"}
+                      </span>
+                    </div>
+
+                    {!userId ? (
+                      <div className="text-ui-body-sm text-foreground/80">
+                        로그인 시 포인트 사용이 가능합니다.
+                      </div>
+                    ) : pointsStatus === "loading" ? (
+                      <div className="text-ui-body-sm text-foreground/80">
+                        포인트를 불러오는 중입니다.
+                      </div>
+                    ) : pointsStatus === "error" ? (
+                      <div className="text-ui-body-sm text-destructive">
+                        포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="use-all-points"
+                            checked={useAllPoints}
+                            onCheckedChange={(v) => {
+                              const checked = !!v;
+                              setUseAllPoints(checked);
+                              if (!checked) {
+                                setPointsToUse(0);
+                                setPointsInput("0");
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor="use-all-points"
+                            className="text-ui-body-sm text-foreground cursor-pointer"
+                          >
+                            전액 사용 (보증금 제외)
+                          </label>
+                        </div>
+
+                        <Input
+                          value={pointsInput}
+                          disabled={pointsStatus !== "ready" || useAllPoints || maxPointsToUse <= 0}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^\d]/g, "");
+                            setPointsInput(raw);
+                            setUseAllPoints(false);
+                            setPointsToUse(Number(raw || 0));
+                          }}
+                          onBlur={() => {
+                            const v = clampPoints(Number(pointsInput || 0));
+                            setPointsToUse(v);
+                            setPointsInput(String(v));
+                          }}
+                          placeholder="0"
+                          className="border-border"
+                        />
+
+                        <div className="text-ui-label text-foreground/75">
+                          보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지
+                          않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
+              </div>
             </CheckoutSection>
             <CheckoutSection
               id="rental-checkout-refund"
@@ -1273,43 +1265,43 @@ export default function RentalsCheckoutClient({
               description="반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요."
               contentClassName="space-y-4"
             >
-                {/* 환급 은행 */}
-                <div className="space-y-2">
-                  <Label htmlFor="refund-bank">환급 은행</Label>
-                  <RefundBankCombobox
-                    value={refundBank}
-                    onChange={setRefundBank}
-                    placeholder="환급 받을 은행을 선택하세요"
-                  />
-                </div>
-                {/* 계좌번호 */}
-                <div className="space-y-2">
-                  <Label htmlFor="refund-account">환급 계좌번호</Label>
-                  <Input
-                    id="refund-account"
-                    value={refundAccount}
-                    onChange={(e) => setRefundAccount(e.target.value)}
-                    placeholder="예: 110-123-456789"
-                    className="border-border focus-visible:ring-ring"
-                  />
-                </div>
-                {/* 예금주 */}
-                <div className="space-y-2">
-                  <Label htmlFor="refund-holder">예금주</Label>
-                  <Input
-                    id="refund-holder"
-                    value={refundHolder}
-                    onChange={(e) => setRefundHolder(e.target.value)}
-                    placeholder="예: 홍길동"
-                    className="border-border focus-visible:ring-ring"
-                  />
-                </div>
-                {/* 안내 */}
-                <div className="border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5">
-                  <p className="text-ui-body-sm text-foreground">
-                    반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.
-                  </p>
-                </div>
+              {/* 환급 은행 */}
+              <div className="space-y-2">
+                <Label htmlFor="refund-bank">환급 은행</Label>
+                <RefundBankCombobox
+                  value={refundBank}
+                  onChange={setRefundBank}
+                  placeholder="환급 받을 은행을 선택하세요"
+                />
+              </div>
+              {/* 계좌번호 */}
+              <div className="space-y-2">
+                <Label htmlFor="refund-account">환급 계좌번호</Label>
+                <Input
+                  id="refund-account"
+                  value={refundAccount}
+                  onChange={(e) => setRefundAccount(e.target.value)}
+                  placeholder="예: 110-123-456789"
+                  className="border-border focus-visible:ring-ring"
+                />
+              </div>
+              {/* 예금주 */}
+              <div className="space-y-2">
+                <Label htmlFor="refund-holder">예금주</Label>
+                <Input
+                  id="refund-holder"
+                  value={refundHolder}
+                  onChange={(e) => setRefundHolder(e.target.value)}
+                  placeholder="예: 홍길동"
+                  className="border-border focus-visible:ring-ring"
+                />
+              </div>
+              {/* 안내 */}
+              <div className="border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5">
+                <p className="text-ui-body-sm text-foreground">
+                  반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.
+                </p>
+              </div>
             </CheckoutSection>
 
             {/* 대여 신청 동의 */}
@@ -1318,99 +1310,99 @@ export default function RentalsCheckoutClient({
               icon={<Shield className="h-5 w-5" />}
               title="대여 신청 동의"
             >
-                <div className="space-y-4">
-                  <div
-                    className={cn(
-                      "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
-                      agreeAll
-                        ? "border-primary/80 bg-primary/5"
-                        : "border-border/60 hover:border-border hover:bg-muted/20",
-                    )}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="agree-all"
-                        checked={agreeAll}
-                        onCheckedChange={(checked) => {
-                          const newValue = !!checked;
-                          setAgreeAll(newValue);
-                          setAgreeTerms(newValue);
-                          setAgreePrivacy(newValue);
-                          setAgreeRefund(newValue);
-                        }}
-                      />
-                      <label
-                        htmlFor="agree-all"
-                        className="font-semibold text-ui-card-title-lg text-foreground"
-                      >
-                        전체 동의
-                      </label>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="divide-y divide-border/60 border-y border-border/60">
-                    {[
-                      {
-                        id: "agree-terms",
-                        label: "이용약관 동의 (필수)",
-                        state: agreeTerms,
-                        setState: setAgreeTerms,
-                        href: "/terms",
-                      },
-                      {
-                        id: "agree-privacy",
-                        label: "개인정보 수집 및 이용 동의 (필수)",
-                        state: agreePrivacy,
-                        setState: setAgreePrivacy,
-                        href: "/privacy",
-                      },
-                      {
-                        id: "agree-refund",
-                        label: "환불 규정 동의 (필수)",
-                        state: agreeRefund,
-                        setState: setAgreeRefund,
-                        href: "/refund-policy",
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.id}
-                        className={cn(
-                          "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
-                          item.state ? "bg-primary/5" : "hover:bg-muted/20",
-                        )}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={item.id}
-                            checked={item.state}
-                            onCheckedChange={(checked) => {
-                              const value = !!checked;
-                              item.setState(value);
-                              if (!value) setAgreeAll(false);
-                              else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
-                            }}
-                          />
-                          <label
-                            htmlFor={item.id}
-                            className="text-ui-body-sm font-medium text-foreground"
-                          >
-                            {item.label}
-                          </label>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
-                          asChild
-                        >
-                          <Link href={item.href} target="_blank" rel="noopener noreferrer">
-                            보기
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
+              <div className="space-y-4">
+                <div
+                  className={cn(
+                    "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
+                    agreeAll
+                      ? "border-primary/80 bg-primary/5"
+                      : "border-border/60 hover:border-border hover:bg-muted/20",
+                  )}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="agree-all"
+                      checked={agreeAll}
+                      onCheckedChange={(checked) => {
+                        const newValue = !!checked;
+                        setAgreeAll(newValue);
+                        setAgreeTerms(newValue);
+                        setAgreePrivacy(newValue);
+                        setAgreeRefund(newValue);
+                      }}
+                    />
+                    <label
+                      htmlFor="agree-all"
+                      className="font-semibold text-ui-card-title-lg text-foreground"
+                    >
+                      전체 동의
+                    </label>
                   </div>
                 </div>
+                <Separator />
+                <div className="divide-y divide-border/60 border-y border-border/60">
+                  {[
+                    {
+                      id: "agree-terms",
+                      label: "이용약관 동의 (필수)",
+                      state: agreeTerms,
+                      setState: setAgreeTerms,
+                      href: "/terms",
+                    },
+                    {
+                      id: "agree-privacy",
+                      label: "개인정보 수집 및 이용 동의 (필수)",
+                      state: agreePrivacy,
+                      setState: setAgreePrivacy,
+                      href: "/privacy",
+                    },
+                    {
+                      id: "agree-refund",
+                      label: "환불 규정 동의 (필수)",
+                      state: agreeRefund,
+                      setState: setAgreeRefund,
+                      href: "/refund-policy",
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
+                        item.state ? "bg-primary/5" : "hover:bg-muted/20",
+                      )}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={item.id}
+                          checked={item.state}
+                          onCheckedChange={(checked) => {
+                            const value = !!checked;
+                            item.setState(value);
+                            if (!value) setAgreeAll(false);
+                            else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
+                          }}
+                        />
+                        <label
+                          htmlFor={item.id}
+                          className="text-ui-body-sm font-medium text-foreground"
+                        >
+                          {item.label}
+                        </label>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
+                        asChild
+                      >
+                        <Link href={item.href} target="_blank" rel="noopener noreferrer">
+                          보기
+                        </Link>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </CheckoutSection>
           </div>
 
@@ -1477,7 +1469,9 @@ export default function RentalsCheckoutClient({
                     <div className="rounded-control bg-surface-inverse px-4 py-3 text-surface-inverse-foreground">
                       <div className="flex items-center justify-between gap-3 text-ui-section-title font-semibold">
                         <span>예상 결제 금액</span>
-                        <span className="text-brand-highlight tabular-nums">{payableTotal.toLocaleString()}원</span>
+                        <span className="text-brand-highlight tabular-nums">
+                          {payableTotal.toLocaleString()}원
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -8,7 +8,14 @@ export type CheckoutLoadingShellProps = {
   className?: string;
 };
 
-const defaultLinearKeys = ["items", "delivery", "recipient", "payment", "agreements", "confirm"] as const;
+const defaultLinearKeys = [
+  "items",
+  "delivery",
+  "recipient",
+  "payment",
+  "agreements",
+  "confirm",
+] as const;
 const defaultAsideKeys = ["package", "applicant", "guide", "payment", "agreements"] as const;
 
 function HeaderSkeleton() {

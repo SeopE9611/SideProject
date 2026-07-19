@@ -26,7 +26,18 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { ArrowLeft, Megaphone, ChevronLeft, ChevronRight, FileText, ImageIcon, Pin, Tags, Upload, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Megaphone,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  ImageIcon,
+  Pin,
+  Tags,
+  Upload,
+  X,
+} from "lucide-react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -603,7 +614,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="feature"
-        eyebrow={<Badge variant={isEventMode ? "success" : "highlight"} className="rounded-control">{isEventMode ? "Event Editor" : "Notice Editor"}</Badge>}
+        eyebrow={
+          <Badge variant={isEventMode ? "success" : "highlight"} className="rounded-control">
+            {isEventMode ? "Event Editor" : "Notice Editor"}
+          </Badge>
+        }
         title={pageHeading}
         description={pageDescription}
         actions={
@@ -655,8 +670,13 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
             </CardHeader>
             <CardContent className="space-y-5 p-4 md:space-y-6 md:p-8">
               <PublicSurface variant="feature" padding="md" className="space-y-3">
-                <div className="flex items-center gap-2"><Tags className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" /><h3 className="font-brand-heading text-ui-card-title-lg">분류 설정</h3></div>
-                <p className="text-ui-body-sm text-muted-foreground">게시판 성격에 맞는 의미 기반 카테고리를 지정합니다.</p>
+                <div className="flex items-center gap-2">
+                  <Tags className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
+                  <h3 className="font-brand-heading text-ui-card-title-lg">분류 설정</h3>
+                </div>
+                <p className="text-ui-body-sm text-muted-foreground">
+                  게시판 성격에 맞는 의미 기반 카테고리를 지정합니다.
+                </p>
                 <Label htmlFor="category" className="text-ui-body-lg font-semibold">
                   카테고리 <span className="text-destructive">*</span>
                 </Label>
@@ -705,7 +725,10 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               </PublicSurface>
 
               <PublicSurface variant="feature" padding="md" className="space-y-3">
-                <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" /><h3 className="font-brand-heading text-ui-card-title-lg">본문 작성</h3></div>
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
+                  <h3 className="font-brand-heading text-ui-card-title-lg">본문 작성</h3>
+                </div>
                 <Label htmlFor="title" className="text-ui-body-lg font-semibold">
                   제목 <span className="text-destructive">*</span>
                 </Label>
@@ -721,19 +744,22 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
 
                 <div className="space-y-3">
                   <Label htmlFor="content" className="text-ui-body-lg font-semibold">
-                  내용 <span className="text-destructive">*</span>
-                </Label>
-                <Textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder={
-                    isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"
-                  }
-                  className="min-h-[300px] resize-none rounded-control bg-card text-ui-body-lg"
-                />
+                    내용 <span className="text-destructive">*</span>
+                  </Label>
+                  <Textarea
+                    id="content"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder={
+                      isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"
+                    }
+                    className="min-h-[300px] resize-none rounded-control bg-card text-ui-body-lg"
+                  />
                 </div>
-                <p className="text-ui-label text-muted-foreground">제목 {title.trim().length}/{TITLE_MAX}자 · 내용 {content.trim().length}/{CONTENT_MAX}자</p>
+                <p className="text-ui-label text-muted-foreground">
+                  제목 {title.trim().length}/{TITLE_MAX}자 · 내용 {content.trim().length}/
+                  {CONTENT_MAX}자
+                </p>
               </PublicSurface>
               {/* 기존 첨부 (수정 모드에서만 표시) */}
               {editId && existingAttachments.length > 0 && (
@@ -802,7 +828,10 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               )}
 
               <PublicSurface variant="feature" padding="md" className="space-y-3">
-                <div className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" /><h3 className="font-brand-heading text-ui-card-title-lg">첨부 자료</h3></div>
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
+                  <h3 className="font-brand-heading text-ui-card-title-lg">첨부 자료</h3>
+                </div>
                 <Label htmlFor="image" className="text-ui-body-lg font-semibold">
                   첨부파일 (선택사항)
                 </Label>
@@ -825,7 +854,10 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                       addFiles(Array.from(e.dataTransfer.files || []));
                     }}
                   >
-                    <Upload className="mx-auto mb-2 h-8 w-8 text-brand-highlight-ink" aria-hidden="true" />
+                    <Upload
+                      className="mx-auto mb-2 h-8 w-8 text-brand-highlight-ink"
+                      aria-hidden="true"
+                    />
                     <p className="text-ui-body-sm text-muted-foreground mb-2">
                       클릭하여 이미지 또는 파일을 선택하거나 드래그하여 업로드하세요
                     </p>
@@ -946,7 +978,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                 </div>
               </PublicSurface>
 
-              <PublicSurface variant="feature" padding="md" className="flex items-start space-x-3 bg-brand-highlight-muted/30">
+              <PublicSurface
+                variant="feature"
+                padding="md"
+                className="flex items-start space-x-3 bg-brand-highlight-muted/30"
+              >
                 <Checkbox
                   id="pinned"
                   checked={isPinned}

@@ -54,10 +54,13 @@ export default function ReviewEditDialog({
 }: Props) {
   const isValid = validateReviewInput(editForm).ok;
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => {
-      if (!nextOpen && uploadingPhotos) return;
-      onOpenChange(nextOpen);
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && uploadingPhotos) return;
+        onOpenChange(nextOpen);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>후기 수정</DialogTitle>
@@ -131,7 +134,11 @@ export default function ReviewEditDialog({
             <Button variant="outline" onClick={onClose} disabled={busy || uploadingPhotos}>
               취소
             </Button>
-            <Button onClick={onSubmit} disabled={busy || uploadingPhotos || !isValid} aria-disabled={busy || uploadingPhotos || !isValid}>
+            <Button
+              onClick={onSubmit}
+              disabled={busy || uploadingPhotos || !isValid}
+              aria-disabled={busy || uploadingPhotos || !isValid}
+            >
               {busy ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

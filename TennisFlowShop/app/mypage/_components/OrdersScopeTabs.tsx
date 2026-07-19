@@ -10,7 +10,12 @@ export const SCOPE_ITEMS: Array<{
   href: string;
 }> = [
   { value: "all", label: "전체", shortLabel: "전체", href: "/mypage?tab=orders" },
-  { value: "todo", label: "확인할 항목", shortLabel: "확인", href: "/mypage?tab=orders&scope=todo" },
+  {
+    value: "todo",
+    label: "확인할 항목",
+    shortLabel: "확인",
+    href: "/mypage?tab=orders&scope=todo",
+  },
   { value: "order", label: "주문", shortLabel: "주문", href: "/mypage?tab=orders&scope=order" },
   {
     value: "application",
@@ -47,10 +52,7 @@ type OrdersScopeTabsProps = {
 export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeTabsProps) {
   return (
     <nav
-      className={cn(
-        "rounded-control border border-border bg-card p-1",
-        className,
-      )}
+      className={cn("rounded-control border border-border bg-card p-1", className)}
       aria-label="거래/이용내역 하위 탭"
     >
       <div className="grid grid-cols-5 gap-1">
@@ -70,7 +72,9 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
                   : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
               )}
             >
-              {isActive ? <span className="h-1.5 w-1.5 rounded-full bg-brand-highlight" aria-hidden="true" /> : null}
+              {isActive ? (
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-highlight" aria-hidden="true" />
+              ) : null}
               <span className="bp-sm:hidden">{item.shortLabel}</span>
               <span className="hidden bp-sm:inline">{item.label}</span>
             </Link>

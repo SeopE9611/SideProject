@@ -41,21 +41,18 @@ export default function UserSection({ user }: Props) {
                   {user.name ?? "회원"}님
                 </h1>
 
-                <IdentityBadge tone={isAdmin ? "admin" : "email"} icon={<ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}>
+                <IdentityBadge
+                  tone={isAdmin ? "admin" : "email"}
+                  icon={<ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+                >
                   {isAdmin ? `${getUserRoleLabel(normalizedRole)} 계정` : "사용자 회원"}
                 </IdentityBadge>
 
-                {hasKakao && (
-                  <IdentityBadge tone="kakao">카카오 로그인</IdentityBadge>
-                )}
+                {hasKakao && <IdentityBadge tone="kakao">카카오 로그인</IdentityBadge>}
 
-                {hasNaver && (
-                  <IdentityBadge tone="naver">네이버 로그인</IdentityBadge>
-                )}
+                {hasNaver && <IdentityBadge tone="naver">네이버 로그인</IdentityBadge>}
 
-                {!hasKakao && !hasNaver && (
-                  <IdentityBadge tone="email">이메일 계정</IdentityBadge>
-                )}
+                {!hasKakao && !hasNaver && <IdentityBadge tone="email">이메일 계정</IdentityBadge>}
               </div>
 
               <p className="mt-1 flex min-w-0 items-center gap-1.5 text-ui-label text-muted-foreground">

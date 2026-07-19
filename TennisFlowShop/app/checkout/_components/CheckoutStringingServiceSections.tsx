@@ -28,7 +28,10 @@ export default function CheckoutStringingServiceSections({
       title="교체서비스 옵션"
       contentClassName="space-y-3 bp-sm:p-5"
     >
-      <CheckoutStringingCompactEditor adapter={adapter} showValidationErrors={showValidationErrors} />
+      <CheckoutStringingCompactEditor
+        adapter={adapter}
+        showValidationErrors={showValidationErrors}
+      />
       <CheckoutStringingSummaryCard adapter={adapter} />
     </CheckoutSection>
   );

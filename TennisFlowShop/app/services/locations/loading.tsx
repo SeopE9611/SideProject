@@ -78,7 +78,10 @@ export default function LocationsLoading() {
 
                   <div className="grid gap-3">
                     {["phone", "email"].map((item) => (
-                      <div key={item} className="grid gap-1 bp-sm:grid-cols-[5rem_minmax(0,1fr)] bp-sm:gap-4">
+                      <div
+                        key={item}
+                        className="grid gap-1 bp-sm:grid-cols-[5rem_minmax(0,1fr)] bp-sm:gap-4"
+                      >
                         <Skeleton className="h-5 w-16" />
                         <Skeleton className="h-5 w-full max-w-xs" />
                       </div>

@@ -51,7 +51,11 @@ export default function PhotosReorderGrid({
     onChange(reorder(value, fromIdx, toIdx));
   };
 
-  const colsClass = responsiveColumns ? "grid-cols-3 bp-sm:grid-cols-5" : columns === 4 ? "grid-cols-4" : "grid-cols-5";
+  const colsClass = responsiveColumns
+    ? "grid-cols-3 bp-sm:grid-cols-5"
+    : columns === 4
+      ? "grid-cols-4"
+      : "grid-cols-5";
 
   return (
     <ul className={`grid ${colsClass} gap-2 mt-2 ${className ?? ""}`} data-cy="photos-grid">
@@ -91,7 +95,12 @@ export default function PhotosReorderGrid({
             {idx + 1}
           </span>
           {!disabled && (
-            <span className={cn("absolute bottom-1 right-1 text-ui-micro px-1 py-0.5 rounded bg-overlay/65 text-surface-inverse-foreground", mobileControls && "hidden bp-md:inline-flex")}>
+            <span
+              className={cn(
+                "absolute bottom-1 right-1 text-ui-micro px-1 py-0.5 rounded bg-overlay/65 text-surface-inverse-foreground",
+                mobileControls && "hidden bp-md:inline-flex",
+              )}
+            >
               드래그
             </span>
           )}
@@ -113,8 +122,34 @@ export default function PhotosReorderGrid({
           )}
           {mobileControls && !disabled && (
             <div className="absolute inset-x-1 bottom-1 flex justify-between gap-1 bp-md:hidden">
-              <button type="button" aria-label={`사진 ${idx + 1}를 왼쪽으로 이동`} disabled={idx === 0} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveItem(idx, idx - 1); }} className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft className="h-3.5 w-3.5" /></button>
-              <button type="button" aria-label={`사진 ${idx + 1}를 오른쪽으로 이동`} disabled={idx === value.length - 1} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveItem(idx, idx + 1); }} className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowRight className="h-3.5 w-3.5" /></button>
+              <button
+                type="button"
+                aria-label={`사진 ${idx + 1}를 왼쪽으로 이동`}
+                disabled={idx === 0}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  moveItem(idx, idx - 1);
+                }}
+                className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label={`사진 ${idx + 1}를 오른쪽으로 이동`}
+                disabled={idx === value.length - 1}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  moveItem(idx, idx + 1);
+                }}
+                className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
         </li>

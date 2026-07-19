@@ -91,7 +91,9 @@ export default function Wishlist() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-control border border-brand-highlight-ink/20 bg-brand-highlight-muted text-brand-highlight-ink shadow-soft">
             <Heart className="h-10 w-10" aria-hidden="true" />
           </div>
-          <h3 className="mb-2 font-brand-heading text-ui-section-title font-semibold">위시리스트가 비어있습니다</h3>
+          <h3 className="mb-2 font-brand-heading text-ui-section-title font-semibold">
+            위시리스트가 비어있습니다
+          </h3>
           <p className="mx-auto mb-6 max-w-md text-ui-body-sm text-muted-foreground">
             마음에 드는 상품을 저장해두고 언제든 다시 확인해보세요.
           </p>

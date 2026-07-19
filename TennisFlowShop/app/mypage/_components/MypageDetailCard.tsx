@@ -49,12 +49,7 @@ export default function MypageDetailCard({
               )}
             >
               {icon ? (
-                <span
-                  className={cn(
-                    "shrink-0",
-                    isFeature && "text-brand-highlight-ink",
-                  )}
-                >
+                <span className={cn("shrink-0", isFeature && "text-brand-highlight-ink")}>
                   {icon}
                 </span>
               ) : null}

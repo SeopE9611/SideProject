@@ -1,7 +1,10 @@
 import type { CreateIndexesOptions, Db, IndexDirection } from "mongodb";
 import { ObjectId } from "mongodb";
 import { inspectActiveReviewDuplicates } from "./reviews/review-duplicate-diagnostics.server";
-import { refreshReviewSummaryCachesForTargets, resolveAffectedReviewTargets } from "./reviews/review-summary-cache.server";
+import {
+  refreshReviewSummaryCachesForTargets,
+  resolveAffectedReviewTargets,
+} from "./reviews/review-summary-cache.server";
 
 type Keys = Record<string, IndexDirection>;
 
@@ -46,8 +49,18 @@ async function ensureIndex(
           reason: "indexDefinitionMismatch",
           collection: collectionName,
           indexName: options.name ?? candidate.name,
-          expected: { key: keys, unique: Boolean(options.unique), sparse: Boolean(options.sparse), partialFilterExpression: options.partialFilterExpression ?? null },
-          actual: { key: candidate.key, unique: Boolean(candidate.unique), sparse: Boolean(candidate.sparse), partialFilterExpression: candidate.partialFilterExpression ?? null },
+          expected: {
+            key: keys,
+            unique: Boolean(options.unique),
+            sparse: Boolean(options.sparse),
+            partialFilterExpression: options.partialFilterExpression ?? null,
+          },
+          actual: {
+            key: candidate.key,
+            unique: Boolean(candidate.unique),
+            sparse: Boolean(candidate.sparse),
+            partialFilterExpression: candidate.partialFilterExpression ?? null,
+          },
         };
         throw error;
       }
@@ -265,7 +278,14 @@ export async function rebuildPublicReviewSummaryCaches(db: Db) {
           { reviewSummaryUpdatedAt: { $exists: true } },
         ],
       },
-      { $set: { ratingAvg: 0, ratingAverage: 0, ratingCount: 0, reviewSummaryUpdatedAt: new Date() } },
+      {
+        $set: {
+          ratingAvg: 0,
+          ratingAverage: 0,
+          ratingCount: 0,
+          reviewSummaryUpdatedAt: new Date(),
+        },
+      },
     ),
     rackets.updateMany(
       {
@@ -277,7 +297,15 @@ export async function rebuildPublicReviewSummaryCaches(db: Db) {
           { reviewSummaryUpdatedAt: { $exists: true } },
         ],
       },
-      { $set: { ratingAvg: 0, ratingAverage: 0, ratingCount: 0, reviewCount: 0, reviewSummaryUpdatedAt: new Date() } },
+      {
+        $set: {
+          ratingAvg: 0,
+          ratingAverage: 0,
+          ratingCount: 0,
+          reviewCount: 0,
+          reviewSummaryUpdatedAt: new Date(),
+        },
+      },
     ),
   ]);
 
@@ -313,11 +341,17 @@ export async function rebuildPublicReviewSummaryCaches(db: Db) {
   let productsUpdated = 0;
   let racketsUpdated = 0;
   await runLimited([...productIds], 6, async (productId) => {
-    const result = await refreshReviewSummaryCachesForTargets(db, { productIds: [productId], racketIds: [] });
+    const result = await refreshReviewSummaryCachesForTargets(db, {
+      productIds: [productId],
+      racketIds: [],
+    });
     productsUpdated += result.productsUpdated;
   });
   await runLimited([...racketIds], 6, async (racketId) => {
-    const result = await refreshReviewSummaryCachesForTargets(db, { productIds: [], racketIds: [racketId] });
+    const result = await refreshReviewSummaryCachesForTargets(db, {
+      productIds: [],
+      racketIds: [racketId],
+    });
     racketsUpdated += result.racketsUpdated;
   });
 

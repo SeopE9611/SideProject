@@ -54,7 +54,9 @@ function pushIds(target: string[], values: unknown) {
 async function existsById(db: Db, collection: string, value: unknown) {
   const filter = buildMixedIdFilter(value);
   if (!filter) return false;
-  return Boolean(await mixedIdCollection(db, collection).findOne(filter, { projection: { _id: 1 } }));
+  return Boolean(
+    await mixedIdCollection(db, collection).findOne(filter, { projection: { _id: 1 } }),
+  );
 }
 
 async function findById(db: Db, collection: string, value: unknown, projection: Record<string, 1>) {
@@ -72,7 +74,8 @@ export async function resolveAffectedReviewTargets(
 
   if (review.productId) {
     if (await existsById(db, "products", review.productId)) pushIds(productIds, review.productId);
-    if (await existsById(db, "used_rackets", review.productId)) pushIds(racketIds, review.productId);
+    if (await existsById(db, "used_rackets", review.productId))
+      pushIds(racketIds, review.productId);
   }
   pushIds(productIds, review.relatedProductIds);
   pushIds(racketIds, review.relatedRacketIds);
@@ -119,7 +122,9 @@ export async function resolveAffectedReviewTargets(
 
   const context = inferReviewContext(review);
   const isProductStringing =
-    context === "product_stringing" || review.reviewType === "service" || review.service === "stringing";
+    context === "product_stringing" ||
+    review.reviewType === "service" ||
+    review.service === "stringing";
   if (isProductStringing && review.orderId) {
     const order = await findById(db, "orders", review.orderId, { _id: 1, items: 1 });
     if (order) pushIds(racketIds, collectOrderRacketIds(order));
@@ -128,28 +133,45 @@ export async function resolveAffectedReviewTargets(
   return { productIds: dedupeStringIds(productIds), racketIds: dedupeStringIds(racketIds) };
 }
 
-async function updateProductCache(db: Db, productId: string, dependencies: ReviewSummaryCacheDependencies) {
+async function updateProductCache(
+  db: Db,
+  productId: string,
+  dependencies: ReviewSummaryCacheDependencies,
+) {
   const summary = await dependencies.getPublicReviewSummary(db, { type: "product", id: productId });
   const average = Number(Number(summary.average || 0).toFixed(2));
   const filter = buildMixedIdFilter(productId);
   if (!filter) return 0;
-  const result = await mixedIdCollection(db, "products").updateOne(
-    filter,
-    { $set: { ratingAvg: average, ratingAverage: average, ratingCount: Math.max(0, Number(summary.count) || 0), reviewSummaryUpdatedAt: new Date() } },
-  );
+  const result = await mixedIdCollection(db, "products").updateOne(filter, {
+    $set: {
+      ratingAvg: average,
+      ratingAverage: average,
+      ratingCount: Math.max(0, Number(summary.count) || 0),
+      reviewSummaryUpdatedAt: new Date(),
+    },
+  });
   return result.modifiedCount;
 }
 
-async function updateRacketCache(db: Db, racketId: string, dependencies: ReviewSummaryCacheDependencies) {
+async function updateRacketCache(
+  db: Db,
+  racketId: string,
+  dependencies: ReviewSummaryCacheDependencies,
+) {
   const summary = await dependencies.getPublicReviewSummary(db, { type: "racket", id: racketId });
   const average = Number(Number(summary.average || 0).toFixed(2));
   const count = Math.max(0, Number(summary.count) || 0);
   const filter = buildMixedIdFilter(racketId);
   if (!filter) return 0;
-  const result = await mixedIdCollection(db, "used_rackets").updateOne(
-    filter,
-    { $set: { ratingAvg: average, ratingAverage: average, ratingCount: count, reviewCount: count, reviewSummaryUpdatedAt: new Date() } },
-  );
+  const result = await mixedIdCollection(db, "used_rackets").updateOne(filter, {
+    $set: {
+      ratingAvg: average,
+      ratingAverage: average,
+      ratingCount: count,
+      reviewCount: count,
+      reviewSummaryUpdatedAt: new Date(),
+    },
+  });
   return result.modifiedCount;
 }
 
@@ -160,8 +182,10 @@ export async function refreshReviewSummaryCachesForTargets(
 ) {
   let productsUpdated = 0;
   let racketsUpdated = 0;
-  for (const productId of dedupeStringIds(targets.productIds)) productsUpdated += await updateProductCache(db, productId, dependencies);
-  for (const racketId of dedupeStringIds(targets.racketIds)) racketsUpdated += await updateRacketCache(db, racketId, dependencies);
+  for (const productId of dedupeStringIds(targets.productIds))
+    productsUpdated += await updateProductCache(db, productId, dependencies);
+  for (const racketId of dedupeStringIds(targets.racketIds))
+    racketsUpdated += await updateRacketCache(db, racketId, dependencies);
   return { productsUpdated, racketsUpdated };
 }
 
@@ -170,7 +194,11 @@ export async function refreshReviewSummaryCachesForReview(
   review: ReviewLike,
   dependencies = defaultDependencies,
 ) {
-  return refreshReviewSummaryCachesForTargets(db, await resolveAffectedReviewTargets(db, review), dependencies);
+  return refreshReviewSummaryCachesForTargets(
+    db,
+    await resolveAffectedReviewTargets(db, review),
+    dependencies,
+  );
 }
 
 export async function refreshReviewSummaryCachesForReviewSafely(

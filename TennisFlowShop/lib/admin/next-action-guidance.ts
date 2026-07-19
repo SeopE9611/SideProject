@@ -1,9 +1,6 @@
 import type { OpsKind } from "@/lib/admin-ops-taxonomy";
 import { isVisitPickupOrder } from "@/lib/order-shipping";
-import {
-  isOrderConfirmedStatus,
-  isOrderDeliveredStatus,
-} from "@/lib/status/flow-status";
+import { isOrderConfirmedStatus, isOrderDeliveredStatus } from "@/lib/status/flow-status";
 
 export type OpsLikeItem = {
   kind: OpsKind;
@@ -24,7 +21,8 @@ export type OpsLikeItem = {
   depositRefundedAt?: string | null;
   linkedApplicationStatus?: string | null;
   shippingMethod?: string | null;
-  cancelStatus?: "none" | "requested" | "approved" | "rejected" | "approved_pending_pg_cancel" | null;
+  cancelStatus?:
+    "none" | "requested" | "approved" | "rejected" | "approved_pending_pg_cancel" | null;
   cancelRequested?: boolean;
   refundAccountReady?: boolean;
   cancel?: {
@@ -111,10 +109,10 @@ const isRentalClosed = (status?: string | null) => {
 };
 
 const isCancelProcessingStatus = (status?: string | null) => {
-  const s = String(status ?? "").trim().toLowerCase();
-  return (
-    s === "취소처리중" || s === "cancel_processing" || s === "approved_pending_pg_cancel"
-  );
+  const s = String(status ?? "")
+    .trim()
+    .toLowerCase();
+  return s === "취소처리중" || s === "cancel_processing" || s === "approved_pending_pg_cancel";
 };
 
 const isOrderClosed = (status?: string | null) => {

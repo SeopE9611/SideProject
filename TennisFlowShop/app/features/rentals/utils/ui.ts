@@ -1,5 +1,7 @@
 function isRentalReturnedStatus(status?: string | null) {
-  const normalized = String(status ?? "").trim().toLowerCase();
+  const normalized = String(status ?? "")
+    .trim()
+    .toLowerCase();
   return normalized === "returned" || normalized.includes("반납완료");
 }
 

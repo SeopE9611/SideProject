@@ -34,7 +34,10 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
           <p className="shrink-0 text-ui-label text-muted-foreground">현재 단계</p>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-          <div className="h-full rounded-full bg-brand-highlight" style={{ width: `${progress}%` }} />
+          <div
+            className="h-full rounded-full bg-brand-highlight"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
 
@@ -65,7 +68,11 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
                 </div>
                 <p
                   className={`mt-2 truncate text-ui-body-sm font-semibold ${
-                    isCurrent ? "text-foreground" : isDone ? "text-foreground" : "text-muted-foreground"
+                    isCurrent
+                      ? "text-foreground"
+                      : isDone
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {step.title}

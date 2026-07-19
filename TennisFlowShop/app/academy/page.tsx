@@ -575,7 +575,10 @@ export default async function AcademyPage() {
                           </dd>
                         </div>
                         <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] items-start gap-3 py-3 text-ui-body-sm">
-                          <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                          <Calendar
+                            className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                            aria-hidden
+                          />
                           <dt className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             일정
                           </dt>
@@ -612,12 +615,7 @@ export default async function AcademyPage() {
 
                       <div className="mt-auto flex flex-col gap-2 pt-2">
                         {existingApplication ? (
-                          <Button
-                            asChild
-                            variant="outline"
-                            wrap="responsive"
-                            className="w-full"
-                          >
+                          <Button asChild variant="outline" wrap="responsive" className="w-full">
                             <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
                               <CheckCircle2 className="mr-2 h-4 w-4" aria-hidden />
                               신청 완료
@@ -628,12 +626,7 @@ export default async function AcademyPage() {
                             <Button disabled variant="secondary" className="flex-1">
                               모집 마감
                             </Button>
-                            <Button
-                              asChild
-                              variant="outline"
-                              wrap="responsive"
-                              className="flex-1"
-                            >
+                            <Button asChild variant="outline" wrap="responsive" className="flex-1">
                               <Link href="/board/qna/write?category=academy">문의하기</Link>
                             </Button>
                           </div>
@@ -709,7 +702,8 @@ export default async function AcademyPage() {
               나에게 맞는 레슨이 궁금하다면 문의해 주세요
             </h2>
             <p className="text-pretty text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
-              도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.
+              도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정
+              후 현장에서 결제를 안내해드립니다.
             </p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
               <Button asChild size="lg" wrap="responsive" className="w-full sm:w-auto">

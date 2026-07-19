@@ -73,7 +73,11 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
             reviewed,
           },
         ],
-        counts: targetBundle?.counts ?? { total: 1, reviewed: reviewed ? 1 : 0, remaining: reviewed ? 0 : 1 },
+        counts: targetBundle?.counts ?? {
+          total: 1,
+          reviewed: reviewed ? 1 : 0,
+          remaining: reviewed ? 0 : 1,
+        },
         nextProductId: reviewed ? null : productId,
         nextApplicationId: reviewed ? null : appId,
         nextReviewContext: "product_stringing",

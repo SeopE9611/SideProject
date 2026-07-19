@@ -1773,7 +1773,9 @@ export default function StringServiceApplyPage() {
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <p className="text-ui-label font-semibold text-brand-highlight-foreground">다음 진행</p>
+                  <p className="text-ui-label font-semibold text-brand-highlight-foreground">
+                    다음 진행
+                  </p>
                   <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
                     {item.steps}
                   </p>

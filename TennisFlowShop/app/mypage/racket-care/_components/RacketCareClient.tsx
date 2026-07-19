@@ -1,6 +1,14 @@
 "use client";
 
-import type { CareForm, CareItem, CreateMode, RacketCareHistoryLinkIntent, RacketCareImportCandidate, RacketCareResponse, StartCreateOptions } from "@/app/mypage/racket-care/_components/racket-care-client.types";
+import type {
+  CareForm,
+  CareItem,
+  CreateMode,
+  RacketCareHistoryLinkIntent,
+  RacketCareImportCandidate,
+  RacketCareResponse,
+  StartCreateOptions,
+} from "@/app/mypage/racket-care/_components/racket-care-client.types";
 import RacketCareHero from "@/app/mypage/racket-care/_components/RacketCareHero";
 import RacketCareMobileNav from "@/app/mypage/racket-care/_components/RacketCareMobileNav";
 import RacketCareRegistrationDialog from "@/app/mypage/racket-care/_components/RacketCareRegistrationDialog";
@@ -8,7 +16,13 @@ import RacketCareStatusCard from "@/app/mypage/racket-care/_components/RacketCar
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { Plus, RefreshCw } from "lucide-react";
@@ -17,27 +31,454 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 
-const stateMeta = { good: { label: "양호", badge: "success" }, prepare: { label: "교체 준비", badge: "warning" }, due: { label: "교체 권장", badge: "danger" } } as const;
+const stateMeta = {
+  good: { label: "양호", badge: "success" },
+  prepare: { label: "교체 준비", badge: "warning" },
+  due: { label: "교체 권장", badge: "danger" },
+} as const;
 
-function emptyForm(): CareForm { return { nickname: "", brand: "", model: "", playFrequency: "weekly", lastStringingAt: "", reminderEnabled: false, stringName: "", gauge: "", tensionMain: "", tensionCross: "", latestCompletedApplicationId: "" }; }
-function formFromCandidate(candidate: RacketCareImportCandidate): CareForm { return { ...emptyForm(), nickname: candidate.nickname, brand: candidate.racket.brand, model: candidate.racket.model, playFrequency: candidate.playFrequency, lastStringingAt: candidate.lastStringingAt?.slice(0, 10) ?? "", stringName: candidate.stringSnapshot?.name ?? "", gauge: candidate.stringSnapshot?.gauge ?? "", tensionMain: candidate.stringSnapshot?.tensionMain ?? "", tensionCross: candidate.stringSnapshot?.tensionCross ?? "", latestCompletedApplicationId: candidate.latestCompletedApplication?.id ?? "" }; }
-function dday(days: number) { if (days > 0) return `D-${days}`; if (days === 0) return "D-DAY"; return `${Math.abs(days)}일 지남`; }
+function emptyForm(): CareForm {
+  return {
+    nickname: "",
+    brand: "",
+    model: "",
+    playFrequency: "weekly",
+    lastStringingAt: "",
+    reminderEnabled: false,
+    stringName: "",
+    gauge: "",
+    tensionMain: "",
+    tensionCross: "",
+    latestCompletedApplicationId: "",
+  };
+}
+function formFromCandidate(candidate: RacketCareImportCandidate): CareForm {
+  return {
+    ...emptyForm(),
+    nickname: candidate.nickname,
+    brand: candidate.racket.brand,
+    model: candidate.racket.model,
+    playFrequency: candidate.playFrequency,
+    lastStringingAt: candidate.lastStringingAt?.slice(0, 10) ?? "",
+    stringName: candidate.stringSnapshot?.name ?? "",
+    gauge: candidate.stringSnapshot?.gauge ?? "",
+    tensionMain: candidate.stringSnapshot?.tensionMain ?? "",
+    tensionCross: candidate.stringSnapshot?.tensionCross ?? "",
+    latestCompletedApplicationId: candidate.latestCompletedApplication?.id ?? "",
+  };
+}
+function dday(days: number) {
+  if (days > 0) return `D-${days}`;
+  if (days === 0) return "D-DAY";
+  return `${Math.abs(days)}일 지남`;
+}
 
 export default function RacketCareClient() {
-  const router = useRouter(); const searchParams = useSearchParams();
-  const { data, error, isLoading, mutate } = useSWR<RacketCareResponse>("/api/users/me/racket-care", authenticatedSWRFetcher);
-  const [open, setOpen] = useState(false); const [step, setStep] = useState(1); const [mode, setMode] = useState<CreateMode>("manual"); const [editing, setEditing] = useState<CareItem | null>(null); const [form, setForm] = useState<CareForm>(() => emptyForm()); const [errors, setErrors] = useState<Record<string,string>>({}); const [saving, setSaving] = useState(false); const [deletingId, setDeletingId] = useState<string | null>(null); const [selectedId, setSelectedId] = useState<string | null>(searchParams.get("selected")); const [togglingId, setTogglingId] = useState<string | null>(null); const [historyLinkIntent, setHistoryLinkIntent] = useState<RacketCareHistoryLinkIntent>("keep"); const [selectedImportCandidateId, setSelectedImportCandidateId] = useState<string | null>(null);
-  const items = data?.items ?? []; const importCandidates = data?.importCandidates ?? []; const maxItems = data?.maxItems ?? 5; const remainingSlots = data?.remainingSlots ?? Math.max(0, maxItems - items.length);
-  const selected = useMemo(() => items.find((item) => item.id === selectedId) ?? items[0] ?? null, [items, selectedId]);
-  useEffect(() => { if (selected && selected.id !== searchParams.get("selected")) router.replace(`/mypage/racket-care?selected=${selected.id}`, { scroll: false }); }, [selected, router, searchParams]);
-  const startCreate = ({ mode, skipMethodStep = false }: StartCreateOptions = {}) => { if (remainingSlots <= 0) { toast.error(`라켓은 최대 ${maxItems}개까지 등록할 수 있어요.`); return; } const resolvedMode = mode === "import" && importCandidates.length === 0 ? "manual" : mode ?? (importCandidates.length > 0 ? "import" : "manual"); const firstCandidate = resolvedMode === "import" ? importCandidates[0] : null; setEditing(null); setErrors({}); setHistoryLinkIntent("keep"); setSelectedImportCandidateId(firstCandidate ? firstCandidate.id : null); setMode(resolvedMode); setStep(skipMethodStep && resolvedMode === mode ? 2 : 1); setForm(firstCandidate ? formFromCandidate(firstCandidate) : emptyForm()); setOpen(true); };
-  const startEdit = (item: CareItem) => { const selectedCandidate = importCandidates.find((candidate) => candidate.latestCompletedApplication?.id === item.lastApplicationId) ?? null; setEditing(item); setErrors({}); setHistoryLinkIntent("keep"); setSelectedImportCandidateId(selectedCandidate?.id ?? null); setStep(2); setMode("manual"); setForm({ nickname: item.nickname, brand: item.racket.brand, model: item.racket.model, playFrequency: item.playFrequency, lastStringingAt: item.lastStringingAt.slice(0,10), reminderEnabled: item.reminderEnabled, stringName: item.stringSnapshot?.name ?? "", gauge: item.stringSnapshot?.gauge ?? "", tensionMain: item.stringSnapshot?.tensionMain ?? "", tensionCross: item.stringSnapshot?.tensionCross ?? "", latestCompletedApplicationId: item.lastApplicationId ?? "" }); setOpen(true); };
-  type SavePayload = { nickname: string; racket: { brand: string; model: string }; playFrequency: string; lastStringingAt: string; reminderEnabled: boolean; stringSnapshot: { name: string; gauge: string; tensionMain: string; tensionCross: string }; latestCompletedApplicationId?: string; clearCompletedApplicationLink?: boolean };
-  const payload = useMemo<SavePayload>(() => { const base: SavePayload = { nickname: form.nickname, racket: { brand: form.brand, model: form.model }, playFrequency: form.playFrequency, lastStringingAt: form.lastStringingAt, reminderEnabled: form.reminderEnabled, stringSnapshot: { name: form.stringName, gauge: form.gauge, tensionMain: form.tensionMain, tensionCross: form.tensionCross } }; if (!editing) return { ...base, latestCompletedApplicationId: form.latestCompletedApplicationId }; if (historyLinkIntent === "replace") return { ...base, latestCompletedApplicationId: form.latestCompletedApplicationId }; if (historyLinkIntent === "clear") return { ...base, clearCompletedApplicationLink: true }; return base; }, [editing, form, historyLinkIntent]);
-  async function save() { if (saving) return; setSaving(true); setErrors({}); try { const res = await fetch(editing ? `/api/users/me/racket-care/${editing.id}` : "/api/users/me/racket-care", { method: editing ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const json: unknown = await res.json().catch(()=>({})); if (!res.ok) { const body = json && typeof json === "object" ? json as { errors?: Record<string,string>; message?: string } : {}; const nextErrors = body.errors ?? { form: body.message ?? "저장하지 못했습니다." }; setErrors(nextErrors); if (body.errors) { const keys = Object.keys(body.errors); if (keys.some((key) => key === "playFrequency" || key === "lastStringingAt")) setStep(3); else if (keys.some((key) => key !== "form")) setStep(2); } toast.error(body.message ?? "라켓 정보를 저장하지 못했습니다."); return; } toast.success(editing ? "라켓 정보를 수정했습니다." : "라켓을 등록했습니다."); setOpen(false); await mutate(); } catch { toast.error("네트워크 오류로 라켓 정보를 저장하지 못했습니다."); } finally { setSaving(false); } }
-  async function remove(id: string) { if (saving) return; setSaving(true); try { const res = await fetch(`/api/users/me/racket-care/${id}`, { method: "DELETE" }); if (!res.ok) { toast.error("라켓 정보를 삭제하지 못했습니다."); return; } setDeletingId(null); toast.success("라켓 정보를 삭제했습니다."); await mutate(); } catch { toast.error("네트워크 오류로 라켓 정보를 삭제하지 못했습니다."); } finally { setSaving(false); } }
-  async function toggleReminder(item: CareItem, checked: boolean) { if (togglingId) return; setTogglingId(item.id); await mutate((prev) => prev ? { ...prev, items: prev.items.map((it) => it.id === item.id ? { ...it, reminderEnabled: checked } : it) } : prev, false); try { const res = await fetch(`/api/users/me/racket-care/${item.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reminderEnabled: checked }) }); if (!res.ok) { toast.error("알림 설정을 변경하지 못했습니다."); await mutate(); return; } toast.success(checked ? "교체 알림을 켰습니다." : "교체 알림을 껐습니다."); await mutate(); } catch { toast.error("네트워크 오류로 알림 설정을 변경하지 못했습니다."); await mutate(); } finally { setTogglingId(null); } }
-  if (isLoading) return <div className="space-y-8"><div className="grid gap-8 rounded-hero border border-border bg-card p-5 shadow-soft bp-sm:p-8 bp-lg:grid-cols-[1.08fr_0.92fr] bp-lg:p-12"><div className="space-y-5"><Skeleton className="h-6 w-52 rounded-control" /><Skeleton className="h-28 w-full rounded-control bp-sm:h-40" /><Skeleton className="h-16 w-4/5 rounded-control" /><Skeleton className="h-12 w-56 rounded-control" /></div><Skeleton className="h-80 rounded-panel" /></div><div className="grid gap-5 bp-lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.48fr)]"><Skeleton className="h-80 rounded-panel" /><Skeleton className="h-[30rem] rounded-panel" /></div></div>;
-  if (error) return <Card variant="feature"><CardContent className="space-y-3 p-5"><p className="font-semibold text-destructive">라켓 케어 정보를 불러오지 못했습니다.</p><p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p><Button onClick={() => mutate()}><RefreshCw className="mr-2 h-4 w-4" />다시 시도</Button></CardContent></Card>;
-  return <div className={selected ? "space-y-12 pb-[calc(5.25rem+env(safe-area-inset-bottom))] bp-lg:space-y-16 bp-lg:pb-0" : "space-y-12 bp-lg:space-y-16"}><RacketCareHero selected={selected} onCreate={startCreate} /><section id="racket-care-workspace" className="space-y-6 scroll-mt-24"><div className="flex flex-col gap-4 border-y border-border py-5 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between"><div><p className="text-ui-kicker text-brand-highlight-ink">MY RACKET WORKSPACE</p><h2 className="mt-2 break-keep text-ui-section-title font-bold tracking-[-0.01em]">내 라켓 관리</h2><p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">상태 점수와 교체 시점을 먼저 확인하고, 필요할 때 추천과 알림으로 바로 이어가세요. 등록 개수 {items.length}/{maxItems}</p></div>{selected ? <Button variant="highlight" wrap="responsive" onClick={() => startCreate()} disabled={remainingSlots <= 0}><Plus className="h-4 w-4" />라켓 추가 등록</Button> : null}</div>{selected ? <div className="grid gap-5 bp-lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.48fr)]"><section className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-lg:self-start" aria-label="내 라켓 선택"><div className="rounded-panel border border-border bg-card p-4 shadow-soft"><div className="mb-4 flex items-center justify-between"><div><p className="text-ui-label text-muted-foreground">SELECT RACKET</p><h3 className="mt-1 font-semibold">라켓 선택</h3></div><span className="text-ui-label text-muted-foreground">{items.length}/{maxItems}</span></div><div className="grid gap-2">{items.map((item) => { const itemMeta = stateMeta[item.careStatus.state]; return <button key={item.id} type="button" onClick={() => setSelectedId(item.id)} className="min-h-20 w-full rounded-control border border-border bg-card p-4 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[active=true]:border-brand-highlight data-[active=true]:bg-brand-highlight-muted" data-active={selected.id === item.id} aria-pressed={selected.id === item.id}><span className="flex flex-wrap items-start justify-between gap-2"><span className="min-w-0 break-words font-semibold">{item.nickname}</span><Badge variant={itemMeta.badge} wrap="normal">{itemMeta.label}</Badge></span><span className="mt-1 block break-words text-ui-label text-muted-foreground">{item.racket.brand} {item.racket.model}</span><span className="mt-3 inline-flex rounded-full bg-muted/30 px-2 py-1 text-ui-label text-muted-foreground">{dday(item.careStatus.daysRemaining)}</span></button>; })}</div>{remainingSlots <= 0 ? <p className="mt-3 text-ui-label text-muted-foreground">최대 {maxItems}개까지 등록할 수 있어요.</p> : null}</div></section><RacketCareStatusCard item={selected} onEdit={() => startEdit(selected)} onDelete={() => setDeletingId(selected.id)} onToggle={toggleReminder} toggling={togglingId === selected.id} /></div> : <Card variant="feature" className="overflow-hidden rounded-panel"><CardContent className="grid gap-6 p-5 bp-sm:p-8 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-center"><div><Badge variant="signal">START RACKET CARE</Badge><h3 className="mt-4 break-keep text-ui-section-title font-bold tracking-[-0.01em]">라켓을 등록하고<br />교체 타이밍을 놓치지 마세요.</h3></div><div><p className="break-keep text-ui-body-sm text-muted-foreground">기존 정보 가져오기를 우선 사용하면 프로필과 완료된 교체 이력을 바탕으로 빠르게 시작할 수 있어요. 라켓은 최대 {maxItems}개까지 관리할 수 있습니다.</p><div className="mt-5 grid gap-2 bp-sm:flex"><Button variant="highlight" wrap="responsive" onClick={() => importCandidates.length > 0 ? startCreate({ mode: "import", skipMethodStep: true }) : startCreate()}>{importCandidates.length > 0 ? "기존 정보에서 가져오기" : "내 라켓 등록하기"}</Button><Button variant="outline" wrap="responsive" onClick={() => startCreate({ mode: "manual", skipMethodStep: true })}>직접 입력하기</Button></div></div></CardContent></Card>}</section>{selected ? <RacketCareMobileNav item={selected} /> : null}<RacketCareRegistrationDialog open={open} setOpen={setOpen} step={step} setStep={setStep} mode={mode} setMode={setMode} editing={editing} form={form} setForm={setForm} errors={errors} saving={saving} save={save} importCandidates={importCandidates} emptyForm={emptyForm} formFromCandidate={formFromCandidate} historyLinkIntent={historyLinkIntent} setHistoryLinkIntent={setHistoryLinkIntent} selectedImportCandidateId={selectedImportCandidateId} setSelectedImportCandidateId={setSelectedImportCandidateId} /><Dialog open={!!deletingId} onOpenChange={(v)=>!v&&setDeletingId(null)}><DialogContent><DialogHeader><DialogTitle>라켓 정보를 삭제할까요?</DialogTitle></DialogHeader><p className="text-ui-body-sm text-muted-foreground">삭제해도 주문·교체 신청 이력은 변경되지 않습니다.</p><DialogFooter><Button variant="outline" onClick={()=>setDeletingId(null)} disabled={saving}>취소</Button><Button variant="destructive" onClick={()=>deletingId&&remove(deletingId)} disabled={saving}>삭제</Button></DialogFooter></DialogContent></Dialog></div>;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data, error, isLoading, mutate } = useSWR<RacketCareResponse>(
+    "/api/users/me/racket-care",
+    authenticatedSWRFetcher,
+  );
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(1);
+  const [mode, setMode] = useState<CreateMode>("manual");
+  const [editing, setEditing] = useState<CareItem | null>(null);
+  const [form, setForm] = useState<CareForm>(() => emptyForm());
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(searchParams.get("selected"));
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [historyLinkIntent, setHistoryLinkIntent] = useState<RacketCareHistoryLinkIntent>("keep");
+  const [selectedImportCandidateId, setSelectedImportCandidateId] = useState<string | null>(null);
+  const items = data?.items ?? [];
+  const importCandidates = data?.importCandidates ?? [];
+  const maxItems = data?.maxItems ?? 5;
+  const remainingSlots = data?.remainingSlots ?? Math.max(0, maxItems - items.length);
+  const selected = useMemo(
+    () => items.find((item) => item.id === selectedId) ?? items[0] ?? null,
+    [items, selectedId],
+  );
+  useEffect(() => {
+    if (selected && selected.id !== searchParams.get("selected"))
+      router.replace(`/mypage/racket-care?selected=${selected.id}`, { scroll: false });
+  }, [selected, router, searchParams]);
+  const startCreate = ({ mode, skipMethodStep = false }: StartCreateOptions = {}) => {
+    if (remainingSlots <= 0) {
+      toast.error(`라켓은 최대 ${maxItems}개까지 등록할 수 있어요.`);
+      return;
+    }
+    const resolvedMode =
+      mode === "import" && importCandidates.length === 0
+        ? "manual"
+        : (mode ?? (importCandidates.length > 0 ? "import" : "manual"));
+    const firstCandidate = resolvedMode === "import" ? importCandidates[0] : null;
+    setEditing(null);
+    setErrors({});
+    setHistoryLinkIntent("keep");
+    setSelectedImportCandidateId(firstCandidate ? firstCandidate.id : null);
+    setMode(resolvedMode);
+    setStep(skipMethodStep && resolvedMode === mode ? 2 : 1);
+    setForm(firstCandidate ? formFromCandidate(firstCandidate) : emptyForm());
+    setOpen(true);
+  };
+  const startEdit = (item: CareItem) => {
+    const selectedCandidate =
+      importCandidates.find(
+        (candidate) => candidate.latestCompletedApplication?.id === item.lastApplicationId,
+      ) ?? null;
+    setEditing(item);
+    setErrors({});
+    setHistoryLinkIntent("keep");
+    setSelectedImportCandidateId(selectedCandidate?.id ?? null);
+    setStep(2);
+    setMode("manual");
+    setForm({
+      nickname: item.nickname,
+      brand: item.racket.brand,
+      model: item.racket.model,
+      playFrequency: item.playFrequency,
+      lastStringingAt: item.lastStringingAt.slice(0, 10),
+      reminderEnabled: item.reminderEnabled,
+      stringName: item.stringSnapshot?.name ?? "",
+      gauge: item.stringSnapshot?.gauge ?? "",
+      tensionMain: item.stringSnapshot?.tensionMain ?? "",
+      tensionCross: item.stringSnapshot?.tensionCross ?? "",
+      latestCompletedApplicationId: item.lastApplicationId ?? "",
+    });
+    setOpen(true);
+  };
+  type SavePayload = {
+    nickname: string;
+    racket: { brand: string; model: string };
+    playFrequency: string;
+    lastStringingAt: string;
+    reminderEnabled: boolean;
+    stringSnapshot: { name: string; gauge: string; tensionMain: string; tensionCross: string };
+    latestCompletedApplicationId?: string;
+    clearCompletedApplicationLink?: boolean;
+  };
+  const payload = useMemo<SavePayload>(() => {
+    const base: SavePayload = {
+      nickname: form.nickname,
+      racket: { brand: form.brand, model: form.model },
+      playFrequency: form.playFrequency,
+      lastStringingAt: form.lastStringingAt,
+      reminderEnabled: form.reminderEnabled,
+      stringSnapshot: {
+        name: form.stringName,
+        gauge: form.gauge,
+        tensionMain: form.tensionMain,
+        tensionCross: form.tensionCross,
+      },
+    };
+    if (!editing)
+      return { ...base, latestCompletedApplicationId: form.latestCompletedApplicationId };
+    if (historyLinkIntent === "replace")
+      return { ...base, latestCompletedApplicationId: form.latestCompletedApplicationId };
+    if (historyLinkIntent === "clear") return { ...base, clearCompletedApplicationLink: true };
+    return base;
+  }, [editing, form, historyLinkIntent]);
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    setErrors({});
+    try {
+      const res = await fetch(
+        editing ? `/api/users/me/racket-care/${editing.id}` : "/api/users/me/racket-care",
+        {
+          method: editing ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      const json: unknown = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const body =
+          json && typeof json === "object"
+            ? (json as { errors?: Record<string, string>; message?: string })
+            : {};
+        const nextErrors = body.errors ?? { form: body.message ?? "저장하지 못했습니다." };
+        setErrors(nextErrors);
+        if (body.errors) {
+          const keys = Object.keys(body.errors);
+          if (keys.some((key) => key === "playFrequency" || key === "lastStringingAt")) setStep(3);
+          else if (keys.some((key) => key !== "form")) setStep(2);
+        }
+        toast.error(body.message ?? "라켓 정보를 저장하지 못했습니다.");
+        return;
+      }
+      toast.success(editing ? "라켓 정보를 수정했습니다." : "라켓을 등록했습니다.");
+      setOpen(false);
+      await mutate();
+    } catch {
+      toast.error("네트워크 오류로 라켓 정보를 저장하지 못했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function remove(id: string) {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/users/me/racket-care/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        toast.error("라켓 정보를 삭제하지 못했습니다.");
+        return;
+      }
+      setDeletingId(null);
+      toast.success("라켓 정보를 삭제했습니다.");
+      await mutate();
+    } catch {
+      toast.error("네트워크 오류로 라켓 정보를 삭제하지 못했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function toggleReminder(item: CareItem, checked: boolean) {
+    if (togglingId) return;
+    setTogglingId(item.id);
+    await mutate(
+      (prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((it) =>
+                it.id === item.id ? { ...it, reminderEnabled: checked } : it,
+              ),
+            }
+          : prev,
+      false,
+    );
+    try {
+      const res = await fetch(`/api/users/me/racket-care/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reminderEnabled: checked }),
+      });
+      if (!res.ok) {
+        toast.error("알림 설정을 변경하지 못했습니다.");
+        await mutate();
+        return;
+      }
+      toast.success(checked ? "교체 알림을 켰습니다." : "교체 알림을 껐습니다.");
+      await mutate();
+    } catch {
+      toast.error("네트워크 오류로 알림 설정을 변경하지 못했습니다.");
+      await mutate();
+    } finally {
+      setTogglingId(null);
+    }
+  }
+  if (isLoading)
+    return (
+      <div className="space-y-8">
+        <div className="grid gap-8 rounded-hero border border-border bg-card p-5 shadow-soft bp-sm:p-8 bp-lg:grid-cols-[1.08fr_0.92fr] bp-lg:p-12">
+          <div className="space-y-5">
+            <Skeleton className="h-6 w-52 rounded-control" />
+            <Skeleton className="h-28 w-full rounded-control bp-sm:h-40" />
+            <Skeleton className="h-16 w-4/5 rounded-control" />
+            <Skeleton className="h-12 w-56 rounded-control" />
+          </div>
+          <Skeleton className="h-80 rounded-panel" />
+        </div>
+        <div className="grid gap-5 bp-lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.48fr)]">
+          <Skeleton className="h-80 rounded-panel" />
+          <Skeleton className="h-[30rem] rounded-panel" />
+        </div>
+      </div>
+    );
+  if (error)
+    return (
+      <Card variant="feature">
+        <CardContent className="space-y-3 p-5">
+          <p className="font-semibold text-destructive">라켓 케어 정보를 불러오지 못했습니다.</p>
+          <p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
+          <Button onClick={() => mutate()}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            다시 시도
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  return (
+    <div
+      className={
+        selected
+          ? "space-y-12 pb-[calc(5.25rem+env(safe-area-inset-bottom))] bp-lg:space-y-16 bp-lg:pb-0"
+          : "space-y-12 bp-lg:space-y-16"
+      }
+    >
+      <RacketCareHero selected={selected} onCreate={startCreate} />
+      <section id="racket-care-workspace" className="space-y-6 scroll-mt-24">
+        <div className="flex flex-col gap-4 border-y border-border py-5 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
+          <div>
+            <p className="text-ui-kicker text-brand-highlight-ink">MY RACKET WORKSPACE</p>
+            <h2 className="mt-2 break-keep text-ui-section-title font-bold tracking-[-0.01em]">
+              내 라켓 관리
+            </h2>
+            <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
+              상태 점수와 교체 시점을 먼저 확인하고, 필요할 때 추천과 알림으로 바로 이어가세요. 등록
+              개수 {items.length}/{maxItems}
+            </p>
+          </div>
+          {selected ? (
+            <Button
+              variant="highlight"
+              wrap="responsive"
+              onClick={() => startCreate()}
+              disabled={remainingSlots <= 0}
+            >
+              <Plus className="h-4 w-4" />
+              라켓 추가 등록
+            </Button>
+          ) : null}
+        </div>
+        {selected ? (
+          <div className="grid gap-5 bp-lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.48fr)]">
+            <section
+              className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-lg:self-start"
+              aria-label="내 라켓 선택"
+            >
+              <div className="rounded-panel border border-border bg-card p-4 shadow-soft">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-ui-label text-muted-foreground">SELECT RACKET</p>
+                    <h3 className="mt-1 font-semibold">라켓 선택</h3>
+                  </div>
+                  <span className="text-ui-label text-muted-foreground">
+                    {items.length}/{maxItems}
+                  </span>
+                </div>
+                <div className="grid gap-2">
+                  {items.map((item) => {
+                    const itemMeta = stateMeta[item.careStatus.state];
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setSelectedId(item.id)}
+                        className="min-h-20 w-full rounded-control border border-border bg-card p-4 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[active=true]:border-brand-highlight data-[active=true]:bg-brand-highlight-muted"
+                        data-active={selected.id === item.id}
+                        aria-pressed={selected.id === item.id}
+                      >
+                        <span className="flex flex-wrap items-start justify-between gap-2">
+                          <span className="min-w-0 break-words font-semibold">{item.nickname}</span>
+                          <Badge variant={itemMeta.badge} wrap="normal">
+                            {itemMeta.label}
+                          </Badge>
+                        </span>
+                        <span className="mt-1 block break-words text-ui-label text-muted-foreground">
+                          {item.racket.brand} {item.racket.model}
+                        </span>
+                        <span className="mt-3 inline-flex rounded-full bg-muted/30 px-2 py-1 text-ui-label text-muted-foreground">
+                          {dday(item.careStatus.daysRemaining)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {remainingSlots <= 0 ? (
+                  <p className="mt-3 text-ui-label text-muted-foreground">
+                    최대 {maxItems}개까지 등록할 수 있어요.
+                  </p>
+                ) : null}
+              </div>
+            </section>
+            <RacketCareStatusCard
+              item={selected}
+              onEdit={() => startEdit(selected)}
+              onDelete={() => setDeletingId(selected.id)}
+              onToggle={toggleReminder}
+              toggling={togglingId === selected.id}
+            />
+          </div>
+        ) : (
+          <Card variant="feature" className="overflow-hidden rounded-panel">
+            <CardContent className="grid gap-6 p-5 bp-sm:p-8 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-center">
+              <div>
+                <Badge variant="signal">START RACKET CARE</Badge>
+                <h3 className="mt-4 break-keep text-ui-section-title font-bold tracking-[-0.01em]">
+                  라켓을 등록하고
+                  <br />
+                  교체 타이밍을 놓치지 마세요.
+                </h3>
+              </div>
+              <div>
+                <p className="break-keep text-ui-body-sm text-muted-foreground">
+                  기존 정보 가져오기를 우선 사용하면 프로필과 완료된 교체 이력을 바탕으로 빠르게
+                  시작할 수 있어요. 라켓은 최대 {maxItems}개까지 관리할 수 있습니다.
+                </p>
+                <div className="mt-5 grid gap-2 bp-sm:flex">
+                  <Button
+                    variant="highlight"
+                    wrap="responsive"
+                    onClick={() =>
+                      importCandidates.length > 0
+                        ? startCreate({ mode: "import", skipMethodStep: true })
+                        : startCreate()
+                    }
+                  >
+                    {importCandidates.length > 0 ? "기존 정보에서 가져오기" : "내 라켓 등록하기"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    wrap="responsive"
+                    onClick={() => startCreate({ mode: "manual", skipMethodStep: true })}
+                  >
+                    직접 입력하기
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </section>
+      {selected ? <RacketCareMobileNav item={selected} /> : null}
+      <RacketCareRegistrationDialog
+        open={open}
+        setOpen={setOpen}
+        step={step}
+        setStep={setStep}
+        mode={mode}
+        setMode={setMode}
+        editing={editing}
+        form={form}
+        setForm={setForm}
+        errors={errors}
+        saving={saving}
+        save={save}
+        importCandidates={importCandidates}
+        emptyForm={emptyForm}
+        formFromCandidate={formFromCandidate}
+        historyLinkIntent={historyLinkIntent}
+        setHistoryLinkIntent={setHistoryLinkIntent}
+        selectedImportCandidateId={selectedImportCandidateId}
+        setSelectedImportCandidateId={setSelectedImportCandidateId}
+      />
+      <Dialog open={!!deletingId} onOpenChange={(v) => !v && setDeletingId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>라켓 정보를 삭제할까요?</DialogTitle>
+          </DialogHeader>
+          <p className="text-ui-body-sm text-muted-foreground">
+            삭제해도 주문·교체 신청 이력은 변경되지 않습니다.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingId(null)} disabled={saving}>
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deletingId && remove(deletingId)}
+              disabled={saving}
+            >
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

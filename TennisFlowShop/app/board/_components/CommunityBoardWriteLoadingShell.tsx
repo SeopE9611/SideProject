@@ -32,7 +32,13 @@ const FormSection = ({
       {Array.from({ length: fields }, (_, index) => (
         <div key={index} className="space-y-2">
           <Skeleton className="h-4 w-20" />
-          <Skeleton className={index === fields - 1 && largeLastField ? "h-36 w-full rounded-control" : "h-11 w-full rounded-control"} />
+          <Skeleton
+            className={
+              index === fields - 1 && largeLastField
+                ? "h-36 w-full rounded-control"
+                : "h-11 w-full rounded-control"
+            }
+          />
         </div>
       ))}
     </div>
@@ -45,12 +51,19 @@ export default function CommunityBoardWriteLoadingShell({ boardLabel, isMarket =
       <span className="sr-only">{boardLabel} 작성 화면을 불러오는 중입니다.</span>
       <SiteContainer
         variant="wide"
-        className={isMarket ? "max-w-7xl space-y-6 py-6 md:space-y-8 md:py-10" : "max-w-5xl space-y-6 py-6 md:space-y-8 md:py-10"}
+        className={
+          isMarket
+            ? "max-w-7xl space-y-6 py-6 md:space-y-8 md:py-10"
+            : "max-w-5xl space-y-6 py-6 md:space-y-8 md:py-10"
+        }
       >
         <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3">
-              <div className="flex items-center gap-2"><Badge variant="brand">{boardLabel}</Badge><Skeleton className="h-4 w-24" /></div>
+              <div className="flex items-center gap-2">
+                <Badge variant="brand">{boardLabel}</Badge>
+                <Skeleton className="h-4 w-24" />
+              </div>
               <Skeleton className="h-9 w-56 max-w-full" />
               <Skeleton className="h-5 w-80 max-w-full" />
             </div>
@@ -67,8 +80,16 @@ export default function CommunityBoardWriteLoadingShell({ boardLabel, isMarket =
               <FormSection icon={FileText} fields={2} largeLastField />
               <FormSection icon={ImageIcon} fields={3} largeLastField />
               <section className="rounded-panel border border-border bg-card p-5 shadow-soft md:p-6">
-                <div className="space-y-3"><Skeleton className="h-5 w-36" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /><Skeleton className="h-14 w-full rounded-control" /></div>
-                <div className="mt-4 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end"><Skeleton className="h-10 w-full rounded-control sm:w-20" /><Skeleton className="h-10 w-full rounded-control sm:w-28" /></div>
+                <div className="space-y-3">
+                  <Skeleton className="h-5 w-36" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-14 w-full rounded-control" />
+                </div>
+                <div className="mt-4 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+                  <Skeleton className="h-10 w-full rounded-control sm:w-20" />
+                  <Skeleton className="h-10 w-full rounded-control sm:w-28" />
+                </div>
               </section>
             </div>
             <aside className="hidden flex-shrink-0 lg:sticky lg:top-24 lg:block lg:w-[300px] lg:self-start xl:w-[320px]">
@@ -80,8 +101,18 @@ export default function CommunityBoardWriteLoadingShell({ boardLabel, isMarket =
           </div>
         ) : (
           <section className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
-            <div className="space-y-3 border-b border-border bg-brand-highlight-muted/35 p-5 md:p-6"><Skeleton className="h-4 w-16" /><Skeleton className="h-11 w-full rounded-control" /></div>
-            <div className="space-y-6 p-5 md:p-6"><FormSection icon={FileText} fields={3} /><FormSection icon={ImageIcon} fields={3} /><div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end"><Skeleton className="h-10 w-full rounded-control sm:w-20" /><Skeleton className="h-10 w-full rounded-control sm:w-28" /></div></div>
+            <div className="space-y-3 border-b border-border bg-brand-highlight-muted/35 p-5 md:p-6">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-11 w-full rounded-control" />
+            </div>
+            <div className="space-y-6 p-5 md:p-6">
+              <FormSection icon={FileText} fields={3} />
+              <FormSection icon={ImageIcon} fields={3} />
+              <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+                <Skeleton className="h-10 w-full rounded-control sm:w-20" />
+                <Skeleton className="h-10 w-full rounded-control sm:w-28" />
+              </div>
+            </div>
           </section>
         )}
       </SiteContainer>

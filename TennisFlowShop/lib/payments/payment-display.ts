@@ -112,7 +112,8 @@ function getMethodBaseLabel(method?: unknown, easyPayProvider?: unknown): string
   const lowered = cleanText(method)?.toLowerCase() ?? "";
   const hasEasyPay = Boolean(cleanText(easyPayProvider));
 
-  if (["bank_transfer", "manual_bank_transfer", "bank", "virtual_account"].includes(lowered)) return "무통장입금";
+  if (["bank_transfer", "manual_bank_transfer", "bank", "virtual_account"].includes(lowered))
+    return "무통장입금";
   if (normalized.includes("VBANK")) return "가상계좌";
   if (normalized.includes("BANK") || normalized.includes("TRANSFER")) return "무통장입금";
   if (

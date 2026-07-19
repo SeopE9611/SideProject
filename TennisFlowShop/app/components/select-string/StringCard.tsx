@@ -152,7 +152,9 @@ export function StringCard({
     <div
       className={cn(
         "group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200",
-        viewMode === "list" ? "flex flex-col bp-md:grid bp-md:grid-cols-[210px_minmax(0,1fr)_200px]" : "flex h-full flex-col",
+        viewMode === "list"
+          ? "flex flex-col bp-md:grid bp-md:grid-cols-[210px_minmax(0,1fr)_200px]"
+          : "flex h-full flex-col",
         isSelected
           ? cn(
               "border-primary/40 bg-primary/5",
@@ -201,7 +203,12 @@ export function StringCard({
       </div>
 
       {/* Content */}
-      <div className={cn("flex min-w-0 flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4",
+        )}
+      >
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
           <h3 className="line-clamp-2 min-w-0 break-words text-ui-body-sm font-semibold leading-tight text-foreground bp-md:text-ui-body">
@@ -345,7 +352,6 @@ export function StringCard({
             <p className="text-ui-label text-destructive">구매 가능 수량 초과</p>
           )}
         </div>
-
       </div>
 
       {/* Actions */}

@@ -11,23 +11,23 @@
 
 ## required / optional 구분
 
-| kind | UI label | 의미 |
-| --- | --- | --- |
+| kind       | UI label  | 의미                                              |
+| ---------- | --------- | ------------------------------------------------- |
 | `required` | 다음 조치 | 거래 진행을 위해 사용자가 처리해야 하는 필수 작업 |
-| `optional` | 선택 활동 | 거래 완료 후 사용자가 선택적으로 할 수 있는 활동 |
+| `optional` | 선택 활동 | 거래 완료 후 사용자가 선택적으로 할 수 있는 활동  |
 
 ## reason code
 
-| code | kind | label | 메시지 |
-| --- | --- | --- | --- |
-| `application_inbound_tracking` | required | 다음 조치 | 라켓 발송 운송장을 등록해주세요. |
-| `order_confirm` | required | 다음 조치 | 상품을 받으셨다면 구매 확정을 진행해주세요. |
-| `application_confirm` | required | 다음 조치 | 작업 내용을 확인하고 교체서비스 확정을 진행해주세요. |
-| `rental_return_shipping_register` | required | 다음 조치 | 반납 운송장을 등록해주세요. |
-| `rental_confirm` | required | 다음 조치 | 반납 내용을 확인하고 수령 확인을 진행해주세요. |
-| `rental_stringing_apply` | required | 다음 조치 | 교체서비스 신청을 이어갈 수 있어요. |
-| `product_review` | optional | 선택 활동 | 후기를 남길 수 있어요. |
-| `product_stringing_review` | optional | 선택 활동 | 상품과 교체서비스 후기를 남길 수 있어요. |
+| code                              | kind     | label     | 메시지                                               |
+| --------------------------------- | -------- | --------- | ---------------------------------------------------- |
+| `application_inbound_tracking`    | required | 다음 조치 | 라켓 발송 운송장을 등록해주세요.                     |
+| `order_confirm`                   | required | 다음 조치 | 상품을 받으셨다면 구매 확정을 진행해주세요.          |
+| `application_confirm`             | required | 다음 조치 | 작업 내용을 확인하고 교체서비스 확정을 진행해주세요. |
+| `rental_return_shipping_register` | required | 다음 조치 | 반납 운송장을 등록해주세요.                          |
+| `rental_confirm`                  | required | 다음 조치 | 반납 내용을 확인하고 수령 확인을 진행해주세요.       |
+| `rental_stringing_apply`          | required | 다음 조치 | 교체서비스 신청을 이어갈 수 있어요.                  |
+| `product_review`                  | optional | 선택 활동 | 후기를 남길 수 있어요.                               |
+| `product_stringing_review`        | optional | 선택 활동 | 상품과 교체서비스 후기를 남길 수 있어요.             |
 
 ## 도메인별 우선순위
 

@@ -310,7 +310,12 @@ export async function GET(req: Request) {
       );
     }
 
-    let fallback: { order: any; target: any; targetItem: CanonicalReviewTarget | null; blockReason: ReviewSubmissionBlockReason } | null = null;
+    let fallback: {
+      order: any;
+      target: any;
+      targetItem: CanonicalReviewTarget | null;
+      blockReason: ReviewSubmissionBlockReason;
+    } | null = null;
     for (const order of myOrders) {
       const target = await resolveOrderReviewTarget(db, userId, String(order._id), productId);
       const targetItem = pickBundleTarget(target?.targetBundle, productId);
@@ -427,18 +432,17 @@ export async function GET(req: Request) {
     }
 
     const blockReasons = bundle.targets.map((target) => getReviewSubmissionBlockReason(target));
-    const blockReason =
-      blockReasons.includes("already")
-        ? "already"
-        : blockReasons.includes("coveredByIntegratedReview")
-          ? "coveredByIntegratedReview"
-          : blockReasons.includes("notConfirmed")
-            ? "notConfirmed"
-            : blockReasons.includes("notCompleted")
-              ? "notCompleted"
-              : blockReasons.includes("invalidStatus")
-                ? "invalidStatus"
-                : "notFound";
+    const blockReason = blockReasons.includes("already")
+      ? "already"
+      : blockReasons.includes("coveredByIntegratedReview")
+        ? "coveredByIntegratedReview"
+        : blockReasons.includes("notConfirmed")
+          ? "notConfirmed"
+          : blockReasons.includes("notCompleted")
+            ? "notCompleted"
+            : blockReasons.includes("invalidStatus")
+              ? "invalidStatus"
+              : "notFound";
     const target = bundle.targets[0] ?? null;
     return NextResponse.json(
       eligibilityPayload({

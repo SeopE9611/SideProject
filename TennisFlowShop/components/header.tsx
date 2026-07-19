@@ -571,10 +571,20 @@ const Header = () => {
                           {displayName} 님
                         </div>
                         {hasKakao && (
-                          <IdentityBadge tone="kakao" className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 text-ui-micro leading-none">카카오</IdentityBadge>
+                          <IdentityBadge
+                            tone="kakao"
+                            className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 text-ui-micro leading-none"
+                          >
+                            카카오
+                          </IdentityBadge>
                         )}
                         {hasNaver && (
-                          <IdentityBadge tone="naver" className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 text-ui-micro leading-none">네이버</IdentityBadge>
+                          <IdentityBadge
+                            tone="naver"
+                            className="h-4 min-h-0 shrink-0 whitespace-nowrap px-1.5 text-ui-micro leading-none"
+                          >
+                            네이버
+                          </IdentityBadge>
                         )}
                         {isAdmin && (
                           <IdentityBadge
@@ -779,9 +789,7 @@ const Header = () => {
                       router.push("/services/apply");
                     }}
                   >
-                    <span className="min-w-0 truncate">
-                      교체서비스 시작하기
-                    </span>
+                    <span className="min-w-0 truncate">교체서비스 시작하기</span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 

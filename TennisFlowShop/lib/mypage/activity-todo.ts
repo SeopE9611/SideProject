@@ -148,7 +148,10 @@ type RentalTodoParams = {
 };
 
 export function isRentalReturnShippingRegistrationRequired(
-  params: Pick<RentalTodoParams, "status" | "dueAt" | "returnedAt" | "hasReturnShipping" | "todayYmd">,
+  params: Pick<
+    RentalTodoParams,
+    "status" | "dueAt" | "returnedAt" | "hasReturnShipping" | "todayYmd"
+  >,
 ): boolean {
   if (!isRentalOutStatus(params.status)) return false;
   if (params.returnedAt) return false;
@@ -203,7 +206,8 @@ export function resolveOrderTodoReason(params: {
   if ((params.linkedApplications ?? []).some((app) => resolveApplicationTrackingTodoReason(app))) {
     return "application_inbound_tracking";
   }
-  if (resolveApplicationTrackingTodoReason(params.primaryApplication)) return "application_inbound_tracking";
+  if (resolveApplicationTrackingTodoReason(params.primaryApplication))
+    return "application_inbound_tracking";
   if (isOrderDeliveredStatus(params.status)) return "order_confirm";
 
   const isConfirmed = Boolean(params.userConfirmedAt) || isOrderConfirmedStatus(params.status);
@@ -212,7 +216,8 @@ export function resolveOrderTodoReason(params: {
   if ((params.linkedApplications ?? []).some((app) => isApplicationServiceReviewTodoPending(app))) {
     return "product_stringing_review";
   }
-  if (isApplicationServiceReviewTodoPending(params.primaryApplication)) return "product_stringing_review";
+  if (isApplicationServiceReviewTodoPending(params.primaryApplication))
+    return "product_stringing_review";
   return null;
 }
 
@@ -228,7 +233,8 @@ export function resolveRentalTodoReason(params: RentalTodoParams): MypageTodoRea
   if ((params.linkedApplications ?? []).some((app) => isApplicationServiceReviewTodoPending(app))) {
     return "product_stringing_review";
   }
-  if (isApplicationServiceReviewTodoPending(params.primaryApplication)) return "product_stringing_review";
+  if (isApplicationServiceReviewTodoPending(params.primaryApplication))
+    return "product_stringing_review";
   if (!params.stringingApplicationId && params.withStringService) return "rental_stringing_apply";
   return null;
 }
@@ -237,7 +243,9 @@ export function isApplicationTodoActionable(app?: ActivityTodoApplicationLike | 
   return resolveApplicationTodoReason(app) !== null;
 }
 
-export function isOrderTodoActionable(params: Parameters<typeof resolveOrderTodoReason>[0]): boolean {
+export function isOrderTodoActionable(
+  params: Parameters<typeof resolveOrderTodoReason>[0],
+): boolean {
   return resolveOrderTodoReason(params) !== null;
 }
 

@@ -135,7 +135,6 @@
 - 공간이 부족하면 primary action을 full-width 행으로 이동한다.
 - Marketing/descriptive CTA는 매우 긴 경우에만 `wrap="responsive"`를 허용한다.
 
-
 ## Transaction command / Marketing descriptive CTA
 
 Transaction command는 구매, 신청, 대여, 상세 보기, 운송장 등록, 확정처럼 거래 진행에 직접 연결되는 명령이다. 이 버튼은 한 줄, `nowrap`, 공간 부족 시 full-width 또는 다음 행 이동을 원칙으로 하며 텍스트 줄바꿈으로 공간을 해결하지 않는다.

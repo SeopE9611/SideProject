@@ -1412,1188 +1412,1161 @@ export default function CheckoutPage() {
               )}
               aria-busy={isCheckoutSubmitting}
             >
-                <nav
-                  aria-label="주문서 작성 순서"
-                  className="rounded-2xl border border-border bg-card p-2.5 shadow-sm bp-sm:p-4"
-                >
-                  <p className="text-ui-body-sm font-medium text-foreground">주문서 작성 순서</p>
-                  <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2 [&::-webkit-scrollbar]:hidden">
-                    {[
-                      { href: "#checkout-order-items", label: "주문 상품" },
-                      { href: "#checkout-delivery-method", label: "수령·배송" },
-                      {
-                        href: "#checkout-recipient-info",
-                        label: "배송·연락 정보",
-                      },
-                      { href: "#checkout-payment-info", label: "결제·혜택" },
-                      { href: "#checkout-agreements", label: "약관 동의" },
-                      { href: "#checkout-final-confirm", label: "최종 확인" },
-                    ].map((item) => (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        className="shrink-0 rounded-full border border-border bg-secondary/30 px-3 py-1.5 text-ui-label font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-3.5 bp-sm:py-2 bp-sm:text-ui-body-sm"
-                      >
-                        {item.label}
-                      </a>
-                    ))}
-                  </div>
-                </nav>
-
-                {/* 현재 주문 성격 및 작성 안내 */}
-                <section
-                  aria-label="현재 주문 성격 및 작성 안내"
-                  className={cn(
-                    "rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5",
-                    withStringService ? "ring-1 ring-primary/20" : "bg-muted/30",
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1",
-                        withStringService
-                          ? "bg-primary/10 text-primary ring-primary/20"
-                          : "bg-muted/60 text-muted-foreground ring-border/60",
-                      )}
+              <nav
+                aria-label="주문서 작성 순서"
+                className="rounded-2xl border border-border bg-card p-2.5 shadow-sm bp-sm:p-4"
+              >
+                <p className="text-ui-body-sm font-medium text-foreground">주문서 작성 순서</p>
+                <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2 [&::-webkit-scrollbar]:hidden">
+                  {[
+                    { href: "#checkout-order-items", label: "주문 상품" },
+                    { href: "#checkout-delivery-method", label: "수령·배송" },
+                    {
+                      href: "#checkout-recipient-info",
+                      label: "배송·연락 정보",
+                    },
+                    { href: "#checkout-payment-info", label: "결제·혜택" },
+                    { href: "#checkout-agreements", label: "약관 동의" },
+                    { href: "#checkout-final-confirm", label: "최종 확인" },
+                  ].map((item) => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      className="shrink-0 rounded-full border border-border bg-secondary/30 px-3 py-1.5 text-ui-label font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-3.5 bp-sm:py-2 bp-sm:text-ui-body-sm"
                     >
-                      {withStringService ? (
-                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                      ) : (
-                        <Info className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="min-w-0 space-y-1">
-                      <h2
-                        className={cn(
-                          "break-keep text-ui-body font-semibold text-foreground",
-                          !withStringService && "text-ui-body-sm font-medium",
-                        )}
-                      >
-                        {withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}
-                      </h2>
-                      {withStringService ? (
-                        <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">
-                            작업 정보와 수령/배송 방식을 확인하면 함께 접수됩니다.
-                          </p>
-                          {isStringOnlyServiceFlow && (
-                            <p className="break-keep">{stringStandalonePausedNotice}</p>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">교체서비스 없이 상품만 주문합니다.</p>
-                          <p className="break-keep text-ui-label text-muted-foreground/90">
-                            결제 전 새로고침이나 페이지 이동은 피해주세요.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </section>
-                {/* 주문 상품 */}
-                <CheckoutSection
-                  id="checkout-order-items"
-                  icon={<Package className="h-5 w-5" />}
-                  title="주문 상품"
-                  headerAction={
-                    <Badge
-                      variant="secondary"
-                      className="shrink-0 whitespace-nowrap px-3 py-1 text-ui-caption font-medium"
-                    >
-                      {orderItems.length}개 상품
-                    </Badge>
-                  }
-                >
-                    {isBundleCheckout && bundleQty !== null && (
-                      <div className="mb-4 border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5 text-ui-body-sm text-foreground dark:bg-card/30 dark:text-foreground">
-                        <p className="font-medium">번들 수량: {bundleQty}개</p>
-                        <p className="mt-1 text-muted-foreground">
-                          라켓/스트링 수량은 함께 적용됩니다. 변경은{" "}
-                          <span className="font-medium text-foreground">스트링 선택 단계</span>
-                          에서만 가능합니다.
-                        </p>
-                        {bundleRacketId && (
-                          <div className="mt-3">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-8"
-                              asChild
-                            >
-                              <Link
-                                href={`/rackets/${bundleRacketId}/select-string`}
-                                data-no-unsaved-guard
-                                onClick={onLeaveCartClick}
-                              >
-                                수량/스트링 변경
-                              </Link>
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <div className="space-y-3">
-                      {orderItems.map((item, idx) => (
-                        <div
-                          key={item.id}
-                          className="flex flex-col gap-3 border-b border-border/50 py-4 last:border-b-0 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5"
-                          style={{ animationDelay: `${idx * 50}ms` }}
-                        >
-                          <div className="flex min-w-0 flex-1 items-start gap-4">
-                            <div className="relative shrink-0">
-                              <div className="overflow-hidden rounded-xl ring-2 ring-border/50">
-                                <Image
-                                  src={
-                                    item.image ||
-                                    "/placeholder.svg?height=80&width=80&query=tennis+product"
-                                  }
-                                  alt={item.name}
-                                  width={80}
-                                  height={80}
-                                  loading="lazy"
-                                  className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover"
-                                />
-                              </div>
-                              <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground shadow-sm ring-2 ring-card">
-                                {item.quantity}
-                              </div>
-                            </div>
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </nav>
 
-                            <div className="min-w-0 flex-1 space-y-1.5">
-                              <h3 className="line-clamp-2 break-keep break-words text-ui-body-sm font-medium leading-relaxed text-foreground bp-sm:text-ui-body">
-                                {item.name}
-                              </h3>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/50 px-2 py-0.5 text-ui-label text-foreground/80">
-                                  수량 {item.quantity}개
-                                </span>
-                                {item.selectedGauge && (
-                                  <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-ui-label leading-relaxed text-foreground/80">
-                                    게이지(굵기) {formatGaugeLabel(item.selectedGauge)}
-                                  </span>
-                                )}
-                                {(item.selectedColorLabel || item.selectedColor) && (
-                                  <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-ui-label leading-relaxed text-foreground/80">
-                                    색상
-                                    {item.selectedColorHex && (
-                                      <span
-                                        className="h-2.5 w-2.5 rounded-full border border-border/60"
-                                        style={{
-                                          backgroundColor: item.selectedColorHex,
-                                        }}
-                                      />
-                                    )}
-                                    <span className="min-w-0 break-keep break-words">
-                                      {item.selectedColorLabel || item.selectedColor}
-                                    </span>
-                                  </span>
-                                )}
-                                {withStringService &&
-                                  serviceTargetIds.includes(String(item.id)) && (
-                                    <Badge
-                                      variant="outline"
-                                      className="shrink-0 whitespace-nowrap border-primary/30 text-ui-caption text-primary"
-                                    >
-                                      교체서비스
-                                    </Badge>
-                                  )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="w-full bp-sm:w-auto bp-sm:min-w-[160px] bp-sm:text-right">
-                            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bp-sm:justify-end">
-                              <span className="text-ui-label font-medium text-muted-foreground">
-                                {typeof item.regularPrice === "number" &&
-                                item.regularPrice > item.price
-                                  ? "할인가"
-                                  : "판매가"}
-                              </span>
-                              <div className="whitespace-nowrap text-ui-price font-semibold tabular-nums text-foreground bp-sm:text-ui-price-lg">
-                                {item.price.toLocaleString()}
-                                <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
-                                  원
-                                </span>
-                              </div>
-                            </div>
-                            {typeof item.regularPrice === "number" &&
-                              Number.isFinite(item.regularPrice) &&
-                              item.regularPrice > item.price && (
-                                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-ui-label">
-                                  <span className="text-muted-foreground tabular-nums">
-                                    정가{" "}
-                                    <span className="line-through">
-                                      {item.regularPrice.toLocaleString()}원
-                                    </span>
-                                  </span>
-                                  <Badge
-                                    variant="destructive"
-                                    className="text-ui-micro tabular-nums"
-                                  >
-                                    {item.discountRate ??
-                                      Math.round(
-                                        ((item.regularPrice - item.price) / item.regularPrice) *
-                                          100,
-                                      )}
-                                    % OFF
-                                  </Badge>
-                                </div>
-                              )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* 상품 금액 소계 */}
-                    <div className="mt-5 flex items-center justify-between gap-3 border-t border-dashed border-border/60 pt-5">
-                      <span className="break-keep text-ui-body-sm text-foreground/80">
-                        상품 판매가 합계
-                      </span>
-                      <span className="whitespace-nowrap text-ui-price-lg font-semibold tabular-nums text-foreground">
-                        {subtotal.toLocaleString()}
-                        <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
-                          원
-                        </span>
-                      </span>
-                    </div>
-                </CheckoutSection>
-
-                {/* 수령 방식 및 장착 서비스 카드 */}
-                <CheckoutSection
-                  id="checkout-delivery-method"
-                  icon={<Truck className="h-5 w-5" />}
-                  title="수령/배송 방법"
-                  description="수령 방식에 맞춰 배송비와 입력 항목이 달라집니다."
-                  contentClassName="space-y-4 bp-sm:space-y-5"
-                >
-                    <RadioGroup
-                      value={deliveryMethod}
-                      onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")}
-                      className="grid gap-3"
-                    >
-                      <label
-                        htmlFor="택배수령"
-                        className={cn(
-                          "flex items-center gap-3 rounded-xl border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:gap-4 bp-sm:p-4",
-                          deliveryMethod === "택배수령"
-                            ? "border-primary/80 bg-primary/5 shadow-sm"
-                            : "border-border/60 bg-transparent hover:border-border hover:bg-muted/20",
-                        )}
-                      >
-                        <RadioGroupItem value="택배수령" id="택배수령" className="sr-only" />
-                        <div
-                          className={cn(
-                            "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
-                            deliveryMethod === "택배수령" ? "bg-primary/15" : "bg-secondary",
-                          )}
-                        >
-                          <Truck
-                            className={cn(
-                              "h-6 w-6",
-                              deliveryMethod === "택배수령"
-                                ? "text-primary"
-                                : "text-muted-foreground",
-                            )}
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-ui-body-sm font-medium text-foreground bp-sm:text-ui-body">
-                            택배 발송/수령
-                          </div>
-                          <div className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                            입력한 주소로 상품을 발송합니다.
-                          </div>
-                        </div>
-                        <div
-                          className={cn(
-                            "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
-                            deliveryMethod === "택배수령"
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-transparent",
-                          )}
-                        >
-                          {deliveryMethod === "택배수령" && (
-                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                          )}
-                        </div>
-                      </label>
-                      <label
-                        htmlFor="방문수령"
-                        className={cn(
-                          "flex items-center gap-3 rounded-xl border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:gap-4 bp-sm:p-4",
-                          deliveryMethod === "방문수령"
-                            ? "border-primary/80 bg-primary/5 shadow-sm"
-                            : "border-border/60 bg-transparent hover:border-border hover:bg-muted/20",
-                        )}
-                      >
-                        <RadioGroupItem value="방문수령" id="방문수령" className="sr-only" />
-                        <div
-                          className={cn(
-                            "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
-                            deliveryMethod === "방문수령" ? "bg-primary/15" : "bg-secondary",
-                          )}
-                        >
-                          <Building2
-                            className={cn(
-                              "h-6 w-6",
-                              deliveryMethod === "방문수령"
-                                ? "text-primary"
-                                : "text-muted-foreground",
-                            )}
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-ui-body-sm font-medium text-foreground bp-sm:text-ui-body">
-                            오프라인 매장 방문
-                          </div>
-                          <div className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                            매장에서 직접 수령합니다.
-                          </div>
-                        </div>
-                        <div
-                          className={cn(
-                            "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
-                            deliveryMethod === "방문수령"
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-transparent",
-                          )}
-                        >
-                          {deliveryMethod === "방문수령" && (
-                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                          )}
-                        </div>
-                      </label>
-                    </RadioGroup>
-                    {withStringService && (
-                      <div className="border-l-2 border-primary/30 bg-primary/5 px-3 py-2.5 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">
-                        <p className="font-medium text-foreground">교체서비스 진행 안내</p>
-                        <p className="mt-1 break-keep">
-                          {deliveryMethod === "택배수령"
-                            ? "결제 후 라켓을 포장해 발송하고, 마이페이지에서 운송장 정보를 등록하면 진행이 빨라집니다."
-                            : "예약/방문 안내에 따라 매장에 방문해주세요. 방문 전 신청 상태를 마이페이지에서 확인할 수 있어요."}
-                        </p>
-                      </div>
-                    )}
-                </CheckoutSection>
-
-                {/* 배송 정보/수령 정보 */}
-                <CheckoutSection
-                  id="checkout-recipient-info"
-                  icon={<MapPin className="h-5 w-5" />}
-                  title={needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
-                  description={
-                    needsShippingAddress
-                      ? "배송과 연락에 필요한 정보를 입력하세요."
-                      : "방문 수령 안내를 받을 연락처를 입력하세요."
-                  }
-                >
-                    <div className="w-full space-y-4 bp-sm:space-y-5">
-                      <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="recipient-name"
-                            className="flex items-center gap-2 text-ui-label font-medium"
-                          >
-                            <UserIcon className="h-4 w-4 text-muted-foreground" />
-                            수령인 이름
-                          </Label>
-                          <Input
-                            id="recipient-name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            onBlur={() => touchField("name")}
-                            placeholder="수령인 이름을 입력하세요"
-                            className={cn(
-                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                              showNameError &&
-                                "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
-                            )}
-                          />
-                          <div className="min-h-[18px]">
-                            {showNameError && (
-                              <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
-                                {fieldErrors.name}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="recipient-email"
-                            className="flex items-center gap-2 text-ui-label font-medium"
-                          >
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            이메일
-                          </Label>
-                          <Input
-                            id="recipient-email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            onBlur={() => touchField("email")}
-                            placeholder="example@naver.com"
-                            className={cn(
-                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                              showEmailError &&
-                                "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
-                            )}
-                          />
-                          <div className="min-h-[18px]">
-                            {showEmailError && (
-                              <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
-                                {fieldErrors.email}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                          <Label
-                            htmlFor="recipient-phone"
-                            className="flex items-center gap-2 text-ui-label font-medium"
-                          >
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            연락처
-                          </Label>
-                          <Input
-                            id="recipient-phone"
-                            value={phone}
-                            onChange={(e) => setPhone(formatKoreanPhone010(e.target.value))}
-                            onBlur={() => touchField("phone")}
-                            placeholder="연락처를 입력하세요 ('-' 제외)"
-                            inputMode="numeric"
-                            className={cn(
-                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                              showPhoneError &&
-                                "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
-                            )}
-                          />
-                          <div className="min-h-[18px]">
-                            {showPhoneError && (
-                              <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
-                                {fieldErrors.phone}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {needsShippingAddress && (
-                        <div className="space-y-4 border-t border-border/60 pt-5">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="address-postal"
-                              className="flex items-center gap-2 text-ui-body-sm"
-                            >
-                              <Home className="h-4 w-4 text-foreground" />
-                              우편번호
-                            </Label>
-
-                            <div className="flex items-end gap-2">
-                              <Input
-                                id="address-postal"
-                                readOnly
-                                value={postalCode}
-                                placeholder="우편번호"
-                                className={cn(
-                                  "h-11 min-w-0 flex-1 cursor-not-allowed border-2 bg-muted bp-sm:max-w-[180px]",
-                                  showPostalCodeError && "border-destructive/30",
-                                )}
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                  touchField("postalCode");
-                                  handleFindPostcode();
-                                }}
-                                className="h-11 min-w-0 px-3 bp-sm:px-4"
-                              >
-                                <MapPin className="mr-1.5 h-4 w-4 shrink-0 bp-sm:mr-2" />
-                                우편번호 검색
-                              </Button>
-                            </div>
-
-                            {/* 에러 메시지 영역 */}
-                            <div className="min-h-[16px]">
-                              {showPostalCodeError && (
-                                <p className="text-ui-label text-destructive">
-                                  {fieldErrors.postalCode}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="address-main">기본 주소</Label>
-                            <Input
-                              id="address-main"
-                              readOnly
-                              value={address}
-                              placeholder="기본 주소"
-                              className={cn(
-                                "h-11 cursor-not-allowed border-2 bg-muted",
-                                showPostalCodeError && "border-destructive/30",
-                              )}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="address-detail">상세 주소</Label>
-                            <Input
-                              id="address-detail"
-                              value={addressDetail}
-                              onChange={(e) => setAddressDetail(e.target.value)}
-                              onBlur={() => touchField("addressDetail")}
-                              placeholder="상세 주소를 입력하세요"
-                              className={cn(
-                                "h-11 border-2 transition-colors focus:border-border",
-                                showAddressDetailError &&
-                                  "border-destructive/30 focus:border-destructive/30",
-                              )}
-                            />
-                            <div className="min-h-[16px]">
-                              {showAddressDetailError && (
-                                <p className="text-ui-label text-destructive">
-                                  {fieldErrors.addressDetail}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="delivery-request"
-                              className="flex items-center gap-2 text-ui-body-sm"
-                            >
-                              <MessageSquare className="h-4 w-4 text-foreground" />
-                              배송 요청사항
-                            </Label>
-                            <Textarea
-                              id="delivery-request"
-                              value={deliveryRequest}
-                              onChange={(e) => setDeliveryRequest(e.target.value)}
-                              placeholder="배송 요청사항만 입력하세요"
-                              className="min-h-[76px] border-2 transition-colors focus:border-border"
-                            />
-                          </div>
-
-                          <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="save-address"
-                                checked={saveAddress}
-                                onCheckedChange={(checked) => setSaveAddress(!!checked)}
-                                disabled={!user}
-                              />
-                              <label
-                                htmlFor="save-address"
-                                className={`text-ui-label font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}
-                              >
-                                이 배송지 정보를 저장
-                              </label>
-                            </div>
-                            {!user && (
-                              <p className="text-ui-body-sm text-foreground/80 ml-6 mt-1">
-                                로그인 후 배송지 정보를 저장할 수 있습니다.
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                </CheckoutSection>
-
-                {withStringService && checkoutStringingAdapter && (
-                  <CheckoutStringingServiceSections
-                    withStringService={withStringService}
-                    adapter={checkoutStringingAdapter}
-                    showValidationErrors={showStringingValidationErrors}
-                  />
+              {/* 현재 주문 성격 및 작성 안내 */}
+              <section
+                aria-label="현재 주문 성격 및 작성 안내"
+                className={cn(
+                  "rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5",
+                  withStringService ? "ring-1 ring-primary/20" : "bg-muted/30",
                 )}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={cn(
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1",
+                      withStringService
+                        ? "bg-primary/10 text-primary ring-primary/20"
+                        : "bg-muted/60 text-muted-foreground ring-border/60",
+                    )}
+                  >
+                    {withStringService ? (
+                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    ) : (
+                      <Info className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="min-w-0 space-y-1">
+                    <h2
+                      className={cn(
+                        "break-keep text-ui-body font-semibold text-foreground",
+                        !withStringService && "text-ui-body-sm font-medium",
+                      )}
+                    >
+                      {withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}
+                    </h2>
+                    {withStringService ? (
+                      <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
+                        <p className="break-keep">
+                          작업 정보와 수령/배송 방식을 확인하면 함께 접수됩니다.
+                        </p>
+                        {isStringOnlyServiceFlow && (
+                          <p className="break-keep">{stringStandalonePausedNotice}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
+                        <p className="break-keep">교체서비스 없이 상품만 주문합니다.</p>
+                        <p className="break-keep text-ui-label text-muted-foreground/90">
+                          결제 전 새로고침이나 페이지 이동은 피해주세요.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+              {/* 주문 상품 */}
+              <CheckoutSection
+                id="checkout-order-items"
+                icon={<Package className="h-5 w-5" />}
+                title="주문 상품"
+                headerAction={
+                  <Badge
+                    variant="secondary"
+                    className="shrink-0 whitespace-nowrap px-3 py-1 text-ui-caption font-medium"
+                  >
+                    {orderItems.length}개 상품
+                  </Badge>
+                }
+              >
+                {isBundleCheckout && bundleQty !== null && (
+                  <div className="mb-4 border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5 text-ui-body-sm text-foreground dark:bg-card/30 dark:text-foreground">
+                    <p className="font-medium">번들 수량: {bundleQty}개</p>
+                    <p className="mt-1 text-muted-foreground">
+                      라켓/스트링 수량은 함께 적용됩니다. 변경은{" "}
+                      <span className="font-medium text-foreground">스트링 선택 단계</span>
+                      에서만 가능합니다.
+                    </p>
+                    {bundleRacketId && (
+                      <div className="mt-3">
+                        <Button type="button" variant="outline" size="sm" className="h-8" asChild>
+                          <Link
+                            href={`/rackets/${bundleRacketId}/select-string`}
+                            data-no-unsaved-guard
+                            onClick={onLeaveCartClick}
+                          >
+                            수량/스트링 변경
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="space-y-3">
+                  {orderItems.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-3 border-b border-border/50 py-4 last:border-b-0 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5"
+                      style={{ animationDelay: `${idx * 50}ms` }}
+                    >
+                      <div className="flex min-w-0 flex-1 items-start gap-4">
+                        <div className="relative shrink-0">
+                          <div className="overflow-hidden rounded-xl ring-2 ring-border/50">
+                            <Image
+                              src={
+                                item.image ||
+                                "/placeholder.svg?height=80&width=80&query=tennis+product"
+                              }
+                              alt={item.name}
+                              width={80}
+                              height={80}
+                              loading="lazy"
+                              className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover"
+                            />
+                          </div>
+                          <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground shadow-sm ring-2 ring-card">
+                            {item.quantity}
+                          </div>
+                        </div>
 
-                {/* 결제 정보 */}
-                <CheckoutSection
-                  id="checkout-payment-info"
-                  icon={<CreditCard className="h-5 w-5" />}
-                  title="결제 정보"
-                  description="포인트와 패키지 적용 후 결제수단을 선택하세요."
-                >
-                    <div className="space-y-5 bp-sm:space-y-6">
-                      <div className="space-y-3">
-                        <Label className="flex items-center gap-2">
-                          <CreditCard className="h-4 w-4 text-primary" />
-                          할인 및 혜택
-                        </Label>
-                        <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-2.5 bp-sm:px-4">
-                          <div className="flex justify-between items-center text-ui-body-sm">
-                            <span className="text-muted-foreground">사용 가능 포인트</span>
-                            <span className="font-semibold">
-                              {user
-                                ? pointsFetchError
-                                  ? "-"
-                                  : pointsAvailable === null
-                                    ? "-"
-                                    : `${pointsAvailable.toLocaleString()}P`
-                                : "로그인 필요"}
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <h3 className="line-clamp-2 break-keep break-words text-ui-body-sm font-medium leading-relaxed text-foreground bp-sm:text-ui-body">
+                            {item.name}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/50 px-2 py-0.5 text-ui-label text-foreground/80">
+                              수량 {item.quantity}개
+                            </span>
+                            {item.selectedGauge && (
+                              <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-ui-label leading-relaxed text-foreground/80">
+                                게이지(굵기) {formatGaugeLabel(item.selectedGauge)}
+                              </span>
+                            )}
+                            {(item.selectedColorLabel || item.selectedColor) && (
+                              <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-ui-label leading-relaxed text-foreground/80">
+                                색상
+                                {item.selectedColorHex && (
+                                  <span
+                                    className="h-2.5 w-2.5 rounded-full border border-border/60"
+                                    style={{
+                                      backgroundColor: item.selectedColorHex,
+                                    }}
+                                  />
+                                )}
+                                <span className="min-w-0 break-keep break-words">
+                                  {item.selectedColorLabel || item.selectedColor}
+                                </span>
+                              </span>
+                            )}
+                            {withStringService && serviceTargetIds.includes(String(item.id)) && (
+                              <Badge
+                                variant="outline"
+                                className="shrink-0 whitespace-nowrap border-primary/30 text-ui-caption text-primary"
+                              >
+                                교체서비스
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="w-full bp-sm:w-auto bp-sm:min-w-[160px] bp-sm:text-right">
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bp-sm:justify-end">
+                          <span className="text-ui-label font-medium text-muted-foreground">
+                            {typeof item.regularPrice === "number" && item.regularPrice > item.price
+                              ? "할인가"
+                              : "판매가"}
+                          </span>
+                          <div className="whitespace-nowrap text-ui-price font-semibold tabular-nums text-foreground bp-sm:text-ui-price-lg">
+                            {item.price.toLocaleString()}
+                            <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
+                              원
                             </span>
                           </div>
-                          {user && pointsFetchError && (
-                            <p className="text-ui-label text-destructive">
-                              포인트 정보를 불러오지 못했습니다.
-                            </p>
-                          )}
-                          {user && !pointsFetchError && resolvedPointsDebt > 0 && (
-                            <p className="text-ui-label text-destructive">
-                              회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P →
-                              적립금이 먼저 상계됩니다.
-                            </p>
-                          )}
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 text-ui-body-sm">
-                              <Checkbox
-                                id="useAllPoints"
-                                checked={useAllPoints}
-                                onCheckedChange={(checked) => {
-                                  const nextUseAll = Boolean(checked);
-                                  const nextPoints = nextUseAll ? maxPointsToUse : 0;
-
-                                  setUseAllPoints(nextUseAll);
-                                  setIsEditingPoints(false);
-                                  setPointsToUse(nextPoints);
-                                  setPointsInput(nextPoints.toLocaleString("ko-KR"));
-                                }}
-                                disabled={
-                                  !isShippingFeeReady ||
-                                  !user ||
-                                  !!pointsFetchError ||
-                                  pointsAvailable === null ||
-                                  resolvedPointsAvailable <= 0 ||
-                                  maxPointsToUse <= 0
-                                }
-                              />
-                              <Label
-                                htmlFor="useAllPoints"
-                                className="text-ui-label font-medium cursor-pointer"
-                              >
-                                전액 사용
-                              </Label>
-                            </div>
-                            <div className="flex items-center gap-2 text-ui-body-sm">
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9,]*"
-                                min={0}
-                                step={POINT_UNIT}
-                                max={maxPointsToUse}
-                                className="w-24 text-right h-9"
-                                value={pointsInput}
-                                disabled={
-                                  !isShippingFeeReady ||
-                                  !user ||
-                                  !!pointsFetchError ||
-                                  pointsAvailable === null ||
-                                  resolvedPointsAvailable <= 0 ||
-                                  maxPointsToUse <= 0 ||
-                                  useAllPoints
-                                }
-                                onFocus={(e) => {
-                                  setIsEditingPoints(true);
-                                  const el = e.currentTarget;
-                                  if (pointsInput === "0") setPointsInput("");
-                                  setTimeout(() => {
-                                    if (el && typeof el.select === "function") el.select();
-                                  }, 0);
-                                }}
-                                onChange={(e) => {
-                                  const onlyDigits = e.target.value
-                                    .replace(/[^\d]/g, "")
-                                    .replace(/^0+(?=\d)/, "");
-
-                                  const raw = onlyDigits ? Number(onlyDigits) : 0;
-                                  const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
-                                  const clamped = Math.max(0, Math.min(safe, maxPointsToUse));
-
-                                  setUseAllPoints(false);
-                                  setPointsToUse(clamped);
-                                  setPointsInput(onlyDigits ? clamped.toLocaleString("ko-KR") : "");
-                                }}
-                                onBlur={(e) => {
-                                  setIsEditingPoints(false);
-                                  const rawText = e.currentTarget.value ?? "";
-                                  const onlyDigits = String(rawText).replace(/[^\d]/g, "");
-                                  const raw = Number(onlyDigits || "0");
-                                  const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
-                                  const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
-                                  const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
-                                  setPointsInput(clamped.toLocaleString("ko-KR"));
-                                  setPointsToUse(clamped);
-                                }}
-                              />
-                              <span className="break-keep text-ui-body-sm text-foreground/80">
-                                P
+                        </div>
+                        {typeof item.regularPrice === "number" &&
+                          Number.isFinite(item.regularPrice) &&
+                          item.regularPrice > item.price && (
+                            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-ui-label">
+                              <span className="text-muted-foreground tabular-nums">
+                                정가{" "}
+                                <span className="line-through">
+                                  {item.regularPrice.toLocaleString()}원
+                                </span>
                               </span>
+                              <Badge variant="destructive" className="text-ui-micro tabular-nums">
+                                {item.discountRate ??
+                                  Math.round(
+                                    ((item.regularPrice - item.price) / item.regularPrice) * 100,
+                                  )}
+                                % OFF
+                              </Badge>
                             </div>
-                          </div>
-                          <p className="break-keep text-ui-body-sm text-foreground/80">
-                            배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P
-                            사용 가능
+                          )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 상품 금액 소계 */}
+                <div className="mt-5 flex items-center justify-between gap-3 border-t border-dashed border-border/60 pt-5">
+                  <span className="break-keep text-ui-body-sm text-foreground/80">
+                    상품 판매가 합계
+                  </span>
+                  <span className="whitespace-nowrap text-ui-price-lg font-semibold tabular-nums text-foreground">
+                    {subtotal.toLocaleString()}
+                    <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
+                      원
+                    </span>
+                  </span>
+                </div>
+              </CheckoutSection>
+
+              {/* 수령 방식 및 장착 서비스 카드 */}
+              <CheckoutSection
+                id="checkout-delivery-method"
+                icon={<Truck className="h-5 w-5" />}
+                title="수령/배송 방법"
+                description="수령 방식에 맞춰 배송비와 입력 항목이 달라집니다."
+                contentClassName="space-y-4 bp-sm:space-y-5"
+              >
+                <RadioGroup
+                  value={deliveryMethod}
+                  onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")}
+                  className="grid gap-3"
+                >
+                  <label
+                    htmlFor="택배수령"
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:gap-4 bp-sm:p-4",
+                      deliveryMethod === "택배수령"
+                        ? "border-primary/80 bg-primary/5 shadow-sm"
+                        : "border-border/60 bg-transparent hover:border-border hover:bg-muted/20",
+                    )}
+                  >
+                    <RadioGroupItem value="택배수령" id="택배수령" className="sr-only" />
+                    <div
+                      className={cn(
+                        "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+                        deliveryMethod === "택배수령" ? "bg-primary/15" : "bg-secondary",
+                      )}
+                    >
+                      <Truck
+                        className={cn(
+                          "h-6 w-6",
+                          deliveryMethod === "택배수령" ? "text-primary" : "text-muted-foreground",
+                        )}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-ui-body-sm font-medium text-foreground bp-sm:text-ui-body">
+                        택배 발송/수령
+                      </div>
+                      <div className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
+                        입력한 주소로 상품을 발송합니다.
+                      </div>
+                    </div>
+                    <div
+                      className={cn(
+                        "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
+                        deliveryMethod === "택배수령"
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-transparent",
+                      )}
+                    >
+                      {deliveryMethod === "택배수령" && (
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                      )}
+                    </div>
+                  </label>
+                  <label
+                    htmlFor="방문수령"
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:gap-4 bp-sm:p-4",
+                      deliveryMethod === "방문수령"
+                        ? "border-primary/80 bg-primary/5 shadow-sm"
+                        : "border-border/60 bg-transparent hover:border-border hover:bg-muted/20",
+                    )}
+                  >
+                    <RadioGroupItem value="방문수령" id="방문수령" className="sr-only" />
+                    <div
+                      className={cn(
+                        "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+                        deliveryMethod === "방문수령" ? "bg-primary/15" : "bg-secondary",
+                      )}
+                    >
+                      <Building2
+                        className={cn(
+                          "h-6 w-6",
+                          deliveryMethod === "방문수령" ? "text-primary" : "text-muted-foreground",
+                        )}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-ui-body-sm font-medium text-foreground bp-sm:text-ui-body">
+                        오프라인 매장 방문
+                      </div>
+                      <div className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
+                        매장에서 직접 수령합니다.
+                      </div>
+                    </div>
+                    <div
+                      className={cn(
+                        "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
+                        deliveryMethod === "방문수령"
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-transparent",
+                      )}
+                    >
+                      {deliveryMethod === "방문수령" && (
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                      )}
+                    </div>
+                  </label>
+                </RadioGroup>
+                {withStringService && (
+                  <div className="border-l-2 border-primary/30 bg-primary/5 px-3 py-2.5 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">
+                    <p className="font-medium text-foreground">교체서비스 진행 안내</p>
+                    <p className="mt-1 break-keep">
+                      {deliveryMethod === "택배수령"
+                        ? "결제 후 라켓을 포장해 발송하고, 마이페이지에서 운송장 정보를 등록하면 진행이 빨라집니다."
+                        : "예약/방문 안내에 따라 매장에 방문해주세요. 방문 전 신청 상태를 마이페이지에서 확인할 수 있어요."}
+                    </p>
+                  </div>
+                )}
+              </CheckoutSection>
+
+              {/* 배송 정보/수령 정보 */}
+              <CheckoutSection
+                id="checkout-recipient-info"
+                icon={<MapPin className="h-5 w-5" />}
+                title={needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
+                description={
+                  needsShippingAddress
+                    ? "배송과 연락에 필요한 정보를 입력하세요."
+                    : "방문 수령 안내를 받을 연락처를 입력하세요."
+                }
+              >
+                <div className="w-full space-y-4 bp-sm:space-y-5">
+                  <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="recipient-name"
+                        className="flex items-center gap-2 text-ui-label font-medium"
+                      >
+                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                        수령인 이름
+                      </Label>
+                      <Input
+                        id="recipient-name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        onBlur={() => touchField("name")}
+                        placeholder="수령인 이름을 입력하세요"
+                        className={cn(
+                          "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
+                          showNameError &&
+                            "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
+                        )}
+                      />
+                      <div className="min-h-[18px]">
+                        {showNameError && (
+                          <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
+                            {fieldErrors.name}
                           </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="recipient-email"
+                        className="flex items-center gap-2 text-ui-label font-medium"
+                      >
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        이메일
+                      </Label>
+                      <Input
+                        id="recipient-email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onBlur={() => touchField("email")}
+                        placeholder="example@naver.com"
+                        className={cn(
+                          "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
+                          showEmailError &&
+                            "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
+                        )}
+                      />
+                      <div className="min-h-[18px]">
+                        {showEmailError && (
+                          <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
+                            {fieldErrors.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label
+                        htmlFor="recipient-phone"
+                        className="flex items-center gap-2 text-ui-label font-medium"
+                      >
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        연락처
+                      </Label>
+                      <Input
+                        id="recipient-phone"
+                        value={phone}
+                        onChange={(e) => setPhone(formatKoreanPhone010(e.target.value))}
+                        onBlur={() => touchField("phone")}
+                        placeholder="연락처를 입력하세요 ('-' 제외)"
+                        inputMode="numeric"
+                        className={cn(
+                          "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
+                          showPhoneError &&
+                            "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
+                        )}
+                      />
+                      <div className="min-h-[18px]">
+                        {showPhoneError && (
+                          <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
+                            {fieldErrors.phone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {needsShippingAddress && (
+                    <div className="space-y-4 border-t border-border/60 pt-5">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="address-postal"
+                          className="flex items-center gap-2 text-ui-body-sm"
+                        >
+                          <Home className="h-4 w-4 text-foreground" />
+                          우편번호
+                        </Label>
+
+                        <div className="flex items-end gap-2">
+                          <Input
+                            id="address-postal"
+                            readOnly
+                            value={postalCode}
+                            placeholder="우편번호"
+                            className={cn(
+                              "h-11 min-w-0 flex-1 cursor-not-allowed border-2 bg-muted bp-sm:max-w-[180px]",
+                              showPostalCodeError && "border-destructive/30",
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              touchField("postalCode");
+                              handleFindPostcode();
+                            }}
+                            className="h-11 min-w-0 px-3 bp-sm:px-4"
+                          >
+                            <MapPin className="mr-1.5 h-4 w-4 shrink-0 bp-sm:mr-2" />
+                            우편번호 검색
+                          </Button>
+                        </div>
+
+                        {/* 에러 메시지 영역 */}
+                        <div className="min-h-[16px]">
+                          {showPostalCodeError && (
+                            <p className="text-ui-label text-destructive">
+                              {fieldErrors.postalCode}
+                            </p>
+                          )}
                         </div>
                       </div>
 
-                      {withStringService && checkoutStringingAdapter && (
-                        <CheckoutStringingPaymentAddon
-                          packagePreview={checkoutStringingAdapter.packagePreview}
-                          packageRemaining={checkoutStringingAdapter.packageRemaining}
-                          requiredPassCount={checkoutStringingAdapter.requiredPassCount}
-                          canApplyPackage={checkoutStringingAdapter.canApplyPackage}
-                          usingPackage={checkoutStringingAdapter.usingPackage}
-                          packageInsufficient={checkoutStringingAdapter.packageInsufficient}
-                          packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
-                          onPackageOptOutChange={(next) => {
-                            checkoutStringingAdapter.setFormData((prev) => ({
-                              ...prev,
-                              packageOptOut: next,
-                            }));
-                          }}
-                        />
-                      )}
-
-                      <div className="space-y-3">
-                        <Label>결제수단</Label>
-                        <RadioGroup
-                          value={paymentMethod}
-                          onValueChange={(v) => {
-                            if (!nicePaymentsEnabled && v === "nicepay") return;
-                            if (v === "nicepay" && isZeroPayableAmount) return;
-                            setPaymentMethod(v as "bank-transfer" | "nicepay");
-                          }}
-                          className="space-y-3"
-                        >
-                          <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
-                            <RadioGroupItem value="bank-transfer" id="bank-transfer" />
-                            <Label
-                              htmlFor="bank-transfer"
-                              className="min-w-0 flex-1 cursor-pointer break-keep font-medium leading-relaxed"
-                            >
-                              무통장입금
-                            </Label>
-                            <Building2 className="h-5 w-5 text-foreground" />
-                          </div>
-                          {nicePaymentsEnabled && (
-                            <div
-                              className={cn(
-                                "flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5",
-                                isZeroPayableAmount && "opacity-60",
-                              )}
-                            >
-                              <RadioGroupItem
-                                value="nicepay"
-                                id="nicepay"
-                                disabled={isZeroPayableAmount}
-                              />
-                              <Label
-                                htmlFor="nicepay"
-                                className={cn(
-                                  "min-w-0 flex-1 cursor-pointer break-keep font-medium leading-relaxed",
-                                  isZeroPayableAmount && "cursor-not-allowed text-muted-foreground",
-                                )}
-                              >
-                                카드/간편결제
-                              </Label>
-                              <CreditCard className="h-5 w-5 text-foreground" />
-                            </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address-main">기본 주소</Label>
+                        <Input
+                          id="address-main"
+                          readOnly
+                          value={address}
+                          placeholder="기본 주소"
+                          className={cn(
+                            "h-11 cursor-not-allowed border-2 bg-muted",
+                            showPostalCodeError && "border-destructive/30",
                           )}
-                        </RadioGroup>
-                        {nicePaymentsEnabled && isZeroPayableAmount && (
-                          <p className="break-keep text-ui-body-sm text-foreground/80">
-                            결제 예정 금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="address-detail">상세 주소</Label>
+                        <Input
+                          id="address-detail"
+                          value={addressDetail}
+                          onChange={(e) => setAddressDetail(e.target.value)}
+                          onBlur={() => touchField("addressDetail")}
+                          placeholder="상세 주소를 입력하세요"
+                          className={cn(
+                            "h-11 border-2 transition-colors focus:border-border",
+                            showAddressDetailError &&
+                              "border-destructive/30 focus:border-destructive/30",
+                          )}
+                        />
+                        <div className="min-h-[16px]">
+                          {showAddressDetailError && (
+                            <p className="text-ui-label text-destructive">
+                              {fieldErrors.addressDetail}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="delivery-request"
+                          className="flex items-center gap-2 text-ui-body-sm"
+                        >
+                          <MessageSquare className="h-4 w-4 text-foreground" />
+                          배송 요청사항
+                        </Label>
+                        <Textarea
+                          id="delivery-request"
+                          value={deliveryRequest}
+                          onChange={(e) => setDeliveryRequest(e.target.value)}
+                          placeholder="배송 요청사항만 입력하세요"
+                          className="min-h-[76px] border-2 transition-colors focus:border-border"
+                        />
+                      </div>
+
+                      <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="save-address"
+                            checked={saveAddress}
+                            onCheckedChange={(checked) => setSaveAddress(!!checked)}
+                            disabled={!user}
+                          />
+                          <label
+                            htmlFor="save-address"
+                            className={`text-ui-label font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}
+                          >
+                            이 배송지 정보를 저장
+                          </label>
+                        </div>
+                        {!user && (
+                          <p className="text-ui-body-sm text-foreground/80 ml-6 mt-1">
+                            로그인 후 배송지 정보를 저장할 수 있습니다.
                           </p>
                         )}
                       </div>
-
-                      {paymentMethod === "bank-transfer" && (
-                        <>
-                          <div className="space-y-3">
-                            <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                            <Select value={selectedBank} onValueChange={setSelectedBank}>
-                              <SelectTrigger className="border-2 focus:border-border">
-                                <SelectValue placeholder="입금 계좌를 선택하세요" />
-                              </SelectTrigger>
-                              <SelectContent className="w-[var(--radix-select-trigger-width)]">
-                                <SelectItem
-                                  value="kakao"
-                                  className="whitespace-normal break-words leading-snug"
-                                >
-                                  카카오뱅크 {bankLabelMap.kakao.account} (예금주:{" "}
-                                  {bankLabelMap.kakao.holder})
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="depositor-name">입금자명</Label>
-                            <Input
-                              id="depositor-name"
-                              value={depositor}
-                              onChange={(e) => setDepositor(e.target.value)}
-                              onBlur={() => touchField("depositor")}
-                              placeholder="입금자명을 입력하세요"
-                              className={cn(
-                                "border-2 focus:border-border transition-colors",
-                                showDepositorError &&
-                                  "border-destructive/30 focus:border-destructive/30",
-                              )}
-                            />
-                            <div className="min-h-[16px]">
-                              {showDepositorError && (
-                                <p className="text-ui-label text-destructive">
-                                  {fieldErrors.depositor}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Shield className="h-5 w-5 text-primary" />
-                              <p className="font-semibold text-foreground">무통장입금 안내</p>
-                            </div>
-                            <ul className="space-y-2 text-ui-body-sm text-foreground">
-                              <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
-                                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                                주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
-                              </li>
-                              <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
-                                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                                입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
-                              </li>
-                              <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
-                                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                                {needsShippingAddress
-                                  ? "입금 확인 후 배송이 시작됩니다."
-                                  : "입금 확인 후 매장 수령 준비가 시작됩니다."}
-                              </li>
-                            </ul>
-                          </div>
-                        </>
-                      )}
                     </div>
-                </CheckoutSection>
+                  )}
+                </div>
+              </CheckoutSection>
 
-                {/* 주문자 동의 */}
-                <CheckoutSection
-                  id="checkout-agreements"
-                  icon={<CheckCircle className="h-5 w-5" />}
-                  title="주문자 동의"
-                  description="필수 약관에 동의하면 결제를 진행할 수 있습니다."
-                >
-                    <div className="space-y-5">
-                      <label
-                        htmlFor="agree-all"
-                        className={cn(
-                          "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
-                          agreeAll
-                            ? "border-primary/80 bg-primary/5"
-                            : "border-border/60 hover:border-border hover:bg-muted/20",
-                        )}
-                      >
-                        <Checkbox
-                          id="agree-all"
-                          checked={agreeAll}
-                          onCheckedChange={(checked) => {
-                            const newValue = !!checked;
-                            setAgreeAll(newValue);
-                            setAgreeTerms(newValue);
-                            setAgreePrivacy(newValue);
-                            setAgreeRefund(newValue);
-                          }}
-                          className="h-5 w-5"
-                        />
-                        <span className="min-w-0 break-words text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          전체 동의
+              {withStringService && checkoutStringingAdapter && (
+                <CheckoutStringingServiceSections
+                  withStringService={withStringService}
+                  adapter={checkoutStringingAdapter}
+                  showValidationErrors={showStringingValidationErrors}
+                />
+              )}
+
+              {/* 결제 정보 */}
+              <CheckoutSection
+                id="checkout-payment-info"
+                icon={<CreditCard className="h-5 w-5" />}
+                title="결제 정보"
+                description="포인트와 패키지 적용 후 결제수단을 선택하세요."
+              >
+                <div className="space-y-5 bp-sm:space-y-6">
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-primary" />
+                      할인 및 혜택
+                    </Label>
+                    <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-2.5 bp-sm:px-4">
+                      <div className="flex justify-between items-center text-ui-body-sm">
+                        <span className="text-muted-foreground">사용 가능 포인트</span>
+                        <span className="font-semibold">
+                          {user
+                            ? pointsFetchError
+                              ? "-"
+                              : pointsAvailable === null
+                                ? "-"
+                                : `${pointsAvailable.toLocaleString()}P`
+                            : "로그인 필요"}
                         </span>
-                      </label>
-                      <Separator />
-                      <div className="divide-y divide-border/60 border-y border-border/60">
-                        {[
-                          {
-                            id: "agree-terms",
-                            label: "이용약관 동의 (필수)",
-                            state: agreeTerms,
-                            setState: setAgreeTerms,
-                            href: "/terms",
-                          },
-                          {
-                            id: "agree-privacy",
-                            label: "개인정보 수집 및 이용 동의 (필수)",
-                            state: agreePrivacy,
-                            setState: setAgreePrivacy,
-                            href: "/privacy",
-                          },
-                          {
-                            id: "agree-refund",
-                            label: "환불 규정 동의 (필수)",
-                            state: agreeRefund,
-                            setState: setAgreeRefund,
-                            href: "/refund-policy",
-                          },
-                        ].map((item) => (
-                          <div
-                            key={item.id}
+                      </div>
+                      {user && pointsFetchError && (
+                        <p className="text-ui-label text-destructive">
+                          포인트 정보를 불러오지 못했습니다.
+                        </p>
+                      )}
+                      {user && !pointsFetchError && resolvedPointsDebt > 0 && (
+                        <p className="text-ui-label text-destructive">
+                          회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이
+                          먼저 상계됩니다.
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-ui-body-sm">
+                          <Checkbox
+                            id="useAllPoints"
+                            checked={useAllPoints}
+                            onCheckedChange={(checked) => {
+                              const nextUseAll = Boolean(checked);
+                              const nextPoints = nextUseAll ? maxPointsToUse : 0;
+
+                              setUseAllPoints(nextUseAll);
+                              setIsEditingPoints(false);
+                              setPointsToUse(nextPoints);
+                              setPointsInput(nextPoints.toLocaleString("ko-KR"));
+                            }}
+                            disabled={
+                              !isShippingFeeReady ||
+                              !user ||
+                              !!pointsFetchError ||
+                              pointsAvailable === null ||
+                              resolvedPointsAvailable <= 0 ||
+                              maxPointsToUse <= 0
+                            }
+                          />
+                          <Label
+                            htmlFor="useAllPoints"
+                            className="text-ui-label font-medium cursor-pointer"
+                          >
+                            전액 사용
+                          </Label>
+                        </div>
+                        <div className="flex items-center gap-2 text-ui-body-sm">
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9,]*"
+                            min={0}
+                            step={POINT_UNIT}
+                            max={maxPointsToUse}
+                            className="w-24 text-right h-9"
+                            value={pointsInput}
+                            disabled={
+                              !isShippingFeeReady ||
+                              !user ||
+                              !!pointsFetchError ||
+                              pointsAvailable === null ||
+                              resolvedPointsAvailable <= 0 ||
+                              maxPointsToUse <= 0 ||
+                              useAllPoints
+                            }
+                            onFocus={(e) => {
+                              setIsEditingPoints(true);
+                              const el = e.currentTarget;
+                              if (pointsInput === "0") setPointsInput("");
+                              setTimeout(() => {
+                                if (el && typeof el.select === "function") el.select();
+                              }, 0);
+                            }}
+                            onChange={(e) => {
+                              const onlyDigits = e.target.value
+                                .replace(/[^\d]/g, "")
+                                .replace(/^0+(?=\d)/, "");
+
+                              const raw = onlyDigits ? Number(onlyDigits) : 0;
+                              const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
+                              const clamped = Math.max(0, Math.min(safe, maxPointsToUse));
+
+                              setUseAllPoints(false);
+                              setPointsToUse(clamped);
+                              setPointsInput(onlyDigits ? clamped.toLocaleString("ko-KR") : "");
+                            }}
+                            onBlur={(e) => {
+                              setIsEditingPoints(false);
+                              const rawText = e.currentTarget.value ?? "";
+                              const onlyDigits = String(rawText).replace(/[^\d]/g, "");
+                              const raw = Number(onlyDigits || "0");
+                              const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
+                              const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
+                              const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
+                              setPointsInput(clamped.toLocaleString("ko-KR"));
+                              setPointsToUse(clamped);
+                            }}
+                          />
+                          <span className="break-keep text-ui-body-sm text-foreground/80">P</span>
+                        </div>
+                      </div>
+                      <p className="break-keep text-ui-body-sm text-foreground/80">
+                        배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용
+                        가능
+                      </p>
+                    </div>
+                  </div>
+
+                  {withStringService && checkoutStringingAdapter && (
+                    <CheckoutStringingPaymentAddon
+                      packagePreview={checkoutStringingAdapter.packagePreview}
+                      packageRemaining={checkoutStringingAdapter.packageRemaining}
+                      requiredPassCount={checkoutStringingAdapter.requiredPassCount}
+                      canApplyPackage={checkoutStringingAdapter.canApplyPackage}
+                      usingPackage={checkoutStringingAdapter.usingPackage}
+                      packageInsufficient={checkoutStringingAdapter.packageInsufficient}
+                      packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
+                      onPackageOptOutChange={(next) => {
+                        checkoutStringingAdapter.setFormData((prev) => ({
+                          ...prev,
+                          packageOptOut: next,
+                        }));
+                      }}
+                    />
+                  )}
+
+                  <div className="space-y-3">
+                    <Label>결제수단</Label>
+                    <RadioGroup
+                      value={paymentMethod}
+                      onValueChange={(v) => {
+                        if (!nicePaymentsEnabled && v === "nicepay") return;
+                        if (v === "nicepay" && isZeroPayableAmount) return;
+                        setPaymentMethod(v as "bank-transfer" | "nicepay");
+                      }}
+                      className="space-y-3"
+                    >
+                      <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                        <RadioGroupItem value="bank-transfer" id="bank-transfer" />
+                        <Label
+                          htmlFor="bank-transfer"
+                          className="min-w-0 flex-1 cursor-pointer break-keep font-medium leading-relaxed"
+                        >
+                          무통장입금
+                        </Label>
+                        <Building2 className="h-5 w-5 text-foreground" />
+                      </div>
+                      {nicePaymentsEnabled && (
+                        <div
+                          className={cn(
+                            "flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5",
+                            isZeroPayableAmount && "opacity-60",
+                          )}
+                        >
+                          <RadioGroupItem
+                            value="nicepay"
+                            id="nicepay"
+                            disabled={isZeroPayableAmount}
+                          />
+                          <Label
+                            htmlFor="nicepay"
                             className={cn(
-                              "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
-                              item.state ? "bg-primary/5" : "hover:bg-muted/20",
+                              "min-w-0 flex-1 cursor-pointer break-keep font-medium leading-relaxed",
+                              isZeroPayableAmount && "cursor-not-allowed text-muted-foreground",
                             )}
                           >
-                            <label
-                              htmlFor={item.id}
-                              className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+                            카드/간편결제
+                          </Label>
+                          <CreditCard className="h-5 w-5 text-foreground" />
+                        </div>
+                      )}
+                    </RadioGroup>
+                    {nicePaymentsEnabled && isZeroPayableAmount && (
+                      <p className="break-keep text-ui-body-sm text-foreground/80">
+                        결제 예정 금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.
+                      </p>
+                    )}
+                  </div>
+
+                  {paymentMethod === "bank-transfer" && (
+                    <>
+                      <div className="space-y-3">
+                        <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                        <Select value={selectedBank} onValueChange={setSelectedBank}>
+                          <SelectTrigger className="border-2 focus:border-border">
+                            <SelectValue placeholder="입금 계좌를 선택하세요" />
+                          </SelectTrigger>
+                          <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                            <SelectItem
+                              value="kakao"
+                              className="whitespace-normal break-words leading-snug"
                             >
-                              <Checkbox
-                                id={item.id}
-                                checked={item.state}
-                                onCheckedChange={(checked) => {
-                                  const value = !!checked;
-                                  item.setState(value);
-                                  if (!value) setAgreeAll(false);
-                                  else if (agreeTerms && agreePrivacy && agreeRefund)
-                                    setAgreeAll(true);
-                                }}
-                              />
-                              <span className="min-w-0 break-words text-ui-body-sm font-medium text-foreground">
-                                {item.label}
-                              </span>
-                            </label>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
-                              asChild
-                            >
-                              <Link href={item.href} target="_blank" rel="noopener noreferrer">
-                                보기
-                              </Link>
-                            </Button>
-                          </div>
-                        ))}
+                              카카오뱅크 {bankLabelMap.kakao.account} (예금주:{" "}
+                              {bankLabelMap.kakao.holder})
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
-                </CheckoutSection>
 
-                <div id="checkout-final-confirm" className="scroll-mt-24">
-                  <FinalPaymentConfirmCard
-                    orderItemsCount={orderItems.length}
-                    subtotal={subtotal}
-                    regularSubtotal={regularSubtotal}
-                    shippingFee={shippingFee}
-                    serviceFee={finalServiceFee}
-                    baseServiceFee={baseServiceFee}
-                    packageUsage={checkoutPackageUsage}
-                    withStringService={withStringService}
-                    appliedPoints={appliedPoints}
-                    totalPrice={totalPrice}
-                    payableTotalPrice={payableTotalPrice}
-                    isShippingFeeReady={isShippingFeeReady}
-                    isMountingFeeReady={isMountingFeeReady}
-                    paymentMethod={paymentMethod}
-                    selectedBank={selectedBank}
-                    depositor={depositor}
-                  />
+                      <div className="space-y-2">
+                        <Label htmlFor="depositor-name">입금자명</Label>
+                        <Input
+                          id="depositor-name"
+                          value={depositor}
+                          onChange={(e) => setDepositor(e.target.value)}
+                          onBlur={() => touchField("depositor")}
+                          placeholder="입금자명을 입력하세요"
+                          className={cn(
+                            "border-2 focus:border-border transition-colors",
+                            showDepositorError &&
+                              "border-destructive/30 focus:border-destructive/30",
+                          )}
+                        />
+                        <div className="min-h-[16px]">
+                          {showDepositorError && (
+                            <p className="text-ui-label text-destructive">
+                              {fieldErrors.depositor}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="h-5 w-5 text-primary" />
+                          <p className="font-semibold text-foreground">무통장입금 안내</p>
+                        </div>
+                        <ul className="space-y-2 text-ui-body-sm text-foreground">
+                          <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
+                            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                            주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                          </li>
+                          <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
+                            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                            입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                          </li>
+                          <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
+                            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                            {needsShippingAddress
+                              ? "입금 확인 후 배송이 시작됩니다."
+                              : "입금 확인 후 매장 수령 준비가 시작됩니다."}
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
                 </div>
+              </CheckoutSection>
 
-                <CheckoutBottomStickyBar
-                  amount={payableTotalPrice}
-                  amountLabel="결제 예정 금액"
-                  label={paymentMethod === "bank-transfer" ? "주문 완료하기" : "결제하기"}
-                  disabled={!resolvedCanSubmit || isCheckoutSubmitting}
-                  loading={isCheckoutSubmitting}
-                  ariaLabel="하단 결제 버튼"
-                  onClick={() => {
-                    requestStringingValidationMessages();
-                    const target = document.getElementById(CHECKOUT_PRIMARY_PAY_BUTTON_ID);
-                    if (target instanceof HTMLButtonElement && !target.disabled) {
-                      target.click();
-                      return;
-                    }
-                    document.getElementById("checkout-payment-action")?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }}
+              {/* 주문자 동의 */}
+              <CheckoutSection
+                id="checkout-agreements"
+                icon={<CheckCircle className="h-5 w-5" />}
+                title="주문자 동의"
+                description="필수 약관에 동의하면 결제를 진행할 수 있습니다."
+              >
+                <div className="space-y-5">
+                  <label
+                    htmlFor="agree-all"
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
+                      agreeAll
+                        ? "border-primary/80 bg-primary/5"
+                        : "border-border/60 hover:border-border hover:bg-muted/20",
+                    )}
+                  >
+                    <Checkbox
+                      id="agree-all"
+                      checked={agreeAll}
+                      onCheckedChange={(checked) => {
+                        const newValue = !!checked;
+                        setAgreeAll(newValue);
+                        setAgreeTerms(newValue);
+                        setAgreePrivacy(newValue);
+                        setAgreeRefund(newValue);
+                      }}
+                      className="h-5 w-5"
+                    />
+                    <span className="min-w-0 break-words text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
+                      전체 동의
+                    </span>
+                  </label>
+                  <Separator />
+                  <div className="divide-y divide-border/60 border-y border-border/60">
+                    {[
+                      {
+                        id: "agree-terms",
+                        label: "이용약관 동의 (필수)",
+                        state: agreeTerms,
+                        setState: setAgreeTerms,
+                        href: "/terms",
+                      },
+                      {
+                        id: "agree-privacy",
+                        label: "개인정보 수집 및 이용 동의 (필수)",
+                        state: agreePrivacy,
+                        setState: setAgreePrivacy,
+                        href: "/privacy",
+                      },
+                      {
+                        id: "agree-refund",
+                        label: "환불 규정 동의 (필수)",
+                        state: agreeRefund,
+                        setState: setAgreeRefund,
+                        href: "/refund-policy",
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.id}
+                        className={cn(
+                          "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
+                          item.state ? "bg-primary/5" : "hover:bg-muted/20",
+                        )}
+                      >
+                        <label
+                          htmlFor={item.id}
+                          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+                        >
+                          <Checkbox
+                            id={item.id}
+                            checked={item.state}
+                            onCheckedChange={(checked) => {
+                              const value = !!checked;
+                              item.setState(value);
+                              if (!value) setAgreeAll(false);
+                              else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
+                            }}
+                          />
+                          <span className="min-w-0 break-words text-ui-body-sm font-medium text-foreground">
+                            {item.label}
+                          </span>
+                        </label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
+                          asChild
+                        >
+                          <Link href={item.href} target="_blank" rel="noopener noreferrer">
+                            보기
+                          </Link>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CheckoutSection>
+
+              <div id="checkout-final-confirm" className="scroll-mt-24">
+                <FinalPaymentConfirmCard
+                  orderItemsCount={orderItems.length}
+                  subtotal={subtotal}
+                  regularSubtotal={regularSubtotal}
+                  shippingFee={shippingFee}
+                  serviceFee={finalServiceFee}
+                  baseServiceFee={baseServiceFee}
+                  packageUsage={checkoutPackageUsage}
+                  withStringService={withStringService}
+                  appliedPoints={appliedPoints}
+                  totalPrice={totalPrice}
+                  payableTotalPrice={payableTotalPrice}
+                  isShippingFeeReady={isShippingFeeReady}
+                  isMountingFeeReady={isMountingFeeReady}
+                  paymentMethod={paymentMethod}
+                  selectedBank={selectedBank}
+                  depositor={depositor}
                 />
+              </div>
 
-                <Card
-                  id="checkout-payment-action"
-                  className="relative border border-border bg-card shadow-sm overflow-hidden"
-                >
-                  <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
-                    {(fieldErrors.items ||
-                      fieldErrors.bundle ||
-                      (isMountingFeeReady && fieldErrors.composition) ||
-                      hasStringingLineErrors ||
-                      stringingApplicationError) && (
-                      <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-ui-body-sm text-destructive dark:bg-destructive/20">
-                        <p className="font-semibold mb-1">확인 필요</p>
-                        {fieldErrors.items && <p>• {fieldErrors.items}</p>}
-                        {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
-                        {hasStringingLineErrors && (
-                          <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>
-                        )}
-                        {stringingApplicationError && <p>• {stringingApplicationError}</p>}
-                        {fieldErrors.composition && (
-                          <p>
-                            • {fieldErrors.composition}{" "}
-                            {mode !== "buynow" && (
-                              <Link
-                                href="/cart"
-                                data-no-unsaved-guard
-                                onClick={onLeaveCartClick}
-                                className="underline underline-offset-2"
-                              >
-                                (장바구니에서 정리)
-                              </Link>
-                            )}
-                          </p>
-                        )}
-                        {fieldErrors.composition && mode !== "buynow" && (
-                          <div className="mt-3 flex flex-wrap gap-2">
+              <CheckoutBottomStickyBar
+                amount={payableTotalPrice}
+                amountLabel="결제 예정 금액"
+                label={paymentMethod === "bank-transfer" ? "주문 완료하기" : "결제하기"}
+                disabled={!resolvedCanSubmit || isCheckoutSubmitting}
+                loading={isCheckoutSubmitting}
+                ariaLabel="하단 결제 버튼"
+                onClick={() => {
+                  requestStringingValidationMessages();
+                  const target = document.getElementById(CHECKOUT_PRIMARY_PAY_BUTTON_ID);
+                  if (target instanceof HTMLButtonElement && !target.disabled) {
+                    target.click();
+                    return;
+                  }
+                  document.getElementById("checkout-payment-action")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }}
+              />
+
+              <Card
+                id="checkout-payment-action"
+                className="relative border border-border bg-card shadow-sm overflow-hidden"
+              >
+                <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
+                  {(fieldErrors.items ||
+                    fieldErrors.bundle ||
+                    (isMountingFeeReady && fieldErrors.composition) ||
+                    hasStringingLineErrors ||
+                    stringingApplicationError) && (
+                    <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-ui-body-sm text-destructive dark:bg-destructive/20">
+                      <p className="font-semibold mb-1">확인 필요</p>
+                      {fieldErrors.items && <p>• {fieldErrors.items}</p>}
+                      {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
+                      {hasStringingLineErrors && (
+                        <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>
+                      )}
+                      {stringingApplicationError && <p>• {stringingApplicationError}</p>}
+                      {fieldErrors.composition && (
+                        <p>
+                          • {fieldErrors.composition}{" "}
+                          {mode !== "buynow" && (
                             <Link
                               href="/cart"
                               data-no-unsaved-guard
                               onClick={onLeaveCartClick}
-                              className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-ui-body-sm font-medium text-foreground hover:bg-muted"
+                              className="underline underline-offset-2"
                             >
-                              장바구니로 가서 정리하기
+                              (장바구니에서 정리)
                             </Link>
-                            <span className="break-keep text-ui-body-sm text-foreground/80">
-                              정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <div className="mx-auto w-full max-w-md">
-                      {paymentMethod === "bank-transfer" ? (
-                        <div
-                          onPointerDownCapture={requestStringingValidationMessages}
-                          className="w-full"
-                        >
-                          <CheckoutButton
-                            buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
-                            disabled={!resolvedCanSubmit}
-                            name={name}
-                            phone={phone}
-                            email={email}
-                            postalCode={postalCode}
-                            address={address}
-                            addressDetail={addressDetail}
-                            depositor={depositor}
-                            totalPrice={totalPrice}
-                            shippingFee={shippingFee}
-                            payableAmount={payableTotalPrice}
-                            selectedBank={selectedBank}
-                            deliveryRequest={deliveryRequest}
-                            saveAddress={saveAddress}
-                            deliveryMethod={deliveryMethod}
-                            serviceTargetIds={serviceTargetIds}
-                            withStringService={withStringService}
-                            servicePickupMethod={servicePickupMethod}
-                            items={orderItems}
-                            serviceFee={finalServiceFee}
-                            pointsToUse={appliedPoints}
-                            stringingApplicationInput={stringingApplicationInput}
-                            onSubmittingChange={setIsCheckoutSubmitting}
-                            onBeforeSuccessNavigation={() =>
-                              setIsIntentionalSuccessNavigation(true)
-                            }
-                            onSuccessNavigationAbort={() =>
-                              setIsIntentionalSuccessNavigation(false)
-                            }
-                          />
+                          )}
+                        </p>
+                      )}
+                      {fieldErrors.composition && mode !== "buynow" && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Link
+                            href="/cart"
+                            data-no-unsaved-guard
+                            onClick={onLeaveCartClick}
+                            className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-ui-body-sm font-medium text-foreground hover:bg-muted"
+                          >
+                            장바구니로 가서 정리하기
+                          </Link>
+                          <span className="break-keep text-ui-body-sm text-foreground/80">
+                            정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.
+                          </span>
                         </div>
-                      ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                        <div
-                          onPointerDownCapture={requestStringingValidationMessages}
-                          className="w-full"
-                        >
-                          <NiceCheckoutButton
-                            buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
-                            disabled={!resolvedCanSubmit}
-                            onBeforeSuccessNavigation={() =>
-                              setIsIntentionalSuccessNavigation(true)
-                            }
-                            onSuccessNavigationAbort={() =>
-                              setIsIntentionalSuccessNavigation(false)
-                            }
-                            payableAmount={payableTotalPrice}
-                            payload={{
-                              items: orderItems.map((item) => ({
-                                productId: item.id,
-                                quantity: item.quantity,
-                                kind: item.kind ?? "product",
-                                selectedGauge: item.selectedGauge,
-                                selectedColor: item.selectedColor,
-                                selectedColorLabel: item.selectedColorLabel,
-                                selectedColorHex: item.selectedColorHex,
-                                selectedColorImage: item.selectedColorImage,
-                              })),
-                              shippingInfo: {
-                                name: name.trim(),
-                                phone: phone.replace(/\D/g, ""),
-                                address: address.trim(),
-                                addressDetail: addressDetail.trim(),
-                                postalCode: postalCode.replace(/\D/g, ""),
-                                depositor: "나이스결제",
-                                deliveryRequest: deliveryRequest.trim(),
-                                deliveryMethod,
-                                withStringService,
-                              },
-                              paymentInfo: { method: "나이스페이" },
-                              totalPrice,
-                              shippingFee,
-                              serviceFee: finalServiceFee,
-                              pointsToUse: appliedPoints,
-                              guestInfo: !user
-                                ? {
-                                    name: name.trim(),
-                                    phone: phone.replace(/\D/g, ""),
-                                    email: email.trim().toLowerCase(),
-                                  }
-                                : undefined,
-                              isStringServiceApplied: withStringService,
-                              servicePickupMethod,
-                              stringingApplicationInput:
-                                withStringService && stringingApplicationInput
-                                  ? stringingApplicationInput
-                                  : undefined,
-                            }}
-                          />
-                        </div>
-                      ) : null}
+                      )}
                     </div>
-                    {/* <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
+                  )}
+                  <div className="mx-auto w-full max-w-md">
+                    {paymentMethod === "bank-transfer" ? (
+                      <div
+                        onPointerDownCapture={requestStringingValidationMessages}
+                        className="w-full"
+                      >
+                        <CheckoutButton
+                          buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                          disabled={!resolvedCanSubmit}
+                          name={name}
+                          phone={phone}
+                          email={email}
+                          postalCode={postalCode}
+                          address={address}
+                          addressDetail={addressDetail}
+                          depositor={depositor}
+                          totalPrice={totalPrice}
+                          shippingFee={shippingFee}
+                          payableAmount={payableTotalPrice}
+                          selectedBank={selectedBank}
+                          deliveryRequest={deliveryRequest}
+                          saveAddress={saveAddress}
+                          deliveryMethod={deliveryMethod}
+                          serviceTargetIds={serviceTargetIds}
+                          withStringService={withStringService}
+                          servicePickupMethod={servicePickupMethod}
+                          items={orderItems}
+                          serviceFee={finalServiceFee}
+                          pointsToUse={appliedPoints}
+                          stringingApplicationInput={stringingApplicationInput}
+                          onSubmittingChange={setIsCheckoutSubmitting}
+                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                        />
+                      </div>
+                    ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
+                      <div
+                        onPointerDownCapture={requestStringingValidationMessages}
+                        className="w-full"
+                      >
+                        <NiceCheckoutButton
+                          buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                          disabled={!resolvedCanSubmit}
+                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                          payableAmount={payableTotalPrice}
+                          payload={{
+                            items: orderItems.map((item) => ({
+                              productId: item.id,
+                              quantity: item.quantity,
+                              kind: item.kind ?? "product",
+                              selectedGauge: item.selectedGauge,
+                              selectedColor: item.selectedColor,
+                              selectedColorLabel: item.selectedColorLabel,
+                              selectedColorHex: item.selectedColorHex,
+                              selectedColorImage: item.selectedColorImage,
+                            })),
+                            shippingInfo: {
+                              name: name.trim(),
+                              phone: phone.replace(/\D/g, ""),
+                              address: address.trim(),
+                              addressDetail: addressDetail.trim(),
+                              postalCode: postalCode.replace(/\D/g, ""),
+                              depositor: "나이스결제",
+                              deliveryRequest: deliveryRequest.trim(),
+                              deliveryMethod,
+                              withStringService,
+                            },
+                            paymentInfo: { method: "나이스페이" },
+                            totalPrice,
+                            shippingFee,
+                            serviceFee: finalServiceFee,
+                            pointsToUse: appliedPoints,
+                            guestInfo: !user
+                              ? {
+                                  name: name.trim(),
+                                  phone: phone.replace(/\D/g, ""),
+                                  email: email.trim().toLowerCase(),
+                                }
+                              : undefined,
+                            isStringServiceApplied: withStringService,
+                            servicePickupMethod,
+                            stringingApplicationInput:
+                              withStringService && stringingApplicationInput
+                                ? stringingApplicationInput
+                                : undefined,
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                  {/* <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                       <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
                         장바구니로 돌아가기
                       </Link>
                     </Button> */}
-                  </CardContent>
-                  {isCheckoutSubmitting && (
-                    <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
-                      <div className="absolute inset-0 grid place-items-center">
-                        <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          <span className="text-ui-body-sm">주문을 처리하고 있어요…</span>
-                        </div>
+                </CardContent>
+                {isCheckoutSubmitting && (
+                  <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+                    <div className="absolute inset-0 grid place-items-center">
+                      <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-ui-body-sm">주문을 처리하고 있어요…</span>
                       </div>
                     </div>
-                  )}
-                </Card>
+                  </div>
+                )}
+              </Card>
             </div>
           </div>
         </SiteContainer>

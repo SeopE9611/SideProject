@@ -311,9 +311,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       src={racket.image || "/placeholder.svg"}
                       alt={`${brandText} ${racket.model}`}
                       fill
-                      className={cn(
-                        "object-contain p-4",
-                      )}
+                      className={cn("object-contain p-4")}
                       unoptimized
                     />
                   </>

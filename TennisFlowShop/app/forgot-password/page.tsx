@@ -94,7 +94,10 @@ export default function ForgotPasswordPage() {
             </Label>
 
             <div className="relative">
-              <Mail aria-hidden="true" className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Mail
+                aria-hidden="true"
+                className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+              />
               <Input
                 id="email"
                 type="email"

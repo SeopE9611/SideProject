@@ -360,10 +360,18 @@ export default function NoticeListClient({
                 {isEventMode ? "진행 소식" : "중요 안내"}
               </Badge>
               <SectionHeader title={listTitle} variant="brand" />
-              <p className="text-ui-body-sm text-muted-foreground">{isEventMode ? "참여 가능한 이벤트와 지난 안내를 확인하세요." : "고정 공지부터 최신 안내까지 한눈에 확인하세요."}</p>
+              <p className="text-ui-body-sm text-muted-foreground">
+                {isEventMode
+                  ? "참여 가능한 이벤트와 지난 안내를 확인하세요."
+                  : "고정 공지부터 최신 안내까지 한눈에 확인하세요."}
+              </p>
             </div>
             <div className="rounded-control border border-border bg-card px-4 py-3 text-ui-body-sm shadow-soft">
-              총 <strong className="font-brand-heading text-ui-section-title text-brand-highlight-ink">{total ?? initialTotal ?? 0}</strong>건
+              총{" "}
+              <strong className="font-brand-heading text-ui-section-title text-brand-highlight-ink">
+                {total ?? initialTotal ?? 0}
+              </strong>
+              건
             </div>
           </div>
         </PublicSurface>

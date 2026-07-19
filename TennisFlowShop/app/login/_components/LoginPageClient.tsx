@@ -309,15 +309,27 @@ export default function LoginPageClient() {
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="mb-5 rounded-control border border-border bg-muted/50 p-1">
           <TabsList className="grid h-11 w-full grid-cols-2 bg-transparent">
-            <TabsTrigger value="login" className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm">로그인</TabsTrigger>
-            <TabsTrigger value="register" className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm">회원가입</TabsTrigger>
+            <TabsTrigger
+              value="login"
+              className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm"
+            >
+              로그인
+            </TabsTrigger>
+            <TabsTrigger
+              value="register"
+              className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm"
+            >
+              회원가입
+            </TabsTrigger>
           </TabsList>
         </div>
         {activeTab === "login" && (
           <TabsContent value="login" forceMount className="mt-0">
             <div className="space-y-4">
               <div className="text-center">
-                <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">로그인</h2>
+                <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">
+                  로그인
+                </h2>
                 <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                   간편 로그인 또는 이메일로 계속 진행하세요.
                 </p>
@@ -363,7 +375,10 @@ export default function LoginPageClient() {
                     이메일
                   </Label>
                   <div className="relative">
-                    <Mail aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Mail
+                      aria-hidden="true"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground"
+                    />
                     <Input
                       id="email"
                       data-cy="login-email"
@@ -396,7 +411,10 @@ export default function LoginPageClient() {
                     비밀번호
                   </Label>
                   <div className="relative">
-                    <Lock aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Lock
+                      aria-hidden="true"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground"
+                    />
                     <Input
                       id="password"
                       data-cy="login-password"
@@ -423,7 +441,11 @@ export default function LoginPageClient() {
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground hover:text-foreground dark:hover:text-foreground"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff aria-hidden="true" className="h-4 w-4" />
+                      ) : (
+                        <Eye aria-hidden="true" className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                   {loginFieldErrors.password && (

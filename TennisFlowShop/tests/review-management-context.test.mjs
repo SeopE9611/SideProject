@@ -12,9 +12,16 @@ const root = new URL("../", import.meta.url);
 function compileTs(rel, stubs = {}) {
   const src = readFileSync(new URL(rel, root), "utf8");
   const { outputText } = ts.transpileModule(src, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+      esModuleInterop: true,
+    },
   });
-  const filename = join(mkdtempSync(join(tmpdir(), "review-management-")), rel.replaceAll("/", "_") + ".cjs");
+  const filename = join(
+    mkdtempSync(join(tmpdir(), "review-management-")),
+    rel.replaceAll("/", "_") + ".cjs",
+  );
   const mod = new Module(filename);
   mod.filename = filename;
   mod.paths = Module._nodeModulePaths(process.cwd());
@@ -25,7 +32,9 @@ function compileTs(rel, stubs = {}) {
 }
 
 const target = compileTs("lib/reviews/review-target.ts");
-const contextServer = compileTs("lib/reviews/review-context.server.ts", { "./review-target": target });
+const contextServer = compileTs("lib/reviews/review-context.server.ts", {
+  "./review-target": target,
+});
 
 const cases = [
   [{ reviewContext: "product" }, "product"],
@@ -103,7 +112,7 @@ test("관리 API/UI와 마이페이지 API/UI가 context 관리 계약을 포함
   const mypage = readFileSync(new URL("app/mypage/tabs/ReviewList.tsx", root), "utf8");
   assert.ok(mypage.includes("ReviewContextBadge"));
   assert.ok(!mypage.includes('"product" | "service"'));
-  assert.ok(mypage.includes('category: categoryFilter'));
+  assert.ok(mypage.includes("category: categoryFilter"));
   assert.ok(mypage.includes("거래 상세보기"));
   assert.ok(mypage.includes("후기 수정"));
 
@@ -120,7 +129,10 @@ test("관리 API/UI와 마이페이지 API/UI가 context 관리 계약을 포함
   const detail = readFileSync(new URL("app/api/admin/reviews/[id]/route.ts", root), "utf8");
   assert.ok(detail.includes("shapeAdminReview"));
 
-  const adminUi = readFileSync(new URL("app/admin/reviews/_components/AdminReviewListClient.tsx", root), "utf8");
+  const adminUi = readFileSync(
+    new URL("app/admin/reviews/_components/AdminReviewListClient.tsx", root),
+    "utf8",
+  );
   assert.ok(adminUi.includes("ReviewContextBadge"));
   assert.ok(adminUi.includes("전체 상태"));
   assert.ok(adminUi.includes("대여·교체서비스 후기"));

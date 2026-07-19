@@ -345,7 +345,9 @@ export default function TennisProfileForm() {
             <MdSportsTennis className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <CardTitle className="font-brand-heading text-ui-section-title">테니스 프로필</CardTitle>
+            <CardTitle className="font-brand-heading text-ui-section-title">
+              테니스 프로필
+            </CardTitle>
             <CardDescription>
               사용하는 라켓과 스트링, 플레이 스타일을 설정하면 커뮤니티에서 프로필 카드로
               보여집니다.

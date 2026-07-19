@@ -70,7 +70,9 @@ export default function MarketMetaFields({
           </div>
           <div>
             <h2 className="text-ui-body-sm font-semibold text-foreground">거래 핵심 정보</h2>
-            <p className="text-ui-body-sm text-foreground/75">구매자가 가장 먼저 확인하는 판매 조건입니다.</p>
+            <p className="text-ui-body-sm text-foreground/75">
+              구매자가 가장 먼저 확인하는 판매 조건입니다.
+            </p>
           </div>
         </div>
 
@@ -182,7 +184,9 @@ export default function MarketMetaFields({
             </div>
             <div>
               <h2 className="text-ui-body-sm font-semibold text-foreground">라켓 상세 정보</h2>
-              <p className="text-ui-body-sm text-foreground/75">모델명은 필수이며, 나머지 스펙은 아는 범위에서만 입력하면 됩니다.</p>
+              <p className="text-ui-body-sm text-foreground/75">
+                모델명은 필수이며, 나머지 스펙은 아는 범위에서만 입력하면 됩니다.
+              </p>
             </div>
           </div>
 
@@ -356,7 +360,9 @@ export default function MarketMetaFields({
             </div>
             <div>
               <h2 className="text-ui-body-sm font-semibold text-foreground">스트링 상세 정보</h2>
-              <p className="text-ui-body-sm text-foreground/75">모델명은 필수이며, 세부 옵션은 아는 범위에서만 작성해도 됩니다.</p>
+              <p className="text-ui-body-sm text-foreground/75">
+                모델명은 필수이며, 세부 옵션은 아는 범위에서만 작성해도 됩니다.
+              </p>
             </div>
           </div>
 

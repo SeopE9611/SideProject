@@ -1105,10 +1105,7 @@ export default async function CheckoutSuccessPage({
                                 : "택배 수령을 선택하셨으므로 라켓 발송 후 작업 완료 시 완성 라켓 배송으로 진행됩니다."}
                             </p>
                             {shouldShowApplyCta ? (
-                              <Button
-                                className="font-semibold"
-                                asChild
-                              >
+                              <Button className="font-semibold" asChild>
                                 <Link href={appHref} className="flex items-center gap-2">
                                   장착 서비스 신청서 작성하기
                                   <ArrowRight className="h-4 w-4" />
@@ -1230,11 +1227,7 @@ export default async function CheckoutSuccessPage({
 
                 <CardFooter className="border-t border-border/80 bg-background p-4 bp-sm:p-5 md:p-6">
                   <div className="flex w-full flex-col gap-3 sm:flex-row">
-                    <Button
-                      className="min-h-12 flex-1"
-                      asChild
-                      wrap="responsive"
-                    >
+                    <Button className="min-h-12 flex-1" asChild wrap="responsive">
                       <Link
                         href={
                           isLoggedIn ? "/mypage?tab=orders" : `/order-lookup/details/${order._id}`

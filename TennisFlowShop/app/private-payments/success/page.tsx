@@ -80,7 +80,9 @@ export default async function PrivatePaymentSuccessPage({
           <div className="w-full space-y-3 rounded-control border border-border bg-muted/40 p-4 text-left text-ui-body-sm sm:p-5">
             <div className="flex items-start justify-between gap-4">
               <span className="shrink-0 text-muted-foreground">결제명</span>
-              <span className="min-w-0 break-words text-right font-medium">{item.title || "-"}</span>
+              <span className="min-w-0 break-words text-right font-medium">
+                {item.title || "-"}
+              </span>
             </div>
             <div className="flex items-start justify-between gap-4">
               <span className="shrink-0 text-muted-foreground">결제금액</span>

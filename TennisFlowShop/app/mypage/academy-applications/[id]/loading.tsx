@@ -13,7 +13,11 @@ export default function AcademyApplicationDetailLoading() {
     <div className="relative min-h-full bg-background">
       <div className="relative border-b border-border/70 bg-muted/10">
         <SiteContainer variant="wide" className="py-4 bp-sm:py-5 bp-lg:py-8">
-          <section className="overflow-hidden rounded-hero border border-surface-inverse-foreground/15 bg-surface-inverse p-5 text-surface-inverse-foreground shadow-soft bp-sm:p-6 bp-lg:p-8" aria-busy="true" aria-live="polite">
+          <section
+            className="overflow-hidden rounded-hero border border-surface-inverse-foreground/15 bg-surface-inverse p-5 text-surface-inverse-foreground shadow-soft bp-sm:p-6 bp-lg:p-8"
+            aria-busy="true"
+            aria-live="polite"
+          >
             <span className="sr-only">마이페이지 아카데미 신청 상세 화면을 불러오는 중입니다.</span>
             <div className="grid gap-5 bp-md:grid-cols-[minmax(0,1fr)_minmax(260px,320px)] bp-md:items-center bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
               <div className="space-y-4">
@@ -37,7 +41,9 @@ export default function AcademyApplicationDetailLoading() {
             <StickyAside>
               <Card className="overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">
                 <CardContent className="space-y-2 p-3">
-                  {Array.from({ length: 6 }).map((_, index) => <Skeleton key={index} className="h-10 w-full rounded-control" />)}
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <Skeleton key={index} className="h-10 w-full rounded-control" />
+                  ))}
                 </CardContent>
               </Card>
             </StickyAside>

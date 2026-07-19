@@ -115,7 +115,11 @@ export default async function Page({
               </>
             }
           >
-            <PublicSurface variant="muted" padding="sm" className="grid gap-3 text-ui-body-sm sm:grid-cols-2">
+            <PublicSurface
+              variant="muted"
+              padding="sm"
+              className="grid gap-3 text-ui-body-sm sm:grid-cols-2"
+            >
               <div className="flex items-start gap-2">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
                 <div>
@@ -126,7 +130,10 @@ export default async function Page({
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <CheckCircle2
+                  className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
                 <div>
                   <p className="font-semibold text-foreground">다음 행동</p>
                   <p className="mt-1 text-muted-foreground">

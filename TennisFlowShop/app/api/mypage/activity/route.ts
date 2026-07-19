@@ -11,7 +11,11 @@ import {
 } from "@/lib/mypage/activity-todo";
 import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
-import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
+import {
+  resolveApplicationReviewTargetBundlesBatch,
+  resolveOrderReviewTargetBundlesBatch,
+  resolveRentalReviewTargetBundlesBatch,
+} from "@/lib/reviews/review-target.server";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -772,11 +776,12 @@ export async function GET(req: Request) {
 
   const todayYmd = toKstYmd();
 
-  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] = await Promise.all([
-    resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
-    resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
-    resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
-  ]);
+  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] =
+    await Promise.all([
+      resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
+      resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
+      resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
+    ]);
 
   // 6) 그룹 생성(주문/대여 + 단독신청)
   const groups: ActivityGroup[] = [];
@@ -793,7 +798,8 @@ export async function GET(req: Request) {
     const reviewAllDone = Boolean(targetBundle?.allReviewed);
     const reviewNextTargetProductId: string | null = nextTarget?.primaryProductId ?? null;
     const reviewNextApplicationId: string | null = nextTarget?.primaryApplicationId ?? null;
-    const reviewContext: string | null = nextTarget?.reviewContext ?? targetBundle?.targets[0]?.reviewContext ?? "product";
+    const reviewContext: string | null =
+      nextTarget?.reviewContext ?? targetBundle?.targets[0]?.reviewContext ?? "product";
     const hasPendingReview = reviewPendingCount > 0;
 
     const linked = pickPrimaryLinkedApplication(linkedApps);
@@ -943,12 +949,18 @@ export async function GET(req: Request) {
         stringingApplicationId: linked?.id ?? null,
         cancelStatus: r?.cancelRequest?.status ?? null,
         linkedApplicationCount: linkedApps.length,
-        reviewContext: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.reviewContext ?? reviewBundlesByRentalId.get(rentalId)?.targets[0]?.reviewContext ?? null,
+        reviewContext:
+          reviewBundlesByRentalId.get(rentalId)?.nextTarget?.reviewContext ??
+          reviewBundlesByRentalId.get(rentalId)?.targets[0]?.reviewContext ??
+          null,
         reviewPendingCount: reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0,
         reviewAllDone: Boolean(reviewBundlesByRentalId.get(rentalId)?.allReviewed),
-        reviewNextTargetProductId: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryProductId ?? null,
-        reviewNextApplicationId: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryApplicationId ?? null,
-        reviewNextRacketId: reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryRacketId ?? null,
+        reviewNextTargetProductId:
+          reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryProductId ?? null,
+        reviewNextApplicationId:
+          reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryApplicationId ?? null,
+        reviewNextRacketId:
+          reviewBundlesByRentalId.get(rentalId)?.nextTarget?.primaryRacketId ?? null,
         reviewTargetBundle: reviewBundlesByRentalId.get(rentalId) ?? null,
         nextReviewTarget: reviewBundlesByRentalId.get(rentalId)?.nextTarget ?? null,
       },
@@ -1017,12 +1029,20 @@ export async function GET(req: Request) {
         packageApplied: paymentContext.packageApplied,
         paymentStatus: paymentContext.paymentStatus,
         paymentProvider: paymentContext.paymentProvider,
-        serviceReviewPending: (reviewBundlesByApplicationId.get(String(doc._id))?.counts.remaining ?? 0) > 0,
-        reviewContext: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.reviewContext ?? reviewBundlesByApplicationId.get(String(doc._id))?.targets[0]?.reviewContext ?? null,
-        reviewPendingCount: reviewBundlesByApplicationId.get(String(doc._id))?.counts.remaining ?? 0,
+        serviceReviewPending:
+          (reviewBundlesByApplicationId.get(String(doc._id))?.counts.remaining ?? 0) > 0,
+        reviewContext:
+          reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.reviewContext ??
+          reviewBundlesByApplicationId.get(String(doc._id))?.targets[0]?.reviewContext ??
+          null,
+        reviewPendingCount:
+          reviewBundlesByApplicationId.get(String(doc._id))?.counts.remaining ?? 0,
         reviewAllDone: Boolean(reviewBundlesByApplicationId.get(String(doc._id))?.allReviewed),
-        reviewNextTargetProductId: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.primaryProductId ?? null,
-        reviewNextApplicationId: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.primaryApplicationId ?? null,
+        reviewNextTargetProductId:
+          reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.primaryProductId ?? null,
+        reviewNextApplicationId:
+          reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget?.primaryApplicationId ??
+          null,
         reviewTargetBundle: reviewBundlesByApplicationId.get(String(doc._id)) ?? null,
         nextReviewTarget: reviewBundlesByApplicationId.get(String(doc._id))?.nextTarget ?? null,
         ...stringSelection,

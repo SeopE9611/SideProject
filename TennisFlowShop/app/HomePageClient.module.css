@@ -1,5 +1,7 @@
 .page {
-  --home-brand-font-family: "GmarketSans", "Spoqa Han Sans Neo", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --home-brand-font-family:
+    "GmarketSans", "Spoqa Han Sans Neo", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 
   background: color-mix(in srgb, hsl(var(--background)) 30%, hsl(var(--secondary)) 70%);
   color: hsl(var(--foreground));
@@ -99,7 +101,10 @@
   border-radius: 30px;
   background: hsl(var(--surface-inverse));
   color: hsl(var(--surface-inverse-foreground));
-  box-shadow: var(--shadow-soft, 0 18px 55px color-mix(in srgb, hsl(var(--foreground)) 12%, transparent));
+  box-shadow: var(
+    --shadow-soft,
+    0 18px 55px color-mix(in srgb, hsl(var(--foreground)) 12%, transparent)
+  );
 }
 
 .heroGrid {
@@ -229,7 +234,11 @@
   padding: 22px;
   overflow: hidden;
   text-align: left;
-  transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .pathCardIdle:hover {
@@ -288,13 +297,12 @@
   position: absolute;
   z-index: 1;
   inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, hsl(var(--surface-inverse)) 96%, transparent) 0%,
-      color-mix(in srgb, hsl(var(--surface-inverse)) 72%, transparent) 58%,
-      color-mix(in srgb, hsl(var(--surface-inverse)) 52%, transparent) 100%
-    );
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 96%, transparent) 0%,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 72%, transparent) 58%,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 52%, transparent) 100%
+  );
   pointer-events: none;
 }
 
@@ -389,7 +397,10 @@
   border-radius: 20px;
   background: hsl(var(--card));
   padding: 24px;
-  box-shadow: var(--shadow-soft, 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 10%, transparent));
+  box-shadow: var(
+    --shadow-soft,
+    0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 10%, transparent)
+  );
 }
 
 .trustSection {
@@ -660,7 +671,10 @@
   border-radius: 16px;
   background: hsl(var(--card));
   color: hsl(var(--foreground));
-  transition: border-color 0.2s, background-color 0.2s, opacity 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    opacity 0.2s;
 }
 
 .racketBrandRailButton:focus-visible {
@@ -1035,9 +1049,12 @@
 }
 
 .bentoSideCard {
-  transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
 }
-
 
 @media (hover: hover) and (pointer: fine) {
   .racketInventoryRow:hover {
@@ -1093,7 +1110,6 @@
     grid-template-columns: 1fr;
   }
 
-
   .heroVisual {
     min-height: 460px;
   }
@@ -1111,7 +1127,6 @@
 }
 
 @media (max-width: 767px) {
-
   .section {
     padding-block: 36px;
   }

@@ -65,7 +65,11 @@ const costMethods = [
     valueType: "policy",
     time: "30-60분",
     description: "사용 가능한 패키지가 있으면 기존 정책에 따라 패키지 횟수가 차감됨",
-    features: ["패키지 잔여 횟수 기준", "적용 불가 시 일반 정책으로 계산", "신청 방식에 따라 최종 금액 상이"],
+    features: [
+      "패키지 잔여 횟수 기준",
+      "적용 불가 시 일반 정책으로 계산",
+      "신청 방식에 따라 최종 금액 상이",
+    ],
     icon: PackageCheck,
   },
 ];
@@ -93,9 +97,19 @@ const additionalServices = [
   },
 ];
 
-function BadgeList({ items, emptyLabel, variant = "secondary" }: { items: string[]; emptyLabel: string; variant?: "secondary" | "outline" | "brand" }) {
+function BadgeList({
+  items,
+  emptyLabel,
+  variant = "secondary",
+}: {
+  items: string[];
+  emptyLabel: string;
+  variant?: "secondary" | "outline" | "brand";
+}) {
   if (!items.length) {
-    return <span className="text-ui-body-sm leading-relaxed text-muted-foreground">{emptyLabel}</span>;
+    return (
+      <span className="text-ui-body-sm leading-relaxed text-muted-foreground">{emptyLabel}</span>
+    );
   }
 
   return (
@@ -127,7 +141,12 @@ export default async function PricingPage() {
                 보유 스트링 장착, 스트링 상품 선택, 패키지 적용 방식에 따라 비용 구성이 달라집니다.
               </p>
               <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-                <Button variant="highlight" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                <Button
+                  variant="highlight"
+                  asChild
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
+                >
                   <Link href="#cost-methods">비용 방식 확인하기</Link>
                 </Button>
                 <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
@@ -137,40 +156,67 @@ export default async function PricingPage() {
             </div>
 
             <PublicSurface variant="feature" className="space-y-3 bg-muted/30">
-              {["신청 방식 확인", "상품 또는 패키지 선택", "신청 화면에서 최종 금액 확인"].map((step, index) => (
-                <div key={step} className="flex items-center gap-3 border-b border-border pb-3 last:border-b-0 last:pb-0">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-highlight text-ui-label font-semibold text-brand-highlight-foreground">
-                    {index + 1}
-                  </span>
-                  <span className="text-ui-body-sm font-medium text-foreground">{step}</span>
-                </div>
-              ))}
+              {["신청 방식 확인", "상품 또는 패키지 선택", "신청 화면에서 최종 금액 확인"].map(
+                (step, index) => (
+                  <div
+                    key={step}
+                    className="flex items-center gap-3 border-b border-border pb-3 last:border-b-0 last:pb-0"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-highlight text-ui-label font-semibold text-brand-highlight-foreground">
+                      {index + 1}
+                    </span>
+                    <span className="text-ui-body-sm font-medium text-foreground">{step}</span>
+                  </div>
+                ),
+              )}
             </PublicSurface>
           </div>
         </SiteContainer>
       </header>
 
       <SiteContainer variant="wide" className="space-y-8 py-8 bp-md:space-y-12 bp-md:py-12">
-        <section id="cost-methods" className="scroll-mt-[calc(var(--header-h)+1rem)] space-y-4 bp-md:space-y-6">
-          <SectionHeader title="신청 방식별 비용 계산 구조" description="먼저 내 신청 방식이 어디에 해당하는지 확인하면 최종 비용을 이해하기 쉽습니다." />
+        <section
+          id="cost-methods"
+          className="scroll-mt-[calc(var(--header-h)+1rem)] space-y-4 bp-md:space-y-6"
+        >
+          <SectionHeader
+            title="신청 방식별 비용 계산 구조"
+            description="먼저 내 신청 방식이 어디에 해당하는지 확인하면 최종 비용을 이해하기 쉽습니다."
+          />
           <PublicSurface padding="none" className="overflow-hidden">
             <div className="grid bp-md:grid-cols-3">
               {costMethods.map((method) => {
                 const Icon = method.icon;
                 return (
-                  <article key={method.name} className="space-y-4 border-b border-border p-5 last:border-b-0 bp-md:border-b-0 bp-md:border-r bp-md:last:border-r-0 bp-md:p-6">
+                  <article
+                    key={method.name}
+                    className="space-y-4 border-b border-border p-5 last:border-b-0 bp-md:border-b-0 bp-md:border-r bp-md:last:border-r-0 bp-md:p-6"
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30" aria-hidden>
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30"
+                        aria-hidden
+                      >
                         <Icon className="h-5 w-5 text-foreground" />
                       </div>
                       <div className="min-w-0 space-y-1">
-                        <h3 className="text-ui-card-title font-semibold leading-snug text-foreground">{method.name}</h3>
-                        <p className="text-ui-body-sm leading-relaxed text-muted-foreground">{method.description}</p>
+                        <h3 className="text-ui-card-title font-semibold leading-snug text-foreground">
+                          {method.name}
+                        </h3>
+                        <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
+                          {method.description}
+                        </p>
                       </div>
                     </div>
                     <div>
                       <p className="text-ui-label font-medium text-muted-foreground">가격/정책</p>
-                      <p className={method.valueType === "price" ? "mt-1 text-ui-section-title font-semibold tabular-nums text-foreground" : "mt-1 text-ui-card-title-lg font-semibold text-primary"}>
+                      <p
+                        className={
+                          method.valueType === "price"
+                            ? "mt-1 text-ui-section-title font-semibold tabular-nums text-foreground"
+                            : "mt-1 text-ui-card-title-lg font-semibold text-primary"
+                        }
+                      >
                         {method.value}
                       </p>
                     </div>
@@ -179,7 +225,10 @@ export default async function PricingPage() {
                     </p>
                     <ul className="space-y-1.5">
                       {method.features.slice(0, 3).map((feature) => (
-                        <li key={feature} className="flex gap-2 text-ui-body-sm leading-relaxed text-foreground">
+                        <li
+                          key={feature}
+                          className="flex gap-2 text-ui-body-sm leading-relaxed text-foreground"
+                        >
                           <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden />
                           <span>{feature}</span>
                         </li>
@@ -193,7 +242,10 @@ export default async function PricingPage() {
         </section>
 
         <section className="space-y-4 bp-md:space-y-6">
-          <SectionHeader title="소재별 실제 가격 범위" description="현재 공개 중인 스트링 상품의 상품가와 장착비를 소재별로 비교합니다." />
+          <SectionHeader
+            title="소재별 실제 가격 범위"
+            description="현재 공개 중인 스트링 상품의 상품가와 장착비를 소재별로 비교합니다."
+          />
           <PublicSurface padding="none" className="overflow-hidden">
             <div className="hidden border-b border-border bg-muted/30 px-5 py-3 text-ui-label font-medium text-muted-foreground bp-md:grid bp-md:grid-cols-[1.4fr_0.8fr_1fr_1fr] bp-md:gap-4">
               <span>소재</span>
@@ -204,8 +256,16 @@ export default async function PricingPage() {
             <div className="divide-y divide-border">
               {primarySummaries.map((category) => {
                 const hasProducts = category.count > 0;
-                const productPriceRange = formatRange(category.minPrice, category.maxPrice, "가격 데이터 확인 필요");
-                const mountingFeeRange = formatMountingFeeRange(category.minMountingFee, category.maxMountingFee, "장착비 미등록");
+                const productPriceRange = formatRange(
+                  category.minPrice,
+                  category.maxPrice,
+                  "가격 데이터 확인 필요",
+                );
+                const mountingFeeRange = formatMountingFeeRange(
+                  category.minMountingFee,
+                  category.maxMountingFee,
+                  "장착비 미등록",
+                );
 
                 return (
                   <article key={category.key} className="p-5 bp-md:p-6">
@@ -215,30 +275,54 @@ export default async function PricingPage() {
                           <Shield className="h-5 w-5" aria-hidden />
                           {category.label}
                         </h3>
-                        <p className="text-ui-body-sm leading-relaxed text-muted-foreground">{materialDescriptions[category.key]}</p>
-                        {!hasProducts ? <p className="text-ui-body-sm font-medium text-foreground">등록된 상품 데이터 없음</p> : null}
+                        <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
+                          {materialDescriptions[category.key]}
+                        </p>
+                        {!hasProducts ? (
+                          <p className="text-ui-body-sm font-medium text-foreground">
+                            등록된 상품 데이터 없음
+                          </p>
+                        ) : null}
                       </div>
                       <div className="grid grid-cols-[6rem_minmax(0,1fr)] gap-2 bp-md:block">
-                        <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">등록 상품</span>
-                        <span className="text-ui-body-sm font-semibold tabular-nums text-foreground">{category.count.toLocaleString("ko-KR")}개</span>
+                        <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">
+                          등록 상품
+                        </span>
+                        <span className="text-ui-body-sm font-semibold tabular-nums text-foreground">
+                          {category.count.toLocaleString("ko-KR")}개
+                        </span>
                       </div>
                       <div className="grid grid-cols-[6rem_minmax(0,1fr)] gap-2 bp-md:block">
-                        <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">상품 가격</span>
-                        <span className="text-ui-body-sm font-semibold tabular-nums leading-relaxed text-foreground">{productPriceRange}</span>
+                        <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">
+                          상품 가격
+                        </span>
+                        <span className="text-ui-body-sm font-semibold tabular-nums leading-relaxed text-foreground">
+                          {productPriceRange}
+                        </span>
                       </div>
                       <div className="grid grid-cols-[6rem_minmax(0,1fr)] gap-2 bp-md:block">
-                        <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">장착비</span>
-                        <span className="text-ui-body-sm font-semibold tabular-nums leading-relaxed text-foreground">{mountingFeeRange}</span>
+                        <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">
+                          장착비
+                        </span>
+                        <span className="text-ui-body-sm font-semibold tabular-nums leading-relaxed text-foreground">
+                          {mountingFeeRange}
+                        </span>
                       </div>
                     </div>
                     <div className="mt-4 grid gap-4 bp-md:grid-cols-2">
                       <div className="space-y-2">
-                        <p className="text-ui-label font-medium text-muted-foreground">대표 브랜드</p>
+                        <p className="text-ui-label font-medium text-muted-foreground">
+                          대표 브랜드
+                        </p>
                         <BadgeList items={category.brands} emptyLabel="데이터 없음" />
                       </div>
                       <div className="space-y-2">
                         <p className="text-ui-label font-medium text-muted-foreground">대표 상품</p>
-                        <BadgeList items={category.productNames} emptyLabel="데이터 없음" variant="outline" />
+                        <BadgeList
+                          items={category.productNames}
+                          emptyLabel="데이터 없음"
+                          variant="outline"
+                        />
                       </div>
                     </div>
                   </article>
@@ -256,36 +340,95 @@ export default async function PricingPage() {
                 <Badge variant="secondary">보조 분류</Badge>
               </div>
               <div className="grid gap-3 bp-sm:grid-cols-3">
-                <div><p className="text-ui-label text-muted-foreground">등록 상품 수</p><p className="mt-1 font-semibold tabular-nums text-foreground">{otherSummary.count.toLocaleString("ko-KR")}개</p></div>
-                <div><p className="text-ui-label text-muted-foreground">상품가 범위</p><p className="mt-1 font-semibold tabular-nums text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p></div>
-                <div><p className="text-ui-label text-muted-foreground">장착비 범위</p><p className="mt-1 font-semibold tabular-nums text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p></div>
+                <div>
+                  <p className="text-ui-label text-muted-foreground">등록 상품 수</p>
+                  <p className="mt-1 font-semibold tabular-nums text-foreground">
+                    {otherSummary.count.toLocaleString("ko-KR")}개
+                  </p>
+                </div>
+                <div>
+                  <p className="text-ui-label text-muted-foreground">상품가 범위</p>
+                  <p className="mt-1 font-semibold tabular-nums text-foreground">
+                    {formatRange(
+                      otherSummary.minPrice,
+                      otherSummary.maxPrice,
+                      "가격 데이터 확인 필요",
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-ui-label text-muted-foreground">장착비 범위</p>
+                  <p className="mt-1 font-semibold tabular-nums text-foreground">
+                    {formatMountingFeeRange(
+                      otherSummary.minMountingFee,
+                      otherSummary.maxMountingFee,
+                      "장착비 미등록",
+                    )}
+                  </p>
+                </div>
               </div>
               <div className="grid gap-4 bp-sm:grid-cols-3">
-                <div className="space-y-2"><p className="text-ui-label text-muted-foreground">대표 브랜드</p><BadgeList items={otherSummary.brands} emptyLabel="데이터 없음" /></div>
-                <div className="space-y-2"><p className="text-ui-label text-muted-foreground">대표 상품</p><BadgeList items={otherSummary.productNames} emptyLabel="데이터 없음" variant="outline" /></div>
-                <div className="space-y-2"><p className="text-ui-label text-muted-foreground">등록 소재값</p><BadgeList items={otherSummary.materialLabels} emptyLabel="데이터 없음" /></div>
+                <div className="space-y-2">
+                  <p className="text-ui-label text-muted-foreground">대표 브랜드</p>
+                  <BadgeList items={otherSummary.brands} emptyLabel="데이터 없음" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-ui-label text-muted-foreground">대표 상품</p>
+                  <BadgeList
+                    items={otherSummary.productNames}
+                    emptyLabel="데이터 없음"
+                    variant="outline"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-ui-label text-muted-foreground">등록 소재값</p>
+                  <BadgeList items={otherSummary.materialLabels} emptyLabel="데이터 없음" />
+                </div>
               </div>
             </PublicSurface>
           ) : null}
 
           <PublicSurface className="space-y-4">
             <div className="space-y-2">
-              <h2 className="text-ui-card-title-lg font-semibold text-foreground">하이브리드 조합</h2>
+              <h2 className="text-ui-card-title-lg font-semibold text-foreground">
+                하이브리드 조합
+              </h2>
               <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
-                하이브리드는 단일 소재가 아니라 메인·크로스 스트링 조합이므로 선택한 조합을 기준으로 최종 금액을 확인합니다.
+                하이브리드는 단일 소재가 아니라 메인·크로스 스트링 조합이므로 선택한 조합을 기준으로
+                최종 금액을 확인합니다.
               </p>
             </div>
             {hybridGuide.count === 0 ? (
-              <p className="text-ui-body-sm font-medium text-foreground">현재 등록된 하이브리드 상품이 없습니다.</p>
+              <p className="text-ui-body-sm font-medium text-foreground">
+                현재 등록된 하이브리드 상품이 없습니다.
+              </p>
             ) : (
               <>
                 <div className="grid gap-3 bp-sm:grid-cols-2">
-                  <div><p className="text-ui-label text-muted-foreground">등록 상품 수</p><p className="mt-1 font-semibold tabular-nums text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p></div>
-                  <div><p className="text-ui-label text-muted-foreground">대표 조합</p><div className="mt-2"><BadgeList items={hybridGuide.representativeMaterials} emptyLabel="데이터 없음" variant="brand" /></div></div>
+                  <div>
+                    <p className="text-ui-label text-muted-foreground">등록 상품 수</p>
+                    <p className="mt-1 font-semibold tabular-nums text-foreground">
+                      {hybridGuide.count.toLocaleString("ko-KR")}개
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-ui-label text-muted-foreground">대표 조합</p>
+                    <div className="mt-2">
+                      <BadgeList
+                        items={hybridGuide.representativeMaterials}
+                        emptyLabel="데이터 없음"
+                        variant="brand"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <p className="text-ui-label text-muted-foreground">대표 상품</p>
-                  <BadgeList items={hybridGuide.representativeProducts} emptyLabel="데이터 없음" variant="outline" />
+                  <BadgeList
+                    items={hybridGuide.representativeProducts}
+                    emptyLabel="데이터 없음"
+                    variant="outline"
+                  />
                 </div>
               </>
             )}
@@ -294,7 +437,9 @@ export default async function PricingPage() {
 
         <section className="grid gap-4 bp-lg:grid-cols-2">
           <PublicSurface className="space-y-4">
-            <h2 className="text-ui-card-title-lg font-semibold text-foreground">무료 지원 및 추가 안내</h2>
+            <h2 className="text-ui-card-title-lg font-semibold text-foreground">
+              무료 지원 및 추가 안내
+            </h2>
             <div className="grid gap-3 bp-sm:grid-cols-2">
               {additionalServices.map((service) => (
                 <div key={service.name} className="border-t border-border pt-3">
@@ -302,7 +447,9 @@ export default async function PricingPage() {
                     <h3 className="font-semibold text-foreground">{service.name}</h3>
                     <Badge variant="secondary">{service.policy}</Badge>
                   </div>
-                  <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">{service.description}</p>
+                  <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
+                    {service.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -320,36 +467,71 @@ export default async function PricingPage() {
         </section>
 
         <PublicSurface variant="inverse" className="space-y-4">
-          <h2 className="text-ui-card-title-lg font-semibold text-surface-inverse-foreground">결제 전 확인하세요</h2>
+          <h2 className="text-ui-card-title-lg font-semibold text-surface-inverse-foreground">
+            결제 전 확인하세요
+          </h2>
           <div className="grid gap-3 bp-md:grid-cols-3">
-            {[STRINGING_POLICY_TEXT.product, STRINGING_POLICY_TEXT.package, STRINGING_POLICY_TEXT.dynamic].map((text, index) => (
-              <p key={text} className="flex gap-3 text-ui-body-sm leading-relaxed text-surface-inverse-muted">
-                <span className="font-semibold text-brand-highlight" aria-hidden>{index + 1}</span>
+            {[
+              STRINGING_POLICY_TEXT.product,
+              STRINGING_POLICY_TEXT.package,
+              STRINGING_POLICY_TEXT.dynamic,
+            ].map((text, index) => (
+              <p
+                key={text}
+                className="flex gap-3 text-ui-body-sm leading-relaxed text-surface-inverse-muted"
+              >
+                <span className="font-semibold text-brand-highlight" aria-hidden>
+                  {index + 1}
+                </span>
                 <span>{text}</span>
               </p>
             ))}
           </div>
           <div className="space-y-2 border-t border-surface-inverse-foreground/15 pt-4 text-ui-body-sm leading-relaxed text-surface-inverse-muted">
             <p>• 스트링 포함 가격은 고정값이 아닙니다.</p>
-            <p>• 주문/대여 기반 신청은 이미 결제된 내역과 이번 신청의 별도 결제 항목을 구분합니다.</p>
+            <p>
+              • 주문/대여 기반 신청은 이미 결제된 내역과 이번 신청의 별도 결제 항목을 구분합니다.
+            </p>
             <p>• 예약 상황에 따라 작업 시간이 달라질 수 있습니다.</p>
           </div>
         </PublicSurface>
 
         <section className="rounded-2xl border border-border bg-muted/30 p-5 text-center bp-sm:p-6">
-          <h2 className="font-brand-heading text-ui-section-title font-semibold text-foreground">신청 화면에서 최종 금액을 확인하세요.</h2>
-          <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">상품, 보유 스트링, 패키지 상태에 따라 실제 결제 또는 차감 방식이 확정됩니다.</p>
+          <h2 className="font-brand-heading text-ui-section-title font-semibold text-foreground">
+            신청 화면에서 최종 금액을 확인하세요.
+          </h2>
+          <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
+            상품, 보유 스트링, 패키지 상태에 따라 실제 결제 또는 차감 방식이 확정됩니다.
+          </p>
           <div className="mt-4 grid gap-2 bp-sm:flex bp-sm:justify-center">
-            <Button asChild size="lg" variant="highlight" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              size="lg"
+              variant="highlight"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/services/apply" className="group">
                 교체 서비스 신청하기
-                <ArrowRight className="transition-transform group-hover:translate-x-1" aria-hidden />
+                <ArrowRight
+                  className="transition-transform group-hover:translate-x-1"
+                  aria-hidden
+                />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/products?from=apply" className="group">
                 스트링 먼저 고르기
-                <ArrowRight className="transition-transform group-hover:translate-x-1" aria-hidden />
+                <ArrowRight
+                  className="transition-transform group-hover:translate-x-1"
+                  aria-hidden
+                />
               </Link>
             </Button>
           </div>

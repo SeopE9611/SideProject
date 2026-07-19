@@ -616,7 +616,11 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <CreditCard className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">결제 상태</span>
             </div>
-            <Badge variant={getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus)).variant}>
+            <Badge
+              variant={
+                getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus)).variant
+              }
+            >
               {getPackagePaymentDisplayLabel(data.paymentStatus)}
             </Badge>
           </div>
@@ -743,7 +747,10 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">결제 상태</span>
                 <Badge
-                  variant={getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus)).variant}
+                  variant={
+                    getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus))
+                      .variant
+                  }
                 >
                   {getPackagePaymentDisplayLabel(data.paymentStatus)}
                 </Badge>

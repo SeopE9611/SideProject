@@ -51,10 +51,20 @@ export default function MypageDetailHero({
     >
       <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
         <div className="min-w-0 space-y-1">
-          <div className={cn("text-ui-label font-medium text-primary", isFeature && "text-brand-highlight-ink")}>
+          <div
+            className={cn(
+              "text-ui-label font-medium text-primary",
+              isFeature && "text-brand-highlight-ink",
+            )}
+          >
             {eyebrow}
           </div>
-          <h2 className={cn("break-keep text-ui-card-title-lg font-medium text-foreground bp-sm:text-ui-section-title", isFeature && "font-brand-heading font-semibold tracking-[-0.015em]")}>
+          <h2
+            className={cn(
+              "break-keep text-ui-card-title-lg font-medium text-foreground bp-sm:text-ui-section-title",
+              isFeature && "font-brand-heading font-semibold tracking-[-0.015em]",
+            )}
+          >
             {title}
           </h2>
           <p className="break-keep text-ui-body-sm text-muted-foreground">{description}</p>
@@ -70,7 +80,8 @@ export default function MypageDetailHero({
       <div
         className={cn(
           mypageDetailLayout.heroShell,
-          isFeature && "border border-brand-highlight-ink/20 bg-background/75 ring-brand-highlight-ink/15",
+          isFeature &&
+            "border border-brand-highlight-ink/20 bg-background/75 ring-brand-highlight-ink/15",
         )}
       >
         <div className={cn(mypageDetailLayout.heroGrid, !hasNextAction && "bp-lg:grid-cols-1")}>
@@ -78,7 +89,8 @@ export default function MypageDetailHero({
             <div
               className={cn(
                 "shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10",
-                isFeature && "bg-brand-highlight-muted text-brand-highlight-ink ring-brand-highlight-ink/20",
+                isFeature &&
+                  "bg-brand-highlight-muted text-brand-highlight-ink ring-brand-highlight-ink/20",
               )}
             >
               {icon}
@@ -99,9 +111,21 @@ export default function MypageDetailHero({
           </div>
 
           {hasNextAction ? (
-            <div className={cn(mypageDetailLayout.actionPanel, isFeature && "border-brand-highlight-ink/25 bg-brand-highlight-muted/55")}>
+            <div
+              className={cn(
+                mypageDetailLayout.actionPanel,
+                isFeature && "border-brand-highlight-ink/25 bg-brand-highlight-muted/55",
+              )}
+            >
               <div className="min-w-0 flex-1">
-                <p className={cn("text-ui-label font-medium text-primary", isFeature && "text-brand-highlight-ink")}>다음 할 일</p>
+                <p
+                  className={cn(
+                    "text-ui-label font-medium text-primary",
+                    isFeature && "text-brand-highlight-ink",
+                  )}
+                >
+                  다음 할 일
+                </p>
 
                 {nextActionTitle ? (
                   <div className="mt-1 break-keep text-ui-body-sm font-medium text-foreground">

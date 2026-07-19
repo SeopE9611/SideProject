@@ -273,8 +273,15 @@ export default function KakaoInquiryWidget() {
               <div ref={compactPanelRef} id="compact-inquiry-panel" className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] rounded-panel border-border shadow-float">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-ui-body-sm font-semibold">무엇을 도와드릴까요?</CardTitle>
-                    <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
+                    <CardTitle className="text-ui-body-sm font-semibold">
+                      무엇을 도와드릴까요?
+                    </CardTitle>
+                    <button
+                      type="button"
+                      aria-label="닫기"
+                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+                      onClick={() => setPanel(null)}
+                    >
                       <X className="h-4 w-4" />
                     </button>
                   </CardHeader>
@@ -282,14 +289,37 @@ export default function KakaoInquiryWidget() {
                     <div className="space-y-2">
                       <p className="text-ui-label font-semibold text-muted-foreground">빠른 이동</p>
                       {guideLinks.map(({ label, href }) => (
-                        <Link key={href} href={href} className="flex min-h-11 items-center rounded-control border border-border bg-card px-3 py-2 text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setPanel(null)}>{label}</Link>
+                        <Link
+                          key={href}
+                          href={href}
+                          className="flex min-h-11 items-center rounded-control border border-border bg-card px-3 py-2 text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onClick={() => setPanel(null)}
+                        >
+                          {label}
+                        </Link>
                       ))}
                     </div>
-                    {(canShowBug || canShowInquiry) ? (
+                    {canShowBug || canShowInquiry ? (
                       <div className="space-y-2 border-t border-border pt-4">
                         <p className="text-ui-label font-semibold text-muted-foreground">지원</p>
-                        {canShowBug ? <button type="button" onClick={openBugChat} className="min-h-11 w-full rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">버그 제보</button> : null}
-                        {canShowInquiry ? <button type="button" onClick={openKakaoChat} className="min-h-11 w-full rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">카카오톡 문의</button> : null}
+                        {canShowBug ? (
+                          <button
+                            type="button"
+                            onClick={openBugChat}
+                            className="min-h-11 w-full rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            버그 제보
+                          </button>
+                        ) : null}
+                        {canShowInquiry ? (
+                          <button
+                            type="button"
+                            onClick={openKakaoChat}
+                            className="min-h-11 w-full rounded-control border border-border bg-card px-3 py-2 text-left text-ui-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            카카오톡 문의
+                          </button>
+                        ) : null}
                       </div>
                     ) : null}
                   </CardContent>

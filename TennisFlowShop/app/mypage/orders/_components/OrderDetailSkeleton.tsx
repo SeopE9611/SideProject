@@ -85,7 +85,10 @@ export default function OrderDetailSkeleton() {
 
           <aside className="grid gap-5 bp-lg:grid-cols-2">
             {Array.from({ length: 2 }).map((_, index) => (
-              <section key={index} className="overflow-hidden rounded-2xl border border-brand-highlight-ink/20 bg-card shadow-none">
+              <section
+                key={index}
+                className="overflow-hidden rounded-2xl border border-brand-highlight-ink/20 bg-card shadow-none"
+              >
                 <div className="border-b border-border/60 bg-brand-highlight-muted/45 p-4 bp-sm:p-5">
                   <div className="flex items-center gap-2">
                     <Skeleton className="h-5 w-5 rounded-full" />
@@ -95,7 +98,10 @@ export default function OrderDetailSkeleton() {
                 </div>
                 <div className="space-y-4 p-4 bp-sm:p-5">
                   {Array.from({ length: 4 }).map((__, fieldIndex) => (
-                    <div key={fieldIndex} className="space-y-2 border-b border-border/60 pb-3 last:border-b-0 last:pb-0">
+                    <div
+                      key={fieldIndex}
+                      className="space-y-2 border-b border-border/60 pb-3 last:border-b-0 last:pb-0"
+                    >
                       <Skeleton className="h-3 w-16" />
                       <Skeleton className="h-5 w-2/3" />
                     </div>

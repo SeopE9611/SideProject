@@ -11,7 +11,13 @@ import Link from "next/link";
 type MypageSummaryState = "loading" | "error" | "ready";
 
 type Props = {
-  user: { id: string; name: string; email: string; role: string; oauthProviders?: Array<"kakao" | "naver"> };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    oauthProviders?: Array<"kakao" | "naver">;
+  };
   todoCount: number;
   summaryState: MypageSummaryState;
 };
@@ -24,27 +30,30 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
   const hasNaver = socialProviders.includes("naver");
   const hasTodoItems = summaryState === "ready" && todoCount > 0;
   const isSummaryReady = summaryState === "ready";
-  const todoMessage = summaryState === "loading"
-    ? "요약 정보를 불러오는 중입니다"
-    : summaryState === "error"
-      ? "요약 정보를 불러오지 못했습니다"
-      : hasTodoItems
-        ? "오늘 확인할 항목"
-        : "현재 처리할 일이 없습니다";
-  const todoBadgeVariant: "warning" | "success" | "secondary" | "danger" = summaryState === "error"
-    ? "danger"
-    : summaryState === "loading"
-      ? "secondary"
-      : hasTodoItems
-        ? "warning"
-        : "success";
-  const todoBadgeLabel = summaryState === "loading"
-    ? "불러오는 중"
-    : summaryState === "error"
-      ? "불러오기 실패"
-      : hasTodoItems
-        ? "확인 필요"
-        : "완료";
+  const todoMessage =
+    summaryState === "loading"
+      ? "요약 정보를 불러오는 중입니다"
+      : summaryState === "error"
+        ? "요약 정보를 불러오지 못했습니다"
+        : hasTodoItems
+          ? "오늘 확인할 항목"
+          : "현재 처리할 일이 없습니다";
+  const todoBadgeVariant: "warning" | "success" | "secondary" | "danger" =
+    summaryState === "error"
+      ? "danger"
+      : summaryState === "loading"
+        ? "secondary"
+        : hasTodoItems
+          ? "warning"
+          : "success";
+  const todoBadgeLabel =
+    summaryState === "loading"
+      ? "불러오는 중"
+      : summaryState === "error"
+        ? "불러오기 실패"
+        : hasTodoItems
+          ? "확인 필요"
+          : "완료";
   const todoCtaLabel = hasTodoItems
     ? "확인할 항목 보기"
     : isSummaryReady
@@ -76,22 +85,27 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <IdentityBadge tone={isAdmin ? "admin" : "email"} icon={<ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}>
+            <IdentityBadge
+              tone={isAdmin ? "admin" : "email"}
+              icon={<ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
               {isAdmin ? `${getUserRoleLabel(normalizedRole)} 계정` : "사용자 회원"}
             </IdentityBadge>
             {hasKakao ? <IdentityBadge tone="kakao">카카오 로그인</IdentityBadge> : null}
             {hasNaver ? <IdentityBadge tone="naver">네이버 로그인</IdentityBadge> : null}
-            {!hasKakao && !hasNaver ? <IdentityBadge tone="email">이메일 계정</IdentityBadge> : null}
+            {!hasKakao && !hasNaver ? (
+              <IdentityBadge tone="email">이메일 계정</IdentityBadge>
+            ) : null}
           </div>
         </div>
 
         <div className="rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse-muted/10 p-4 bp-sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="hidden text-ui-kicker text-surface-inverse-muted bp-sm:block">TODAY ACTION</p>
-              <p className="mt-2 text-ui-body-sm text-surface-inverse-muted">
-                {todoMessage}
+              <p className="hidden text-ui-kicker text-surface-inverse-muted bp-sm:block">
+                TODAY ACTION
               </p>
+              <p className="mt-2 text-ui-body-sm text-surface-inverse-muted">{todoMessage}</p>
             </div>
             <Badge variant={todoBadgeVariant}>{todoBadgeLabel}</Badge>
           </div>
@@ -99,13 +113,28 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
             {isSummaryReady ? todoCount : "-"}
           </p>
           <div className="mt-4 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-1">
-            <Button asChild variant={hasTodoItems ? "inverse" : "outline"} className={cn("min-h-11 rounded-control", !hasTodoItems && "border-surface-inverse-foreground/25 bg-transparent text-surface-inverse-foreground hover:bg-surface-inverse-muted/15 hover:text-surface-inverse-foreground")}>
+            <Button
+              asChild
+              variant={hasTodoItems ? "inverse" : "outline"}
+              className={cn(
+                "min-h-11 rounded-control",
+                !hasTodoItems &&
+                  "border-surface-inverse-foreground/25 bg-transparent text-surface-inverse-foreground hover:bg-surface-inverse-muted/15 hover:text-surface-inverse-foreground",
+              )}
+            >
               <Link href={hasTodoItems ? "/mypage?tab=orders&scope=todo" : "/mypage?tab=orders"}>
                 {todoCtaLabel}
               </Link>
             </Button>
-            <Button asChild variant="outline" className="min-h-11 rounded-control border-surface-inverse-foreground/25 bg-transparent text-surface-inverse-foreground hover:bg-surface-inverse-muted/15 hover:text-surface-inverse-foreground">
-              <Link href="/mypage/profile"><UserCog className="h-4 w-4" aria-hidden="true" />회원정보 수정</Link>
+            <Button
+              asChild
+              variant="outline"
+              className="min-h-11 rounded-control border-surface-inverse-foreground/25 bg-transparent text-surface-inverse-foreground hover:bg-surface-inverse-muted/15 hover:text-surface-inverse-foreground"
+            >
+              <Link href="/mypage/profile">
+                <UserCog className="h-4 w-4" aria-hidden="true" />
+                회원정보 수정
+              </Link>
             </Button>
           </div>
         </div>

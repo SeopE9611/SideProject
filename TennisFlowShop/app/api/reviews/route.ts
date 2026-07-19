@@ -700,10 +700,7 @@ export async function GET(req: Request) {
           status: { $in: ["visible", "hidden"] },
           ...(currentUserId
             ? {
-                $or: [
-                  { moderationStatus: { $ne: "hidden" } },
-                  { userId: currentUserId },
-                ],
+                $or: [{ moderationStatus: { $ne: "hidden" } }, { userId: currentUserId }],
               }
             : { moderationStatus: { $ne: "hidden" } }),
         }
@@ -894,10 +891,7 @@ export async function GET(req: Request) {
     effectiveStatus: {
       $cond: [
         {
-          $and: [
-            { $ne: ["$status", "hidden"] },
-            { $ne: ["$moderationStatus", "hidden"] },
-          ],
+          $and: [{ $ne: ["$status", "hidden"] }, { $ne: ["$moderationStatus", "hidden"] }],
         },
         "visible",
         "hidden",
@@ -911,11 +905,7 @@ export async function GET(req: Request) {
   project.adminView = 1;
   if (withHidden === "mask") {
     const hiddenCond = {
-      $and: [
-        { $eq: ["$status", "hidden"] },
-        { $ne: ["$isMine", true] },
-        { $eq: [isAdmin, false] },
-      ],
+      $and: [{ $eq: ["$status", "hidden"] }, { $ne: ["$isMine", true] }, { $eq: [isAdmin, false] }],
     };
     project.userName = { $cond: [hiddenCond, null, "$userName"] };
     project.content = { $cond: [hiddenCond, null, "$content"] };

@@ -61,7 +61,15 @@ function fmt(n: number | null | undefined, suffix?: string) {
   return `${n}${suffix ?? ""}`;
 }
 
-function SpecItem({ label, value, className }: { label: string; value: string; className?: string }) {
+function SpecItem({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
     <div className={cn("min-w-0 space-y-0.5", className)}>
       <span className="block whitespace-nowrap text-ui-micro uppercase tracking-wide text-foreground/70 bp-sm:text-ui-label">
@@ -77,7 +85,9 @@ function SpecItem({ label, value, className }: { label: string; value: string; c
 export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   const brandText = racketBrandLabel(racket.brand);
   const spec = (racket.spec ?? {}) as RacketSpec;
-  const conditionMeta = racket.condition ? usedBadgeMeta("condition", racket.condition, "image") : null;
+  const conditionMeta = racket.condition
+    ? usedBadgeMeta("condition", racket.condition, "image")
+    : null;
   const conditionText = racketConditionLabel(racket.condition);
   const img = racket.images?.[0];
   const rentalEnabled = !!racket.rental?.enabled;
@@ -187,7 +197,13 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 <RacketSpecQuickViewDialog
                   racket={compareItem}
                   trigger={
-                    <Button type="button" variant="outline" size="sm" wrap="responsive" className="min-h-10 w-full min-w-0 rounded-lg bg-transparent px-2 text-ui-label bp-sm:text-ui-body-sm">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      wrap="responsive"
+                      className="min-h-10 w-full min-w-0 rounded-lg bg-transparent px-2 text-ui-label bp-sm:text-ui-body-sm"
+                    >
                       <Info className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                       상세 스펙
                     </Button>
@@ -222,7 +238,13 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               </div>
 
               <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
-                <Button asChild size="sm" wrap="responsive" variant="highlight_soft" className="min-h-11 w-full min-w-0 rounded-lg px-2 text-ui-label bp-sm:text-ui-body-sm">
+                <Button
+                  asChild
+                  size="sm"
+                  wrap="responsive"
+                  variant="highlight_soft"
+                  className="min-h-11 w-full min-w-0 rounded-lg px-2 text-ui-label bp-sm:text-ui-body-sm"
+                >
                   <Link href={`/rackets/${racket.id}/select-string`}>
                     <ShoppingCart className="mr-1.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     스트링 선택 후 구매
@@ -249,7 +271,9 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                     disabled
                     title={rentalDisabledReason ?? undefined}
                     wrap="responsive"
-                    aria-label={rentalDisabledReason ? `대여 불가: ${rentalDisabledReason}` : "대여 불가"}
+                    aria-label={
+                      rentalDisabledReason ? `대여 불가: ${rentalDisabledReason}` : "대여 불가"
+                    }
                     className="min-h-11 w-full min-w-0 rounded-lg px-2 text-ui-label opacity-70 bp-sm:text-ui-body-sm"
                   >
                     대여 불가

@@ -17,23 +17,58 @@ export function buildReviewDuplicateDiagnosticPipelines() {
   return {
     product: [
       { $match: { ...active, productId: { $exists: true }, orderId: { $exists: true } } },
-      { $project: { userId: normalizeId("$userId"), productId: normalizeId("$productId"), orderId: normalizeId("$orderId") } },
-      { $match: { $expr: { $and: [nonEmpty("$userId"), nonEmpty("$productId"), nonEmpty("$orderId")] } } },
-      { $group: { _id: { userId: "$userId", productId: "$productId", orderId: "$orderId" }, count: { $sum: 1 }, ids: { $push: "$_id" } } },
+      {
+        $project: {
+          userId: normalizeId("$userId"),
+          productId: normalizeId("$productId"),
+          orderId: normalizeId("$orderId"),
+        },
+      },
+      {
+        $match: {
+          $expr: { $and: [nonEmpty("$userId"), nonEmpty("$productId"), nonEmpty("$orderId")] },
+        },
+      },
+      {
+        $group: {
+          _id: { userId: "$userId", productId: "$productId", orderId: "$orderId" },
+          count: { $sum: 1 },
+          ids: { $push: "$_id" },
+        },
+      },
       { $match: { count: { $gt: 1 } } },
     ],
     rental: [
       { $match: { ...active, rentalId: { $exists: true } } },
       { $project: { userId: normalizeId("$userId"), rentalId: normalizeId("$rentalId") } },
       { $match: { $expr: { $and: [nonEmpty("$userId"), nonEmpty("$rentalId")] } } },
-      { $group: { _id: { userId: "$userId", rentalId: "$rentalId" }, count: { $sum: 1 }, ids: { $push: "$_id" } } },
+      {
+        $group: {
+          _id: { userId: "$userId", rentalId: "$rentalId" },
+          count: { $sum: 1 },
+          ids: { $push: "$_id" },
+        },
+      },
       { $match: { count: { $gt: 1 } } },
     ],
     service: [
       { $match: active },
-      { $project: { userId: normalizeId("$userId"), serviceApplicationId: normalizeId({ $ifNull: ["$serviceApplicationId", "$applicationId"] }) } },
+      {
+        $project: {
+          userId: normalizeId("$userId"),
+          serviceApplicationId: normalizeId({
+            $ifNull: ["$serviceApplicationId", "$applicationId"],
+          }),
+        },
+      },
       { $match: { $expr: { $and: [nonEmpty("$userId"), nonEmpty("$serviceApplicationId")] } } },
-      { $group: { _id: { userId: "$userId", serviceApplicationId: "$serviceApplicationId" }, count: { $sum: 1 }, ids: { $push: "$_id" } } },
+      {
+        $group: {
+          _id: { userId: "$userId", serviceApplicationId: "$serviceApplicationId" },
+          count: { $sum: 1 },
+          ids: { $push: "$_id" },
+        },
+      },
       { $match: { count: { $gt: 1 } } },
     ],
   };

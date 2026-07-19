@@ -669,64 +669,64 @@ export default function FreeBoardEditClient({ id }: Props) {
       <SiteContainer variant="wide" className="max-w-7xl py-8">
         {/* 상단 헤더 */}
         <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            {/* 브레드크럼: 게시판 > 자유 게시판 > 글 수정 */}
-            <div className="mb-1 text-ui-body-sm text-muted-foreground">
-              <Badge variant="brand">중고 거래</Badge>
-              <span className="mx-1">›</span>
-              <Link
-                href="/board/market"
-                onClick={onLeaveLinkClick}
-                className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground"
-              >
-                중고 거래
-              </Link>
-              <span className="mx-1">›</span>
-              <span>글 수정</span>
-            </div>
-            <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
-              중고 거래 글 수정
-            </h1>
-            <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
-              기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.
-            </p>
-            {/* 이탈 경고(고정 노출) */}
-            <div className="mb-3 mt-3 flex items-start gap-2 rounded-panel border border-border bg-brand-highlight-muted/35 px-3 py-2 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
-              <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 flex-none" />
-              <p className="leading-relaxed">
-                <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나
-                새로고침하면 입력한 내용이{" "}
-                <span className="font-semibold">초기화될 수 있습니다.</span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              {/* 브레드크럼: 게시판 > 자유 게시판 > 글 수정 */}
+              <div className="mb-1 text-ui-body-sm text-muted-foreground">
+                <Badge variant="brand">중고 거래</Badge>
+                <span className="mx-1">›</span>
+                <Link
+                  href="/board/market"
+                  onClick={onLeaveLinkClick}
+                  className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground"
+                >
+                  중고 거래
+                </Link>
+                <span className="mx-1">›</span>
+                <span>글 수정</span>
+              </div>
+              <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+                중고 거래 글 수정
+              </h1>
+              <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
+                기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.
               </p>
+              {/* 이탈 경고(고정 노출) */}
+              <div className="mb-3 mt-3 flex items-start gap-2 rounded-panel border border-border bg-brand-highlight-muted/35 px-3 py-2 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+                <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 flex-none" />
+                <p className="leading-relaxed">
+                  <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나
+                  새로고침하면 입력한 내용이{" "}
+                  <span className="font-semibold">초기화될 수 있습니다.</span>
+                </p>
+              </div>
+            </div>
+
+            {/* 우측 상단: 뒤로가기 */}
+            <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
+                onClick={() => confirmLeaveIfDirty(() => router.back())}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>이전으로</span>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
+              >
+                <Link href="/board/market" onClick={onLeaveLinkClick}>
+                  <MessageSquare aria-hidden="true" className="h-4 w-4" />
+                  <span>목록으로</span>
+                </Link>
+              </Button>
             </div>
           </div>
-
-          {/* 우측 상단: 뒤로가기 */}
-          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
-              onClick={() => confirmLeaveIfDirty(() => router.back())}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>이전으로</span>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
-            >
-              <Link href="/board/market" onClick={onLeaveLinkClick}>
-                <MessageSquare aria-hidden="true" className="h-4 w-4" />
-                <span>목록으로</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
         </section>
 
         {isLoading ? (
@@ -810,7 +810,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
                   <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <Package aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
+                      <Package
+                        aria-hidden="true"
+                        className="h-4 w-4 text-brand-highlight-foreground"
+                      />
                       <span>상품 기본 정보</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -897,7 +900,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
                   <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <Package aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
+                      <Package
+                        aria-hidden="true"
+                        className="h-4 w-4 text-brand-highlight-foreground"
+                      />
                       <span>거래 핵심 정보</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -924,7 +930,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <Card className="border border-border bg-card rounded-panel shadow-soft dark:bg-card">
                   <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <MessageSquare aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
+                      <MessageSquare
+                        aria-hidden="true"
+                        className="h-4 w-4 text-brand-highlight-foreground"
+                      />
                       <span>게시글 내용</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -1003,7 +1012,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                 >
                   <CardHeader className="space-y-1 border-b border-border bg-brand-highlight-muted/35 p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
-                      <Upload aria-hidden="true" className="h-4 w-4 text-brand-highlight-foreground" />
+                      <Upload
+                        aria-hidden="true"
+                        className="h-4 w-4 text-brand-highlight-foreground"
+                      />
                       <span>판매 이미지 / 파일</span>
                     </CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -1116,7 +1128,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                             addFiles(Array.from(e.dataTransfer.files || []));
                           }}
                         >
-                          <Upload aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                          <Upload
+                            aria-hidden="true"
+                            className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                          />
                           <p className="text-ui-body-sm text-muted-foreground">
                             클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                           </p>

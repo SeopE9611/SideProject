@@ -136,8 +136,8 @@ export default function StringPackagesPageClient({
                   교체 횟수에 맞춰, 필요한 만큼 미리 준비하세요.
                 </h1>
                 <p className="max-w-2xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
-                  횟수·회당 금액·유효기간을 비교하고, 교체서비스 신청 시 보유 횟수에서
-                  간편하게 사용하세요.
+                  횟수·회당 금액·유효기간을 비교하고, 교체서비스 신청 시 보유 횟수에서 간편하게
+                  사용하세요.
                 </p>
               </div>
               <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap">
@@ -205,9 +205,7 @@ export default function StringPackagesPageClient({
           )}
 
           {packages.length > 0 ? (
-            <div
-              className={`mx-auto grid ${packageGridClass} items-stretch gap-4`}
-            >
+            <div className={`mx-auto grid ${packageGridClass} items-stretch gap-4`}>
               {packages.map((pkg) => (
                 <PackagePlanCard
                   key={pkg.id}
@@ -237,8 +235,8 @@ export default function StringPackagesPageClient({
                   결제 후에도 교체 과정까지 이어지는 관리
                 </h2>
                 <p className="break-keep text-ui-body-sm leading-relaxed text-surface-inverse-muted">
-                  패키지는 단순 할인권이 아니라 교체서비스 접수와 상담, 남은 횟수 관리까지
-                  연결되는 이용 방식입니다.
+                  패키지는 단순 할인권이 아니라 교체서비스 접수와 상담, 남은 횟수 관리까지 연결되는
+                  이용 방식입니다.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

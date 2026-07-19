@@ -5,11 +5,7 @@ export const REVIEW_CONTENT_MAX_LENGTH = 1000;
 export const REVIEW_MAX_PHOTOS = 5;
 
 export type ReviewInputValidationReason =
-  | "invalidRating"
-  | "contentTooShort"
-  | "contentTooLong"
-  | "tooManyPhotos"
-  | "invalidPhotos";
+  "invalidRating" | "contentTooShort" | "contentTooLong" | "tooManyPhotos" | "invalidPhotos";
 
 export type ReviewInputValidationResult =
   | {
@@ -112,9 +108,7 @@ export function validateReviewPatchInput(
   return { ok: true, value };
 }
 
-export function reviewInputMessage(
-  reason: ReviewInputValidationReason,
-) {
+export function reviewInputMessage(reason: ReviewInputValidationReason) {
   switch (reason) {
     case "invalidRating":
       return "별점은 1점부터 5점까지 선택해 주세요.";

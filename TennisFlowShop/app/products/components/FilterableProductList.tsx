@@ -606,17 +606,109 @@ export default function FilterableProductList({
 
   const activeFilterItems: ActiveFilterItem[] = [
     ...(submittedQuery
-      ? [{ id: "search", label: `검색어 "${submittedQuery}"`, removeLabel: "검색어 필터 해제", onRemove: () => { setSearchQuery(""); setSubmittedQuery(""); resetInfinite(); } }]
+      ? [
+          {
+            id: "search",
+            label: `검색어 "${submittedQuery}"`,
+            removeLabel: "검색어 필터 해제",
+            onRemove: () => {
+              setSearchQuery("");
+              setSubmittedQuery("");
+              resetInfinite();
+            },
+          },
+        ]
       : []),
-    ...(selectedBrand ? [{ id: "brand", label: `브랜드 ${brandLabelMap[selectedBrand] ?? selectedBrand}`, removeLabel: "브랜드 필터 해제", onRemove: () => setSelectedBrand(null) }] : []),
-    ...(selectedMaterial ? [{ id: "material", label: `재질 ${stringMaterialLabel(selectedMaterial)}`, removeLabel: "재질 필터 해제", onRemove: () => setSelectedMaterial(null) }] : []),
-    ...(selectedBounce !== null ? [{ id: "bounce", label: `반발력 ${getScoreLabel(selectedBounce)}`, removeLabel: "반발력 필터 해제", onRemove: () => setSelectedBounce(null) }] : []),
-    ...(selectedControl !== null ? [{ id: "control", label: `컨트롤 ${getScoreLabel(selectedControl)}`, removeLabel: "컨트롤 필터 해제", onRemove: () => setSelectedControl(null) }] : []),
-    ...(selectedSpin !== null ? [{ id: "spin", label: `스핀 ${getScoreLabel(selectedSpin)}`, removeLabel: "스핀 필터 해제", onRemove: () => setSelectedSpin(null) }] : []),
-    ...(selectedDurability !== null ? [{ id: "durability", label: `내구성 ${getScoreLabel(selectedDurability)}`, removeLabel: "내구성 필터 해제", onRemove: () => setSelectedDurability(null) }] : []),
-    ...(selectedComfort !== null ? [{ id: "comfort", label: `편안함 ${getScoreLabel(selectedComfort)}`, removeLabel: "편안함 필터 해제", onRemove: () => setSelectedComfort(null) }] : []),
-    ...(exposureLabel ? [{ id: "benefit", label: exposureLabel, removeLabel: "혜택 필터 해제", onRemove: () => setExposureFilter([]) }] : []),
-    ...(priceChanged ? [{ id: "price", label: getPriceChipLabel(priceRange), removeLabel: "가격 필터 해제", onRemove: () => setPriceRange(DEFAULT_PRICE_RANGE) }] : []),
+    ...(selectedBrand
+      ? [
+          {
+            id: "brand",
+            label: `브랜드 ${brandLabelMap[selectedBrand] ?? selectedBrand}`,
+            removeLabel: "브랜드 필터 해제",
+            onRemove: () => setSelectedBrand(null),
+          },
+        ]
+      : []),
+    ...(selectedMaterial
+      ? [
+          {
+            id: "material",
+            label: `재질 ${stringMaterialLabel(selectedMaterial)}`,
+            removeLabel: "재질 필터 해제",
+            onRemove: () => setSelectedMaterial(null),
+          },
+        ]
+      : []),
+    ...(selectedBounce !== null
+      ? [
+          {
+            id: "bounce",
+            label: `반발력 ${getScoreLabel(selectedBounce)}`,
+            removeLabel: "반발력 필터 해제",
+            onRemove: () => setSelectedBounce(null),
+          },
+        ]
+      : []),
+    ...(selectedControl !== null
+      ? [
+          {
+            id: "control",
+            label: `컨트롤 ${getScoreLabel(selectedControl)}`,
+            removeLabel: "컨트롤 필터 해제",
+            onRemove: () => setSelectedControl(null),
+          },
+        ]
+      : []),
+    ...(selectedSpin !== null
+      ? [
+          {
+            id: "spin",
+            label: `스핀 ${getScoreLabel(selectedSpin)}`,
+            removeLabel: "스핀 필터 해제",
+            onRemove: () => setSelectedSpin(null),
+          },
+        ]
+      : []),
+    ...(selectedDurability !== null
+      ? [
+          {
+            id: "durability",
+            label: `내구성 ${getScoreLabel(selectedDurability)}`,
+            removeLabel: "내구성 필터 해제",
+            onRemove: () => setSelectedDurability(null),
+          },
+        ]
+      : []),
+    ...(selectedComfort !== null
+      ? [
+          {
+            id: "comfort",
+            label: `편안함 ${getScoreLabel(selectedComfort)}`,
+            removeLabel: "편안함 필터 해제",
+            onRemove: () => setSelectedComfort(null),
+          },
+        ]
+      : []),
+    ...(exposureLabel
+      ? [
+          {
+            id: "benefit",
+            label: exposureLabel,
+            removeLabel: "혜택 필터 해제",
+            onRemove: () => setExposureFilter([]),
+          },
+        ]
+      : []),
+    ...(priceChanged
+      ? [
+          {
+            id: "price",
+            label: getPriceChipLabel(priceRange),
+            removeLabel: "가격 필터 해제",
+            onRemove: () => setPriceRange(DEFAULT_PRICE_RANGE),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -662,7 +754,9 @@ export default function FilterableProductList({
                     {isCountLoading ? (
                       <Skeleton className="inline-block h-5 w-12 align-middle" />
                     ) : (
-                      <span className="font-semibold text-primary">{(total ?? 0).toLocaleString()}</span>
+                      <span className="font-semibold text-primary">
+                        {(total ?? 0).toLocaleString()}
+                      </span>
                     )}
                     <span>개</span>
                     {isCountLoading ? (
@@ -804,8 +898,28 @@ export default function FilterableProductList({
                       품절 제외
                     </Button>
                     <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
-                      <Button type="button" variant={viewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={viewMode === "grid"}><Grid3X3 className="h-4 w-4" /></Button>
-                      <Button type="button" variant={viewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={viewMode === "list"}><List className="h-4 w-4" /></Button>
+                      <Button
+                        type="button"
+                        variant={viewMode === "grid" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("grid")}
+                        className="h-8 w-9 p-0"
+                        aria-label="그리드 보기"
+                        aria-pressed={viewMode === "grid"}
+                      >
+                        <Grid3X3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={viewMode === "list" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("list")}
+                        className="h-8 w-9 p-0"
+                        aria-label="리스트 보기"
+                        aria-pressed={viewMode === "list"}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
                     </div>
                     <Select value={sortOption} onValueChange={setSortOption}>
                       <SelectTrigger className="h-9 w-[150px] rounded-control border-border bg-background text-ui-body-sm focus:border-border bp-lg:w-[180px] dark:focus:border-border">

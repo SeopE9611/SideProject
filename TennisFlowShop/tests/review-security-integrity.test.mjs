@@ -34,8 +34,14 @@ test("후기 입력 정책은 운영 validator로 별점/내용/사진 경계를
     validateReviewInput({ rating: 4.5, content: "12345", photos: [] }).reason,
     "invalidRating",
   );
-  assert.equal(validateReviewInput({ rating: Number.NaN, content: "12345", photos: [] }).reason, "invalidRating");
-  assert.equal(validateReviewInput({ rating: Infinity, content: "12345", photos: [] }).reason, "invalidRating");
+  assert.equal(
+    validateReviewInput({ rating: Number.NaN, content: "12345", photos: [] }).reason,
+    "invalidRating",
+  );
+  assert.equal(
+    validateReviewInput({ rating: Infinity, content: "12345", photos: [] }).reason,
+    "invalidRating",
+  );
   assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: [] }).ok, true);
   assert.equal(
     validateReviewInput({ rating: 5, content: "1234", photos: [] }).reason,
@@ -56,9 +62,18 @@ test("후기 입력 정책은 운영 validator로 별점/내용/사진 경계를
       .reason,
     "tooManyPhotos",
   );
-  assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: "1" }).reason, "invalidPhotos");
-  assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: null }).reason, "invalidPhotos");
-  assert.equal(validateReviewInput({ rating: 5, content: "12345", photos: ["1", 2] }).reason, "invalidPhotos");
+  assert.equal(
+    validateReviewInput({ rating: 5, content: "12345", photos: "1" }).reason,
+    "invalidPhotos",
+  );
+  assert.equal(
+    validateReviewInput({ rating: 5, content: "12345", photos: null }).reason,
+    "invalidPhotos",
+  );
+  assert.equal(
+    validateReviewInput({ rating: 5, content: "12345", photos: ["1", 2] }).reason,
+    "invalidPhotos",
+  );
 });
 
 test("후기 수정 입력 정책은 전달된 필드만 운영 validator로 검증한다", async () => {
@@ -66,7 +81,10 @@ test("후기 수정 입력 정책은 전달된 필드만 운영 validator로 검
 
   assert.deepEqual(validateReviewPatchInput({}), { ok: true, value: {} });
   assert.deepEqual(validateReviewPatchInput({ rating: 4 }), { ok: true, value: { rating: 4 } });
-  assert.deepEqual(validateReviewPatchInput({ content: "12345" }), { ok: true, value: { content: "12345" } });
+  assert.deepEqual(validateReviewPatchInput({ content: "12345" }), {
+    ok: true,
+    value: { content: "12345" },
+  });
   assert.deepEqual(validateReviewPatchInput({ photos: [] }), { ok: true, value: { photos: [] } });
   assert.equal(validateReviewPatchInput({ rating: null }).reason, "invalidRating");
   assert.equal(validateReviewPatchInput({ content: null }).reason, "contentTooShort");
@@ -145,7 +163,6 @@ test("cursor와 후기 작성 로그인 정책을 방어한다", () => {
   assert.doesNotMatch(writeSource, /NEXT_PUBLIC_GUEST_ORDER_MODE/);
   assert.match(writeSource, /const blockedByLoginGate = authChecked && !isAuthenticated/);
 });
-
 
 test("후기 중복 진단은 active 조건과 문자열 정규화 group key를 사용한다", () => {
   const helper = read("scripts/db/review-duplicate-diagnostics.mjs");

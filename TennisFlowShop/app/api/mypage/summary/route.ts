@@ -7,7 +7,11 @@ import {
 } from "@/lib/mypage/activity-todo";
 import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
-import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
+import {
+  resolveApplicationReviewTargetBundlesBatch,
+  resolveOrderReviewTargetBundlesBatch,
+  resolveRentalReviewTargetBundlesBatch,
+} from "@/lib/reviews/review-target.server";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -215,11 +219,12 @@ export async function GET() {
 
   const todayYmd = toKstYmd();
 
-  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] = await Promise.all([
-    resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
-    resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
-    resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
-  ]);
+  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] =
+    await Promise.all([
+      resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
+      resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
+      resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
+    ]);
 
   let todoOrderCount = 0;
   for (const order of orders as any[]) {
@@ -267,7 +272,7 @@ export async function GET() {
         ? String(rental.stringingApplicationId)
         : null,
       withStringService,
-      reviewPendingCount: (reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0),
+      reviewPendingCount: reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0,
     });
 
     if (needsAction !== null) todoRentalCount += 1;
@@ -292,16 +297,21 @@ export async function GET() {
           : typeof app?.userConfirmedAt === "string"
             ? app.userConfirmedAt
             : null,
-      serviceReviewPending: (reviewBundlesByApplicationId.get(String(app._id))?.counts.remaining ?? 0) > 0,
+      serviceReviewPending:
+        (reviewBundlesByApplicationId.get(String(app._id))?.counts.remaining ?? 0) > 0,
     });
 
     if (needsAction !== null) todoApplicationCount += 1;
   }
 
   const racketCareStatuses = (racketCareItems as any[]).map((item) =>
-    calculateRacketCareStatus({ playFrequency: item.playFrequency, lastStringingAt: item.lastStringingAt }),
+    calculateRacketCareStatus({
+      playFrequency: item.playFrequency,
+      lastStringingAt: item.lastStringingAt,
+    }),
   );
-  const racketCareNearest = racketCareStatuses.sort((a, b) => a.daysRemaining - b.daysRemaining)[0] ?? null;
+  const racketCareNearest =
+    racketCareStatuses.sort((a, b) => a.daysRemaining - b.daysRemaining)[0] ?? null;
 
   return NextResponse.json({
     ordersCount,

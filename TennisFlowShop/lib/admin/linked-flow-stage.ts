@@ -6,7 +6,12 @@ export type LinkedFlowStage = (typeof LINKED_FLOW_STAGES)[number];
 
 export const LINKED_FLOW_STAGE_LIST: readonly LinkedFlowStage[] = LINKED_FLOW_STAGES;
 
-export const LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES = ["취소", "취소처리중", "환불", "구매확정"] as const;
+export const LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES = [
+  "취소",
+  "취소처리중",
+  "환불",
+  "구매확정",
+] as const;
 export const LINKED_FLOW_AUTOMATION_BLOCKED_APPLICATION_STATUSES = ["취소"] as const;
 export const LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES = ["draft", "취소"] as const;
 export const LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES = ["approved", "승인"] as const;

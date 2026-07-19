@@ -1095,164 +1095,175 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             )}
             {linesForSubmit.map((line, index) => {
               const stableLineKey = typeof line.id === "string" && line.id ? line.id : null;
-              const panelId = stableLineKey ? `work-line-${stableLineKey}` : `work-line-legacy-${index}`;
+              const panelId = stableLineKey
+                ? `work-line-${stableLineKey}`
+                : `work-line-legacy-${index}`;
               const isLineOpen = stableLineKey !== null && openLineId === stableLineKey;
               const lineComplete = Boolean(
                 line.racketType?.trim() &&
-                  line.tensionMain?.trim() &&
-                  line.tensionCross?.trim() &&
-                  (!canEditStandaloneWorkLines || line.stringName?.trim()),
+                line.tensionMain?.trim() &&
+                line.tensionCross?.trim() &&
+                (!canEditStandaloneWorkLines || line.stringName?.trim()),
               );
               const lineSummary = [
                 line.racketType?.trim() || `라켓 ${index + 1}`,
-                line.tensionMain && line.tensionCross ? `${line.tensionMain}/${line.tensionCross}LB` : "텐션 미입력",
+                line.tensionMain && line.tensionCross
+                  ? `${line.tensionMain}/${line.tensionCross}LB`
+                  : "텐션 미입력",
               ]
                 .filter(Boolean)
                 .join(" · ");
 
               return (
-              <PublicSurface
-                key={stableLineKey ?? `legacy-line-${index}`}
-                padding="none"
-                className="group relative overflow-hidden"
-              >
-                {/* 헤더 영역: 라켓 N, 스트링 이름 */}
-                <div className="flex min-w-0 items-center justify-between gap-2 border-b border-border bg-muted/30 px-4 py-3">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary shadow-sm">
-                      <span className="text-ui-body-sm font-semibold text-primary">
-                        {index + 1}
+                <PublicSurface
+                  key={stableLineKey ?? `legacy-line-${index}`}
+                  padding="none"
+                  className="group relative overflow-hidden"
+                >
+                  {/* 헤더 영역: 라켓 N, 스트링 이름 */}
+                  <div className="flex min-w-0 items-center justify-between gap-2 border-b border-border bg-muted/30 px-4 py-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary shadow-sm">
+                        <span className="text-ui-body-sm font-semibold text-primary">
+                          {index + 1}
+                        </span>
+                      </div>
+                      <span className="min-w-0 truncate text-ui-body-sm font-medium text-foreground">
+                        {line.racketType?.trim() || `라켓 ${index + 1}`}
                       </span>
                     </div>
-                    <span className="min-w-0 truncate text-ui-body-sm font-medium text-foreground">
-                      {line.racketType?.trim() || `라켓 ${index + 1}`}
-                    </span>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    {!canEditStandaloneWorkLines && (
-                      <Badge
-                        variant="brand"
-                        className="flex max-w-[120px] items-center gap-1.5 px-2.5 py-1 sm:max-w-[200px]"
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                        <span className="truncate text-ui-label font-medium">
-                          {line.stringName}
-                        </span>
-                      </Badge>
-                    )}
-                    {canEditStandaloneWorkLines && lineCount > 1 && (
+                    <div className="flex shrink-0 items-center gap-2">
+                      {!canEditStandaloneWorkLines && (
+                        <Badge
+                          variant="brand"
+                          className="flex max-w-[120px] items-center gap-1.5 px-2.5 py-1 sm:max-w-[200px]"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                          <span className="truncate text-ui-label font-medium">
+                            {line.stringName}
+                          </span>
+                        </Badge>
+                      )}
+                      {canEditStandaloneWorkLines && lineCount > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1 px-2 text-ui-label text-destructive hover:text-destructive"
+                          onClick={() => {
+                            removeStandaloneWorkLine(index);
+                            setOpenLineId((current) =>
+                              current === stableLineKey ? null : current,
+                            );
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          삭제
+                        </Button>
+                      )}
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-8 gap-1 px-2 text-ui-label text-destructive hover:text-destructive"
+                        className="h-8 px-2 text-ui-label bp-md:hidden"
                         onClick={() => {
-                          removeStandaloneWorkLine(index);
-                          setOpenLineId((current) => (current === stableLineKey ? null : current));
+                          if (!stableLineKey) return;
+                          setOpenLineId(isLineOpen ? null : stableLineKey);
                         }}
+                        aria-expanded={isLineOpen}
+                        aria-controls={panelId}
+                        disabled={!stableLineKey}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        삭제
+                        {isLineOpen ? "접기" : "편집"}
                       </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-2 text-ui-label bp-md:hidden"
-                      onClick={() => {
-                        if (!stableLineKey) return;
-                        setOpenLineId(isLineOpen ? null : stableLineKey);
-                      }}
-                      aria-expanded={isLineOpen}
-                      aria-controls={panelId}
-                      disabled={!stableLineKey}
-                    >
-                      {isLineOpen ? "접기" : "편집"}
-                    </Button>
-                  </div>
-                </div>
-                <div className="border-b border-border px-4 py-2 text-ui-label text-muted-foreground bp-md:hidden">
-                  {lineSummary} · {lineComplete ? "입력 완료" : "입력 필요"}
-                </div>
-
-                {/* 라켓 이름 + 텐션 */}
-                <div id={panelId} className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-ui-label font-medium text-foreground">
-                        라켓 이름/별칭
-                      </Label>
-                      <Input
-                        value={line.racketType ?? ""}
-                        onChange={(e) => handleLineFieldChange(index, "racketType", e.target.value)}
-                        placeholder={
-                          canEditStandaloneWorkLines
-                            ? "예: 윌슨 블레이드 98, 첫 번째 라켓 등"
-                            : "예: 라켓1"
-                        }
-                        className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
-                      />
                     </div>
+                  </div>
+                  <div className="border-b border-border px-4 py-2 text-ui-label text-muted-foreground bp-md:hidden">
+                    {lineSummary} · {lineComplete ? "입력 완료" : "입력 필요"}
+                  </div>
 
-                    {canEditStandaloneWorkLines && (
+                  {/* 라켓 이름 + 텐션 */}
+                  <div
+                    id={panelId}
+                    className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}
+                  >
+                    <div className="grid gap-3 md:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label className="text-ui-label font-medium text-foreground">
-                          스트링명
+                          라켓 이름/별칭
                         </Label>
                         <Input
-                          value={line.stringName ?? ""}
+                          value={line.racketType ?? ""}
                           onChange={(e) =>
-                            handleLineFieldChange(index, "stringName", e.target.value)
+                            handleLineFieldChange(index, "racketType", e.target.value)
                           }
-                          placeholder="예: 알루파워 러프, RPM Blast, 보유 스트링 등"
+                          placeholder={
+                            canEditStandaloneWorkLines
+                              ? "예: 윌슨 블레이드 98, 첫 번째 라켓 등"
+                              : "예: 라켓1"
+                          }
                           className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
-                    )}
-                    <div className="space-y-1.5">
-                      <Label className="text-ui-label font-medium text-foreground">
-                        메인 텐션(LB)
-                      </Label>
-                      <Input
-                        value={line.tensionMain ?? ""}
-                        onChange={(e) =>
-                          handleLineFieldChange(index, "tensionMain", e.target.value)
-                        }
-                        placeholder="예: 53"
-                        className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-ui-label font-medium text-foreground">
-                        크로스 텐션(LB)
-                      </Label>
-                      <Input
-                        value={line.tensionCross ?? ""}
-                        onChange={(e) =>
-                          handleLineFieldChange(index, "tensionCross", e.target.value)
-                        }
-                        placeholder="예: 51"
-                        className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
-                      />
-                    </div>
-                  </div>
 
-                  {/* 라켓별 메모 */}
-                  <div className="space-y-1.5">
-                    <Label className="text-ui-label font-medium text-foreground">
-                      작업 메모 (선택)
-                    </Label>
-                    <Textarea
-                      value={line.note ?? ""}
-                      onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
-                      rows={2}
-                      className="text-ui-body-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
-                      placeholder="요청사항을 적어 두셔도 좋습니다."
-                    />
+                      {canEditStandaloneWorkLines && (
+                        <div className="space-y-1.5">
+                          <Label className="text-ui-label font-medium text-foreground">
+                            스트링명
+                          </Label>
+                          <Input
+                            value={line.stringName ?? ""}
+                            onChange={(e) =>
+                              handleLineFieldChange(index, "stringName", e.target.value)
+                            }
+                            placeholder="예: 알루파워 러프, RPM Blast, 보유 스트링 등"
+                            className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                          />
+                        </div>
+                      )}
+                      <div className="space-y-1.5">
+                        <Label className="text-ui-label font-medium text-foreground">
+                          메인 텐션(LB)
+                        </Label>
+                        <Input
+                          value={line.tensionMain ?? ""}
+                          onChange={(e) =>
+                            handleLineFieldChange(index, "tensionMain", e.target.value)
+                          }
+                          placeholder="예: 53"
+                          className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-ui-label font-medium text-foreground">
+                          크로스 텐션(LB)
+                        </Label>
+                        <Input
+                          value={line.tensionCross ?? ""}
+                          onChange={(e) =>
+                            handleLineFieldChange(index, "tensionCross", e.target.value)
+                          }
+                          placeholder="예: 51"
+                          className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 라켓별 메모 */}
+                    <div className="space-y-1.5">
+                      <Label className="text-ui-label font-medium text-foreground">
+                        작업 메모 (선택)
+                      </Label>
+                      <Textarea
+                        value={line.note ?? ""}
+                        onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
+                        rows={2}
+                        className="text-ui-body-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                        placeholder="요청사항을 적어 두셔도 좋습니다."
+                      />
+                    </div>
                   </div>
-                </div>
-              </PublicSurface>
+                </PublicSurface>
               );
             })}
           </SummaryCard>

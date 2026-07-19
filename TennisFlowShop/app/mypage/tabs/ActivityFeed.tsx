@@ -1277,7 +1277,9 @@ export default function ActivityFeed() {
                       const showMore = Boolean(
                         canShowShippingEdit || // 운송장 수정(이미 등록된 경우)만 보조로 내리기
                         (appDetailHref && g.kind !== "application") ||
-                        (g.kind === "order" && g.order?.id && isOrderDeliveredStatus(g.order.status)) ||
+                        (g.kind === "order" &&
+                          g.order?.id &&
+                          isOrderDeliveredStatus(g.order.status)) ||
                         (appId && canShowStringingReviewCta(app)) ||
                         (appId && canShowStringingConfirmCta(app)),
                       );

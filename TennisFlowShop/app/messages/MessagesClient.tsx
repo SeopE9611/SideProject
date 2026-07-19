@@ -211,17 +211,26 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             className="w-full"
           >
             <TabsList className="mb-4 grid w-full grid-cols-3 rounded-control border border-border bg-brand-highlight-muted/45 p-1 md:mb-6">
-              <TabsTrigger value="inbox" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
+              <TabsTrigger
+                value="inbox"
+                className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
+              >
                 <Mail aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">받은쪽지</span>
                 <span className="sm:hidden">받은</span>
               </TabsTrigger>
-              <TabsTrigger value="send" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
+              <TabsTrigger
+                value="send"
+                className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
+              >
                 <Send aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">보낸쪽지</span>
                 <span className="sm:hidden">보낸</span>
               </TabsTrigger>
-              <TabsTrigger value="admin" className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm">
+              <TabsTrigger
+                value="admin"
+                className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
+              >
                 <Megaphone aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">관리자</span>
                 <span className="sm:hidden">관리</span>
@@ -327,8 +336,11 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               key={m.id}
                               className={cn(
                                 "w-full rounded-control border border-border bg-card p-4 text-left transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-sm",
-                                isUnread && !active && "border-brand-highlight-ink/35 bg-brand-highlight-muted",
-                                active && "border-brand-highlight-ink/45 bg-brand-highlight-muted shadow-soft",
+                                isUnread &&
+                                  !active &&
+                                  "border-brand-highlight-ink/35 bg-brand-highlight-muted",
+                                active &&
+                                  "border-brand-highlight-ink/45 bg-brand-highlight-muted shadow-soft",
                                 !active && "hover:bg-muted hover:text-foreground",
                               )}
                               onClick={async () => {

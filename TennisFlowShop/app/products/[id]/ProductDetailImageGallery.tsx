@@ -11,7 +11,12 @@ type ProductDetailImageGalleryProps = {
   merchandisingBadges: ProductBadge[];
 };
 
-export default function ProductDetailImageGallery({ images, productName, currentImage, merchandisingBadges }: ProductDetailImageGalleryProps) {
+export default function ProductDetailImageGallery({
+  images,
+  productName,
+  currentImage,
+  merchandisingBadges,
+}: ProductDetailImageGalleryProps) {
   return (
     <CommerceMediaGallery
       images={images}
@@ -19,7 +24,12 @@ export default function ProductDetailImageGallery({ images, productName, current
       overrideImage={currentImage}
       objectFit="contain"
       badges={merchandisingBadges.map((badge) => (
-        <Badge key={`${productName}-${badge}`} variant={merchandisingImageBadgeVariant(badge)} shape="pill" className={cn(merchandisingImageBadgeClass)}>
+        <Badge
+          key={`${productName}-${badge}`}
+          variant={merchandisingImageBadgeVariant(badge)}
+          shape="pill"
+          className={cn(merchandisingImageBadgeClass)}
+        >
           {badge}
         </Badge>
       ))}

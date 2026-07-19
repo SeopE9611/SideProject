@@ -36,10 +36,7 @@ export default function HeroSlider({
 
   return (
     <section className="relative">
-      <div
-        className="overflow-hidden rounded-panel"
-        ref={emblaRef}
-      >
+      <div className="overflow-hidden rounded-panel" ref={emblaRef}>
         <div className="flex">
           {slides.map((s, i) => {
             const imageSrc = normalizeImageSrc(s.img);

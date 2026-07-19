@@ -57,9 +57,7 @@ export function getRequiredTargetError(target: CanonicalReviewTarget | null) {
         ? null
         : "상품·교체서비스 후기 대상을 확인할 수 없습니다.";
     case "standalone_stringing":
-      return getTargetApplicationId(target)
-        ? null
-        : "교체서비스 후기 대상을 확인할 수 없습니다.";
+      return getTargetApplicationId(target) ? null : "교체서비스 후기 대상을 확인할 수 없습니다.";
     case "rental":
       return cleanId(target.rentalId) ? null : "대여 후기 대상을 확인할 수 없습니다.";
     case "rental_stringing":
@@ -110,7 +108,8 @@ export function getReviewPostFailureState(
   const normalizedReason = String(reason ?? "").trim();
   if (status === 401) return "unauthorized";
   if (status === 409 && normalizedReason === "already") return "already";
-  if (normalizedReason === "notPurchased" || normalizedReason === "noPurchase") return "notPurchased";
+  if (normalizedReason === "notPurchased" || normalizedReason === "noPurchase")
+    return "notPurchased";
   if (normalizedReason === "notConfirmed") return "notConfirmed";
   if (normalizedReason === "notCompleted") return "notCompleted";
   if (normalizedReason === "invalidStatus") return "invalidStatus";

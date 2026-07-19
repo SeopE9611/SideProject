@@ -489,15 +489,15 @@ export default function PackageCheckoutClient({
             title="선택된 패키지"
             description="패키지명, 이용 횟수, 유효기간과 결제 금액을 확인해 주세요."
           >
-              {selectedPackage ? (
-                <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
-              ) : (
-                <div className="space-y-3 rounded-xl border border-border bg-card p-4">
-                  <Skeleton className="h-6 w-1/3" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-24 w-full" />
-                </div>
-              )}
+            {selectedPackage ? (
+              <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
+            ) : (
+              <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+                <Skeleton className="h-6 w-1/3" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            )}
           </CheckoutSection>
 
           {/* 신청자 정보 */}
@@ -508,105 +508,105 @@ export default function PackageCheckoutClient({
             description="결제 안내를 받을 신청자 정보를 입력해 주세요."
             contentClassName="bp-sm:p-5"
           >
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="applicant-name" className="flex items-center gap-2">
-                      <UserIcon className="h-4 w-4 text-primary" />
-                      신청자 이름
-                    </Label>
-                    <Input
-                      id="applicant-name"
-                      value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        touch();
-                      }}
-                      disabled={isFrameLoading}
-                      placeholder="신청자 이름을 입력하세요"
-                      className={inputClass(
-                        "border-2 focus:border-border transition-colors",
-                        "name",
-                        fieldErrors,
-                      )}
-                    />
-                    {hasInteracted && fieldErrors.name && (
-                      <p className="mt-1 text-ui-label text-destructive">{fieldErrors.name}</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="applicant-name" className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-primary" />
+                    신청자 이름
+                  </Label>
+                  <Input
+                    id="applicant-name"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      touch();
+                    }}
+                    disabled={isFrameLoading}
+                    placeholder="신청자 이름을 입력하세요"
+                    className={inputClass(
+                      "border-2 focus:border-border transition-colors",
+                      "name",
+                      fieldErrors,
                     )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="applicant-email" className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-primary" />
-                      이메일
-                    </Label>
-                    <Input
-                      id="applicant-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        touch();
-                      }}
-                      disabled={isFrameLoading}
-                      placeholder="example@naver.com"
-                      className={inputClass(
-                        "border-2 focus:border-border transition-colors",
-                        "email",
-                        fieldErrors,
-                      )}
-                    />
-                    {hasInteracted && fieldErrors.email && (
-                      <p className="mt-1 text-ui-label text-destructive">{fieldErrors.email}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="applicant-phone" className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-foreground" />
-                      연락처
-                    </Label>
-                    <Input
-                      id="applicant-phone"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        touch();
-                      }}
-                      disabled={isFrameLoading}
-                      placeholder="연락처를 입력하세요 ('-' 제외)"
-                      className={inputClass(
-                        "border-2 focus:border-border transition-colors",
-                        "phone",
-                        fieldErrors,
-                      )}
-                    />
-                    {hasInteracted && fieldErrors.phone && (
-                      <p className="mt-1 text-ui-label text-destructive">{fieldErrors.phone}</p>
-                    )}
-                  </div>
+                  />
+                  {hasInteracted && fieldErrors.name && (
+                    <p className="mt-1 text-ui-label text-destructive">{fieldErrors.name}</p>
+                  )}
                 </div>
-
-                <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="save-info"
-                      checked={saveInfo}
-                      onCheckedChange={(checked) => setSaveInfo(!!checked)}
-                      disabled={!isLoggedIn || isFrameLoading}
-                    />
-                    <label
-                      htmlFor="save-info"
-                      className={`text-ui-body-sm font-medium ${!isLoggedIn ? "text-muted-foreground" : "text-primary"}`}
-                    >
-                      이 정보를 저장
-                    </label>
-                  </div>
-                  {!isLoggedIn && (
-                    <p className="text-ui-label text-muted-foreground ml-6 mt-1">
-                      로그인 후 정보를 저장할 수 있습니다.
-                    </p>
+                <div className="space-y-2">
+                  <Label htmlFor="applicant-email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-primary" />
+                    이메일
+                  </Label>
+                  <Input
+                    id="applicant-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      touch();
+                    }}
+                    disabled={isFrameLoading}
+                    placeholder="example@naver.com"
+                    className={inputClass(
+                      "border-2 focus:border-border transition-colors",
+                      "email",
+                      fieldErrors,
+                    )}
+                  />
+                  {hasInteracted && fieldErrors.email && (
+                    <p className="mt-1 text-ui-label text-destructive">{fieldErrors.email}</p>
+                  )}
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="applicant-phone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-foreground" />
+                    연락처
+                  </Label>
+                  <Input
+                    id="applicant-phone"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      touch();
+                    }}
+                    disabled={isFrameLoading}
+                    placeholder="연락처를 입력하세요 ('-' 제외)"
+                    className={inputClass(
+                      "border-2 focus:border-border transition-colors",
+                      "phone",
+                      fieldErrors,
+                    )}
+                  />
+                  {hasInteracted && fieldErrors.phone && (
+                    <p className="mt-1 text-ui-label text-destructive">{fieldErrors.phone}</p>
                   )}
                 </div>
               </div>
+
+              <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="save-info"
+                    checked={saveInfo}
+                    onCheckedChange={(checked) => setSaveInfo(!!checked)}
+                    disabled={!isLoggedIn || isFrameLoading}
+                  />
+                  <label
+                    htmlFor="save-info"
+                    className={`text-ui-body-sm font-medium ${!isLoggedIn ? "text-muted-foreground" : "text-primary"}`}
+                  >
+                    이 정보를 저장
+                  </label>
+                </div>
+                {!isLoggedIn && (
+                  <p className="text-ui-label text-muted-foreground ml-6 mt-1">
+                    로그인 후 정보를 저장할 수 있습니다.
+                  </p>
+                )}
+              </div>
+            </div>
           </CheckoutSection>
 
           {/* 서비스 이용 안내 */}
@@ -617,27 +617,27 @@ export default function PackageCheckoutClient({
             description="요청사항은 선택 입력이며, 결제 방식별 처리 기준만 확인해 주세요."
             contentClassName="space-y-4"
           >
-              <div className="rounded-lg border border-border bg-muted/30 p-3 text-ui-body-sm leading-6 text-muted-foreground md:p-4">
-                <p>• 무통장입금은 입금 확인 후 패키지가 활성화됩니다.</p>
-                <p>• 카드/간편결제는 결제 완료 후 자동으로 활성화됩니다.</p>
-                <p>• 교체서비스 신청이 완료되면 이용 횟수가 1회 차감됩니다.</p>
-              </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3 text-ui-body-sm leading-6 text-muted-foreground md:p-4">
+              <p>• 무통장입금은 입금 확인 후 패키지가 활성화됩니다.</p>
+              <p>• 카드/간편결제는 결제 완료 후 자동으로 활성화됩니다.</p>
+              <p>• 교체서비스 신청이 완료되면 이용 횟수가 1회 차감됩니다.</p>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="service-request" className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-primary" />
-                  서비스 요청사항{" "}
-                  <span className="text-ui-label font-normal text-muted-foreground">(선택)</span>
-                </Label>
-                <Textarea
-                  id="service-request"
-                  value={serviceRequest}
-                  onChange={(e) => setServiceRequest(e.target.value)}
-                  placeholder="서비스 이용 시 요청사항이 있으면 입력해 주세요"
-                  className="min-h-[104px] border-2 focus:border-border transition-colors"
-                  disabled={isFrameLoading}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="service-request" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-primary" />
+                서비스 요청사항{" "}
+                <span className="text-ui-label font-normal text-muted-foreground">(선택)</span>
+              </Label>
+              <Textarea
+                id="service-request"
+                value={serviceRequest}
+                onChange={(e) => setServiceRequest(e.target.value)}
+                placeholder="서비스 이용 시 요청사항이 있으면 입력해 주세요"
+                className="min-h-[104px] border-2 focus:border-border transition-colors"
+                disabled={isFrameLoading}
+              />
+            </div>
           </CheckoutSection>
 
           {/* 결제 정보 */}
@@ -648,171 +648,163 @@ export default function PackageCheckoutClient({
             description="결제 방법을 선택하고 필요한 정보를 입력해주세요."
             contentClassName="bp-sm:p-5"
           >
-              <div className="mb-5 rounded-xl border border-primary/15 bg-primary/5 p-4">
-                <div className="flex items-end justify-between gap-4">
-                  <span className="text-ui-body-sm font-medium text-muted-foreground">
-                    총 결제 금액
-                  </span>
-                  <span className="text-ui-section-title font-bold text-primary">
-                    {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
-                  </span>
-                </div>
-                <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
-                  무통장입금은 입금 확인 후, 카드/간편결제는 결제 완료 후 패키지권이 활성화됩니다.
-                </p>
+            <div className="mb-5 rounded-xl border border-primary/15 bg-primary/5 p-4">
+              <div className="flex items-end justify-between gap-4">
+                <span className="text-ui-body-sm font-medium text-muted-foreground">
+                  총 결제 금액
+                </span>
+                <span className="text-ui-section-title font-bold text-primary">
+                  {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
+                </span>
               </div>
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <Label>결제 방법</Label>
-                  <RadioGroup
-                    value={paymentMethod}
-                    onValueChange={(v) =>
-                      setPaymentMethod(
-                        v === "nicepay" && nicePaymentsEnabled
-                          ? "nicepay"
-                          : v === "tosspayments" && tossPaymentsEnabled
-                            ? "tosspayments"
-                            : "bank_transfer",
-                      )
-                    }
-                    className="space-y-2"
-                  >
+              <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
+                무통장입금은 입금 확인 후, 카드/간편결제는 결제 완료 후 패키지권이 활성화됩니다.
+              </p>
+            </div>
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label>결제 방법</Label>
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={(v) =>
+                    setPaymentMethod(
+                      v === "nicepay" && nicePaymentsEnabled
+                        ? "nicepay"
+                        : v === "tosspayments" && tossPaymentsEnabled
+                          ? "tosspayments"
+                          : "bank_transfer",
+                    )
+                  }
+                  className="space-y-2"
+                >
+                  <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
+                    <RadioGroupItem
+                      value="bank_transfer"
+                      id="bank-transfer"
+                      disabled={isFrameLoading}
+                    />
+                    <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
+                      무통장입금
+                    </Label>
+                    <Building2 className="h-5 w-5 text-primary" />
+                  </div>
+                  {nicePaymentsEnabled && (
                     <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                       <RadioGroupItem
-                        value="bank_transfer"
-                        id="bank-transfer"
-                        disabled={isFrameLoading}
+                        value="nicepay"
+                        id="nice-payments"
+                        disabled={isFrameLoading || tossBlockedByZeroAmount}
                       />
-                      <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
-                        무통장입금
+                      <Label htmlFor="nice-payments" className="flex-1 cursor-pointer font-medium">
+                        카드/간편결제{" "}
+                        <span className="block text-ui-body-sm font-normal text-muted-foreground">
+                          안전 결제창에서 진행
+                        </span>
                       </Label>
-                      <Building2 className="h-5 w-5 text-primary" />
+                      <CreditCard className="h-5 w-5 text-primary" />
                     </div>
-                    {nicePaymentsEnabled && (
-                      <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
-                        <RadioGroupItem
-                          value="nicepay"
-                          id="nice-payments"
-                          disabled={isFrameLoading || tossBlockedByZeroAmount}
-                        />
-                        <Label
-                          htmlFor="nice-payments"
-                          className="flex-1 cursor-pointer font-medium"
-                        >
-                          카드/간편결제{" "}
-                          <span className="block text-ui-body-sm font-normal text-muted-foreground">
-                            안전 결제창에서 진행
-                          </span>
-                        </Label>
-                        <CreditCard className="h-5 w-5 text-primary" />
-                      </div>
-                    )}
-                    {tossPaymentsEnabled && (
-                      <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
-                        <RadioGroupItem
-                          value="tosspayments"
-                          id="toss-payments"
-                          disabled={isFrameLoading || tossBlockedByZeroAmount}
-                        />
-                        <Label
-                          htmlFor="toss-payments"
-                          className="flex-1 cursor-pointer font-medium"
-                        >
-                          카드/간편결제{" "}
-                          <span className="block text-ui-body-sm font-normal text-muted-foreground">
-                            안전 결제창에서 진행
-                          </span>
-                        </Label>
-                        <CreditCard className="h-5 w-5 text-primary" />
-                      </div>
-                    )}
-                  </RadioGroup>
-                </div>
-
-                {paymentMethod === "bank_transfer" ? (
-                  <>
-                    <div className="space-y-3">
-                      <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                      <Select
-                        value={selectedBank}
-                        disabled={isFrameLoading}
-                        onValueChange={(v) => {
-                          setSelectedBank(v);
-                          touch();
-                        }}
-                      >
-                        <SelectTrigger className="border-2 focus:border-border">
-                          <SelectValue placeholder="입금 계좌를 선택하세요" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="kakao">{bankOptionLabel("kakao")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="depositor-name">입금자명</Label>
-                      <Input
-                        id="depositor-name"
-                        value={depositor}
-                        onChange={(e) => {
-                          setDepositor(e.target.value);
-                          touch();
-                        }}
-                        disabled={isFrameLoading}
-                        placeholder="입금자명을 입력하세요"
-                        className={inputClass(
-                          "border-2 focus:border-border transition-colors",
-                          "depositor",
-                          fieldErrors,
-                        )}
+                  )}
+                  {tossPaymentsEnabled && (
+                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
+                      <RadioGroupItem
+                        value="tosspayments"
+                        id="toss-payments"
+                        disabled={isFrameLoading || tossBlockedByZeroAmount}
                       />
-                      {hasInteracted && fieldErrors.depositor && (
-                        <p className="mt-1 text-ui-label text-destructive">
-                          {fieldErrors.depositor}
-                        </p>
-                      )}
+                      <Label htmlFor="toss-payments" className="flex-1 cursor-pointer font-medium">
+                        카드/간편결제{" "}
+                        <span className="block text-ui-body-sm font-normal text-muted-foreground">
+                          안전 결제창에서 진행
+                        </span>
+                      </Label>
+                      <CreditCard className="h-5 w-5 text-primary" />
                     </div>
-
-                    <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Shield className="h-5 w-5 text-primary" />
-                        <p className="font-semibold text-foreground">무통장입금 안내</p>
-                      </div>
-                      <ul className="space-y-2 text-ui-body-sm text-muted-foreground">
-                        <li className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4" />
-                          주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4" />
-                          입금 확인 후 패키지가 활성화됩니다.
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4" />
-                          패키지 이용은 입금 확인 후부터 가능합니다.
-                        </li>
-                      </ul>
-                    </div>
-                  </>
-                ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
-                  <div className="space-y-3">
-                    <TossPaymentWidget
-                      amount={Number(selectedPackage?.price ?? 0)}
-                      customerKey={String(initialUser?.id || email || "guest")}
-                      onStatusChange={({ ready, loadError }) => {
-                        setTossWidgetReady(ready);
-                        setTossWidgetLoadError(loadError);
-                      }}
-                    />
-                  </div>
-                ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
-                  <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-ui-body-sm text-muted-foreground">
-                    카드/간편결제창으로 안전하게 결제를 진행합니다. 결제 버튼을 눌러 계속
-                    진행해주세요.
-                  </div>
-                ) : null}
+                  )}
+                </RadioGroup>
               </div>
+
+              {paymentMethod === "bank_transfer" ? (
+                <>
+                  <div className="space-y-3">
+                    <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                    <Select
+                      value={selectedBank}
+                      disabled={isFrameLoading}
+                      onValueChange={(v) => {
+                        setSelectedBank(v);
+                        touch();
+                      }}
+                    >
+                      <SelectTrigger className="border-2 focus:border-border">
+                        <SelectValue placeholder="입금 계좌를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="kakao">{bankOptionLabel("kakao")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="depositor-name">입금자명</Label>
+                    <Input
+                      id="depositor-name"
+                      value={depositor}
+                      onChange={(e) => {
+                        setDepositor(e.target.value);
+                        touch();
+                      }}
+                      disabled={isFrameLoading}
+                      placeholder="입금자명을 입력하세요"
+                      className={inputClass(
+                        "border-2 focus:border-border transition-colors",
+                        "depositor",
+                        fieldErrors,
+                      )}
+                    />
+                    {hasInteracted && fieldErrors.depositor && (
+                      <p className="mt-1 text-ui-label text-destructive">{fieldErrors.depositor}</p>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield className="h-5 w-5 text-primary" />
+                      <p className="font-semibold text-foreground">무통장입금 안내</p>
+                    </div>
+                    <ul className="space-y-2 text-ui-body-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        입금 확인 후 패키지가 활성화됩니다.
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        패키지 이용은 입금 확인 후부터 가능합니다.
+                      </li>
+                    </ul>
+                  </div>
+                </>
+              ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
+                <div className="space-y-3">
+                  <TossPaymentWidget
+                    amount={Number(selectedPackage?.price ?? 0)}
+                    customerKey={String(initialUser?.id || email || "guest")}
+                    onStatusChange={({ ready, loadError }) => {
+                      setTossWidgetReady(ready);
+                      setTossWidgetLoadError(loadError);
+                    }}
+                  />
+                </div>
+              ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
+                <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-ui-body-sm text-muted-foreground">
+                  카드/간편결제창으로 안전하게 결제를 진행합니다. 결제 버튼을 눌러 계속
+                  진행해주세요.
+                </div>
+              ) : null}
+            </div>
           </CheckoutSection>
 
           {/* 주문자 동의 */}
@@ -822,88 +814,88 @@ export default function PackageCheckoutClient({
             title="주문자 동의"
             contentClassName="bp-sm:p-5"
           >
-              <div className="space-y-3">
-                <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="agree-all"
-                      checked={agreeAll}
-                      onCheckedChange={(checked) => {
-                        const newValue = !!checked;
-                        setAgreeAll(newValue);
-                        setAgreeTerms(newValue);
-                        setAgreePrivacy(newValue);
-                        setAgreeRefund(newValue);
-                      }}
-                      disabled={isFrameLoading}
-                    />
-                    <label htmlFor="agree-all" className="font-semibold text-foreground">
-                      전체 동의
-                    </label>
-                  </div>
-                </div>
-                <Separator />
-                <div className="space-y-3">
-                  {[
-                    {
-                      id: "agree-terms",
-                      label: "이용약관 동의 (필수)",
-                      state: agreeTerms,
-                      setState: setAgreeTerms,
-                      href: "/terms",
-                    },
-                    {
-                      id: "agree-privacy",
-                      label: "개인정보 수집 및 이용 동의 (필수)",
-                      state: agreePrivacy,
-                      setState: setAgreePrivacy,
-                      href: "/privacy",
-                    },
-                    {
-                      id: "agree-refund",
-                      label: "환불 규정 동의 (필수)",
-                      state: agreeRefund,
-                      setState: setAgreeRefund,
-                      href: "/refund-policy",
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between gap-3 rounded-lg bg-muted/30 p-3"
-                    >
-                      <div className="flex min-w-0 items-center space-x-2">
-                        <Checkbox
-                          id={item.id}
-                          checked={item.state}
-                          onCheckedChange={(checked) => {
-                            const value = !!checked;
-                            item.setState(value);
-                            if (!value) setAgreeAll(false);
-                            else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
-                          }}
-                          disabled={isFrameLoading}
-                        />
-                        <label
-                          htmlFor={item.id}
-                          className="min-w-0 text-ui-body-sm font-medium text-foreground"
-                        >
-                          {item.label}
-                        </label>
-                      </div>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-primary hover:text-primary"
-                        asChild
-                      >
-                        <Link href={item.href} target="_blank" rel="noopener noreferrer">
-                          보기
-                        </Link>
-                      </Button>
-                    </div>
-                  ))}
+            <div className="space-y-3">
+              <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="agree-all"
+                    checked={agreeAll}
+                    onCheckedChange={(checked) => {
+                      const newValue = !!checked;
+                      setAgreeAll(newValue);
+                      setAgreeTerms(newValue);
+                      setAgreePrivacy(newValue);
+                      setAgreeRefund(newValue);
+                    }}
+                    disabled={isFrameLoading}
+                  />
+                  <label htmlFor="agree-all" className="font-semibold text-foreground">
+                    전체 동의
+                  </label>
                 </div>
               </div>
+              <Separator />
+              <div className="space-y-3">
+                {[
+                  {
+                    id: "agree-terms",
+                    label: "이용약관 동의 (필수)",
+                    state: agreeTerms,
+                    setState: setAgreeTerms,
+                    href: "/terms",
+                  },
+                  {
+                    id: "agree-privacy",
+                    label: "개인정보 수집 및 이용 동의 (필수)",
+                    state: agreePrivacy,
+                    setState: setAgreePrivacy,
+                    href: "/privacy",
+                  },
+                  {
+                    id: "agree-refund",
+                    label: "환불 규정 동의 (필수)",
+                    state: agreeRefund,
+                    setState: setAgreeRefund,
+                    href: "/refund-policy",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 rounded-lg bg-muted/30 p-3"
+                  >
+                    <div className="flex min-w-0 items-center space-x-2">
+                      <Checkbox
+                        id={item.id}
+                        checked={item.state}
+                        onCheckedChange={(checked) => {
+                          const value = !!checked;
+                          item.setState(value);
+                          if (!value) setAgreeAll(false);
+                          else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
+                        }}
+                        disabled={isFrameLoading}
+                      />
+                      <label
+                        htmlFor={item.id}
+                        className="min-w-0 text-ui-body-sm font-medium text-foreground"
+                      >
+                        {item.label}
+                      </label>
+                    </div>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="h-auto p-0 text-primary hover:text-primary"
+                      asChild
+                    >
+                      <Link href={item.href} target="_blank" rel="noopener noreferrer">
+                        보기
+                      </Link>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </CheckoutSection>
 
           {/* 최종 결제 확인 */}

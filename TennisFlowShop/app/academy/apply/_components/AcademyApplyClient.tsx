@@ -145,7 +145,11 @@ function SectionCard({
               </div>
             )}
             <div className="min-w-0">
-              {title && <h2 className="font-brand-heading text-ui-body-lg font-semibold tracking-[-0.015em] text-foreground">{title}</h2>}
+              {title && (
+                <h2 className="font-brand-heading text-ui-body-lg font-semibold tracking-[-0.015em] text-foreground">
+                  {title}
+                </h2>
+              )}
               {description && (
                 <p className="mt-0.5 text-ui-body-sm text-muted-foreground">{description}</p>
               )}
@@ -249,7 +253,8 @@ function CustomSelect({
                 className={cn(
                   "flex w-full flex-col items-start rounded-lg px-3 py-2.5 text-left transition-colors",
                   "hover:bg-brand-highlight-muted",
-                  option.value === value && "bg-brand-highlight-muted text-brand-highlight-foreground",
+                  option.value === value &&
+                    "bg-brand-highlight-muted text-brand-highlight-foreground",
                 )}
               >
                 <span className="text-ui-body-sm font-medium text-foreground">{option.label}</span>
@@ -552,7 +557,10 @@ export default function AcademyApplyClient({
             >
               <FormField label="신청자명" required error={fieldErrors.applicantName}>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                  <User
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden
+                  />
                   <Input
                     value={form.applicantName}
                     readOnly
@@ -574,7 +582,10 @@ export default function AcademyApplyClient({
             >
               <FormField label="연락처" required error={fieldErrors.phone}>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                  <Phone
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden
+                  />
                   <Input
                     value={form.phone}
                     readOnly
@@ -592,7 +603,10 @@ export default function AcademyApplyClient({
             <div className="min-w-0 md:col-span-2">
               <FormField label="이메일">
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                  <Mail
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden
+                  />
                   <Input
                     type="email"
                     value={form.email}
@@ -699,7 +713,10 @@ export default function AcademyApplyClient({
             {/* Preferred Time */}
             <FormField label="희망 시간대" hint="예: 평일 저녁, 주말 오전">
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                <Clock
+                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden
+                />
                 <Input
                   value={form.preferredTimeText}
                   onChange={(e) => updateField("preferredTimeText", e.target.value)}
@@ -714,7 +731,10 @@ export default function AcademyApplyClient({
             {/* Lesson Goal */}
             <FormField label="레슨 목표" hint="원하시는 레슨 목표를 자유롭게 작성해 주세요">
               <div className="relative">
-                <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden />
+                <Target
+                  className="absolute left-3 top-3 h-4 w-4 text-muted-foreground"
+                  aria-hidden
+                />
                 <Textarea
                   value={form.lessonGoal}
                   onChange={(e) => updateField("lessonGoal", e.target.value)}
@@ -729,7 +749,10 @@ export default function AcademyApplyClient({
             {/* Request Memo */}
             <FormField label="요청사항" hint="추가로 궁금하신 점이나 요청사항을 남겨주세요">
               <div className="relative">
-                <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden />
+                <MessageSquare
+                  className="absolute left-3 top-3 h-4 w-4 text-muted-foreground"
+                  aria-hidden
+                />
                 <Textarea
                   value={form.requestMemo}
                   onChange={(e) => updateField("requestMemo", e.target.value)}

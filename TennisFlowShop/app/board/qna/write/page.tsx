@@ -22,15 +22,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast } from "@/lib/toast";
-import {
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight,
-  ImagePlus,
-  Search,
-  Upload,
-  X,
-} from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, ImagePlus, Search, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -541,9 +533,21 @@ export default function QnaWritePage() {
         <div className="mx-auto max-w-4xl space-y-5 bp-sm:space-y-6">
           <PublicSurface variant="muted" padding="md" className="grid gap-4 bp-md:grid-cols-3">
             {[
-              ["01", "답변 절차", "접수된 문의는 담당자가 확인한 뒤 Q&A 상세에서 답변 상태를 안내합니다."],
-              ["02", "필수 입력", "문의 유형, 제목, 내용은 필수이며 상품문의는 상품 선택이 필요합니다."],
-              ["03", "작성 주의", "비밀번호, 카드번호 등 민감 정보와 불필요한 주문 개인정보는 입력하지 마세요."],
+              [
+                "01",
+                "답변 절차",
+                "접수된 문의는 담당자가 확인한 뒤 Q&A 상세에서 답변 상태를 안내합니다.",
+              ],
+              [
+                "02",
+                "필수 입력",
+                "문의 유형, 제목, 내용은 필수이며 상품문의는 상품 선택이 필요합니다.",
+              ],
+              [
+                "03",
+                "작성 주의",
+                "비밀번호, 카드번호 등 민감 정보와 불필요한 주문 개인정보는 입력하지 마세요.",
+              ],
             ].map(([step, title, copy]) => (
               <div key={step} className="rounded-control border border-border bg-card/70 p-4">
                 <span className="text-ui-kicker text-brand-highlight-ink">{step}</span>
@@ -678,7 +682,9 @@ export default function QnaWritePage() {
                         )}
                         <div className="max-h-64 space-y-2 overflow-auto pr-1">
                           {me && myProducts.length === 0 && (
-                            <div className="text-ui-body-sm text-muted-foreground">구매 이력이 없습니다.</div>
+                            <div className="text-ui-body-sm text-muted-foreground">
+                              구매 이력이 없습니다.
+                            </div>
                           )}
                           {myProducts.map((p) => (
                             <button
@@ -703,7 +709,10 @@ export default function QnaWritePage() {
                           전체 상품 검색
                         </div>
                         <div className="relative mb-3">
-                          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                          <Search
+                            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                            aria-hidden="true"
+                          />
                           <Input
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
@@ -714,10 +723,14 @@ export default function QnaWritePage() {
                         </div>
                         <div className="max-h-64 space-y-2 overflow-auto pr-1">
                           {!q.trim() && (
-                            <div className="text-ui-body-sm text-muted-foreground">검색어를 입력하세요.</div>
+                            <div className="text-ui-body-sm text-muted-foreground">
+                              검색어를 입력하세요.
+                            </div>
                           )}
                           {q.trim() && searchProducts.length === 0 && (
-                            <div className="text-ui-body-sm text-muted-foreground">검색 결과가 없습니다.</div>
+                            <div className="text-ui-body-sm text-muted-foreground">
+                              검색 결과가 없습니다.
+                            </div>
                           )}
                           {searchProducts.map((p) => (
                             <button
@@ -743,7 +756,12 @@ export default function QnaWritePage() {
                         <span className="min-w-0 flex-1 break-keep">
                           <strong>{product.name}</strong> ({product.id})
                         </span>
-                        <Button type="button" variant="highlight_soft" size="sm" onClick={() => setProduct(null)}>
+                        <Button
+                          type="button"
+                          variant="highlight_soft"
+                          size="sm"
+                          onClick={() => setProduct(null)}
+                        >
                           선택 해제
                         </Button>
                       </div>
@@ -769,10 +787,15 @@ export default function QnaWritePage() {
                     placeholder="문의 제목을 작성해주세요(4자 이상)"
                     aria-invalid={!!fieldErrors.title}
                     aria-describedby={fieldErrors.title ? titleErrorId : undefined}
-                    className={cn("h-12 bg-card text-ui-body focus-visible:ring-ring", fieldErrors.title && "border-destructive")}
+                    className={cn(
+                      "h-12 bg-card text-ui-body focus-visible:ring-ring",
+                      fieldErrors.title && "border-destructive",
+                    )}
                   />
                   {fieldErrors.title && (
-                    <p id={titleErrorId} className="text-ui-body-sm text-destructive">{fieldErrors.title}</p>
+                    <p id={titleErrorId} className="text-ui-body-sm text-destructive">
+                      {fieldErrors.title}
+                    </p>
                   )}
                 </div>
 
@@ -791,10 +814,15 @@ export default function QnaWritePage() {
                     placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
                     aria-invalid={!!fieldErrors.content}
                     aria-describedby={fieldErrors.content ? contentErrorId : undefined}
-                    className={cn("min-h-[220px] resize-none bg-card text-ui-body leading-relaxed focus-visible:ring-ring", fieldErrors.content && "border-destructive")}
+                    className={cn(
+                      "min-h-[220px] resize-none bg-card text-ui-body leading-relaxed focus-visible:ring-ring",
+                      fieldErrors.content && "border-destructive",
+                    )}
                   />
                   {fieldErrors.content && (
-                    <p id={contentErrorId} className="text-ui-body-sm text-destructive">{fieldErrors.content}</p>
+                    <p id={contentErrorId} className="text-ui-body-sm text-destructive">
+                      {fieldErrors.content}
+                    </p>
                   )}
                   <p className="text-ui-body-sm text-muted-foreground">
                     상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.
@@ -802,7 +830,10 @@ export default function QnaWritePage() {
                 </div>
               </section>
 
-              <section ref={imagesWrapRef} className="space-y-5 scroll-mt-24 border-t border-border pt-8">
+              <section
+                ref={imagesWrapRef}
+                className="space-y-5 scroll-mt-24 border-t border-border pt-8"
+              >
                 <SectionHeader
                   variant="brand"
                   eyebrow="ATTACHMENT"
@@ -812,10 +843,15 @@ export default function QnaWritePage() {
                 <div
                   className={cn(
                     "rounded-control border border-dashed bg-muted/30 p-5 text-center transition-colors",
-                    fieldErrors.images ? "border-destructive" : "border-border hover:border-brand-highlight-ink/40",
+                    fieldErrors.images
+                      ? "border-destructive"
+                      : "border-border hover:border-brand-highlight-ink/40",
                   )}
                 >
-                  <ImagePlus className="mx-auto mb-3 h-8 w-8 text-brand-highlight-ink" aria-hidden="true" />
+                  <ImagePlus
+                    className="mx-auto mb-3 h-8 w-8 text-brand-highlight-ink"
+                    aria-hidden="true"
+                  />
                   <p className="text-ui-body-sm text-muted-foreground">
                     파일 선택 버튼을 눌러 문의에 필요한 이미지를 첨부하세요.
                   </p>
@@ -830,24 +866,36 @@ export default function QnaWritePage() {
                     aria-describedby={fieldErrors.images ? imagesErrorId : undefined}
                     className="sr-only"
                   />
-                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-4"
+                  >
                     <Upload className="h-4 w-4" aria-hidden="true" />
                     파일 선택
                   </Button>
                 </div>
                 {fieldErrors.images && (
-                  <p id={imagesErrorId} className="text-ui-body-sm text-destructive">{fieldErrors.images}</p>
+                  <p id={imagesErrorId} className="text-ui-body-sm text-destructive">
+                    {fieldErrors.images}
+                  </p>
                 )}
 
                 {selectedFiles.length > 0 && (
                   <div className="space-y-3">
-                    <p className="text-ui-body-sm font-medium text-foreground">첨부된 파일 ({selectedFiles.length}/3)</p>
+                    <p className="text-ui-body-sm font-medium text-foreground">
+                      첨부된 파일 ({selectedFiles.length}/3)
+                    </p>
                     <div className="grid grid-cols-2 gap-3 bp-sm:grid-cols-3 bp-md:grid-cols-4">
                       {selectedFiles.map((file, index) => {
                         const isImage = file.type?.startsWith("image/");
                         const previewUrl = isImage ? previews[index] : null;
                         return (
-                          <div key={index} className="group relative overflow-hidden rounded-control border border-border bg-card shadow-sm">
+                          <div
+                            key={index}
+                            className="group relative overflow-hidden rounded-control border border-border bg-card shadow-sm"
+                          >
                             {isImage && previewUrl ? (
                               <button
                                 type="button"
@@ -855,12 +903,18 @@ export default function QnaWritePage() {
                                 className="block w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                 aria-label={`${file.name} 이미지 확대 보기`}
                               >
-                                <img src={previewUrl || "/placeholder.svg"} alt={file.name} className="h-28 w-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" />
+                                <img
+                                  src={previewUrl || "/placeholder.svg"}
+                                  alt={file.name}
+                                  className="h-28 w-full object-cover transition-transform duration-150 group-hover:scale-[1.02]"
+                                />
                               </button>
                             ) : isImage ? (
                               <div className="h-28 rounded bg-muted animate-pulse" />
                             ) : (
-                              <div className="flex h-28 items-center justify-center px-2 text-center text-ui-label text-muted-foreground">{file.name}</div>
+                              <div className="flex h-28 items-center justify-center px-2 text-center text-ui-label text-muted-foreground">
+                                {file.name}
+                              </div>
                             )}
                             <div className="absolute bottom-2 left-2 rounded bg-card/90 px-1.5 py-0.5 text-ui-caption">
                               {(file.size / 1024 / 1024).toFixed(2)} MB
@@ -880,7 +934,8 @@ export default function QnaWritePage() {
                   </div>
                 )}
                 <div className="rounded-control border border-border bg-muted/30 p-3 text-ui-label text-muted-foreground">
-                  • 최대 3개 / 파일당 최대 5MB<br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP)
+                  • 최대 3개 / 파일당 최대 5MB
+                  <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP)
                 </div>
               </section>
 
@@ -894,7 +949,10 @@ export default function QnaWritePage() {
                     className="mt-1"
                   />
                   <div className="space-y-1">
-                    <label htmlFor="private" className="cursor-pointer text-ui-body-sm font-medium leading-none">
+                    <label
+                      htmlFor="private"
+                      className="cursor-pointer text-ui-body-sm font-medium leading-none"
+                    >
                       비공개 문의로 작성
                     </label>
                     <p className="text-ui-label text-muted-foreground">
@@ -907,9 +965,17 @@ export default function QnaWritePage() {
 
             <div className="flex flex-col gap-3 border-t border-border bg-muted/30 p-5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6 bp-md:p-8">
               <Button variant="outline" asChild size="lg" className="w-full bg-card bp-sm:w-auto">
-                <Link href="/board/qna" onClick={guardLinkLeave}>취소</Link>
+                <Link href="/board/qna" onClick={guardLinkLeave}>
+                  취소
+                </Link>
               </Button>
-              <Button size="lg" variant="highlight" className="w-full bp-sm:w-auto" onClick={handleSubmit} disabled={submitting}>
+              <Button
+                size="lg"
+                variant="highlight"
+                className="w-full bp-sm:w-auto"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
                 {submitting ? "등록 중…" : "문의 등록하기"}
               </Button>
             </div>
@@ -924,14 +990,30 @@ export default function QnaWritePage() {
           </DialogHeader>
           <div className="relative aspect-video w-full bg-muted/30">
             {viewerImages[viewerIndex] && (
-              <Image src={viewerImages[viewerIndex] || "/placeholder.svg"} alt={`첨부 이미지 ${viewerIndex + 1}`} fill className="object-contain" priority />
+              <Image
+                src={viewerImages[viewerIndex] || "/placeholder.svg"}
+                alt={`첨부 이미지 ${viewerIndex + 1}`}
+                fill
+                className="object-contain"
+                priority
+              />
             )}
             {viewerImages.length > 1 && (
               <>
-                <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/90 shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="이전 이미지 보기">
+                <button
+                  type="button"
+                  onClick={prevViewer}
+                  className="absolute left-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/90 shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="이전 이미지 보기"
+                >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/90 shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="다음 이미지 보기">
+                <button
+                  type="button"
+                  onClick={nextViewer}
+                  className="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/90 shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="다음 이미지 보기"
+                >
                   <ChevronRight className="h-5 w-5" />
                 </button>
               </>
@@ -940,8 +1022,25 @@ export default function QnaWritePage() {
           {viewerImages.length > 1 && (
             <div className="flex flex-wrap justify-center gap-2 border-t border-border bg-muted/30 p-3">
               {viewerImages.map((thumb, i) => (
-                <button key={i} type="button" onClick={() => setViewerIndex(i)} className={cn("relative h-16 w-16 overflow-hidden rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", i === viewerIndex ? "border-brand-highlight-ink bg-brand-highlight-muted" : "border-border bg-card")} aria-label={`첨부 이미지 ${i + 1} 보기`} aria-pressed={i === viewerIndex}>
-                  <Image src={thumb || "/placeholder.svg"} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setViewerIndex(i)}
+                  className={cn(
+                    "relative h-16 w-16 overflow-hidden rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    i === viewerIndex
+                      ? "border-brand-highlight-ink bg-brand-highlight-muted"
+                      : "border-border bg-card",
+                  )}
+                  aria-label={`첨부 이미지 ${i + 1} 보기`}
+                  aria-pressed={i === viewerIndex}
+                >
+                  <Image
+                    src={thumb || "/placeholder.svg"}
+                    alt={`썸네일 ${i + 1}`}
+                    fill
+                    className="object-cover"
+                  />
                 </button>
               ))}
             </div>

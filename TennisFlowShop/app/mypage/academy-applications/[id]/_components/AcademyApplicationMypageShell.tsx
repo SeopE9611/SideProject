@@ -49,7 +49,10 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
 
   return (
     <div className="relative min-h-full bg-background">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.07] bp-xs:hidden bg-cross-line-pattern" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.07] bp-xs:hidden bg-cross-line-pattern"
+      />
 
       <div className="relative border-b border-border/70 bg-muted/10">
         <SiteContainer variant="wide" className="py-4 bp-sm:py-5 bp-lg:py-8">

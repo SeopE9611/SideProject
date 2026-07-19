@@ -9,7 +9,11 @@ import {
 } from "@/lib/mypage/activity-todo";
 import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
-import { resolveApplicationReviewTargetBundlesBatch, resolveOrderReviewTargetBundlesBatch, resolveRentalReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
+import {
+  resolveApplicationReviewTargetBundlesBatch,
+  resolveOrderReviewTargetBundlesBatch,
+  resolveRentalReviewTargetBundlesBatch,
+} from "@/lib/reviews/review-target.server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -191,11 +195,12 @@ export async function GET() {
 
   const todayYmd = toKstYmd();
 
-  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] = await Promise.all([
-    resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
-    resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
-    resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
-  ]);
+  const [reviewBundlesByOrderId, reviewBundlesByRentalId, reviewBundlesByApplicationId] =
+    await Promise.all([
+      resolveOrderReviewTargetBundlesBatch(db, userId, orders as any[]),
+      resolveRentalReviewTargetBundlesBatch(db, userId, rentals as any[]),
+      resolveApplicationReviewTargetBundlesBatch(db, userId, standaloneApps as any[]),
+    ]);
 
   let todoOrderCount = 0;
   for (const order of orders as any[]) {
@@ -243,7 +248,7 @@ export async function GET() {
         ? String(rental.stringingApplicationId)
         : null,
       withStringService,
-      reviewPendingCount: (reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0),
+      reviewPendingCount: reviewBundlesByRentalId.get(rentalId)?.counts.remaining ?? 0,
     });
 
     if (needsAction !== null) todoRentalCount += 1;

@@ -452,7 +452,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <div className="rounded-control bg-surface-inverse px-4 py-4 text-surface-inverse-foreground">
                   <div className="flex items-center justify-between gap-3 text-ui-section-title font-semibold">
                     <span>총 결제 금액</span>
-                    <span className="tabular-nums text-brand-highlight">{total.toLocaleString()}원</span>
+                    <span className="tabular-nums text-brand-highlight">
+                      {total.toLocaleString()}원
+                    </span>
                   </div>
                 </div>
                 <p className="rounded-control border border-border/70 bg-muted/20 px-3 py-2 text-ui-body-sm text-muted-foreground">
@@ -493,7 +495,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                           은행: <b>{bankInfo.label}</b>
                         </div>
                         <div>
-                          계좌: <b className="break-all font-mono tabular-nums">{bankInfo.account}</b>
+                          계좌:{" "}
+                          <b className="break-all font-mono tabular-nums">{bankInfo.account}</b>
                         </div>
                         <div>
                           예금주: <b>{bankInfo.holder}</b>
@@ -521,38 +524,54 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">수령 방식</dt>
-                        <dd className="break-words font-semibold text-foreground">방문 수령 선택됨</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          방문 수령 선택됨
+                        </dd>
                       </div>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">이름</dt>
-                        <dd className="break-words font-semibold text-foreground">{data.shipping?.name || "-"}</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          {data.shipping?.name || "-"}
+                        </dd>
                       </div>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">연락처</dt>
-                        <dd className="break-words font-semibold text-foreground">{data.shipping?.phone || "-"}</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          {data.shipping?.phone || "-"}
+                        </dd>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">이름</dt>
-                        <dd className="break-words font-semibold text-foreground">{data.shipping?.name || "-"}</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          {data.shipping?.name || "-"}
+                        </dd>
                       </div>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">연락처</dt>
-                        <dd className="break-words font-semibold text-foreground">{data.shipping?.phone || "-"}</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          {data.shipping?.phone || "-"}
+                        </dd>
                       </div>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">우편번호</dt>
-                        <dd className="break-words font-semibold text-foreground">{data.shipping?.postalCode || "-"}</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          {data.shipping?.postalCode || "-"}
+                        </dd>
                       </div>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">주소</dt>
-                        <dd className="break-words font-semibold text-foreground">{data.shipping?.address || "-"}</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          {data.shipping?.address || "-"}
+                        </dd>
                       </div>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">상세주소</dt>
-                        <dd className="break-words font-semibold text-foreground">{data.shipping?.addressDetail || "-"}</dd>
+                        <dd className="break-words font-semibold text-foreground">
+                          {data.shipping?.addressDetail || "-"}
+                        </dd>
                       </div>
                       <div className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                         <dt className="text-muted-foreground">요청사항</dt>
@@ -599,11 +618,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
             <CardFooter className="border-t border-border/80 bg-muted/20 p-4 sm:p-5 md:p-6">
               <div className="flex w-full flex-col gap-4 sm:flex-row">
-                <Button
-                  className="h-12 flex-1"
-                  wrap="responsive"
-                  asChild
-                >
+                <Button className="h-12 flex-1" wrap="responsive" asChild>
                   <Link href="/mypage?tab=orders&scope=rental" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     주문/대여 내역 확인
@@ -611,24 +626,14 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </Link>
                 </Button>
                 {rentalStringingHref ? (
-                  <Button
-                    variant="outline"
-                    className="h-12 flex-1"
-                    wrap="responsive"
-                    asChild
-                  >
+                  <Button variant="outline" className="h-12 flex-1" wrap="responsive" asChild>
                     <Link href={rentalStringingHref} className="flex items-center gap-2">
                       교체서비스 신청 내역 보기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
                 ) : null}
-                <Button
-                  variant="ghost"
-                  className="h-12 flex-1"
-                  wrap="responsive"
-                  asChild
-                >
+                <Button variant="ghost" className="h-12 flex-1" wrap="responsive" asChild>
                   <Link href="/rackets" className="flex items-center gap-2">
                     다른 라켓 보기
                     <ArrowRight className="h-4 w-4" />

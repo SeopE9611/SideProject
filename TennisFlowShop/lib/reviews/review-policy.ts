@@ -1,4 +1,8 @@
-import { isOrderConfirmedStatus, isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
+import {
+  isOrderConfirmedStatus,
+  isRentalReturnedStatus,
+  isStringingCompletedStatus,
+} from "@/lib/status/flow-status";
 import type { CanonicalReviewTarget, ReviewTargetBundle } from "./review-target";
 
 type OrderLike = {
@@ -50,7 +54,6 @@ export function isStringingReviewBlockedStatus(status: unknown) {
   return BLOCKED_STRINGING_REVIEW_STATUS_TOKENS.some((token) => normalized.includes(token));
 }
 
-
 export function isOrderReviewEligible(order: any) {
   return Boolean(order?.userConfirmedAt) || isOrderConfirmedStatus(order?.status);
 }
@@ -77,7 +80,8 @@ export type ReviewSubmissionBlockReason =
   | null;
 
 export function getReviewSubmissionBlockReason(
-  target: { reviewed?: boolean; eligible?: boolean; ineligibleReason?: string | null } | null | undefined,
+  target:
+    { reviewed?: boolean; eligible?: boolean; ineligibleReason?: string | null } | null | undefined,
 ): ReviewSubmissionBlockReason {
   if (!target) return "notFound";
   if (target.reviewed) return "already";
@@ -119,7 +123,12 @@ export function findRequestedCanonicalTarget(
   if (requested) {
     return bundle.targets.find((target) => targetMatchesRequestedItem(target, requested)) ?? null;
   }
-  return bundle.nextTarget ?? bundle.targets.find((target) => target.eligible && !target.reviewed) ?? bundle.targets[0] ?? null;
+  return (
+    bundle.nextTarget ??
+    bundle.targets.find((target) => target.eligible && !target.reviewed) ??
+    bundle.targets[0] ??
+    null
+  );
 }
 
 export function getStandaloneStringingIneligibleReason(app: any) {

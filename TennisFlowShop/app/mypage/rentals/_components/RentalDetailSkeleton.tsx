@@ -64,7 +64,12 @@ export default function RentalDetailSkeleton() {
                 <Skeleton className="h-4 w-52 max-w-full rounded-md" />
               </div>
             </div>
-            <div className={cn(mypageDetailLayout.actionPanel, "border-brand-highlight-ink/25 bg-brand-highlight-muted/55")}>
+            <div
+              className={cn(
+                mypageDetailLayout.actionPanel,
+                "border-brand-highlight-ink/25 bg-brand-highlight-muted/55",
+              )}
+            >
               <Skeleton className="h-4 w-20 rounded-md" />
               <Skeleton className="h-5 w-48 max-w-full rounded-md" />
               <Skeleton className="h-9 w-full rounded-md bp-sm:w-32" />

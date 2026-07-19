@@ -33,13 +33,7 @@ export const dynamic = "force-dynamic";
 
 type Params = { id: string };
 
-function RacketSelectionBlockedResult({
-  id,
-  reasonLabel,
-}: {
-  id?: string;
-  reasonLabel?: string;
-}) {
+function RacketSelectionBlockedResult({ id, reasonLabel }: { id?: string; reasonLabel?: string }) {
   const isNotFound = !reasonLabel;
 
   return (
@@ -49,9 +43,7 @@ function RacketSelectionBlockedResult({
         eyebrow="라켓 스트링 선택"
         title={isNotFound ? "라켓을 찾을 수 없습니다" : "현재 구매할 수 없는 라켓입니다"}
         description={
-          isNotFound
-            ? "요청하신 라켓이 없거나 현재 공개되어 있지 않습니다."
-            : reasonLabel
+          isNotFound ? "요청하신 라켓이 없거나 현재 공개되어 있지 않습니다." : reasonLabel
         }
       />
       <SiteContainer variant="wide" className="pt-6">

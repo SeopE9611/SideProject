@@ -48,10 +48,16 @@ export function StepIndicator({
               <span
                 className={cn(
                   "flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-ui-caption font-medium text-muted-foreground",
-                  variant === "standard" && isCurrent && "border-primary bg-primary text-primary-foreground",
+                  variant === "standard" &&
+                    isCurrent &&
+                    "border-primary bg-primary text-primary-foreground",
                   variant === "standard" && isComplete && "border-primary text-primary",
-                  variant === "v2" && isCurrent && "border-foreground bg-background text-foreground",
-                  variant === "v2" && isComplete && "border-success bg-success text-success-foreground",
+                  variant === "v2" &&
+                    isCurrent &&
+                    "border-foreground bg-background text-foreground",
+                  variant === "v2" &&
+                    isComplete &&
+                    "border-success bg-success text-success-foreground",
                 )}
                 aria-hidden="true"
               >

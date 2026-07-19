@@ -5,7 +5,10 @@ export default function Loading() {
   return (
     <div className="min-h-full bg-background">
       <div className="border-b border-border/60 bg-background">
-        <SiteContainer variant="wide" className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6">
+        <SiteContainer
+          variant="wide"
+          className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6"
+        >
           <div className="grid gap-5 rounded-hero border border-surface-inverse-foreground/15 bg-surface-inverse p-5 bp-md:grid-cols-[minmax(0,1fr)_minmax(260px,320px)] bp-md:items-center bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] bp-lg:p-8">
             <Skeleton className="h-40 rounded-panel bg-surface-inverse-muted/20" />
             <Skeleton className="h-48 rounded-panel bg-surface-inverse-muted/20" />
@@ -23,7 +26,10 @@ export default function Loading() {
           <div className="min-w-0 bp-lg:col-span-3">
             <div className="mb-3 grid grid-cols-12 gap-1 rounded-panel border border-border/80 bg-card p-2 bp-sm:mb-4 bp-sm:grid-cols-7 bp-lg:hidden">
               {Array.from({ length: 7 }).map((_, index) => (
-                <Skeleton key={index} className={`h-11 rounded-control ${index >= 4 ? "col-span-4 bp-sm:col-span-1" : "col-span-3 bp-sm:col-span-1"}`} />
+                <Skeleton
+                  key={index}
+                  className={`h-11 rounded-control ${index >= 4 ? "col-span-4 bp-sm:col-span-1" : "col-span-3 bp-sm:col-span-1"}`}
+                />
               ))}
             </div>
             <div className="overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">

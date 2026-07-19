@@ -150,7 +150,8 @@ export function mergeProductDetailReviews({
         moderationStatus: review.moderationStatus ?? current?.moderationStatus ?? "visible",
         effectiveStatus:
           review.effectiveStatus ??
-          ((review.authorStatus ?? review.status) === "visible" && review.moderationStatus !== "hidden"
+          ((review.authorStatus ?? review.status) === "visible" &&
+          review.moderationStatus !== "hidden"
             ? "visible"
             : "hidden"),
         masked: false,

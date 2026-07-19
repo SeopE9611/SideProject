@@ -101,11 +101,7 @@ export default function PackagePlanCard({ pkg, ctaHref, blocked = false }: Packa
               현재 추가 구매 불가
             </div>
           ) : (
-            <Button
-              variant={pkg.popular ? "highlight_soft" : "outline"}
-              className="w-full"
-              asChild
-            >
+            <Button variant={pkg.popular ? "highlight_soft" : "outline"} className="w-full" asChild>
               <Link href={ctaHref}>패키지 구매하기</Link>
             </Button>
           )}

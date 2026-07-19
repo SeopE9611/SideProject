@@ -162,10 +162,30 @@ type InfoLinkProps = {
 };
 
 const infoLinks: InfoLinkProps[] = [
-  { icon: Megaphone, title: "공지사항", description: "서비스 운영 안내와 필수 공지를 확인합니다.", href: "/board/notice" },
-  { icon: Gift, title: "이벤트", description: "진행 중인 혜택과 참여 안내를 살펴봅니다.", href: "/board/event" },
-  { icon: Headset, title: "아카데미", description: "레슨 일정과 수강 안내 페이지로 이동합니다.", href: "/academy" },
-  { icon: MessageSquare, title: "쪽지함", description: "개별 안내와 답변 메시지를 확인합니다.", href: "/messages" },
+  {
+    icon: Megaphone,
+    title: "공지사항",
+    description: "서비스 운영 안내와 필수 공지를 확인합니다.",
+    href: "/board/notice",
+  },
+  {
+    icon: Gift,
+    title: "이벤트",
+    description: "진행 중인 혜택과 참여 안내를 살펴봅니다.",
+    href: "/board/event",
+  },
+  {
+    icon: Headset,
+    title: "아카데미",
+    description: "레슨 일정과 수강 안내 페이지로 이동합니다.",
+    href: "/academy",
+  },
+  {
+    icon: MessageSquare,
+    title: "쪽지함",
+    description: "개별 안내와 답변 메시지를 확인합니다.",
+    href: "/messages",
+  },
 ];
 
 function InfoLinkItem({ icon: Icon, title, description, href }: InfoLinkProps) {
@@ -176,7 +196,9 @@ function InfoLinkItem({ icon: Icon, title, description, href }: InfoLinkProps) {
     >
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
       <span className="min-w-0 flex-1 space-y-1">
-        <span className="block break-keep text-ui-body-sm font-semibold text-foreground">{title}</span>
+        <span className="block break-keep text-ui-body-sm font-semibold text-foreground">
+          {title}
+        </span>
         <span className="block break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
           {description}
         </span>

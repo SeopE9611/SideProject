@@ -26,38 +26,100 @@ export default function RacketCareMobileNav({ item }: { item: CareItem }) {
       return;
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
 
-      setShowNav(!entry.isIntersecting);
-    }, { threshold: 0 });
+        setShowNav(!entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
 
     observer.observe(hero);
 
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
-    const sections = anchors.map((anchor) => document.querySelector(anchor.href)).filter((section): section is Element => Boolean(section));
+    const sections = anchors
+      .map((anchor) => document.querySelector(anchor.href))
+      .filter((section): section is Element => Boolean(section));
     if (sections.length === 0 || !("IntersectionObserver" in window)) return;
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.find((entry) => entry.isIntersecting);
-      if (!visible) return;
-      const matched = anchors.find((anchor) => anchor.href === `#${visible.target.id}`);
-      if (matched) setActive(matched.id);
-    }, { rootMargin: "-35% 0px -55% 0px", threshold: 0.01 });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.find((entry) => entry.isIntersecting);
+        if (!visible) return;
+        const matched = anchors.find((anchor) => anchor.href === `#${visible.target.id}`);
+        if (matched) setActive(matched.id);
+      },
+      { rootMargin: "-35% 0px -55% 0px", threshold: 0.01 },
+    );
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
   }, []);
-  const scrollTo = (href: string, id: (typeof anchors)[number]["id"]) => (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    setActive(id);
-    const target = document.querySelector(href);
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    target?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-  };
+  const scrollTo =
+    (href: string, id: (typeof anchors)[number]["id"]) =>
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      setActive(id);
+      const target = document.querySelector(href);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      target?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    };
 
   if (!showNav) return null;
 
-  return <div data-bottom-sticky="1" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.6rem+env(safe-area-inset-bottom))] bp-lg:hidden"><nav className="pointer-events-auto rounded-panel border border-border bg-card/90 p-1.5 shadow-float backdrop-blur" aria-label="라켓 케어 바로가기"><div className="grid grid-cols-4 gap-1 text-ui-label">{anchors.slice(0, 2).map((anchor) => { const Icon = anchor.icon; return <a key={anchor.id} className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center data-[active=true]:bg-brand-highlight-muted data-[active=true]:text-brand-highlight-foreground dark:data-[active=true]:text-brand-highlight" href={anchor.href} onClick={scrollTo(anchor.href, anchor.id)} data-active={active === anchor.id} aria-current={active === anchor.id ? "location" : undefined}><Icon className="h-4 w-4" /><span>{anchor.label}</span></a>; })}<Link className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center" href={recommendHref}><Sparkles className="h-4 w-4" /><span>맞춤 추천</span></Link>{anchors.slice(2).map((anchor) => { const Icon = anchor.icon; return <a key={anchor.id} className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center data-[active=true]:bg-brand-highlight-muted data-[active=true]:text-brand-highlight-foreground dark:data-[active=true]:text-brand-highlight" href={anchor.href} onClick={scrollTo(anchor.href, anchor.id)} data-active={active === anchor.id} aria-current={active === anchor.id ? "location" : undefined}><Icon className="h-4 w-4" /><span>{anchor.label}</span></a>; })}</div></nav></div>;
+  return (
+    <div
+      data-bottom-sticky="1"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.6rem+env(safe-area-inset-bottom))] bp-lg:hidden"
+    >
+      <nav
+        className="pointer-events-auto rounded-panel border border-border bg-card/90 p-1.5 shadow-float backdrop-blur"
+        aria-label="라켓 케어 바로가기"
+      >
+        <div className="grid grid-cols-4 gap-1 text-ui-label">
+          {anchors.slice(0, 2).map((anchor) => {
+            const Icon = anchor.icon;
+            return (
+              <a
+                key={anchor.id}
+                className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center data-[active=true]:bg-brand-highlight-muted data-[active=true]:text-brand-highlight-foreground dark:data-[active=true]:text-brand-highlight"
+                href={anchor.href}
+                onClick={scrollTo(anchor.href, anchor.id)}
+                data-active={active === anchor.id}
+                aria-current={active === anchor.id ? "location" : undefined}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{anchor.label}</span>
+              </a>
+            );
+          })}
+          <Link
+            className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center"
+            href={recommendHref}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>맞춤 추천</span>
+          </Link>
+          {anchors.slice(2).map((anchor) => {
+            const Icon = anchor.icon;
+            return (
+              <a
+                key={anchor.id}
+                className="grid min-h-11 place-items-center rounded-control px-1 py-1.5 text-center data-[active=true]:bg-brand-highlight-muted data-[active=true]:text-brand-highlight-foreground dark:data-[active=true]:text-brand-highlight"
+                href={anchor.href}
+                onClick={scrollTo(anchor.href, anchor.id)}
+                data-active={active === anchor.id}
+                aria-current={active === anchor.id ? "location" : undefined}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{anchor.label}</span>
+              </a>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
 }

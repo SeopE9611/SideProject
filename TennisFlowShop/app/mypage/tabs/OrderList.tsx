@@ -357,7 +357,8 @@ export default function OrderList() {
 
         const primaryDetailLabel = hasLinkedApplication ? "교체서비스 상세 보기" : "주문 상세 보기";
 
-        const showConfirm = !isOrderCanceledStatus(order.status) && !isOrderRefundedStatus(order.status);
+        const showConfirm =
+          !isOrderCanceledStatus(order.status) && !isOrderRefundedStatus(order.status);
 
         const canConfirm =
           showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;

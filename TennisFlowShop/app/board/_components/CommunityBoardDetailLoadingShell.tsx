@@ -12,7 +12,11 @@ type Props = {
 
 export default function CommunityBoardDetailLoadingShell({ boardLabel, isMarket = false }: Props) {
   return (
-    <main className="min-h-screen bg-background text-foreground" aria-busy="true" aria-live="polite">
+    <main
+      className="min-h-screen bg-background text-foreground"
+      aria-busy="true"
+      aria-live="polite"
+    >
       <span className="sr-only">{boardLabel} 상세 화면을 불러오는 중입니다.</span>
       <SiteContainer className="space-y-6 py-6 md:space-y-8 md:py-8">
         <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">

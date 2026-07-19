@@ -63,7 +63,9 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       return NextResponse.json({ ok: false, message: "Forbidden" }, { status: 403 });
     }
 
-    const rawStatus = String(rental.status ?? "").trim().toLowerCase();
+    const rawStatus = String(rental.status ?? "")
+      .trim()
+      .toLowerCase();
     const isReturned = rawStatus === "returned" || rawStatus.includes("반납완료");
 
     if (!isReturned) {

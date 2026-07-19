@@ -1154,7 +1154,9 @@ export default function AdminReviewListClient() {
                           status: next,
                           moderationStatus: next,
                           effectiveStatus:
-                            d.authorStatus === "visible" && next === "visible" ? "visible" : "hidden",
+                            d.authorStatus === "visible" && next === "visible"
+                              ? "visible"
+                              : "hidden",
                         }
                       : d,
                   );

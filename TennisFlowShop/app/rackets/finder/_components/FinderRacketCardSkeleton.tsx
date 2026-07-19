@@ -6,7 +6,10 @@ export default function FinderRacketCardSkeleton({ count = 1 }: FinderRacketCard
   return (
     <div className="space-y-4" aria-hidden="true">
       {Array.from({ length: count }).map((_, index) => (
-        <article key={index} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <article
+          key={index}
+          className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+        >
           <div className="p-4 bp-sm:p-5">
             <div className="flex flex-col gap-4 bp-md:flex-row">
               <Skeleton className="aspect-[4/3] w-full shrink-0 rounded-xl bp-md:h-44 bp-md:w-44 bp-md:aspect-auto" />

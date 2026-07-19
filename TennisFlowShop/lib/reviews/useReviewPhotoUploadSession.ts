@@ -54,7 +54,10 @@ export function useReviewPhotoUploadSession(): ReviewPhotoUploadSessionControlle
 
     const generation = generationRef.current;
     setIsCreatingSession(true);
-    creatingPromiseRef.current = fetch("/api/reviews/photos/session", { method: "POST", cache: "no-store" })
+    creatingPromiseRef.current = fetch("/api/reviews/photos/session", {
+      method: "POST",
+      cache: "no-store",
+    })
       .then(async (res) => {
         const json = await res.json().catch(() => null);
         if (!res.ok || typeof json?.uploadSessionId !== "string") return null;

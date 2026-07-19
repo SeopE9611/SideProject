@@ -997,14 +997,24 @@ export default function ProductDetailClient({ product }: { product: any }) {
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
       <CommerceDetailTopBar
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "상품", href: "/products" }]}
+        breadcrumbs={[
+          { label: "홈", href: "/" },
+          { label: "상품", href: "/products" },
+        ]}
         currentLabel={product.name}
         onBack={() => router.back()}
-        adminAction={isAdmin ? (
-          <Button asChild variant="outline" size="sm" className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3">
-            <Link href={`/admin/products/${productId}/edit`}>상품 수정</Link>
-          </Button>
-        ) : undefined}
+        adminAction={
+          isAdmin ? (
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3"
+            >
+              <Link href={`/admin/products/${productId}/edit`}>상품 수정</Link>
+            </Button>
+          ) : undefined
+        }
       />
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10">
@@ -1025,228 +1035,232 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </h1>
               }
               rating={<CatalogRating average={averageRating} count={reviewCount} size="lg" />}
-              price={<CatalogPrice regularPrice={regularPrice} salePrice={isSale ? salePrice : null} size="detail" />}
+              price={
+                <CatalogPrice
+                  regularPrice={regularPrice}
+                  salePrice={isSale ? salePrice : null}
+                  size="detail"
+                />
+              }
               summary={
                 canCheckoutWithService ? (
-                      <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm sm:text-ui-body">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-muted-foreground">상품가</span>
-                          <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
-                            {qtyTotal.toLocaleString()}원
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-                            <Wrench className="h-3.5 w-3.5 shrink-0" />
-                            교체서비스 포함
-                          </span>
-                          <span className="whitespace-nowrap tabular-nums font-semibold text-primary">
-                            {serviceTotal.toLocaleString()}원
-                          </span>
-                        </div>
-                        <p className="break-keep text-ui-label text-muted-foreground">
-                          상품가 {qtyTotal.toLocaleString()}원 + 장착비{" "}
-                          {mountingFee.toLocaleString()}원
-                        </p>
-                      </div>
+                  <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm sm:text-ui-body">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-muted-foreground">상품가</span>
+                      <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                        {qtyTotal.toLocaleString()}원
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                        <Wrench className="h-3.5 w-3.5 shrink-0" />
+                        교체서비스 포함
+                      </span>
+                      <span className="whitespace-nowrap tabular-nums font-semibold text-primary">
+                        {serviceTotal.toLocaleString()}원
+                      </span>
+                    </div>
+                    <p className="break-keep text-ui-label text-muted-foreground">
+                      상품가 {qtyTotal.toLocaleString()}원 + 장착비 {mountingFee.toLocaleString()}원
+                    </p>
+                  </div>
                 ) : undefined
               }
               options={
                 <div className="space-y-4 sm:space-y-5">
-                    {visibleColorRows.length > 0 && (
-                      <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
-                        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-ui-body-sm font-semibold text-foreground">
-                            색상 선택
+                  {visibleColorRows.length > 0 && (
+                    <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
+                      <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
+                        <span className="text-ui-body-sm font-semibold text-foreground">
+                          색상 선택
+                        </span>
+                        {selectedColorLabel && (
+                          <span
+                            className="min-w-0 break-words text-ui-label text-muted-foreground"
+                            title={selectedColorLabel}
+                          >
+                            현재 색상: {selectedColorLabel}
                           </span>
-                          {selectedColorLabel && (
-                            <span
-                              className="min-w-0 break-words text-ui-label text-muted-foreground"
-                              title={selectedColorLabel}
-                            >
-                              현재 색상: {selectedColorLabel}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex snap-x gap-2 overflow-x-auto pb-1">
-                          {visibleColorRows.map((row) => {
-                            const label = getColorLabel(row);
-                            const soldOut = hasVariantInventories
-                              ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v))
-                              : isColorSoldOut(row);
-                            const isSelected = selectedColor === row.value;
-                            const swatchImage =
-                              row.image?.trim() ||
-                              getVariantsByColor(row.value)
-                                .find((v) => v.colorImage?.trim())
-                                ?.colorImage?.trim();
-                            const hasImage = !!swatchImage;
-                            const hasSwatch =
-                              typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
-
-                            return (
-                              <button
-                                key={row.value}
-                                type="button"
-                                aria-pressed={isSelected}
-                                aria-label={`${label} 색상 선택`}
-                                disabled={soldOut}
-                                onClick={() => setSelectedColor(row.value)}
-                                className={cn(
-                                  "relative flex h-16 w-16 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border bg-background text-ui-label text-foreground transition",
-                                  isSelected ? "border-foreground" : "border-border/60",
-                                  soldOut && "cursor-not-allowed opacity-45",
-                                )}
-                              >
-                                {hasImage ? (
-                                  <Image
-                                    src={swatchImage}
-                                    alt={label}
-                                    fill
-                                    className="object-cover"
-                                  />
-                                ) : hasSwatch ? (
-                                  <span
-                                    className="h-7 w-7 rounded-full border border-border/60"
-                                    style={{
-                                      backgroundColor: row.colorHex?.trim(),
-                                    }}
-                                  />
-                                ) : (
-                                  <span className="line-clamp-2 px-1 text-center leading-tight break-keep">
-                                    {label}
-                                  </span>
-                                )}
-                                {soldOut && (
-                                  <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-ui-micro font-medium">
-                                    품절
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
+                        )}
                       </div>
-                    )}
-                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
-                      <span className="whitespace-nowrap text-ui-body-sm font-semibold text-foreground">
-                        수량 선택
+                      <div className="flex snap-x gap-2 overflow-x-auto pb-1">
+                        {visibleColorRows.map((row) => {
+                          const label = getColorLabel(row);
+                          const soldOut = hasVariantInventories
+                            ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v))
+                            : isColorSoldOut(row);
+                          const isSelected = selectedColor === row.value;
+                          const swatchImage =
+                            row.image?.trim() ||
+                            getVariantsByColor(row.value)
+                              .find((v) => v.colorImage?.trim())
+                              ?.colorImage?.trim();
+                          const hasImage = !!swatchImage;
+                          const hasSwatch =
+                            typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
+
+                          return (
+                            <button
+                              key={row.value}
+                              type="button"
+                              aria-pressed={isSelected}
+                              aria-label={`${label} 색상 선택`}
+                              disabled={soldOut}
+                              onClick={() => setSelectedColor(row.value)}
+                              className={cn(
+                                "relative flex h-16 w-16 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border bg-background text-ui-label text-foreground transition",
+                                isSelected ? "border-foreground" : "border-border/60",
+                                soldOut && "cursor-not-allowed opacity-45",
+                              )}
+                            >
+                              {hasImage ? (
+                                <Image
+                                  src={swatchImage}
+                                  alt={label}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : hasSwatch ? (
+                                <span
+                                  className="h-7 w-7 rounded-full border border-border/60"
+                                  style={{
+                                    backgroundColor: row.colorHex?.trim(),
+                                  }}
+                                />
+                              ) : (
+                                <span className="line-clamp-2 px-1 text-center leading-tight break-keep">
+                                  {label}
+                                </span>
+                              )}
+                              {soldOut && (
+                                <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-ui-micro font-medium">
+                                  품절
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
+                    <span className="whitespace-nowrap text-ui-body-sm font-semibold text-foreground">
+                      수량 선택
+                    </span>
+
+                    <div
+                      className={cn(
+                        "flex w-auto shrink-0 items-center p-1",
+                        detailSurfaceSubtleInnerClass,
+                      )}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
+                        aria-label="수량 감소"
+                        disabled={!canDec}
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+
+                      <span className="tabular-nums w-10 sm:w-12 select-none text-center font-semibold text-ui-card-title-lg sm:text-ui-section-title">
+                        {quantity}
                       </span>
 
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
+                        aria-label="수량 증가"
+                        disabled={!canInc}
+                        onClick={() => {
+                          if (!canInc) {
+                            showErrorToast(
+                              hideGaugeStock
+                                ? "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다."
+                                : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`,
+                            );
+                            return;
+                          }
+                          setQuantity((q) => q + 1);
+                        }}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  {!hasVariantInventories &&
+                    product.inventory?.manageStock &&
+                    product.inventory.stock <= 5 &&
+                    product.inventory.stock > 0 && (
                       <div
                         className={cn(
-                          "flex w-auto shrink-0 items-center p-1",
+                          "flex items-start gap-2.5 p-3 sm:p-3.5",
                           detailSurfaceSubtleInnerClass,
                         )}
                       >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
-                          aria-label="수량 감소"
-                          disabled={!canDec}
-                          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-
-                        <span className="tabular-nums w-10 sm:w-12 select-none text-center font-semibold text-ui-card-title-lg sm:text-ui-section-title">
-                          {quantity}
+                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
+                          현재 남은 수량이{" "}
+                          <span className="font-semibold text-foreground">
+                            {product.inventory.stock}개
+                          </span>
+                          입니다.
                         </span>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
-                          aria-label="수량 증가"
-                          disabled={!canInc}
-                          onClick={() => {
-                            if (!canInc) {
-                              showErrorToast(
-                                hideGaugeStock
-                                  ? "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다."
-                                  : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`,
-                              );
-                              return;
-                            }
-                            setQuantity((q) => q + 1);
-                          }}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
                       </div>
-                    </div>
-                    {!hasVariantInventories &&
-                      product.inventory?.manageStock &&
-                      product.inventory.stock <= 5 &&
-                      product.inventory.stock > 0 && (
-                        <div
-                          className={cn(
-                            "flex items-start gap-2.5 p-3 sm:p-3.5",
-                            detailSurfaceSubtleInnerClass,
-                          )}
-                        >
-                          <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
-                            현재 남은 수량이{" "}
-                            <span className="font-semibold text-foreground">
-                              {product.inventory.stock}개
-                            </span>
-                            입니다.
-                          </span>
-                        </div>
-                      )}
+                    )}
 
-                    {isStringProduct && gaugeRows.length > 0 && (
-                      <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
-                        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-ui-body-sm font-semibold text-foreground">
-                            게이지(굵기) 선택
-                          </span>
-                          {gaugeOptions.length === 1 && (
-                            <span className="text-ui-label text-muted-foreground">자동 선택</span>
-                          )}
-                        </div>
-                        <Select value={selectedGauge} onValueChange={setSelectedGauge}>
-                          <SelectTrigger className="h-11 w-full min-w-0 bg-background">
-                            <SelectValue placeholder="게이지(굵기)를 선택하세요" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {gaugeRows.map((row) => {
-                              const soldOut = row.isSoldOut || row.stock <= 0;
-                              const displayLabel = normalizeGaugeDisplayLabel(row);
-                              const stockLabel =
-                                !hideGaugeStock && !soldOut
-                                  ? ` · 재고 ${Math.max(0, Number(row.stock ?? 0))}개`
-                                  : "";
-                              const soldOutLabel = soldOut ? " · 품절" : "";
-                              return (
-                                <SelectItem key={row.value} value={row.value} disabled={soldOut}>
-                                  {`${displayLabel}${stockLabel}${soldOutLabel}`}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                        {hasVariantInventories && variantHasNoSellableGauge && (
-                          <p className="text-ui-label text-destructive">
-                            선택 가능한 게이지(굵기)가 없습니다.
-                          </p>
+                  {isStringProduct && gaugeRows.length > 0 && (
+                    <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
+                      <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
+                        <span className="text-ui-body-sm font-semibold text-foreground">
+                          게이지(굵기) 선택
+                        </span>
+                        {gaugeOptions.length === 1 && (
+                          <span className="text-ui-label text-muted-foreground">자동 선택</span>
                         )}
                       </div>
-                    )}
-
-                    {isStringProduct && (
-                      <div className="rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm leading-relaxed text-muted-foreground">
-                        <p className="font-semibold text-foreground">
-                          교체서비스 신청용 스트링입니다.
+                      <Select value={selectedGauge} onValueChange={setSelectedGauge}>
+                        <SelectTrigger className="h-11 w-full min-w-0 bg-background">
+                          <SelectValue placeholder="게이지(굵기)를 선택하세요" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gaugeRows.map((row) => {
+                            const soldOut = row.isSoldOut || row.stock <= 0;
+                            const displayLabel = normalizeGaugeDisplayLabel(row);
+                            const stockLabel =
+                              !hideGaugeStock && !soldOut
+                                ? ` · 재고 ${Math.max(0, Number(row.stock ?? 0))}개`
+                                : "";
+                            const soldOutLabel = soldOut ? " · 품절" : "";
+                            return (
+                              <SelectItem key={row.value} value={row.value} disabled={soldOut}>
+                                {`${displayLabel}${stockLabel}${soldOutLabel}`}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      {hasVariantInventories && variantHasNoSellableGauge && (
+                        <p className="text-ui-label text-destructive">
+                          선택 가능한 게이지(굵기)가 없습니다.
                         </p>
-                        <p className="mt-1 break-keep">
-                          게이지(굵기)·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.
-                        </p>
-                      </div>
-                    )}
+                      )}
+                    </div>
+                  )}
 
+                  {isStringProduct && (
+                    <div className="rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm leading-relaxed text-muted-foreground">
+                      <p className="font-semibold text-foreground">
+                        교체서비스 신청용 스트링입니다.
+                      </p>
+                      <p className="mt-1 break-keep">
+                        게이지(굵기)·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.
+                      </p>
+                    </div>
+                  )}
                 </div>
               }
               actions={
@@ -1269,97 +1283,99 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   />
                 ) : (
                   <CommercePurchaseActions
-                            primary={
-                              canCheckoutWithService ? (
-                                <Button
-                                  variant="highlight_soft"
-                                  size="tall"
-                                  className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14" wrap="nowrap" aria-label="교체서비스 신청하기"
-                                  disabled={
-                                    loading ||
-                                    quantity > effectiveStock ||
-                                    (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
-                                    variantPurchaseBlocked
-                                  }
-                                  onClick={handleBuyNowWithService}
-                                >
-                                  <Wrench className="mr-2 h-5 w-5 shrink-0" />
-                                  <span className="whitespace-nowrap">교체서비스 신청</span>
-                                </Button>
-                              ) : ENABLE_STRING_STANDALONE_ORDER ? (
-                                <Button
-                                  variant="highlight_soft"
-                                  size="tall"
-                                  className="h-12 w-full whitespace-nowrap sm:h-14"
-                                  onClick={handleBuyNow}
-                                  disabled={
-                                    loading ||
-                                    effectiveStock <= 0 ||
-                                    quantity > effectiveStock ||
-                                    (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
-                                    variantPurchaseBlocked
-                                  }
-                                >
-                                  <CreditCard className="mr-2 h-5 w-5" />
-                                  스트링만 구매하기
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="outline"
-                                  size="lg"
-                                  className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
-                                  onClick={handleAddToCart}
-                                  disabled={
-                                    loading ||
-                                    quantity > effectiveStock ||
-                                    (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
-                                    variantPurchaseBlocked
-                                  }
-                                >
-                                  <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                                  {cartCtaLabel}
-                                </Button>
-                              )
-                            }
-                            secondary={
-                              canCheckoutWithService && ENABLE_STRING_STANDALONE_ORDER ? (
-                                <Button
-                                  variant="secondary"
-                                  size="tall"
-                                  className="h-12 w-full whitespace-nowrap sm:h-14"
-                                  onClick={handleBuyNow}
-                                  disabled={
-                                    loading ||
-                                    effectiveStock <= 0 ||
-                                    quantity > effectiveStock ||
-                                    (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
-                                    variantPurchaseBlocked
-                                  }
-                                >
-                                  <CreditCard className="mr-2 h-5 w-5" />
-                                  스트링만 구매하기
-                                </Button>
-                              ) : undefined
-                            }
-                            tertiary={
-                              canCheckoutWithService || ENABLE_STRING_STANDALONE_ORDER ? (
-                                <Button
-                                  variant="outline"
-                                  size="lg"
-                                  className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
-                                  onClick={handleAddToCart}
-                                  disabled={
-                                    loading ||
-                                    quantity > effectiveStock ||
-                                    (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
-                                    variantPurchaseBlocked
-                                  }
-                                >
-                                  <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                                  {cartCtaLabel}
-                                </Button>
-                              ) : undefined
-                            }
+                    primary={
+                      canCheckoutWithService ? (
+                        <Button
+                          variant="highlight_soft"
+                          size="tall"
+                          className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14"
+                          wrap="nowrap"
+                          aria-label="교체서비스 신청하기"
+                          disabled={
+                            loading ||
+                            quantity > effectiveStock ||
+                            (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
+                            variantPurchaseBlocked
+                          }
+                          onClick={handleBuyNowWithService}
+                        >
+                          <Wrench className="mr-2 h-5 w-5 shrink-0" />
+                          <span className="whitespace-nowrap">교체서비스 신청</span>
+                        </Button>
+                      ) : ENABLE_STRING_STANDALONE_ORDER ? (
+                        <Button
+                          variant="highlight_soft"
+                          size="tall"
+                          className="h-12 w-full whitespace-nowrap sm:h-14"
+                          onClick={handleBuyNow}
+                          disabled={
+                            loading ||
+                            effectiveStock <= 0 ||
+                            quantity > effectiveStock ||
+                            (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
+                            variantPurchaseBlocked
+                          }
+                        >
+                          <CreditCard className="mr-2 h-5 w-5" />
+                          스트링만 구매하기
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
+                          onClick={handleAddToCart}
+                          disabled={
+                            loading ||
+                            quantity > effectiveStock ||
+                            (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
+                            variantPurchaseBlocked
+                          }
+                        >
+                          <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                          {cartCtaLabel}
+                        </Button>
+                      )
+                    }
+                    secondary={
+                      canCheckoutWithService && ENABLE_STRING_STANDALONE_ORDER ? (
+                        <Button
+                          variant="secondary"
+                          size="tall"
+                          className="h-12 w-full whitespace-nowrap sm:h-14"
+                          onClick={handleBuyNow}
+                          disabled={
+                            loading ||
+                            effectiveStock <= 0 ||
+                            quantity > effectiveStock ||
+                            (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
+                            variantPurchaseBlocked
+                          }
+                        >
+                          <CreditCard className="mr-2 h-5 w-5" />
+                          스트링만 구매하기
+                        </Button>
+                      ) : undefined
+                    }
+                    tertiary={
+                      canCheckoutWithService || ENABLE_STRING_STANDALONE_ORDER ? (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
+                          onClick={handleAddToCart}
+                          disabled={
+                            loading ||
+                            quantity > effectiveStock ||
+                            (isStringProduct && gaugeRows.length > 0 && !selectedGauge) ||
+                            variantPurchaseBlocked
+                          }
+                        >
+                          <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                          {cartCtaLabel}
+                        </Button>
+                      ) : undefined
+                    }
                   />
                 )
               }
@@ -1381,10 +1397,36 @@ export default function ProductDetailClient({ product }: { product: any }) {
               value={activeTab}
               onValueChange={(v) => updateTabInUrl(v as any)}
               items={[
-                { value: "description", label: "상품 설명", shortLabel: "설명", ariaLabel: "상품 설명", icon: <FileText className="h-4 w-4 sm:h-5 sm:w-5" /> },
-                { value: "specifications", label: "상세 스펙", shortLabel: "스펙", ariaLabel: "상세 스펙", icon: <Settings className="h-4 w-4 sm:h-5 sm:w-5" /> },
-                { value: "reviews", label: "후기", shortLabel: "후기", ariaLabel: "상품 후기", icon: <Star className="h-4 w-4 sm:h-5 sm:w-5" />, count: reviewCount },
-                { value: "qna", label: "문의", shortLabel: "문의", ariaLabel: "상품 문의", icon: <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />, count: qnaTotal },
+                {
+                  value: "description",
+                  label: "상품 설명",
+                  shortLabel: "설명",
+                  ariaLabel: "상품 설명",
+                  icon: <FileText className="h-4 w-4 sm:h-5 sm:w-5" />,
+                },
+                {
+                  value: "specifications",
+                  label: "상세 스펙",
+                  shortLabel: "스펙",
+                  ariaLabel: "상세 스펙",
+                  icon: <Settings className="h-4 w-4 sm:h-5 sm:w-5" />,
+                },
+                {
+                  value: "reviews",
+                  label: "후기",
+                  shortLabel: "후기",
+                  ariaLabel: "상품 후기",
+                  icon: <Star className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  count: reviewCount,
+                },
+                {
+                  value: "qna",
+                  label: "문의",
+                  shortLabel: "문의",
+                  ariaLabel: "상품 문의",
+                  icon: <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  count: qnaTotal,
+                },
               ]}
             >
               <TabsContent value="description" className="p-4 sm:p-6 bp-md:p-8">
@@ -1468,18 +1510,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <ProductDetailRelatedProductsSection
           HorizontalProducts={HorizontalProducts}
           relatedSectionRef={relatedSectionRef}
-          relatedProducts={relatedFiltered.map(
-            (rp: any): HItem => ({
-              _id: String(rp._id),
-              name: rp.name,
-              price: Number(rp.price ?? 0),
-              images: rp.images ?? [],
-              brand: displayBrandLabel(rp.brand) || rp.brand,
-              href: `/products/${rp._id}`,
-              merchandisingBadges: getProductDetailBadges(rp),
-              inventory: rp.inventory,
-            }),
-          )}
+          relatedProducts={relatedFiltered.map((rp: any): HItem => ({
+            _id: String(rp._id),
+            name: rp.name,
+            price: Number(rp.price ?? 0),
+            images: rp.images ?? [],
+            brand: displayBrandLabel(rp.brand) || rp.brand,
+            href: `/products/${rp._id}`,
+            merchandisingBadges: getProductDetailBadges(rp),
+            inventory: rp.inventory,
+          }))}
           loadingRelated={loadingRelated}
         >
           <RecentViewedItems currentType="product" currentId={productId} />

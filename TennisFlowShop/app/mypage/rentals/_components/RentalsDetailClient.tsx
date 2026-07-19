@@ -452,12 +452,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     !data.withStringService ||
     isStringingCompletedStatus(data.stringingApplication?.status) ||
     isStringingCompletedStatus(data.applicationSummary?.status);
-  const normalizedStatus = String(data.status ?? "").trim().toLowerCase();
+  const normalizedStatus = String(data.status ?? "")
+    .trim()
+    .toLowerCase();
   const isPending = normalizedStatus === "pending" || normalizedStatus.includes("대기중");
   const isPaid = normalizedStatus === "paid" || normalizedStatus.includes("결제완료");
   const isOut = normalizedStatus === "out" || normalizedStatus.includes("대여중");
-  const isReturned =
-    isRentalReturnedStatus(data.status) || Boolean(data.returnedAt);
+  const isReturned = isRentalReturnedStatus(data.status) || Boolean(data.returnedAt);
   const isCanceled =
     normalizedStatus === "canceled" ||
     normalizedStatus === "cancelled" ||
@@ -475,7 +476,8 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
       : getCustomerRentalStatusLabel(data.status);
 
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
-  const isOnlineCancelRestricted = isOut || isReturned || isCanceled || Boolean(data.depositRefundedAt);
+  const isOnlineCancelRestricted =
+    isOut || isReturned || isCanceled || Boolean(data.depositRefundedAt);
   const canRequestCancel =
     // 상태는 pending 또는 paid만 허용
     (isPending || isPaid) &&
@@ -650,8 +652,12 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </Button>
           </>
         }
-        nextActionTitle={canReceiveRental ? "수령 확인" : nextTodo?.label ?? rentalNextActionMessage}
-        nextActionDescription={canReceiveRental ? rentalNextActionMessage : nextTodo ? rentalNextActionMessage : null}
+        nextActionTitle={
+          canReceiveRental ? "수령 확인" : (nextTodo?.label ?? rentalNextActionMessage)
+        }
+        nextActionDescription={
+          canReceiveRental ? rentalNextActionMessage : nextTodo ? rentalNextActionMessage : null
+        }
         nextActionSlot={
           <>
             {canReceiveRental ? (
@@ -690,9 +696,15 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             <MypageInfoField
               label={heroSecondaryTitle}
               value={heroSecondaryLabel}
-              valueClassName={isRentalActive ? "font-semibold text-brand-highlight-ink" : "font-semibold"}
+              valueClassName={
+                isRentalActive ? "font-semibold text-brand-highlight-ink" : "font-semibold"
+              }
             />
-            <MypageInfoField label="총 결제금액" value={formatCurrency(total)} valueClassName="font-semibold" />
+            <MypageInfoField
+              label="총 결제금액"
+              value={formatCurrency(total)}
+              valueClassName="font-semibold"
+            />
           </>
         }
       />
@@ -805,10 +817,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   </>
                 ) : isRentalActive ? (
                   <div className="space-y-2 text-ui-body-sm text-foreground/80">
-                    <p>
-                      반납 예정일:{" "}
-                      {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-                    </p>
+                    <p>반납 예정일: {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}</p>
                     <p>
                       반납 방식:{" "}
                       <span className="font-medium text-foreground">{returnMethodLabel}</span>
@@ -882,16 +891,21 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                           </Badge>
                         </div>
                         <p className="break-keep text-foreground/80">
-                          스트링/텐션: {[
+                          스트링/텐션:{" "}
+                          {[
                             installedStringLabel,
-                            linkedApplication?.tensionSummary ?? data.applicationSummary?.tensionSummary,
+                            linkedApplication?.tensionSummary ??
+                              data.applicationSummary?.tensionSummary,
                           ]
                             .filter(Boolean)
                             .join(" · ")}
                         </p>
-                        {(linkedApplication?.reservationLabel ?? data.applicationSummary?.reservationLabel) ? (
+                        {(linkedApplication?.reservationLabel ??
+                        data.applicationSummary?.reservationLabel) ? (
                           <p className="break-keep text-muted-foreground">
-                            희망 작업일: {linkedApplication?.reservationLabel ?? data.applicationSummary?.reservationLabel}
+                            희망 작업일:{" "}
+                            {linkedApplication?.reservationLabel ??
+                              data.applicationSummary?.reservationLabel}
                           </p>
                         ) : null}
                       </div>
@@ -977,7 +991,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </MypageDetailCard>
           </div>
         </div>
-
       </SiteContainer>
 
       {/* 다이얼로그는 클릭 시점에만 마운트해 초기 번들을 경량화 */}

@@ -49,7 +49,8 @@ export function CommerceSelectionHeader({
                 className={cn(
                   "min-w-0 rounded-xl border px-2.5 py-2 text-center text-ui-label font-semibold",
                   complete && "border-primary/30 bg-primary/10 text-foreground",
-                  current && "border-brand-highlight-ink/40 bg-brand-highlight-muted text-foreground",
+                  current &&
+                    "border-brand-highlight-ink/40 bg-brand-highlight-muted text-foreground",
                   step.status === "upcoming" && "border-border bg-muted/20 text-muted-foreground",
                 )}
               >

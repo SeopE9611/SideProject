@@ -39,7 +39,8 @@ export function DashboardSectionPanel({
             <div
               className={cn(
                 "flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-border bg-muted text-muted-foreground",
-                variant === "feature" && "border-brand-highlight/30 bg-brand-highlight-muted text-brand-highlight-ink",
+                variant === "feature" &&
+                  "border-brand-highlight/30 bg-brand-highlight-muted text-brand-highlight-ink",
               )}
               aria-hidden="true"
             >
@@ -52,7 +53,8 @@ export function DashboardSectionPanel({
               id={titleId}
               className={cn(
                 "text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg",
-                variant === "feature" && "font-brand-heading text-ui-section-title tracking-[-0.015em]",
+                variant === "feature" &&
+                  "font-brand-heading text-ui-section-title tracking-[-0.015em]",
               )}
             >
               {title}

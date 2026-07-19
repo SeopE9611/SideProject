@@ -21,12 +21,14 @@ String cards
 ## Desktop order
 
 Main
+
 - Flow header
 - Search/filter toolbar
 - Result summary
 - String cards
 
 Sticky aside
+
 - Selected racket
 - 수량
 - 스트링 없이 진행
@@ -49,15 +51,19 @@ Sticky aside
 ## Responsive grid
 
 360~575px
+
 - 1열
 
 576~1199px
+
 - 2열
 
 1200~1499px
+
 - 3열
 
 1500px 이상
+
 - 4열
 
 list view는 768px 이상에서 실제 horizontal card를 사용합니다.
@@ -76,10 +82,12 @@ list view는 768px 이상에서 실제 horizontal card를 사용합니다.
 모든 return path는 normalizeInternalReturnPath를 통과해야 합니다.
 
 허용:
+
 - 동일 origin의 /로 시작하는 내부 경로
 - query와 hash
 
 거부:
+
 - 외부 absolute URL
 - protocol-relative URL
 - 역슬래시가 포함된 경로

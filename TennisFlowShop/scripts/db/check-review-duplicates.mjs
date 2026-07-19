@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 import { MongoClient } from "mongodb";
-import { buildDuplicateReviewPipeline, duplicateDiagnostics, stringifyId } from "./review-duplicate-diagnostics.mjs";
+import {
+  buildDuplicateReviewPipeline,
+  duplicateDiagnostics,
+  stringifyId,
+} from "./review-duplicate-diagnostics.mjs";
 
 const HELP = new Set(["--help", "-h"]);
 if (process.argv.some((arg) => HELP.has(arg))) {
@@ -34,9 +38,7 @@ if (!uri) {
 async function findDuplicates(db, spec) {
   return db
     .collection("reviews")
-    .aggregate([
-      ...buildDuplicateReviewPipeline(spec),
-    ])
+    .aggregate([...buildDuplicateReviewPipeline(spec)])
     .toArray();
 }
 
@@ -52,16 +54,20 @@ try {
     totalGroups += groups.length;
     console.log(`\n[${spec.name}] duplicate groups: ${groups.length}`);
     for (const group of groups) {
-      console.log(JSON.stringify({
-        key: Object.fromEntries(Object.entries(group._id).map(([key, value]) => [key, stringifyId(value)])),
-        reviewIds: group.reviews.map((review) => stringifyId(review._id)),
-        reviews: group.reviews.map((review) => ({
-          id: stringifyId(review._id),
-          createdAt: review.createdAt ?? null,
-          status: review.status ?? null,
-          reviewContext: review.reviewContext ?? null,
-        })),
-      }));
+      console.log(
+        JSON.stringify({
+          key: Object.fromEntries(
+            Object.entries(group._id).map(([key, value]) => [key, stringifyId(value)]),
+          ),
+          reviewIds: group.reviews.map((review) => stringifyId(review._id)),
+          reviews: group.reviews.map((review) => ({
+            id: stringifyId(review._id),
+            createdAt: review.createdAt ?? null,
+            status: review.status ?? null,
+            reviewContext: review.reviewContext ?? null,
+          })),
+        }),
+      );
     }
   }
 

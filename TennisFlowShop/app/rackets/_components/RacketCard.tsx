@@ -242,8 +242,18 @@ const RacketCard = React.memo(
       );
       const iconClassName = "h-4 w-4 shrink-0";
       const buyButton = canBuy ? (
-        <Button asChild size="sm" variant="highlight_soft" className={buttonClassName} onClick={(e) => e.stopPropagation()}>
-          <Link href={`/rackets/${racket.id}/select-string`} onClick={(e) => e.stopPropagation()} className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 text-center">
+        <Button
+          asChild
+          size="sm"
+          variant="highlight_soft"
+          className={buttonClassName}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Link
+            href={`/rackets/${racket.id}/select-string`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 text-center"
+          >
             <ShoppingCart className={iconClassName} />
             {buyLabel}
           </Link>
@@ -254,25 +264,32 @@ const RacketCard = React.memo(
           구매 불가
         </Button>
       );
-      const rentButton = racket.rental?.enabled && canRent ? (
-        <RentDialog
-          id={racket.id}
-          rental={racket.rental}
-          brand={displayBrandLabel}
-          model={racket.model}
-          size="sm"
-          preventCardNav={true}
-          full={false}
-          className={buttonClassName}
-          variant={canBuy ? "outline" : "highlight_soft"}
-          label="스트링 선택 후 대여"
-        />
-      ) : (
-        <Button size="sm" className={disabledButtonClassName} disabled aria-disabled title={rentDisabledTitle}>
-          <Briefcase className={iconClassName} />
-          대여 불가
-        </Button>
-      );
+      const rentButton =
+        racket.rental?.enabled && canRent ? (
+          <RentDialog
+            id={racket.id}
+            rental={racket.rental}
+            brand={displayBrandLabel}
+            model={racket.model}
+            size="sm"
+            preventCardNav={true}
+            full={false}
+            className={buttonClassName}
+            variant={canBuy ? "outline" : "highlight_soft"}
+            label="스트링 선택 후 대여"
+          />
+        ) : (
+          <Button
+            size="sm"
+            className={disabledButtonClassName}
+            disabled
+            aria-disabled
+            title={rentDisabledTitle}
+          >
+            <Briefcase className={iconClassName} />
+            대여 불가
+          </Button>
+        );
 
       return (
         <div className="grid w-full grid-cols-1 gap-2">
@@ -283,13 +300,21 @@ const RacketCard = React.memo(
     };
 
     const media = (
-      <Link href={`/rackets/${racket.id}`} className={racketImageWrapClass} aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}>
+      <Link
+        href={`/rackets/${racket.id}`}
+        className={racketImageWrapClass}
+        aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
+      >
         {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
         <Image
           src={racket.images?.[0] || "/placeholder.svg?height=300&width=300&query=tennis+racket"}
           alt={`${displayBrandLabel} ${racket.model}`}
           fill
-          sizes={viewMode === "list" ? "(max-width: 768px) 100vw, 260px" : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+          sizes={
+            viewMode === "list"
+              ? "(max-width: 768px) 100vw, 260px"
+              : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          }
           className="object-contain object-center p-3 transition-opacity duration-200 group-hover:opacity-95"
         />
       </Link>
@@ -297,11 +322,17 @@ const RacketCard = React.memo(
 
     const content = (
       <div className="min-w-0">
-        <div className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm" title={displayBrandLabel}>
+        <div
+          className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm"
+          title={displayBrandLabel}
+        >
           {displayBrandLabel}
         </div>
         <Link href={`/rackets/${racket.id}`} className="block min-w-0">
-          <h3 className="mb-2 line-clamp-2 break-words text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3" title={racket.model}>
+          <h3
+            className="mb-2 line-clamp-2 break-words text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3"
+            title={racket.model}
+          >
             {racket.model}
           </h3>
         </Link>
@@ -321,7 +352,22 @@ const RacketCard = React.memo(
           media={media}
           content={content}
           price={priceBlock("right")}
-          actions={<>{actionButtons({ compact: true, stackOnNarrow: true })}<Button asChild size="sm" variant="outline" className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"><Link href={`/rackets/${racket.id}`}><Eye className="mr-1.5 h-4 w-4 shrink-0" />상세 보기</Link></Button></>}
+          actions={
+            <>
+              {actionButtons({ compact: true, stackOnNarrow: true })}
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"
+              >
+                <Link href={`/rackets/${racket.id}`}>
+                  <Eye className="mr-1.5 h-4 w-4 shrink-0" />
+                  상세 보기
+                </Link>
+              </Button>
+            </>
+          }
         />
       );
     }

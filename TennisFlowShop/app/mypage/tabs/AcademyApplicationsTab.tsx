@@ -197,7 +197,10 @@ export default function AcademyApplicationsTab() {
 
   if (applications.length === 0) {
     return (
-      <Card variant="feature" className="relative overflow-hidden border-brand-highlight/25 shadow-soft">
+      <Card
+        variant="feature"
+        className="relative overflow-hidden border-brand-highlight/25 shadow-soft"
+      >
         <CardContent className="p-8 text-center md:p-12">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-highlight-muted text-brand-highlight-ink md:mb-6">
             <GraduationCap className="h-10 w-10" aria-hidden="true" />
@@ -206,7 +209,8 @@ export default function AcademyApplicationsTab() {
             아직 신청한 클래스가 없습니다.
           </h3>
           <p className="mx-auto mb-6 max-w-md break-keep text-muted-foreground">
-            원하는 클래스를 둘러보고 상담 신청을 남겨보세요. 신청 내역은 이곳에서 확인할 수 있습니다.
+            원하는 클래스를 둘러보고 상담 신청을 남겨보세요. 신청 내역은 이곳에서 확인할 수
+            있습니다.
           </p>
           <Button asChild variant="highlight" wrap="responsive">
             <Link href="/academy">아카데미 보러가기</Link>
@@ -255,134 +259,150 @@ export default function AcademyApplicationsTab() {
 
               <div className="space-y-4 p-4 bp-sm:p-5">
                 <div className="grid gap-3 bp-sm:grid-cols-2">
-                <InfoItem
-                  label="수업 유형"
-                  value={
-                    application.classSnapshot?.lessonTypeLabel || application.desiredLessonTypeLabel
-                  }
-                />
-                <InfoItem
-                  label="레벨"
-                  value={application.classSnapshot?.levelLabel || application.currentLevelLabel}
-                />
-                <InfoItem
-                  label="일정"
-                  value={
-                    application.classSnapshot?.scheduleText ||
-                    application.preferredDays?.join(", ") ||
-                    application.preferredTimeText
-                  }
-                />
-                <InfoItem label="희망 시간대" value={application.preferredTimeText} />
-              </div>
-
-              {isCancelled ? (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-ui-body-sm font-medium text-destructive">
-                  취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수 있습니다.
-                </div>
-              ) : null}
-
-              {isExpanded && application.classSnapshot ? (
-                <div id={expandedPanelId} className="rounded-control border border-border/70 bg-muted/20 p-3">
-                  <div className="flex items-center gap-2 text-ui-body-sm font-semibold text-foreground">
-                    <GraduationCap className="h-4 w-4 text-brand-highlight-ink" aria-hidden="true" />
-                    선택 클래스 상세
-                  </div>
-                  <p className="mt-2 break-keep font-semibold text-foreground">
-                    {application.classSnapshot.name || "클래스명 미입력"}
-                  </p>
-                  <dl className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground bp-sm:grid-cols-2">
-                    <div className="rounded-lg bg-background p-3">
-                      <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
-                        <MapPin className="h-3.5 w-3.5" aria-hidden="true" /> 장소
-                      </dt>
-                      <dd className="mt-0.5 break-keep font-medium text-foreground">
-                        {application.classSnapshot.location || "상담 후 안내"}
-                      </dd>
-                    </div>
-                    <div className="rounded-lg bg-background p-3 bp-sm:col-span-2">
-                      <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
-                        <WalletCards className="h-3.5 w-3.5" aria-hidden="true" /> 기준 수강료
-                      </dt>
-                      <dd className="mt-0.5 font-medium text-foreground">
-                        {formatPrice(application.classSnapshot.price)}
-                      </dd>
-                      {!isCancelled ? (
-                        <dd className="mt-1 break-keep text-ui-label text-muted-foreground">
-                          수강료는 상담 내용에 따라 최종 확인될 수 있습니다. 등록 확정 후 현장에서
-                          결제를 안내해드립니다.
-                        </dd>
-                      ) : null}
-                    </div>
-                  </dl>
-                </div>
-              ) : null}
-
-              {isExpanded ? (
-                <div id={!application.classSnapshot ? expandedPanelId : undefined} className="grid gap-3 bp-sm:grid-cols-2">
-                  <InfoItem label="희망 레슨 유형" value={application.desiredLessonTypeLabel} />
                   <InfoItem
-                    label="희망 요일"
+                    label="수업 유형"
                     value={
-                      application.preferredDays?.length
-                        ? application.preferredDays.join(", ")
-                        : null
+                      application.classSnapshot?.lessonTypeLabel ||
+                      application.desiredLessonTypeLabel
                     }
                   />
-                  <InfoItem label="희망 시간" value={application.preferredTimeText} />
+                  <InfoItem
+                    label="레벨"
+                    value={application.classSnapshot?.levelLabel || application.currentLevelLabel}
+                  />
+                  <InfoItem
+                    label="일정"
+                    value={
+                      application.classSnapshot?.scheduleText ||
+                      application.preferredDays?.join(", ") ||
+                      application.preferredTimeText
+                    }
+                  />
+                  <InfoItem label="희망 시간대" value={application.preferredTimeText} />
                 </div>
-              ) : null}
 
-              {isExpanded && application.customerMessage ? (
-                <div className="rounded-xl border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
-                  <div className="flex items-center gap-2 text-ui-body-sm font-semibold">
-                    <MessageSquareText className="h-4 w-4" aria-hidden="true" />
-                    관리자 안내
-                  </div>
-                  <p className="mt-2 whitespace-pre-wrap break-words text-ui-body-sm">
-                    {application.customerMessage}
-                  </p>
-                </div>
-              ) : null}
-
-              <div className="flex flex-col gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
-                <Button asChild variant="highlight" size="sm" wrap="responsive" className="w-full sm:w-auto">
-                  <Link href={`/mypage/academy-applications/${application.id}`}>
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                    상세 보기
-                  </Link>
-                </Button>
-                <Button
-                  type="button"
-                  variant="highlight_soft"
-                  size="sm"
-                  wrap="responsive"
-                  className="w-full sm:w-auto"
-                  aria-expanded={isExpanded}
-                  aria-controls={expandedPanelId}
-                  onClick={() => toggleExpanded(application.id)}
-                >
-                  {isExpanded ? (
-                    <ChevronUp className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                  )}
-                  {isExpanded ? "접기" : "펼쳐보기"}
-                </Button>
                 {isCancelled ? (
+                  <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-ui-body-sm font-medium text-destructive">
+                    취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수 있습니다.
+                  </div>
+                ) : null}
+
+                {isExpanded && application.classSnapshot ? (
+                  <div
+                    id={expandedPanelId}
+                    className="rounded-control border border-border/70 bg-muted/20 p-3"
+                  >
+                    <div className="flex items-center gap-2 text-ui-body-sm font-semibold text-foreground">
+                      <GraduationCap
+                        className="h-4 w-4 text-brand-highlight-ink"
+                        aria-hidden="true"
+                      />
+                      선택 클래스 상세
+                    </div>
+                    <p className="mt-2 break-keep font-semibold text-foreground">
+                      {application.classSnapshot.name || "클래스명 미입력"}
+                    </p>
+                    <dl className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground bp-sm:grid-cols-2">
+                      <div className="rounded-lg bg-background p-3">
+                        <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
+                          <MapPin className="h-3.5 w-3.5" aria-hidden="true" /> 장소
+                        </dt>
+                        <dd className="mt-0.5 break-keep font-medium text-foreground">
+                          {application.classSnapshot.location || "상담 후 안내"}
+                        </dd>
+                      </div>
+                      <div className="rounded-lg bg-background p-3 bp-sm:col-span-2">
+                        <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
+                          <WalletCards className="h-3.5 w-3.5" aria-hidden="true" /> 기준 수강료
+                        </dt>
+                        <dd className="mt-0.5 font-medium text-foreground">
+                          {formatPrice(application.classSnapshot.price)}
+                        </dd>
+                        {!isCancelled ? (
+                          <dd className="mt-1 break-keep text-ui-label text-muted-foreground">
+                            수강료는 상담 내용에 따라 최종 확인될 수 있습니다. 등록 확정 후 현장에서
+                            결제를 안내해드립니다.
+                          </dd>
+                        ) : null}
+                      </div>
+                    </dl>
+                  </div>
+                ) : null}
+
+                {isExpanded ? (
+                  <div
+                    id={!application.classSnapshot ? expandedPanelId : undefined}
+                    className="grid gap-3 bp-sm:grid-cols-2"
+                  >
+                    <InfoItem label="희망 레슨 유형" value={application.desiredLessonTypeLabel} />
+                    <InfoItem
+                      label="희망 요일"
+                      value={
+                        application.preferredDays?.length
+                          ? application.preferredDays.join(", ")
+                          : null
+                      }
+                    />
+                    <InfoItem label="희망 시간" value={application.preferredTimeText} />
+                  </div>
+                ) : null}
+
+                {isExpanded && application.customerMessage ? (
+                  <div className="rounded-xl border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
+                    <div className="flex items-center gap-2 text-ui-body-sm font-semibold">
+                      <MessageSquareText className="h-4 w-4" aria-hidden="true" />
+                      관리자 안내
+                    </div>
+                    <p className="mt-2 whitespace-pre-wrap break-words text-ui-body-sm">
+                      {application.customerMessage}
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
                   <Button
-                    type="button"
-                    variant="destructive"
+                    asChild
+                    variant="highlight"
                     size="sm"
                     wrap="responsive"
                     className="w-full sm:w-auto"
-                    disabled={deletingId === application.id}
-                    onClick={() => void handleDelete(application.id)}
                   >
-                    <Trash2 className="h-4 w-4" />
-                    {deletingId === application.id ? "삭제 중..." : "기록 삭제"}
+                    <Link href={`/mypage/academy-applications/${application.id}`}>
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                      상세 보기
+                    </Link>
                   </Button>
-                ) : null}
+                  <Button
+                    type="button"
+                    variant="highlight_soft"
+                    size="sm"
+                    wrap="responsive"
+                    className="w-full sm:w-auto"
+                    aria-expanded={isExpanded}
+                    aria-controls={expandedPanelId}
+                    onClick={() => toggleExpanded(application.id)}
+                  >
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                    )}
+                    {isExpanded ? "접기" : "펼쳐보기"}
+                  </Button>
+                  {isCancelled ? (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      wrap="responsive"
+                      className="w-full sm:w-auto"
+                      disabled={deletingId === application.id}
+                      onClick={() => void handleDelete(application.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {deletingId === application.id ? "삭제 중..." : "기록 삭제"}
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </CardContent>

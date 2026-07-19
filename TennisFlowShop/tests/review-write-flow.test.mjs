@@ -64,7 +64,10 @@ test("POST 실패 응답 reason을 후기 작성 상태로 매핑한다", () => 
   assert.equal(getReviewPostFailureState(403, "notConfirmed"), "notConfirmed");
   assert.equal(getReviewPostFailureState(403, "notCompleted"), "notCompleted");
   assert.equal(getReviewPostFailureState(403, "invalidStatus"), "invalidStatus");
-  assert.equal(getReviewPostFailureState(409, "coveredByIntegratedReview"), "coveredByIntegratedReview");
+  assert.equal(
+    getReviewPostFailureState(409, "coveredByIntegratedReview"),
+    "coveredByIntegratedReview",
+  );
 
   for (const reason of ["notFound", "invalid", "orderNotFound", "rentalNotFound"]) {
     assert.equal(getReviewPostFailureState(404, reason), "invalid");
@@ -89,7 +92,11 @@ test("일반 상품 후기는 상품 payload와 상품 후기 탭 CTA를 만든�
 });
 
 test("일반 라켓 구매 후기는 라켓 payload와 라켓 후기 탭 CTA를 만든다", () => {
-  const target = base("product", { orderId: id(21), primaryProductId: id(22), primaryRacketId: id(22) });
+  const target = base("product", {
+    orderId: id(21),
+    primaryProductId: id(22),
+    primaryRacketId: id(22),
+  });
   const payload = buildReviewSubmissionPayload(target, form);
   assert.equal(payload.productId, id(22));
   assert.equal(payload.racketId, id(22));

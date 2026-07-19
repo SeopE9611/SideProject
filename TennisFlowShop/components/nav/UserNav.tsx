@@ -89,10 +89,20 @@ export function UserNav() {
                 <span className="text-ui-label text-muted-foreground">소셜 로그인</span>
                 <div className="flex gap-1">
                   {hasKakao && (
-                    <IdentityBadge tone="kakao" className="pointer-events-none h-5 min-h-0 px-2 text-ui-micro">카카오</IdentityBadge>
+                    <IdentityBadge
+                      tone="kakao"
+                      className="pointer-events-none h-5 min-h-0 px-2 text-ui-micro"
+                    >
+                      카카오
+                    </IdentityBadge>
                   )}
                   {hasNaver && (
-                    <IdentityBadge tone="naver" className="pointer-events-none h-5 min-h-0 px-2 text-ui-micro">네이버</IdentityBadge>
+                    <IdentityBadge
+                      tone="naver"
+                      className="pointer-events-none h-5 min-h-0 px-2 text-ui-micro"
+                    >
+                      네이버
+                    </IdentityBadge>
                   )}
                 </div>
               </div>

@@ -141,8 +141,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
     const blocking = linkedApps.filter((a: any) => {
       const st = String(a?.status ?? "");
       const confirmed = Boolean(a?.userConfirmedAt);
-      const doneLike =
-        confirmed || isStringingCompletedStatus(st) || isStringingCanceledStatus(st);
+      const doneLike = confirmed || isStringingCompletedStatus(st) || isStringingCanceledStatus(st);
       return !doneLike;
     });
 

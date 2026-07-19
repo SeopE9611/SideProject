@@ -527,7 +527,8 @@ export default function ApplicationsClient() {
               isStringService && needsInboundTracking && !isLinkedApplication;
 
             // 종료 상태(수정 금지)
-            const isClosed = String((app as any).status) === "작업 중" || isStringingCompletedStatus(app.status);
+            const isClosed =
+              String((app as any).status) === "작업 중" || isStringingCompletedStatus(app.status);
 
             // 취소 상태 계산 (한글/영문 둘 다 대응)
             const rawCancelStatus = app.cancelStatus ?? "none";
@@ -564,9 +565,12 @@ export default function ApplicationsClient() {
                   : "라켓 발송 운송장을 등록해주세요."
                 : isLinkedApplication
                   ? "연결된 주문/대여 상세에서 진행 상황을 확인해보세요."
-                  : isStringService && isStringingCompletedStatus(app.status) && !(app as any).userConfirmedAt
+                  : isStringService &&
+                      isStringingCompletedStatus(app.status) &&
+                      !(app as any).userConfirmedAt
                     ? "작업 내용을 확인하고 교체서비스 확정을 진행해주세요."
-                    : isStringingCompletedStatus(app.status) || isStringingCanceledStatus(app.status)
+                    : isStringingCompletedStatus(app.status) ||
+                        isStringingCanceledStatus(app.status)
                       ? "추가로 진행할 일은 없습니다."
                       : "상세에서 신청 진행 상황을 확인해주세요.";
 

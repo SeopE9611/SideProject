@@ -406,7 +406,9 @@ export default function ProfileClient({ user }: Props) {
                       <User className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="font-brand-heading text-ui-section-title">기본정보</CardTitle>
+                      <CardTitle className="font-brand-heading text-ui-section-title">
+                        기본정보
+                      </CardTitle>
                       <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
                     </div>
                   </div>
@@ -532,7 +534,9 @@ export default function ProfileClient({ user }: Props) {
                       <Shield className="h-6 w-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="font-brand-heading text-ui-section-title">비밀번호 변경</CardTitle>
+                      <CardTitle className="font-brand-heading text-ui-section-title">
+                        비밀번호 변경
+                      </CardTitle>
                       <CardDescription>
                         보안을 위해 정기적으로 비밀번호를 변경해주세요.
                       </CardDescription>
@@ -554,7 +558,7 @@ export default function ProfileClient({ user }: Props) {
                           currentPassword: e.target.value,
                         })
                       }
-                        className="h-12 rounded-control border-border"
+                      className="h-12 rounded-control border-border"
                     />
                   </div>
                   <div className="space-y-2">
@@ -571,7 +575,7 @@ export default function ProfileClient({ user }: Props) {
                           newPassword: e.target.value,
                         })
                       }
-                        className="h-12 rounded-control border-border"
+                      className="h-12 rounded-control border-border"
                     />
                     <p className="text-ui-body-sm text-muted-foreground">
                       8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)
@@ -591,7 +595,7 @@ export default function ProfileClient({ user }: Props) {
                           confirmPassword: e.target.value,
                         })
                       }
-                        className="h-12 rounded-control border-border"
+                      className="h-12 rounded-control border-border"
                     />
                   </div>
 
@@ -618,7 +622,9 @@ export default function ProfileClient({ user }: Props) {
                       <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="font-brand-heading text-ui-section-title">배송지 관리</CardTitle>
+                      <CardTitle className="font-brand-heading text-ui-section-title">
+                        배송지 관리
+                      </CardTitle>
                       <CardDescription>기본 배송지 정보를 관리할 수 있습니다.</CardDescription>
                     </div>
                   </div>
@@ -709,7 +715,9 @@ export default function ProfileClient({ user }: Props) {
                         <Bell className="h-6 w-6 text-primary" aria-hidden="true" />
                       </div>
                       <div>
-                        <CardTitle className="font-brand-heading text-ui-section-title">마케팅 수신 동의</CardTitle>
+                        <CardTitle className="font-brand-heading text-ui-section-title">
+                          마케팅 수신 동의
+                        </CardTitle>
                         <CardDescription>
                           마케팅 정보 수신 방법을 선택할 수 있습니다.
                         </CardDescription>
@@ -852,7 +860,10 @@ export default function ProfileClient({ user }: Props) {
                     ) : (
                       <div className="text-center">
                         <div className="bg-destructive/10 dark:bg-destructive/15 border border-destructive/30 rounded-xl p-4 md:p-6 mb-4 md:mb-6">
-                          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" aria-hidden="true" />
+                          <AlertTriangle
+                            className="h-12 w-12 text-destructive mx-auto mb-4"
+                            aria-hidden="true"
+                          />
                           <h3 className="text-ui-card-title-lg font-semibold text-destructive mb-2">
                             정말로 탈퇴하시겠습니까?
                           </h3>
