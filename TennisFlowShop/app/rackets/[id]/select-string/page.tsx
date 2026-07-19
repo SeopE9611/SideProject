@@ -8,6 +8,9 @@ import clientPromise from "@/lib/mongodb";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
+import Link from "next/link";
+import { PublicPageHero, ResultState } from "@/components/public";
+import { Button } from "@/components/ui/button";
 import RacketSelectStringClient from "./RacketSelectStringClient";
 
 import type { Metadata } from "next";
@@ -29,6 +32,54 @@ function safeVerifyAccessToken(token?: string) {
 export const dynamic = "force-dynamic";
 
 type Params = { id: string };
+
+function RacketSelectionBlockedResult({
+  id,
+  reasonLabel,
+}: {
+  id?: string;
+  reasonLabel?: string;
+}) {
+  const isNotFound = !reasonLabel;
+
+  return (
+    <main className="min-h-screen bg-background pb-10">
+      <PublicPageHero
+        variant="feature"
+        eyebrow="라켓 스트링 선택"
+        title={isNotFound ? "라켓을 찾을 수 없습니다" : "현재 구매할 수 없는 라켓입니다"}
+        description={
+          isNotFound
+            ? "요청하신 라켓이 없거나 현재 공개되어 있지 않습니다."
+            : reasonLabel
+        }
+      />
+      <SiteContainer variant="wide" className="pt-6">
+        <ResultState
+          status="warning"
+          title={isNotFound ? "라켓 목록을 확인해 주세요" : "라켓 상세에서 상태를 확인해 주세요"}
+          description={
+            isNotFound
+              ? "판매 중인 다른 라켓을 둘러보세요."
+              : "판매 가능 상태가 되면 스트링을 선택할 수 있습니다."
+          }
+          actions={
+            <>
+              {!isNotFound && id && (
+                <Button asChild className="rounded-control">
+                  <Link href={`/rackets/${id}`}>라켓 상세로 돌아가기</Link>
+                </Button>
+              )}
+              <Button asChild variant="outline" className="rounded-control">
+                <Link href="/rackets">라켓 목록으로 이동</Link>
+              </Button>
+            </>
+          }
+        />
+      </SiteContainer>
+    </main>
+  );
+}
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { id } = await params;
@@ -53,11 +104,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const viewer = await getVisibilityViewerFromCookies();
 
   if (!ObjectId.isValid(id)) {
-    return (
-      <SiteContainer variant="wide" className="py-10">
-        <h1 className="text-ui-card-title-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
-      </SiteContainer>
-    );
+    return <RacketSelectionBlockedResult />;
   }
   const racketObjectId = new ObjectId(id);
   const doc: any = await db
@@ -65,11 +112,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     .findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(viewer) });
 
   if (!doc) {
-    return (
-      <SiteContainer variant="wide" className="py-10">
-        <h1 className="text-ui-card-title-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
-      </SiteContainer>
-    );
+    return <RacketSelectionBlockedResult />;
   }
 
   // (가드) 라켓 구매 가능 여부: 대여중(판매 불가) / 판매완료 상태를 선택 단계에서 1차 차단
@@ -92,15 +135,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       activeRentalCount > 0
         ? "현재 대여중인 라켓이라 구매할 수 없습니다."
         : "현재 판매 가능한 상태가 아닙니다.";
-    return (
-      <SiteContainer variant="wide" className="py-10 space-y-2">
-        <h1 className="text-ui-card-title-lg font-semibold">현재 구매할 수 없는 라켓입니다.</h1>
-        <p className="text-ui-body-sm text-muted-foreground">{reasonLabel}</p>
-        <a className="text-ui-body-sm underline" href={`/rackets/${id}`}>
-          상세로 돌아가기
-        </a>
-      </SiteContainer>
-    );
+    return <RacketSelectionBlockedResult id={id} reasonLabel={reasonLabel} />;
   }
 
   const discountRate = getRacketDiscountRate(doc);
