@@ -192,7 +192,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
           <div className="rounded-panel border border-border/80 bg-card shadow-soft">
             <ResultState
               status="info"
-              icon={<AlertTriangle className="h-5 w-5" />}
+              icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
               title="라켓 발송이 필요하지 않은 신청입니다"
               description="이 신청은 매장 보유 라켓 또는 대여 라켓 기준으로 처리되어 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
               actions={
@@ -201,7 +201,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
                   variant="outline"
                   className="w-full rounded-control sm:w-auto"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
                   마이페이지 진행상태로 돌아가기
                 </Button>
               }
@@ -225,7 +225,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
           <div className="rounded-panel border border-border/80 bg-card shadow-soft">
             <ResultState
               status="warning"
-              icon={<AlertTriangle className="h-5 w-5" />}
+              icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
               title="이미 종료된 신청서입니다"
               description="작업 중 또는 교체완료 상태에서는 운송장을 수정할 수 없습니다."
             />
@@ -395,26 +395,24 @@ function SelfShipForm({
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8 md:py-12">
-      <div className="mx-auto max-w-3xl px-4">
-        <PublicPageHero
-          variant="feature"
-          className="mb-6 px-0 py-0 md:mb-8"
-          eyebrow="자가발송 운송장"
-          title={
-            isLoading
-              ? "라켓 발송 운송장 등록"
-              : isEdit
-                ? "라켓 발송 운송장 수정"
-                : "라켓 발송 운송장 등록"
-          }
-          description={
-            isLoading
-              ? "라켓 발송 정보를 불러오는 중입니다."
-              : "매장으로 보내는 보유 라켓의 택배사와 송장번호를 입력해 주세요."
-          }
-        />
-
+    <div className="min-h-screen bg-background pb-10">
+      <PublicPageHero
+        variant="feature"
+        eyebrow="자가발송 운송장"
+        title={
+          isLoading
+            ? "라켓 발송 운송장 등록"
+            : isEdit
+              ? "라켓 발송 운송장 수정"
+              : "라켓 발송 운송장 등록"
+        }
+        description={
+          isLoading
+            ? "라켓 발송 정보를 불러오는 중입니다."
+            : "매장으로 보내는 보유 라켓의 택배사와 송장번호를 입력해 주세요."
+        }
+      />
+      <div className="mx-auto max-w-3xl px-4 pt-6">
         <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
           <PublicSurface variant="muted" padding="md">
             {isLoading ? (
@@ -468,7 +466,7 @@ function SelfShipForm({
                     htmlFor="courier"
                     className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
-                    <Truck className="w-4 h-4 text-primary" />
+                    <Truck className="w-4 h-4 text-brand-highlight-ink" aria-hidden="true" />
                     택배사
                     <span className="text-destructive">*</span>
                   </Label>
@@ -512,7 +510,7 @@ function SelfShipForm({
                     htmlFor="trackingNo"
                     className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
-                    <FileText className="w-4 h-4 text-foreground" />
+                    <FileText className="w-4 h-4 text-foreground" aria-hidden="true" />
                     송장번호
                     <span className="text-destructive">*</span>
                   </Label>
@@ -534,7 +532,10 @@ function SelfShipForm({
                     htmlFor="shippedAt"
                     className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
-                    <Calendar className="w-4 h-4 text-primary dark:text-foreground" />
+                    <Calendar
+                      className="w-4 h-4 text-brand-highlight-ink dark:text-foreground"
+                      aria-hidden="true"
+                    />
                     발송일
                     <span className="text-ui-label text-muted-foreground font-normal">
                       (선택사항)
@@ -555,7 +556,7 @@ function SelfShipForm({
                     htmlFor="note"
                     className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
-                    <FileText className="w-4 h-4 text-muted-foreground" />
+                    <FileText className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                     메모
                     <span className="text-ui-label text-muted-foreground font-normal">
                       (선택사항)
@@ -589,7 +590,7 @@ function SelfShipForm({
                     disabled={submitting}
                     className="flex-1 h-12 text-ui-body border-border hover:bg-background dark:hover:bg-card"
                   >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
                     돌아가기
                   </Button>
                   <Button
@@ -601,7 +602,7 @@ function SelfShipForm({
                     disabled={submitting}
                     className="flex-1 h-12 text-ui-body border-border hover:bg-background dark:hover:bg-card"
                   >
-                    <Clock className="w-4 h-4 mr-2" />
+                    <Clock className="w-4 h-4 mr-2" aria-hidden="true" />
                     마이페이지로 돌아가기
                   </Button>
                   <Button
@@ -612,12 +613,12 @@ function SelfShipForm({
                   >
                     {submitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
                         저장 중...
                       </>
                     ) : (
                       <>
-                        <Check className="w-4 h-4 mr-2" />
+                        <Check className="w-4 h-4 mr-2" aria-hidden="true" />
                         {submitting ? "저장 중…" : isEdit ? "수정하기" : "저장하기"}
                       </>
                     )}
