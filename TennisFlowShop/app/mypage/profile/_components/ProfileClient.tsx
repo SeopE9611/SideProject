@@ -333,6 +333,7 @@ export default function ProfileClient({ user }: Props) {
   return (
     <div className="min-h-full bg-background">
       <PublicPageHero
+        variant="feature"
         eyebrow="계정 설정"
         title="회원 정보 관리"
         description="계정, 배송지와 테니스 프로필을 한곳에서 안전하게 관리하세요."
@@ -345,7 +346,7 @@ export default function ProfileClient({ user }: Props) {
                 e.preventDefault();
               }}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               마이페이지로 돌아가기
             </Link>
           </Button>
@@ -355,44 +356,46 @@ export default function ProfileClient({ user }: Props) {
       <SiteContainer className="py-8 md:py-12">
         <div className="mx-auto max-w-4xl">
           <Tabs defaultValue="profile" className="space-y-6 md:space-y-8">
-            <PublicSurface padding="sm" className="rounded-panel border-border/80 bg-card shadow-soft">
-              <TabsList className="flex h-auto w-full min-w-max gap-1 overflow-x-auto rounded-control bg-brand-muted/55 p-1 sm:min-w-0 sm:grid sm:grid-cols-5">
-                <TabsTrigger
-                  value="profile"
-                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
-                >
-                  <User className="h-5 w-5" />
-                  <span className="text-ui-label font-medium">기본정보</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="password"
-                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
-                >
-                  <Shield className="h-5 w-5" />
-                  <span className="text-ui-label font-medium">비밀번호</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="address"
-                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
-                >
-                  <MapPin className="h-5 w-5" />
-                  <span className="text-ui-label font-medium">배송지</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="tennis-profile"
-                  className="min-w-24 flex-1 flex-col items-center justify-center gap-1.5 rounded-control px-3 py-3 text-ui-label font-medium data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
-                >
-                  <MdSportsTennis className="h-5 w-5" />
-                  <span className="text-ui-label font-medium">테니스 프로필</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="preferences"
-                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
-                >
-                  <Bell className="h-5 w-5" />
-                  <span className="text-ui-label font-medium">설정</span>
-                </TabsTrigger>
-              </TabsList>
+            <PublicSurface variant="feature" padding="sm">
+              <div className="w-full overflow-x-auto">
+                <TabsList className="flex h-auto min-w-max gap-1 rounded-control bg-brand-muted/55 p-1 sm:grid sm:w-full sm:min-w-0 sm:grid-cols-5">
+                  <TabsTrigger
+                    value="profile"
+                    className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
+                  >
+                    <User className="h-5 w-5" aria-hidden="true" />
+                    <span className="text-ui-label font-medium">기본정보</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="password"
+                    className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
+                  >
+                    <Shield className="h-5 w-5" aria-hidden="true" />
+                    <span className="text-ui-label font-medium">비밀번호</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="address"
+                    className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
+                  >
+                    <MapPin className="h-5 w-5" aria-hidden="true" />
+                    <span className="text-ui-label font-medium">배송지</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="tennis-profile"
+                    className="min-w-24 flex-1 flex-col items-center justify-center gap-1.5 rounded-control px-3 py-3 text-ui-label font-medium data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
+                  >
+                    <MdSportsTennis className="h-5 w-5" aria-hidden="true" />
+                    <span className="text-ui-label font-medium">테니스 프로필</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preferences"
+                    className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
+                  >
+                    <Bell className="h-5 w-5" aria-hidden="true" />
+                    <span className="text-ui-label font-medium">설정</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
             </PublicSurface>
 
             <TabsContent value="profile">
@@ -423,7 +426,7 @@ export default function ProfileClient({ user }: Props) {
                         onClick={() => showInfoToast("해당 기능은 준비 중입니다.")}
                         className="mb-2 border-border hover:bg-secondary"
                       >
-                        <Camera className="mr-2 h-4 w-4" />
+                        <Camera className="mr-2 h-4 w-4" aria-hidden="true" />
                         이미지 변경
                       </Button>
                       <p className="text-ui-body-sm text-muted-foreground">
@@ -435,7 +438,7 @@ export default function ProfileClient({ user }: Props) {
                   <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="flex items-center gap-2 text-foreground">
-                        <User className="h-4 w-4" />
+                        <User className="h-4 w-4" aria-hidden="true" />
                         이름 *
                       </Label>
                       <Input
@@ -469,7 +472,7 @@ export default function ProfileClient({ user }: Props) {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email" className="flex items-center gap-2 text-foreground">
-                        <Mail className="h-4 w-4" />
+                        <Mail className="h-4 w-4" aria-hidden="true" />
                         이메일 *
                       </Label>
                       <Input
@@ -488,7 +491,7 @@ export default function ProfileClient({ user }: Props) {
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="phone" className="flex items-center gap-2 text-foreground">
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-4 w-4" aria-hidden="true" />
                         전화번호
                       </Label>
                       <Input
@@ -510,9 +513,10 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handleSave}
                       disabled={isLoading}
-                      className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
+                      variant="highlight"
+                      className="rounded-control"
                     >
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="mr-2 h-4 w-4" aria-hidden="true" />
                       {isLoading ? "저장 중..." : "저장"}
                     </Button>
                   </div>
@@ -525,7 +529,7 @@ export default function ProfileClient({ user }: Props) {
                 <CardHeader className="border-b border-border/70 bg-brand-muted/35">
                   <div className="flex items-center gap-3">
                     <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
-                      <Shield className="h-6 w-6 text-primary" />
+                      <Shield className="h-6 w-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
                       <CardTitle className="font-brand-heading text-ui-section-title">비밀번호 변경</CardTitle>
@@ -595,9 +599,10 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handlePasswordChange}
                       disabled={isLoading}
-                      className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
+                      variant="highlight"
+                      className="rounded-control"
                     >
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="mr-2 h-4 w-4" aria-hidden="true" />
                       {isLoading ? "변경 중..." : "비밀번호 변경"}
                     </Button>
                   </div>
@@ -610,7 +615,7 @@ export default function ProfileClient({ user }: Props) {
                 <CardHeader className="border-b border-border/70 bg-brand-muted/35">
                   <div className="flex items-center gap-3">
                     <div className="rounded-2xl p-3 border border-border bg-secondary text-foreground">
-                      <MapPin className="h-6 w-6 text-primary" />
+                      <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
                       <CardTitle className="font-brand-heading text-ui-section-title">배송지 관리</CardTitle>
@@ -680,9 +685,10 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handleSave}
                       disabled={isLoading}
-                      className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
+                      variant="highlight"
+                      className="rounded-control"
                     >
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="mr-2 h-4 w-4" aria-hidden="true" />
                       {isLoading ? "저장 중..." : "저장"}
                     </Button>
                   </div>
@@ -700,7 +706,7 @@ export default function ProfileClient({ user }: Props) {
                   <CardHeader className="border-b border-border/70 bg-brand-muted/35">
                     <div className="flex items-center gap-3">
                       <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
-                        <Bell className="h-6 w-6 text-primary" />
+                        <Bell className="h-6 w-6 text-primary" aria-hidden="true" />
                       </div>
                       <div>
                         <CardTitle className="font-brand-heading text-ui-section-title">마케팅 수신 동의</CardTitle>
@@ -787,9 +793,10 @@ export default function ProfileClient({ user }: Props) {
                       <Button
                         onClick={handleSave}
                         disabled={isLoading}
-                        className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
+                        variant="highlight"
+                        className="rounded-control"
                       >
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 h-4 w-4" aria-hidden="true" />
                         {isLoading ? "저장 중..." : "저장"}
                       </Button>
                     </div>
@@ -800,7 +807,7 @@ export default function ProfileClient({ user }: Props) {
                   <CardHeader className="bg-destructive/10 dark:bg-destructive/15 border-b border-destructive/30">
                     <div className="flex items-center gap-3">
                       <div className="bg-destructive/10 dark:bg-destructive/15 text-destructive rounded-2xl p-3 border border-destructive/30">
-                        <AlertTriangle className="h-6 w-6 text-destructive" />
+                        <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden="true" />
                       </div>
                       <div>
                         <CardTitle className="text-ui-section-title text-destructive">
@@ -845,7 +852,7 @@ export default function ProfileClient({ user }: Props) {
                     ) : (
                       <div className="text-center">
                         <div className="bg-destructive/10 dark:bg-destructive/15 border border-destructive/30 rounded-xl p-4 md:p-6 mb-4 md:mb-6">
-                          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" aria-hidden="true" />
                           <h3 className="text-ui-card-title-lg font-semibold text-destructive mb-2">
                             정말로 탈퇴하시겠습니까?
                           </h3>
@@ -859,7 +866,7 @@ export default function ProfileClient({ user }: Props) {
                           onClick={() => setShowWithdrawalForm(true)}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md transition-all duration-200"
                         >
-                          <AlertTriangle className="mr-2 h-4 w-4" />
+                          <AlertTriangle className="mr-2 h-4 w-4" aria-hidden="true" />
                           회원 탈퇴
                         </Button>
                       </div>
