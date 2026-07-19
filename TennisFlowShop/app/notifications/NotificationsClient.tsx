@@ -200,13 +200,14 @@ export default function NotificationsClient() {
   return (
     <div className="min-h-full bg-background">
       <PublicPageHero
+        variant="feature"
         eyebrow="알림 센터"
         title="알림"
         description={`주문, 쪽지, 서비스 진행 안내를 시간순으로 확인하세요 · 읽지 않은 알림 ${unreadCount.toLocaleString()}개`}
         actions={
           <>
             <Button
-              variant="outline"
+              variant="highlight_soft"
               disabled={unreadCount <= 0 || isMarkingAll || isDeletingAll}
               onClick={markAllAsRead}
               className="w-full gap-2 sm:w-auto"
@@ -223,9 +224,9 @@ export default function NotificationsClient() {
             >
               <AlertDialogTrigger asChild>
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   disabled={items.length <= 0 || isDeletingAll}
-                  className="w-full gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
+                  className="w-full gap-2 sm:w-auto"
                 >
                   {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
                   전체 삭제
@@ -242,7 +243,7 @@ export default function NotificationsClient() {
                   <AlertDialogCancel disabled={isDeletingAll}>취소</AlertDialogCancel>
                   <AlertDialogAction
                     disabled={isDeletingAll}
-                    className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="gap-2"
                     onClick={(event) => {
                       event.preventDefault();
                       void deleteAllNotifications();
@@ -258,7 +259,7 @@ export default function NotificationsClient() {
         }
       />
       <SiteContainer className="py-6 md:py-8">
-        <SummaryCard className="mx-auto max-w-5xl" contentClassName="p-0">
+        <SummaryCard variant="feature" className="mx-auto max-w-5xl rounded-panel" contentClassName="p-0">
           {status === "loading" ? (
             <div className="space-y-3 p-3 md:p-5">
               {Array.from({ length: 6 }).map((_, index) => (
