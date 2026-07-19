@@ -129,6 +129,7 @@ export default function ForgotPasswordPage() {
         {!isSubmitted ? (
           <Button
             type="submit"
+            variant="highlight"
             className="h-12 w-full rounded-control font-semibold"
             disabled={isSubmitting || !email.trim()}
           >
