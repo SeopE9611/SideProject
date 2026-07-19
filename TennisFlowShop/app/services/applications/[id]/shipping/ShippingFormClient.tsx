@@ -4,7 +4,7 @@ import type React from "react";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { Button } from "@/components/ui/button";
-import { PublicSurface, ResultState, SummaryCard } from "@/components/public";
+import { PublicPageHero, PublicSurface, ResultState, SummaryCard } from "@/components/public";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
 import { Input } from "@/components/ui/input";
@@ -126,16 +126,24 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
 
   if (error && !data) {
     return (
-      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
-        <AsyncState
-          kind="error"
-          variant="card"
-          resourceName="신청 정보"
-          onAction={() => {
-            void mutate();
-          }}
+      <main className="min-h-screen bg-background pb-10">
+        <PublicPageHero
+          variant="feature"
+          eyebrow="자가발송 운송장"
+          title="라켓 발송 정보를 확인해 주세요"
+          description="매장으로 보내는 보유 라켓의 택배사와 송장번호를 등록합니다."
         />
-      </div>
+        <div className="mx-auto mt-6 max-w-3xl px-4">
+          <AsyncState
+            kind="error"
+            variant="card"
+            resourceName="신청 정보"
+            onAction={() => {
+              void mutate();
+            }}
+          />
+        </div>
+      </main>
     );
   }
 
@@ -173,23 +181,32 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   const isClosed = CLOSED.includes(String(data?.status));
   if (!needsInboundTracking) {
     return (
-      <div className="min-h-screen bg-muted/30 py-8 md:py-12">
-        <div className="mx-auto max-w-3xl px-4">
-          <ResultState
-            status="info"
-            icon={<AlertTriangle className="h-5 w-5" />}
-            title="라켓 발송이 필요하지 않은 신청입니다"
-            description="이 신청은 매장 보유 라켓 또는 대여 라켓 기준으로 처리되어 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
-            actions={
-              <Button
-                onClick={() => router.push(returnTo ?? defaultReturnTo)}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                마이페이지 진행상태로 돌아가기
-              </Button>
-            }
-          />
+      <div className="min-h-screen bg-background pb-10">
+        <PublicPageHero
+          variant="feature"
+          eyebrow="자가발송 운송장"
+          title="라켓 발송 정보를 확인해 주세요"
+          description="매장으로 보내는 보유 라켓의 택배사와 송장번호를 등록합니다."
+        />
+        <div className="mx-auto max-w-3xl px-4 pt-6">
+          <div className="rounded-panel border border-border/80 bg-card shadow-soft">
+            <ResultState
+              status="info"
+              icon={<AlertTriangle className="h-5 w-5" />}
+              title="라켓 발송이 필요하지 않은 신청입니다"
+              description="이 신청은 매장 보유 라켓 또는 대여 라켓 기준으로 처리되어 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
+              actions={
+                <Button
+                  onClick={() => router.push(returnTo ?? defaultReturnTo)}
+                  variant="outline"
+                  className="w-full rounded-control sm:w-auto"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  마이페이지 진행상태로 돌아가기
+                </Button>
+              }
+            />
+          </div>
         </div>
       </div>
     );
@@ -197,14 +214,22 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
 
   if (isClosed) {
     return (
-      <div className="min-h-screen bg-muted/30 py-8 md:py-12">
-        <div className="mx-auto max-w-3xl px-4">
-          <ResultState
-            status="warning"
-            icon={<AlertTriangle className="h-5 w-5" />}
-            title="이미 종료된 신청서입니다"
-            description="작업 중 또는 교체완료 상태에서는 운송장을 수정할 수 없습니다."
-          />
+      <div className="min-h-screen bg-background pb-10">
+        <PublicPageHero
+          variant="feature"
+          eyebrow="자가발송 운송장"
+          title="라켓 발송 정보를 확인해 주세요"
+          description="매장으로 보내는 보유 라켓의 택배사와 송장번호를 등록합니다."
+        />
+        <div className="mx-auto max-w-3xl px-4 pt-6">
+          <div className="rounded-panel border border-border/80 bg-card shadow-soft">
+            <ResultState
+              status="warning"
+              icon={<AlertTriangle className="h-5 w-5" />}
+              title="이미 종료된 신청서입니다"
+              description="작업 중 또는 교체완료 상태에서는 운송장을 수정할 수 없습니다."
+            />
+          </div>
         </div>
       </div>
     );
@@ -372,20 +397,23 @@ function SelfShipForm({
   return (
     <div className="min-h-screen bg-muted/30 py-8 md:py-12">
       <div className="mx-auto max-w-3xl px-4">
-        <header className="mb-6 text-center md:mb-8">
-          <h1 className="text-ui-page-title font-semibold tracking-tight text-foreground sm:text-ui-page-title-lg">
-            {isLoading
+        <PublicPageHero
+          variant="feature"
+          className="mb-6 px-0 py-0 md:mb-8"
+          eyebrow="자가발송 운송장"
+          title={
+            isLoading
               ? "라켓 발송 운송장 등록"
               : isEdit
                 ? "라켓 발송 운송장 수정"
-                : "라켓 발송 운송장 등록"}
-          </h1>
-          <p className="mt-3 text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
-            {isLoading
+                : "라켓 발송 운송장 등록"
+          }
+          description={
+            isLoading
               ? "라켓 발송 정보를 불러오는 중입니다."
-              : "매장으로 보내는 보유 라켓의 택배사와 송장번호를 입력해주세요."}
-          </p>
-        </header>
+              : "매장으로 보내는 보유 라켓의 택배사와 송장번호를 입력해 주세요."
+          }
+        />
 
         <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
           <PublicSurface variant="muted" padding="md">
@@ -408,6 +436,7 @@ function SelfShipForm({
           </PublicSurface>
 
           <SummaryCard
+            variant="feature"
             eyebrow="라켓 발송 정보"
             title="라켓 발송 운송장"
             description="택배사 선택 → 송장번호 입력 → 필요한 경우 발송일과 메모 입력 후 저장해 주세요."
@@ -460,7 +489,7 @@ function SelfShipForm({
                   >
                     <SelectTrigger
                       id="courier"
-                      className={`h-12 text-ui-body focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.courier ? "border-destructive focus:border-destructive" : "border-border focus:border-border"}`}
+                      className={`h-12 rounded-control text-ui-body focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.courier ? "border-destructive focus:border-destructive" : "border-border focus:border-border"}`}
                     >
                       <SelectValue placeholder="택배사를 선택하세요" />
                     </SelectTrigger>
@@ -492,7 +521,7 @@ function SelfShipForm({
                     value={form.trackingNo}
                     onChange={onChange("trackingNo")}
                     placeholder="예: 1234567890"
-                    className={`h-12 text-ui-body focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? "border-destructive focus:border-destructive" : "border-border focus:border-border dark:focus:border-border"}`}
+                    className={`h-12 rounded-control text-ui-body focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? "border-destructive focus:border-destructive" : "border-border focus:border-border dark:focus:border-border"}`}
                   />
                   <p className="min-h-[18px] text-ui-body-sm text-destructive">
                     {fieldErrors.trackingNo ?? ""}
@@ -516,7 +545,7 @@ function SelfShipForm({
                     type="date"
                     value={form.shippedAt ?? ""}
                     onChange={onChange("shippedAt")}
-                    className="h-12 text-ui-body border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring"
+                    className="h-12 rounded-control text-ui-body border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring"
                   />
                 </div>
 
@@ -538,7 +567,7 @@ function SelfShipForm({
                     onChange={onChange("note")}
                     placeholder="포장 상태, 라켓 발송 관련 참고사항 등을 입력해 주세요"
                     rows={4}
-                    className="text-ui-body border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
+                    className="rounded-control text-ui-body border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
                   />
                 </div>
               </div>
@@ -578,7 +607,8 @@ function SelfShipForm({
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 h-12 text-ui-body bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    variant="highlight"
+                    className="flex-1 h-12 rounded-control text-ui-body font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
                       <>

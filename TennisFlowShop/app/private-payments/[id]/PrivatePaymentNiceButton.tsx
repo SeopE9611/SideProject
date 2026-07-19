@@ -68,10 +68,15 @@ export default function PrivatePaymentNiceButton({
   };
   return (
     <div className="space-y-2">
-      <Button className="w-full h-12" disabled={disabled || !ready || loading} onClick={click}>
+      <Button
+        variant="highlight"
+        className="h-12 w-full rounded-control"
+        disabled={disabled || !ready || loading}
+        onClick={click}
+      >
         {loading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
             결제 요청 중...
           </>
         ) : (
