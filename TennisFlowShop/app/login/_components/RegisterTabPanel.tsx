@@ -561,7 +561,7 @@ export default function RegisterTabPanel({
     <TabsContent value="register" className="mt-0">
       <div className="space-y-5">
         <div className="text-center">
-          <h2 className="text-ui-page-title font-semibold text-foreground">회원가입</h2>
+          <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">회원가입</h2>
           <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
             {isSocialOauthRegister
               ? "가입 완료를 위해 필요한 정보만 입력해주세요."
@@ -604,7 +604,7 @@ export default function RegisterTabPanel({
           )}
           <section className="space-y-4">
             <div><p className="text-ui-kicker text-brand-highlight-ink">01 · 계정 정보</p><h3 className="mt-1 text-ui-body-sm font-semibold text-foreground">로그인에 사용할 정보를 입력해주세요.</h3></div>
-          <div className="grid grid-cols-1 gap-4 rounded-panel border border-border bg-card p-4 shadow-sm md:grid-cols-2 md:gap-5 md:p-5">
+          <div className="grid grid-cols-1 gap-4 rounded-panel border border-border bg-card p-4 shadow-soft md:grid-cols-2 md:gap-5 md:p-5">
             <div className="md:col-span-2 space-y-2">
               <Label
                 htmlFor="register-email-id"
@@ -630,7 +630,7 @@ export default function RegisterTabPanel({
                           }));
                         }}
                         placeholder="아이디 입력"
-                        className={`h-12 pl-10 pr-4 ${registerFieldErrors.emailId ? "border-destructive focus:border-destructive" : ""}`}
+                        className={`h-12 rounded-control pl-10 pr-4 ${registerFieldErrors.emailId ? "border-destructive focus:border-destructive" : ""}`}
                         autoComplete="email"
                         disabled={isSocialOauthRegister}
                       />
@@ -653,7 +653,7 @@ export default function RegisterTabPanel({
                             }));
                           }}
                           placeholder="도메인 직접 입력"
-                          className={`h-12 w-full min-w-0 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                          className={`h-12 w-full min-w-0 rounded-control ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
                           disabled={isSocialOauthRegister}
                         />
                         {!isSocialOauthRegister && (
@@ -693,7 +693,7 @@ export default function RegisterTabPanel({
                         >
                           <SelectTrigger
                             id="register-email-domain"
-                            className={`h-12 w-full min-w-0 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                            className={`h-12 w-full min-w-0 rounded-control ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
                           >
                             <SelectValue placeholder="도메인 선택" />
                           </SelectTrigger>
@@ -924,7 +924,7 @@ export default function RegisterTabPanel({
                   value={postalCode}
                   placeholder="우편번호를 입력하세요"
                   readOnly
-                  className="h-12 max-w-none cursor-not-allowed border-border bg-muted sm:max-w-xs"
+                  className="h-12 max-w-none rounded-control cursor-not-allowed border-border bg-muted sm:max-w-xs"
                 />
                 <Button
                   id="register-find-postcode"
@@ -991,6 +991,7 @@ export default function RegisterTabPanel({
 
           <Button
             type="submit"
+            variant={isSocialOauthRegister ? "default" : "highlight"}
             className={
               isSocialOauthRegister
                 ? oauthProvider === "naver"

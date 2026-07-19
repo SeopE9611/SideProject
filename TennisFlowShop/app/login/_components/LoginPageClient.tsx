@@ -32,7 +32,30 @@ function getGuestOrderModeClient(): GuestOrderMode {
 type LoginField = "email" | "password";
 
 function RegisterTabPanelSkeleton() {
-  return <div className="space-y-5" aria-busy="true" aria-live="polite"><p className="sr-only">회원가입 양식을 불러오는 중입니다.</p><Skeleton className="mx-auto h-7 w-24" /><Skeleton className="h-28 w-full rounded-control" /><Skeleton className="h-4 w-full" /><div className="space-y-4 rounded-panel border border-border p-4"><Skeleton className="h-4 w-32" /><Skeleton className="h-12 w-full rounded-control" /><div className="grid gap-4 sm:grid-cols-2"><Skeleton className="h-12 w-full rounded-control" /><Skeleton className="h-12 w-full rounded-control" /></div><Skeleton className="h-12 w-full rounded-control" /></div><div className="space-y-3 rounded-panel border border-border p-4"><Skeleton className="h-4 w-28" /><Skeleton className="h-12 w-full rounded-control" /><Skeleton className="h-12 w-full rounded-control" /></div><Skeleton className="h-12 w-full rounded-control" /></div>; }
+  return (
+    <div className="space-y-5" aria-busy="true" aria-live="polite">
+      <p className="sr-only">회원가입 양식을 불러오는 중입니다.</p>
+      <Skeleton className="mx-auto h-7 w-24" />
+      <Skeleton className="h-28 w-full rounded-control" />
+      <Skeleton className="h-4 w-full" />
+      <div className="space-y-4 rounded-panel border border-border p-4">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-12 w-full rounded-control" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Skeleton className="h-12 w-full rounded-control" />
+          <Skeleton className="h-12 w-full rounded-control" />
+        </div>
+        <Skeleton className="h-12 w-full rounded-control" />
+      </div>
+      <div className="space-y-3 rounded-panel border border-border p-4">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-12 w-full rounded-control" />
+        <Skeleton className="h-12 w-full rounded-control" />
+      </div>
+      <Skeleton className="h-12 w-full rounded-control" />
+    </div>
+  );
+}
 
 const RegisterTabPanel = dynamic(() => import("@/app/login/_components/RegisterTabPanel"), {
   loading: () => <RegisterTabPanelSkeleton />,
@@ -294,7 +317,7 @@ export default function LoginPageClient() {
           <TabsContent value="login" forceMount className="mt-0">
             <div className="space-y-4">
               <div className="text-center">
-                <h2 className="text-ui-page-title font-semibold text-foreground">로그인</h2>
+                <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">로그인</h2>
                 <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                   간편 로그인 또는 이메일로 계속 진행하세요.
                 </p>
@@ -437,6 +460,7 @@ export default function LoginPageClient() {
 
                 <Button
                   type="submit"
+                  variant="highlight"
                   className="h-12 w-full rounded-control font-semibold"
                   disabled={loginLoading}
                   data-cy="login-submit"
