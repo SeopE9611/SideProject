@@ -334,8 +334,8 @@ export default function ProfileClient({ user }: Props) {
     <div className="min-h-full bg-background">
       <PublicPageHero
         eyebrow="계정 설정"
-        title="회원정보 수정"
-        description="개인정보를 안전하게 관리하세요"
+        title="회원 정보 관리"
+        description="계정, 배송지와 테니스 프로필을 한곳에서 안전하게 관리하세요."
         actions={
           <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
             <Link
@@ -355,39 +355,39 @@ export default function ProfileClient({ user }: Props) {
       <SiteContainer className="py-8 md:py-12">
         <div className="mx-auto max-w-4xl">
           <Tabs defaultValue="profile" className="space-y-6 md:space-y-8">
-            <PublicSurface padding="sm">
-              <TabsList className="grid h-auto w-full grid-cols-2 bg-muted p-1 sm:grid-cols-5">
+            <PublicSurface padding="sm" className="rounded-panel border-border/80 bg-card shadow-soft">
+              <TabsList className="flex h-auto w-full min-w-max gap-1 overflow-x-auto rounded-control bg-brand-muted/55 p-1 sm:min-w-0 sm:grid sm:grid-cols-5">
                 <TabsTrigger
                   value="profile"
-                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
                 >
                   <User className="h-5 w-5" />
                   <span className="text-ui-label font-medium">기본정보</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="password"
-                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
                 >
                   <Shield className="h-5 w-5" />
                   <span className="text-ui-label font-medium">비밀번호</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="address"
-                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
                 >
                   <MapPin className="h-5 w-5" />
                   <span className="text-ui-label font-medium">배송지</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="tennis-profile"
-                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-ui-label font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
+                  className="min-w-24 flex-1 flex-col items-center justify-center gap-1.5 rounded-control px-3 py-3 text-ui-label font-medium data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
                 >
                   <MdSportsTennis className="h-5 w-5" />
                   <span className="text-ui-label font-medium">테니스 프로필</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="preferences"
-                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                  className="min-w-24 flex-1 flex-col items-center gap-1.5 rounded-control px-3 py-3 data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft"
                 >
                   <Bell className="h-5 w-5" />
                   <span className="text-ui-label font-medium">설정</span>
@@ -396,14 +396,14 @@ export default function ProfileClient({ user }: Props) {
             </PublicSurface>
 
             <TabsContent value="profile">
-              <Card className="border border-border shadow-sm bg-card">
-                <CardHeader className="bg-muted border-b">
+              <Card className="rounded-panel border-border/80 bg-card shadow-soft">
+                <CardHeader className="border-b border-border/70 bg-brand-muted/35">
                   <div className="flex items-center gap-3">
-                    <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
-                      <User className="h-6 w-6 text-primary" />
+                    <div className="rounded-control border border-brand-highlight/20 bg-brand-muted p-3 text-brand-highlight-ink">
+                      <User className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="text-ui-section-title">기본정보</CardTitle>
+                      <CardTitle className="font-brand-heading text-ui-section-title">기본정보</CardTitle>
                       <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
                     </div>
                   </div>
@@ -447,7 +447,7 @@ export default function ProfileClient({ user }: Props) {
                             name: e.target.value,
                           })
                         }
-                        className="h-12 border-border focus:border-border dark:focus:border-border"
+                        className="h-12 rounded-control border-border"
                         placeholder="이름을 입력해주세요"
                       />
                       {/* 소셜 가입/연동 제공자 표시 (표시용) */}
@@ -482,7 +482,7 @@ export default function ProfileClient({ user }: Props) {
                             email: e.target.value,
                           })
                         }
-                        className="h-12 border-border focus:border-border dark:focus:border-border"
+                        className="h-12 rounded-control border-border"
                         placeholder="example@naver.com"
                       />
                     </div>
@@ -500,7 +500,7 @@ export default function ProfileClient({ user }: Props) {
                             phone: e.target.value,
                           })
                         }
-                        className="h-12 border-border focus:border-border dark:focus:border-border"
+                        className="h-12 rounded-control border-border"
                         placeholder="01012345678"
                       />
                     </div>
@@ -510,7 +510,7 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handleSave}
                       disabled={isLoading}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
+                      className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "저장 중..." : "저장"}
@@ -521,14 +521,14 @@ export default function ProfileClient({ user }: Props) {
             </TabsContent>
 
             <TabsContent value="password">
-              <Card className="border border-border shadow-sm bg-card">
-                <CardHeader className="bg-muted border-b">
+              <Card className="rounded-panel border-border/80 bg-card shadow-soft">
+                <CardHeader className="border-b border-border/70 bg-brand-muted/35">
                   <div className="flex items-center gap-3">
                     <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
                       <Shield className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-ui-section-title">비밀번호 변경</CardTitle>
+                      <CardTitle className="font-brand-heading text-ui-section-title">비밀번호 변경</CardTitle>
                       <CardDescription>
                         보안을 위해 정기적으로 비밀번호를 변경해주세요.
                       </CardDescription>
@@ -550,7 +550,7 @@ export default function ProfileClient({ user }: Props) {
                           currentPassword: e.target.value,
                         })
                       }
-                      className="h-12 border-border focus:border-border dark:focus:border-border"
+                        className="h-12 rounded-control border-border"
                     />
                   </div>
                   <div className="space-y-2">
@@ -567,7 +567,7 @@ export default function ProfileClient({ user }: Props) {
                           newPassword: e.target.value,
                         })
                       }
-                      className="h-12 border-border focus:border-border dark:focus:border-border"
+                        className="h-12 rounded-control border-border"
                     />
                     <p className="text-ui-body-sm text-muted-foreground">
                       8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)
@@ -587,7 +587,7 @@ export default function ProfileClient({ user }: Props) {
                           confirmPassword: e.target.value,
                         })
                       }
-                      className="h-12 border-border focus:border-border dark:focus:border-border"
+                        className="h-12 rounded-control border-border"
                     />
                   </div>
 
@@ -595,7 +595,7 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handlePasswordChange}
                       disabled={isLoading}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
+                      className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "변경 중..." : "비밀번호 변경"}
@@ -606,14 +606,14 @@ export default function ProfileClient({ user }: Props) {
             </TabsContent>
 
             <TabsContent value="address">
-              <Card className="border border-border shadow-sm bg-card">
-                <CardHeader className="bg-muted border-b">
+              <Card className="rounded-panel border-border/80 bg-card shadow-soft">
+                <CardHeader className="border-b border-border/70 bg-brand-muted/35">
                   <div className="flex items-center gap-3">
                     <div className="rounded-2xl p-3 border border-border bg-secondary text-foreground">
                       <MapPin className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-ui-section-title">배송지 관리</CardTitle>
+                      <CardTitle className="font-brand-heading text-ui-section-title">배송지 관리</CardTitle>
                       <CardDescription>기본 배송지 정보를 관리할 수 있습니다.</CardDescription>
                     </div>
                   </div>
@@ -629,13 +629,13 @@ export default function ProfileClient({ user }: Props) {
                           id="postalCode"
                           value={profileData.address.postalCode}
                           readOnly
-                          className="h-12 bg-muted text-muted-foreground cursor-default"
+                          className="h-12 rounded-control bg-muted text-muted-foreground cursor-default"
                           placeholder="12345"
                         />
                         <Button
                           type="button"
                           onClick={handleAddressSearch}
-                          className="h-12 px-6 bg-background border-border text-foreground hover:bg-secondary"
+                          className="h-12 rounded-control px-6"
                           variant="outline"
                         >
                           검색
@@ -651,7 +651,7 @@ export default function ProfileClient({ user }: Props) {
                       id="address1"
                       value={profileData.address.address1}
                       readOnly
-                      className="h-12 bg-muted text-muted-foreground cursor-default"
+                      className="h-12 rounded-control bg-muted text-muted-foreground cursor-default"
                       placeholder="주소 검색 버튼을 클릭해주세요"
                     />
                   </div>
@@ -671,7 +671,7 @@ export default function ProfileClient({ user }: Props) {
                           },
                         })
                       }
-                      className="h-12 border-border focus:border-border dark:focus:border-border"
+                      className="h-12 rounded-control border-border"
                       placeholder="동, 호수 등 상세주소"
                     />
                   </div>
@@ -680,7 +680,7 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handleSave}
                       disabled={isLoading}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
+                      className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "저장 중..." : "저장"}
@@ -696,14 +696,14 @@ export default function ProfileClient({ user }: Props) {
 
             <TabsContent value="preferences">
               <div className="space-y-6 md:space-y-8">
-                <Card className="border border-border shadow-sm bg-card">
-                  <CardHeader className="bg-muted border-b">
+                <Card className="rounded-panel border-border/80 bg-card shadow-soft">
+                  <CardHeader className="border-b border-border/70 bg-brand-muted/35">
                     <div className="flex items-center gap-3">
                       <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
                         <Bell className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-ui-section-title">마케팅 수신 동의</CardTitle>
+                        <CardTitle className="font-brand-heading text-ui-section-title">마케팅 수신 동의</CardTitle>
                         <CardDescription>
                           마케팅 정보 수신 방법을 선택할 수 있습니다.
                         </CardDescription>
@@ -711,7 +711,7 @@ export default function ProfileClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
-                    <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+                    <div className="flex items-center justify-between gap-4 rounded-control bg-brand-muted/45 p-4">
                       <div>
                         <Label htmlFor="email-marketing" className="font-medium text-foreground">
                           이메일 수신
@@ -735,7 +735,7 @@ export default function ProfileClient({ user }: Props) {
                       />
                     </div>
                     <Separator />
-                    <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+                    <div className="flex items-center justify-between gap-4 rounded-control bg-brand-muted/45 p-4">
                       <div>
                         <Label htmlFor="sms-marketing" className="font-medium text-foreground">
                           SMS 수신
@@ -759,7 +759,7 @@ export default function ProfileClient({ user }: Props) {
                       />
                     </div>
                     <Separator />
-                    <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+                    <div className="flex items-center justify-between gap-4 rounded-control bg-brand-muted/45 p-4">
                       <div>
                         <Label htmlFor="push-marketing" className="font-medium text-foreground">
                           앱 푸시 알림
@@ -787,7 +787,7 @@ export default function ProfileClient({ user }: Props) {
                       <Button
                         onClick={handleSave}
                         disabled={isLoading}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
+                        className="rounded-control bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
                       >
                         <Save className="mr-2 h-4 w-4" />
                         {isLoading ? "저장 중..." : "저장"}
@@ -796,7 +796,7 @@ export default function ProfileClient({ user }: Props) {
                   </CardContent>
                 </Card>
 
-                <Card className="border border-destructive/30 shadow-sm bg-card">
+                <Card className="rounded-panel border border-destructive/30 bg-card shadow-soft">
                   <CardHeader className="bg-destructive/10 dark:bg-destructive/15 border-b border-destructive/30">
                     <div className="flex items-center gap-3">
                       <div className="bg-destructive/10 dark:bg-destructive/15 text-destructive rounded-2xl p-3 border border-destructive/30">

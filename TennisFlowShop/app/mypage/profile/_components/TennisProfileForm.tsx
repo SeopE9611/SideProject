@@ -338,14 +338,14 @@ export default function TennisProfileForm() {
   };
 
   return (
-    <Card className="border border-border shadow-sm bg-card">
-      <CardHeader className="bg-muted border-b">
+    <Card className="rounded-panel border-border/80 bg-card shadow-soft">
+      <CardHeader className="border-b border-border/70 bg-brand-muted/35">
         <div className="flex items-center gap-3">
-          <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
-            <MdSportsTennis className="h-5 w-5 text-primary" />
+          <div className="rounded-control border border-brand-highlight/20 bg-brand-muted p-3 text-brand-highlight-ink">
+            <MdSportsTennis className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <CardTitle className="text-ui-section-title">테니스 프로필</CardTitle>
+            <CardTitle className="font-brand-heading text-ui-section-title">테니스 프로필</CardTitle>
             <CardDescription>
               사용하는 라켓과 스트링, 플레이 스타일을 설정하면 커뮤니티에서 프로필 카드로
               보여집니다.
@@ -354,7 +354,7 @@ export default function TennisProfileForm() {
         </div>
       </CardHeader>
 
-      <CardContent className="p-8 space-y-8">
+      <CardContent className="space-y-8 p-5 md:p-8">
         {isLoading ? (
           <div className="space-y-6">
             <div className="space-y-3">
@@ -390,7 +390,7 @@ export default function TennisProfileForm() {
                     value={profile.level}
                     onValueChange={(value) => updateField("level", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-control">
                       <SelectValue placeholder="NTRP를 선택해주세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -415,7 +415,7 @@ export default function TennisProfileForm() {
                     value={profile.hand}
                     onValueChange={(value) => updateField("hand", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-control">
                       <SelectValue placeholder="오른손 / 왼손" />
                     </SelectTrigger>
                     <SelectContent>
@@ -433,7 +433,7 @@ export default function TennisProfileForm() {
                     value={profile.playStyle}
                     onValueChange={(value) => updateField("playStyle", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-control">
                       <SelectValue placeholder="플레이 스타일 선택" />
                     </SelectTrigger>
                     <SelectContent>
@@ -554,7 +554,7 @@ export default function TennisProfileForm() {
             </div>
 
             {/* 5. 공개 여부 */}
-            <div className="flex items-center justify-between rounded-xl bg-muted dark:bg-card/40 px-4 py-3">
+            <div className="flex items-center justify-between gap-4 rounded-control bg-brand-muted/45 px-4 py-3">
               <div className="space-y-0.5">
                 <p className="text-ui-body-sm font-medium text-foreground">
                   커뮤니티에서 테니스 프로필 공개
@@ -571,7 +571,7 @@ export default function TennisProfileForm() {
 
             {/* 저장 버튼 */}
             <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={isSaving} className="px-6">
+              <Button onClick={handleSave} disabled={isSaving} className="rounded-control bg-brand-highlight px-6 text-brand-highlight-foreground hover:bg-brand-highlight/90">
                 {isSaving ? "저장 중..." : "저장"}
               </Button>
             </div>

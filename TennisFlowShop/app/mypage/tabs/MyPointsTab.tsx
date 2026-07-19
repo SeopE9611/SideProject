@@ -49,7 +49,7 @@ const fmt = (n: number) => new Intl.NumberFormat("ko-KR").format(n);
 const PointsSummarySkeleton = () => (
   <div className="grid gap-3 bp-sm:gap-5 bp-md:grid-cols-2 bp-lg:grid-cols-3">
     {Array.from({ length: 3 }).map((_, idx) => (
-      <Card key={`points-summary-skeleton-${idx}`} className="border-0">
+      <Card key={`points-summary-skeleton-${idx}`} className="rounded-panel border-border/80 shadow-soft">
         <CardContent className="space-y-3 p-4 bp-sm:p-5">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-8 w-28" />
@@ -63,7 +63,7 @@ const PointsSummarySkeleton = () => (
 const PointsListSkeleton = ({ count = 5 }: { count?: number }) => (
   <div className="space-y-2 px-4 py-4">
     {Array.from({ length: count }).map((_, idx) => (
-      <div key={`points-list-skeleton-${idx}`} className="rounded-lg border border-border/60 p-4">
+      <div key={`points-list-skeleton-${idx}`} className="rounded-control border border-border/60 p-4">
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="mt-2 h-3 w-1/2" />
       </div>
@@ -153,15 +153,12 @@ export default function MyPointsTab() {
       {!isInitialLoading && (
         <>
           <div className="grid gap-3 bp-sm:gap-5 bp-md:grid-cols-2 bp-lg:grid-cols-3">
-            <Card className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md text-foreground">
-              <div className="absolute inset-0 bg-overlay/5 group-hover:bg-overlay/10 transition-colors duration-300" />
-              <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
-              <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
+            <Card className="group relative overflow-hidden rounded-panel border border-brand-highlight/30 bg-brand-muted/55 shadow-soft transition-shadow hover:shadow-md text-foreground">
 
               <CardContent className="relative p-4 bp-sm:p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="bg-card/20 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-                    <Coins className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
+                  <div className="rounded-control bg-brand-highlight p-2 text-brand-highlight-foreground">
+                    <Coins className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" aria-hidden="true" />
                   </div>
                   {stats.recentTrend !== 0 && (
                     <Badge
@@ -179,8 +176,8 @@ export default function MyPointsTab() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-ui-label font-medium text-primary">보유 포인트</p>
-                  <p className="text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold tracking-normal">
+                  <p className="text-ui-label font-medium text-brand-highlight-ink">보유 포인트</p>
+                  <p className="font-brand-heading text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold tracking-normal text-brand-highlight-ink">
                     {pointsBalance === null ? "-" : `${fmt(pointsBalance)}P`}
                   </p>
                   {typeof pointsDebt === "number" && pointsDebt > 0 && pointsBalance !== null && (
@@ -195,13 +192,13 @@ export default function MyPointsTab() {
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md">
+            <Card className="group relative overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft transition-shadow hover:shadow-md">
               <div className="absolute inset-0 bg-muted/30 group-hover:opacity-80 transition-opacity duration-300" />
 
               <CardContent className="relative p-4 bp-sm:p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="bg-muted/30 rounded-lg p-2 shadow-md">
-                    <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
+                    <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" aria-hidden="true" />
                   </div>
                   <TrendingUp className="h-4 w-4 text-primary opacity-50" />
                 </div>
@@ -209,7 +206,7 @@ export default function MyPointsTab() {
                   <p className="text-ui-label font-medium text-muted-foreground">
                     적립 포인트 (이번 페이지)
                   </p>
-                  <p className="text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-primary">
+                  <p className="font-brand-heading text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-success">
                     +{fmt(stats.earned)}
                   </p>
                   <p className="text-ui-label text-muted-foreground">전체 기준</p>
@@ -217,7 +214,7 @@ export default function MyPointsTab() {
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md bp-md:col-span-2 bp-lg:col-span-1">
+            <Card className="group relative overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft transition-shadow hover:shadow-md bp-md:col-span-2 bp-lg:col-span-1">
               <div className="absolute inset-0 bg-muted/30 group-hover:opacity-80 transition-opacity duration-300" />
 
               <CardContent className="relative p-4 bp-sm:p-5">
@@ -231,7 +228,7 @@ export default function MyPointsTab() {
                   <p className="text-ui-label font-medium text-muted-foreground">
                     사용 포인트 (이번 페이지)
                   </p>
-                  <p className="text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-destructive">
+                  <p className="font-brand-heading text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-destructive">
                     -{fmt(stats.spent)}
                   </p>
                   <p className="text-ui-label text-muted-foreground">전체 기준</p>
@@ -240,15 +237,15 @@ export default function MyPointsTab() {
             </Card>
           </div>
 
-          <Card className="overflow-hidden border border-border bg-card shadow-sm">
-            <CardHeader className="border-b border-border bg-muted/30 p-4 bp-sm:p-5 bp-md:p-6">
+          <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
+            <CardHeader className="border-b border-border/70 bg-brand-muted/30 p-4 bp-sm:p-5 bp-md:p-6">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-3">
                   <div className="bg-muted/30 rounded-xl p-2.5 shadow-md">
                     <Calendar className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">
+                    <CardTitle className="font-brand-heading text-ui-card-title-lg bp-sm:text-ui-section-title">
                       포인트 내역
                     </CardTitle>
                     <p className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground mt-0.5">
@@ -292,7 +289,7 @@ export default function MyPointsTab() {
                         <div className="flex items-start gap-3 bp-sm:gap-4 flex-1 min-w-0">
                           <div className="shrink-0 rounded-xl p-2 bp-sm:p-2.5 shadow-sm bg-muted/30">
                             {it.amount >= 0 ? (
-                              <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
+                              <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" aria-hidden="true" />
                             ) : (
                               <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-destructive" />
                             )}
@@ -301,7 +298,7 @@ export default function MyPointsTab() {
                           <div className="flex-1 min-w-0 space-y-1.5 bp-sm:space-y-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span
-                                className={`text-ui-body bp-sm:text-ui-card-title-lg font-semibold tabular-nums ${it.amount >= 0 ? "text-primary" : "text-destructive"}`}
+                                className={`text-ui-body bp-sm:text-ui-card-title-lg font-semibold tabular-nums ${it.amount >= 0 ? "text-success" : "text-destructive"}`}
                               >
                                 {it.amount >= 0 ? "+" : ""}
                                 {fmt(it.amount)}P
