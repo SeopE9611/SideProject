@@ -1,32 +1,30 @@
 "use client";
 
-import { FormEvent, useEffect, useState, useRef, ChangeEvent, useMemo } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { MessageSquare, ArrowLeft, Loader2, Upload, X, AlertTriangle } from "lucide-react";
-import useSWR, { mutate as globalMutate } from "swr";
-import type { MouseEvent as ReactMouseEvent } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import type { CommunityPost } from "@/lib/types/community";
+import { CATEGORY_OPTIONS } from "@/app/board/gear/_components/FreeBoardWriteClient";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { CommunityBoardEditLoadingShell } from "@/components/system/CommunityBoardEditLoadingShell";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase";
-import { CATEGORY_OPTIONS } from "@/app/board/gear/_components/FreeBoardWriteClient";
-import SiteContainer from "@/components/layout/SiteContainer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { communityFetch } from "@/lib/community/communityFetch.client";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
-import { communityFetch } from "@/lib/community/communityFetch.client";
+import { supabase } from "@/lib/supabase";
+import type { CommunityPost } from "@/lib/types/community";
+import { cn } from "@/lib/utils";
+import { AlertTriangle, ArrowLeft, Loader2, MessageSquare, Upload, X } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { MouseEvent as ReactMouseEvent } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import useSWR, { mutate as globalMutate } from "swr";
 
 type Props = {
   id: string;
@@ -289,7 +287,6 @@ export default function FreeBoardEditClient({ id }: Props) {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(clientSeenDate ? { "If-Unmodified-Since": clientSeenDate } : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -299,7 +296,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       if (res.status === 409 && json?.error === "conflict") {
         setConflictOpen(true);
         setErrorMsg(
-          "다른 사용자가 먼저 글을 수정했습니다. 최신 글을 다시 불러온 뒤 변경 사항을 병합해 주세요.",
+          "게시물이 수정 화면을 연 이후 변경되었거나 이전 저장 요청이 이미 반영되었을 수 있습니다. 최신 글을 다시 불러온 뒤 확인해 주세요.",
         );
         return;
       }
@@ -613,8 +610,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <div className="rounded-panel border border-border bg-brand-highlight-muted/35 px-4 py-4 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                   <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
                   <p className="mt-1">
-                    최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해
-                    주세요.
+                    최신 글을 다시 불러오면 현재 입력 중인 변경 내용은 최신 저장본으로 교체됩니다.
+                    필요한 내용은 먼저 복사해 두세요.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button
@@ -622,9 +619,72 @@ export default function FreeBoardEditClient({ id }: Props) {
                       variant="outline"
                       size="sm"
                       onClick={async () => {
-                        await mutate();
-                        setConflictOpen(false);
-                        setErrorMsg(null);
+                        const confirmed = window.confirm(
+                          "최신 글을 다시 불러오면 현재 입력한 수정 내용이 사라집니다. 계속하시겠습니까?",
+                        );
+
+                        if (!confirmed) return;
+
+                        try {
+                          const latest = await mutate();
+
+                          if (!latest || !latest.ok) {
+                            setErrorMsg(
+                              "최신 글을 다시 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                            );
+                            return;
+                          }
+
+                          const item = latest.item;
+
+                          const nextTitle = item.title ?? "";
+                          const nextContent = item.content ?? "";
+                          const nextImages = Array.isArray(item.images) ? item.images : [];
+                          const nextCategory = ((item.category as any) ?? "racket") as any;
+
+                          const nextAttachments = Array.isArray(item.attachments)
+                            ? (item.attachments as AttachmentItem[])
+                            : [];
+
+                          let nextClientSeenDate: string | null = null;
+
+                          if (item.updatedAt) {
+                            const parsedUpdatedAt = new Date(item.updatedAt);
+
+                            if (!Number.isNaN(parsedUpdatedAt.getTime())) {
+                              nextClientSeenDate = parsedUpdatedAt.toISOString();
+                            }
+                          }
+
+                          setTitle(nextTitle);
+                          setContent(nextContent);
+                          setImages(nextImages);
+                          setCategory(nextCategory);
+                          setAttachments(nextAttachments);
+                          setClientSeenDate(nextClientSeenDate);
+
+                          baselineRef.current = {
+                            title: nextTitle,
+                            content: nextContent,
+                            category: String(nextCategory),
+                            imagesJson: JSON.stringify(nextImages),
+                          };
+
+                          setSelectedFiles([]);
+
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = "";
+                          }
+
+                          setConflictOpen(false);
+                          setErrorMsg(null);
+                        } catch (error) {
+                          console.error("최신 장비 사용기 글 재조회 실패", error);
+
+                          setErrorMsg(
+                            "최신 글을 다시 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                          );
+                        }
                       }}
                     >
                       최신 글 다시 불러오기
@@ -635,7 +695,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       size="sm"
                       onClick={() => setConflictOpen(false)}
                     >
-                      병합 안내만 닫기
+                      충돌 안내 닫기
                     </Button>
                   </div>
                 </div>

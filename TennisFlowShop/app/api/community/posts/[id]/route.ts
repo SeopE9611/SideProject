@@ -1,23 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getDb } from "@/lib/mongodb";
-import { logInfo, reqMeta, startTimer } from "@/lib/logger";
-import { verifyCommunityCsrf } from "@/lib/community/security";
-import type { CommunityBoardType, CommunityPost } from "@/lib/types/community";
-import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from "@/lib/types/community";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
 import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
 import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
-import { normalizeMarketMeta } from "@/lib/market";
 import { resolveCommunityDisplayName } from "@/lib/community-display-name";
 import {
   COMMUNITY_BOARDS_ENABLED,
   communityBoardClosedResponse,
 } from "@/lib/community/community-board-policy";
+import { verifyCommunityCsrf } from "@/lib/community/security";
+import { logInfo, reqMeta, startTimer } from "@/lib/logger";
+import { normalizeMarketMeta } from "@/lib/market";
+import { getDb } from "@/lib/mongodb";
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
+import type { CommunityBoardType, CommunityPost } from "@/lib/types/community";
+import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from "@/lib/types/community";
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
@@ -337,14 +337,13 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const body = parsed.data;
 
-  // 낙관적 동시성 제어를 위한 클라이언트 기준 시각 추출
-  // - 헤더: If-Unmodified-Since
-  // - 바디: clientSeenDate (권장), ifUnmodifiedSince (하위 호환)
-  const ifUnmodifiedSinceHeader = req.headers.get("if-unmodified-since");
+  // 클라이언트가 마지막으로 확인한 updatedAt을 JSON body에서 추출
+  // clientSeenDate는 현재 규격이고,
+  // ifUnmodifiedSince는 기존 요청과의 하위 호환용이다.
   const clientSeenDateBody = (json as any)?.clientSeenDate;
   const ifUnmodifiedSinceBody = (json as any)?.ifUnmodifiedSince;
-  const clientSeenAtRaw =
-    clientSeenDateBody ?? ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader ?? null;
+
+  const clientSeenAtRaw = clientSeenDateBody ?? ifUnmodifiedSinceBody ?? null;
 
   let clientSeenDate: Date | null = null;
   if (typeof clientSeenAtRaw === "string") {
