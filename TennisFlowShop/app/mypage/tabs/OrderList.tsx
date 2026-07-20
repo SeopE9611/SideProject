@@ -1,6 +1,10 @@
 "use client";
 
-import { getCustomerOrderStatusLabel } from "@/app/mypage/_lib/flow-display";
+import {
+  getCustomerOrderPaymentStatusLabel,
+  getCustomerOrderStatusLabel,
+  getCustomerStringingSubmissionLabel,
+} from "@/app/mypage/_lib/flow-display";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { StackedCardListSkeleton } from "@/components/system/loading";
@@ -17,14 +21,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from "@/lib/badge-style";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import {
   isOrderCanceledStatus,
   isOrderConfirmedStatus,
   isOrderDeliveredStatus,
   isOrderRefundedStatus,
 } from "@/lib/status/flow-status";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowRight,
@@ -91,7 +95,9 @@ interface Order {
   reviewNextTargetProductId?: string | null;
   reviewNextApplicationId?: string | null;
   reviewContext?: string | null;
-
+  paymentStatus: string;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
   // 주문 취소 요청 상태/사유(목록 카드용)
   cancelStatus?: string;
   cancelReasonSummary?: string | null;
@@ -378,6 +384,21 @@ export default function OrderList() {
         const hasSubmittedStringingApplication =
           hasLinkedApplication || order.isStringServiceApplied === true || usedSlots > 0;
 
+        // 주문별 표시값 계산
+        const paymentStatusLabel = getCustomerOrderPaymentStatusLabel({
+          paymentStatus: order.paymentStatus,
+          paymentMethod: order.paymentMethod,
+          paymentProvider: order.paymentProvider,
+          totalPrice: order.totalPrice,
+        });
+
+        const stringingSubmissionLabel = getCustomerStringingSubmissionLabel({
+          withStringService: order.shippingInfo?.withStringService,
+          hasSubmittedApplication: hasSubmittedStringingApplication,
+        });
+
+        const isBankTransferWaiting = paymentStatusLabel === "입금 확인 대기";
+
         const stringServiceCTAKind: "apply" | "add" | "done" | null =
           isOrderTerminalCanceled || !order.shippingInfo?.withStringService
             ? null
@@ -414,12 +435,16 @@ export default function OrderList() {
             : order.cancelStatus === "requested"
               ? "취소 요청 확인을 기다려주세요."
               : stringServiceCTAHref
-                ? "교체서비스 신청을 이어갈 수 있어요."
+                ? isBankTransferWaiting
+                  ? "입금과 교체서비스 신청서 작성을 완료해주세요."
+                  : "교체서비스 신청을 이어갈 수 있어요."
                 : isReviewStatusConfirmed
                   ? confirmedOrderReviewLabel
-                  : ["결제완료", "처리중", "배송중"].includes(order.status)
-                    ? "주문 진행 상황이 변경되면 이곳에서 안내됩니다."
-                    : "상세에서 주문 진행 내용을 확인할 수 있어요.";
+                  : isBankTransferWaiting
+                    ? "안내된 계좌로 주문 금액을 입금해주세요."
+                    : ["결제완료", "처리중", "배송중"].includes(order.status)
+                      ? "주문 진행 상황이 변경되면 이곳에서 안내됩니다."
+                      : "상세에서 주문 진행 내용을 확인할 수 있어요.";
 
         return (
           <Card
@@ -462,12 +487,20 @@ export default function OrderList() {
                   </Badge>
 
                   {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
-                  {order.stringingApplicationId ? (
+                  {order.shippingInfo?.withStringService ? (
                     <Badge
-                      variant={getWorkflowMetaBadgeSpec("application_linked").variant}
-                      className="shrink-0 rounded-md px-2 py-0.5 text-ui-micro font-semibold"
+                      variant={
+                        getWorkflowMetaBadgeSpec(
+                          hasSubmittedStringingApplication
+                            ? "application_linked"
+                            : "action_required",
+                        ).variant
+                      }
+                      className="shrink-0 whitespace-nowrap rounded-md px-2 py-0.5 text-ui-micro font-semibold"
                     >
-                      신청서 연결됨
+                      {hasSubmittedStringingApplication
+                        ? "교체서비스 접수 완료"
+                        : "신청서 작성 필요"}
                     </Badge>
                   ) : null}
 
@@ -483,7 +516,13 @@ export default function OrderList() {
                 </div>
               </div>
 
-              <div className="mb-4 grid grid-cols-1 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-sm:grid-cols-3">
+              <div className="mb-4 grid grid-cols-1 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                  <p className="text-ui-micro font-medium text-muted-foreground">결제 상태</p>
+                  <p className="mt-1 break-keep text-ui-body-sm font-semibold text-foreground">
+                    {paymentStatusLabel}
+                  </p>
+                </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <p className="text-ui-micro font-medium text-muted-foreground">결제 금액</p>
                   <p className="mt-1 truncate text-ui-body-sm font-semibold tabular-nums text-foreground">
@@ -492,10 +531,11 @@ export default function OrderList() {
                       : "정보 없음"}
                   </p>
                 </div>
+
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <p className="text-ui-micro font-medium text-muted-foreground">교체서비스</p>
                   <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
-                    {order.shippingInfo?.withStringService ? "포함" : "미포함"}
+                    {stringingSubmissionLabel}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">

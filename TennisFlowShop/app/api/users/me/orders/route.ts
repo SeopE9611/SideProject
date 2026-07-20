@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-import clientPromise from "@/lib/mongodb";
-import { cookies } from "next/headers";
+import { LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES, LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES } from "@/lib/admin/linked-flow-stage";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import clientPromise from "@/lib/mongodb";
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { resolveOrderReviewTargetBundlesBatch } from "@/lib/reviews/review-target.server";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity 방지)
@@ -49,6 +50,8 @@ type OrderDoc = {
   paymentStatus?: string;
   paymentInfo?: {
     status?: string;
+    method?: string;
+    provider?: string;
   };
   history?: any[];
 };
@@ -69,6 +72,9 @@ type OrderListItem = {
   }>;
   shippingInfo: any;
   paymentStatus: string;
+  paymentMethod: string | null;
+  paymentProvider: string | null;
+
   // 리뷰 관련
   reviewAllDone: boolean;
   unreviewedCount: number;
@@ -222,7 +228,17 @@ export async function GET(req: NextRequest) {
         {
           userId,
           orderId: { $in: orderIds },
-          status: { $nin: ["draft", "취소"] },
+          status: {
+            $nin: [...LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES],
+          },
+          $or: [
+            { "cancelRequest.status": { $exists: false } },
+            {
+              "cancelRequest.status": {
+                $nin: [...LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES],
+              },
+            },
+          ],
         },
         {
           projection: {
@@ -336,6 +352,14 @@ export async function GET(req: NextRequest) {
           withStringService: Boolean(order.shippingInfo?.withStringService),
         },
         paymentStatus: resolveOrderPaymentStatus(order),
+        paymentMethod:
+          typeof order.paymentInfo?.method === "string" && order.paymentInfo.method.trim()
+            ? order.paymentInfo.method.trim()
+            : null,
+        paymentProvider:
+          typeof order.paymentInfo?.provider === "string" && order.paymentInfo.provider.trim()
+            ? order.paymentInfo.provider.trim()
+            : null,
 
         reviewAllDone,
         unreviewedCount,

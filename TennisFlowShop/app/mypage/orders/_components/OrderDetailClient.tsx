@@ -6,11 +6,12 @@ import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
 import {
   getCustomerApplicationStatusLabel,
   getCustomerNextActionCopy,
-  getCustomerOrderStatusLabel,
-  getCustomerPaymentStatusLabel,
+  getCustomerOrderPaymentStatusLabel,
+  getCustomerStringingSubmissionLabel,
+  isCustomerBankTransferPayment,
 } from "@/app/mypage/_lib/flow-display";
-import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import OrderDetailSkeleton from "@/app/mypage/orders/_components/OrderDetailSkeleton";
+import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -37,10 +38,10 @@ import {
   shouldShowDeliveryOnlyFields,
 } from "@/lib/order-shipping";
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
+import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { isOrderConfirmedStatus, isOrderDeliveredStatus } from "@/lib/status/flow-status";
-import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { CheckCircle, ChevronDown, CreditCard, ShoppingCart, Truck } from "lucide-react";
@@ -260,7 +261,12 @@ type OrderTrackingResponse =
   | {
       success: false;
       errorCode?:
-        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
 
@@ -550,12 +556,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   // 이 주문과 연결된 신청서 요약 리스트
   const linkedStringingApps = orderDetail?.stringingApplications ?? [];
   const hasLinkedStringingApps = linkedStringingApps.length > 0;
+
   const hasSubmittedStringingApplication =
-    hasLinkedStringingApps ||
-    Boolean(orderDetail?.stringingApplicationId) ||
-    orderDetail?.isStringServiceApplied === true;
+    Boolean(orderDetail?.stringingApplicationId) || orderDetail?.isStringServiceApplied === true;
   const serviceLinkedOrder =
     Boolean(orderDetail?.shippingInfo?.withStringService) || hasSubmittedStringingApplication;
+  const stringingSubmissionLabel = getCustomerStringingSubmissionLabel({
+    withStringService: serviceLinkedOrder,
+    hasSubmittedApplication: hasSubmittedStringingApplication,
+  });
 
   // 리뷰/링크에 사용할 대표 신청 ID
   // - API 계약: stringingApplicationId는 최신 신청서(updatedAt/createdAt desc)
@@ -631,34 +640,42 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   const normalizedPaymentStatus = rawPaymentStatus.toLowerCase();
   const paymentLabel = getCommonOrderStatusLabel(rawPaymentStatus) ?? rawPaymentStatus;
 
-  const receivedDone = Boolean(orderDetail?.date);
-  const paymentDone = paymentDoneKeywords.some(
-    (keyword) => normalizedPaymentStatus.includes(keyword) || paymentLabel.includes(keyword),
-  );
+  const normalizedTotalPrice = Number(orderDetail.total);
+  const isZeroPaymentOrder = Number.isFinite(normalizedTotalPrice) && normalizedTotalPrice <= 0;
 
-  // 결제대기 무통장 여부 변수
-  const normalizedPaymentMethod = String(orderDetail?.paymentMethod ?? "")
-    .trim()
-    .toLowerCase();
+  const paymentDone =
+    isZeroPaymentOrder ||
+    paymentDoneKeywords.some(
+      (keyword) => normalizedPaymentStatus.includes(keyword) || paymentLabel.includes(keyword),
+    );
 
-  const isBankTransferPayment =
-    normalizedPaymentMethod.includes("무통장") ||
-    normalizedPaymentMethod.includes("bank") ||
-    normalizedPaymentMethod.includes("deposit");
+  const isBankTransferPayment = isCustomerBankTransferPayment({
+    paymentMethod: orderDetail.paymentMethod,
+    paymentProvider: orderDetail.paymentProvider,
+    totalPrice: orderDetail.total,
+  });
 
   const isPaymentWaiting = isBankTransferPayment && !paymentDone && !isOrderCanceled;
 
+  const customerPaymentStatusLabel = getCustomerOrderPaymentStatusLabel({
+    paymentStatus: orderDetail.paymentStatus,
+    paymentMethod: orderDetail.paymentMethod,
+    paymentProvider: orderDetail.paymentProvider,
+    totalPrice: orderDetail.total,
+  });
   const depositorName = orderDetail.shippingInfo?.depositor?.trim();
 
-  const customerPaymentMethodLabel = isBankTransferPayment
-    ? "무통장입금"
-    : orderDetail.paymentEasyPayProvider
-      ? `${orderDetail.paymentEasyPayProvider} 간편결제`
-      : orderDetail.paymentCardDisplayName ||
-        orderDetail.paymentCardLabel ||
-        orderDetail.paymentCardCompany ||
-        orderDetail.paymentMethod ||
-        "결제수단 확인 중";
+  const customerPaymentMethodLabel = isZeroPaymentOrder
+    ? "결제 불필요"
+    : isBankTransferPayment
+      ? "무통장입금"
+      : orderDetail.paymentEasyPayProvider
+        ? `${orderDetail.paymentEasyPayProvider} 간편결제`
+        : orderDetail.paymentCardDisplayName ||
+          orderDetail.paymentCardLabel ||
+          orderDetail.paymentCardCompany ||
+          orderDetail.paymentMethod ||
+          "결제수단 확인 중";
 
   const paymentApprovedAtLabel = orderDetail.paymentApprovedAt
     ? formatDateTime(orderDetail.paymentApprovedAt)
@@ -783,7 +800,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               }),
             }
           : null;
-  const customerStatusLabel = getCustomerOrderStatusLabel(displayOrderStatusLabel);
+  const heroStatusTitle = serviceLinkedOrder
+    ? `${customerPaymentStatusLabel} · 교체서비스 ${stringingSubmissionLabel}`
+    : customerPaymentStatusLabel;
   const nextActionCopy = getCustomerNextActionCopy({
     hasTodo: Boolean(nextTodo),
     todoLabel: nextTodo?.label,
@@ -918,7 +937,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             shippingMethod={orderDetail.shippingInfo}
           />
         }
-        statusTitle={customerStatusLabel}
+        statusTitle={heroStatusTitle}
         identifier={`주문번호: #${orderId.slice(-6).toUpperCase()}`}
         summary={
           <>
@@ -928,6 +947,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               value={formatCurrency(orderDetail.total)}
               valueClassName="text-brand-highlight-ink"
             />
+            <MypageInfoField label="결제 상태" value={customerPaymentStatusLabel} />
+            {serviceLinkedOrder ? (
+              <MypageInfoField label="교체서비스" value={stringingSubmissionLabel} />
+            ) : null}
             <MypageInfoField label="배송/수령" value={shippingMethodLabel} />
           </>
         }
@@ -1382,10 +1405,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   <div className="min-w-0 flex-1">
                     <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
                     {(() => {
-                      const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
+                      const pay = getPaymentStatusBadgeSpec(
+                        isZeroPaymentOrder ? "결제완료" : orderDetail.paymentStatus,
+                      );
                       return (
                         <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                          {getCustomerPaymentStatusLabel(orderDetail.paymentStatus)}
+                          {customerPaymentStatusLabel}
                         </Badge>
                       );
                     })()}
@@ -1411,7 +1436,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
                       {isPaymentWaiting ? (
                         <p className="mt-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                          입금 확인 후 주문과 교체서비스 작업이 진행됩니다.
+                          {serviceLinkedOrder
+                            ? "입금 확인 후 주문과 교체서비스 작업이 진행됩니다."
+                            : "입금 확인 후 상품 준비가 진행됩니다."}
                         </p>
                       ) : null}
                     </div>

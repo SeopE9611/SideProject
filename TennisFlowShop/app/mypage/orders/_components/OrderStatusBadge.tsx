@@ -1,11 +1,12 @@
 "use client";
 
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec } from "@/lib/badge-style";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
+import useSWR from "swr";
+import { getCustomerOrderStatusLabel } from "../../_lib/flow-display";
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((res) => res.json());
 
@@ -34,10 +35,11 @@ export function OrderStatusBadge({ orderId, initialStatus, shippingMethod }: Pro
     ? getOrderStatusLabelForDisplay(baseLabel, shippingMethod)
     : "배송준비중";
 
+  const customerDisplayLabel = getCustomerOrderStatusLabel(displayLabel);
   const spec = getOrderStatusBadgeSpec(data?.status);
   return (
     <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>
-      {displayLabel}
+      {customerDisplayLabel}
     </Badge>
   );
 }

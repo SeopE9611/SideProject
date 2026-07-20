@@ -7,10 +7,10 @@ const normalize = (value?: string | null) => String(value ?? "").trim();
 const lower = (value?: string | null) => normalize(value).toLowerCase();
 
 const CUSTOMER_ORDER_STATUS_LABELS: Record<string, string> = {
-  pending: "결제 또는 입금 확인 대기",
-  대기중: "결제 또는 입금 확인 대기",
-  paid: "결제 확인 완료",
-  결제완료: "결제 확인 완료",
+  pending: "주문 접수",
+  대기중: "주문 접수",
+  paid: "상품 준비 대기",
+  결제완료: "상품 준비 대기",
   processing: "상품 준비 중",
   preparing: "상품 준비 중",
   처리중: "상품 준비 중",
@@ -130,6 +130,87 @@ export function getCustomerPaymentStatusLabel(status?: string | null) {
   const base = getMypagePaymentStatusLabel(raw);
   return CUSTOMER_PAYMENT_STATUS_LABELS[lower(raw)] ?? CUSTOMER_PAYMENT_STATUS_LABELS[base] ?? base;
 }
+
+// 목록, 상세의 단일 표시 기준
+export type CustomerOrderPaymentStatusParams = {
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
+  totalPrice?: number | null;
+};
+
+const compactPaymentToken = (value?: string | null) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+
+export function isCustomerBankTransferPayment({
+  paymentMethod,
+  paymentProvider,
+  totalPrice,
+}: Omit<CustomerOrderPaymentStatusParams, "paymentStatus">) {
+  const hasTotalPrice = totalPrice !== null && totalPrice !== undefined;
+  const normalizedTotalPrice = Number(totalPrice);
+
+  if (hasTotalPrice && Number.isFinite(normalizedTotalPrice) && normalizedTotalPrice <= 0) {
+    return false;
+  }
+
+  const providerToken = compactPaymentToken(paymentProvider);
+  const methodToken = compactPaymentToken(paymentMethod);
+
+  const isOnlinePaymentProvider = ["nicepay", "toss", "tosspayments"].includes(providerToken);
+
+  return (
+    !isOnlinePaymentProvider &&
+    (methodToken.includes("무통장") ||
+      methodToken.includes("banktransfer") ||
+      methodToken.includes("manualbanktransfer") ||
+      methodToken.includes("deposit"))
+  );
+}
+
+export function getCustomerOrderPaymentStatusLabel({
+  paymentStatus,
+  paymentMethod,
+  paymentProvider,
+  totalPrice,
+}: CustomerOrderPaymentStatusParams) {
+  const hasTotalPrice = totalPrice !== null && totalPrice !== undefined;
+  const normalizedTotalPrice = Number(totalPrice);
+
+  if (hasTotalPrice && Number.isFinite(normalizedTotalPrice) && normalizedTotalPrice <= 0) {
+    return "결제 불필요";
+  }
+
+  const statusToken = compactPaymentToken(paymentStatus);
+  const isBankTransfer = isCustomerBankTransferPayment({
+    paymentMethod,
+    paymentProvider,
+    totalPrice,
+  });
+
+  const isPaid = ["paid", "결제완료", "paymentcompleted"].includes(statusToken);
+  const isPending =
+    !statusToken || ["pending", "결제대기", "대기중", "paymentpending"].includes(statusToken);
+
+  if (isPaid) return "결제 완료";
+  if (isBankTransfer && isPending) return "입금 확인 대기";
+  if (isPending) return "결제 확인 대기";
+
+  return getCustomerPaymentStatusLabel(paymentStatus);
+}
+
+export function getCustomerStringingSubmissionLabel(params: {
+  withStringService?: boolean;
+  hasSubmittedApplication?: boolean;
+}) {
+  if (params.hasSubmittedApplication) return "접수 완료";
+  if (params.withStringService) return "신청서 작성 필요";
+  return "미포함";
+}
+// 목록, 상세의 단일 표시 기준 끝
 
 export function getCustomerNextActionCopy(params: {
   hasTodo: boolean;

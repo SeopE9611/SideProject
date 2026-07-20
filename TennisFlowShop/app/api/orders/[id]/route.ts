@@ -69,6 +69,31 @@ const customerSchema = z.object({
     }),
 });
 
+// 공통 판별
+function resolveOrderPaymentStatus(order: any): string {
+  const topLevelStatus = String(order?.paymentStatus ?? "").trim();
+
+  if (topLevelStatus) {
+    return topLevelStatus;
+  }
+
+  const paymentInfoStatus = String(order?.paymentInfo?.status ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (paymentInfoStatus === "pending") return "결제대기";
+  if (paymentInfoStatus === "paid") return "결제완료";
+  if (paymentInfoStatus === "failed") return "결제실패";
+
+  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled") {
+    return "결제취소";
+  }
+
+  if (paymentInfoStatus === "refunded") return "환불완료";
+
+  return "결제대기";
+}
+
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
@@ -744,7 +769,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           trackingNumber: order.shippingInfo?.invoice?.trackingNumber ?? null,
         },
       },
-      paymentStatus: order.paymentStatus || "결제대기",
+      paymentStatus: resolveOrderPaymentStatus(order),
       paymentMethod: order.paymentInfo?.method ?? "결제방법 없음",
       paymentProvider: order.paymentInfo?.provider ?? null,
       paymentApprovedAt: toNullableIsoString(order.paymentInfo?.approvedAt),
