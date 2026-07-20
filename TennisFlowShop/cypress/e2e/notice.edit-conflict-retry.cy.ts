@@ -43,7 +43,7 @@ describe("공지사항 수정 동시 수정 충돌(409) 재시도 UX", () => {
     cy.wait("@patchConflict");
 
     cy.contains(
-      "다른 사용자 수정 발생: 최신 글을 다시 불러온 뒤 변경 내용을 반영해 주세요.",
+      "게시물이 수정 화면을 연 이후 변경되었거나 이전 저장 요청이 이미 반영되었을 수 있습니다. 최신 내용을 다시 불러온 뒤 확인해 주세요.",
     ).should("be.visible");
     cy.contains("button", "다시 불러오기").should("be.visible");
 

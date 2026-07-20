@@ -511,36 +511,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     });
   }
 
-  // 스토리지 파일 삭제 (옵션)
-  if (removedPaths.length > 0) {
-    const { error: delErr } = await supabaseAdmin.storage.from(STORAGE_BUCKET).remove(removedPaths);
-
-    if (delErr) {
-      // 실패해도 DB 업데이트는 진행할지 여부는 정책 결정
-      logError({
-        msg: "boards:patch:storage_remove_failed",
-        status: 200,
-        docId: id,
-        userId: String(payload.sub),
-        durationMs: stop(),
-        extra: { removedPaths },
-        error: delErr,
-        ...meta,
-      });
-      // 실패 시 요청 자체를 막으려면 아래 주석을 해제:
-      // return NextResponse.json({ ok: false, error: 'storage_remove_failed' }, { status: 500 });
-    }
-  }
-
   // === 낙관적 락(updatedAt 매칭) + 재조회 반환 시작 ===
 
-  // 0) 클라이언트가 마지막으로 본 updatedAt(선택) 추출
-  //    - 헤더: If-Unmodified-Since
-  //    - 바디: clientSeenDate (권장), ifUnmodifiedSince (하위 호환)
   // 클라이언트가 마지막으로 확인한 updatedAt을 JSON body에서 추출
+  // clientSeenDate는 현재 규격이고,
+  // ifUnmodifiedSince는 기존 요청과의 하위 호환용이다.
   const clientSeenDateBody = (bodyRaw as any)?.clientSeenDate;
 
-  // 기존 클라이언트 요청과의 호환용
   const ifUnmodifiedSinceBody = (bodyRaw as any)?.ifUnmodifiedSince;
 
   const clientSeenAtRaw = clientSeenDateBody ?? ifUnmodifiedSinceBody ?? null;
@@ -616,6 +593,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       { ok: false, version: API_VERSION, error: "not_found" },
       { status: 404 },
     );
+  }
+
+  // 스토리지 파일 삭제 (옵션)
+  if (removedPaths.length > 0) {
+    const { error: delErr } = await supabaseAdmin.storage.from(STORAGE_BUCKET).remove(removedPaths);
+
+    if (delErr) {
+      // 실패해도 DB 업데이트는 진행할지 여부는 정책 결정
+      logError({
+        msg: "boards:patch:storage_remove_failed",
+        status: 200,
+        docId: id,
+        userId: String(payload.sub),
+        durationMs: stop(),
+        extra: { removedPaths },
+        error: delErr,
+        ...meta,
+      });
+    }
   }
 
   // console.log('[PATCH boards: update matchedCount]', r.matchedCount);
