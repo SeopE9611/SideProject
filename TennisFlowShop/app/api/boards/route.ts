@@ -809,6 +809,7 @@ export async function POST(req: NextRequest) {
     status: "published",
     viewCount: 0,
     createdAt: now,
+    updatedAt: now,
   };
 
   const r = await db.collection<BoardCreateMongoDoc>("board_posts").insertOne(doc);

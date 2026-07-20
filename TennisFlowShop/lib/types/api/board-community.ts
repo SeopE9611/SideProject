@@ -1,8 +1,8 @@
-import type { ObjectId } from "mongodb";
-import type { BoardType, QnaCategory } from "@/lib/types/board";
 import type { BoardListItem } from "@/lib/boards.queries";
-import type { CommunityBoardType } from "@/lib/types/community";
 import type { MarketMeta } from "@/lib/market";
+import type { BoardType, QnaCategory } from "@/lib/types/board";
+import type { CommunityBoardType } from "@/lib/types/community";
+import type { ObjectId } from "mongodb";
 
 export type AccessTokenPayload = {
   sub?: string;
@@ -108,4 +108,5 @@ export interface BoardCreateMongoDoc {
   status: "published";
   viewCount: number;
   createdAt: Date;
+  updatedAt: Date;
 }

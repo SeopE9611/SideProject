@@ -1,20 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { ObjectId } from "mongodb";
-import { getDb } from "@/lib/mongodb";
-import { verifyAccessToken } from "@/lib/auth.utils";
-import { z } from "zod";
-import { supabaseAdmin } from "@/lib/supabase-admin";
-import { sanitizeHtml } from "@/lib/sanitize";
-import { logError, logInfo, reqMeta, startTimer } from "@/lib/logger";
-import { verifyCommunityCsrf } from "@/lib/community/security";
-import { API_VERSION } from "@/lib/board.repository";
-import { baseCookie } from "@/lib/cookieOptions";
-import { createHash } from "crypto";
-import { resolveBoardViewerContext } from "@/lib/board-secret-policy";
-import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
 import { requireAdmin } from "@/lib/admin.guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { resolveBoardViewerContext } from "@/lib/board-secret-policy";
+import { API_VERSION } from "@/lib/board.repository";
+import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
+import { verifyCommunityCsrf } from "@/lib/community/security";
+import { logError, logInfo, reqMeta, startTimer } from "@/lib/logger";
+import { getDb } from "@/lib/mongodb";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { createHash } from "crypto";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = "tennis-images";
@@ -538,11 +537,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // 0) 클라이언트가 마지막으로 본 updatedAt(선택) 추출
   //    - 헤더: If-Unmodified-Since
   //    - 바디: clientSeenDate (권장), ifUnmodifiedSince (하위 호환)
-  const ifUnmodifiedSinceHeader = req.headers.get("if-unmodified-since");
+  // 클라이언트가 마지막으로 확인한 updatedAt을 JSON body에서 추출
   const clientSeenDateBody = (bodyRaw as any)?.clientSeenDate;
+
+  // 기존 클라이언트 요청과의 호환용
   const ifUnmodifiedSinceBody = (bodyRaw as any)?.ifUnmodifiedSince;
-  const clientSeenAtRaw =
-    clientSeenDateBody ?? ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader ?? null;
+
+  const clientSeenAtRaw = clientSeenDateBody ?? ifUnmodifiedSinceBody ?? null;
 
   let clientSeenDate: Date | null = null;
   if (typeof clientSeenAtRaw === "string") {

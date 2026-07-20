@@ -28,11 +28,11 @@ import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowLeft,
-  Megaphone,
   ChevronLeft,
   ChevronRight,
   FileText,
   ImageIcon,
+  Megaphone,
   Pin,
   Tags,
   Upload,
@@ -529,7 +529,6 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
         method,
         headers: {
           "Content-Type": "application/json",
-          ...(editId && clientSeenDate ? { "If-Unmodified-Since": clientSeenDate } : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -545,7 +544,8 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
       if (!res.ok || !json?.ok) {
         if (res.status === 409 && json?.error === "conflict") {
           const conflictMsg =
-            "다른 사용자 수정 발생: 최신 글을 다시 불러온 뒤 변경 내용을 반영해 주세요.";
+            "게시물이 수정 화면을 연 이후 변경되었거나 이전 저장 요청이 이미 반영되었을 수 있습니다. 최신 내용을 다시 불러온 뒤 확인해 주세요.";
+
           setConflictError(conflictMsg);
           showErrorToast(conflictMsg);
           return;
@@ -649,10 +649,75 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   size="sm"
                   onClick={async () => {
                     if (!editId) return;
-                    await mutate(`/api/boards/${editId}`);
-                    router.refresh();
-                    showSuccessToast("최신 내용을 다시 불러왔습니다.");
-                    setConflictError(null);
+
+                    const confirmed = window.confirm(
+                      "최신 내용을 다시 불러오면 현재 입력한 수정 내용이 사라집니다. 계속하시겠습니까?",
+                    );
+
+                    if (!confirmed) return;
+
+                    try {
+                      const latest = (await mutate(`/api/boards/${editId}`)) as
+                        | NoticeDetailRes
+                        | undefined;
+
+                      if (!latest?.item) {
+                        throw new Error("최신 공지 내용을 불러오지 못했습니다.");
+                      }
+
+                      const p = latest.item;
+                      const code = NOTICE_CODE_BY_LABEL[p.category ?? ""] ?? "general";
+                      const nextCategory = fixedCategoryCode ?? code;
+
+                      const nextAttachments = Array.isArray(p.attachments)
+                        ? p.attachments.map((attachment: any) => ({
+                            url: String(attachment.url),
+                            name: attachment.name,
+                            size: attachment.size,
+                          }))
+                        : [];
+
+                      let nextClientSeenDate: string | null = null;
+
+                      if (p.updatedAt) {
+                        const parsedUpdatedAt = new Date(p.updatedAt);
+
+                        if (!Number.isNaN(parsedUpdatedAt.getTime())) {
+                          nextClientSeenDate = parsedUpdatedAt.toISOString();
+                        }
+                      }
+
+                      setTitle(p.title ?? "");
+                      setContent(p.content ?? "");
+                      setIsPinned(Boolean(p.isPinned));
+                      setCategory(nextCategory);
+                      setExistingAttachments(nextAttachments);
+                      setClientSeenDate(nextClientSeenDate);
+
+                      setSelectedFiles([]);
+                      setRemovedPaths([]);
+
+                      initialRef.current = {
+                        title: p.title ?? "",
+                        content: p.content ?? "",
+                        category: nextCategory,
+                        isPinned: Boolean(p.isPinned),
+                        existingUrls: nextAttachments.map((attachment) => attachment.url),
+                      };
+
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+
+                      setConflictError(null);
+                      showSuccessToast("최신 내용을 다시 불러왔습니다.");
+                    } catch (error) {
+                      showErrorToast(
+                        error instanceof Error
+                          ? error.message
+                          : "최신 내용을 다시 불러오지 못했습니다.",
+                      );
+                    }
                   }}
                 >
                   다시 불러오기
