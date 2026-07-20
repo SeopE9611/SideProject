@@ -299,7 +299,7 @@ export default function LoginPageClient() {
               priority
             />
           </span>
-          <span>도깨비테니스 계정</span>
+          <span>도깨비테니스</span>
         </span>
       }
       description="로그인 또는 회원가입을 선택해 계속 진행하세요"
