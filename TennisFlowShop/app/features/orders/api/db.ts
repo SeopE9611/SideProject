@@ -1,5 +1,6 @@
 // 주문 관련 DB 작업 전용 유틸
 import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
+import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-stage";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
@@ -158,6 +159,10 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         date: order.createdAt,
         status: normalizeOrderStatus((order as any)?.status),
         paymentStatus: normalizePaymentStatus(paymentStatusRaw),
+        paymentMethod:
+          typeof (order as any)?.paymentInfo?.method === "string"
+            ? (order as any).paymentInfo.method
+            : null,
         paymentProvider:
           typeof (order as any)?.paymentInfo?.provider === "string"
             ? (order as any).paymentInfo.provider
@@ -239,6 +244,8 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           createdAt: 1,
           status: 1,
           paymentStatus: 1,
+          paymentMethod: 1,
+          paymentInfo: 1,
           customer: 1,
           userSnapshot: 1,
           guestName: 1,
@@ -349,7 +356,22 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           userId: app.userId ? app.userId.toString() : null, // 비회원 null 허용
           date: app.createdAt,
           status: app.status,
-          paymentStatus: normalizePaymentStatus(app.paymentStatus ?? "결제대기"),
+          paymentStatus: normalizePaymentStatus(
+            app.paymentStatus ?? app.paymentInfo?.status ?? "결제대기",
+          ),
+          paymentMethod:
+            typeof app.paymentInfo?.method === "string"
+              ? app.paymentInfo.method
+              : typeof app.paymentMethod === "string"
+                ? app.paymentMethod
+                : null,
+          paymentProvider:
+            typeof app.paymentInfo?.provider === "string" ? app.paymentInfo.provider : null,
+          paymentInfo: {
+            provider:
+              typeof app.paymentInfo?.provider === "string" ? app.paymentInfo.provider : null,
+            status: typeof app.paymentInfo?.status === "string" ? app.paymentInfo.status : null,
+          },
           type: "서비스",
           total: totalFromDoc ?? totalCalculated,
           items,
@@ -384,8 +406,17 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
   const orderIds = new Set(orders.map((order) => order.id));
   const appsByOrderId = new Map<string, any[]>();
 
-  for (const app of stringingOrders as any[]) {
-    if (!app?.linkedOrderId || !orderIds.has(app.linkedOrderId)) continue;
+  const activeLinkedStringingOrders = (stringingOrders as any[]).filter(
+    (app) =>
+      Boolean(app?.linkedOrderId) &&
+      isApplicationEligibleForLinkedStage({
+        status: app?.status,
+        cancelRequestStatus: app?.cancelStatus,
+      }),
+  );
+
+  for (const app of activeLinkedStringingOrders) {
+    if (!app.linkedOrderId || !orderIds.has(app.linkedOrderId)) continue;
 
     const linkedApps = appsByOrderId.get(app.linkedOrderId) ?? [];
     linkedApps.push(app);

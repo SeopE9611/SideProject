@@ -1,7 +1,6 @@
 "use client";
 
 import CustomerTypeFilter from "@/app/features/orders/components/order-filters/CustomerTypeFilter";
-import { DateFilter } from "@/app/features/orders/components/order-filters/DateFilter";
 import { OrderStatusFilter } from "@/app/features/orders/components/order-filters/OrderStatusFilter";
 import { OrderTypeFilter } from "@/app/features/orders/components/order-filters/OrderTypeFilter";
 import { PaymentStatusFilter } from "@/app/features/orders/components/order-filters/PaymentStatusFilter";
@@ -10,9 +9,9 @@ import ApplicationStatusBadge from "@/app/features/stringing-applications/compon
 import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { AdminBadgeRow } from "@/components/admin/AdminBadgeRow";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -37,10 +36,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
 import {
   badgeBase,
   badgeSizeSm,
-  badgeToneVariant,
   flowBadgeClass,
   getOrderStatusBadgeSpec,
   getShippingMethodBadge,
@@ -52,7 +51,6 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { shortenId } from "@/lib/shorten";
-import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import type { ApiResponse, OrderWithType } from "@/lib/types/order";
@@ -380,14 +378,41 @@ export default function OrdersClient() {
     return { primary, details };
   }
 
-  function getOrderNextAction(order: OrderWithType, isLinkedProductOrder: boolean) {
+  function getOrderNextAction(
+    order: OrderWithType,
+    context: {
+      isLinkedProductOrder: boolean;
+      needsStringingApplication: boolean;
+      paymentState: ReturnType<typeof getAdminOrderPaymentState>;
+    },
+  ) {
+    const { isLinkedProductOrder, needsStringingApplication, paymentState } = context;
+
     if (order.cancelStatus === "requested") return "취소 처리";
     if (needsOrderCancelFinalization(order)) return "취소 후처리하기";
-    if (order.paymentStatus === "결제대기") return "결제 확인하기";
-    if (isLinkedProductOrder) return "작업 확인하기";
+
+    if (paymentState.actionLabel && needsStringingApplication) {
+      return paymentState.kind === "bank_pending" ? "입금·신청서 확인" : "결제·신청서 확인";
+    }
+
+    if (paymentState.actionLabel) {
+      return paymentState.actionLabel;
+    }
+
+    if (needsStringingApplication) {
+      return "신청서 접수 확인";
+    }
+
+    if (isLinkedProductOrder) {
+      return "교체 작업 확인";
+    }
+
     const tracking = getTrackingBadge(order);
-    if (tracking.label.includes("미등록") || tracking.label.includes("없음"))
+
+    if (tracking.label.includes("미등록") || tracking.label.includes("없음")) {
       return "배송 등록하기";
+    }
+
     return "상세 보기";
   }
 
@@ -1046,6 +1071,21 @@ export default function OrdersClient() {
                     const isLinkedProductOrder =
                       order.__type === "order" &&
                       (hasStringingAppInGroup || (order as any).hasStringingApplication === true);
+
+                    // 각 행의 상태 계산
+                    const expectsStringingApplication =
+                      order.__type === "order" && order.shippingInfo?.withStringService === true;
+
+                    const needsStringingApplication =
+                      expectsStringingApplication && !isLinkedProductOrder;
+
+                    const paymentState = getAdminOrderPaymentState({
+                      paymentStatus: order.paymentStatus,
+                      paymentMethod: order.paymentMethod,
+                      paymentProvider: order.paymentProvider,
+                      totalPrice: order.total,
+                    });
+
                     const isIntegratedApp =
                       order.__type === "stringing_application" &&
                       !!order.linkedOrderId &&
@@ -1078,7 +1118,11 @@ export default function OrdersClient() {
                       : "배송 정보 등록";
                     const cancelQuickSignal = getCancelQuickSignal(order);
                     const productSummary = getProductServiceSummary(order, linkedApplication);
-                    const nextActionLabel = getOrderNextAction(order, isLinkedProductOrder);
+                    const nextActionLabel = getOrderNextAction(order, {
+                      isLinkedProductOrder,
+                      needsStringingApplication,
+                      paymentState,
+                    });
                     const detailHref =
                       order.__type === "stringing_application"
                         ? `/admin/applications/stringing/${order.id}`
@@ -1406,11 +1450,13 @@ export default function OrdersClient() {
                                       )}
                                     </Badge>
                                   )}
+
                                   {needsCancelFinalization && (
                                     <span className="text-ui-label text-destructive">
                                       결제는 취소되었지만 주문 후처리가 완료되지 않았습니다.
                                     </span>
                                   )}
+
                                   {hasCancelRequest && (
                                     <Badge
                                       className={cn(
@@ -1422,6 +1468,25 @@ export default function OrdersClient() {
                                       취소요청
                                     </Badge>
                                   )}
+
+                                  {isLinkedProductOrder && linkedApplication?.status ? (
+                                    <div className="mt-1 flex flex-wrap items-center gap-1">
+                                      <span className="text-ui-micro font-medium text-muted-foreground">
+                                        교체서비스
+                                      </span>
+                                      <ApplicationStatusBadge status={linkedApplication.status} />
+                                    </div>
+                                  ) : needsStringingApplication ? (
+                                    <Badge
+                                      className={cn(
+                                        badgeBase,
+                                        badgeSizeSm,
+                                        "mt-1 whitespace-nowrap border border-warning/30 bg-warning/10 text-warning",
+                                      )}
+                                    >
+                                      교체 신청서 미접수
+                                    </Badge>
+                                  ) : null}
                                 </div>
                               );
                             })()
@@ -1493,9 +1558,8 @@ export default function OrdersClient() {
                               })()}
                             </div>
                             <div className="mt-1.5 flex w-full items-baseline justify-end gap-3 tabular-nums">
-                              <span className="text-ui-label text-foreground/70">
-                                {getCommonPaymentStatusLabel(order.paymentStatus) ??
-                                  order.paymentStatus}
+                              <span className="text-ui-label font-medium text-foreground/75">
+                                {paymentState.label}
                               </span>
                               <span className="whitespace-nowrap text-ui-body-sm font-medium text-foreground">
                                 {formatCurrency(order.total)}

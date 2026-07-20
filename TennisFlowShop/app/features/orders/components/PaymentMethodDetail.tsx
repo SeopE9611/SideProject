@@ -1,5 +1,6 @@
 import { bankLabelMap } from "@/lib/constants";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
+import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 
 interface PaymentMethodDetailProps {
   method: string;
@@ -12,6 +13,7 @@ interface PaymentMethodDetailProps {
   paymentCardDisplayName?: string | null;
   paymentCardCompany?: string | null;
   paymentCardLabel?: string | null;
+  paymentStatusLabel?: string | null;
   paymentNiceSync?: {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
@@ -36,6 +38,7 @@ export default function PaymentMethodDetail({
   paymentCardCompany,
   paymentCardLabel,
   paymentNiceSync,
+  paymentStatusLabel,
 }: PaymentMethodDetailProps) {
   const isTossPayment =
     String(paymentProvider ?? "")
@@ -56,7 +59,11 @@ export default function PaymentMethodDetail({
     bank: bankKey,
     depositor,
   });
-  const statusLabel = paymentStatus === "결제완료" ? "결제완료" : paymentStatus;
+  const statusLabel =
+    String(paymentStatusLabel ?? "").trim() ||
+    getCommonPaymentStatusLabel(paymentStatus) ||
+    paymentStatus ||
+    null;
 
   return (
     <div className="space-y-2">

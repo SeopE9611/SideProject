@@ -7,13 +7,13 @@ import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminCompactField from "@/components/admin/AdminCompactField";
-import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
+import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
@@ -46,6 +46,7 @@ import {
   isOrderBlockedForLinkedAutomation,
 } from "@/lib/admin/linked-flow-stage";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
+import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
 import {
   badgeBase,
   badgeSizeSm,
@@ -72,12 +73,12 @@ import {
   orderShippingMethodLabel,
   shouldShowDeliveryOnlyFields,
 } from "@/lib/order-shipping";
+import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import {
   getAdminCancelPolicyMessage,
   isAdminCancelableOrderStatus,
   isAdminForceCancelRequired,
 } from "@/lib/orders/cancel-refund-policy";
-import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
@@ -142,6 +143,7 @@ interface OrderDetail {
     };
     deliveryRequest?: string;
     depositor?: string;
+    withStringService?: boolean;
   };
   paymentStatus: string;
   paymentMethod: string;
@@ -342,7 +344,12 @@ type OrderTrackingResponse =
   | {
       success: false;
       errorCode?:
-        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
 
@@ -581,10 +588,20 @@ export default function OrderDetailClient({ orderId }: Props) {
   // - 상품 구매 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
   const linkedStringingAppId =
     latestLinkedApplication?.id ?? orderDetail.stringingApplicationId ?? null;
-  const isShippingManagedByApplication = Boolean(linkedStringingAppId);
-  const isLinkedStringingOrder = Boolean(
-    orderDetail.isStringServiceApplied || linkedStringingAppId,
-  );
+
+  const expectsStringingApplication = orderDetail.shippingInfo?.withStringService === true;
+
+  const hasActiveLinkedStringingApplication = Boolean(linkedStringingAppId);
+
+  const needsStringingApplication =
+    expectsStringingApplication && !hasActiveLinkedStringingApplication;
+
+  const isShippingManagedByApplication = hasActiveLinkedStringingApplication;
+
+  const isLinkedStringingOrder =
+    expectsStringingApplication ||
+    orderDetail.isStringServiceApplied === true ||
+    hasActiveLinkedStringingApplication;
 
   // 관리자 상세에서 “수령/배송(사용자가 체크아웃에서 선택한 값)”을 한눈에 보기 위한 배지
   // - 목록(/admin/orders)에서 쓰는 규칙과 동일한 기준으로 표시한다.
@@ -754,31 +771,32 @@ export default function OrderDetailClient({ orderId }: Props) {
         ]
       : []),
   ]);
-  const lowerPayment = String(orderDetail.paymentStatus ?? "").toLowerCase();
-  const isPaymentCompletedLike =
-    lowerPayment.includes("완료") ||
-    lowerPayment.includes("paid") ||
-    lowerPayment.includes("approved") ||
-    lowerPayment.includes("done");
-  const paymentStatusDisplayLabel =
-    isLinkedStringingOrder && isPaymentCompletedLike
-      ? "주문 결제에 포함됨"
-      : orderDetail.paymentStatus || "결제 상태 미확인";
-  const paymentMethodDisplayLabel = getPaymentDisplaySummary({
-    method: orderDetail.paymentMethod,
-    provider: orderDetail.paymentProvider,
-    easyPayProvider: orderDetail.paymentEasyPayProvider,
-    cardDisplayName: orderDetail.paymentCardDisplayName,
-    cardLabel: orderDetail.paymentCardLabel,
-    cardCompany: orderDetail.paymentCardCompany,
-    bank: orderDetail.paymentBank,
-    depositor: orderDetail.shippingInfo?.depositor,
-  }).adminLabel;
-  const needsPaymentCheck =
-    lowerPayment.includes("대기") ||
-    lowerPayment.includes("입금") ||
-    lowerPayment.includes("미입금") ||
-    lowerPayment.includes("pending");
+  const adminPaymentState = getAdminOrderPaymentState({
+    paymentStatus: orderDetail.paymentStatus,
+    paymentMethod: orderDetail.paymentMethod,
+    paymentProvider: orderDetail.paymentProvider,
+    totalPrice: orderDetail.total,
+  });
+
+  const paymentMethodDisplayLabel =
+    adminPaymentState.kind === "not_required"
+      ? "결제 불필요"
+      : getPaymentDisplaySummary({
+          method: orderDetail.paymentMethod,
+          provider: orderDetail.paymentProvider,
+          easyPayProvider: orderDetail.paymentEasyPayProvider,
+          cardDisplayName: orderDetail.paymentCardDisplayName,
+          cardLabel: orderDetail.paymentCardLabel,
+          cardCompany: orderDetail.paymentCardCompany,
+          bank: orderDetail.paymentBank,
+          depositor: orderDetail.shippingInfo?.depositor,
+        }).adminLabel;
+
+  const paymentStatusDisplayLabel = adminPaymentState.label;
+  const needsPaymentCheck = adminPaymentState.needsCheck;
+
+  const paymentBadgeStatus =
+    adminPaymentState.kind === "not_required" ? "결제완료" : orderDetail.paymentStatus;
   const needsShippingInfo =
     !isShippingManagedByApplication &&
     !isVisitPickup &&
@@ -812,35 +830,51 @@ export default function OrderDetailClient({ orderId }: Props) {
       : needsPaymentCheck
         ? {
             tone: "warning",
-            title: "결제 상태 확인 필요",
-            description: "입금/결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
+            title: adminPaymentState.actionLabel ?? "결제 상태 확인 필요",
+            description:
+              adminPaymentState.kind === "bank_pending"
+                ? needsStringingApplication
+                  ? "입금 내역과 교체서비스 신청서 접수 여부를 함께 확인하세요."
+                  : "고객 입금 내역을 확인한 뒤 결제 상태를 반영하세요."
+                : adminPaymentState.kind === "pg_pending"
+                  ? "PG 승인 결과를 확인한 뒤 주문 상태를 점검하세요."
+                  : adminPaymentState.kind === "failed"
+                    ? "결제 실패 사유와 재결제 필요 여부를 확인하세요."
+                    : "결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
           }
-        : needsShippingInfo
+        : needsStringingApplication
           ? {
               tone: "warning",
-              title: "배송 정보 등록 필요",
-              description: "결제 확인 후 운송장 또는 수령 방식을 등록하세요.",
-              actionLabel: "배송 정보 등록/수정",
-              actionHref: `/admin/orders/${orderId}/shipping-update`,
+              title: "교체서비스 신청서 미접수",
+              description:
+                "주문에 교체서비스가 포함되어 있지만 활성 신청서가 없습니다. 고객에게 신청서 작성을 안내하세요.",
             }
-          : linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId)
+          : needsShippingInfo
             ? {
-                tone: "info",
-                title: "주문에 포함된 교체서비스 확인",
-                description:
-                  "결제는 주문에서 처리되었습니다. 장착 정보와 요청사항은 교체 작업 정보에서 확인하세요.",
+                tone: "warning",
+                title: "배송 정보 등록 필요",
+                description: "결제 확인 후 운송장 또는 수령 방식을 등록하세요.",
+                actionLabel: "배송 정보 등록/수정",
+                actionHref: `/admin/orders/${orderId}/shipping-update`,
               }
-            : orderGuide.stage || isDoneLikeStatus
+            : linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId)
               ? {
-                  tone: "success",
-                  title: "처리 이력 확인",
-                  description: "상세 처리 이력과 최근 변경 내역을 확인하세요.",
+                  tone: "info",
+                  title: "주문에 포함된 교체서비스 확인",
+                  description:
+                    "결제는 주문에서 처리되었습니다. 장착 정보와 요청사항은 교체 작업 정보에서 확인하세요.",
                 }
-              : {
-                  tone: "success",
-                  title: "추가 조치 필요 없음",
-                  description: "현재 기준으로 즉시 필요한 선행 조치는 없습니다.",
-                };
+              : orderGuide.stage || isDoneLikeStatus
+                ? {
+                    tone: "success",
+                    title: "처리 이력 확인",
+                    description: "상세 처리 이력과 최근 변경 내역을 확인하세요.",
+                  }
+                : {
+                    tone: "success",
+                    title: "추가 조치 필요 없음",
+                    description: "현재 기준으로 즉시 필요한 선행 조치는 없습니다.",
+                  };
   const recommendedActions = [
     { label: "결제 정보 확인", href: "#admin-order-payment", show: true },
     { label: "배송/수령 정보 확인", href: "#admin-order-shipping", show: true },
@@ -1166,7 +1200,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               density="compact"
               title="결제 상태"
               value={(() => {
-                const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
+                const pay = getPaymentStatusBadgeSpec(paymentBadgeStatus);
                 return (
                   <Badge variant={pay.variant} className={summaryBadgeClass}>
                     {paymentStatusDisplayLabel}
@@ -1199,14 +1233,32 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               <AdminStatusCard
                 density="compact"
                 title="연결 교체 작업"
-                value="주문에 포함된 교체 작업"
+                value={
+                  needsStringingApplication ? (
+                    <Badge
+                      className={cn(
+                        summaryBadgeClass,
+                        "border-warning/30 bg-warning/10 text-warning",
+                      )}
+                    >
+                      신청서 미접수
+                    </Badge>
+                  ) : (
+                    "주문에 포함된 교체 작업"
+                  )
+                }
                 description={
-                  latestLinkedApplication?.status
-                    ? `작업 상태 ${getCommonApplicationStatusLabel(latestLinkedApplication.status) ?? latestLinkedApplication.status}`
-                    : "교체 작업 문서 확인 필요"
+                  needsStringingApplication
+                    ? "교체서비스 포함 주문이지만 활성 신청서가 없습니다."
+                    : latestLinkedApplication?.status
+                      ? `작업 상태 ${
+                          getCommonApplicationStatusLabel(latestLinkedApplication.status) ??
+                          latestLinkedApplication.status
+                        }`
+                      : "교체 작업 문서 확인 필요"
                 }
                 icon={LinkIcon}
-                tone="primary"
+                tone={needsStringingApplication ? "warning" : "primary"}
               />
             ) : (
               <AdminStatusCard
@@ -1362,15 +1414,36 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       주문에 포함된 교체 작업
                     </CardTitle>
                     <CardDescription className={cn("mt-1", adminTypography.meta)}>
-                      주문 결제에 포함된 교체 작업의 진행 단계만 확인합니다.
+                      {needsStringingApplication
+                        ? "교체서비스 포함 의사표시는 있으나 활성 신청서가 아직 없습니다."
+                        : "주문에 연결된 교체 작업의 진행 단계와 접수 정보를 확인합니다."}
                     </CardDescription>
                   </div>
-                  <Badge variant="outline" className="w-fit border-primary/30 text-primary">
-                    주문 결제에 포함됨
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "w-fit",
+                      needsStringingApplication
+                        ? "border-warning/30 text-warning"
+                        : "border-primary/30 text-primary",
+                    )}
+                  >
+                    {needsStringingApplication ? "신청서 미접수" : "주문 결제에 포함됨"}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
+                {needsStringingApplication ? (
+                  <div className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+                    <p className="text-ui-body-sm font-semibold text-foreground">
+                      교체서비스 신청서 확인이 필요합니다.
+                    </p>
+                    <p className="mt-1 text-ui-label text-muted-foreground">
+                      고객에게 주문 상세 또는 교체서비스 신청 경로에서 신청서를 작성하도록
+                      안내하세요.
+                    </p>
+                  </div>
+                ) : null}
                 {latestLinkedApplication?.id && latestLinkedApplication?.status && (
                   <div className="grid gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
                     <p className={adminTypography.bodyStrong}>
@@ -2179,7 +2252,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       <AdminCompactField
                         label="결제 상태"
                         value={(() => {
-                          const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
+                          const pay = getPaymentStatusBadgeSpec(paymentBadgeStatus);
                           return (
                             <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
                               {paymentStatusDisplayLabel}
@@ -2202,7 +2275,8 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       </summary>
                       <div className="mt-1 border-t border-border/60 p-3 text-ui-body-sm">
                         <PaymentMethodDetail
-                          method={orderDetail.paymentMethod || "무통장입금"}
+                          method={orderDetail.paymentMethod || "결제 정보 확인 필요"}
+                          paymentStatusLabel={paymentStatusDisplayLabel}
                           bankKey={orderDetail.paymentBank}
                           depositor={orderDetail.shippingInfo?.depositor}
                           paymentProvider={orderDetail.paymentProvider}

@@ -45,6 +45,7 @@ export type Order = {
 
   paymentStatus: "결제완료" | "결제대기" | "결제실패" | "결제취소" | string;
 
+  paymentMethod?: string | null;
   paymentProvider?: string | null;
   paymentTid?: string | null;
   paymentInfo?: {
