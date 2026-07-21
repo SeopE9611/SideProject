@@ -1,3 +1,4 @@
+import { richTextToPlainText } from "@/components/editor/rich-text-utils";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { maskSecretTitle, resolveBoardViewerContext } from "@/lib/board-secret-policy";
 import { API_VERSION } from "@/lib/board.repository";
@@ -17,7 +18,11 @@ import { getMarketBrandOptions, isBrandRequiredCategory, normalizeMarketMeta } f
 import { verifyCommunityCsrf } from "@/lib/community/security";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
 import { getDb } from "@/lib/mongodb";
-import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  sanitizeHtml,
+  sanitizeRichTextHtml,
+  validateSanitizedLength,
+} from "@/lib/sanitize";
 import type {
   AccessTokenPayload,
   BoardCreateMongoDoc,
@@ -241,6 +246,11 @@ const createSchema = z.object({
     )
     .optional(),
 });
+
+// 공지·이벤트 본문은 HTML 원문 길이가 아닌 정제 후 화면상 텍스트를 기준으로 검증한다.
+// 작성 화면의 CONTENT_MIN / CONTENT_MAX 정책과 동일하게 유지한다.
+const NOTICE_CONTENT_MIN = 10;
+const NOTICE_CONTENT_MAX = 8000;
 
 const isAllowedHttpUrl = (v: unknown): v is string => {
   const validation = validateBoardAssetUrl(v);
@@ -791,8 +801,43 @@ export async function POST(req: NextRequest) {
     ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url))
     : [];
 
-  // 본문 content 서버에서 정제
-  const safeContent = await sanitizeHtml(String(body.content ?? ""));
+  let safeContent: string;
+  if (body.type === "notice") {
+    // 이벤트도 category만 다른 notice이므로, 공지와 같은 리치 텍스트 allowlist를 적용한다.
+    safeContent = await sanitizeRichTextHtml(String(body.content ?? ""));
+
+    // HTML 태그·속성 길이는 사용자 본문 길이가 아니므로 화면상 텍스트를 따로 추출한다.
+    const plainTextContent = richTextToPlainText(safeContent);
+    // 위험한 HTML을 정제한 뒤 검증해야 빈 태그나 제거된 태그만으로 정책을 우회할 수 없다.
+    const lengthValidation = validateSanitizedLength(plainTextContent, {
+      min: NOTICE_CONTENT_MIN,
+      max: NOTICE_CONTENT_MAX,
+    });
+
+    if (lengthValidation) {
+      // 유효하지 않은 본문은 board_posts insert 전에 즉시 거부한다.
+      return NextResponse.json(
+        {
+          ok: false,
+          version: API_VERSION,
+          error: "validation_error",
+          details: [
+            {
+              path: ["content"],
+              message:
+                lengthValidation === "too_short"
+                  ? "내용은 10자 이상 입력해 주세요."
+                  : "내용은 8000자 이내로 입력해 주세요.",
+            },
+          ],
+        },
+        { status: 400 },
+      );
+    }
+  } else {
+    // Q&A 등 아직 리치 텍스트를 적용하지 않은 게시판은 기존 sanitizer 정책을 유지한다.
+    safeContent = await sanitizeHtml(String(body.content ?? ""));
+  }
 
   const doc: BoardCreateMongoDoc = {
     type: body.type as BoardType,
