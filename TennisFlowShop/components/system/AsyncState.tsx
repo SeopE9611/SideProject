@@ -84,7 +84,7 @@ export default function AsyncState({
         </div>
         <p
           className={cn(
-            "font-semibold",
+            "font-ui-medium",
             variant === "inline" ? "text-ui-body-sm" : "text-ui-body-sm sm:text-ui-body",
           )}
         >
