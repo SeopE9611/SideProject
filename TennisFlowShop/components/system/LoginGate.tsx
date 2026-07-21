@@ -133,7 +133,7 @@ export default function LoginGate({
                 <LogIn className="h-7 w-7" />
               </div>
 
-              <h1 className="mb-2 break-keep text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg">
+              <h1 className="mb-2 break-keep text-ui-page-title font-ui-bold tracking-normal text-foreground md:text-ui-page-title-lg">
                 로그인이 필요합니다.
               </h1>
               <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground md:text-ui-body">
