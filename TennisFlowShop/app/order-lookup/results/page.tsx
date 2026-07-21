@@ -3,7 +3,7 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { EmptyState, PublicPageHero, ResultState } from "@/components/public";
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -37,10 +37,6 @@ import { getGuestOrderNextActionText } from "@/app/order-lookup/_lib/guestOrderN
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { getCustomerOrderPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const onlyDigits = (v: string) => v.replace(/\D/g, "");
-const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
-
 type GuestOrderMode = "off" | "legacy" | "on";
 
 function getGuestOrderModeClient(): GuestOrderMode {
@@ -51,12 +47,6 @@ function getGuestOrderModeClient(): GuestOrderMode {
 }
 
 // 주문 타입 정의
-const FIELD_LABELS: Record<string, string> = {
-  name: "이름",
-  email: "이메일",
-  phone: "전화번호",
-};
-
 // 주문 타입 정의
 interface Order {
   id: string;
@@ -104,130 +94,39 @@ const getLookupOrderStatusLabel = (status?: string, shippingLike?: any) => {
 
 export default function OrderLookupResultsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
 
   // 비회원 주문 조회(게스트) 접근 허용 여부(클라)
   const guestOrderMode = getGuestOrderModeClient();
   const allowGuestLookup = guestOrderMode !== "off";
 
-  // 이름과 이메일 파라미터 가져오기
-  const rawName: string = searchParams.get("name") ?? "";
-  const rawEmail: string = searchParams.get("email") ?? "";
-  const rawPhone: string = searchParams.get("phone") ?? "";
-
-  // 화면 표시는 trim 된 값 기준 (공백만 들어오는 케이스 방지)
-  const displayName = rawName.trim();
+  const displayName = orders?.[0]?.recipient ?? "";
 
   useEffect(() => {
-    if (!allowGuestLookup) {
-      setLoading(false);
-      return;
-    }
+    if (!allowGuestLookup) { setLoading(false); return; }
     const fetchOrders = async () => {
       try {
-        setFieldErrors(null);
-
-        // 1) URL 파라미터 정규화
-        const name = rawName.trim();
-        const email = rawEmail.trim();
-        const phoneDigits = rawPhone ? onlyDigits(rawPhone) : "";
-
-        // 2) URL 파라미터 검증 (서버와 동일 기준)
-        if (!name) {
-          setError("이름이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.");
-          setLoading(false);
-          return;
-        }
-
-        if (name.length > 50) {
-          setError("이름은 50자 이내로 입력해주세요.");
-          setLoading(false);
-          return;
-        }
-        if (!email) {
-          setError("이메일이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.");
-          setLoading(false);
-          return;
-        }
-        if (!EMAIL_RE.test(email) || email.length > 254) {
-          setError("유효한 이메일 주소를 입력해주세요.");
-          setLoading(false);
-          return;
-        }
-        if (phoneDigits && !isValidKoreanPhoneDigits(phoneDigits)) {
-          setError("전화번호는 숫자 10~11자리만 입력해주세요.");
-          setLoading(false);
-          return;
-        }
-
-        // 3) 서버로는 "정규화된 값"만 전송 (phone은 빈 값이면 제외)
-        const payload: { name: string; email: string; phone?: string } = {
-          name,
-          email,
-        };
-        if (phoneDigits) payload.phone = phoneDigits;
-
-        const res = await fetch("/api/guest-orders/lookup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          credentials: "include",
-        });
-
+        const res = await fetch("/api/guest-orders/lookup", { credentials: "include" });
         const data = await res.json();
-
-        // 400(유효성 실패)도 여기로 들어오므로 ok/success 기준으로 분기
         if (!res.ok || !data?.success) {
-          setError(data?.error ?? "주문 조회 요청 값이 올바르지 않습니다.");
-          setFieldErrors(data?.fieldErrors ?? null);
-          setLoading(false);
+          setError(data?.code === "GUEST_LOOKUP_SESSION_REQUIRED" ? "조회 정보가 만료되었습니다. 주문을 다시 조회해주세요." : (data?.error ?? "주문 정보를 불러올 수 없습니다."));
           return;
         }
-
-        if (data.orders.length > 0) {
-          setOrders(
-            data.orders.map((o: any) => ({
-              id: o._id, // key로 사용할 고유 ID
-              orderNumber: o._id.slice(-6), // 보기 좋게 마지막 6자리만 주문번호처럼 사용
-              orderDate: new Date(o.createdAt).toLocaleDateString(),
-              recipient: o.shippingInfo?.name ?? "",
-              contactNumber: formatKoreanPhone(o.shippingInfo?.phone) || "",
-              totalAmount: typeof o.totalPrice === "number" ? o.totalPrice : null,
-              status: o.status ?? "배송준비중",
-              paymentStatus: o.paymentStatus ?? null,
-              paymentMethod: o.paymentMethod ?? null,
-              paymentInfo: {
-                status: o.paymentInfo?.status ?? null,
-                method: o.paymentInfo?.method ?? null,
-                provider: o.paymentInfo?.provider ?? null,
-              },
-              shippingInfo: {
-                deliveryMethod: o.shippingInfo?.deliveryMethod,
-                shippingMethod: o.shippingInfo?.shippingMethod,
-                withStringService: o.shippingInfo?.withStringService,
-              },
-              isStringServiceApplied: o.isStringServiceApplied,
-              stringingApplicationId: normalizeStringingApplicationId(o.stringingApplicationId),
-            })),
-          );
-        } else {
-          setOrders([]);
-        }
-
-        setLoading(false);
-      } catch (err) {
-        console.error("주문 조회 중 오류 발생:", err);
-        setError("주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.");
-        setLoading(false);
-      }
+        setOrders((data.orders ?? []).map((o: any) => ({
+          id: o.id, orderNumber: o.id.slice(-6), orderDate: new Date(o.createdAt).toLocaleDateString(),
+          recipient: o.shippingInfo?.name ?? "", contactNumber: formatKoreanPhone(o.shippingInfo?.phone) || "",
+          totalAmount: typeof o.totalPrice === "number" ? o.totalPrice : null, status: o.status ?? "배송준비중",
+          paymentStatus: o.paymentStatus ?? null, paymentMethod: o.paymentMethod ?? null,
+          paymentInfo: o.paymentInfo, shippingInfo: o.shippingInfo,
+          isStringServiceApplied: o.isStringServiceApplied, stringingApplicationId: normalizeStringingApplicationId(o.stringingApplicationId),
+        })));
+      } catch { setError("주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요."); }
+      finally { setLoading(false); }
     };
-
     fetchOrders();
-  }, [rawName, rawEmail, rawPhone, allowGuestLookup]);
+  }, [allowGuestLookup]);
 
   if (!allowGuestLookup) {
     return <LoginGate next="/mypage" variant="orderLookup" />;
@@ -272,24 +171,7 @@ export default function OrderLookupResultsPage() {
                 주문 조회 페이지로 돌아가기
               </Button>
             }
-          >
-            {fieldErrors && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-foreground dark:bg-destructive/15">
-                <p className="mb-2 text-ui-label font-semibold text-destructive">
-                  입력값 오류 상세
-                </p>
-                <ul className="list-disc space-y-1 pl-5">
-                  {Object.entries(fieldErrors).map(([field, msgs]) =>
-                    (msgs ?? []).map((msg, i) => (
-                      <li key={`${field}-${i}`} className="text-ui-label text-destructive">
-                        <span className="font-medium">{FIELD_LABELS[field] ?? field}:</span> {msg}
-                      </li>
-                    )),
-                  )}
-                </ul>
-              </div>
-            )}
-          </ResultState>
+          />
         </SiteContainer>
       </div>
     );

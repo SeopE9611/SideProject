@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
-import { signOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderLookupAccess, signOrderAccessToken, verifyGuestOrderLookupAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 
 type GuestOrderMode = "off" | "legacy" | "on";
 
@@ -36,8 +36,13 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ message: "not a guest order" }, { status: 400 });
     }
 
-    // (선택) 이메일 해시 생성 지점: 프라이버시를 위해 원문은 저장/서명하지 않음
-    // const emailHash = order?.customer?.email ? hash(order.customer.email) : undefined;
+    const cookieStore = await cookies();
+    const existing = verifyOrderAccessToken(cookieStore.get("orderAccessToken")?.value ?? "");
+    const lookup = verifyGuestOrderLookupAccessToken(cookieStore.get("guestOrderLookupToken")?.value ?? "");
+    const hasExistingAccess = Boolean(existing && "orderId" in existing && existing.orderId === String(order._id));
+    if (!hasExistingAccess && !hasGuestOrderLookupAccess(lookup, String(order._id))) {
+      return NextResponse.json({ message: "order not available" }, { status: 404 });
+    }
 
     const token = signOrderAccessToken({ orderId: String(order._id) });
 

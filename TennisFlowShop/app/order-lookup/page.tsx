@@ -187,13 +187,7 @@ export default function OrderLookupPage() {
       }
 
       if (data.orders.length > 0) {
-        // results 페이지에도 "정규화된 값"을 넘김
-        const qs = new URLSearchParams();
-        qs.set("name", normalizedName);
-        qs.set("email", normalizedEmail);
-        if (normalizedPhone) qs.set("phone", normalizedPhone);
-
-        router.push(`/order-lookup/results?${qs.toString()}`);
+        router.push("/order-lookup/results");
       } else {
         setLookupNotice({
           type: "empty",

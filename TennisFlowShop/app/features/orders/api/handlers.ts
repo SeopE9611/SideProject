@@ -19,7 +19,7 @@ import {
   truthyField,
 } from "@/lib/admin-alerts/formatters";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
-import { verifyAccessToken } from "@/lib/auth.utils";
+import { signOrderAccessToken, verifyAccessToken } from "@/lib/auth.utils";
 import { getShippingBadge } from "@/lib/badge-style";
 import {
   hasStringingServiceInCheckout,
@@ -231,6 +231,11 @@ type CreateOrderExecutionContext = {
   userIdOverride?: string | null;
 };
 
+function withGuestOrderAccessToken(response: NextResponse, orderId: string, isGuest: boolean, source?: CreateOrderExecutionContext["source"]) {
+  if (isGuest && source !== "nicepay_return") response.cookies.set("orderAccessToken", signOrderAccessToken({ orderId }), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 7 });
+  return response;
+}
+
 export async function createOrder(
   req: Request,
   executionContext?: CreateOrderExecutionContext,
@@ -427,7 +432,7 @@ export async function createOrder(
     if (idemKey) {
       const dup = await ordersCol.findOne({ idemKey });
       if (dup) {
-        return NextResponse.json(
+        return withGuestOrderAccessToken(NextResponse.json(
           {
             success: true,
             orderId: String(dup._id),
@@ -438,7 +443,7 @@ export async function createOrder(
             idempotent: true,
           },
           { status: 200 },
-        );
+        ), String(dup._id), !dup.userId, executionContext?.source);
       }
     }
 
@@ -1492,7 +1497,7 @@ export async function createOrder(
       fields: alertFields,
     });
 
-    return NextResponse.json(
+    return withGuestOrderAccessToken(NextResponse.json(
       {
         success: true,
         orderId: String(createdOrderId),
@@ -1502,7 +1507,7 @@ export async function createOrder(
         stringingSubmitted,
       },
       { status: 201 },
-    );
+    ), String(createdOrderId), !userId, executionContext?.source);
   } catch (error) {
     if (idemKeyForDuplicateRecovery && dbForDuplicateRecovery && isDuplicateKeyError(error)) {
       const dup = await dbForDuplicateRecovery.collection("orders").findOne(
@@ -1513,12 +1518,13 @@ export async function createOrder(
           projection: {
             _id: 1,
             stringingApplicationId: 1,
+            userId: 1,
           },
         },
       );
 
       if (dup?._id) {
-        return NextResponse.json(
+        return withGuestOrderAccessToken(NextResponse.json(
           {
             success: true,
             orderId: String(dup._id),
@@ -1529,7 +1535,7 @@ export async function createOrder(
             idempotent: true,
           },
           { status: 200 },
-        );
+        ), String(dup._id), !dup.userId, executionContext?.source);
       }
     }
 

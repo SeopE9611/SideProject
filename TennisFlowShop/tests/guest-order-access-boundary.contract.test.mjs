@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+assert.match(read("lib/auth.utils.ts"), /signGuestOrderLookupAccessToken/);
+assert.match(read("app\/api\/guest-orders\/lookup\/route.ts"), /guestOrderLookupToken/);
+assert.match(read("app\/api\/guest-orders\/\[id\]\/route.ts"), /hasGuestOrderLookupAccess/);
+assert.doesNotMatch(read("app\/api\/guest-orders\/\[id\]\/route.ts"), /\.\.\.order/);
+assert.match(read("app\/api\/orders\/\[id\]\/guest-token\/route.ts"), /hasGuestOrderLookupAccess/);
+assert.match(read("app\/features\/orders\/api\/handlers.ts"), /withGuestOrderAccessToken/);
+assert.match(read("app\/api\/payments\/nice\/return\/route.ts"), /redirectToCheckoutSuccess/);
