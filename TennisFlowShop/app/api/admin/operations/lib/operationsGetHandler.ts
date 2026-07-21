@@ -1,49 +1,51 @@
-import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-import type { Document, Filter } from "mongodb";
-import { requireAdmin } from "@/lib/admin.guard";
 import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
 import {
-  toISO,
   normalizeOrderStatus,
   normalizePaymentStatus,
-  normalizeRentalStatus,
-  summarizeOrderItems,
-  pickCustomerFromDoc,
   normalizeRentalAmountTotal,
   normalizeRentalPaymentMeta,
+  normalizeRentalStatus,
+  pickCustomerFromDoc,
+  summarizeOrderItems,
+  toISO,
 } from "@/lib/admin-ops-normalize";
+import { requireAdmin } from "@/lib/admin.guard";
+import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
+import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
+import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-stage";
+import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
+import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
+import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
+import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
+import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
+import {
+  isRentalReturnedStatus,
+  isOrderTerminalStatus as isSharedOrderTerminalStatus,
+  isStringingCanceledStatus,
+  isStringingCompletedStatus,
+  normalizeStatusText,
+} from "@/lib/status/flow-status";
 import type {
-  AdminOperationFlow as Flow,
-  AdminOperationItem as OpItem,
-  AdminOperationKind as Kind,
   AdminOperationReviewLevel,
   AdminOperationsGroup,
-  SettlementAnchor,
   AdminOperationsListRequestDto,
   AdminOperationsListResponseDto,
   AdminOperationsSummary,
   AdminOperationsWarnFilter,
   AdminOperationsWarnSort,
+  AdminOperationFlow as Flow,
+  AdminOperationKind as Kind,
   LinkedFlowStatusIssue,
   OperationSignal,
   OperationSignalCounts,
   OperationSignalLevel,
+  AdminOperationItem as OpItem,
+  SettlementAnchor,
 } from "@/types/admin/operations";
-import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
-import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
-import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
-import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
-import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
-import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
-import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
-import {
-  isOrderTerminalStatus as isSharedOrderTerminalStatus,
-  isRentalReturnedStatus,
-  isStringingCanceledStatus,
-  isStringingCompletedStatus,
-  normalizeStatusText,
-} from "@/lib/status/flow-status";
+import type { Document, Filter } from "mongodb";
+import { ObjectId } from "mongodb";
+import { NextResponse } from "next/server";
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -178,6 +180,15 @@ function normalizeCancelRequest(doc: UnknownDoc): NormalizedCancel {
   };
 }
 
+function isActiveLinkedApplicationDoc(app: UnknownDoc) {
+  const cancelRequest = asDoc(app.cancelRequest);
+
+  return isApplicationEligibleForLinkedStage({
+    status: getString(app.status),
+    cancelRequestStatus: getString(cancelRequest?.status),
+  });
+}
+
 function hasRacketItems(items: unknown) {
   return asDocArray(items).some((it) => it.kind === "racket" || it.kind === "used_racket");
 }
@@ -260,8 +271,14 @@ function groupKeyOf(it: OpItem): string {
 
   // 신청서는 연결된 "주문/대여"를 앵커로
   const rel = it.related;
-  if (rel?.kind === "order") return `order:${rel.id}`;
-  if (rel?.kind === "rental") return `rental:${rel.id}`;
+
+  if (it.isIntegrated && rel?.kind === "order") {
+    return `order:${rel.id}`;
+  }
+
+  if (it.isIntegrated && rel?.kind === "rental") {
+    return `rental:${rel.id}`;
+  }
   // 단독 신청서
   return `app:${it.id}`;
 }
@@ -296,7 +313,10 @@ function getLinkedOrderStringingStatusIssue(items: OpItem[]): LinkedFlowStatusIs
         item.kind === "stringing_application" &&
         item.related?.kind === "order" &&
         (!order || item.related.id === order.id) &&
-        normalizeLinkedStatus(item.statusLabel).toLowerCase() !== "draft",
+        isApplicationEligibleForLinkedStage({
+          status: item.statusLabel,
+          cancelRequestStatus: item.cancel?.status,
+        }),
     )
     .sort((a, b) => {
       const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -1209,32 +1229,44 @@ export async function handleAdminOperationsGet(
 
   const orderToApp = new Map<string, string>();
   const rentalToApp = new Map<string, string>();
-  for (const a of rawApps) {
-    const appId = getIdString(a?._id);
-    const orderId = getIdString(a?.orderId);
-    const rentalId = getIdString(a?.rentalId);
-    if (orderId && appId) orderToApp.set(orderId, appId);
-    if (rentalId && appId) rentalToApp.set(rentalId, appId);
-  }
 
-  // 경고용: orderId/rentalId 기준으로 신청서가 “여러 개” 붙는 경우까지 집계(기존 orderToApp/rentalToApp은 1개만 매핑)
   const orderToAppIds = new Map<string, string[]>();
   const rentalToAppIds = new Map<string, string[]>();
-  for (const a of asDocArray(rawApps)) {
-    const orderId = getIdString(a?.orderId);
-    const rentalId = getIdString(a?.rentalId);
-    const appId = getIdString(a?._id);
-    if (orderId && appId) {
-      const key = orderId;
-      const arr = orderToAppIds.get(key) ?? [];
-      arr.push(appId);
-      orderToAppIds.set(key, arr);
+
+  for (const app of asDocArray(rawApps)) {
+    if (!isActiveLinkedApplicationDoc(app)) {
+      continue;
     }
+
+    const appId = getIdString(app._id);
+    const orderId = getIdString(app.orderId);
+    const rentalId = getIdString(app.rentalId);
+
+    if (orderId && appId) {
+      // rawApps가 createdAt 내림차순이므로 최초 항목이 최신 신청서
+      if (!orderToApp.has(orderId)) {
+        orderToApp.set(orderId, appId);
+      }
+
+      const ids = orderToAppIds.get(orderId) ?? [];
+
+      if (!ids.includes(appId)) {
+        ids.push(appId);
+        orderToAppIds.set(orderId, ids);
+      }
+    }
+
     if (rentalId && appId) {
-      const key = rentalId;
-      const arr = rentalToAppIds.get(key) ?? [];
-      arr.push(appId);
-      rentalToAppIds.set(key, arr);
+      if (!rentalToApp.has(rentalId)) {
+        rentalToApp.set(rentalId, appId);
+      }
+
+      const ids = rentalToAppIds.get(rentalId) ?? [];
+
+      if (!ids.includes(appId)) {
+        ids.push(appId);
+        rentalToAppIds.set(rentalId, ids);
+      }
     }
   }
 
@@ -1445,6 +1477,10 @@ export async function handleAdminOperationsGet(
       }
       dbMatchedAppIds.add(aid);
 
+      if (!isActiveLinkedApplicationDoc(a)) {
+        continue;
+      }
+
       // 2) 주문/대여 → 신청서 매핑 보강(단독/통합 판정 + 경고 계산 정확도 향상)
       if (a?.orderId) {
         const oid = String(a.orderId);
@@ -1592,6 +1628,8 @@ export async function handleAdminOperationsGet(
             );
           }
         }
+      } else if (!isActiveLinkedApplicationDoc(a)) {
+        pushPending("order", oid, "기존 교체서비스 신청서는 취소되어 활성 신청서가 없습니다.");
       } else {
         const aOrderId = a?.orderId ? String(a.orderId) : "";
         if (aOrderId && aOrderId !== oid) {
@@ -1660,6 +1698,8 @@ export async function handleAdminOperationsGet(
             );
           }
         }
+      } else if (!isActiveLinkedApplicationDoc(a)) {
+        pushPending("rental", rid, "기존 교체서비스 신청서는 취소되어 활성 신청서가 없습니다.");
       } else {
         const aRentalId = a?.rentalId ? String(a.rentalId) : "";
         if (aRentalId && aRentalId !== rid) {
@@ -1688,7 +1728,9 @@ export async function handleAdminOperationsGet(
   // 신청서 기준: 존재성 + 역방향 링크
   for (const a of asDocArray(rawApps)) {
     const aid = String(a._id);
-
+    if (!isActiveLinkedApplicationDoc(a)) {
+      continue;
+    }
     const oid = a?.orderId ? String(a.orderId) : null;
     if (oid) {
       const o = rawOrders.find((x) => String(x._id) === oid);
@@ -1741,27 +1783,58 @@ export async function handleAdminOperationsGet(
     const id = String(o._id);
     const cust = pickCustomerFromDoc(o);
     const appId = orderToApp.get(id) ?? null;
-    const isIntegrated = !!appId;
+    const isIntegrated = Boolean(appId);
+
     const hasShippingInfo = hasOrderShippingInfo(o);
+    const shippingInfo = asDoc(o.shippingInfo);
+
     const shippingMethod =
-      getString(asDoc(o?.shippingInfo)?.shippingMethod) ??
-      getString(asDoc(o?.shippingInfo)?.deliveryMethod);
+      getString(shippingInfo?.shippingMethod) ?? getString(shippingInfo?.deliveryMethod);
+
+    const expectsStringingApplication = shippingInfo?.withStringService === true;
+
+    const needsStringingApplication = expectsStringingApplication && !appId;
+
     const hasOutboundTracking = Boolean(
-      getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim(),
+      getString(asDoc(shippingInfo?.invoice)?.trackingNumber)?.trim(),
     );
+
     const statusLabel = normalizeOrderStatus(o.status);
     // NOTE: statusDisplayLabel은 현재 order 문맥(방문 수령 노출 문구)에서만 사용한다.
     const statusDisplayLabel = getOrderStatusLabelForDisplay(statusLabel, {
       shippingMethod,
-      deliveryMethod: getString(asDoc(o?.shippingInfo)?.deliveryMethod),
+      deliveryMethod: getString(shippingInfo?.deliveryMethod),
     });
-    const paymentLabel = normalizePaymentStatus(
-      getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status),
-    );
+
     const cancel = normalizeCancelRequest(o);
+
     const paymentInfo = asDoc(o.paymentInfo);
+
+    const paymentLabel = normalizePaymentStatus(
+      getString(o.paymentStatus) ?? getString(paymentInfo?.status),
+    );
+
+    const paymentMethod = getString(paymentInfo?.method) ?? null;
     const paymentProvider = getString(paymentInfo?.provider) ?? null;
     const paymentTid = getString(paymentInfo?.tid) ?? null;
+
+    const totalPriceValue = o.totalPrice;
+    const normalizedTotalPrice = Number(totalPriceValue);
+
+    const totalPrice =
+      totalPriceValue !== null &&
+      totalPriceValue !== undefined &&
+      Number.isFinite(normalizedTotalPrice)
+        ? normalizedTotalPrice
+        : null;
+
+    const paymentState = getAdminOrderPaymentState({
+      paymentStatus: paymentLabel,
+      paymentMethod,
+      paymentProvider,
+      totalPrice,
+    });
+
     const niceSync = asDoc(paymentInfo?.niceSync);
     const needsCancelFinalization = needsOrderCancelFinalization({
       status: statusLabel,
@@ -1778,12 +1851,22 @@ export async function handleAdminOperationsGet(
       createdAt: toISO(o.createdAt),
       customer: cust,
       title: summarizeOrderItems(o.items),
+
       statusLabel,
       statusDisplayLabel,
+
       paymentLabel,
+      paymentMethod,
       paymentProvider,
       paymentTid,
+
+      paymentDisplayLabel: paymentState.label,
+      paymentStateKind: paymentState.kind,
+      paymentNeedsCheck: paymentState.needsCheck,
+      paymentActionLabel: paymentState.actionLabel,
+
       paymentInfo: {
+        method: paymentMethod,
         provider: paymentProvider,
         tid: paymentTid,
         status: getString(paymentInfo?.status) ?? null,
@@ -1794,14 +1877,19 @@ export async function handleAdminOperationsGet(
             }
           : null,
       },
+
       canSyncNicePayment,
-      amount: Number(o.totalPrice ?? 0),
+      amount: totalPrice ?? 0,
       shippingMethod,
+
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
+
       flowLabel: flowLabelOf(orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated)),
+
       settlementAnchor: "order",
       settlementLabel: settlementLabelOf("order"),
       href: `/admin/orders/${id}`,
+
       related: appId
         ? {
             kind: "stringing_application",
@@ -1809,18 +1897,32 @@ export async function handleAdminOperationsGet(
             href: `/admin/applications/stringing/${appId}`,
           }
         : null,
+
       isIntegrated,
+      expectsStringingApplication,
+      needsStringingApplication,
       hasShippingInfo,
       hasOutboundTracking,
+
       warnReasons: warnByKey.get(`order:${id}`) ?? [],
+
       pendingReasons: [
         ...(pendingByKey.get(`order:${id}`) ?? []),
+
+        ...(needsStringingApplication
+          ? ["교체서비스 포함 주문이지만 활성 신청서가 없습니다."]
+          : []),
+
         ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
+
         ...(cancel.status === "approved_pending_pg_cancel" ? ["PG 취소 확인 필요"] : []),
       ],
+
       warn: needsCancelFinalization || (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
+
       cancel,
       needsCancelFinalization,
+
       ...inferNextActionForOperationItem({
         kind: "order",
         statusLabel,
@@ -1846,9 +1948,13 @@ export async function handleAdminOperationsGet(
   const appItems: OpItem[] = asDocArray(rawApps).map((a) => {
     const id = String(a._id);
     const cust = pickCustomerFromDoc(a);
-    const linkedOrderId = a?.orderId ? String(a.orderId) : null;
-    const linkedRentalId = a?.rentalId ? String(a.rentalId) : null;
-    const isIntegrated = !!(linkedOrderId || linkedRentalId);
+    const activeForLinkedStage = isActiveLinkedApplicationDoc(a);
+
+    const linkedOrderId = activeForLinkedStage && a?.orderId ? String(a.orderId) : null;
+
+    const linkedRentalId = activeForLinkedStage && a?.rentalId ? String(a.rentalId) : null;
+
+    const isIntegrated = Boolean(linkedOrderId || linkedRentalId);
 
     // 신청서는 상세/정산에서 “가격 누락”이 치명적이므로,
     // totalPrice 우선, 없으면 serviceAmount로 보완.
@@ -2268,8 +2374,15 @@ export async function handleAdminOperationsGet(
     group.items.some((item) =>
       ["결제취소", "결제실패", "확인필요"].includes(item.paymentLabel ?? ""),
     );
+  const itemNeedsPaymentCheck = (item: OpItem) => {
+    if (item.kind === "order" && typeof item.paymentNeedsCheck === "boolean") {
+      return item.paymentNeedsCheck;
+    }
+    return item.paymentLabel === "결제대기" || item.paymentLabel === "확인필요";
+  };
+
   const hasPaymentPending = (group: AdminOperationsGroup) =>
-    group.items.some((item) => (item.paymentLabel ?? "") === "결제대기");
+    group.items.some(itemNeedsPaymentCheck);
   const hasRoutineNextAction = (group: AdminOperationsGroup) =>
     group.items.some(
       (item) =>
@@ -2356,8 +2469,7 @@ export async function handleAdminOperationsGet(
       ),
     ).length,
     paymentCheck: allGroups.filter(
-      (group) =>
-        hasPaymentPending(group) || groupHas(group, (item) => item.paymentLabel === "확인필요"),
+      (group) => group.anchorKind !== "package_purchase" && groupHas(group, itemNeedsPaymentCheck),
     ).length,
     packagePaymentCheck: allGroups.filter((group) => group.anchorKind === "package_purchase")
       .length,

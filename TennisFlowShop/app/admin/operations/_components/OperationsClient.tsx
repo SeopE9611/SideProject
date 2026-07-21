@@ -18,10 +18,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AdminTaskCard from "@/components/admin/AdminTaskCard";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
   formatElapsedText,
@@ -64,7 +65,6 @@ import {
   getPaymentStatusBadgeSpec,
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
-import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -84,8 +84,8 @@ import { prevMonthYyyymmKST, type Kind } from "./filters/operationsFilters";
 import {
   buildOperationsViewQueryString,
   initOperationsStateFromQuery,
-  type FlowValue,
   useSyncOperationsQuery,
+  type FlowValue,
 } from "./hooks/useOperationsQueryState";
 import { formatKST, type OpItem, type ReviewLevel } from "./table/operationsTableUtils";
 
@@ -215,14 +215,43 @@ function flowLabelText(item: OpItem) {
 
 function groupNextActionText(group: {
   guide: { nextAction?: string | null };
+  anchor: OpItem;
   cancelRequested: boolean;
   reviewLevel?: ReviewLevel;
 }) {
+  // 취소 요청은 다른 안내보다 우선합니다.
+  if (group.cancelRequested) {
+    return "취소 요청 처리 필요";
+  }
+
+  // 교체서비스 포함 주문인데 아직 신청서가 없는 경우
+  if (group.anchor.needsStringingApplication) {
+    // 결제 확인과 신청서 확인이 모두 필요한 경우
+    if (group.anchor.paymentNeedsCheck && group.anchor.paymentActionLabel) {
+      return `${group.anchor.paymentActionLabel} · 교체서비스 신청서 접수 확인`;
+    }
+
+    return "교체서비스 신청서 접수 확인";
+  }
+
+  // 일반 주문에서 결제 확인만 필요한 경우
+  if (
+    group.anchor.kind === "order" &&
+    group.anchor.paymentNeedsCheck &&
+    group.anchor.paymentActionLabel
+  ) {
+    return group.anchor.paymentActionLabel;
+  }
+
+  // 그 외에는 기존 업무 가이드를 사용합니다.
   if (group.guide.nextAction?.trim()) {
     return toOperatorSentence(group.guide.nextAction);
   }
-  if (group.cancelRequested) return "취소 요청 처리 필요";
-  if (group.reviewLevel === "info") return "자동 계산 정보 있음";
+
+  if (group.reviewLevel === "info") {
+    return "자동 계산 정보 있음";
+  }
+
   return "조치 필요 없음";
 }
 
@@ -381,6 +410,7 @@ function isCancelRequestedGroup(group: { items: OpItem[] }) {
 
 function hasPaymentCheckNeeded(group: { items: OpItem[] }) {
   const excludeKeywords = ["결제완료", "환불완료", "취소완료"];
+
   const includeKeywords = [
     "결제대기",
     "입금대기",
@@ -389,14 +419,55 @@ function hasPaymentCheckNeeded(group: { items: OpItem[] }) {
     "결제 확인",
     "동기화 필요",
   ];
+
   return group.items.some((item) => {
+    // 일반 주문은 API에서 계산한 구조화된 판정값을 최우선으로 사용합니다.
+    if (item.kind === "order" && typeof item.paymentNeedsCheck === "boolean") {
+      return item.paymentNeedsCheck;
+    }
+
+    // 신청서·대여·패키지는 기존 문자열 기반 판정을 유지합니다.
     const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`;
-    if (excludeKeywords.some((word) => statusText.includes(word))) return false;
+
+    if (excludeKeywords.some((word) => statusText.includes(word))) {
+      return false;
+    }
+
     const paymentStatus = normalizeText(item.stage);
-    if (paymentStatus.includes("pending") || paymentStatus.includes("unpaid")) return true;
+
+    if (paymentStatus.includes("pending") || paymentStatus.includes("unpaid")) {
+      return true;
+    }
+
     const combined = `${item.paymentLabel ?? ""} ${statusText} ${item.nextAction ?? ""}`;
+
     return includeKeywords.some((word) => combined.includes(word));
   });
+}
+
+function getOperationPaymentBadgeStatus(item: OpItem) {
+  switch (item.paymentStateKind) {
+    case "not_required":
+    case "paid":
+      return "결제완료";
+
+    case "bank_pending":
+    case "pg_pending":
+    case "pending":
+      return "결제대기";
+
+    case "failed":
+      return "결제실패";
+
+    case "canceled":
+      return "결제취소";
+
+    case "refunded":
+      return "환불완료";
+
+    default:
+      return item.paymentLabel ?? null;
+  }
 }
 
 function hasShippingMissing(group: { items: OpItem[] }) {
@@ -868,7 +939,8 @@ export default function OperationsClient() {
   const navigationSummaryKey = "/api/admin/navigation-summary";
   const { cache } = useSWRConfig();
   const navigationSummary = cache.get(navigationSummaryKey)?.data as
-    NavigationSummaryResponse | undefined;
+    | NavigationSummaryResponse
+    | undefined;
 
   const { data, isLoading, error, mutate } = useSWR<AdminOperationsListResponseDto>(
     key,
@@ -2128,6 +2200,7 @@ export default function OperationsClient() {
                       });
                       const nextActionText = groupNextActionText({
                         guide: groupGuide,
+                        anchor: g.anchor,
                         cancelRequested: groupCancelRequested,
                         reviewLevel: g.reviewLevel,
                       });
@@ -2152,7 +2225,18 @@ export default function OperationsClient() {
                         anchor: g.anchor,
                         items: g.items,
                       });
+
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
+
+                      const anchorPaymentBadgeStatus = getOperationPaymentBadgeStatus(g.anchor);
+
+                      const anchorPaymentBadgeSpec =
+                        g.anchor.kind === "order" &&
+                        g.anchor.paymentDisplayLabel &&
+                        anchorPaymentBadgeStatus
+                          ? getPaymentStatusBadgeSpec(anchorPaymentBadgeStatus)
+                          : null;
+
                       const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2";
                       const primarySignal = visibleSignalSummary(g.signals, 1).visible[0];
                       const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.12]";
@@ -2297,6 +2381,28 @@ export default function OperationsClient() {
                                       g.anchor.statusLabel ??
                                       "상태 확인"}
                                   </Badge>
+
+                                  {anchorPaymentBadgeSpec && g.anchor.paymentDisplayLabel ? (
+                                    <Badge
+                                      variant={anchorPaymentBadgeSpec.variant}
+                                      className={cn(badgeBase, badgeSizeSm)}
+                                    >
+                                      {g.anchor.paymentDisplayLabel}
+                                    </Badge>
+                                  ) : null}
+
+                                  {g.anchor.needsStringingApplication ? (
+                                    <Badge
+                                      className={cn(
+                                        badgeBase,
+                                        badgeSizeSm,
+                                        "border border-warning/30 bg-warning/10 text-warning",
+                                      )}
+                                    >
+                                      교체 신청서 미접수
+                                    </Badge>
+                                  ) : null}
+
                                   {slaMeta ? (
                                     <Badge
                                       title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
@@ -2513,6 +2619,7 @@ export default function OperationsClient() {
                   });
                   const nextActionText = groupNextActionText({
                     guide: groupGuide,
+                    anchor: g.anchor,
                     cancelRequested: groupCancelRequested,
                     reviewLevel: g.reviewLevel,
                   });
@@ -2520,7 +2627,18 @@ export default function OperationsClient() {
                   const shouldShowReasonBullets = reasonBullets.length > 0;
                   const reasonBulletCount = reasonBullets.length;
                   const isReasonOpen = !!openReasons[g.key];
+
                   const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
+
+                  const anchorPaymentBadgeStatus = getOperationPaymentBadgeStatus(g.anchor);
+
+                  const anchorPaymentBadgeSpec =
+                    g.anchor.kind === "order" &&
+                    g.anchor.paymentDisplayLabel &&
+                    anchorPaymentBadgeStatus
+                      ? getPaymentStatusBadgeSpec(anchorPaymentBadgeStatus)
+                      : null;
+
                   return (
                     <Card key={`m:${g.key}`} className="border-border shadow-sm">
                       <CardContent className="space-y-3 p-4">
@@ -2597,6 +2715,34 @@ export default function OperationsClient() {
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {headline}
                         </p>
+
+                        <div className="flex flex-wrap items-center gap-1">
+                          <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                            {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
+                          </Badge>
+
+                          {anchorPaymentBadgeSpec && g.anchor.paymentDisplayLabel ? (
+                            <Badge
+                              variant={anchorPaymentBadgeSpec.variant}
+                              className={cn(badgeBase, badgeSizeSm)}
+                            >
+                              {g.anchor.paymentDisplayLabel}
+                            </Badge>
+                          ) : null}
+
+                          {g.anchor.needsStringingApplication ? (
+                            <Badge
+                              className={cn(
+                                badgeBase,
+                                badgeSizeSm,
+                                "border border-warning/30 bg-warning/10 text-warning",
+                              )}
+                            >
+                              교체 신청서 미접수
+                            </Badge>
+                          ) : null}
+                        </div>
+
                         <div className="rounded-xl border border-primary/15 bg-primary/[0.02] px-3 py-2">
                           <p className={cn("mb-0.5", adminTypography.caption)}>다음 작업</p>
                           <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>

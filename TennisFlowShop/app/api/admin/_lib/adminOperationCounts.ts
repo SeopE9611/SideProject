@@ -8,10 +8,7 @@ import {
 } from "@/lib/status/flow-status";
 
 import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
-import {
-  EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
-  OFFLINE_PACKAGE_ORDER_FILTER,
-} from "@/app/api/admin/offline/_lib/packageOrderOffline";
+import { OFFLINE_PACKAGE_ORDER_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 import type {
   OperationGroupCounts,
@@ -261,6 +258,15 @@ const paymentCheckFilter: Filter<Document> = {
       ],
     },
     { status: { $nin: TERMINAL_STATUS_VALUES } },
+  ],
+};
+
+const orderPaymentCheckFilter: Filter<Document> = {
+  $and: [
+    paymentCheckFilter,
+    {
+      $or: [{ totalPrice: { $exists: false } }, { totalPrice: null }, { totalPrice: { $gt: 0 } }],
+    },
   ],
 };
 
@@ -581,7 +587,7 @@ export async function countAdminOperationTaskCounts(
       safeCount(db, "rental_orders", cancelRequestFilter, "rental cancel requests"),
     ),
     measure("operationCounts.orders.paymentCheck", () =>
-      safeCount(db, "orders", paymentCheckFilter, "order payment check"),
+      safeCount(db, "orders", orderPaymentCheckFilter, "order payment check"),
     ),
     measure("operationCounts.stringingApplications.paymentCheck", () =>
       safeCount(db, "stringing_applications", paymentCheckFilter, "stringing payment check"),

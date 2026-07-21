@@ -1,3 +1,4 @@
+import type { AdminOrderPaymentStateKind } from "@/lib/admin/order-payment-display";
 /**
  * Responsibility: mapping only (admin operations 도메인 타입 정의).
  * - API route 로직은 이 파일을 import 해서 도메인 타입을 공유합니다.
@@ -7,7 +8,11 @@ export type AdminOperationFlow = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type SettlementAnchor = "order" | "rental" | "application" | "package_purchase";
 export type AdminOperationReviewLevel = "none" | "info" | "action";
 export type AdminOperationCancelStatus =
-  "none" | "requested" | "approved" | "rejected" | "approved_pending_pg_cancel";
+  | "none"
+  | "requested"
+  | "approved"
+  | "rejected"
+  | "approved_pending_pg_cancel";
 
 export type OperationSignalLevel = "warn" | "review" | "pending" | "info";
 
@@ -41,9 +46,16 @@ export type AdminOperationItem = {
   statusLabel: string;
   statusDisplayLabel?: string;
   paymentLabel?: string;
+  paymentMethod?: string | null;
   paymentProvider?: string | null;
   paymentTid?: string | null;
+
+  paymentDisplayLabel?: string;
+  paymentStateKind?: AdminOrderPaymentStateKind;
+  paymentNeedsCheck?: boolean;
+  paymentActionLabel?: string | null;
   paymentInfo?: {
+    method?: string | null;
     provider?: string | null;
     tid?: string | null;
     status?: string | null;
@@ -77,6 +89,10 @@ export type AdminOperationItem = {
     mountingFee?: number;
     applicationStatus?: string;
   };
+
+  expectsStringingApplication?: boolean;
+  needsStringingApplication?: boolean;
+
   stage?: string;
   nextAction?: string;
   shippingMethod?: string | null;
