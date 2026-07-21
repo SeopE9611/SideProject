@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderLookupAccess, verifyAccessToken, verifyGuestOrderLookupAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import {
   fetchDeliveryTrackerSummary,
   type DeliveryTrackerSummaryFailure,
@@ -81,7 +81,10 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     } else {
       const orderAccessToken = cookieStore.get("orderAccessToken")?.value;
       const orderClaims = orderAccessToken ? verifyOrderAccessToken(orderAccessToken) : null;
-      if (getOrderIdClaim(orderClaims) !== String(order._id)) {
+      const lookupClaims = verifyGuestOrderLookupAccessToken(
+        cookieStore.get("guestOrderLookupToken")?.value ?? "",
+      );
+      if (getOrderIdClaim(orderClaims) !== String(order._id) && !hasGuestOrderLookupAccess(lookupClaims, String(order._id))) {
         return NextResponse.json({ success: false, error: "권한이 없습니다." }, { status: 403 });
       }
     }

@@ -85,3 +85,36 @@ export function verifyApplicationAccessToken(token: string) {
     return null;
   }
 }
+
+
+export type GuestOrderLookupAccessTokenPayload = {
+  scope: "guest_order_lookup";
+  orderIds: string[];
+};
+
+function normalizeGuestOrderLookupOrderIds(orderIds: unknown): string[] | null {
+  if (!Array.isArray(orderIds) || orderIds.length > 50) return null;
+  const normalized = [...new Set(orderIds.map((id) => String(id).trim()).filter(Boolean))];
+  return normalized.length <= 50 ? normalized : null;
+}
+
+export function signGuestOrderLookupAccessToken(
+  payload: GuestOrderLookupAccessTokenPayload,
+  expiresIn: SignOptions["expiresIn"] = 60 * 30,
+) {
+  const orderIds = normalizeGuestOrderLookupOrderIds(payload.orderIds);
+  if (!orderIds || payload.scope !== "guest_order_lookup") throw new Error("INVALID_GUEST_ORDER_LOOKUP_PAYLOAD");
+  return jwt.sign({ scope: "guest_order_lookup", orderIds }, getOrderScopedTokenSecret(), { expiresIn });
+}
+
+export function verifyGuestOrderLookupAccessToken(token: string): GuestOrderLookupAccessTokenPayload | null {
+  try {
+    const claims = jwt.verify(token, getOrderScopedTokenSecret()) as jwt.JwtPayload;
+    const orderIds = normalizeGuestOrderLookupOrderIds(claims.orderIds);
+    return claims.scope === "guest_order_lookup" && orderIds ? { scope: "guest_order_lookup", orderIds } : null;
+  } catch { return null; }
+}
+
+export function hasGuestOrderLookupAccess(
+  claims: ReturnType<typeof verifyGuestOrderLookupAccessToken>, orderId: string,
+) { return Boolean(claims?.orderIds.includes(String(orderId))); }

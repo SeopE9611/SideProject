@@ -80,8 +80,6 @@ interface OrderDetail {
     cardDisplayName?: string | null;
     cardCompany?: string | null;
     cardLabel?: string | null;
-    niceCard?: unknown;
-    rawSummary?: unknown;
     depositor?: string | null;
     bank?: "shinhan" | "kookmin" | "woori";
   };

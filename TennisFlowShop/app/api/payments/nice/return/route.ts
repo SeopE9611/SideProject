@@ -15,6 +15,7 @@ import {
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { signOrderAccessToken } from "@/lib/auth.utils";
 
 export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
@@ -35,6 +36,11 @@ function toFailUrl(code: string, message?: string) {
 
 function redirect303(req: Request, path: string) {
   return NextResponse.redirect(new URL(path, req.url), { status: 303 });
+}
+function redirectToCheckoutSuccess(req: Request, mongoOrderId: string, isGuest: boolean) {
+  const response = redirect303(req, `/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`);
+  if (isGuest) response.cookies.set("orderAccessToken", signOrderAccessToken({ orderId: mongoOrderId }), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 7 });
+  return response;
 }
 
 function toAmount(value: string) {
@@ -121,10 +127,7 @@ async function handleNiceReturn(req: Request) {
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
-      return redirect303(
-        req,
-        `/checkout/success?orderId=${encodeURIComponent(session.mongoOrderId)}`,
-      );
+      return redirectToCheckoutSuccess(req, String(session.mongoOrderId), !session.userId);
     }
 
     if (session.status === "failed") {
@@ -176,10 +179,7 @@ async function handleNiceReturn(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirect303(
-          req,
-          `/checkout/success?orderId=${encodeURIComponent(latest.mongoOrderId)}`,
-        );
+        return redirectToCheckoutSuccess(req, String(latest.mongoOrderId), !session.userId);
       }
 
       if (
@@ -250,10 +250,7 @@ async function handleNiceReturn(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirect303(
-          req,
-          `/checkout/success?orderId=${encodeURIComponent(latest.mongoOrderId)}`,
-        );
+        return redirectToCheckoutSuccess(req, String(latest.mongoOrderId), !session.userId);
       }
 
       if (
@@ -688,10 +685,7 @@ async function handleNiceReturn(req: Request) {
             },
           );
 
-          return redirect303(
-            req,
-            `/checkout/success?orderId=${encodeURIComponent(recoveredMongoOrderId)}`,
-          );
+          return redirectToCheckoutSuccess(req, String(recoveredMongoOrderId), !session.userId);
         }
         console.error("[nicepay][flow]", {
           stage: "before_auto_cancel_after_create_order_failed",
@@ -878,7 +872,7 @@ async function handleNiceReturn(req: Request) {
         orderId,
         mongoOrderId,
       });
-      return redirect303(req, `/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`);
+      return redirectToCheckoutSuccess(req, mongoOrderId, !session.userId);
     } catch (downstreamError: any) {
       const failureMessage =
         downstreamError?.message || "승인 이후 내부 주문 후처리에 실패했습니다.";
