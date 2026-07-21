@@ -327,7 +327,7 @@ export default function LoginPageClient() {
           <TabsContent value="login" forceMount className="mt-0">
             <div className="space-y-4">
               <div className="text-center">
-                <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">
+                <h2 className="text-ui-page-title font-ui-bold tracking-normal text-foreground">
                   로그인
                 </h2>
                 <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -336,7 +336,7 @@ export default function LoginPageClient() {
               </div>
 
               <div className="space-y-3 rounded-control border border-border bg-brand-highlight-muted/35 p-4">
-                <p className="text-ui-body-sm font-semibold text-foreground text-center">
+                <p className="text-ui-body-sm font-ui-medium text-foreground text-center">
                   간편 로그인
                 </p>
                 <SocialAuthButtons
@@ -483,7 +483,7 @@ export default function LoginPageClient() {
                 <Button
                   type="submit"
                   variant="highlight"
-                  className="h-12 w-full rounded-control font-semibold"
+                  className="h-12 w-full rounded-control font-ui-medium"
                   disabled={loginLoading}
                   data-cy="login-submit"
                 >
@@ -514,7 +514,7 @@ export default function LoginPageClient() {
                   <div className="mb-4 rounded-xl border border-border/60 bg-muted/30 p-4">
                     <div className="flex items-center justify-center gap-2 mb-3">
                       <Shield className="h-5 w-5 text-foreground" />
-                      <p className="text-ui-body-sm font-semibold text-foreground">
+                      <p className="text-ui-body-sm font-ui-medium text-foreground">
                         비회원도 주문하실 수 있습니다
                       </p>
                     </div>
