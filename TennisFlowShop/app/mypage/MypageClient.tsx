@@ -303,7 +303,7 @@ export default function MypageClient({ user }: Props) {
                     <Wrench className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-brand-heading text-ui-section-title text-foreground">
+                    <span className="block text-ui-section-title font-ui-bold tracking-normal text-foreground">
                       라켓 케어
                     </span>
                     <span className="mt-1 block break-keep text-ui-body-sm font-medium text-foreground">
@@ -327,7 +327,7 @@ export default function MypageClient({ user }: Props) {
             <Card className="rounded-panel border-border/80 bg-card shadow-soft">
               <CardContent className="p-4 bp-sm:p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-ui-body-sm font-semibold text-foreground">활동 요약</p>
+                  <p className="text-ui-body-sm font-ui-medium text-foreground">활동 요약</p>
                   {hasSummaryError ? (
                     <span className="text-ui-label text-destructive">지표 불러오기 실패</span>
                   ) : null}
