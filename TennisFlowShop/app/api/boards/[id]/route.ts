@@ -323,8 +323,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     durationMs: stop(),
     ...meta,
   });
+
+  // 쓰기 경계에서 정제했더라도 과거 데이터나 직접 수정된 DB 레코드는 신뢰할 수 없으므로,
+  // dangerouslySetInnerHTML을 사용하는 RichTextContent에 전달되기 직전 notice 본문을 다시 안전한 HTML로 보장한다.
+  // DB 원본은 조회 요청에서 변경하지 않고 응답 객체만 복사하며, 아직 리치 텍스트 정책 대상이 아닌 Q&A는 기존 post를 유지한다.
+  const responseItem =
+    post.type === "notice"
+      ? {
+          ...post,
+          content: await sanitizeRichTextHtml(String(post.content ?? "")),
+        }
+      : post;
+
   const response = NextResponse.json(
-    { ok: true, version: API_VERSION, item: post },
+    { ok: true, version: API_VERSION, item: responseItem },
     { headers: { "Cache-Control": "no-store" } },
   );
 

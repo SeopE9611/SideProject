@@ -22,6 +22,16 @@ function assertOrderedAfter(source, anchor, snippets) {
   }
 }
 
+function getFunctionSource(source, startMarker, endMarker) {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker, start);
+
+  assert.notEqual(start, -1, `시작 지점을 찾지 못했습니다: ${startMarker}`);
+  assert.notEqual(end, -1, `종료 지점을 찾지 못했습니다: ${endMarker}`);
+
+  return source.slice(start, end);
+}
+
 test("공지 작성 API는 정제 HTML의 화면상 텍스트 길이를 검증한 뒤 저장한다", () => {
   assert.match(createSource, /sanitizeRichTextHtml/);
   assert.match(
@@ -87,4 +97,39 @@ test("공지 작성과 수정 API는 동일한 본문 길이 오류 메시지를
     assert.match(source, /내용은 10자 이상 입력해 주세요\./);
     assert.match(source, /내용은 8000자 이내로 입력해 주세요\./);
   }
+});
+
+test("공지 상세 GET은 응답 전에 리치 텍스트 본문을 다시 정제한다", () => {
+  const getSource = getFunctionSource(
+    patchSource,
+    "export async function GET",
+    "export async function PATCH",
+  );
+
+  assert.match(getSource, /export\s+async\s+function\s+GET/);
+  assert.match(getSource, /post\.type\s*===\s*["']notice["']/);
+  assert.match(
+    getSource,
+    /sanitizeRichTextHtml\(\s*String\(post\.content\s*\?\?\s*["']["']\)\s*\)/s,
+  );
+
+  const responseItemMatch = getSource.match(
+    /const\s+(\w+)\s*=\s*post\.type\s*===\s*["']notice["']\s*\?/s,
+  );
+  assert.ok(responseItemMatch, "정제된 content를 담는 응답 객체가 필요합니다.");
+
+  const responseItemName = responseItemMatch[1];
+  assert.match(
+    getSource,
+    new RegExp(`\\.\\.\\.post[\\s\\S]*?content\\s*:\\s*await\\s+sanitizeRichTextHtml`),
+  );
+  assert.match(getSource, new RegExp(`:\\s*post\\s*;`));
+  assert.match(
+    getSource,
+    new RegExp(`NextResponse\\.json\\([\\s\\S]*?item\\s*:\\s*${responseItemName}`),
+  );
+  assert.doesNotMatch(getSource, /post\.content\s*=/);
+  assert.doesNotMatch(getSource, /\.updateOne\s*\(/);
+  assert.doesNotMatch(getSource, /\.findOneAndUpdate\s*\(/);
+  assert.match(getSource, /Cache-Control["']?\s*:\s*["']no-store["']/);
 });
