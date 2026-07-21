@@ -71,6 +71,10 @@ export default function FreeBoardEditClient({ id }: Props) {
   const { data, error, isLoading, mutate } = useSWR<DetailResponse>(
     `/api/community/posts/${id}`,
     fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
   );
 
   type Baseline = {
