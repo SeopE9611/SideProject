@@ -11,13 +11,13 @@ export default function NotFound() {
       <Card variant="feature" className="w-full max-w-xl rounded-panel text-center">
         <CardContent className="space-y-8 p-6 bp-sm:p-8">
           <div>
-            <p className="font-brand-heading text-ui-display font-semibold tracking-[-0.015em] text-foreground">
+            <p className="font-brand-display text-ui-display text-foreground">
               404
             </p>
           </div>
 
           <div>
-            <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-[-0.015em] bp-sm:text-ui-page-title-lg">
+            <h1 className="text-ui-page-title font-ui-bold tracking-normal bp-sm:text-ui-page-title-lg">
               페이지를 찾을 수 없습니다.
             </h1>
           </div>
