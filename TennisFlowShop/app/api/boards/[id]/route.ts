@@ -1,4 +1,4 @@
-import { richTextToPlainText } from "@/components/editor/rich-text-utils";
+import { richTextToValidationText } from "@/components/editor/rich-text-utils";
 import { requireAdmin } from "@/lib/admin.guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAccessToken } from "@/lib/auth.utils";
@@ -498,10 +498,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (post.type === "notice") {
       // 이벤트도 category만 다른 notice이므로 공지와 동일한 리치 텍스트 allowlist로 정제한다.
       const safeContent = await sanitizeRichTextHtml(patch.content);
-      // HTML 태그·속성 길이 대신 실제 화면상 본문을 추출해 작성 화면과 같은 길이 정책을 적용한다.
-      const plainTextContent = richTextToPlainText(safeContent);
-      // 정제 후 검증해야 위험 태그가 제거된 빈 본문으로 DB 갱신을 우회할 수 없다.
-      const lengthValidation = validateSanitizedLength(plainTextContent, {
+      // PATCH도 sanitizer 이후 실제 입력 텍스트만 계산해 자동 목록 기호를 제외하고, 빈 목록 수정은 DB 갱신 전에 거부한다.
+      const validationText = richTextToValidationText(safeContent);
+      const lengthValidation = validateSanitizedLength(validationText, {
         min: NOTICE_CONTENT_MIN,
         max: NOTICE_CONTENT_MAX,
       });

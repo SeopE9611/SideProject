@@ -83,22 +83,26 @@ export function normalizeRichTextValue(
   return plainTextToRichTextHtml(normalized);
 }
 
+type RichTextExtractionOptions = {
+  // 목록 항목을 읽기 쉬운 표시용 텍스트로 만들 때만 에디터 구조를 기호로 드러낸다.
+  includeListMarkers: boolean;
+};
+
 /**
- * HTML에서 화면에 보이는 일반 텍스트를 추출합니다.
+ * 리치 텍스트와 기존 일반 텍스트를 같은 규칙으로 화면상 문자열로 추출합니다.
  *
- * 사용 목적:
- * - 글자 수 계산
- * - 기존 일반 텍스트와의 호환
- * - 서버 전송 전 빈 내용 검사
+ * 목록 기호처럼 사용자가 직접 입력하지 않은 HTML 구조는 옵션으로만 추가해,
+ * 표시용 표현과 서버 글자 수 검증이 서로 다른 목적을 안전하게 가질 수 있게 합니다.
  */
-export function richTextToPlainText(
+function extractRichTextPlainText(
   value: string | null | undefined,
+  { includeListMarkers }: RichTextExtractionOptions,
 ): string {
   const normalized = normalizeRichTextValue(value);
 
   const withBlockBreaks = normalized
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<li\b[^>]*>/gi, "• ")
+    .replace(/<li\b[^>]*>/gi, includeListMarkers ? "• " : "")
     .replace(
       /<\/(p|h1|h2|h3|h4|h5|h6|li|blockquote)>/gi,
       "\n",
@@ -111,6 +115,29 @@ export function richTextToPlainText(
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+/**
+ * 미리보기·검색 텍스트처럼 읽기 쉬운 일반 텍스트 표현을 만듭니다.
+ *
+ * 목록 항목을 서로 구분해 보여 주기 위해 기존처럼 표시용 목록 기호를 포함합니다.
+ */
+export function richTextToPlainText(
+  value: string | null | undefined,
+): string {
+  return extractRichTextPlainText(value, { includeListMarkers: true });
+}
+
+/**
+ * 서버 본문 길이 검증에 사용할 실제 입력 텍스트를 만듭니다.
+ *
+ * 목록 기호는 사용자가 입력한 문자가 아니므로 제외해야 빈 목록이 최소 길이 검증을
+ * 우회하지 않으며, 서버 글자 수 검증도 실제 화면상 입력 텍스트만 계산할 수 있습니다.
+ */
+export function richTextToValidationText(
+  value: string | null | undefined,
+): string {
+  return extractRichTextPlainText(value, { includeListMarkers: false });
 }
 
 /**

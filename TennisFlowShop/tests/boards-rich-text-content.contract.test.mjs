@@ -13,23 +13,28 @@ test("공지 작성 API는 정제 HTML의 화면상 텍스트 길이를 검증�
   assert.match(createSource, /sanitizeRichTextHtml/);
   assert.match(
     createSource,
-    /import\s*\{\s*richTextToPlainText\s*\}\s*from\s*["']@\/components\/editor\/rich-text-utils["']/,
+    /import\s*\{\s*richTextToValidationText\s*\}\s*from\s*["']@\/components\/editor\/rich-text-utils["']/,
   );
   assert.match(createSource, /if\s*\(body\.type\s*===\s*["']notice["']\)/);
   assert.match(createSource, /safeContent\s*=\s*await\s+sanitizeRichTextHtml\(/);
-  assert.match(createSource, /richTextToPlainText\(safeContent\)/);
+  assert.match(createSource, /richTextToValidationText\(safeContent\)/);
+  assert.doesNotMatch(createSource, /richTextToPlainText\(safeContent\)/);
   assert.match(createSource, /const NOTICE_CONTENT_MIN\s*=\s*10/);
   assert.match(createSource, /const NOTICE_CONTENT_MAX\s*=\s*8000/);
   assert.match(
     createSource,
-    /validateSanitizedLength\(plainTextContent,\s*\{\s*min:\s*NOTICE_CONTENT_MIN,\s*max:\s*NOTICE_CONTENT_MAX,/s,
+    /validateSanitizedLength\(validationText,\s*\{\s*min:\s*NOTICE_CONTENT_MIN,\s*max:\s*NOTICE_CONTENT_MAX,/s,
   );
   assert.match(createSource, /content:\s*safeContent/);
   assert.match(createSource, /safeContent\s*=\s*await\s+sanitizeHtml\(/);
 
   assert.ok(
-    createSource.indexOf("validateSanitizedLength(plainTextContent") <
-      createSource.indexOf('collection<BoardCreateMongoDoc>("board_posts").insertOne'),
+    createSource.indexOf("sanitizeRichTextHtml") <
+      createSource.indexOf("richTextToValidationText(safeContent") &&
+      createSource.indexOf("richTextToValidationText(safeContent") <
+        createSource.indexOf("validateSanitizedLength(validationText") &&
+      createSource.indexOf("validateSanitizedLength(validationText") <
+        createSource.indexOf('collection<BoardCreateMongoDoc>("board_posts").insertOne'),
   );
 });
 
@@ -37,18 +42,19 @@ test("공지 수정 API는 저장된 post.type을 기준으로 검증하고 낙�
   assert.match(patchSource, /sanitizeRichTextHtml/);
   assert.match(
     patchSource,
-    /import\s*\{\s*richTextToPlainText\s*\}\s*from\s*["']@\/components\/editor\/rich-text-utils["']/,
+    /import\s*\{\s*richTextToValidationText\s*\}\s*from\s*["']@\/components\/editor\/rich-text-utils["']/,
   );
   assert.match(patchSource, /if\s*\(typeof patch\.content === ["']string["']\)/);
   assert.match(patchSource, /if\s*\(post\.type\s*===\s*["']notice["']\)/);
   assert.doesNotMatch(patchSource, /(?:parsed\.data|bodyRaw)\.type\s*===\s*["']notice["']/);
   assert.match(patchSource, /await\s+sanitizeRichTextHtml\(patch\.content\)/);
-  assert.match(patchSource, /richTextToPlainText\(safeContent\)/);
+  assert.match(patchSource, /richTextToValidationText\(safeContent\)/);
+  assert.doesNotMatch(patchSource, /richTextToPlainText\(safeContent\)/);
   assert.match(patchSource, /const NOTICE_CONTENT_MIN\s*=\s*10/);
   assert.match(patchSource, /const NOTICE_CONTENT_MAX\s*=\s*8000/);
   assert.match(
     patchSource,
-    /validateSanitizedLength\(plainTextContent,\s*\{\s*min:\s*NOTICE_CONTENT_MIN,\s*max:\s*NOTICE_CONTENT_MAX,/s,
+    /validateSanitizedLength\(validationText,\s*\{\s*min:\s*NOTICE_CONTENT_MIN,\s*max:\s*NOTICE_CONTENT_MAX,/s,
   );
   assert.match(patchSource, /patch\.content\s*=\s*safeContent/);
   assert.match(patchSource, /patch\.content\s*=\s*await\s+sanitizeHtml\(patch\.content\)/);
@@ -56,8 +62,12 @@ test("공지 수정 API는 저장된 post.type을 기준으로 검증하고 낙�
   assert.match(patchSource, /updatedAt:\s*clientSeenDate/);
 
   assert.ok(
-    patchSource.indexOf("validateSanitizedLength(plainTextContent") <
-      patchSource.indexOf("let r = await col.updateOne"),
+    patchSource.indexOf("sanitizeRichTextHtml") <
+      patchSource.indexOf("richTextToValidationText(safeContent") &&
+      patchSource.indexOf("richTextToValidationText(safeContent") <
+        patchSource.indexOf("validateSanitizedLength(validationText") &&
+      patchSource.indexOf("validateSanitizedLength(validationText") <
+        patchSource.indexOf("let r = await col.updateOne"),
   );
 });
 
