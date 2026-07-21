@@ -44,14 +44,14 @@ export function ResultState({
     >
       <div
         className={cn(
-          "mb-5 flex size-12 items-center justify-center rounded-full border text-ui-caption font-medium",
+          "mb-5 flex size-12 items-center justify-center rounded-full border text-ui-caption font-ui-medium",
           statusStyles[status],
         )}
         aria-hidden="true"
       >
         {icon ?? statusLabels[status]}
       </div>
-      <h1 className="text-ui-page-title font-semibold tracking-tight text-foreground sm:text-ui-page-title-lg">
+      <h1 className="text-ui-page-title font-ui-bold tracking-normal text-foreground sm:text-ui-page-title-lg">
         {title}
       </h1>
       {description && (

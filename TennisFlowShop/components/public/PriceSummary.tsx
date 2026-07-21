@@ -23,7 +23,7 @@ export function PriceSummary({ rows, title, description, footer, className }: Pr
     <div className={cn("space-y-4", className)}>
       {(title || description) && (
         <div className="space-y-1">
-          {title && <h3 className="text-ui-card-title font-semibold text-foreground">{title}</h3>}
+          {title && <h3 className="text-ui-card-title font-ui-medium text-foreground">{title}</h3>}
 
           {description && (
             <div className="text-ui-body-sm text-muted-foreground">{description}</div>
@@ -37,7 +37,7 @@ export function PriceSummary({ rows, title, description, footer, className }: Pr
             className={cn(
               "flex items-start justify-between gap-4 text-ui-body-sm",
               row.emphasis &&
-                "border-t border-border pt-4 text-ui-body-lg font-semibold text-foreground",
+                "border-t border-border pt-4 text-ui-body-lg font-ui-medium text-foreground",
             )}
           >
             <dt className="min-w-0 text-muted-foreground">
@@ -48,7 +48,7 @@ export function PriceSummary({ rows, title, description, footer, className }: Pr
                 </span>
               )}
             </dt>
-            <dd className="shrink-0 text-right font-medium text-foreground">{row.value}</dd>
+            <dd className="shrink-0 text-right font-ui-medium text-foreground">{row.value}</dd>
           </div>
         ))}
       </dl>

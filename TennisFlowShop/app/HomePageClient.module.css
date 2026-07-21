@@ -38,7 +38,7 @@
   gap: 10px;
   margin-bottom: 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.025em;
   text-transform: none;
 }
@@ -86,7 +86,7 @@
   justify-self: end;
   margin: 0;
   color: hsl(var(--muted-foreground));
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.7;
   word-break: keep-all;
 }
@@ -130,7 +130,7 @@
   font-weight: 500;
   font-synthesis: none;
   line-height: 0.98;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.035em;
   word-break: keep-all;
 }
 
@@ -195,13 +195,13 @@
 .heroTrustItem strong {
   color: hsl(var(--surface-inverse-foreground));
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .heroTrustItem span {
   margin-top: 5px;
   color: hsl(var(--surface-inverse-muted));
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
 }
 
@@ -235,7 +235,6 @@
   overflow: hidden;
   text-align: left;
   transition:
-    transform 0.2s,
     border-color 0.2s,
     background-color 0.2s,
     box-shadow 0.2s;
@@ -527,7 +526,7 @@
   display: block;
   margin-top: 4px;
   color: hsl(var(--muted-foreground));
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.45;
   word-break: keep-all;
@@ -537,7 +536,7 @@
   display: block;
   margin-top: 4px;
   color: hsl(var(--muted-foreground));
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
   word-break: keep-all;
 }
@@ -628,7 +627,7 @@
 .racketInventoryKicker {
   color: hsl(var(--muted-foreground));
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
 }
 
@@ -644,7 +643,7 @@
   flex-shrink: 0;
   color: hsl(var(--muted-foreground));
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
 }
 
@@ -767,7 +766,7 @@
 .racketInventoryBrand {
   color: hsl(var(--muted-foreground));
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25;
 }
 
@@ -808,14 +807,14 @@
   margin-top: 2px;
   color: hsl(var(--muted-foreground));
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .racketInventoryRental {
   margin-top: 3px;
   color: hsl(var(--muted-foreground));
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.35;
 }
 
@@ -845,7 +844,7 @@
 .racketInventoryMoreLink small {
   color: hsl(var(--muted-foreground));
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .racketInventoryMoreLink:focus-visible {
@@ -1050,7 +1049,6 @@
 
 .bentoSideCard {
   transition:
-    transform 0.2s,
     border-color 0.2s,
     background-color 0.2s,
     box-shadow 0.2s;
@@ -1065,7 +1063,6 @@
 @media (hover: hover) and (pointer: fine) {
   .pathCardIdle:hover,
   .bentoSideCard:hover {
-    transform: translateY(-2px);
     box-shadow: 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
   }
 }
@@ -1084,7 +1081,7 @@
 
   .pathCardIdle:hover,
   .bentoSideCard:hover {
-    transform: none;
+    box-shadow: none;
   }
 }
 
@@ -1148,7 +1145,7 @@
   }
 
   .sectionDescription {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
   }
 

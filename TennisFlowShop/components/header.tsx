@@ -107,16 +107,16 @@ const mobileMenuItemClass = (active = false) =>
   cn(
     "group relative z-0 min-h-11 w-full min-w-0 justify-between rounded-control px-3 py-2.5 text-ui-body-sm transition-[background-color,color,border-color,box-shadow,opacity] before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:rounded-full before:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     active
-      ? "bg-muted/60 font-semibold text-foreground before:bg-brand-highlight"
-      : "font-medium text-foreground/85 hover:bg-muted/40 hover:text-foreground",
+      ? "bg-muted/60 font-ui-medium text-foreground before:bg-brand-highlight"
+      : "font-ui-medium text-foreground/85 hover:bg-muted/40 hover:text-foreground",
   );
 const mobileNestedGroupClass = "mt-1 pl-1";
 const mobileNestedTriggerClass =
-  "min-h-11 min-w-0 px-3 py-2 text-ui-body-sm font-medium text-foreground/75 hover:text-foreground rounded-control hover:bg-muted/40";
+  "min-h-11 min-w-0 px-3 py-2 text-ui-body-sm font-ui-medium text-foreground/75 hover:text-foreground rounded-control hover:bg-muted/40";
 const mobileAccordionTriggerClass = (active = false) =>
   cn(
     "group relative z-0 rounded-lg px-3 py-2.5 transition-[background-color,color,border-color,box-shadow,opacity] before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:rounded-full before:bg-transparent hover:bg-muted/40 hover:no-underline",
-    active ? "font-semibold text-foreground before:bg-brand-highlight" : "text-foreground/85",
+    active ? "font-ui-medium text-foreground before:bg-brand-highlight" : "font-ui-medium text-foreground/85",
   );
 const mobileMenuGroupClass = "mt-1.5 pt-0";
 const mobileGroupTitleClass = "min-w-0 break-keep whitespace-normal text-foreground";
@@ -224,7 +224,7 @@ const Header = () => {
     setOverflowMenuOpen(false);
     setOpen(false);
     recomputeOverflow();
-    // 스크롤 상태 변화(scale 변경)도 실측 폭에 영향을 주므로 재계산 트리거로 포함
+    // 스크롤 상태 변화로 헤더 여백이 바뀐 뒤에도 실측 폭을 다시 계산한다.
   }, [recomputeOverflow, pathname]);
 
   useEffect(() => {
@@ -531,7 +531,7 @@ const Header = () => {
               aria-label="도깨비테니스 홈"
               onClick={() => setOpen(false)}
             >
-              <div className="relative h-7 w-7 shrink-0 overflow-hidden">
+              <div className={cn("relative shrink-0 overflow-hidden transition-[width,height] duration-300", isScrolled ? "h-6 w-6" : "h-7 w-7")}>
                 <Image
                   src="/brand/symbol-light.png"
                   alt=""
@@ -549,7 +549,7 @@ const Header = () => {
                   priority
                 />
               </div>
-              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-ui-card-title-lg font-semibold text-foreground">
+              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-ui-card-title-lg font-ui-medium text-foreground">
                 도깨비테니스
               </div>
             </Link>
@@ -567,7 +567,7 @@ const Header = () => {
                   <div className="flex min-w-0 items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <div className="min-w-0 max-w-[150px] truncate text-ui-body-sm font-medium text-foreground bp-sm:max-w-[180px]">
+                        <div className="min-w-0 max-w-[150px] truncate text-ui-body-sm font-ui-medium text-foreground bp-sm:max-w-[180px]">
                           {displayName} 님
                         </div>
                         {hasKakao && (
@@ -598,10 +598,10 @@ const Header = () => {
                       <Link
                         href="/mypage?tab=points"
                         onClick={() => setOpen(false)}
-                        className="mt-1 inline-flex min-w-0 items-center gap-1 text-ui-micro font-medium text-muted-foreground tabular-nums hover:text-foreground"
+                        className="mt-1 inline-flex min-w-0 items-center gap-1 text-ui-micro font-ui-medium text-muted-foreground tabular-nums hover:text-foreground"
                         aria-label="포인트 보기"
                       >
-                        <span className="text-ui-micro font-semibold">P</span>
+                        <span className="text-ui-micro font-ui-medium">P</span>
                         {pointsStatus === "loading" ? (
                           <>
                             <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
@@ -687,7 +687,7 @@ const Header = () => {
                     </div>
                   </div>
 
-                  <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-ui-label font-medium text-muted-foreground">
+                  <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-ui-label font-ui-medium text-muted-foreground">
                     <button
                       type="button"
                       className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -734,7 +734,7 @@ const Header = () => {
                   value="strings"
                   className={mobileAccordionTriggerClass(stringsGroupActive)}
                 >
-                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
+                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-ui-medium">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Grid2X2 className="h-4 w-4" />
                     </div> */}
@@ -862,7 +862,7 @@ const Header = () => {
                   value="rackets"
                   className={mobileAccordionTriggerClass(racketsGroupActive)}
                 >
-                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
+                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-ui-medium">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
                     </div> */}
@@ -916,7 +916,7 @@ const Header = () => {
                   value="boards"
                   className={mobileAccordionTriggerClass(boardsGroupActive)}
                 >
-                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
+                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-ui-medium">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
                     </div> */}
@@ -948,7 +948,7 @@ const Header = () => {
                   value="support"
                   className={mobileAccordionTriggerClass(supportGroupActive)}
                 >
-                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-semibold">
+                  <span className="inline-flex items-center gap-2.5 text-ui-card-title font-ui-medium">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquare className="h-4 w-4" />
                     </div> */}
@@ -1015,12 +1015,7 @@ const Header = () => {
             className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"} bg-background/95 border-b border-border/80 ${isScrolled ? "shadow-soft" : ""}`}
           />
           <SiteContainer
-            className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
-            style={{
-              transform: isScrolled ? "scale(0.96)" : "scale(1)",
-              transformOrigin: "top center",
-              willChange: "transform",
-            }}
+            className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible"
           >
             <div className="grid w-full grid-cols-[52px_minmax(0,1fr)_52px] items-center bp-sm:grid-cols-[56px_minmax(0,1fr)_56px] bp-lg:hidden">
               <div className="justify-self-start">
@@ -1042,7 +1037,7 @@ const Header = () => {
                 aria-label="도깨비테니스 홈"
                 onClick={() => setOpen(false)}
               >
-                <div className="relative h-7 w-7 shrink-0 overflow-hidden">
+                <div className={cn("relative shrink-0 overflow-hidden transition-[width,height] duration-300", isScrolled ? "h-6 w-6" : "h-7 w-7")}>
                   <Image
                     src="/brand/symbol-light.png"
                     alt=""
@@ -1060,7 +1055,7 @@ const Header = () => {
                     priority
                   />
                 </div>
-                <div className="font-brand-bold font-semibold text-ui-body tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+                <div className="font-brand-bold text-ui-body tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
                   도깨비테니스
                 </div>
               </Link>
@@ -1075,7 +1070,7 @@ const Header = () => {
                   >
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && (
-                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-surface-inverse px-1 text-ui-micro font-semibold text-surface-inverse-foreground">
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-surface-inverse px-1 text-ui-micro font-ui-medium text-surface-inverse-foreground">
                         {cartBadge}
                       </span>
                     )}
@@ -1090,7 +1085,7 @@ const Header = () => {
                   className="flex items-center gap-2 shrink-0 group"
                   aria-label="도깨비테니스 홈"
                 >
-                  <div className="relative h-12 w-12 xl:h-14 xl:w-14 2xl:h-[60px] 2xl:w-[60px] shrink-0 overflow-hidden">
+                  <div className={cn("relative shrink-0 overflow-hidden transition-[width,height] duration-300", isScrolled ? "h-10 w-10 xl:h-12 xl:w-12 2xl:h-14 2xl:w-14" : "h-12 w-12 xl:h-14 xl:w-14 2xl:h-[60px] 2xl:w-[60px]")}>
                     <Image
                       src="/brand/symbol-light.png"
                       alt=""
@@ -1109,7 +1104,7 @@ const Header = () => {
                     />
                   </div>
 
-                  <div className="font-brand-bold font-semibold text-ui-page-title xl:text-ui-page-title-lg tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+                  <div className="font-brand-bold text-ui-page-title xl:text-ui-page-title-lg tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
                     도깨비테니스
                   </div>
                 </Link>
@@ -1133,7 +1128,7 @@ const Header = () => {
                           <Link
                             key={item.name}
                             href={item.href}
-                            className={`inline-flex h-10 shrink-0 items-center rounded-lg px-3 text-ui-body leading-none transition whitespace-nowrap ${active ? "bg-secondary text-foreground font-medium" : "text-foreground hover:bg-secondary hover:text-foreground"}`}
+                            className={`inline-flex h-10 shrink-0 items-center rounded-lg px-3 text-ui-body leading-none transition whitespace-nowrap ${active ? "bg-secondary text-foreground font-ui-medium" : "text-foreground hover:bg-secondary hover:text-foreground"}`}
                             aria-current={active ? "page" : undefined}
                             aria-label={`${item.name} 페이지로 이동`}
                           >
@@ -1167,7 +1162,7 @@ const Header = () => {
                                 <DropdownMenuItem
                                   key={item.name}
                                   className={
-                                    active ? "bg-secondary text-foreground font-medium" : undefined
+                                    active ? "bg-secondary text-foreground font-ui-medium" : undefined
                                   }
                                   onSelect={(e) => {
                                     e.preventDefault();
@@ -1212,7 +1207,7 @@ const Header = () => {
                       <span
                         key={`measure-${it.name}`}
                         data-measure-item
-                        className="inline-flex h-10 shrink-0 items-center rounded-lg px-3 text-ui-body leading-none whitespace-nowrap font-medium"
+                        className="inline-flex h-10 shrink-0 items-center rounded-lg px-3 text-ui-body leading-none whitespace-nowrap font-ui-medium"
                       >
                         {it.name}
                       </span>
@@ -1220,7 +1215,7 @@ const Header = () => {
 
                     <span
                       data-measure-dots
-                      className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg px-3 text-ui-body leading-none whitespace-nowrap font-medium"
+                      className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg px-3 text-ui-body leading-none whitespace-nowrap font-ui-medium"
                     >
                       ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </span>
@@ -1272,7 +1267,7 @@ const Header = () => {
                   >
                     <ShoppingCart className="!h-5 !w-5" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 text-ui-micro min-w-[18px] h-[18px] px-[5px] rounded-full bg-surface-inverse text-surface-inverse-foreground flex items-center justify-center font-semibold">
+                      <span className="absolute -top-1 -right-1 text-ui-micro min-w-[18px] h-[18px] px-[5px] rounded-full bg-surface-inverse text-surface-inverse-foreground flex items-center justify-center font-ui-medium">
                         {cartBadge}
                       </span>
                     )}
@@ -1286,10 +1281,10 @@ const Header = () => {
                     asChild
                   >
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-ui-caption font-semibold text-muted-foreground">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-ui-caption font-ui-medium text-muted-foreground">
                         P
                       </span>
-                      <span className="hidden 2xl:inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-ui-body-sm font-medium tabular-nums">
+                      <span className="hidden 2xl:inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-ui-body-sm font-ui-medium tabular-nums">
                         {pointsStatus === "loading" ? (
                           <>
                             <Loader2

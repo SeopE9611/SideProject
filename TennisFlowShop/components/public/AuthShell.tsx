@@ -46,7 +46,7 @@ export function AuthShell({
         >
           <h1
             id={titleId}
-            className="font-brand-heading text-ui-section-title font-semibold tracking-[-0.015em] text-foreground"
+            className="text-ui-section-title font-ui-bold tracking-normal text-foreground"
           >
             {title}
           </h1>

@@ -35,12 +35,12 @@ export function PublicPageHero({
           className={cn("flex flex-col gap-6", centered && "items-center text-center")}
         >
           <div className={cn("max-w-3xl space-y-3", centered && "mx-auto")}>
-            {eyebrow && <div className="text-ui-label font-medium text-primary">{eyebrow}</div>}
-            <h1 className="text-balance text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:text-ui-page-title-lg">
+            {eyebrow && <div className="text-ui-label font-ui-medium text-primary">{eyebrow}</div>}
+            <h1 className="text-balance text-ui-page-title font-ui-bold tracking-normal text-foreground bp-sm:text-ui-page-title-lg">
               {title}
             </h1>
             {description && (
-              <div className="max-w-2xl text-pretty text-ui-body text-muted-foreground bp-sm:text-ui-body-lg">
+              <div className="max-w-2xl text-pretty text-ui-body font-ui-regular text-muted-foreground bp-sm:text-ui-body-lg">
                 {description}
               </div>
             )}
@@ -79,7 +79,7 @@ export function PublicPageHero({
               {eyebrow && (
                 <div
                   className={cn(
-                    "text-ui-label font-medium",
+                    "text-ui-label font-ui-medium",
                     inverse ? "text-surface-inverse-muted" : "text-muted-foreground",
                   )}
                 >
@@ -88,7 +88,7 @@ export function PublicPageHero({
               )}
               <h1
                 className={cn(
-                  "text-balance font-brand-heading text-ui-page-title font-semibold tracking-[-0.015em] bp-sm:text-ui-page-title-lg",
+                  "text-balance text-ui-page-title font-ui-bold tracking-normal bp-sm:text-ui-page-title-lg",
                   inverse ? "text-surface-inverse-foreground" : "text-foreground",
                 )}
               >
@@ -97,7 +97,7 @@ export function PublicPageHero({
               {description && (
                 <div
                   className={cn(
-                    "max-w-2xl text-pretty text-ui-body bp-sm:text-ui-body-lg",
+                    "max-w-2xl text-pretty text-ui-body font-ui-regular bp-sm:text-ui-body-lg",
                     inverse ? "text-surface-inverse-muted" : "text-muted-foreground",
                   )}
                 >

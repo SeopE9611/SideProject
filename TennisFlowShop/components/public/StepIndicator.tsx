@@ -47,7 +47,7 @@ export function StepIndicator({
             >
               <span
                 className={cn(
-                  "flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-ui-caption font-medium text-muted-foreground",
+                  "flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-ui-caption font-ui-medium text-muted-foreground",
                   variant === "standard" &&
                     isCurrent &&
                     "border-primary bg-primary text-primary-foreground",
@@ -64,7 +64,7 @@ export function StepIndicator({
                 {isComplete ? "✓" : index + 1}
               </span>
               <span className="space-y-0.5">
-                <span className="block text-ui-body-sm font-medium text-foreground">
+                <span className="block text-ui-body-sm font-ui-medium text-foreground">
                   {step.label}
                 </span>
                 {step.description && (

@@ -48,7 +48,7 @@ export function SummaryCard({
             {eyebrow && (
               <div
                 className={cn(
-                  "text-ui-caption font-medium uppercase tracking-[0.14em] text-primary",
+                  "text-ui-caption font-ui-medium uppercase tracking-[0.14em] text-primary",
                   inverse && "text-surface-inverse-muted",
                 )}
               >
@@ -59,8 +59,7 @@ export function SummaryCard({
             {title && (
               <h2
                 className={cn(
-                  "text-ui-card-title-lg font-semibold text-foreground",
-                  variant === "feature" && "font-brand-heading tracking-[-0.015em]",
+                  "text-ui-card-title-lg font-ui-medium text-foreground",
                   inverse && "text-surface-inverse-foreground",
                 )}
               >

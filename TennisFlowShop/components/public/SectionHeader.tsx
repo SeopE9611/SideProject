@@ -33,14 +33,14 @@ export function SectionHeader({
     >
       <div className="max-w-2xl space-y-2">
         {eyebrow && (
-          <div className="text-ui-caption font-medium uppercase tracking-[0.14em] text-primary sm:text-ui-label">
+          <div className="text-ui-caption font-ui-medium uppercase tracking-[0.14em] text-primary sm:text-ui-label">
             {eyebrow}
           </div>
         )}
 
         <h2
           className={cn(
-            "text-ui-section-title font-semibold tracking-tight text-foreground sm:text-ui-section-title-lg",
+            "text-ui-section-title font-ui-bold tracking-normal text-foreground sm:text-ui-section-title-lg",
             variant === "brand" && "font-brand-heading tracking-[-0.015em]",
           )}
         >
@@ -48,7 +48,7 @@ export function SectionHeader({
         </h2>
 
         {description && (
-          <div className="text-ui-body-sm text-muted-foreground sm:text-ui-body">{description}</div>
+          <div className="text-ui-body-sm font-ui-regular text-muted-foreground sm:text-ui-body">{description}</div>
         )}
       </div>
       {actions && (

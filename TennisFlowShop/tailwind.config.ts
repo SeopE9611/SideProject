@@ -60,6 +60,11 @@ const config: Config = {
       ],
     },
     extend: {
+      fontWeight: {
+        "ui-regular": "400",
+        "ui-medium": "500",
+        "ui-bold": "700",
+      },
       /**
        * 반응형 기준(벤치마크: Tennis Warehouse)
        * - bp-sm: 576+

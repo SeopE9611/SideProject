@@ -52,9 +52,8 @@ export function DashboardSectionPanel({
             <h2
               id={titleId}
               className={cn(
-                "text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg",
-                variant === "feature" &&
-                  "font-brand-heading text-ui-section-title tracking-[-0.015em]",
+                "text-ui-body font-ui-medium text-foreground bp-sm:text-ui-card-title-lg",
+                variant === "feature" && "text-ui-section-title tracking-normal",
               )}
             >
               {title}
