@@ -493,7 +493,8 @@ export default function OrderDetailPage() {
     normalizedProvider === "tosspayments" ||
     normalizedProvider === "toss";
   const hasBankInfo = Boolean(order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank]);
-  const shouldShowBankInfo = !isOnlinePayment && hasBankInfo;
+  const shouldShowBankInfo =
+    paymentStatusLabel !== "결제 불필요" && !isOnlinePayment && hasBankInfo;
   const receivedDone = Boolean(order.createdAt);
   const isPaymentResolved = ["결제 완료", "결제 불필요"].includes(paymentStatusLabel);
   const isPaymentPending = [
