@@ -67,7 +67,7 @@ const Footer = () => {
           <SiteContainer variant="wide">
             <div className="space-y-3 text-ui-body-sm text-surface-inverse-muted">
               <div className="space-y-1">
-                <p className="font-semibold text-surface-inverse-foreground">도깨비테니스</p>
+                <p className="font-ui-medium text-surface-inverse-foreground">도깨비테니스</p>
                 <p className="break-keep">고객센터 010-5218-5248 · 평일 10:00 - 22:00</p>
               </div>
 
@@ -115,14 +115,14 @@ const Footer = () => {
             <div className="space-y-6 bp-sm:space-y-8">
               <div className="grid w-full grid-cols-1 gap-y-6 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-sm:pb-6 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-8 bp-xl:grid-cols-[1.15fr_1fr_1fr_1fr_0.85fr]">
                 <section className="flex min-w-0 w-full flex-col items-start gap-3">
-                  <h3 className="text-ui-body-sm font-semibold text-surface-inverse-foreground bp-sm:text-ui-body">
+                  <h3 className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
                     고객센터
                   </h3>
                   <div className="w-full space-y-3">
                     <div className="flex items-start gap-2.5">
                       <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight" />
                       <div>
-                        <span className="block text-ui-body-lg font-semibold leading-none text-surface-inverse-foreground">
+                        <span className="block text-ui-body-lg font-ui-medium leading-none text-surface-inverse-foreground">
                           010-5218-5248
                         </span>
                         <p className="mt-1 text-ui-label text-surface-inverse-muted">
@@ -150,7 +150,7 @@ const Footer = () => {
                 </section>
 
                 <section className="flex min-w-0 w-full flex-col items-start gap-3">
-                  <h3 className="flex items-center gap-2 text-ui-body-sm font-semibold text-surface-inverse-foreground bp-sm:text-ui-body">
+                  <h3 className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
                     <Truck className="h-4 w-4 text-brand-highlight" />
                     배송안내
                   </h3>
@@ -186,13 +186,13 @@ const Footer = () => {
                 </section>
 
                 <section className="flex min-w-0 w-full flex-col items-start gap-3">
-                  <h3 className="flex items-center gap-2 text-ui-body-sm font-semibold text-surface-inverse-foreground bp-sm:text-ui-body">
+                  <h3 className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
                     <MapPin className="h-4 w-4 text-brand-highlight" />
                     매장 위치
                   </h3>
                   <div className="w-full space-y-3">
                     <div className="space-y-1.5 border-l border-brand-highlight/35 pl-3">
-                      <p className="text-ui-body-sm font-semibold text-surface-inverse-foreground">
+                      <p className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground">
                         도깨비테니스
                       </p>
                       <p className="text-ui-body-sm text-surface-inverse-foreground">
@@ -225,13 +225,13 @@ const Footer = () => {
                 </section>
 
                 <section className="flex min-w-0 w-full flex-col items-start gap-3">
-                  <h3 className="flex items-center gap-2 text-ui-body-sm font-semibold text-surface-inverse-foreground bp-sm:text-ui-body">
+                  <h3 className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
                     <CreditCard className="h-4 w-4 text-brand-highlight" />
                     결제안내
                   </h3>
                   <div className="w-full space-y-2 text-ui-label leading-5 text-surface-inverse-muted">
                     <p>무통장 입금 계좌</p>
-                    <p className="text-ui-body-sm font-semibold text-surface-inverse-foreground">
+                    <p className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground">
                       카카오뱅크 3333-2110-92155
                     </p>
                     <p>예금주 김재민</p>
@@ -240,7 +240,7 @@ const Footer = () => {
                 </section>
 
                 <section className="flex min-w-0 w-full flex-col items-start gap-3">
-                  <h3 className="text-ui-body-sm font-semibold text-surface-inverse-foreground bp-sm:text-ui-body">
+                  <h3 className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
                     SNS
                   </h3>
                   <div className="flex flex-col items-start gap-2.5">
