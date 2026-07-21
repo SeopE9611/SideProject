@@ -1,4 +1,5 @@
 "use client";
+import { RichTextContent } from "@/components/editor/RichTextContent";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
@@ -376,9 +377,8 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
               </header>
 
               <div className="border-t border-border bg-card p-5 sm:p-6 md:p-8">
-                <div className="max-w-3xl whitespace-pre-line break-words text-left text-ui-body leading-8 text-foreground">
-                  {String(notice.content || "")}
-                </div>
+                {/* 공지 상세 GET 읽기 경계에서 정제된 HTML만 RichTextContent에 전달됩니다. */}
+                <RichTextContent content={notice.content} className="max-w-3xl" />
               </div>
 
               {imageAtts.length > 0 && (

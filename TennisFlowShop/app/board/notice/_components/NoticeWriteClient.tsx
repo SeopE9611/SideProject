@@ -1,5 +1,7 @@
 "use client";
 
+import { RichTextEditor } from "@/components/editor/RichTextEditor";
+import { richTextToValidationText } from "@/components/editor/rich-text-utils";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
@@ -17,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
@@ -165,6 +166,13 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
   const [existingAttachments, setExistingAttachments] = useState<
     Array<{ url: string; name?: string; size?: number }>
   >([]);
+
+  // content는 HTML이므로 문자열 길이를 직접 검증할 수 없습니다. 서버와 같은 일반 텍스트
+  // 추출 기준의 파생값을 사용해야 프리필·충돌 복구에서 별도 길이 상태가 어긋나지 않습니다.
+  const contentValidationLength = useMemo(
+    () => richTextToValidationText(content).length,
+    [content],
+  );
 
   // (작성 모드) 최초 기본값 스냅샷 세팅
   useEffect(() => {
@@ -420,7 +428,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
         return;
       }
 
-      if (!t || !c) {
+      if (!t || contentValidationLength === 0) {
         showErrorToast("제목과 내용을 입력해주세요.");
         return;
       }
@@ -432,23 +440,24 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
         showErrorToast(`제목은 ${TITLE_MAX}자 이내로 입력해주세요.`);
         return;
       }
-      if (c.length < CONTENT_MIN) {
+      if (contentValidationLength < CONTENT_MIN) {
         showErrorToast(`내용은 ${CONTENT_MIN}자 이상 입력해주세요.`);
         return;
       }
-      if (c.length > CONTENT_MAX) {
+      if (contentValidationLength > CONTENT_MAX) {
         showErrorToast(`내용은 ${CONTENT_MAX}자 이내로 입력해주세요.`);
         return;
       }
-      // 공지 입력은 기본적으로 HTML/스크립트 입력을 허용하지 않는 편이 안전
-      if (hasScriptLike(t) || hasScriptLike(c)) {
+      if (hasScriptLike(t)) {
         showErrorToast("스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.");
         return;
       }
-      if (hasHtmlLike(t) || hasHtmlLike(c)) {
+      if (hasHtmlLike(t)) {
         showErrorToast("HTML 태그는 사용할 수 없습니다.");
         return;
       }
+      // 본문은 리치 에디터가 만든 정상 HTML이므로 클라이언트에서 거부하지 않습니다.
+      // 최종 보안 검증과 정제는 서버 sanitizer가 담당합니다.
       setSubmitting(true);
 
       // 여기까지 통과한 뒤에만 submitting ON (UI 잠금)
@@ -551,7 +560,13 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
           return;
         }
 
-        const msg = typeof json.error === "string" ? json.error : JSON.stringify(json.error);
+        const validationMessage =
+          Array.isArray(json?.details) && typeof json.details[0]?.message === "string"
+            ? json.details[0].message
+            : null;
+        const msg =
+          validationMessage ??
+          (typeof json.error === "string" ? json.error : JSON.stringify(json.error));
         throw new Error(
           msg || (editId ? "수정 실패(권한 확인 필요)" : "저장 실패(권한 확인 필요)"),
         );
@@ -808,22 +823,24 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                 />
 
                 <div className="space-y-3">
-                  <Label htmlFor="content" className="text-ui-body-lg font-semibold">
+                  <Label className="text-ui-body-lg font-semibold">
                     내용 <span className="text-destructive">*</span>
                   </Label>
-                  <Textarea
-                    id="content"
+                  <RichTextEditor
                     value={content}
-                    onChange={(e) => setContent(e.target.value)}
+                    onChange={(change) => {
+                      setContent(change.html);
+                    }}
+                    maxLength={CONTENT_MAX}
                     placeholder={
                       isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"
                     }
-                    className="min-h-[300px] resize-none rounded-control bg-card text-ui-body-lg"
+                    ariaLabel={isEventMode ? "이벤트 본문 편집기" : "공지사항 본문 편집기"}
+                    disabled={submitting}
                   />
                 </div>
                 <p className="text-ui-label text-muted-foreground">
-                  제목 {title.trim().length}/{TITLE_MAX}자 · 내용 {content.trim().length}/
-                  {CONTENT_MAX}자
+                  제목 {title.trim().length}/{TITLE_MAX}자
                 </p>
               </PublicSurface>
               {/* 기존 첨부 (수정 모드에서만 표시) */}
