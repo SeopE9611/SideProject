@@ -845,14 +845,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             <CardContent className="px-4 py-4 sm:px-5">
               <div className="flex flex-col gap-2 text-ui-body-sm text-muted-foreground sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="font-semibold text-foreground">중고거래 이용 안내</p>
+                  <p className="font-ui-medium text-foreground">중고거래 이용 안내</p>
                   <p className="mt-1">
                     도깨비테니스는 개인 간 거래의 당사자가 아니며 거래를 보증하지 않습니다. 상품
                     상태, 가격, 배송 방식, 환불 가능 여부를 거래 전에 확인해 주세요.
                   </p>
                 </div>
                 <div className="rounded-control border border-warning/35 bg-card px-3 py-2 text-ui-label sm:max-w-xs">
-                  <span className="font-semibold text-foreground">거래 금지 품목: </span>
+                  <span className="font-ui-medium text-foreground">거래 금지 품목: </span>
                   도난품, 위조품/가품, 불법 복제품, 개인정보 포함 물품, 법령상 제한 물품,
                   위험물·무기류·의약품·주류·담배
                 </div>
@@ -866,7 +866,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           <CardHeader className="flex flex-col gap-3 border-b border-border bg-brand-highlight-muted/45 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex items-center gap-3">
               <div>
-                <CardTitle className="font-brand-heading text-ui-section-title font-semibold md:text-ui-section-title-lg">
+                <CardTitle className="text-ui-section-title font-ui-bold tracking-normal md:text-ui-section-title-lg">
                   {config.boardTitle}
                 </CardTitle>
                 <p className="mt-0.5 text-ui-label text-foreground/75">{config.cardDescription}</p>
@@ -881,7 +881,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-ui-label text-foreground/75">
                     총{" "}
-                    <span className="font-semibold">
+                    <span className="font-ui-medium">
                       {hasResolvedTotal ? (total ?? 0).toLocaleString() : "-"}
                     </span>
                     개의 글이 있습니다.
@@ -1012,7 +1012,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           상세 필터
                         </span>
                         {activeMarketFilterCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-highlight px-1.5 text-ui-caption font-semibold tabular-nums text-brand-highlight-foreground">
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-highlight px-1.5 text-ui-caption font-ui-medium tabular-nums text-brand-highlight-foreground">
                             {activeMarketFilterCount}
                           </span>
                         )}
@@ -1081,7 +1081,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       <div className="px-4 py-3">
                         <div className="mb-3 flex items-center gap-2">
                           <div className="h-1 w-1 rounded-full bg-primary" />
-                          <span className="text-ui-label font-semibold text-foreground">
+                          <span className="text-ui-label font-ui-medium text-foreground">
                             기본 필터
                           </span>
                           <span className="text-ui-label text-foreground/75">
@@ -1147,7 +1147,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           >
                             <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
-                              <span className="text-ui-label font-semibold text-foreground">
+                              <span className="text-ui-label font-ui-medium text-foreground">
                                 라켓 상세 조건
                               </span>
                               <span className="text-ui-label text-foreground/75">
@@ -1272,7 +1272,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           >
                             <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
-                              <span className="text-ui-label font-semibold text-foreground">
+                              <span className="text-ui-label font-ui-medium text-foreground">
                                 스트링 상세 조건
                               </span>
                               <span className="text-ui-label text-foreground/75">
@@ -1470,7 +1470,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 <div className="hidden text-ui-body-sm md:block">
                   {/* 헤더 행 */}
                   {config.boardType === "market" ? (
-                    <div className="grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-caption font-semibold uppercase tracking-wide text-muted-foreground">
+                    <div className="grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-caption font-ui-medium uppercase tracking-wide text-muted-foreground">
                       <div className="text-center">No.</div>
                       <div className="text-center">분류</div>
                       <div>상품 정보</div>
@@ -1485,7 +1485,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-[64px_88px_minmax(0,1fr)_128px_140px_72px_72px_72px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-label font-semibold text-muted-foreground">
+                    <div className="grid grid-cols-[64px_88px_minmax(0,1fr)_128px_140px_72px_72px_72px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-label font-ui-medium text-muted-foreground">
                       <div className="text-center">번호</div>
                       <div className="text-center">분류</div>
                       <div>제목</div>
@@ -1532,7 +1532,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 상품 정보: 제목 + 브랜드/모델/등급 */}
                           <div className="min-w-0 pr-3">
                             <div className="flex items-center gap-1">
-                              <span className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
+                              <span className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-ui-medium leading-snug text-foreground transition-colors group-hover:text-primary">
                                 {post.title}
                               </span>
                               {post.commentsCount ? (
@@ -1584,7 +1584,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 가격 - 가장 눈에 띄게 */}
                           <div className="pr-1 text-right">
                             {post.marketMeta?.price != null ? (
-                              <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-semibold tabular-nums text-foreground">
+                              <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-ui-medium tabular-nums text-foreground">
                                 {post.marketMeta.price.toLocaleString()}
                                 <span className="ml-0.5 text-ui-micro font-normal text-muted-foreground">
                                   원
@@ -1877,7 +1877,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
                           {/* 가격 - 모바일에서도 가장 눈에 띄게 */}
                           {post.marketMeta?.price != null && (
-                            <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-semibold tabular-nums text-foreground">
+                            <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-ui-medium tabular-nums text-foreground">
                               {post.marketMeta.price.toLocaleString()}
                               <span className="ml-0.5 text-ui-micro font-normal text-muted-foreground">
                                 원

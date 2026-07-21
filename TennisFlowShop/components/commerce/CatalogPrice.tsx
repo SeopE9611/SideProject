@@ -32,7 +32,7 @@ export function CatalogPrice({
         {label ? <span className="text-ui-label text-muted-foreground">{label}</span> : null}
         <span
           className={cn(
-            "whitespace-nowrap tabular-nums font-semibold text-foreground",
+            "whitespace-nowrap tabular-nums font-ui-medium text-foreground",
             size === "detail"
               ? "text-ui-price-lg"
               : size === "list"
@@ -43,7 +43,7 @@ export function CatalogPrice({
           {displayPrice.toLocaleString()}원
         </span>
         {isSale ? (
-          <span className="shrink-0 whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-ui-label font-semibold text-foreground">
+          <span className="shrink-0 whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-ui-label font-ui-medium text-foreground">
             {saleRate}%
           </span>
         ) : null}

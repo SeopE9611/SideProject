@@ -41,22 +41,22 @@ export function CatalogResultsPanel({
       <div className="space-y-3 p-4 bp-sm:p-5">
         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
           <div className="min-w-0 space-y-1">
-            <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-brand-highlight-ink">
+            <p className="text-ui-label font-ui-medium uppercase tracking-[0.14em] text-brand-highlight-ink">
               {eyebrow}
             </p>
-            <h2 className="text-ui-card-title-lg font-semibold text-foreground">{title}</h2>
+            <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">{title}</h2>
             {description ? (
               <p className="max-w-2xl text-ui-body-sm text-muted-foreground">{description}</p>
             ) : null}
             <div
-              className="flex min-h-6 flex-wrap items-center gap-x-1 text-ui-body font-semibold tabular-nums text-foreground"
+              className="flex min-h-6 flex-wrap items-center gap-x-1 text-ui-body font-ui-medium tabular-nums text-foreground"
               aria-live="polite"
             >
               {countPrefix}{" "}
               {isCountLoading ? (
                 <Skeleton className="inline-block h-5 w-12 align-middle" />
               ) : (
-                <span className="font-semibold text-primary">{total}</span>
+                <span className="font-ui-medium text-primary">{total}</span>
               )}
               {countSuffix}
               {isCountLoading ? (

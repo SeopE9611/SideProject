@@ -26,7 +26,7 @@ export function CatalogFilterPanelShell({
     <div className="flex max-h-[85dvh] flex-col overflow-hidden rounded-t-2xl border-border bg-card bp-md:h-dvh bp-md:max-h-none bp-md:rounded-none">
       <header className="shrink-0 border-b border-border p-4 bp-sm:p-5">
         <div>
-          <h2 className="text-ui-section-title font-semibold text-foreground">{title}</h2>
+          <h2 className="text-ui-section-title font-ui-bold text-foreground">{title}</h2>
           <p className="text-ui-label text-muted-foreground">적용 조건 {activeCount}개</p>
         </div>
         {description ? (

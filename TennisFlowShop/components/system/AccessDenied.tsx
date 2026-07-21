@@ -12,7 +12,7 @@ export default function AccessDenied() {
         <div className="mx-auto max-w-md text-center space-y-8">
           <div>
             <Lock className="w-16 h-16 text-destructive mx-auto" />
-            <h2 className="text-ui-page-title sm:text-ui-page-title-lg font-semibold mt-4">
+            <h2 className="text-ui-page-title sm:text-ui-page-title-lg font-ui-bold mt-4">
               접근이 제한된 페이지입니다.
             </h2>
           </div>

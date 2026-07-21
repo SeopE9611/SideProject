@@ -60,7 +60,7 @@ export default function RacketsClient() {
     <div className="mx-auto max-w-6xl space-y-4 p-4 md:space-y-6">
       {/* 상단 타이틀 + 간단 필터 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-ui-page-title font-semibold">중고 라켓</h1>
+        <h1 className="text-ui-page-title font-ui-bold">중고 라켓</h1>
         <div className="flex gap-2">
           <input
             value={brand}
@@ -127,9 +127,9 @@ export default function RacketsClient() {
                 </div>
                 <div className="font-medium group-hover:underline">{it.model}</div>
                 <div className="text-ui-body-sm">
-                  상태: <span className="font-semibold">{it.condition}</span>
+                  상태: <span className="font-ui-medium">{it.condition}</span>
                 </div>
-                <div className="text-ui-body font-semibold">{it.price.toLocaleString()}원</div>
+                <div className="text-ui-body font-ui-medium">{it.price.toLocaleString()}원</div>
                 {it.rental?.enabled ? (
                   // 라켓별 진행중 대여 수 조회
                   <RacketAvailBadge id={it.id} />
