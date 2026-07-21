@@ -84,8 +84,12 @@ export function normalizeRichTextValue(
 }
 
 type RichTextExtractionOptions = {
-  // 목록 항목을 읽기 쉬운 표시용 텍스트로 만들 때만 에디터 구조를 기호로 드러낸다.
+  // 목록 기호는 표시용 표현일 뿐 사용자가 입력한 문자가 아니므로 검증용에는 추가하지 않는다.
   includeListMarkers: boolean;
+  // 블록 경계는 표시용에서는 읽기 쉬운 개행이지만, 검증용에서는 0자로 계산되어야 한다.
+  blockSeparator: string;
+  // 연속 개행 축약은 표시 가독성 정책이므로 실제 글자 수를 검증할 때는 적용하지 않는다.
+  collapseDisplayLineBreaks: boolean;
 };
 
 /**
@@ -96,25 +100,37 @@ type RichTextExtractionOptions = {
  */
 function extractRichTextPlainText(
   value: string | null | undefined,
-  { includeListMarkers }: RichTextExtractionOptions,
+  {
+    includeListMarkers,
+    blockSeparator,
+    collapseDisplayLineBreaks,
+  }: RichTextExtractionOptions,
 ): string {
   const normalized = normalizeRichTextValue(value);
 
-  const withBlockBreaks = normalized
+  const withStructure = normalized
+    // 실제 <br>는 사용자가 삽입한 hard break이므로 한 글자 줄바꿈으로 유지한다.
     .replace(/<br\s*\/?>/gi, "\n")
+    // 자동 목록 기호는 사용자 입력이 아니므로 표시용에서만 추가한다.
     .replace(/<li\b[^>]*>/gi, includeListMarkers ? "• " : "")
+    // 블록 경계는 표시용에서는 개행, 검증용에서는 빈 문자열로 변환한다.
     .replace(
       /<\/(p|h1|h2|h3|h4|h5|h6|li|blockquote)>/gi,
-      "\n",
+      blockSeparator,
     );
 
-  const withoutTags = withBlockBreaks.replace(/<[^>]+>/g, "");
+  const withoutTags = withStructure.replace(/<[^>]+>/g, "");
 
-  return decodeHtmlEntities(withoutTags)
-    .replace(/\u00a0/g, " ")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  const decoded = decodeHtmlEntities(withoutTags).replace(/\u00a0/g, " ");
+
+  if (collapseDisplayLineBreaks) {
+    return decoded
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  return decoded.trim();
 }
 
 /**
@@ -125,7 +141,12 @@ function extractRichTextPlainText(
 export function richTextToPlainText(
   value: string | null | undefined,
 ): string {
-  return extractRichTextPlainText(value, { includeListMarkers: true });
+  // 미리보기·검색에서는 문단과 목록 경계가 개행으로 보여야 읽기 쉬우므로 기존 목록 기호와 개행 축약을 유지한다.
+  return extractRichTextPlainText(value, {
+    includeListMarkers: true,
+    blockSeparator: "\n",
+    collapseDisplayLineBreaks: true,
+  });
 }
 
 /**
@@ -137,7 +158,13 @@ export function richTextToPlainText(
 export function richTextToValidationText(
   value: string | null | undefined,
 ): string {
-  return extractRichTextPlainText(value, { includeListMarkers: false });
+  // 문단·제목·목록 항목 경계는 HTML 구조이지 입력 문자가 아니므로 최소 10자 우회와 정확히 8,000자인 다중 문단의 초과 오판을 막기 위해 빈 문자열로 처리한다.
+  // 실제 <br>는 사용자가 삽입한 hard break라 내부에서는 한 글자로 남기며, 연속 hard break도 검증용에서 임의 축약하지 않는다.
+  return extractRichTextPlainText(value, {
+    includeListMarkers: false,
+    blockSeparator: "",
+    collapseDisplayLineBreaks: false,
+  });
 }
 
 /**
