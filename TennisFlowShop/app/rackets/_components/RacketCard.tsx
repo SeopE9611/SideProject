@@ -233,7 +233,7 @@ const RacketCard = React.memo(
     const actionButtons = (options?: { compact?: boolean; stackOnNarrow?: boolean }) => {
       const compact = options?.compact ?? false;
       const buttonClassName = cn(
-        "inline-flex h-10 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
+        "inline-flex h-10 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-2.5 text-center font-ui-medium [&_svg]:mr-0 [&_svg]:shrink-0",
         compact ? "text-ui-caption bp-sm:text-ui-label bp-md:text-ui-body-sm" : "text-ui-body-sm",
       );
       const disabledButtonClassName = cn(
@@ -323,7 +323,7 @@ const RacketCard = React.memo(
     const content = (
       <div className="min-w-0">
         <div
-          className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm"
+          className="mb-1.5 max-w-full truncate text-ui-label font-ui-medium uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm"
           title={displayBrandLabel}
         >
           {displayBrandLabel}
@@ -359,7 +359,7 @@ const RacketCard = React.memo(
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"
+                className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-ui-medium bp-sm:text-ui-body-sm"
               >
                 <Link href={`/rackets/${racket.id}`}>
                   <Eye className="mr-1.5 h-4 w-4 shrink-0" />
