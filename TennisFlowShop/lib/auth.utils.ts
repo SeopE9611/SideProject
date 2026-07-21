@@ -38,7 +38,8 @@ function getOrderScopedTokenSecret(): Secret {
 }
 
 type OrderScopedAccessTokenPayload =
-  { orderId: string; emailHash?: string } | { rentalId: string; emailHash?: string };
+  | { orderId: string; emailHash?: string }
+  | { rentalId: string; emailHash?: string };
 
 //  주문 접근 전용 토큰 발급 (게스트용)
 export function signOrderAccessToken(
@@ -86,16 +87,28 @@ export function verifyApplicationAccessToken(token: string) {
   }
 }
 
-
 export type GuestOrderLookupAccessTokenPayload = {
   scope: "guest_order_lookup";
   orderIds: string[];
 };
 
+const OBJECT_ID_TEXT_RE = /^[a-f0-9]{24}$/i;
+
 function normalizeGuestOrderLookupOrderIds(orderIds: unknown): string[] | null {
   if (!Array.isArray(orderIds) || orderIds.length > 50) return null;
-  const normalized = [...new Set(orderIds.map((id) => String(id).trim()).filter(Boolean))];
-  return normalized.length <= 50 ? normalized : null;
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  for (const orderId of orderIds) {
+    const value = String(orderId).trim();
+    if (!OBJECT_ID_TEXT_RE.test(value)) return null;
+    if (!seen.has(value)) {
+      seen.add(value);
+      normalized.push(value);
+    }
+  }
+
+  return normalized.length >= 1 && normalized.length <= 50 ? normalized : null;
 }
 
 export function signGuestOrderLookupAccessToken(
@@ -103,18 +116,35 @@ export function signGuestOrderLookupAccessToken(
   expiresIn: SignOptions["expiresIn"] = 60 * 30,
 ) {
   const orderIds = normalizeGuestOrderLookupOrderIds(payload.orderIds);
-  if (!orderIds || payload.scope !== "guest_order_lookup") throw new Error("INVALID_GUEST_ORDER_LOOKUP_PAYLOAD");
-  return jwt.sign({ scope: "guest_order_lookup", orderIds }, getOrderScopedTokenSecret(), { expiresIn });
+  if (!orderIds || payload.scope !== "guest_order_lookup") {
+    throw new Error("INVALID_GUEST_ORDER_LOOKUP_PAYLOAD");
+  }
+
+  return jwt.sign({ scope: "guest_order_lookup", orderIds }, getOrderScopedTokenSecret(), {
+    expiresIn,
+  });
 }
 
-export function verifyGuestOrderLookupAccessToken(token: string): GuestOrderLookupAccessTokenPayload | null {
+export function verifyGuestOrderLookupAccessToken(
+  token: string,
+): GuestOrderLookupAccessTokenPayload | null {
   try {
     const claims = jwt.verify(token, getOrderScopedTokenSecret()) as jwt.JwtPayload;
     const orderIds = normalizeGuestOrderLookupOrderIds(claims.orderIds);
-    return claims.scope === "guest_order_lookup" && orderIds ? { scope: "guest_order_lookup", orderIds } : null;
-  } catch { return null; }
+    return claims.scope === "guest_order_lookup" && orderIds
+      ? { scope: "guest_order_lookup", orderIds }
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export function hasGuestOrderLookupAccess(
-  claims: ReturnType<typeof verifyGuestOrderLookupAccessToken>, orderId: string,
-) { return Boolean(claims?.orderIds.includes(String(orderId))); }
+  claims: ReturnType<typeof verifyGuestOrderLookupAccessToken>,
+  orderId: string,
+) {
+  const normalizedOrderId = String(orderId).trim();
+  return Boolean(
+    OBJECT_ID_TEXT_RE.test(normalizedOrderId) && claims?.orderIds.includes(normalizedOrderId),
+  );
+}

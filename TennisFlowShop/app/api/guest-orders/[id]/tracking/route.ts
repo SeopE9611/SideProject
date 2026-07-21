@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
-import { hasGuestOrderLookupAccess, verifyAccessToken, verifyGuestOrderLookupAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import {
+  hasGuestOrderLookupAccess,
+  verifyAccessToken,
+  verifyGuestOrderLookupAccessToken,
+  verifyOrderAccessToken,
+} from "@/lib/auth.utils";
 import {
   fetchDeliveryTrackerSummary,
   type DeliveryTrackerSummaryFailure,
@@ -35,6 +40,13 @@ function getOrderIdClaim(claims: ReturnType<typeof verifyOrderAccessToken>) {
   return claims && "orderId" in claims ? claims.orderId : null;
 }
 
+function orderNotAvailable() {
+  return NextResponse.json(
+    { success: false, code: "ORDER_NOT_AVAILABLE", error: "주문 정보를 확인할 수 없습니다." },
+    { status: 404 },
+  );
+}
+
 function externalFailureResponse(result: DeliveryTrackerSummaryFailure) {
   return NextResponse.json(
     {
@@ -48,44 +60,33 @@ function externalFailureResponse(result: DeliveryTrackerSummaryFailure) {
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    if (getGuestOrderMode() === "off") {
-      return NextResponse.json(
-        { success: false, error: "비회원 주문 조회가 현재 중단되었습니다." },
-        { status: 404 },
-      );
-    }
+    if (getGuestOrderMode() === "off") return orderNotAvailable();
 
     const { id } = await params;
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: "BAD_ID" }, { status: 400 });
-    }
+    if (!ObjectId.isValid(id)) return orderNotAvailable();
 
     const db = (await clientPromise).db();
     const order = await db.collection("orders").findOne({ _id: new ObjectId(id) });
 
-    if (!order) {
-      return NextResponse.json(
-        { success: false, error: "주문을 찾을 수 없습니다." },
-        { status: 404 },
-      );
-    }
+    if (!order) return orderNotAvailable();
 
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
     const payload = safeVerifyAccessToken(token);
 
     if (order.userId) {
-      if (!payload || payload.sub !== order.userId.toString()) {
-        return NextResponse.json({ success: false, error: "권한이 없습니다." }, { status: 403 });
-      }
+      if (!payload || payload.sub !== order.userId.toString()) return orderNotAvailable();
     } else {
       const orderAccessToken = cookieStore.get("orderAccessToken")?.value;
       const orderClaims = orderAccessToken ? verifyOrderAccessToken(orderAccessToken) : null;
       const lookupClaims = verifyGuestOrderLookupAccessToken(
         cookieStore.get("guestOrderLookupToken")?.value ?? "",
       );
-      if (getOrderIdClaim(orderClaims) !== String(order._id) && !hasGuestOrderLookupAccess(lookupClaims, String(order._id))) {
-        return NextResponse.json({ success: false, error: "권한이 없습니다." }, { status: 403 });
+      if (
+        getOrderIdClaim(orderClaims) !== String(order._id) &&
+        !hasGuestOrderLookupAccess(lookupClaims, String(order._id))
+      ) {
+        return orderNotAvailable();
       }
     }
 

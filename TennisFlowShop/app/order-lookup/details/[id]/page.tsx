@@ -83,7 +83,7 @@ interface OrderDetail {
     depositor?: string | null;
     bank?: "shinhan" | "kookmin" | "woori";
   };
-  totalPrice: number;
+  totalPrice: number | null;
   shippingFee: number;
   status: string;
   paymentStatus?: string | null;
@@ -121,7 +121,12 @@ type TrackingResponse =
   | {
       success: false;
       errorCode?:
-        "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
 
@@ -1014,7 +1019,9 @@ export default function OrderDetailPage() {
                       <div className="flex items-center justify-between gap-3 py-2">
                         <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
                         <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                          {formatCurrency(order.totalPrice - order.shippingFee)}
+                          {typeof order.totalPrice === "number"
+                            ? formatCurrency(order.totalPrice - order.shippingFee)
+                            : "금액 확인 중"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3 py-2">
@@ -1029,7 +1036,9 @@ export default function OrderDetailPage() {
                           총 결제금액
                         </span>
                         <span className="shrink-0 whitespace-nowrap text-right text-ui-price-lg font-semibold tabular-nums text-primary">
-                          {formatCurrency(order.totalPrice)}
+                          {typeof order.totalPrice === "number"
+                            ? formatCurrency(order.totalPrice)
+                            : "금액 확인 중"}
                         </span>
                       </div>
 
