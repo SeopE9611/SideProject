@@ -7,9 +7,15 @@ import {
   OFFLINE_PACKAGE_ORDER_FILTER,
 } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import { buildOfflineRevenueSummary } from "@/app/api/admin/offline/_lib/revenueSummary";
+import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
 import { labelOrderStatus } from "@/lib/admin/status-labels";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import {
+  ORDER_CANCELED_TERMINAL_VALUES,
+  ORDER_CONFIRMED_TERMINAL_VALUES,
+  ORDER_REFUNDED_TERMINAL_VALUES,
+} from "@/lib/status/flow-status";
 import type { AdminDashboardMetricsResponseDto } from "@/types/admin/dashboard";
 import type { Db } from "mongodb";
 import type { UnknownDoc } from "./metrics-pure-utils";
@@ -313,6 +319,42 @@ const REFUND_ACCOUNT_NOT_READY_QUERY = {
     { "cancelRequest.refundAccount.holder": "" },
   ],
 };
+
+const ORDER_PAYMENT_PENDING_CANDIDATE_VALUES = [
+  ...PAYMENT_PENDING_VALUES,
+  "대기중",
+  "paymentpending",
+];
+const ORDER_TERMINAL_STATUS_VALUES = [
+  ...ORDER_CANCELED_TERMINAL_VALUES,
+  ...ORDER_REFUNDED_TERMINAL_VALUES,
+  ...ORDER_CONFIRMED_TERMINAL_VALUES,
+];
+
+function getDashboardOrderPaymentState(order: UnknownDoc) {
+  const paymentInfo = asDoc(order.paymentInfo);
+  const paymentStatus =
+    getString(order.paymentStatus)?.trim() || getString(paymentInfo?.status)?.trim() || null;
+  const rawTotalPrice = order.totalPrice;
+  const parsedTotalPrice = Number(rawTotalPrice);
+  const totalPrice =
+    rawTotalPrice !== null && rawTotalPrice !== undefined && Number.isFinite(parsedTotalPrice)
+      ? parsedTotalPrice
+      : null;
+
+  return getAdminOrderPaymentState({
+    paymentStatus,
+    paymentMethod: getString(paymentInfo?.method),
+    paymentProvider: getString(paymentInfo?.provider),
+    totalPrice,
+  });
+}
+
+function isOrderPaymentPendingState(state: ReturnType<typeof getAdminOrderPaymentState>) {
+  return (
+    state.kind === "bank_pending" || state.kind === "pg_pending" || state.kind === "pending"
+  );
+}
 
 export async function getDashboardMetrics(db: Db) {
   const now = new Date();
@@ -706,25 +748,51 @@ export async function getDashboardMetrics(db: Db) {
     )
     .toArray();
 
-  // 결제 대기(24h+) - 일반 주문(Order)
-  const paymentPending24hOrdersP = ordersCol.countDocuments({
-    paymentStatus: { $in: PAYMENT_PENDING_VALUES },
-    createdAt: { $lte: oneDayAgo },
-
-    // 취소 요청으로 넘어간 건은 "취소 요청" 카드에서 관리하므로 여기서는 제외
-    "cancelRequest.status": { $nin: CANCEL_REQUESTED_VALUES },
-  });
-
-  const paymentPending24hOrdersListP = ordersCol
+  // 결제 확인(24h+) - 일반 주문(Order).
+  // 후보를 먼저 좁힌 뒤 관리자 공통 결제 기준으로 최종 판정한다.
+  const paymentPending24hOrderCandidatesP = ordersCol
     .find(
       {
-        paymentStatus: { $in: PAYMENT_PENDING_VALUES },
         createdAt: { $lte: oneDayAgo },
         "cancelRequest.status": { $nin: CANCEL_REQUESTED_VALUES },
+        status: { $nin: ORDER_TERMINAL_STATUS_VALUES },
+        $nor: [{ totalPrice: { $type: "number", $lte: 0 } }],
+        $or: [
+          { paymentStatus: { $in: ORDER_PAYMENT_PENDING_CANDIDATE_VALUES } },
+          {
+            $and: [
+              {
+                $or: [
+                  { paymentStatus: { $exists: false } },
+                  { paymentStatus: null },
+                  { paymentStatus: { $regex: /^\s*$/ } },
+                ],
+              },
+              { "paymentInfo.status": { $in: ORDER_PAYMENT_PENDING_CANDIDATE_VALUES } },
+            ],
+          },
+          {
+            $and: [
+              {
+                $or: [
+                  { paymentStatus: { $exists: false } },
+                  { paymentStatus: null },
+                  { paymentStatus: { $regex: /^\s*$/ } },
+                ],
+              },
+              {
+                $or: [
+                  { "paymentInfo.status": { $exists: false } },
+                  { "paymentInfo.status": null },
+                  { "paymentInfo.status": { $regex: /^\s*$/ } },
+                ],
+              },
+            ],
+          },
+        ],
       },
       {
         sort: { createdAt: 1 }, // 오래된 순(운영 우선순위)
-        limit: 10,
         projection: {
           _id: 1,
           userId: 1,
@@ -733,6 +801,7 @@ export async function getDashboardMetrics(db: Db) {
           totalPrice: 1,
           status: 1,
           paymentStatus: 1,
+          paymentInfo: 1,
           shippingInfo: 1,
         },
       },
@@ -1726,8 +1795,7 @@ export async function getDashboardMetrics(db: Db) {
     outOfStockListDocs,
 
     // 결제 대기(24h+)
-    paymentPending24hOrders,
-    paymentPending24hOrdersList,
+    paymentPending24hOrderCandidates,
     paymentPending24hApps,
     paymentPending24hAppsList,
     paymentPending24hRentals,
@@ -1825,8 +1893,7 @@ export async function getDashboardMetrics(db: Db) {
     outOfStockListP,
 
     // 결제 대기(24h+)
-    paymentPending24hOrdersP,
-    paymentPending24hOrdersListP,
+    paymentPending24hOrderCandidatesP,
     paymentPending24hAppsP,
     paymentPending24hAppsListP,
     paymentPending24hRentalsP,
@@ -2016,9 +2083,13 @@ export async function getDashboardMetrics(db: Db) {
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .slice(0, 10);
 
+  const paymentPending24hOrders = asDocArray(paymentPending24hOrderCandidates).filter((order) =>
+    isOrderPaymentPendingState(getDashboardOrderPaymentState(order)),
+  );
+
   // 결제 대기(24h+) 총합 (주문 + 신청 + 대여 + 패키지)
   const paymentPending24h =
-    paymentPending24hOrders +
+    paymentPending24hOrders.length +
     paymentPending24hApps +
     paymentPending24hRentals +
     paymentPending24hPackages;
@@ -2032,7 +2103,7 @@ export async function getDashboardMetrics(db: Db) {
 
   // 결제 대기(24h+) Top 리스트 (오래된 순)
   const paymentPending24hList = [
-    ...asDocArray(paymentPending24hOrdersList).map((d) => ({
+    ...paymentPending24hOrders.slice(0, 10).map((d) => ({
       kind: "order" as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),

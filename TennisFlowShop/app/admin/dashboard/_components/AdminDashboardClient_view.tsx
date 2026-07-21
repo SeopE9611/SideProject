@@ -164,7 +164,7 @@ export default function AdminDashboardClientView() {
         <SummaryCard
           title="긴급 확인"
           value={`${formatAdminNumber(urgentTotal)}건`}
-          description="취소 요청, 24시간 초과 결제대기, 대여 연체"
+          description="취소 요청, 24시간 초과 결제 확인, 대여 연체"
           tone={urgentTotal > 0 ? "danger" : "default"}
         />
         <SummaryCard
@@ -198,6 +198,7 @@ export default function AdminDashboardClientView() {
           <CardContent className="space-y-2 text-sm">
             {[
               ["취소 요청", data.kpi.queue.cancelRequests],
+              ["24시간 초과 결제 확인", data.kpi.queue.paymentPending24h],
               ["송장 등록 대기", data.kpi.queue.shippingPending],
               ["대여 반납 임박", data.kpi.queue.rentalDueSoon],
               ["패키지 결제 확인", data.kpi.queue.packagePaymentCheck],
