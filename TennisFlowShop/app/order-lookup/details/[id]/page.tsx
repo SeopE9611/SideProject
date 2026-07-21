@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
+import { badgeToneVariant, getOrderStatusTone, getPaymentStatusTone } from "@/lib/badge-style";
 import { bankLabelMap } from "@/lib/constants";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatKoreanPhone } from "@/lib/phone";
@@ -23,6 +23,7 @@ import {
   getCommonOrderStatusLabel,
 } from "@/lib/status-labels/base";
 import { getGuestOrderNextActionText } from "@/app/order-lookup/_lib/guestOrderNextAction";
+import { getCustomerOrderPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import {
   ArrowLeft,
   Calendar,
@@ -72,7 +73,8 @@ interface OrderDetail {
     reservationLabel?: string | null;
   }[];
   paymentInfo?: {
-    method: string;
+    status?: string | null;
+    method?: string | null;
     provider?: string | null;
     easyPayProvider?: string | null;
     cardDisplayName?: string | null;
@@ -86,6 +88,7 @@ interface OrderDetail {
   totalPrice: number;
   shippingFee: number;
   status: string;
+  paymentStatus?: string | null;
   paymentMethod?: string;
   trackingNumber?: string;
   items: {
@@ -390,9 +393,21 @@ export default function OrderDetailPage() {
     ? orderShippingReadLabels.primaryValue
     : order.shippingInfo.address;
   const displayStatus = getLookupOrderStatusLabel(order.status, order.shippingInfo);
+  const orderPaymentInfo = order.paymentInfo as Record<string, unknown> | undefined;
+  const rawPaymentStatus =
+    String(order.paymentStatus ?? "").trim() ||
+    String(order.paymentInfo?.status ?? "").trim() ||
+    null;
+  const paymentStatusLabel = getCustomerOrderPaymentStatusLabel({
+    paymentStatus: rawPaymentStatus,
+    paymentMethod: order.paymentMethod ?? order.paymentInfo?.method ?? null,
+    paymentProvider: order.paymentInfo?.provider ?? null,
+    totalPrice: order.totalPrice,
+  });
   const nextActionText = getGuestOrderNextActionText({
     status: order.status,
     displayStatus,
+    paymentStatusLabel,
     shippingLike: order.shippingInfo,
   });
   const trackingNumber = order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
@@ -458,7 +473,6 @@ export default function OrderDetailPage() {
   const normalizedStatus = String(order.status ?? "")
     .trim()
     .toLowerCase();
-  const orderPaymentInfo = order.paymentInfo as Record<string, unknown> | undefined;
   const paymentDisplaySummary = getPaymentDisplaySummary({
     method: order.paymentMethod ?? orderPaymentInfo?.method,
     provider: orderPaymentInfo?.provider,
@@ -480,16 +494,15 @@ export default function OrderDetailPage() {
     normalizedProvider === "toss";
   const hasBankInfo = Boolean(order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank]);
   const shouldShowBankInfo = !isOnlinePayment && hasBankInfo;
-  const paymentSource = String(order.paymentMethod ?? orderPaymentInfo?.method ?? "")
-    .trim()
-    .toLowerCase();
-
   const receivedDone = Boolean(order.createdAt);
-  const paymentDone =
-    normalizedStatus.includes("paid") ||
-    normalizedStatus.includes("결제완료") ||
-    paymentSource.includes("card") ||
-    paymentSource.includes("결제");
+  const isPaymentResolved = ["결제 완료", "결제 불필요"].includes(paymentStatusLabel);
+  const isPaymentPending = [
+    "입금 확인 대기",
+    "결제 확인 대기",
+    "결제 또는 입금 확인 대기",
+  ].includes(paymentStatusLabel);
+  const isPaymentFailed = paymentStatusLabel === "결제 실패";
+  const paymentDone = isPaymentResolved;
   const isPreparing = ["processing", "preparing", "배송준비", "배송준비중", "처리중"].some(
     (keyword) => normalizedStatus.includes(keyword),
   );
@@ -500,6 +513,19 @@ export default function OrderDetailPage() {
   const isCompleted = ["confirmed", "completed", "구매확정"].some((keyword) =>
     normalizedStatus.includes(keyword),
   );
+  const paymentTimelineDescription =
+    paymentStatusLabel === "결제 완료"
+      ? "결제가 완료되었습니다."
+      : paymentStatusLabel === "결제 불필요"
+        ? "추가 결제 없이 접수된 주문입니다."
+        : paymentStatusLabel === "입금 확인 대기"
+          ? "입금 또는 입금 확인을 기다리고 있습니다."
+          : paymentStatusLabel === "결제 확인 대기" ||
+              paymentStatusLabel === "결제 또는 입금 확인 대기"
+            ? "결제 승인 상태를 확인하고 있습니다."
+            : isPaymentFailed
+              ? "결제가 완료되지 않았습니다. 상태 확인이 필요합니다."
+              : "결제 상태를 확인하고 다음 절차를 준비합니다.";
 
   const timelineSteps: TimelineStep[] = [
     {
@@ -509,8 +535,8 @@ export default function OrderDetailPage() {
     },
     {
       title: "결제 확인",
-      description: "결제 상태를 확인하고 다음 절차를 준비합니다.",
-      state: paymentDone ? "done" : receivedDone ? "active" : "waiting",
+      description: paymentTimelineDescription,
+      state: paymentDone ? "done" : isPaymentPending || isPaymentFailed ? "active" : "waiting",
     },
     {
       title: "상품 준비",
@@ -793,6 +819,13 @@ export default function OrderDetailPage() {
                         <p className="mb-3 font-semibold text-foreground">
                           {paymentDisplaySummary.userLabel}
                         </p>
+                        <p className="text-ui-body-sm text-muted-foreground mb-2">결제 상태</p>
+                        <Badge
+                          variant={badgeToneVariant(getPaymentStatusTone(paymentStatusLabel))}
+                          className="mb-3 text-ui-label font-medium"
+                        >
+                          {paymentStatusLabel}
+                        </Badge>
                         {shouldShowBankInfo && order.paymentInfo?.bank && (
                           <>
                             <p className="text-ui-body-sm text-muted-foreground mb-2">입금 계좌</p>

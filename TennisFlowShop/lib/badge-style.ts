@@ -258,11 +258,24 @@ export function getPaymentStatusTone(status?: string | null): BadgeSemanticTone 
     return "danger";
   if (normalized.includes("실패") || normalized.includes("취소") || normalized.includes("환불"))
     return "danger";
-  if (normalized === "결제완료" || normalized === "주문결제포함" || normalized === "대여결제포함")
+  if (
+    normalized === "결제완료" ||
+    normalized === "결제 완료" ||
+    normalized === "결제 불필요" ||
+    normalized === "주문결제포함" ||
+    normalized === "대여결제포함"
+  )
     return "success";
   if (lower === "paid" || lower === "payment_completed") return "success";
   if (normalized === "패키지차감") return "info";
-  if (normalized === "결제대기") return "warning";
+  if (
+    normalized === "결제대기" ||
+    normalized === "결제 대기" ||
+    normalized === "입금 확인 대기" ||
+    normalized === "결제 확인 대기" ||
+    normalized === "결제 또는 입금 확인 대기"
+  )
+    return "warning";
   if (lower === "pending") return "warning";
   if (normalized === "확인필요") return "warning";
   return "neutral";
