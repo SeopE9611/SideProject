@@ -159,7 +159,7 @@ export default async function ServicesPage() {
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
             <div className="max-w-3xl space-y-4">
               <p className="text-ui-label font-medium text-primary">스트링 교체 서비스</p>
-              <h1 className="text-balance font-brand-heading text-ui-page-title font-semibold tracking-[-0.015em] text-foreground bp-sm:text-ui-page-title-lg">
+              <h1 className="text-balance font-brand-heading text-ui-page-title tracking-[-0.015em] text-foreground bp-sm:text-ui-page-title-lg">
                 스트링 교체, 내 상황에 맞는 흐름부터 선택하세요.
               </h1>
               <p className="text-pretty text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
@@ -187,7 +187,7 @@ export default async function ServicesPage() {
                   key={notice.title}
                   className="flex items-start justify-between gap-4 border-b border-surface-inverse-foreground/15 pb-3 last:border-b-0 last:pb-0"
                 >
-                  <span className="text-ui-body-sm font-semibold text-surface-inverse-foreground">
+                  <span className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground">
                     {notice.title}
                   </span>
                   <span className="text-right text-ui-body-sm leading-relaxed text-surface-inverse-muted">
@@ -227,7 +227,7 @@ export default async function ServicesPage() {
                     {item.badge}
                   </Badge>
                 </div>
-                <h3 className="text-ui-card-title-lg font-semibold leading-snug text-foreground">
+                <h3 className="text-ui-card-title-lg font-ui-medium leading-snug text-foreground">
                   {item.title}
                 </h3>
                 <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -237,7 +237,7 @@ export default async function ServicesPage() {
                   {item.steps}
                 </div>
                 <span
-                  className={`mt-auto inline-flex items-center gap-2 text-ui-body-sm font-semibold ${item.featured ? "text-brand-highlight-ink" : "text-foreground"}`}
+                  className={`mt-auto inline-flex items-center gap-2 text-ui-body-sm font-ui-medium ${item.featured ? "text-brand-highlight-ink" : "text-foreground"}`}
                 >
                   {item.cta}
                   <ArrowRight
@@ -270,7 +270,7 @@ export default async function ServicesPage() {
                     {item.icon}
                   </span>
                   <span className="min-w-0 flex-1 space-y-1">
-                    <span className="block text-ui-body-sm font-semibold text-foreground">
+                    <span className="block text-ui-body-sm font-ui-medium text-foreground">
                       {item.title}
                     </span>
                     <span className="block text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -288,7 +288,7 @@ export default async function ServicesPage() {
               href="tel:01052185248"
               className="flex flex-col gap-2 border-t border-border bg-muted/25 p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
             >
-              <span className="flex items-center gap-3 text-ui-body-sm font-semibold text-foreground">
+              <span className="flex items-center gap-3 text-ui-body-sm font-ui-medium text-foreground">
                 <Phone className="h-4 w-4 text-primary" aria-hidden />
                 전화 상담
               </span>
@@ -309,22 +309,22 @@ export default async function ServicesPage() {
           <div className="grid gap-6 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-start">
             <div className="space-y-4">
               <p className="text-ui-label font-medium text-primary">가격 구조</p>
-              <h2 className="text-ui-section-title-lg font-semibold tracking-tight text-foreground">
+              <h2 className="text-ui-section-title-lg font-ui-bold tracking-normal text-foreground">
                 신청 방식에 따라 비용이 달라집니다
               </h2>
               <div className="space-y-3 text-ui-body-sm leading-relaxed text-muted-foreground">
                 <p>
-                  <span className="font-semibold text-foreground">보유/커스텀 스트링 장착비</span>:{" "}
+                  <span className="font-ui-medium text-foreground">보유/커스텀 스트링 장착비</span>:{" "}
                   <span className="whitespace-nowrap tabular-nums">
                     {CUSTOM_STRING_MOUNTING_FEE.toLocaleString("ko-KR")}원
                   </span>
                 </p>
                 <p>
-                  <span className="font-semibold text-foreground">스트링 상품 선택</span>: 상품가와
+                  <span className="font-ui-medium text-foreground">스트링 상품 선택</span>: 상품가와
                   상품별 장착비 기준
                 </p>
                 <p>
-                  <span className="font-semibold text-foreground">패키지 적용</span>: 사용 가능한
+                  <span className="font-ui-medium text-foreground">패키지 적용</span>: 사용 가능한
                   잔여 횟수 차감
                 </p>
               </div>
@@ -347,7 +347,7 @@ export default async function ServicesPage() {
                   key={cat.key}
                   className="grid gap-2 border-b border-border px-4 py-3 text-ui-body-sm last:border-b-0 bp-sm:grid-cols-[1.1fr_0.7fr_1fr_1fr]"
                 >
-                  <div className="font-semibold text-foreground">{cat.label}</div>
+                  <div className="font-ui-medium text-foreground">{cat.label}</div>
                   {cat.count === 0 ? (
                     <div className="text-muted-foreground bp-sm:col-span-3">
                       등록된 상품 데이터 없음
@@ -377,7 +377,7 @@ export default async function ServicesPage() {
                 </div>
               ))}
               <div className="grid gap-2 px-4 py-3 text-ui-body-sm bp-sm:grid-cols-[1.1fr_2.7fr]">
-                <div className="font-semibold text-foreground">하이브리드 조합</div>
+                <div className="font-ui-medium text-foreground">하이브리드 조합</div>
                 <div className="text-muted-foreground">
                   등록된 하이브리드 상품 개수{" "}
                   <span className="whitespace-nowrap tabular-nums text-foreground">
@@ -397,7 +397,7 @@ export default async function ServicesPage() {
               <p className="text-ui-label font-medium text-surface-inverse-muted">
                 전문적인 프로세스
               </p>
-              <h2 className="text-ui-section-title-lg font-semibold text-surface-inverse-foreground">
+              <h2 className="text-ui-section-title-lg font-ui-bold text-surface-inverse-foreground">
                 스트링 장착 과정
               </h2>
             </div>
@@ -408,12 +408,12 @@ export default async function ServicesPage() {
                   className="border-t border-surface-inverse-foreground/15 py-4 bp-sm:px-4 bp-sm:[&:nth-child(2n)]:border-l bp-lg:border-l bp-lg:first:border-l-0"
                 >
                   <div className="mb-3 flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-highlight-muted text-ui-body-sm font-semibold text-brand-highlight-ink">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-highlight-muted text-ui-body-sm font-ui-medium text-brand-highlight-ink">
                       {step.step}
                     </span>
                     <span className="text-brand-highlight-ink">{step.icon}</span>
                   </div>
-                  <h3 className="text-ui-body font-semibold text-surface-inverse-foreground">
+                  <h3 className="text-ui-body font-ui-medium text-surface-inverse-foreground">
                     {step.title}
                   </h3>
                   <p className="mt-2 text-ui-body-sm leading-relaxed text-surface-inverse-muted">
@@ -430,7 +430,7 @@ export default async function ServicesPage() {
         <SiteContainer>
           <PublicSurface className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
             <div className="space-y-2">
-              <h2 className="text-ui-section-title font-semibold text-foreground">
+              <h2 className="text-ui-section-title font-ui-bold text-foreground">
                 준비됐다면 신청 방식부터 선택하세요.
               </h2>
               <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
