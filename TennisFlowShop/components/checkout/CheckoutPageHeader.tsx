@@ -34,10 +34,10 @@ export default function CheckoutPageHeader({
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-ui-label font-semibold uppercase tracking-[0.18em] text-brand-highlight-ink">
+              <p className="text-ui-label font-ui-medium uppercase tracking-[0.18em] text-brand-highlight-ink">
                 {eyebrow}
               </p>
-              <h1 className="mt-1 text-balance font-brand-heading text-ui-page-title font-semibold leading-tight tracking-tight text-foreground bp-sm:text-ui-page-title-lg">
+              <h1 className="mt-1 text-balance text-ui-page-title font-ui-bold leading-tight tracking-normal text-foreground bp-sm:text-ui-page-title-lg">
                 {title}
               </h1>
               {description && (
