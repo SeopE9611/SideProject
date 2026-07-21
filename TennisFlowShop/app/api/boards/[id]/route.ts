@@ -1,4 +1,7 @@
-import { richTextToValidationText } from "@/components/editor/rich-text-utils";
+import {
+  prepareRichTextHtmlForSanitization,
+  richTextToValidationText,
+} from "@/components/editor/rich-text-utils";
 import { requireAdmin } from "@/lib/admin.guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAccessToken } from "@/lib/auth.utils";
@@ -331,7 +334,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     post.type === "notice"
       ? {
           ...post,
-          content: await sanitizeRichTextHtml(String(post.content ?? "")),
+          content: await sanitizeRichTextHtml(
+            prepareRichTextHtmlForSanitization(String(post.content ?? "")),
+          ),
         }
       : post;
 

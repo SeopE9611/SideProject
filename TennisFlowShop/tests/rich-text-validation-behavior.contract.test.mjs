@@ -16,7 +16,51 @@ const transpiled = ts.transpileModule(source, {
   },
 }).outputText;
 const moduleUrl = `data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`;
-const { richTextToPlainText, richTextToValidationText } = await import(moduleUrl);
+const {
+  normalizeRichTextValue,
+  prepareRichTextHtmlForSanitization,
+  richTextToPlainText,
+  richTextToValidationText,
+} = await import(moduleUrl);
+
+test("sanitizer 준비 함수는 raw/entity 일반 텍스트를 동일한 HTML로 정규화한다", () => {
+  assert.equal(prepareRichTextHtmlForSanitization("A&B"), "<p>A&amp;B</p>");
+  assert.equal(prepareRichTextHtmlForSanitization("A&amp;B"), "<p>A&amp;B</p>");
+});
+
+test("sanitizer 준비 함수는 raw/entity 부등호와 줄바꿈 일반 텍스트를 안전한 HTML로 만든다", () => {
+  assert.equal(prepareRichTextHtmlForSanitization("2 < 3"), "<p>2 &lt; 3</p>");
+  assert.equal(prepareRichTextHtmlForSanitization("2 &lt; 3"), "<p>2 &lt; 3</p>");
+  assert.equal(
+    prepareRichTextHtmlForSanitization("첫째 줄\r\n둘째 줄"),
+    "<p>첫째 줄<br>둘째 줄</p>",
+  );
+});
+
+test("sanitizer 준비 함수는 기존 HTML을 유지하고 RichTextContent 재정규화와 호환된다", () => {
+  assert.equal(
+    prepareRichTextHtmlForSanitization("<p>A&amp;B</p>"),
+    "<p>A&amp;B</p>",
+  );
+
+  const prepared = prepareRichTextHtmlForSanitization("A&amp;B");
+  assert.equal(normalizeRichTextValue(prepared), prepared);
+});
+
+test("sanitizer 준비 함수는 entity로 인코딩된 태그를 실행 가능한 HTML로 만들지 않는다", () => {
+  const prepared = prepareRichTextHtmlForSanitization(
+    "&lt;script&gt;alert(1)&lt;/script&gt;",
+  );
+
+  assert.equal(prepared, "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>");
+  assert.doesNotMatch(prepared, /<script>/i);
+});
+
+test("sanitizer 준비 함수는 빈 값을 빈 리치 텍스트 HTML로 정규화한다", () => {
+  for (const value of ["", "   ", null, undefined]) {
+    assert.equal(prepareRichTextHtmlForSanitization(value), "<p></p>");
+  }
+});
 
 test("검증용 텍스트는 빈 문단과 빈 제목 구조를 글자로 계산하지 않는다", () => {
   assert.equal(richTextToValidationText("<p></p>"), "");
