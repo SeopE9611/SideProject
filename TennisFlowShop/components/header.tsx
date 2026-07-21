@@ -1015,7 +1015,7 @@ const Header = () => {
             className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"} bg-background/95 border-b border-border/80 ${isScrolled ? "shadow-soft" : ""}`}
           />
           <SiteContainer
-            className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible"
+            className="relative z-10 bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible"
           >
             <div className="grid w-full grid-cols-[52px_minmax(0,1fr)_52px] items-center bp-sm:grid-cols-[56px_minmax(0,1fr)_56px] bp-lg:hidden">
               <div className="justify-self-start">

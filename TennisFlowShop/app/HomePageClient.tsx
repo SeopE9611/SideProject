@@ -863,7 +863,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       <p className="text-ui-label font-medium uppercase tracking-[0.12em] text-surface-inverse-muted">
                         MY STRINGING PLAN
                       </p>
-                      <h2 className={cn(styles.marketingTitle, "mt-2 text-ui-section-title")}>
+                      <h2 className="mt-2 text-ui-section-title font-ui-medium tracking-normal">
                         교체 신청 미리보기
                       </h2>
                     </div>
