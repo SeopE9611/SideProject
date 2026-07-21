@@ -63,6 +63,39 @@ export function plainTextToRichTextHtml(value: string): string {
 }
 
 /**
+ * 서버 sanitizer 직전에 기존 HTML과 레거시 일반 텍스트의 형식을 정규화합니다.
+ *
+ * 기존 HTML은 엔티티를 포함한 원문 구조를 유지해야 하고, 태그가 없는 과거 일반
+ * 텍스트는 sanitizeHtml() 처리로 엔티티가 남아 있을 수 있습니다. 따라서 태그 없는
+ * 값만 한 번 디코딩한 뒤 plainTextToRichTextHtml()로 다시 escape하여 안전한 문단
+ * HTML로 만듭니다. 디코딩한 값을 normalizeRichTextValue()에 전달하면 인코딩된 태그
+ * 문자열을 실제 HTML로 오인할 수 있으므로 사용하지 않습니다.
+ *
+ * 이 함수는 sanitizer가 아닌 형식 정규화 함수입니다. 반환값도 반드시
+ * sanitizeRichTextHtml()을 거쳐 allowlist 정책을 적용해야 합니다.
+ */
+export function prepareRichTextHtmlForSanitization(
+  value: string | null | undefined,
+): string {
+  const normalized =
+    typeof value === "string" ? value.trim() : "";
+
+  if (!normalized) {
+    return EMPTY_RICH_TEXT_HTML;
+  }
+
+  if (HTML_ELEMENT_PATTERN.test(normalized)) {
+    return normalized;
+  }
+
+  // 과거 sanitizeHtml()이 일반 텍스트의 &를 &amp;로 저장했을 수 있으므로
+  // 태그가 없는 레거시 값만 한 번 디코딩한 뒤 문단 HTML에서 정확히 한 번 다시 escape한다.
+  const decodedLegacyText = decodeHtmlEntities(normalized);
+
+  return plainTextToRichTextHtml(decodedLegacyText);
+}
+
+/**
  * 전달받은 값이 이미 HTML이면 유지하고,
  * 기존 일반 텍스트이면 안전한 HTML 문단으로 변환합니다.
  */
