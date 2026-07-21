@@ -4,9 +4,9 @@ import { PublicPageHero, PublicSurface } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { NoticeDetailContentSkeleton } from "./NoticeDetailLoadingShell";
 import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";
 import { communityFetch } from "@/lib/community/communityFetch.client";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowLeft,
@@ -29,7 +29,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
-import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
+import { NoticeDetailContentSkeleton } from "./NoticeDetailLoadingShell";
 
 type NoticeDetailClientProps = { mode?: "notice" | "event" };
 
@@ -376,7 +376,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
               </header>
 
               <div className="border-t border-border bg-card p-5 sm:p-6 md:p-8">
-                <div className="mx-auto max-w-3xl whitespace-pre-line break-words text-ui-body leading-8 text-foreground">
+                <div className="max-w-3xl whitespace-pre-line break-words text-left text-ui-body leading-8 text-foreground">
                   {String(notice.content || "")}
                 </div>
               </div>
