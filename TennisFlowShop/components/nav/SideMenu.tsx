@@ -55,7 +55,7 @@ export default function SideMenu() {
       "hover:bg-muted/40",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
-        ? "border-border bg-muted/60 text-foreground font-semibold before:bg-brand-highlight"
+        ? "border-border bg-muted/60 text-foreground font-ui-medium before:bg-brand-highlight"
         : "text-foreground/75 hover:text-foreground",
     );
   };
@@ -67,7 +67,7 @@ export default function SideMenu() {
       "hover:bg-muted/40",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
-        ? "bg-muted/50 text-foreground font-semibold"
+        ? "bg-muted/50 text-foreground font-ui-medium"
         : "text-foreground/75 hover:text-foreground",
     );
   };
@@ -82,11 +82,11 @@ export default function SideMenu() {
   const topLevelLinkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-control border border-transparent px-3 py-3 text-ui-card-title-lg font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-200 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-transparent",
+      "group relative z-0 block rounded-control border border-transparent px-3 py-3 text-ui-card-title-lg font-ui-medium transition-[background-color,color,border-color,box-shadow,opacity] duration-200 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-transparent",
       "hover:bg-muted/50",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
-        ? "border-border bg-muted/60 text-foreground font-semibold before:bg-brand-highlight"
+        ? "border-border bg-muted/60 text-foreground font-ui-medium before:bg-brand-highlight"
         : "text-foreground hover:text-foreground",
     );
   };
@@ -105,7 +105,7 @@ export default function SideMenu() {
               value="strings"
               className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
-              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
+              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-ui-medium">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <Grid2X2 className="h-4 w-4" />
                 </div> */}
@@ -203,7 +203,7 @@ export default function SideMenu() {
               value="rackets"
               className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
-              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
+              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-ui-medium">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MdSportsTennis className="h-4 w-4" />
                 </div> */}
@@ -262,7 +262,7 @@ export default function SideMenu() {
               value="boards"
               className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
-              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
+              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-ui-medium">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MessageSquareText className="h-4 w-4" />
                 </div> */}
@@ -287,7 +287,7 @@ export default function SideMenu() {
               value="support"
               className="py-3 px-3 rounded-control hover:bg-muted/50 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
             >
-              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-semibold">
+              <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-ui-card-title-lg font-ui-medium">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MessageSquare className="h-4 w-4" />
                 </div> */}
