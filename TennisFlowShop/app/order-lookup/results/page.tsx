@@ -26,7 +26,7 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import LoginGate from "@/components/system/LoginGate";
-import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
+import { badgeToneVariant, getOrderStatusTone, getPaymentStatusTone } from "@/lib/badge-style";
 import { formatKoreanPhone } from "@/lib/phone";
 import {
   hasCompletedStringingApplication,
@@ -35,6 +35,7 @@ import {
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { getGuestOrderNextActionText } from "@/app/order-lookup/_lib/guestOrderNextAction";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
+import { getCustomerOrderPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
@@ -63,8 +64,15 @@ interface Order {
   orderDate: string;
   recipient: string;
   contactNumber: string;
-  totalAmount: number;
+  totalAmount: number | null;
   status: string;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  paymentInfo?: {
+    status?: string | null;
+    method?: string | null;
+    provider?: string | null;
+  };
   shippingInfo?: {
     deliveryMethod?: string;
     shippingMethod?: string;
@@ -188,8 +196,15 @@ export default function OrderLookupResultsPage() {
               orderDate: new Date(o.createdAt).toLocaleDateString(),
               recipient: o.shippingInfo?.name ?? "",
               contactNumber: formatKoreanPhone(o.shippingInfo?.phone) || "",
-              totalAmount: o.totalPrice ?? 0,
+              totalAmount: typeof o.totalPrice === "number" ? o.totalPrice : null,
               status: o.status ?? "배송준비중",
+              paymentStatus: o.paymentStatus ?? null,
+              paymentMethod: o.paymentMethod ?? null,
+              paymentInfo: {
+                status: o.paymentInfo?.status ?? null,
+                method: o.paymentInfo?.method ?? null,
+                provider: o.paymentInfo?.provider ?? null,
+              },
               shippingInfo: {
                 deliveryMethod: o.shippingInfo?.deliveryMethod,
                 shippingMethod: o.shippingInfo?.shippingMethod,
@@ -230,7 +245,8 @@ export default function OrderLookupResultsPage() {
   const isInitialLoading = loading && !orders && !error;
 
   // 금액 포맷팅 함수
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null) return "-";
     return new Intl.NumberFormat("ko-KR", {
       style: "currency",
       currency: "KRW",
@@ -338,9 +354,20 @@ export default function OrderLookupResultsPage() {
                       order.status,
                       order.shippingInfo,
                     );
+                    const rawPaymentStatus =
+                      String(order.paymentStatus ?? "").trim() ||
+                      String(order.paymentInfo?.status ?? "").trim() ||
+                      null;
+                    const paymentStatusLabel = getCustomerOrderPaymentStatusLabel({
+                      paymentStatus: rawPaymentStatus,
+                      paymentMethod: order.paymentMethod ?? order.paymentInfo?.method ?? null,
+                      paymentProvider: order.paymentInfo?.provider ?? null,
+                      totalPrice: order.totalAmount,
+                    });
                     const nextActionText = getGuestOrderNextActionText({
                       status: order.status,
                       displayStatus,
+                      paymentStatusLabel,
                       shippingLike: order.shippingInfo,
                     });
 
@@ -376,6 +403,12 @@ export default function OrderLookupResultsPage() {
                               >
                                 {getStatusIcon(displayStatus, isVisitPickup)}
                                 {displayStatus}
+                              </Badge>
+                              <Badge
+                                variant={badgeToneVariant(getPaymentStatusTone(paymentStatusLabel))}
+                                className="gap-1 px-3 py-1.5 text-ui-label font-medium"
+                              >
+                                {paymentStatusLabel}
                               </Badge>
                             </div>
                           </div>
