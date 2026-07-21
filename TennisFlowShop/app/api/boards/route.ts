@@ -1,4 +1,4 @@
-import { richTextToPlainText } from "@/components/editor/rich-text-utils";
+import { richTextToValidationText } from "@/components/editor/rich-text-utils";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { maskSecretTitle, resolveBoardViewerContext } from "@/lib/board-secret-policy";
 import { API_VERSION } from "@/lib/board.repository";
@@ -806,10 +806,9 @@ export async function POST(req: NextRequest) {
     // 이벤트도 category만 다른 notice이므로, 공지와 같은 리치 텍스트 allowlist를 적용한다.
     safeContent = await sanitizeRichTextHtml(String(body.content ?? ""));
 
-    // HTML 태그·속성 길이는 사용자 본문 길이가 아니므로 화면상 텍스트를 따로 추출한다.
-    const plainTextContent = richTextToPlainText(safeContent);
-    // 위험한 HTML을 정제한 뒤 검증해야 빈 태그나 제거된 태그만으로 정책을 우회할 수 없다.
-    const lengthValidation = validateSanitizedLength(plainTextContent, {
+    // sanitizer 이후에 추출해야 제거된 위험 태그가 글자 수에 남지 않고, 자동 목록 기호를 빼 빈 목록 우회도 차단한다.
+    const validationText = richTextToValidationText(safeContent);
+    const lengthValidation = validateSanitizedLength(validationText, {
       min: NOTICE_CONTENT_MIN,
       max: NOTICE_CONTENT_MAX,
     });
