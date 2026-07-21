@@ -1,3 +1,4 @@
+import { richTextToPlainText } from "@/components/editor/rich-text-utils";
 import { requireAdmin } from "@/lib/admin.guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAccessToken } from "@/lib/auth.utils";
@@ -7,7 +8,11 @@ import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
 import { verifyCommunityCsrf } from "@/lib/community/security";
 import { logError, logInfo, reqMeta, startTimer } from "@/lib/logger";
 import { getDb } from "@/lib/mongodb";
-import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  sanitizeHtml,
+  sanitizeRichTextHtml,
+  validateSanitizedLength,
+} from "@/lib/sanitize";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createHash } from "crypto";
 import { ObjectId } from "mongodb";
@@ -142,6 +147,11 @@ const updateSchema = z.object({
     )
     .optional(),
 });
+
+// 공지·이벤트 본문은 HTML 원문 길이가 아닌 정제 후 화면상 텍스트를 기준으로 검증한다.
+// 작성 화면의 CONTENT_MIN / CONTENT_MAX 정책과 동일하게 유지한다.
+const NOTICE_CONTENT_MIN = 10;
+const NOTICE_CONTENT_MAX = 8000;
 
 function canEdit({ viewerId, isAdmin }: { viewerId?: string | null; isAdmin: boolean }, post: any) {
   const isOwner = String(viewerId || "") === String(post.authorId || "");
@@ -482,9 +492,46 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     files: docs, // 문서만
     updatedAt: new Date(),
   };
-  // content가 오면 서버에서 정제
+  // content가 생략된 PATCH는 기존 본문을 그대로 유지하므로 이 블록에 들어오지 않는다.
   if (typeof patch.content === "string") {
-    patch.content = await sanitizeHtml(patch.content);
+    // 요청 type은 위조될 수 있으므로, DB에서 조회한 post.type만 sanitizer 선택의 신뢰 기준으로 사용한다.
+    if (post.type === "notice") {
+      // 이벤트도 category만 다른 notice이므로 공지와 동일한 리치 텍스트 allowlist로 정제한다.
+      const safeContent = await sanitizeRichTextHtml(patch.content);
+      // HTML 태그·속성 길이 대신 실제 화면상 본문을 추출해 작성 화면과 같은 길이 정책을 적용한다.
+      const plainTextContent = richTextToPlainText(safeContent);
+      // 정제 후 검증해야 위험 태그가 제거된 빈 본문으로 DB 갱신을 우회할 수 없다.
+      const lengthValidation = validateSanitizedLength(plainTextContent, {
+        min: NOTICE_CONTENT_MIN,
+        max: NOTICE_CONTENT_MAX,
+      });
+
+      if (lengthValidation) {
+        // MongoDB 갱신·파일 삭제·감사 로그보다 먼저 실패를 반환한다.
+        return NextResponse.json(
+          {
+            ok: false,
+            version: API_VERSION,
+            error: "validation_error",
+            details: [
+              {
+                path: ["content"],
+                message:
+                  lengthValidation === "too_short"
+                    ? "내용은 10자 이상 입력해 주세요."
+                    : "내용은 8000자 이내로 입력해 주세요.",
+              },
+            ],
+          },
+          { status: 400 },
+        );
+      }
+
+      patch.content = safeContent;
+    } else {
+      // Q&A 등 리치 텍스트 대상이 아닌 문서는 기존 sanitizeHtml 정책을 그대로 사용한다.
+      patch.content = await sanitizeHtml(patch.content);
+    }
   }
   // removedPaths가 오면 patch.attachments에서 해당 항목 제거(이중 안전망)
   if (removedPaths.length > 0 && Array.isArray(patch.attachments)) {
