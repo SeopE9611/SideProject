@@ -549,7 +549,7 @@ const Header = () => {
                   priority
                 />
               </div>
-              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-ui-card-title-lg font-ui-medium text-foreground">
+              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-ui-card-title-lg text-foreground">
                 도깨비테니스
               </div>
             </Link>
