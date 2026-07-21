@@ -1030,7 +1030,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <CommercePurchasePanel
               eyebrow={<span className="break-words">{productBrandLabel}</span>}
               title={
-                <h1 className="min-w-0 text-balance break-words text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
+                <h1 className="min-w-0 text-balance break-words text-ui-section-title font-ui-bold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
                   {product.name}
                 </h1>
               }
@@ -1047,7 +1047,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm sm:text-ui-body">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">상품가</span>
-                      <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                      <span className="whitespace-nowrap tabular-nums font-ui-medium text-foreground">
                         {qtyTotal.toLocaleString()}원
                       </span>
                     </div>
@@ -1056,7 +1056,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Wrench className="h-3.5 w-3.5 shrink-0" />
                         교체서비스 포함
                       </span>
-                      <span className="whitespace-nowrap tabular-nums font-semibold text-primary">
+                      <span className="whitespace-nowrap tabular-nums font-ui-medium text-primary">
                         {serviceTotal.toLocaleString()}원
                       </span>
                     </div>
@@ -1071,7 +1071,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {visibleColorRows.length > 0 && (
                     <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                       <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                        <span className="text-ui-body-sm font-semibold text-foreground">
+                        <span className="text-ui-body-sm font-ui-medium text-foreground">
                           색상 선택
                         </span>
                         {selectedColorLabel && (
@@ -1144,7 +1144,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                   )}
                   <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
-                    <span className="whitespace-nowrap text-ui-body-sm font-semibold text-foreground">
+                    <span className="whitespace-nowrap text-ui-body-sm font-ui-medium text-foreground">
                       수량 선택
                     </span>
 
@@ -1165,7 +1165,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Minus className="h-4 w-4" />
                       </Button>
 
-                      <span className="tabular-nums w-10 sm:w-12 select-none text-center font-semibold text-ui-card-title-lg sm:text-ui-section-title">
+                      <span className="tabular-nums w-10 sm:w-12 select-none text-center font-ui-medium text-ui-card-title-lg sm:text-ui-section-title">
                         {quantity}
                       </span>
 
@@ -1204,7 +1204,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
                           현재 남은 수량이{" "}
-                          <span className="font-semibold text-foreground">
+                          <span className="font-ui-medium text-foreground">
                             {product.inventory.stock}개
                           </span>
                           입니다.
@@ -1215,7 +1215,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {isStringProduct && gaugeRows.length > 0 && (
                     <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                       <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                        <span className="text-ui-body-sm font-semibold text-foreground">
+                        <span className="text-ui-body-sm font-ui-medium text-foreground">
                           게이지(굵기) 선택
                         </span>
                         {gaugeOptions.length === 1 && (
@@ -1253,7 +1253,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   {isStringProduct && (
                     <div className="rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm leading-relaxed text-muted-foreground">
-                      <p className="font-semibold text-foreground">
+                      <p className="font-ui-medium text-foreground">
                         교체서비스와 함께 주문하는 스트링입니다.
                       </p>
                       <p className="mt-1 break-keep">
@@ -1436,7 +1436,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
+                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground sm:text-ui-page-title">
                       상품 설명
                     </h3>
                   </div>
