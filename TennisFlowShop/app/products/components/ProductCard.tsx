@@ -76,7 +76,7 @@ function PerformanceSummary({ entries }: { entries: ReturnType<typeof getFeature
 
   return (
     <section className="rounded-xl border border-border bg-muted/20 px-3 py-2.5">
-      <p className="mb-1.5 text-ui-micro font-semibold tracking-wide text-muted-foreground">
+      <p className="mb-1.5 text-ui-micro font-ui-medium tracking-wide text-muted-foreground">
         성능 요약
       </p>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-ui-caption sm:text-ui-label">
@@ -216,7 +216,7 @@ const ProductCard = React.memo(
     const soldOutOverlay = isSoldOut ? (
       <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/35">
         <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-          <Badge variant="secondary" className="text-ui-body-sm font-semibold">
+          <Badge variant="secondary" className="text-ui-body-sm font-ui-medium">
             품절
           </Badge>
         </div>
@@ -328,7 +328,7 @@ const ProductCard = React.memo(
     const content = (
       <div className="flex min-w-0 flex-1 flex-col">
         <div
-          className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+          className="mb-1.5 max-w-full truncate text-ui-label font-ui-medium uppercase tracking-[0.08em] text-muted-foreground"
           title={brandLabel}
         >
           {brandLabel}
