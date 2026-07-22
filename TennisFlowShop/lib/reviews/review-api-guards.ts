@@ -27,9 +27,11 @@ export function isValidReviewCursor(
   const cursor = value as Record<string, unknown>;
   if (!isValidId(String(cursor.id ?? ""))) return false;
   if (sort === "latest") {
-    if (typeof cursor.createdAt !== "string" && !(cursor.createdAt instanceof Date)) return false;
-    if (Number.isNaN(new Date(cursor.createdAt).getTime())) return false;
+    const createdAt = cursor.createdAt;
+    if (typeof createdAt !== "string" && !(createdAt instanceof Date)) return false;
+    const timestamp = createdAt instanceof Date ? createdAt.getTime() : Date.parse(createdAt);
+    return !Number.isNaN(timestamp);
   }
   const numericValue = sort === "helpful" ? cursor.helpfulCount : cursor.rating;
-  return sort === "latest" || (typeof numericValue === "number" && Number.isFinite(numericValue));
+  return typeof numericValue === "number" && Number.isFinite(numericValue);
 }
