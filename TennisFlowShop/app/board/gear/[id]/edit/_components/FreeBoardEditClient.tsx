@@ -2,6 +2,12 @@
 
 import { CATEGORY_OPTIONS } from "@/app/board/gear/_components/FreeBoardWriteClient";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { RichTextEditor } from "@/components/editor/RichTextEditor";
+import { richTextToValidationText } from "@/components/editor/rich-text-utils";
+import {
+  COMMUNITY_RICH_TEXT_CONTENT_MAX,
+  COMMUNITY_RICH_TEXT_CONTENT_MIN,
+} from "@/lib/community/community-rich-text-policy";
 import { CommunityBoardEditLoadingShell } from "@/components/system/CommunityBoardEditLoadingShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +51,11 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 폼 상태
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  // content에는 HTML 태그가 포함되므로 서버와 같은 실제 텍스트 기준으로 검증합니다. 별도 길이 상태를 두지 않아야 에디터 초기화와 상태 변경이 어긋나지 않습니다.
+  const contentValidationLength = useMemo(
+    () => richTextToValidationText(content).length,
+    [content],
+  );
 
   // 카테고리 상태
   const [category, setCategory] = useState<
@@ -156,7 +167,9 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 간단한 프론트 유효성 검증
   const validate = () => {
     if (!title.trim()) return "제목을 입력해 주세요.";
-    if (!content.trim()) return "내용을 입력해 주세요.";
+    if (contentValidationLength === 0) return "내용을 입력해 주세요.";
+    if (contentValidationLength < COMMUNITY_RICH_TEXT_CONTENT_MIN) return "내용은 10자 이상 입력해 주세요.";
+    if (contentValidationLength > COMMUNITY_RICH_TEXT_CONTENT_MAX) return "내용은 5000자 이내로 입력해 주세요.";
     return null;
   };
 
@@ -474,14 +487,17 @@ export default function FreeBoardEditClient({ id }: Props) {
 
               {/* 내용 */}
               <div className="space-y-2">
-                <Label htmlFor="content">내용</Label>
-                <Textarea
-                  id="content"
-                  className="min-h-[200px]"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  disabled={isSubmitting}
-                />
+                <Label>내용</Label>
+                <RichTextEditor
+  value={content}
+  onChange={(change) => {
+    setContent(change.html);
+  }}
+  maxLength={COMMUNITY_RICH_TEXT_CONTENT_MAX}
+  placeholder="게시글 내용을 작성해 주세요."
+  ariaLabel="게시글 본문 편집기"
+  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+/>
                 <p className="mt-1 text-ui-label text-muted-foreground">
                   신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
                   주세요.

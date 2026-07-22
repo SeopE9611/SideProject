@@ -6,6 +6,12 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
 
 import ImageUploader from "@/components/admin/ImageUploader";
+import { RichTextEditor } from "@/components/editor/RichTextEditor";
+import { richTextToValidationText } from "@/components/editor/rich-text-utils";
+import {
+  COMMUNITY_RICH_TEXT_CONTENT_MAX,
+  COMMUNITY_RICH_TEXT_CONTENT_MIN,
+} from "@/lib/community/community-rich-text-policy";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +19,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
@@ -37,8 +42,6 @@ type CategoryValue = (typeof CATEGORY_OPTIONS)[number]["value"];
 // 게시글 작성 제출 직전 최종 유효성 가드(우회 방지)
 const TITLE_MIN = 4;
 const TITLE_MAX = 80;
-const CONTENT_MIN = 10;
-const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s);
 const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
@@ -55,6 +58,11 @@ export default function FreeBoardWriteClient() {
   // 폼 상태
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  // content에는 HTML 태그가 포함되므로 서버와 같은 실제 텍스트 기준으로 검증합니다. 별도 길이 상태를 두지 않아야 에디터 초기화와 상태 변경이 어긋나지 않습니다.
+  const contentValidationLength = useMemo(
+    () => richTextToValidationText(content).length,
+    [content],
+  );
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // 카테고리 상태 (기본 'general')
@@ -63,7 +71,7 @@ export default function FreeBoardWriteClient() {
   // 포커스/스크롤 대상 refs (첫 오류로 이동)
   const categoryRef = useRef<HTMLDivElement | null>(null);
   const titleRef = useRef<HTMLInputElement | null>(null);
-  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const contentEditorRef = useRef<HTMLDivElement | null>(null);
   const attachmentsRef = useRef<HTMLDivElement | null>(null);
 
   // 이미지 상태
@@ -85,13 +93,12 @@ export default function FreeBoardWriteClient() {
   // 입력 중(Dirty) 판단: 내용/제목/분류/첨부가 하나라도 있으면 true
   const isDirty = useMemo(() => {
     const t = title.trim();
-    const c = content.trim();
-    if (t || c) return true;
+    if (t || contentValidationLength > 0) return true;
     if (category !== "general") return true;
     if (images.length > 0) return true;
     if (selectedFiles.length > 0) return true;
     return false;
-  }, [title, content, category, images.length, selectedFiles.length]);
+  }, [title, contentValidationLength, category, images.length, selectedFiles.length]);
 
   // 탭닫기/새로고침 + 뒤로가기(popstate)까지 통합 보호
   useUnsavedChangesGuard(isDirty && !isSubmitting);
@@ -126,8 +133,8 @@ export default function FreeBoardWriteClient() {
       return;
     }
     if (key === "content") {
-      contentRef.current?.scrollIntoView(scrollIntoViewOpts);
-      contentRef.current?.focus();
+      contentEditorRef.current?.scrollIntoView(scrollIntoViewOpts);
+      contentEditorRef.current?.querySelector<HTMLElement>('[contenteditable="true"]')?.focus();
       return;
     }
     if (key === "attachments") {
@@ -151,8 +158,6 @@ export default function FreeBoardWriteClient() {
   const validateBeforeSubmit = (): FieldErrors => {
     const errs: FieldErrors = {};
     const t = title.trim();
-    const c = content.trim();
-
     // 카테고리 화이트리스트(타입이 있어도 devtools로 깨질 수 있어 방어)
     if (!CATEGORY_OPTIONS.some((o) => o.value === category)) {
       errs.category = "분류를 선택해 주세요.";
@@ -160,25 +165,23 @@ export default function FreeBoardWriteClient() {
     }
 
     if (!t) errs.title = "제목을 입력해 주세요.";
-    if (!c) errs.content = "내용을 입력해 주세요.";
+    if (contentValidationLength === 0) errs.content = "내용을 입력해 주세요.";
 
     if (!errs.title) {
       if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
       else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
     }
     if (!errs.content) {
-      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
-      else if (c.length > CONTENT_MAX)
-        errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+      if (contentValidationLength < COMMUNITY_RICH_TEXT_CONTENT_MIN) errs.content = `내용은 ${COMMUNITY_RICH_TEXT_CONTENT_MIN}자 이상 입력해 주세요.`;
+      else if (contentValidationLength > COMMUNITY_RICH_TEXT_CONTENT_MAX)
+        errs.content = `내용은 ${COMMUNITY_RICH_TEXT_CONTENT_MAX}자 이내로 입력해 주세요.`;
     }
 
     // 스크립트/HTML 유사 입력 방어: 해당 필드에 귀속
+    // 본문의 HTML은 에디터 정상 출력이므로 일괄 거부하지 않으며, 최종 허용 여부는 서버 sanitizer가 결정합니다.
     if (!errs.title && hasScriptLike(t))
       errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.content && hasScriptLike(c))
-      errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
     if (!errs.title && hasHtmlLike(t)) errs.title = "HTML 태그는 사용할 수 없습니다.";
-    if (!errs.content && hasHtmlLike(c)) errs.content = "HTML 태그는 사용할 수 없습니다.";
 
     // 이미지 업로더 max=5이지만, 제출 직전 한 번 더 방어
     if (images.length > 5) errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
@@ -487,29 +490,22 @@ export default function FreeBoardWriteClient() {
                     다른 이용자가 이해하기 쉽도록 구체적으로 작성해 주세요.
                   </p>
                 </div>
-                <Label htmlFor="content">내용</Label>
-                <Textarea
-                  id="content"
-                  ref={contentRef}
-                  className="min-h-[280px] resize-y leading-relaxed"
-                  value={content}
-                  onChange={(e) => {
-                    setContent(e.target.value);
-                    if (fieldErrors.content)
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        content: undefined,
-                      }));
-                  }}
-                  disabled={isSubmitting}
-                  maxLength={CONTENT_MAX}
-                />
+                <Label>내용</Label>
+                <div ref={contentEditorRef}>
+                  <RichTextEditor
+  value={content}
+  onChange={(change) => {
+    setContent(change.html);
+  }}
+  maxLength={COMMUNITY_RICH_TEXT_CONTENT_MAX}
+  placeholder="게시글 내용을 작성해 주세요."
+  ariaLabel="게시글 본문 편집기"
+  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+/>
+                </div>
                 {fieldErrors.content ? (
                   <p className="text-ui-label text-destructive">{fieldErrors.content}</p>
                 ) : null}
-                <p className="text-ui-label text-muted-foreground">
-                  {content.trim().length}/{CONTENT_MAX}
-                </p>
 
                 <p className="mt-1 text-ui-label text-muted-foreground">
                   신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해

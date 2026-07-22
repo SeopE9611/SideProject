@@ -24,6 +24,12 @@ import {
 } from "@/app/board/market/_components/market.constants";
 import MarketMetaFields from "@/app/board/market/_components/MarketMetaFields";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { RichTextEditor } from "@/components/editor/RichTextEditor";
+import { richTextToValidationText } from "@/components/editor/rich-text-utils";
+import {
+  COMMUNITY_RICH_TEXT_CONTENT_MAX,
+  COMMUNITY_RICH_TEXT_CONTENT_MIN,
+} from "@/lib/community/community-rich-text-policy";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +37,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
@@ -54,8 +59,6 @@ type CategoryValue = (typeof CATEGORY_OPTIONS)[number]["value"];
 // 게시글 작성 제출 직전 최종 유효성 가드(우회 방지)
 const TITLE_MIN = 4;
 const TITLE_MAX = 80;
-const CONTENT_MIN = 10;
-const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
 const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
@@ -124,6 +127,11 @@ export default function FreeBoardWriteClient() {
   // 폼 상태
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  // content에는 HTML 태그가 포함되므로 서버와 같은 실제 텍스트 기준으로 검증합니다. 별도 길이 상태를 두지 않아야 에디터 초기화와 상태 변경이 어긋나지 않습니다.
+  const contentValidationLength = useMemo(
+    () => richTextToValidationText(content).length,
+    [content],
+  );
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
@@ -136,7 +144,7 @@ export default function FreeBoardWriteClient() {
   const priceRef = useRef<HTMLInputElement | null>(null);
   const modelNameRef = useRef<HTMLInputElement | null>(null);
   const titleRef = useRef<HTMLInputElement | null>(null);
-  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const contentEditorRef = useRef<HTMLDivElement | null>(null);
   const attachmentsRef = useRef<HTMLDivElement | null>(null);
 
   // 이미지 상태
@@ -159,8 +167,7 @@ export default function FreeBoardWriteClient() {
   // 입력 중(Dirty) 판단: marketMeta 핵심 입력(price/spec)도 반드시 반영
   const isDirty = useMemo(() => {
     const t = title.trim();
-    const c = content.trim();
-    if (t || c) return true;
+    if (t || contentValidationLength > 0) return true;
     if (category !== "racket") return true;
     if (brand) return true;
     if (images.length > 0) return true;
@@ -206,8 +213,8 @@ export default function FreeBoardWriteClient() {
       return;
     }
     if (key === "content") {
-      contentRef.current?.scrollIntoView(scrollIntoViewOpts);
-      contentRef.current?.focus();
+      contentEditorRef.current?.scrollIntoView(scrollIntoViewOpts);
+      contentEditorRef.current?.querySelector<HTMLElement>('[contenteditable="true"]')?.focus();
       return;
     }
     if (key === "price") {
@@ -271,8 +278,6 @@ export default function FreeBoardWriteClient() {
   const validateBeforeSubmit = (): FieldErrors => {
     const errs: FieldErrors = {};
     const t = title.trim();
-    const c = content.trim();
-
     // 카테고리 화이트리스트(타입이 있어도 devtools로 깨질 수 있어 방어)
     if (!CATEGORY_OPTIONS.some((o) => o.value === category)) {
       errs.category = "분류를 선택해 주세요.";
@@ -294,25 +299,23 @@ export default function FreeBoardWriteClient() {
 
     // 제목/내용 기본 + min/max 길이
     if (!t) errs.title = "제목을 입력해 주세요.";
-    if (!c) errs.content = "내용을 입력해 주세요.";
+    if (contentValidationLength === 0) errs.content = "내용을 입력해 주세요.";
 
     if (!errs.title) {
       if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
       else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
     }
     if (!errs.content) {
-      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
-      else if (c.length > CONTENT_MAX)
-        errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+      if (contentValidationLength < COMMUNITY_RICH_TEXT_CONTENT_MIN) errs.content = `내용은 ${COMMUNITY_RICH_TEXT_CONTENT_MIN}자 이상 입력해 주세요.`;
+      else if (contentValidationLength > COMMUNITY_RICH_TEXT_CONTENT_MAX)
+        errs.content = `내용은 ${COMMUNITY_RICH_TEXT_CONTENT_MAX}자 이내로 입력해 주세요.`;
     }
 
     // 게시판 입력은 기본적으로 HTML/스크립트 입력을 차단하는 편이 안전
+    // 본문의 HTML은 에디터 정상 출력이므로 일괄 거부하지 않으며, 최종 허용 여부는 서버 sanitizer가 결정합니다.
     if (!errs.title && hasScriptLike(t))
       errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.content && hasScriptLike(c))
-      errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
     if (!errs.title && hasHtmlLike(t)) errs.title = "HTML 태그는 사용할 수 없습니다.";
-    if (!errs.content && hasHtmlLike(c)) errs.content = "HTML 태그는 사용할 수 없습니다.";
 
     // 업로드 제한은 UI에서 막아도 devtools/드롭으로 우회될 수 있어 제출 직전 1회 더 방어
     if (images.length > 5) errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
@@ -489,12 +492,10 @@ export default function FreeBoardWriteClient() {
       }
 
       const t = title.trim();
-      const c = content.trim();
-
       const payload: any = {
         type: "market",
         title: t,
-        content: c,
+        content: content.trim(),
         images,
         category,
         brand: isMarketBrandCategory(category) ? brand : null,
@@ -564,7 +565,7 @@ export default function FreeBoardWriteClient() {
       ok: typeof marketMeta.price === "number" && marketMeta.price > 0,
     },
     { label: "제목 입력", ok: title.trim().length >= TITLE_MIN },
-    { label: "내용 입력", ok: content.trim().length >= CONTENT_MIN },
+    { label: "내용 입력", ok: contentValidationLength >= COMMUNITY_RICH_TEXT_CONTENT_MIN },
     { label: "이미지 첨부", ok: images.length > 0 },
     { label: "정책 확인", ok: policyConfirmed },
   ];
@@ -794,41 +795,26 @@ export default function FreeBoardWriteClient() {
 
                   {/* 내용 */}
                   <div className="space-y-2">
-                    <Label htmlFor="content" className="text-ui-body-sm font-semibold">
+                    <Label className="text-ui-body-sm font-semibold">
                       내용 <span className="text-destructive">*</span>
                     </Label>
-                    <Textarea
-                      id="content"
-                      ref={contentRef}
-                      className={cn(
-                        "min-h-[220px] resize-y leading-relaxed placeholder:text-muted-foreground/60",
-                        fieldErrors.content
-                          ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
-                          : "",
-                      )}
-                      value={content}
-                      onChange={(e) => {
-                        setContent(e.target.value);
-                        if (fieldErrors.content)
-                          setFieldErrors((prev) => ({
-                            ...prev,
-                            content: undefined,
-                          }));
-                      }}
-                      disabled={isSubmitting}
-                      maxLength={CONTENT_MAX}
-                      placeholder={
-                        "구매 시기, 사용 기간, 상태, 거래 방식(직거래/택배), 포함 구성품 등을 적어주세요."
-                      }
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-ui-body-sm text-foreground/75">
-                        {content.trim().length}/{CONTENT_MAX}
-                      </span>
-                      {fieldErrors.content ? (
-                        <p className="text-ui-label text-destructive">{fieldErrors.content}</p>
-                      ) : null}
-                    </div>
+                    <div ref={contentEditorRef}>
+                  <RichTextEditor
+  value={content}
+  onChange={(change) => {
+    setContent(change.html);
+    if (fieldErrors?.content) setFieldErrors((prev) => ({ ...prev, content: undefined }));
+  }}
+  maxLength={COMMUNITY_RICH_TEXT_CONTENT_MAX}
+  placeholder="게시글 내용을 작성해 주세요."
+  ariaLabel="게시글 본문 편집기"
+  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+  invalid={Boolean(fieldErrors?.content)}
+/>
+                </div>
+                    {fieldErrors.content ? (
+                      <p className="text-ui-label text-destructive">{fieldErrors.content}</p>
+                    ) : null}
                   </div>
                 </div>
               </section>
