@@ -1,27 +1,16 @@
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import Module from "node:module";
 import { test } from "node:test";
-import ts from "typescript";
+import { compileTsModule } from "./helpers/compile-ts-module.mjs";
 
-function compileTs(rel) {
-  const source = readFileSync(new URL(`../${rel}`, import.meta.url), "utf8");
-  const { outputText } = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  });
-  const filename = join(mkdtempSync(join(tmpdir(), "review-api-policy-")), `${rel}.cjs`);
-  const mod = new Module(filename);
-  mod.filename = filename;
-  mod.paths = Module._nodeModulePaths(process.cwd());
-  mod._compile(outputText, filename);
-  return mod.exports;
-}
-
-const policy = compileTs("lib/reviews/review-policy.ts");
-const input = compileTs("lib/reviews/review-input-policy.ts");
-const query = compileTs("lib/reviews/review-query-match.ts");
+const policy = compileTsModule("lib/reviews/review-policy.ts", {
+  "@/lib/status/flow-status": {
+    isOrderConfirmedStatus: () => false,
+    isRentalReturnedStatus: () => false,
+    isStringingCompletedStatus: () => false,
+  },
+});
+const input = compileTsModule("lib/reviews/review-input-policy.ts");
+const query = compileTsModule("lib/reviews/review-query-match.ts");
 
 test("후기 제출은 reviewed를 eligible보다 먼저 canonical reason으로 차단한다", () => {
   assert.equal(policy.getReviewSubmissionBlockReason({ eligible: false, reviewed: true }), "already");
@@ -40,6 +29,16 @@ test("후기 요청 body validator는 잘못된 본문과 사진 목록을 거�
   assert.deepEqual(input.validateReviewInput({ rating: 0, content: "충분한 후기 내용", photos: [] }), { ok: false, reason: "invalidRating" });
   assert.deepEqual(input.validateReviewInput({ rating: 5, content: "짧음", photos: [] }), { ok: false, reason: "contentTooShort" });
   assert.deepEqual(input.validateReviewInput({ rating: 5, content: "충분한 후기 내용", photos: [1] }), { ok: false, reason: "invalidPhotos" });
+});
+
+test("후기 PATCH 입력 validator는 전달된 필드만 정규화하고 잘못된 값을 거부한다", () => {
+  assert.deepEqual(input.validateReviewPatchInput({ content: "  충분한 후기 내용  " }), {
+    ok: true, value: { content: "충분한 후기 내용" },
+  });
+  assert.deepEqual(input.validateReviewPatchInput({ rating: 4 }), { ok: true, value: { rating: 4 } });
+  assert.deepEqual(input.validateReviewPatchInput({ photos: [] }), { ok: true, value: { photos: [] } });
+  assert.equal(input.validateReviewPatchInput({ rating: 0 }).reason, "invalidRating");
+  assert.equal(input.validateReviewPatchInput({ photos: [1] }).reason, "invalidPhotos");
 });
 
 test("후기 query match는 공개 권한 조건과 target 조건을 $and로 함께 보존한다", () => {
