@@ -38,6 +38,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { communityFetch } from "@/lib/community/communityFetch.client";
+import { getApiErrorMessage } from "@/lib/fetchers/getApiErrorMessage";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
   UNSAVED_CHANGES_MESSAGE,
@@ -59,6 +60,7 @@ type CategoryValue = (typeof CATEGORY_OPTIONS)[number]["value"];
 // 게시글 작성 제출 직전 최종 유효성 가드(우회 방지)
 const TITLE_MIN = 4;
 const TITLE_MAX = 80;
+const WRITE_ERROR_MESSAGE = "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
 const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
@@ -110,6 +112,18 @@ const MARKET_POLICY_CONFIRM_MESSAGE = "중고거래 이용 안내와 금지 품�
 const scrollIntoViewOpts: ScrollIntoViewOptions = {
   behavior: "smooth",
   block: "center",
+};
+
+type BoardCreateResponse = {
+  ok?: boolean;
+  id?: string;
+  item?: {
+    _id?: string;
+    id?: string;
+  };
+  details?: unknown;
+  message?: unknown;
+  error?: unknown;
 };
 
 export default function FreeBoardWriteClient() {
@@ -513,19 +527,15 @@ export default function FreeBoardWriteClient() {
         body: JSON.stringify(payload),
       });
 
-      let data: any = null;
+      let data: BoardCreateResponse | null = null;
       try {
-        data = await res.json();
+        data = (await res.json()) as BoardCreateResponse;
       } catch {
         data = null;
       }
 
       if (!res.ok || !data?.ok) {
-        const msg =
-          data?.details?.[0]?.message ??
-          data?.error ??
-          "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
-        emitServerError(msg);
+        emitServerError(getApiErrorMessage(data, WRITE_ERROR_MESSAGE));
         return;
       }
 
