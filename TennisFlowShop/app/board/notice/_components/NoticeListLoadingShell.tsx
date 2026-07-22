@@ -51,7 +51,7 @@ export default function NoticeListLoadingShell({ mode = "notice" }: Props) {
           <div className="flex flex-col gap-3 bg-brand-highlight-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div className="space-y-2">
               <Skeleton className="h-6 w-20 rounded-control" />
-              <SectionHeader title={listTitle} variant="brand" />
+              <SectionHeader title={listTitle} />
               <Skeleton className="h-4 w-72 max-w-full" />
             </div>
             <Skeleton className="h-16 w-32 rounded-control" />

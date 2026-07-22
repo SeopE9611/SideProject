@@ -394,7 +394,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <span className="mx-1">›</span>
                 <span>글 수정</span>
               </div>
-              <h1 className="font-ui-bold text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+              <h1 className="font-ui-bold text-ui-page-title tracking-normal text-foreground md:text-ui-page-title-lg">
                 장비 사용기 글 수정
               </h1>
               <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">

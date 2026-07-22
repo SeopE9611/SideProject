@@ -205,7 +205,7 @@ export default function AcademyApplicationsTab() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-highlight-muted text-brand-highlight-ink md:mb-6">
             <GraduationCap className="h-10 w-10" aria-hidden="true" />
           </div>
-          <h3 className="mb-2 font-ui-bold text-ui-section-title font-semibold text-foreground">
+          <h3 className="mb-2 font-ui-bold text-ui-section-title text-foreground">
             아직 신청한 클래스가 없습니다.
           </h3>
           <p className="mx-auto mb-6 max-w-md break-keep text-muted-foreground">
@@ -246,7 +246,7 @@ export default function AcademyApplicationsTab() {
                         <span>·</span>
                         <span>신청일 {formatDateTime(application.appliedAt)}</span>
                       </div>
-                      <h3 className="line-clamp-2 break-keep font-ui-bold text-ui-card-title-lg font-semibold text-foreground">
+                      <h3 className="line-clamp-2 break-keep font-ui-medium text-ui-card-title-lg text-foreground">
                         {application.classSnapshot?.name || "아카데미 클래스 신청"}
                       </h3>
                     </div>

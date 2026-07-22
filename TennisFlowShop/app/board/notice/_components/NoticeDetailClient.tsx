@@ -338,7 +338,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                         </span>
                       )}
                     </div>
-                    <h2 className="min-w-0 break-words text-balance font-ui-bold text-ui-section-title font-semibold leading-tight  text-foreground sm:text-ui-page-title">
+                    <h2 className="min-w-0 break-words text-balance font-ui-bold text-ui-section-title leading-tight  text-foreground sm:text-ui-page-title">
                       {notice.title}
                     </h2>
                     <div className="grid gap-2 text-ui-body-sm text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">

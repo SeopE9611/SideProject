@@ -390,7 +390,6 @@ export default async function AcademyPage() {
           <SectionHeader
             eyebrow="Lesson Program"
             title={<span id="lesson-fees-heading">레슨 프로그램 & 기준 수강료</span>}
-            variant="brand"
             description={
               <p className="break-keep leading-relaxed">
                 레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다. 수강료는 레슨 유형과
@@ -455,7 +454,6 @@ export default async function AcademyPage() {
           <SectionHeader
             eyebrow="Contact"
             title={<span id="academy-contact-heading">상담 문의</span>}
-            variant="brand"
             description={
               <p className="break-keep leading-relaxed">
                 레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요. 상담 후
@@ -509,7 +507,6 @@ export default async function AcademyPage() {
           <SectionHeader
             eyebrow="Classes"
             title="현재 모집 중인 클래스"
-            variant="brand"
             description={
               <p className="break-keep leading-relaxed">
                 목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청

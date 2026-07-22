@@ -75,7 +75,7 @@ export default function Wishlist() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-control bg-destructive/10 text-destructive">
             <AlertCircle className="h-8 w-8" aria-hidden="true" />
           </div>
-          <h3 className="mb-2 font-ui-bold text-ui-section-title font-semibold">
+          <h3 className="mb-2 font-ui-bold text-ui-section-title">
             위시리스트를 불러오지 못했습니다
           </h3>
           <p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해주세요.</p>
@@ -91,7 +91,7 @@ export default function Wishlist() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-control border border-brand-highlight-ink/20 bg-brand-highlight-muted text-brand-highlight-ink shadow-soft">
             <Heart className="h-10 w-10" aria-hidden="true" />
           </div>
-          <h3 className="mb-2 font-ui-bold text-ui-section-title font-semibold">
+          <h3 className="mb-2 font-ui-bold text-ui-section-title">
             위시리스트가 비어있습니다
           </h3>
           <p className="mx-auto mb-6 max-w-md text-ui-body-sm text-muted-foreground">
@@ -129,7 +129,7 @@ export default function Wishlist() {
                   />
                 </div>
                 <div className="space-y-3 p-4">
-                  <div className="line-clamp-2 min-h-12 break-keep font-ui-bold text-ui-card-title font-semibold text-foreground hover:underline">
+                  <div className="line-clamp-2 min-h-12 break-keep font-ui-medium text-ui-card-title text-foreground hover:underline">
                     {it.name}
                   </div>
                   <div className="text-ui-body-sm tabular-nums">

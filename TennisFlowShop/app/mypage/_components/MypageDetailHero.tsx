@@ -61,8 +61,8 @@ export default function MypageDetailHero({
           </div>
           <h2
             className={cn(
-              "break-keep text-ui-card-title-lg font-medium text-foreground bp-sm:text-ui-section-title",
-              isFeature && "font-ui-bold tracking-normal",
+              "break-keep text-ui-card-title-lg text-foreground bp-sm:text-ui-section-title",
+              isFeature ? "font-ui-bold tracking-normal" : "font-ui-medium",
             )}
           >
             {title}

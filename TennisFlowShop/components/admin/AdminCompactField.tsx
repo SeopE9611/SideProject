@@ -30,8 +30,8 @@ export default function AdminCompactField({
       <p className={cn("mb-1", adminTypography.metaMuted)}>{label}</p>
       <div
         className={cn(
-          "min-w-0 break-words text-ui-body-sm font-medium text-foreground",
-          isEmpty && "font-normal text-muted-foreground",
+          "min-w-0 break-words text-ui-body-sm",
+          isEmpty ? "font-normal text-muted-foreground" : "font-ui-medium text-foreground",
           valueClassName,
         )}
       >

@@ -359,7 +359,7 @@ export default function NoticeListClient({
               <Badge variant={isEventMode ? "success" : "brand"} className="rounded-control">
                 {isEventMode ? "진행 소식" : "중요 안내"}
               </Badge>
-              <SectionHeader title={listTitle} variant="brand" />
+              <SectionHeader title={listTitle} />
               <p className="text-ui-body-sm text-muted-foreground">
                 {isEventMode
                   ? "참여 가능한 이벤트와 지난 안내를 확인하세요."
