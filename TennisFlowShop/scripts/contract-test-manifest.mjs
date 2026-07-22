@@ -16,7 +16,7 @@ export const coreContractFiles = [
   "mypage-stringing-detail-state.contract.test.mjs", "rich-text-sanitize-policy.contract.test.mjs",
   "rich-text-validation-behavior.contract.test.mjs", "security-contract.test.mjs",
   "stringing-single-payment.contract.test.mjs", "review-target-resolver.test.mjs",
-  "review-write-flow.test.mjs", "public-review-surface.test.mjs", "review-security-integrity.test.mjs",
+  "review-write-flow.test.mjs", "public-review-surface.test.mjs", "review-security-integrity.core.test.mjs",
   "review-summary-cache.test.mjs", "review-api-policy.core.test.mjs",
   "review-management-context.core.test.mjs",
 ];
@@ -26,7 +26,7 @@ export const advisoryContractFiles = [
   "board-unsaved-changes-navigation.contract.test.mjs", "checkout-success-links.contract.test.mjs",
   "community-rich-text-ui.contract.test.mjs", "display-policy-contract.test.mjs",
   "mypage-confirmation-items-contract.test.mjs", "mypage-transaction-flow-state.contract.test.mjs",
-  "notice-rich-text-ui.contract.test.mjs", "review-api-policy.test.mjs",
+  "notice-rich-text-ui.contract.test.mjs", "review-api-policy.test.mjs", "review-security-integrity.test.mjs",
   "review-domain-contract.test.mjs", "review-management-context.test.mjs",
   "review-summary-cache.advisory.test.mjs", "typescript-project-boundary.contract.test.mjs",
 ];
@@ -55,5 +55,7 @@ export function validateContractTestManifest() {
 
 export function getContractTestFiles(kind) {
   validateContractTestManifest();
-  return registeredFiles(kind === "core" ? coreContractFiles : advisoryContractFiles);
+  if (kind === "core") return registeredFiles(coreContractFiles);
+  if (kind === "advisory") return registeredFiles(advisoryContractFiles);
+  throw new Error(`[contract manifest] 알 수 없는 테스트 종류: ${String(kind)}`);
 }

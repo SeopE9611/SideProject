@@ -8,6 +8,11 @@ import {
   buildPublicReviewSurfaceTargetMatch,
 } from "@/lib/reviews/public-review-surface.server";
 import { validateReviewInput } from "@/lib/reviews/review-input-policy";
+import {
+  isDuplicateReviewError,
+  isPlainReviewRequestBody,
+  isValidReviewCursor,
+} from "@/lib/reviews/review-api-guards";
 import { appendMatchCondition } from "@/lib/reviews/review-query-match";
 import { isAllowedReviewPhotoUrl } from "@/lib/reviews/review-photo-storage.server";
 import {
@@ -33,18 +38,6 @@ import {
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
-function isDuplicateKeyError(error: unknown): boolean {
-  return Boolean(
-    error &&
-    typeof error === "object" &&
-    ("code" in error ? (error as { code?: unknown }).code === 11000 : false),
-  );
-}
-
-function isPlainRequestBody(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
 
 function duplicateReviewResponse() {
   return NextResponse.json(
@@ -77,7 +70,7 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ message: "invalid_json" }, { status: 400 });
   }
-  if (!isPlainRequestBody(body)) {
+  if (!isPlainReviewRequestBody(body)) {
     return NextResponse.json(
       { ok: false, reason: "invalidBody", message: "잘못된 후기 요청입니다." },
       { status: 400 },
@@ -263,7 +256,7 @@ export async function POST(req: Request) {
           "POST /api/reviews",
         );
       }
-      if (isDuplicateKeyError(error)) return duplicateReviewResponse();
+      if (isDuplicateReviewError(error)) return duplicateReviewResponse();
       throw error;
     }
     if (sessionClaimed) {
@@ -420,7 +413,7 @@ export async function POST(req: Request) {
           "POST /api/reviews",
         );
       }
-      if (isDuplicateKeyError(error)) return duplicateReviewResponse();
+      if (isDuplicateReviewError(error)) return duplicateReviewResponse();
       throw error;
     }
     const reviewId = insertRes.insertedId;
@@ -580,7 +573,7 @@ export async function POST(req: Request) {
           "POST /api/reviews",
         );
       }
-      if (isDuplicateKeyError(error)) return duplicateReviewResponse();
+      if (isDuplicateReviewError(error)) return duplicateReviewResponse();
       throw error;
     }
 
@@ -750,27 +743,11 @@ export async function GET(req: Request) {
       { ok: false, reason: "invalidCursor", message: "잘못된 페이지 요청입니다." },
       { status: 400 },
     );
-  const isValidCursorNumber = (value: unknown) =>
-    typeof value === "number" && Number.isFinite(value);
-
   let after: Record<string, unknown> | null = null;
   if (cursorB64) {
     try {
       const parsed = JSON.parse(Buffer.from(cursorB64, "base64").toString("utf-8"));
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        return invalidCursorResponse();
-      }
-      if (!ObjectId.isValid(String(parsed.id ?? ""))) return invalidCursorResponse();
-      if (sort === "latest") {
-        if (typeof parsed.createdAt !== "string" && !(parsed.createdAt instanceof Date)) {
-          return invalidCursorResponse();
-        }
-        if (Number.isNaN(new Date(parsed.createdAt).getTime())) return invalidCursorResponse();
-      }
-      if (sort === "helpful" && !isValidCursorNumber(parsed.helpfulCount)) {
-        return invalidCursorResponse();
-      }
-      if (sort === "rating" && !isValidCursorNumber(parsed.rating)) {
+      if (!isValidReviewCursor(parsed, sort, (id) => ObjectId.isValid(id))) {
         return invalidCursorResponse();
       }
       after = parsed as Record<string, unknown>;

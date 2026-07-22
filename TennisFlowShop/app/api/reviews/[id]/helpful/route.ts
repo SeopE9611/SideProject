@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { getHelpfulReviewBlockReason } from "@/lib/reviews/review-api-guards";
 
 type DbAny = any;
 
@@ -43,12 +44,12 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     { _id: reviewId, isDeleted: { $ne: true } },
     { projection: { _id: 1, userId: 1, status: 1, moderationStatus: 1 } },
   );
-  if (!exists) return NextResponse.json({ ok: false, reason: "notFound" }, { status: 404 });
-  if (exists.status !== "visible" || exists.moderationStatus === "hidden") {
-    return NextResponse.json({ ok: false, reason: "reviewNotVisible" }, { status: 403 });
-  }
-  if (String(exists.userId) === String(userId)) {
-    return NextResponse.json({ ok: false, reason: "ownReview" }, { status: 403 });
+  const helpfulBlockReason = getHelpfulReviewBlockReason(exists, userId);
+  if (helpfulBlockReason) {
+    return NextResponse.json(
+      { ok: false, reason: helpfulBlockReason },
+      { status: helpfulBlockReason === "notFound" ? 404 : 403 },
+    );
   }
 
   // 토글 로직: 있으면 삭제, 없으면 생성
