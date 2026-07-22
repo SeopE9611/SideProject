@@ -40,6 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { RichTextContent } from "@/components/editor/RichTextContent";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +48,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { badgeSizeSm, getBoardCategoryTone } from "@/lib/badge-style";
 import { communityFetch } from "@/lib/community/communityFetch.client";
+import { isCommunityRichTextType } from "@/lib/community/community-rich-text-policy";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import {
@@ -1904,9 +1906,18 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               )}
 
               {/* 본문 */}
-              <div className="rounded-panel border border-border bg-card px-4 py-5 text-ui-body-sm leading-relaxed text-foreground shadow-soft whitespace-pre-wrap sm:px-6">
-                {item.content}
-              </div>
+              {isCommunityRichTextType(item.type) ? (
+                // free/market/gear 상세 GET은 읽기 경계에서 정제된 HTML만 반환합니다.
+                <RichTextContent
+                  content={item.content}
+                  className="rounded-panel border border-border bg-card px-4 py-5 shadow-soft sm:px-6"
+                />
+              ) : (
+                // brand는 아직 일반 텍스트 정책이므로 raw fallback을 유지합니다.
+                <div className="rounded-panel border border-border bg-card px-4 py-5 text-ui-body-sm leading-relaxed text-foreground shadow-soft whitespace-pre-wrap sm:px-6">
+                  {item.content}
+                </div>
+              )}
 
               {/* 첨부파일 */}
               {attachments.length > 0 && (

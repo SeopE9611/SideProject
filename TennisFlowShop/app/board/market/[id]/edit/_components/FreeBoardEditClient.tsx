@@ -8,6 +8,12 @@ import {
 } from "@/app/board/market/_components/market.constants";
 import MarketMetaFields from "@/app/board/market/_components/MarketMetaFields";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { RichTextEditor } from "@/components/editor/RichTextEditor";
+import { richTextToValidationText } from "@/components/editor/rich-text-utils";
+import {
+  COMMUNITY_RICH_TEXT_CONTENT_MAX,
+  COMMUNITY_RICH_TEXT_CONTENT_MIN,
+} from "@/lib/community/community-rich-text-policy";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,8 +64,6 @@ type FieldErrors = Partial<Record<FieldKey, string>>;
 
 const TITLE_MIN = 4;
 const TITLE_MAX = 80;
-const CONTENT_MIN = 10;
-const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s);
 const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 const scrollIntoViewOpts: ScrollIntoViewOptions = {
@@ -78,6 +82,11 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 폼 상태
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  // content에는 HTML 태그가 포함되므로 서버와 같은 실제 텍스트 기준으로 검증합니다. 별도 길이 상태를 두지 않아야 에디터 초기화와 상태 변경이 어긋나지 않습니다.
+  const contentValidationLength = useMemo(
+    () => richTextToValidationText(content).length,
+    [content],
+  );
 
   // 카테고리 상태
   const [category, setCategory] = useState<"racket" | "string" | "equipment">("racket");
@@ -114,7 +123,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const priceRef = useRef<HTMLInputElement | null>(null);
   const modelNameRef = useRef<HTMLInputElement | null>(null);
   const titleRef = useRef<HTMLInputElement | null>(null);
-  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const contentEditorRef = useRef<HTMLDivElement | null>(null);
   const attachmentsRef = useRef<HTMLDivElement | null>(null);
 
   // 기존 글 불러오기
@@ -261,8 +270,8 @@ export default function FreeBoardEditClient({ id }: Props) {
       return;
     }
     if (key === "content") {
-      contentRef.current?.scrollIntoView(scrollIntoViewOpts);
-      contentRef.current?.focus();
+      contentEditorRef.current?.scrollIntoView(scrollIntoViewOpts);
+      contentEditorRef.current?.querySelector<HTMLElement>('[contenteditable="true"]')?.focus();
       return;
     }
     attachmentsRef.current?.scrollIntoView(scrollIntoViewOpts);
@@ -277,8 +286,6 @@ export default function FreeBoardEditClient({ id }: Props) {
   const validateBeforeSubmit = (): FieldErrors => {
     const errs: FieldErrors = {};
     const t = title.trim();
-    const c = content.trim();
-
     if (isMarketBrandCategory(category)) {
       if (!brand) errs.brand = "브랜드를 선택해 주세요.";
       else if (!isValidMarketBrandForCategory(category, brand))
@@ -292,24 +299,21 @@ export default function FreeBoardEditClient({ id }: Props) {
       errs.modelName = "스트링 모델명을 입력해 주세요.";
 
     if (!t) errs.title = "제목을 입력해 주세요.";
-    if (!c) errs.content = "내용을 입력해 주세요.";
+    if (contentValidationLength === 0) errs.content = "내용을 입력해 주세요.";
 
     if (!errs.title) {
       if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
       else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
     }
     if (!errs.content) {
-      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
-      else if (c.length > CONTENT_MAX)
-        errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+      if (contentValidationLength < COMMUNITY_RICH_TEXT_CONTENT_MIN) errs.content = `내용은 ${COMMUNITY_RICH_TEXT_CONTENT_MIN}자 이상 입력해 주세요.`;
+      else if (contentValidationLength > COMMUNITY_RICH_TEXT_CONTENT_MAX)
+        errs.content = `내용은 ${COMMUNITY_RICH_TEXT_CONTENT_MAX}자 이내로 입력해 주세요.`;
     }
 
     if (!errs.title && hasScriptLike(t))
       errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.content && hasScriptLike(c))
-      errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
     if (!errs.title && hasHtmlLike(t)) errs.title = "HTML 태그는 사용할 수 없습니다.";
-    if (!errs.content && hasHtmlLike(c)) errs.content = "HTML 태그는 사용할 수 없습니다.";
 
     if (images.length > 5) errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
     if (totalAttachmentCount > MAX_FILES)
@@ -387,7 +391,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       ok: typeof marketMeta.price === "number" && marketMeta.price > 0,
     },
     { label: "제목 입력", ok: title.trim().length > 0 },
-    { label: "내용 입력", ok: content.trim().length > 0 },
+    { label: "내용 입력", ok: contentValidationLength > 0 },
     { label: "이미지 첨부", ok: images.length > 0 },
   ];
 
@@ -1058,29 +1062,19 @@ export default function FreeBoardEditClient({ id }: Props) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="content">내용</Label>
-                      <Textarea
-                        id="content"
-                        ref={contentRef}
-                        className={cn(
-                          "min-h-[220px] placeholder:text-muted-foreground/60",
-                          fieldErrors.content
-                            ? "border-destructive focus-visible:border-destructive"
-                            : "",
-                        )}
-                        value={content}
-                        onChange={(e) => {
-                          setContent(e.target.value);
-                          if (fieldErrors.content)
-                            setFieldErrors((prev) => ({
-                              ...prev,
-                              content: undefined,
-                            }));
-                        }}
-                        disabled={isSubmitting}
-                        maxLength={CONTENT_MAX}
-                        placeholder="구매 시기, 사용 기간, 상태, 거래 방식(직거래/택배), 포함 구성품 등을 적어주세요."
-                      />
+                      <Label>내용</Label>
+                      <RichTextEditor
+  value={content}
+  onChange={(change) => {
+    setContent(change.html);
+    if (fieldErrors?.content) setFieldErrors((prev) => ({ ...prev, content: undefined }));
+  }}
+  maxLength={COMMUNITY_RICH_TEXT_CONTENT_MAX}
+  placeholder="게시글 내용을 작성해 주세요."
+  ariaLabel="게시글 본문 편집기"
+  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+  invalid={Boolean(fieldErrors?.content)}
+/>
                       {fieldErrors.content ? (
                         <p className="text-ui-label text-destructive">{fieldErrors.content}</p>
                       ) : null}
