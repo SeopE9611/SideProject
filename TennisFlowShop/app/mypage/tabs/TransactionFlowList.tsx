@@ -27,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   getApplicationStatusBadgeSpec,
   getOrderStatusBadgeSpec,
+  getPaymentStatusBadgeSpec,
   getRentalStatusBadgeSpec,
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
@@ -299,6 +300,18 @@ const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
   if (normalized === "환불") return getApplicationStatusBadgeSpec("취소");
   if (normalized === "반납완료") return getApplicationStatusBadgeSpec("교체완료");
   return getApplicationStatusBadgeSpec(label);
+};
+
+const getOrderProgressStatusLabel = (
+  status?: string | null,
+  shippingMethod?: string | null,
+): string => {
+  const normalizedStatus = getMypageNormalizedStatus(status);
+  const fulfillmentLabel = getOrderStatusLabelForDisplay(normalizedStatus, { shippingMethod });
+
+  if (fulfillmentLabel !== normalizedStatus) return fulfillmentLabel;
+
+  return getCustomerOrderStatusLabel(status);
 };
 
 const isApplicationBeforeWork = (status?: string | null) => {
@@ -998,26 +1011,20 @@ export default function TransactionFlowList() {
                     linkedActionableApplication?.id ??
                     g.rental?.applicationSummaries?.[0]?.id)
                   : undefined;
-            const status =
+            const rawStatus =
               g.kind === "order"
                 ? g.order?.status
                 : g.kind === "rental"
                   ? g.rental?.status
                   : g.application?.status;
-            const normalizedStatus = getMypageNormalizedStatus(status);
-            const userStatusLabel =
+            const normalizedStatus = getMypageNormalizedStatus(rawStatus);
+            const displayStatusLabel =
               g.kind === "order"
-                ? getCustomerOrderStatusLabel(status)
+                ? getOrderProgressStatusLabel(rawStatus, g.order?.shippingMethod)
                 : g.kind === "rental"
-                  ? getCustomerRentalStatusLabel(status)
-                  : getCustomerApplicationStatusLabel(status);
-            const orderDisplayStatusLabel =
-              g.kind === "order"
-                ? getOrderStatusLabelForDisplay(userStatusLabel, {
-                    shippingMethod: g.order?.shippingMethod,
-                  })
-                : userStatusLabel;
-            const statusBadgeSpec = getStatusBadgeSpec(g, userStatusLabel);
+                  ? getCustomerRentalStatusLabel(rawStatus)
+                  : getCustomerApplicationStatusLabel(rawStatus);
+            const statusBadgeSpec = getStatusBadgeSpec(g, rawStatus ?? "");
             const linkedCount =
               g.kind === "order"
                 ? (g.order?.linkedApplicationCount ?? 0)
@@ -1042,12 +1049,14 @@ export default function TransactionFlowList() {
               (prefersApplicationView
                 ? getApplicationTitle(displayApplication)
                 : getRepresentativeTitle(g)) || "거래/이용 내역";
-            const displayStatus = prefersApplicationView ? displayApplication?.status : status;
+            const displayRawStatus = prefersApplicationView
+              ? displayApplication?.status
+              : rawStatus;
             const displayUserStatusLabel = prefersApplicationView
-              ? getMypageUserStatusLabel(displayStatus)
-              : orderDisplayStatusLabel;
+              ? getCustomerApplicationStatusLabel(displayRawStatus)
+              : displayStatusLabel;
             const displayStatusBadgeSpec = prefersApplicationView
-              ? getStatusBadgeSpec({ ...g, kind: "application" }, displayUserStatusLabel)
+              ? getStatusBadgeSpec({ ...g, kind: "application" }, displayApplication?.status ?? "")
               : statusBadgeSpec;
 
             const displayDateValue =
@@ -1121,6 +1130,9 @@ export default function TransactionFlowList() {
                 : displayKind === "rental"
                   ? g.rental?.paymentStatusLabel
                   : null;
+            const paymentStatusBadgeSpec = paymentStatusLabel
+              ? getPaymentStatusBadgeSpec(paymentStatusLabel)
+              : null;
 
             const representativeImage = getRepresentativeImage(g, displayApplication);
             const shouldShowServiceIcon =
@@ -1165,8 +1177,11 @@ export default function TransactionFlowList() {
                     >
                       {representativeStatusLabel}
                     </Badge>
-                    {paymentStatusLabel ? (
-                      <Badge variant="outline" className="shrink-0 whitespace-nowrap">
+                    {paymentStatusLabel && paymentStatusBadgeSpec ? (
+                      <Badge
+                        variant={paymentStatusBadgeSpec.variant}
+                        className="shrink-0 whitespace-nowrap"
+                      >
                         {paymentStatusLabel}
                       </Badge>
                     ) : null}
@@ -1451,7 +1466,7 @@ export default function TransactionFlowList() {
                       if (reviewAction) addPrimaryActionCandidate(reviewAction);
                     }
 
-                    if (canShowOrderShippingInfo(status)) {
+                    if (canShowOrderShippingInfo(rawStatus)) {
                       const isVisitPickup = isVisitPickupOrder({
                         shippingMethod: g.order?.shippingMethod,
                       });
@@ -1775,8 +1790,11 @@ export default function TransactionFlowList() {
                         >
                           {representativeStatusLabel}
                         </Badge>
-                        {paymentStatusLabel ? (
-                          <Badge variant="outline" className="shrink-0 whitespace-nowrap">
+                        {paymentStatusLabel && paymentStatusBadgeSpec ? (
+                          <Badge
+                            variant={paymentStatusBadgeSpec.variant}
+                            className="shrink-0 whitespace-nowrap"
+                          >
                             {paymentStatusLabel}
                           </Badge>
                         ) : null}
