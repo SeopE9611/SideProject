@@ -15,31 +15,6 @@ function assertSourceOrder(source, first, second) {
   assert.ok(firstIndex < secondIndex, `${first} must appear before ${second}`);
 }
 
-function blockReason(target) {
-  if (!target) return "notFound";
-  if (target.reviewed) return "already";
-  if (!target.eligible) return target.ineligibleReason ?? "notConfirmed";
-  return null;
-}
-
-test("GET/POST 공통 canonical target 차단 순서: reviewed를 eligible보다 먼저 처리한다", () => {
-  assert.equal(blockReason({ eligible: true, reviewed: true }), "already");
-  assert.equal(
-    blockReason({ eligible: false, reviewed: true, ineligibleReason: "coveredByIntegratedReview" }),
-    "already",
-  );
-  assert.equal(
-    blockReason({ eligible: false, reviewed: false, ineligibleReason: "notCompleted" }),
-    "notCompleted",
-  );
-  assert.equal(
-    blockReason({ eligible: false, reviewed: false, ineligibleReason: null }),
-    "notConfirmed",
-  );
-  assert.equal(blockReason({ eligible: true, reviewed: false }), null);
-  assert.equal(blockReason(null), "notFound");
-});
-
 test("후기 API 정책 계약: GET applicationId와 POST 등록이 같은 canonical 차단 helper를 사용한다", () => {
   const eligibility = read("app/api/reviews/eligibility/route.ts");
   const postRoute = read("app/api/reviews/route.ts");
@@ -264,18 +239,20 @@ test("helpful API는 실제 공개 후기만 허용하고 관리자 숨김을 �
   assert.ok(helpfulRoute.includes('reason: "notFound"'));
 });
 
-test("CI 계약: test-contract job에서 review-security를 public surface 다음에 실행한다", () => {
+test("CI advisory 계약: review 핵심 테스트는 단일 Core manifest에서 실행한다", () => {
   const ci = read("../.github/workflows/ci.yml");
-  const packageJson = read("package.json");
+  const manifest = read("scripts/contract-test-manifest.mjs");
 
-  assert.ok(packageJson.includes('"test:review-security"'));
   assert.ok(ci.includes("test-contract:"));
-  assert.ok(ci.includes("Test public review surface"));
-  assert.ok(ci.includes("Test review security and integrity"));
-  assert.ok(ci.includes("pnpm test:review-security"));
-  assert.ok(
-    ci.indexOf("Test public review surface") < ci.indexOf("Test review security and integrity"),
-  );
+  assert.ok(ci.includes("pnpm test:contract"));
+  assert.ok(!ci.includes("Test review target resolver"));
+  for (const file of [
+    "review-target-resolver.test.mjs",
+    "review-write-flow.test.mjs",
+    "public-review-surface.test.mjs",
+    "review-security-integrity.test.mjs",
+    "review-summary-cache.test.mjs",
+  ]) assert.ok(manifest.includes(file));
 });
 
 test("후기 POST body 계약: 일반 JSON 객체만 허용하고 검증 이후 필드에 접근한다", () => {

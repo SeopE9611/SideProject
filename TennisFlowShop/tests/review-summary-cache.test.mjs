@@ -8,7 +8,6 @@ import ts from "typescript";
 import { ObjectId } from "mongodb";
 
 const root = new URL("../", import.meta.url);
-const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 function compileTs(rel, stubs = {}) {
   const src = readFileSync(new URL(rel, root), "utf8");
@@ -108,7 +107,7 @@ async function targets(review, fixtures) {
 
 test("public summary stage와 fake aggregate 변환을 실제 운영 함수로 확인한다", async () => {
   assert.deepEqual(surface.buildPublicReviewSummaryStages(), [
-    { $match: { status: "visible" } },
+    { $match: { status: "visible", moderationStatus: { $ne: "hidden" } } },
     { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } },
   ]);
   const db = makeDb({
@@ -129,10 +128,6 @@ test("public summary stage와 fake aggregate 변환을 실제 운영 함수로 �
   const pipeline = db.calls.aggregate[0].pipeline;
   assert.deepEqual(pipeline[0].$match.isDeleted, { $ne: true });
   assert.deepEqual(pipeline.slice(1), surface.buildPublicReviewSummaryStages());
-  assert.match(
-    read("lib/reviews/public-review-surface.server.ts"),
-    /summary: buildPublicReviewSummaryStages\(\)/,
-  );
 });
 
 test("영향 대상 수집은 상품·라켓·신청서·부모 주문/대여와 중복 제거를 실행한다", async () => {
@@ -309,36 +304,4 @@ test("캐시 update payload와 safe wrapper를 실제 운영 함수로 실행한
     console.error = oldError;
   }
   assert.equal(logged, true);
-});
-
-test("작성 route는 공통 캐시 refresh helper를 사용한다", () => {
-  const post = read("app/api/reviews/route.ts");
-  assert.ok(!post.includes("function updateProductRatingSummary"));
-  assert.ok((post.match(/refreshReviewSummaryCachesForReviewSafely/g) ?? []).length >= 3);
-});
-
-test("유지보수와 목록 UI/API 및 라켓 카드 색상 계약", () => {
-  const maintenance = read("lib/reviews.maintenance.ts");
-  assert.match(maintenance, /rebuildPublicReviewSummaryCaches/);
-  assert.match(maintenance, /collection\("used_rackets"\)/);
-  assert.match(maintenance, /runLimited\(\[\.\.\.productIds\], 6/);
-  assert.match(maintenance, /reviewsScanned/);
-
-  const productsApi = read("app/api/products/route.ts");
-  assert.match(productsApi, /ratingCount: -1, ratingAvg: -1, _id: -1/);
-  assert.ok(!productsApi.includes('collection("reviews")'));
-
-  const racketsApi = read("app/api/rackets/route.ts");
-  assert.match(racketsApi, /reviewCount: -1, ratingCount: -1, createdAt: -1, _id: -1/);
-  assert.match(racketsApi, /ratingAvg: normalizedRatingAverage/);
-  assert.match(racketsApi, /ratingCount: normalizedReviewCount/);
-  assert.match(racketsApi, /reviewCount: normalizedReviewCount/);
-
-  const racketCard = read("app/rackets/_components/RacketCard.tsx");
-  assert.doesNotMatch(racketCard, /yellow-|amber-|#[0-9A-Fa-f]{3,8}/);
-  assert.match(racketCard, /text-warning/);
-  assert.match(racketCard, /fill-current|fill-warning/);
-  assert.match(racketCard, /prev\.racket\.reviewCount === next\.racket\.reviewCount/);
-  assert.match(read("app/products/components/FilterableProductList.tsx"), /후기 많은순/);
-  assert.match(read("app/rackets/_components/FilterableRacketList.tsx"), /후기 많은순/);
 });

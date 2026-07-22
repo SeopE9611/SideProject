@@ -241,31 +241,10 @@ jobs:
           cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
-        id: install
         run: pnpm install --frozen-lockfile
 
       - name: Test core contract (권한/CSRF/후기 정책)
         run: pnpm test:contract
-
-      - name: Test review target resolver
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: pnpm test:review-target
-
-      - name: Test review write flow
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: pnpm test:review-write
-
-      - name: Test public review surface
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: pnpm test:review-surface
-
-      - name: Test review security and integrity
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: pnpm test:review-security
-
-      - name: Test review summary cache
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: pnpm test:review-summary
 
   # 구현 문자열·UI 문구 검사는 관찰 가능하게 실행하되 핵심 gate를 막지 않는다.
   test-contract-advisory:

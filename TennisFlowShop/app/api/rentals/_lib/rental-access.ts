@@ -11,6 +11,28 @@ export function rentalNotAvailable() {
   );
 }
 
+export function getRentalAccessDecision(params: {
+  rental: { userId?: unknown } | null;
+  rentalId: string;
+  accessClaims: { sub?: unknown; role?: unknown } | null;
+  hasGuestRentalAccess: boolean;
+  allowAdmin?: boolean;
+}) {
+  if (!params.rental) return { ok: false as const, reason: "RENTAL_NOT_AVAILABLE" as const };
+
+  const isGuestRental = !params.rental.userId;
+  const isMemberOwner =
+    !isGuestRental &&
+    typeof params.accessClaims?.sub === "string" &&
+    params.accessClaims.sub === String(params.rental.userId);
+  const isAdmin = params.allowAdmin && params.accessClaims?.role === "admin";
+  const isGuestOwner = isGuestRental && params.hasGuestRentalAccess;
+
+  return isMemberOwner || isAdmin || isGuestOwner
+    ? { ok: true as const, isGuestRental }
+    : { ok: false as const, reason: "RENTAL_NOT_AVAILABLE" as const };
+}
+
 export async function getRentalAccess(db: any, rentalId: string, allowAdmin = false) {
   const id = rentalId.trim();
   if (!ObjectId.isValid(id)) return { ok: false as const, response: rentalNotAvailable() };
@@ -22,15 +44,14 @@ export async function getRentalAccess(db: any, rentalId: string, allowAdmin = fa
   const jar = await cookies();
   const accessClaims = verifyAccessToken(jar.get("accessToken")?.value ?? "");
 
-  const isGuestRental = !rental.userId;
-  const isMemberOwner =
-    !isGuestRental &&
-    typeof accessClaims?.sub === "string" &&
-    accessClaims.sub === String(rental.userId);
-  const isAdmin = allowAdmin && accessClaims?.role === "admin";
-  const isGuestOwner = isGuestRental && hasGuestRentalCookieAccess(jar, id);
-
-  if (!isMemberOwner && !isAdmin && !isGuestOwner) {
+  const decision = getRentalAccessDecision({
+    rental,
+    rentalId: id,
+    accessClaims,
+    hasGuestRentalAccess: hasGuestRentalCookieAccess(jar, id),
+    allowAdmin,
+  });
+  if (!decision.ok) {
     return { ok: false as const, response: rentalNotAvailable() };
   }
 
@@ -38,7 +59,7 @@ export async function getRentalAccess(db: any, rentalId: string, allowAdmin = fa
     ok: true as const,
     rental,
     _id,
-    accessFilter: isGuestRental
+    accessFilter: decision.isGuestRental
       ? { _id, $or: [{ userId: { $exists: false } }, { userId: null }] }
       : { _id, userId: rental.userId },
   };
