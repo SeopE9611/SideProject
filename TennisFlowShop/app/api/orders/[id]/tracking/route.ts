@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import {
   fetchDeliveryTrackerSummary,
   type DeliveryTrackerSummaryFailure,
@@ -55,7 +55,7 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
     const guestOwnsOrder = !!(
       isGuestOrder &&
       guestClaims &&
-      (guestClaims as any).orderId === String(order._id)
+      hasGuestOrderAccess(guestClaims, String(order._id))
     );
 
     if (!isOwner && !isAdmin && !guestOwnsOrder) {

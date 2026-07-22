@@ -1,8 +1,7 @@
 import {
-  hasGuestRentalAccess,
-  signOrderAccessToken,
-  verifyOrderAccessToken,
-} from "@/lib/auth.utils";
+  hasGuestRentalCookieAccess,
+  setGuestRentalAccessCookie,
+} from "@/lib/auth/guest-resource-access.server";
 import { rentalNotAvailable } from "@/app/api/rentals/_lib/rental-access";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -24,8 +23,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const id = rawId.trim();
   if (!isGuestRentalModeEnabled() || !ObjectId.isValid(id)) return rentalNotAvailable();
 
-  const claims = verifyOrderAccessToken((await cookies()).get("orderAccessToken")?.value ?? "");
-  if (!hasGuestRentalAccess(claims, id)) return rentalNotAvailable();
+  if (!hasGuestRentalCookieAccess(await cookies(), id)) return rentalNotAvailable();
 
   const rental = await (await getDb())
     .collection("rental_orders")
@@ -33,12 +31,6 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   if (!rental || rental.userId) return rentalNotAvailable();
 
   const response = NextResponse.json({ success: true });
-  response.cookies.set("orderAccessToken", signOrderAccessToken({ rentalId: id }), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  setGuestRentalAccessCookie(response, id);
   return response;
 }

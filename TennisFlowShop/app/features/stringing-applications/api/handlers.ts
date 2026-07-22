@@ -22,8 +22,10 @@ import {
   signApplicationAccessToken,
   verifyAccessToken,
   verifyOrderAccessToken,
+  hasGuestOrderAccess,
 } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
+import { getGuestRentalAccessClaims } from "@/lib/auth/guest-resource-access.server";
 import clientPromise, { getDb } from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { revertConsumption } from "@/lib/passes.service";
@@ -3698,16 +3700,13 @@ export async function handleSubmitStringingApplication(req: Request) {
   const token = cookieStore.get("accessToken")?.value;
   const payload = token ? verifyAccessToken(token) : null;
   const userId = payload?.sub ? new ObjectId(payload.sub) : null;
-  const guestClaims = verifyOrderAccessToken(cookieStore.get("orderAccessToken")?.value ?? "");
-
+  const orderClaims = verifyOrderAccessToken(cookieStore.get("orderAccessToken")?.value ?? "");
+  const rentalClaims = getGuestRentalAccessClaims(cookieStore);
   const guestOrderId =
-    guestClaims && "orderId" in guestClaims && typeof guestClaims.orderId === "string"
-      ? guestClaims.orderId
+    orderClaims && "orderId" in orderClaims && hasGuestOrderAccess(orderClaims, orderClaims.orderId)
+      ? orderClaims.orderId
       : null;
-  const guestRentalId =
-    guestClaims && "rentalId" in guestClaims && typeof guestClaims.rentalId === "string"
-      ? guestClaims.rentalId
-      : null;
+  const guestRentalId = rentalClaims && "rentalId" in rentalClaims ? rentalClaims.rentalId : null;
 
   try {
     const body = await req.json();
@@ -3836,7 +3835,9 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     const oax = jar.get("orderAccessToken")?.value ?? null;
     const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
     const guestOrderId =
-      guestClaims && "orderId" in guestClaims && typeof guestClaims.orderId === "string"
+      guestClaims &&
+      "orderId" in guestClaims &&
+      hasGuestOrderAccess(guestClaims, guestClaims.orderId)
         ? guestClaims.orderId
         : null;
     // 권한: (주문 소유자) or (관리자) or (게스트 토큰의 orderId 일치)

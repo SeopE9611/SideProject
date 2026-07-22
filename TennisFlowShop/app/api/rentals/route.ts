@@ -2,7 +2,8 @@ import {
   createRentalOrderCore,
   type RentalCreatePayload,
 } from "@/app/features/rentals/api/create-rental-order-core";
-import { signOrderAccessToken, verifyAccessToken } from "@/lib/auth.utils";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { setGuestRentalAccessCookie } from "@/lib/auth/guest-resource-access.server";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -207,13 +208,7 @@ export async function POST(req: Request) {
         .collection("rental_orders")
         .findOne({ _id: new ObjectId(result.id) }, { projection: { _id: 1, userId: 1 } });
       if (rental && !rental.userId) {
-        response.cookies.set("orderAccessToken", signOrderAccessToken({ rentalId: result.id }), {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-          path: "/",
-          maxAge: 60 * 60 * 24 * 7,
-        });
+        setGuestRentalAccessCookie(response, result.id);
       }
     }
 

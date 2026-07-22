@@ -7,6 +7,7 @@ import {
   verifyAccessToken,
   verifyGuestOrderLookupAccessToken,
   verifyOrderAccessToken,
+  hasGuestOrderAccess,
 } from "@/lib/auth.utils";
 import { buildGuestOrderDetailDto } from "../_lib/guest-order-response";
 
@@ -44,9 +45,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       const lookupClaims = verifyGuestOrderLookupAccessToken(
         store.get("guestOrderLookupToken")?.value ?? "",
       );
-      const hasOrderToken = Boolean(
-        orderClaims && "orderId" in orderClaims && orderClaims.orderId === id,
-      );
+      const hasOrderToken = Boolean(hasGuestOrderAccess(orderClaims, id));
       if (!hasOrderToken && !hasGuestOrderLookupAccess(lookupClaims, id)) return unavailable();
     }
 

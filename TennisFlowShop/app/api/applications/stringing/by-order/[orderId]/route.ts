@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { cookies } from "next/headers";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderCookieAccess } from "@/lib/auth/guest-resource-access.server";
 
 export async function GET(_req: Request, context: { params: Promise<{ orderId: string }> }) {
   try {
@@ -29,20 +30,12 @@ export async function GET(_req: Request, context: { params: Promise<{ orderId: s
 
     const cookieStore = await cookies();
     const at = cookieStore.get("accessToken")?.value ?? null;
-    const oax = cookieStore.get("orderAccessToken")?.value ?? null;
 
     let payload: any = null;
     try {
       payload = at ? verifyAccessToken(at) : null;
     } catch {
       payload = null;
-    }
-
-    let guestClaims: any = null;
-    try {
-      guestClaims = oax ? verifyOrderAccessToken(oax) : null;
-    } catch {
-      guestClaims = null;
     }
 
     const isOwner = !!(
@@ -53,9 +46,7 @@ export async function GET(_req: Request, context: { params: Promise<{ orderId: s
     const isAdmin = payload?.role === "admin";
     const isGuestOrder = !order.userId || (order as any).guest === true;
     const guestOwnsOrder = !!(
-      isGuestOrder &&
-      guestClaims?.orderId &&
-      String(guestClaims.orderId) === String(order._id)
+      isGuestOrder && hasGuestOrderCookieAccess(cookieStore, String(order._id))
     );
 
     if (!isOwner && !isAdmin && !guestOwnsOrder) {

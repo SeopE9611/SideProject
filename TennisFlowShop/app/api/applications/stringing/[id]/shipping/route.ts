@@ -1,5 +1,6 @@
 import { handleUpdateShippingInfo } from "@/app/features/stringing-applications/api/handlers";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderCookieAccess } from "@/lib/auth/guest-resource-access.server";
 import { getDb } from "@/lib/mongodb";
 import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
@@ -48,7 +49,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   // 쿠키 기반 권한 체크
   const jar = await cookies();
   const at = jar.get("accessToken")?.value ?? null;
-  const oax = jar.get("orderAccessToken")?.value ?? null;
 
   const payload = at ? verifyAccessToken(at) : null;
   const userId = typeof payload?.sub === "string" ? payload.sub : null;
@@ -64,15 +64,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const isOwner =
     !!userId && !!(app as any).userId && String((app as any).userId) === String(userId);
 
-  const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
-  const guestOrderId =
-    guestClaims && "orderId" in guestClaims && typeof guestClaims.orderId === "string"
-      ? guestClaims.orderId
-      : null;
   const guestOwns =
-    !!guestOrderId &&
-    !!(app as any).orderId &&
-    String(guestOrderId) === String((app as any).orderId);
+    !!(app as any).orderId && hasGuestOrderCookieAccess(jar, String((app as any).orderId));
 
   if (!isOwner && !isAdmin && !guestOwns) {
     return NextResponse.json({ ok: false, message: "Forbidden" }, { status: 403 });

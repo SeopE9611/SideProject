@@ -1,7 +1,8 @@
 import RentalsSuccessClient from "@/app/rentals/success/_components/RentalsSuccessClient";
 import BackButtonGuard from "@/app/rentals/success/_components/BackButtonGuard";
 import LoginGate from "@/components/system/LoginGate";
-import { hasGuestRentalAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestRentalCookieAccess } from "@/lib/auth/guest-resource-access.server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -215,14 +216,9 @@ export default async function Page({
   const rentalOrderId = rental.orderId ? String(rental.orderId) : null;
   const isMemberOwner = !!(accessPayload?.sub && ownerUserId && accessPayload.sub === ownerUserId);
   const isGuestOwner =
-    hasGuestRentalAccess(orderAccessPayload, String(rental._id)) ||
+    hasGuestRentalCookieAccess(cookieStore, String(rental._id)) ||
     Boolean(
-      !ownerUserId &&
-      orderAccessPayload &&
-      "orderId" in orderAccessPayload &&
-      orderAccessPayload.orderId &&
-      rentalOrderId &&
-      orderAccessPayload.orderId === rentalOrderId,
+      !ownerUserId && rentalOrderId && hasGuestOrderAccess(orderAccessPayload, rentalOrderId),
     );
 
   if (!isMemberOwner && !isGuestOwner) return notFound();

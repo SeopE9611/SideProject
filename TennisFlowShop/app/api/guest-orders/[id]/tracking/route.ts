@@ -7,6 +7,7 @@ import {
   verifyAccessToken,
   verifyGuestOrderLookupAccessToken,
   verifyOrderAccessToken,
+  hasGuestOrderAccess,
 } from "@/lib/auth.utils";
 import {
   fetchDeliveryTrackerSummary,
@@ -36,8 +37,8 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
-function getOrderIdClaim(claims: ReturnType<typeof verifyOrderAccessToken>) {
-  return claims && "orderId" in claims ? claims.orderId : null;
+function getOrderIdClaim(claims: ReturnType<typeof verifyOrderAccessToken>, orderId: string) {
+  return hasGuestOrderAccess(claims, orderId) ? orderId : null;
 }
 
 function orderNotAvailable() {
@@ -83,7 +84,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
         cookieStore.get("guestOrderLookupToken")?.value ?? "",
       );
       if (
-        getOrderIdClaim(orderClaims) !== String(order._id) &&
+        getOrderIdClaim(orderClaims, String(order._id)) !== String(order._id) &&
         !hasGuestOrderLookupAccess(lookupClaims, String(order._id))
       ) {
         return orderNotAvailable();

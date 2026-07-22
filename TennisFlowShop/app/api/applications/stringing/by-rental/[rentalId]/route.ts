@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { cookies } from "next/headers";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { hasGuestRentalCookieAccess } from "@/lib/auth/guest-resource-access.server";
 
 /**
  * 목적: 라켓 대여(rental_orders) 기반 “draft 이어쓰기”를 지원
@@ -24,7 +25,6 @@ export async function GET(_req: Request, context: { params: Promise<{ rentalId: 
     const rentalObjectId = new ObjectId(rentalId);
     const cookieStore = await cookies();
     const at = cookieStore.get("accessToken")?.value ?? null;
-    const oax = cookieStore.get("orderAccessToken")?.value ?? null;
 
     let payload: any = null;
     try {
@@ -32,16 +32,10 @@ export async function GET(_req: Request, context: { params: Promise<{ rentalId: 
     } catch {
       payload = null;
     }
-    let guestClaims: any = null;
-    try {
-      guestClaims = oax ? verifyOrderAccessToken(oax) : null;
-    } catch {
-      guestClaims = null;
-    }
 
     const userSub = typeof payload?.sub === "string" ? payload.sub : null;
     const isAdmin = payload?.role === "admin";
-    const guestRentalId = typeof guestClaims?.rentalId === "string" ? guestClaims.rentalId : null;
+    const hasGuestRentalAccess = hasGuestRentalCookieAccess(cookieStore, rentalId);
 
     let rental: any = null;
     if (userSub && ObjectId.isValid(userSub)) {
@@ -59,7 +53,7 @@ export async function GET(_req: Request, context: { params: Promise<{ rentalId: 
         .findOne({ _id: rentalObjectId }, { projection: { _id: 1, userId: 1 } });
     }
 
-    if (!rental && guestRentalId) {
+    if (!rental && hasGuestRentalAccess) {
       rental = await db.collection("rental_orders").findOne(
         {
           _id: rentalObjectId,
@@ -77,11 +71,7 @@ export async function GET(_req: Request, context: { params: Promise<{ rentalId: 
     }
 
     const isGuestRental = !(rental as any).userId;
-    const guestOwnsRental = !!(
-      isGuestRental &&
-      guestRentalId &&
-      guestRentalId === String((rental as any)._id)
-    );
+    const guestOwnsRental = !!(isGuestRental && hasGuestRentalAccess);
 
     if (isGuestRental && !isAdmin && !guestOwnsRental) {
       return new NextResponse(JSON.stringify({ found: false }), {

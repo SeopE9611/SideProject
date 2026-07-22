@@ -7,6 +7,7 @@ import {
   signOrderAccessToken,
   verifyGuestOrderLookupAccessToken,
   verifyOrderAccessToken,
+  hasGuestOrderAccess,
 } from "@/lib/auth.utils";
 
 type GuestOrderMode = "off" | "legacy" | "on";
@@ -41,9 +42,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     const lookup = verifyGuestOrderLookupAccessToken(
       cookieStore.get("guestOrderLookupToken")?.value ?? "",
     );
-    const hasExistingAccess = Boolean(
-      existing && "orderId" in existing && existing.orderId === String(order._id),
-    );
+    const hasExistingAccess = Boolean(hasGuestOrderAccess(existing, String(order._id)));
     if (!hasExistingAccess && !hasGuestOrderLookupAccess(lookup, String(order._id))) {
       return orderNotAvailable();
     }

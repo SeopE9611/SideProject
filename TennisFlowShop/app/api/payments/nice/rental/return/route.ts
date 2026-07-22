@@ -2,7 +2,7 @@ import {
   createRentalOrderCore,
   type RentalCreatePayload,
 } from "@/app/features/rentals/api/create-rental-order-core";
-import { signOrderAccessToken } from "@/lib/auth.utils";
+import { setGuestRentalAccessCookie } from "@/lib/auth/guest-resource-access.server";
 import clientPromise from "@/lib/mongodb";
 import { getVisibilityViewerFromUserId } from "@/lib/public-visibility-viewer";
 import {
@@ -49,13 +49,7 @@ function redirect303(req: Request, path: string) {
 function redirectToRentalSuccess(req: Request, rentalId: string, isGuest: boolean) {
   const response = redirect303(req, `/rentals/success?id=${encodeURIComponent(rentalId)}`);
   if (isGuest) {
-    response.cookies.set("orderAccessToken", signOrderAccessToken({ rentalId }), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    setGuestRentalAccessCookie(response, rentalId);
   }
   return response;
 }

@@ -37,7 +37,7 @@ function getOrderScopedTokenSecret(): Secret {
   return process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
 }
 
-type OrderScopedAccessTokenPayload =
+export type OrderScopedAccessTokenPayload =
   | { orderId: string; emailHash?: string }
   | { rentalId: string; emailHash?: string };
 
@@ -63,6 +63,52 @@ export function verifyOrderAccessToken(token: string) {
   } catch {
     return null;
   }
+}
+
+export type GuestRentalAccessTokenPayload = {
+  scope: "guest_rental";
+  rentalId: string;
+};
+
+export function signRentalAccessToken(
+  payload: GuestRentalAccessTokenPayload,
+  expiresIn: SignOptions["expiresIn"] = 60 * 60 * 24 * 7,
+) {
+  if (
+    payload.scope !== "guest_rental" ||
+    !OBJECT_ID_TEXT_RE.test(String(payload.rentalId).trim())
+  ) {
+    throw new Error("INVALID_GUEST_RENTAL_ACCESS_PAYLOAD");
+  }
+  return jwt.sign(
+    { scope: "guest_rental", rentalId: String(payload.rentalId).trim() },
+    getOrderScopedTokenSecret(),
+    { expiresIn },
+  );
+}
+
+export function verifyRentalAccessToken(token: string): GuestRentalAccessTokenPayload | null {
+  try {
+    const claims = jwt.verify(token, getOrderScopedTokenSecret()) as jwt.JwtPayload;
+    const rentalId = typeof claims.rentalId === "string" ? claims.rentalId.trim() : "";
+    return claims.scope === "guest_rental" && OBJECT_ID_TEXT_RE.test(rentalId)
+      ? { scope: "guest_rental", rentalId }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function hasDedicatedGuestRentalAccess(
+  claims: ReturnType<typeof verifyRentalAccessToken>,
+  rentalId: string,
+): boolean {
+  const normalizedRentalId = String(rentalId).trim();
+  return Boolean(
+    OBJECT_ID_TEXT_RE.test(normalizedRentalId) &&
+    claims?.scope === "guest_rental" &&
+    claims.rentalId === normalizedRentalId,
+  );
 }
 
 export function signApplicationAccessToken(
@@ -93,6 +139,19 @@ export type GuestOrderLookupAccessTokenPayload = {
 };
 
 const OBJECT_ID_TEXT_RE = /^[a-f0-9]{24}$/i;
+
+export function hasGuestOrderAccess(
+  claims: ReturnType<typeof verifyOrderAccessToken>,
+  orderId: string,
+): boolean {
+  const normalizedOrderId = String(orderId).trim();
+  return Boolean(
+    OBJECT_ID_TEXT_RE.test(normalizedOrderId) &&
+    claims &&
+    "orderId" in claims &&
+    claims.orderId === normalizedOrderId,
+  );
+}
 
 export function hasGuestRentalAccess(
   claims: ReturnType<typeof verifyOrderAccessToken>,
