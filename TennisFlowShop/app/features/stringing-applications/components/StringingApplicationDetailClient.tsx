@@ -18,7 +18,12 @@ import {
 import { mypageDetailLayout } from "@/app/mypage/_components/mypage-detail-style";
 import MypageDetailHero from "@/app/mypage/_components/MypageDetailHero";
 import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
-import { getCustomerApplicationStatusLabel } from "@/app/mypage/_lib/flow-display";
+import {
+  getCustomerApplicationStatusLabel,
+  getCustomerOrderStatusLabel,
+  getCustomerRentalStatusLabel,
+  getCustomerTransactionPaymentStatusLabel,
+} from "@/app/mypage/_lib/flow-display";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
@@ -57,8 +62,12 @@ import {
   badgeBase,
   badgeSizeSm,
   badgeToneClass,
+  getApplicationStatusBadgeSpec,
+  getOrderStatusBadgeSpec,
   getPaymentStatusBadgeSpec,
+  getRentalStatusBadgeSpec,
   getShippingMethodBadge,
+  getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
 import {
   buildAdminCancelRequestView,
@@ -158,7 +167,28 @@ interface ApplicationDetail {
       goodsName?: string | null;
     } | null;
   } | null;
-  totalPrice: number;
+  totalPrice: number | null;
+  linkedOrderSummary?: {
+    id: string;
+    source: "order";
+    status: string | null;
+    paymentStatus: string | null;
+    paymentStatusLabel: string;
+    paymentMethod: string | null;
+    paymentProvider: string | null;
+    totalAmount: number | null;
+  } | null;
+  linkedRentalSummary?: {
+    id: string;
+    source: "rental";
+    status: string | null;
+    paymentStatus: string | null;
+    paymentStatusLabel: string;
+    paymentMethod: string | null;
+    paymentProvider: string | null;
+    totalAmount: number | null;
+  } | null;
+  primaryLinkedSource?: "order" | "rental" | null;
   history?: { status: string; date: string; description: string }[];
   cancelRequest?: {
     status: "요청" | "승인" | "거절";
@@ -836,14 +866,10 @@ export default function StringingApplicationDetailClient({
   }
 
   // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
-  const isOrderLinkedApplication = Boolean(data.orderId);
-  const isRentalLinkedApplication = Boolean(
-    data.rentalId ||
-    String(data.paymentSource ?? "")
-      .trim()
-      .startsWith("rental:"),
-  );
-  const isLinkedApplication = isOrderLinkedApplication || isRentalLinkedApplication;
+  const primaryLinkedSource = data.primaryLinkedSource ?? null;
+  const isOrderLinkedApplication = primaryLinkedSource === "order";
+  const isRentalLinkedApplication = primaryLinkedSource === "rental";
+  const isLinkedApplication = Boolean(data.orderId || data.rentalId || primaryLinkedSource);
   const isEditableAllowed =
     !isRentalLinkedApplication && (isAdmin || userEditableStatuses.includes(data.status));
 
@@ -863,7 +889,10 @@ export default function StringingApplicationDetailClient({
         : 1;
 
   // 총 장착비 (백엔드 totalPrice 신뢰)
-  const totalPrice = data.totalPrice ?? 0;
+  const totalPrice =
+    typeof data.totalPrice === "number" && Number.isFinite(data.totalPrice)
+      ? data.totalPrice
+      : null;
   const lineCount = Array.isArray(data.lines) ? data.lines.length : 0;
   const selectedGauge = String(data.meta?.selectedGauge ?? "").trim();
   const selectedColorLabel = String(
@@ -956,17 +985,6 @@ export default function StringingApplicationDetailClient({
   const packageApplied = Boolean(data.packageInfo?.applied);
   const packageUsedCount = packageApplied ? Math.max(0, data.packageInfo?.useCount ?? 1) : 0;
   const packageRemainingCount = data.packageInfo?.remainingCount ?? null;
-  const hasOrderLinkedPayment =
-    paymentSourceRaw.startsWith("order:") &&
-    Boolean(linkedPayment) &&
-    linkedPayment?.source === "order";
-  const hasRentalLinkedPayment =
-    paymentSourceRaw.startsWith("rental:") &&
-    Boolean(linkedPayment) &&
-    linkedPayment?.source === "rental";
-  const isLinkedPayment = hasOrderLinkedPayment || hasRentalLinkedPayment;
-  const useStandaloneBankFallback = !isLinkedPayment && !packageApplied;
-
   const toFinitePriceOrNull = (value: unknown): number | null => {
     const n = Number(value);
     return Number.isFinite(n) && n >= 0 ? n : null;
@@ -994,27 +1012,60 @@ export default function StringingApplicationDetailClient({
     };
   };
 
-  const paymentStatus = packageApplied
-    ? (linkedPayment?.status ?? "패키지 적용 완료")
-    : hasOrderLinkedPayment || hasRentalLinkedPayment
-      ? (linkedPayment?.status ?? data.orderPaymentStatus ?? data.paymentStatus ?? "결제대기")
-      : (data.paymentStatus ?? "결제대기");
-  const linkedPaymentContextLabel = packageApplied
-    ? "패키지 차감"
-    : isOrderLinkedApplication || paymentSourceRaw.startsWith("order:")
-      ? "주문 결제에 포함됨"
-      : isRentalLinkedApplication || paymentSourceRaw.startsWith("rental:")
-        ? "대여 결제에 포함됨"
-        : paymentStatus;
-  const shouldShowLinkedPaymentContextBadge =
-    packageApplied ||
-    isLinkedApplication ||
-    isLinkedPayment ||
-    paymentSourceRaw.startsWith("order:") ||
-    paymentSourceRaw.startsWith("rental:");
-  const paymentHeaderBadgeLabel = shouldShowLinkedPaymentContextBadge
-    ? linkedPaymentContextLabel
-    : paymentStatus;
+  const applicationPaymentStatus = data.paymentStatus ?? linkedPayment?.status ?? null;
+  const applicationPaymentMethod = linkedPayment?.method ?? null;
+  const applicationPaymentProvider = linkedPayment?.provider ?? null;
+  const linkedOrderSummary = data.linkedOrderSummary ?? null;
+  const linkedRentalSummary = data.linkedRentalSummary ?? null;
+  const paymentContextLabel = packageApplied
+    ? "패키지 사용"
+    : primaryLinkedSource === "order"
+      ? "주문 결제에 포함"
+      : primaryLinkedSource === "rental"
+        ? "대여 결제에 포함"
+        : "단독 신청서 결제";
+  const paymentStatusLabel = packageApplied
+    ? "결제 불필요"
+    : primaryLinkedSource === "order" && linkedOrderSummary
+      ? getCustomerTransactionPaymentStatusLabel({
+          paymentStatus: linkedOrderSummary.paymentStatus,
+          paymentMethod: linkedOrderSummary.paymentMethod,
+          paymentProvider: linkedOrderSummary.paymentProvider,
+          totalPrice: linkedOrderSummary.totalAmount,
+        })
+      : primaryLinkedSource === "rental" && linkedRentalSummary
+        ? getCustomerTransactionPaymentStatusLabel({
+            paymentStatus: linkedRentalSummary.paymentStatus,
+            paymentMethod: linkedRentalSummary.paymentMethod,
+            paymentProvider: linkedRentalSummary.paymentProvider,
+            totalPrice: linkedRentalSummary.totalAmount,
+          })
+        : getCustomerTransactionPaymentStatusLabel({
+            paymentStatus: applicationPaymentStatus,
+            paymentMethod: applicationPaymentMethod,
+            paymentProvider: applicationPaymentProvider,
+            totalPrice,
+          });
+  const paymentStatus = paymentStatusLabel;
+  const linkedPaymentContextLabel = paymentContextLabel;
+  const applicationStatusLabel = getCustomerApplicationStatusLabel(data.status);
+  const applicationStatusBadgeSpec = getApplicationStatusBadgeSpec(data.status);
+  const paymentStatusBadgeSpec = getPaymentStatusBadgeSpec(paymentStatusLabel);
+  const linkedOrderStatusLabel = linkedOrderSummary
+    ? getCustomerOrderStatusLabel(linkedOrderSummary.status)
+    : null;
+  const linkedOrderStatusBadgeSpec = getOrderStatusBadgeSpec(linkedOrderSummary?.status);
+  const linkedRentalStatusLabel = linkedRentalSummary
+    ? getCustomerRentalStatusLabel(linkedRentalSummary.status)
+    : null;
+  const linkedRentalStatusBadgeSpec = getRentalStatusBadgeSpec(linkedRentalSummary?.status);
+  const hasOrderLinkedPayment =
+    primaryLinkedSource === "order" && linkedPayment?.source === "order";
+  const hasRentalLinkedPayment =
+    primaryLinkedSource === "rental" && linkedPayment?.source === "rental";
+  const isLinkedPayment = hasOrderLinkedPayment || hasRentalLinkedPayment;
+  const useStandaloneBankFallback = !isLinkedPayment && !packageApplied;
+
   const normalizedPaymentProvider = String(linkedPayment?.provider ?? "")
     .trim()
     .toLowerCase();
@@ -1129,9 +1180,11 @@ export default function StringingApplicationDetailClient({
 
   const paymentMethodForDisplay = packageApplied
     ? linkedPayment?.method
-    : hasOrderLinkedPayment || hasRentalLinkedPayment
-      ? linkedPayment?.method
-      : (linkedPayment?.method ?? "무통장입금");
+    : primaryLinkedSource === "order"
+      ? (linkedOrderSummary?.paymentMethod ?? linkedPayment?.method ?? null)
+      : primaryLinkedSource === "rental"
+        ? (linkedRentalSummary?.paymentMethod ?? linkedPayment?.method ?? null)
+        : applicationPaymentMethod;
   const standaloneBankKey = linkedPayment?.bank ?? data.shippingInfo?.bank ?? "kakao";
   const standaloneBankInfo = bankLabelMap[standaloneBankKey] ?? bankLabelMap.kakao;
   const standaloneDepositor = String(
@@ -1140,9 +1193,11 @@ export default function StringingApplicationDetailClient({
   const shouldShowCustomerBankAccount =
     !isAdmin &&
     !packageApplied &&
+    primaryLinkedSource === null &&
+    totalPrice !== null &&
     totalPrice > 0 &&
     isBankTransferMethod(paymentMethodForDisplay) &&
-    isWaitingPaymentStatus(paymentStatus);
+    paymentStatusLabel === "입금 확인 대기";
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, "application");
@@ -1177,7 +1232,11 @@ export default function StringingApplicationDetailClient({
   // - handleGetStringingApplication에서 linkedOrderPickupMethod를 내려주므로,
   // 신청서 상세에서도 같은 수령방식을 표시할 수 있다.
   const linkedOrderPickupMethod = (data as any)?.linkedOrderPickupMethod as
-    "visit" | "delivery" | "quick" | null | undefined;
+    | "visit"
+    | "delivery"
+    | "quick"
+    | null
+    | undefined;
   const linkedOrderPickupBadge = linkedOrderPickupMethod
     ? getShippingMethodBadge({
         shippingInfo: { shippingMethod: linkedOrderPickupMethod },
@@ -1358,9 +1417,7 @@ export default function StringingApplicationDetailClient({
   const detailCardHeaderClass = isAdmin
     ? "border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5 lg:p-6"
     : "border-b border-brand-highlight-ink/15 bg-brand-highlight-muted/45 px-4 py-4 bp-sm:px-5";
-  const detailCardTitleClass = !isAdmin
-    ? "font-ui-bold "
-    : undefined;
+  const detailCardTitleClass = !isAdmin ? "font-ui-bold " : undefined;
   const detailIconClass = !isAdmin ? "text-brand-highlight-ink" : "text-primary";
   return (
     <main className="w-full">
@@ -1371,8 +1428,23 @@ export default function StringingApplicationDetailClient({
           title="교체서비스 신청 상세"
           description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
           icon={<Target className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
-          status={<ApplicationStatusBadge status={data.status} />}
-          statusTitle={customerStatusLabel}
+          status={undefined}
+          statusTitle={
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant={applicationStatusBadgeSpec.variant}
+                aria-label={`교체서비스 진행 상태: ${applicationStatusLabel}`}
+              >
+                {applicationStatusLabel}
+              </Badge>
+              <Badge
+                variant={paymentStatusBadgeSpec.variant}
+                aria-label={`결제 상태: ${paymentStatusLabel}`}
+              >
+                {paymentStatusLabel}
+              </Badge>
+            </div>
+          }
           identifier={`신청번호: #${toShortApplicationId(data.id)}`}
           actions={
             <>
@@ -1454,9 +1526,29 @@ export default function StringingApplicationDetailClient({
               <MypageInfoField label="신청 유형" value={applicationContext.label} />
               <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
               <MypageInfoField
-                label={totalPrice > 0 ? "총 서비스 금액" : "접수 방식"}
-                value={totalPrice > 0 ? `${totalPrice.toLocaleString()}원` : inboundStatusLabel}
+                label="서비스 금액"
+                value={totalPrice === null ? "금액 확인 중" : `${totalPrice.toLocaleString()}원`}
               />
+              {linkedOrderStatusLabel && (
+                <MypageInfoField
+                  label="연결 주문"
+                  value={
+                    <Badge variant={linkedOrderStatusBadgeSpec.variant}>
+                      {linkedOrderStatusLabel}
+                    </Badge>
+                  }
+                />
+              )}
+              {linkedRentalStatusLabel && (
+                <MypageInfoField
+                  label="연결 대여"
+                  value={
+                    <Badge variant={linkedRentalStatusBadgeSpec.variant}>
+                      {linkedRentalStatusLabel}
+                    </Badge>
+                  }
+                />
+              )}
             </>
           }
         />
@@ -1719,7 +1811,7 @@ export default function StringingApplicationDetailClient({
                         </span>
                       </div>
                       <p className="whitespace-nowrap text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg">
-                        {data.totalPrice.toLocaleString()}원
+                        {totalPrice === null ? "금액 확인 중" : `${totalPrice.toLocaleString()}원`}
                       </p>
                     </div>
 
@@ -1766,7 +1858,7 @@ export default function StringingApplicationDetailClient({
                       </div>
                       {isAdmin ? (
                         (() => {
-                          const pay = getPaymentStatusBadgeSpec(linkedPaymentContextLabel);
+                          const pay = getWorkflowMetaBadgeSpec("application_linked");
                           return (
                             <Badge variant={pay.variant} className={summaryBadgeClass}>
                               {linkedPaymentContextLabel}
@@ -2321,7 +2413,10 @@ export default function StringingApplicationDetailClient({
 
                       {isAdmin && (
                         <div className="text-ui-label sm:text-ui-body-sm font-semibold text-primary">
-                          총 장착비 {totalPrice.toLocaleString()}원
+                          총 장착비{" "}
+                          {totalPrice === null
+                            ? "금액 확인 중"
+                            : `${totalPrice.toLocaleString()}원`}
                         </div>
                       )}
                     </div>
@@ -2989,10 +3084,10 @@ export default function StringingApplicationDetailClient({
                     </CardTitle>
                     <div className="flex items-center space-x-2">
                       {(() => {
-                        const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
+                        const pay = getPaymentStatusBadgeSpec(paymentStatusLabel);
                         return (
                           <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                            {paymentHeaderBadgeLabel}
+                            {paymentStatusLabel}
                           </Badge>
                         );
                       })()}
@@ -3022,7 +3117,7 @@ export default function StringingApplicationDetailClient({
                             <AdminCompactField
                               label="총 결제 금액"
                               className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
-                              value={`${data.totalPrice.toLocaleString()}원`}
+                              value={`${totalPrice === null ? "금액 확인 중" : `${totalPrice.toLocaleString()}원`}`}
                               valueClassName={
                                 isAdmin
                                   ? "font-semibold text-primary"
@@ -3032,13 +3127,13 @@ export default function StringingApplicationDetailClient({
                             <AdminCompactField
                               label="결제 상태"
                               value={(() => {
-                                const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
+                                const pay = getPaymentStatusBadgeSpec(paymentStatusLabel);
                                 return (
                                   <Badge
                                     variant={pay.variant}
                                     className={cn(badgeBase, badgeSizeSm)}
                                   >
-                                    {paymentHeaderBadgeLabel}
+                                    {paymentStatusLabel}
                                   </Badge>
                                 );
                               })()}
@@ -3054,14 +3149,30 @@ export default function StringingApplicationDetailClient({
                         ) : (
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-center gap-2 text-ui-body-sm font-medium text-foreground">
-                              <span>{paymentHeaderBadgeLabel}</span>
-                              <span className="text-muted-foreground">·</span>
-                              <span>
+                              <Badge
+                                variant={paymentStatusBadgeSpec.variant}
+                                className={cn(badgeBase, badgeSizeSm)}
+                              >
+                                {paymentStatusLabel}
+                              </Badge>
+                            </div>
+                            <div className="space-y-1 text-ui-body-sm text-foreground/80">
+                              <p>
+                                <span className="font-medium text-foreground">결제 문맥:</span>{" "}
+                                <Badge
+                                  variant={getWorkflowMetaBadgeSpec("application_linked").variant}
+                                  className={cn(badgeBase, badgeSizeSm)}
+                                >
+                                  {paymentContextLabel}
+                                </Badge>
+                              </p>
+                              <p>
+                                <span className="font-medium text-foreground">결제수단:</span>{" "}
                                 {getCustomerPaymentMethodLabel(
                                   paymentMethodForDisplay,
                                   packageApplied,
                                 )}
-                              </span>
+                              </p>
                             </div>
                             {shouldShowCustomerBankAccount && standaloneBankInfo && (
                               <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-ui-body-sm text-foreground/85">
@@ -3080,13 +3191,20 @@ export default function StringingApplicationDetailClient({
                               </div>
                             )}
                             <div className="space-y-1 text-ui-body-sm text-foreground/80">
-                              <p>서비스비/장착비 {totalPrice.toLocaleString()}원</p>
+                              <p>
+                                서비스 금액{" "}
+                                {totalPrice === null
+                                  ? "금액 확인 중"
+                                  : `${totalPrice.toLocaleString()}원`}
+                              </p>
                               {packageApplied && <p>패키지 {packageUsedCount}회 사용</p>}
                             </div>
                             <div className="mt-3 rounded-xl border border-brand-highlight-ink/15 bg-brand-highlight-muted/35 p-4 ring-1 ring-brand-highlight-ink/15">
                               <p className="text-ui-label text-muted-foreground">최종 결제금액</p>
                               <p className="mt-1 text-right text-ui-title-sm font-semibold text-brand-highlight-ink">
-                                {data.totalPrice.toLocaleString()}원
+                                {totalPrice === null
+                                  ? "금액 확인 중"
+                                  : `${totalPrice.toLocaleString()}원`}
                               </p>
                             </div>
                           </div>

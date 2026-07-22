@@ -1,5 +1,6 @@
 import { submitStringingApplicationCore } from "@/app/features/stringing-applications/api/submit-core";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { getCustomerTransactionPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import {
   buildSlotSummaryForDate,
   loadStringingSettings,
@@ -77,6 +78,17 @@ function toCollectionMethodFromServicePickup(
 }
 type CancelStatus = "none" | "requested" | "approved" | "rejected";
 type LinkedPaymentSource = "order" | "rental" | "application" | "package" | null;
+
+type LinkedTransactionStatusSummary = {
+  id: string;
+  source: "order" | "rental";
+  status: string | null;
+  paymentStatus: string | null;
+  paymentStatusLabel: string;
+  paymentMethod: string | null;
+  paymentProvider: string | null;
+  totalAmount: number | null;
+};
 
 type LinkedPaymentPayload = {
   source: LinkedPaymentSource;
@@ -235,6 +247,16 @@ function toIsoOrNull(value: unknown): string | null {
   return null;
 }
 
+function nullableTrim(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function toNullableFiniteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
 function normalizeLinkedPaymentStatus(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
   const original = raw.trim();
@@ -249,21 +271,53 @@ function normalizeLinkedPaymentStatus(raw: unknown): string | null {
   return original;
 }
 
+function buildLinkedTransactionStatusSummary(
+  source: "order" | "rental",
+  doc: any,
+): LinkedTransactionStatusSummary {
+  const paymentInfo = doc?.paymentInfo ?? {};
+  const paymentStatus = nullableTrim(doc?.paymentStatus) ?? nullableTrim(paymentInfo?.status);
+  const paymentMethod = nullableTrim(paymentInfo?.method) ?? nullableTrim(doc?.paymentMethod);
+  const paymentProvider = nullableTrim(paymentInfo?.provider) ?? nullableTrim(doc?.paymentProvider);
+  const totalAmount =
+    source === "order"
+      ? (toNullableFiniteNumber(doc?.totalPrice) ??
+        toNullableFiniteNumber(doc?.total) ??
+        toNullableFiniteNumber(doc?.finalAmount) ??
+        toNullableFiniteNumber(doc?.totalAmount))
+      : toNullableFiniteNumber(doc?.amount?.total);
+
+  return {
+    id: String(doc?._id ?? ""),
+    source,
+    status: nullableTrim(doc?.status),
+    paymentStatus: normalizeLinkedPaymentStatus(paymentStatus),
+    paymentStatusLabel: getCustomerTransactionPaymentStatusLabel({
+      paymentStatus,
+      paymentMethod,
+      paymentProvider,
+      totalPrice: totalAmount,
+    }),
+    paymentMethod,
+    paymentProvider,
+    totalAmount,
+  };
+}
+
 function buildLinkedPaymentFromDoc(
   source: Exclude<LinkedPaymentSource, "application" | "package" | null>,
   doc: any,
 ): LinkedPaymentPayload {
   const paymentInfo = (doc as any)?.paymentInfo ?? {};
   const niceSyncRaw = paymentInfo?.niceSync;
-  const normalizedStatus =
-    normalizeLinkedPaymentStatus(doc?.paymentStatus) ??
-    normalizeLinkedPaymentStatus(paymentInfo?.status);
+  const paymentStatus = nullableTrim(doc?.paymentStatus) ?? nullableTrim(paymentInfo?.status);
+  const normalizedStatus = normalizeLinkedPaymentStatus(paymentStatus);
 
   return {
     source,
     status: normalizedStatus,
-    method: typeof paymentInfo?.method === "string" ? paymentInfo.method : null,
-    provider: typeof paymentInfo?.provider === "string" ? paymentInfo.provider : null,
+    method: nullableTrim(paymentInfo?.method) ?? nullableTrim(doc?.paymentMethod),
+    provider: nullableTrim(paymentInfo?.provider) ?? nullableTrim(doc?.paymentProvider),
     easyPayProvider:
       typeof paymentInfo?.easyPayProvider === "string" ? paymentInfo.easyPayProvider : null,
     tid: typeof paymentInfo?.tid === "string" ? paymentInfo.tid : null,
@@ -1157,16 +1211,26 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     const total = items.reduce((sum, x) => sum + x.price * x.quantity, 0);
 
     // 주문 조회 전에 “주문에 취소요청이 걸린 상태인지” 판단
+    const applicationPaymentSourceRaw = String((app as any).paymentSource ?? "").trim();
+    const orderObjectId =
+      getObjectIdFromPaymentSource(applicationPaymentSourceRaw, "order") ??
+      getObjectIdFromField(app.orderId);
     let order: any = null;
-    if (app.orderId && ObjectId.isValid(app.orderId)) {
+    if (orderObjectId) {
       order = await db.collection("orders").findOne(
-        { _id: new ObjectId(app.orderId) },
+        { _id: orderObjectId },
         {
           projection: {
             items: 1,
             status: 1,
             paymentStatus: 1,
             paymentInfo: 1,
+            paymentMethod: 1,
+            paymentProvider: 1,
+            totalPrice: 1,
+            total: 1,
+            finalAmount: 1,
+            totalAmount: 1,
             cancelRequest: 1,
             shippingInfo: 1,
             servicePickupMethod: 1,
@@ -1175,17 +1239,23 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       );
     }
 
-    const rentalIdRaw = (app as any).rentalId;
-    const rentalObjectId = ObjectId.isValid(String(rentalIdRaw ?? ""))
-      ? new ObjectId(String(rentalIdRaw))
-      : null;
+    const rentalObjectId =
+      getObjectIdFromPaymentSource(applicationPaymentSourceRaw, "rental") ??
+      getObjectIdFromField((app as any).rentalId);
     const linkedRental = rentalObjectId
       ? await db.collection("rental_orders").findOne(
           { _id: rentalObjectId },
           {
             projection: {
+              status: 1,
               paymentStatus: 1,
               paymentInfo: 1,
+              paymentMethod: 1,
+              paymentProvider: 1,
+              amount: 1,
+              cancelRequest: 1,
+              returnedAt: 1,
+              depositRefundedAt: 1,
             },
           },
         )
@@ -1391,6 +1461,21 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     }));
 
     const paymentSourceRaw = String((app as any).paymentSource ?? "").trim();
+    const explicitOrderSource = getObjectIdFromPaymentSource(paymentSourceRaw, "order");
+    const explicitRentalSource = getObjectIdFromPaymentSource(paymentSourceRaw, "rental");
+    const linkedOrderSummary = order ? buildLinkedTransactionStatusSummary("order", order) : null;
+    const linkedRentalSummary = linkedRental
+      ? buildLinkedTransactionStatusSummary("rental", linkedRental)
+      : null;
+    const primaryLinkedSource: "order" | "rental" | null = explicitOrderSource
+      ? "order"
+      : explicitRentalSource
+        ? "rental"
+        : linkedOrderSummary && !linkedRentalSummary
+          ? "order"
+          : linkedRentalSummary && !linkedOrderSummary
+            ? "rental"
+            : null;
     const hasPackageApplied = !!(app as any).packageApplied;
     const linkedPayment: LinkedPaymentPayload = hasPackageApplied
       ? {
@@ -1409,18 +1494,19 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           niceSync: null,
           rawSummary: null,
         }
-      : (paymentSourceRaw.startsWith("order:") || app.orderId) && order
+      : primaryLinkedSource === "order" && order
         ? buildLinkedPaymentFromDoc("order", order)
-        : (paymentSourceRaw.startsWith("rental:") || rentalObjectId) && linkedRental
+        : primaryLinkedSource === "rental" && linkedRental
           ? buildLinkedPaymentFromDoc("rental", linkedRental)
           : {
               source: "application",
-              status: typeof app.paymentStatus === "string" ? app.paymentStatus : null,
-              method: typeof app.paymentMethod === "string" ? app.paymentMethod : null,
+              status:
+                nullableTrim(app.paymentStatus) ?? nullableTrim((app as any).paymentInfo?.status),
+              method:
+                nullableTrim((app as any).paymentInfo?.method) ?? nullableTrim(app.paymentMethod),
               provider:
-                typeof (app as any).paymentInfo?.provider === "string"
-                  ? (app as any).paymentInfo.provider
-                  : null,
+                nullableTrim((app as any).paymentInfo?.provider) ??
+                nullableTrim((app as any).paymentProvider),
               easyPayProvider:
                 typeof (app as any).paymentInfo?.easyPayProvider === "string"
                   ? (app as any).paymentInfo.easyPayProvider
@@ -1507,6 +1593,9 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       orderId: app.orderId?.toString() || null,
       rentalId: (app as any).rentalId?.toString?.() || null,
       paymentSource: paymentSourceRaw || null,
+      linkedOrderSummary,
+      linkedRentalSummary,
+      primaryLinkedSource,
       linkedOrderPickupMethod,
       linkedOrderItems,
       // 사용자 확정 시각 (없으면 null)
@@ -1562,7 +1651,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       lines: racketLines,
       items,
       total,
-      totalPrice: app.totalPrice ?? 0,
+      totalPrice: toNullableFiniteNumber(app.totalPrice),
       packageInfo,
       packageConsumptions,
       // 신청 취소 요청 정보
