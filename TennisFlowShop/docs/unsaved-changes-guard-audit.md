@@ -78,3 +78,12 @@ rg -n "router\.push|router\.back|history\.back|Link href|popstate" app/<target-f
 - submitting/uploading은 저장 성공을 뜻하지 않으므로 guard 해제 조건이 아니다. 게시판 back은 입력 포커스와 관계없이 confirm-immediately 정책을 사용한다.
 - capture와 로컬 onClick은 같은 이벤트 턴 승인 상태를 공유해 중복 confirm을 막는다. beforeunload의 브라우저 기본 문구는 커스텀할 수 없다.
 - 기존 marker cleanup 설명은 정정한다. 현재 구현은 cleanup에서 `history.back()`이 아니라 `replaceState`로 marker 속성만 제거한다.
+
+## 2026-07 coordinator 긴급 보완
+
+- document capture의 네이티브 `MouseEvent`와 React `onClick` SyntheticEvent는 즉시 전파 중단 API 위치가 달라, 각각의 취소 함수를 분리했다.
+- 모바일 Header Sheet의 마이페이지·이벤트·쪽지·장바구니는 이탈 확인 승인 뒤에만 Sheet를 닫는다.
+- Header 로그아웃은 승인과 캐시 정리 뒤 API를 호출하고, hard navigation 대신 SPA `router.replace`와 `router.refresh`를 사용한다.
+- href가 있는 알림은 이탈 승인 뒤에만 읽음 처리·패널 종료·이동을 수행하며, href가 없는 알림은 기존 읽음 처리만 수행한다.
+- 공지·이벤트 수정 URL의 mode 보정은 저장 성공이 아니므로 `navigateAfterSave`가 아닌 확인 가능한 일반 이동을 사용한다.
+- Cypress 명세로 capture click/React onClick의 confirm 횟수, 모바일 취소, 저장 성공·실패, 첫 back을 검증한다.

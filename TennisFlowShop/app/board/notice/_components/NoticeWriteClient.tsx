@@ -292,10 +292,12 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
     if (!editId || !detail?.item || !isEditRouteMismatch) return;
     const targetBase =
       detail.item.category === "이벤트" ? "/board/event/write" : "/board/notice/write";
-    navigateAfterSave(() => {
+    // mode URL 보정은 저장 성공이 아니다. 저장 성공 전용 bypass를 쓰면 이후 dirty guard가
+    // 비활성화될 수 있으므로 실제 저장 성공 이동에만 intentional bypass를 사용한다.
+    confirmAndNavigate(() => {
       router.replace(`${targetBase}?id=${encodeURIComponent(editId)}`);
     });
-  }, [editId, detail?.item, isEditRouteMismatch, router]);
+  }, [editId, detail?.item, isEditRouteMismatch, router, confirmAndNavigate]);
 
   // 프리필: 상세 응답을 코드값으로 역변환해서 넣는다.
   useEffect(() => {
