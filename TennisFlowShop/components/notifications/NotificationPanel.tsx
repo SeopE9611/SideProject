@@ -1,7 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
+import {
+  confirmBoardUnsavedChangesNavigation,
+  runBoardUnsavedChangesNavigation,
+} from "@/lib/hooks/useBoardUnsavedChangesGuard";
 
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 import { Button } from "@/components/ui/button";
@@ -18,14 +21,15 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
   });
 
   const handleItemClick = async (id: string, href: string | null) => {
+    if (href && !confirmBoardUnsavedChangesNavigation()) return;
     try {
       await markAsRead(id);
     } catch {
       showErrorToast("알림 처리에 실패했습니다.");
       return;
     }
-    if (href) runBoardUnsavedChangesNavigation(() => { onClose(); router.push(href); });
-    else onClose();
+    onClose();
+    if (href) router.push(href);
   };
 
   const handleMarkAllAsRead = async () => {

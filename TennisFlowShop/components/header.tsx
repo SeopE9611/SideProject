@@ -25,7 +25,10 @@ import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
-import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
+import {
+  confirmBoardUnsavedChangesNavigation,
+  runBoardUnsavedChangesNavigation,
+} from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { cn } from "@/lib/utils";
 import {
   ChevronDown,
@@ -649,7 +652,7 @@ const Header = () => {
                           <DropdownMenuItem
                             className="h-9"
                             onSelect={() => {
-                              guardedPush("/mypage");
+                              guardedPush("/mypage", () => setOpen(false));
                             }}
                           >
                             마이페이지
@@ -657,7 +660,7 @@ const Header = () => {
                           <DropdownMenuItem
                             className="h-9"
                             onSelect={() => {
-                              guardedPush("/board/event");
+                              guardedPush("/board/event", () => setOpen(false));
                             }}
                           >
                             이벤트
@@ -676,7 +679,8 @@ const Header = () => {
                           <DropdownMenuItem
                             className="h-9 text-destructive focus:text-destructive"
                             onSelect={async () => {
-                              if (!runBoardUnsavedChangesNavigation(() => {})) return;
+                              if (!confirmBoardUnsavedChangesNavigation()) return;
+                              setOpen(false);
                               // 로그아웃 직전 캐시를 선제적으로 비워
                               // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
                               headerPointsCache = null;
@@ -684,7 +688,8 @@ const Header = () => {
                                 method: "POST",
                                 credentials: "include",
                               });
-                              window.location.href = "/";
+                              router.replace("/");
+                              router.refresh();
                             }}
                           >
                             로그아웃
@@ -700,7 +705,7 @@ const Header = () => {
                       className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="쪽지함으로 이동"
                       onClick={() => {
-                        guardedPush("/messages");
+                        guardedPush("/messages", () => setOpen(false));
                       }}
                     >
                       <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -716,7 +721,7 @@ const Header = () => {
                       className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="장바구니로 이동"
                       onClick={() => {
-                        guardedPush("/cart");
+                        guardedPush("/cart", () => setOpen(false));
                       }}
                     >
                       <ShoppingCart className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />

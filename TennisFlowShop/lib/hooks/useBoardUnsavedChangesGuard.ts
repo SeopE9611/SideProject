@@ -35,10 +35,18 @@ export function runBoardUnsavedChangesNavigation(navigate: () => void, message?:
   return true;
 }
 
-const cancelLink = (event: React.MouseEvent<HTMLAnchorElement> | MouseEvent) => {
+// document listener는 네이티브 MouseEvent, React onClick은 SyntheticEvent를 받는다.
+// 즉시 전파 중단 API 위치가 다르므로 취소 함수를 분리해야 한다.
+const cancelNativeLink = (event: MouseEvent) => {
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
+};
+
+const cancelReactLink = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  event.preventDefault();
+  event.stopPropagation();
+  event.nativeEvent.stopImmediatePropagation();
 };
 
 const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -59,7 +67,7 @@ const onDocumentClick = (event: MouseEvent) => {
   if (!/^https?:$/.test(destination.protocol) || destination.origin !== window.location.origin) return;
   // Header·SideMenu·Footer의 Link를 한 곳에서 보호하되 같은 문서의 hash 이동은 이탈이 아니다.
   if (destination.pathname === window.location.pathname && destination.search === window.location.search) return;
-  if (!confirmBoardUnsavedChangesNavigation()) cancelLink(event);
+  if (!confirmBoardUnsavedChangesNavigation()) cancelNativeLink(event);
 };
 
 const installListeners = () => {
@@ -78,7 +86,6 @@ const uninstallListeners = () => {
 export function useBoardUnsavedChangesGuard(isDirty: boolean, message = UNSAVED_CHANGES_MESSAGE) {
   const idRef = useRef(Symbol("board-unsaved-changes"));
   const [isIntentionalNavigation, setIsIntentionalNavigation] = useState(false);
-  const intentionalRef = useRef(false);
   const guardEnabled = isDirty && !isIntentionalNavigation;
 
   const unregister = useCallback(() => {
@@ -104,18 +111,16 @@ export function useBoardUnsavedChangesGuard(isDirty: boolean, message = UNSAVED_
   });
 
   const guardLinkClick = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!confirmBoardUnsavedChangesNavigation(message)) cancelLink(event);
+    if (!confirmBoardUnsavedChangesNavigation(message)) cancelReactLink(event);
   }, [message]);
   const confirmAndNavigate = useCallback((navigate: () => void) => runBoardUnsavedChangesNavigation(navigate, message), [message]);
   const navigateAfterSave = useCallback((navigate: () => void) => {
     // 성공 이동 전에 동기 해제해야 finally가 실행돼도 가드가 다시 켜지는 경합을 막는다.
     unregister();
-    intentionalRef.current = true;
     setIsIntentionalNavigation(true);
     try {
       navigate();
     } catch (error) {
-      intentionalRef.current = false;
       setIsIntentionalNavigation(false);
       if (isDirty) register();
       throw error;
