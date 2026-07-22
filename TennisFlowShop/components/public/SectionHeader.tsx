@@ -9,7 +9,6 @@ export type SectionHeaderProps = {
   actions?: ReactNode;
   align?: "left" | "center";
   className?: string;
-  variant?: "standard" | "brand";
 };
 
 export function SectionHeader({
@@ -19,7 +18,6 @@ export function SectionHeader({
   actions,
   align = "left",
   className,
-  variant = "standard",
 }: SectionHeaderProps) {
   const centered = align === "center";
 

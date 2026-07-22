@@ -412,7 +412,7 @@ export default function FreeBoardWriteClient() {
                 <span className="text-ui-label text-muted-foreground">자유 게시판 · 새 글</span>
               </div>
               <div>
-                <h1 className="font-ui-bold text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+                <h1 className="font-ui-bold text-ui-page-title tracking-normal text-foreground md:text-ui-page-title-lg">
                   자유 게시판 글쓰기
                 </h1>
                 <p className="mt-2 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
@@ -494,7 +494,7 @@ export default function FreeBoardWriteClient() {
               {/* 내용 입력 */}
               <section className="space-y-2 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5">
                 <div className="border-b border-border pb-3">
-                  <h2 className="font-ui-bold text-ui-body-lg font-semibold text-foreground">
+                  <h2 className="font-ui-medium text-ui-body-lg text-foreground">
                     본문 작성
                   </h2>
                   <p className="mt-1 text-ui-label text-muted-foreground">
@@ -538,7 +538,7 @@ export default function FreeBoardWriteClient() {
                 ref={attachmentsRef}
               >
                 <div className="border-b border-border pb-3">
-                  <h2 className="font-ui-bold text-ui-body-lg font-semibold text-foreground">
+                  <h2 className="font-ui-medium text-ui-body-lg text-foreground">
                     첨부 파일
                   </h2>
                   <p className="mt-1 text-ui-label text-muted-foreground">

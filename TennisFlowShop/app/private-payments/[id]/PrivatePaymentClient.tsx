@@ -144,7 +144,7 @@ export default function PrivatePaymentClient({
         >
           <div className="rounded-control border border-border bg-brand-highlight-muted/35 p-4">
             <p className="text-ui-body-sm text-muted-foreground">결제금액</p>
-            <p className="mt-1 text-ui-page-title font-ui-bold font-semibold text-brand-highlight-ink">
+            <p className="mt-1 text-ui-page-title font-ui-bold text-brand-highlight-ink">
               {item.amount.toLocaleString("ko-KR")}원
             </p>
           </div>

@@ -47,7 +47,7 @@ export default function LocationsPage() {
               <p className="text-ui-label font-medium uppercase tracking-[0.14em] text-primary">
                 OFFLINE STORE
               </p>
-              <h1 className="text-balance font-ui-bold text-ui-page-title font-semibold text-foreground bp-sm:text-ui-page-title-lg">
+              <h1 className="text-balance font-ui-bold text-ui-page-title text-foreground bp-sm:text-ui-page-title-lg">
                 방문 전 위치와 운영시간을 확인하세요.
               </h1>
               <p className="text-pretty text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">

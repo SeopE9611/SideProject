@@ -134,7 +134,7 @@ export default async function PricingPage() {
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
             <div className="max-w-3xl space-y-4">
               <p className="text-ui-label font-medium text-primary">장착 서비스 가격</p>
-              <h1 className="text-balance font-ui-bold text-ui-page-title font-semibold text-foreground bp-sm:text-ui-page-title-lg">
+              <h1 className="text-balance font-ui-bold text-ui-page-title text-foreground bp-sm:text-ui-page-title-lg">
                 최종 비용은 선택한 신청 방식으로 결정됩니다.
               </h1>
               <p className="text-pretty text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
@@ -497,7 +497,7 @@ export default async function PricingPage() {
         </PublicSurface>
 
         <section className="rounded-2xl border border-border bg-muted/30 p-5 text-center bp-sm:p-6">
-          <h2 className="font-ui-bold text-ui-section-title font-semibold text-foreground">
+          <h2 className="font-ui-bold text-ui-section-title text-foreground">
             신청 화면에서 최종 금액을 확인하세요.
           </h2>
           <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">

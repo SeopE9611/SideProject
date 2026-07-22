@@ -551,7 +551,7 @@ export default function QnaWritePage() {
             ].map(([step, title, copy]) => (
               <div key={step} className="rounded-control border border-border bg-card/70 p-4">
                 <span className="text-ui-kicker text-brand-highlight-ink">{step}</span>
-                <h2 className="mt-2 font-ui-bold text-ui-card-title font-semibold text-foreground">
+                <h2 className="mt-2 font-ui-medium text-ui-card-title text-foreground">
                   {title}
                 </h2>
                 <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">{copy}</p>
@@ -562,7 +562,6 @@ export default function QnaWritePage() {
           <PublicSurface variant="feature" padding="none" className="overflow-hidden">
             <div className="border-b border-border bg-brand-highlight-muted/40 p-5 bp-sm:p-6 bp-md:p-8">
               <SectionHeader
-                variant="brand"
                 eyebrow="NEW QUESTION"
                 title="새 문의 작성"
                 description="아래 항목을 순서대로 작성해 주세요. 입력 오류가 있으면 첫 오류 위치로 이동합니다."
@@ -583,7 +582,6 @@ export default function QnaWritePage() {
 
               <section ref={categoryWrapRef} className="space-y-5 scroll-mt-24">
                 <SectionHeader
-                  variant="brand"
                   eyebrow="TYPE & PRODUCT"
                   title="문의 유형 및 상품 선택"
                   description="문의 유형을 먼저 선택해 주세요. 상품문의는 관련 상품을 함께 지정해야 합니다."
@@ -667,7 +665,7 @@ export default function QnaWritePage() {
                       aria-describedby={fieldErrors.product ? productErrorId : undefined}
                     >
                       <div className="rounded-control border border-border bg-muted/30 p-4">
-                        <div className="mb-3 font-ui-bold text-ui-card-title font-semibold ">
+                        <div className="mb-3 font-ui-medium text-ui-card-title ">
                           내 구매상품
                         </div>
                         {!me && (
@@ -705,7 +703,7 @@ export default function QnaWritePage() {
                       </div>
 
                       <div className="rounded-control border border-border bg-muted/30 p-4">
-                        <div className="mb-3 font-ui-bold text-ui-card-title font-semibold ">
+                        <div className="mb-3 font-ui-medium text-ui-card-title ">
                           전체 상품 검색
                         </div>
                         <div className="relative mb-3">
@@ -771,7 +769,7 @@ export default function QnaWritePage() {
               </section>
 
               <section className="space-y-5 border-t border-border pt-8">
-                <SectionHeader variant="brand" eyebrow="QUESTION" title="제목 및 문의 내용" />
+                <SectionHeader eyebrow="QUESTION" title="제목 및 문의 내용" />
                 <div className="space-y-3">
                   <Label htmlFor="title" className="text-ui-body font-semibold">
                     제목 <span className="text-destructive">*</span>
@@ -835,7 +833,6 @@ export default function QnaWritePage() {
                 className="space-y-5 scroll-mt-24 border-t border-border pt-8"
               >
                 <SectionHeader
-                  variant="brand"
                   eyebrow="ATTACHMENT"
                   title="이미지 첨부"
                   description="선택 사항이며 최대 3개, 파일당 최대 5MB까지 등록할 수 있습니다."
@@ -940,7 +937,7 @@ export default function QnaWritePage() {
               </section>
 
               <section className="space-y-4 border-t border-border pt-8">
-                <SectionHeader variant="brand" eyebrow="VISIBILITY" title="공개 범위" />
+                <SectionHeader eyebrow="VISIBILITY" title="공개 범위" />
                 <div className="flex items-start gap-3 rounded-control border border-border bg-muted/30 p-4">
                   <Checkbox
                     id="private"

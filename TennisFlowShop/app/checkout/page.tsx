@@ -1488,8 +1488,10 @@ export default function CheckoutPage() {
                   <div className="min-w-0 space-y-1">
                     <h2
                       className={cn(
-                        "break-keep text-ui-body font-semibold text-foreground",
-                        !withStringService && "text-ui-body-sm font-medium",
+                        "break-keep text-foreground",
+                        withStringService
+                          ? "text-ui-body font-semibold"
+                          : "text-ui-body-sm font-ui-medium",
                       )}
                     >
                       {withStringService

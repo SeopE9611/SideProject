@@ -439,7 +439,7 @@ export default function QnaPageClient({
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <MessageSquare className="h-5 w-5 shrink-0 text-brand-highlight-ink sm:h-6 sm:w-6" />
-                <h2 className="whitespace-nowrap break-keep font-ui-bold text-ui-card-title-lg font-semibold leading-tight sm:text-ui-section-title md:text-ui-page-title">
+                <h2 className="whitespace-nowrap break-keep font-ui-medium text-ui-card-title-lg leading-tight sm:text-ui-section-title md:text-ui-page-title">
                   Q&amp;A 목록
                 </h2>
                 {total !== null && (

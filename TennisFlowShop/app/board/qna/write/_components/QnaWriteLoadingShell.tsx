@@ -45,7 +45,6 @@ export function QnaWriteLoadingShell() {
           <PublicSurface variant="feature" padding="none" className="overflow-hidden">
             <div className="border-b border-border bg-brand-highlight-muted/40 p-5 bp-sm:p-6 bp-md:p-8">
               <SectionHeader
-                variant="brand"
                 eyebrow="NEW QUESTION"
                 title="새 문의 작성"
                 description="작성 화면을 준비하고 있습니다."

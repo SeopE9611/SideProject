@@ -88,7 +88,7 @@ export default function QnAList() {
             <MessageCircleQuestion className="h-10 w-10" aria-hidden="true" />
           </div>
 
-          <h3 className="font-ui-bold text-ui-section-title font-semibold text-foreground">
+          <h3 className="font-ui-bold text-ui-section-title text-foreground">
             아직 문의 내역이 없습니다.
           </h3>
 
@@ -129,7 +129,7 @@ export default function QnAList() {
                       const c = getQnaCategoryBadgeSpec(qna.category);
                       return <Badge variant={c.variant}>{qna.category}</Badge>;
                     })()}
-                    <h3 className="line-clamp-2 break-keep font-ui-bold text-ui-card-title-lg font-semibold text-foreground">
+                    <h3 className="line-clamp-2 break-keep font-ui-medium text-ui-card-title-lg text-foreground">
                       {qna.title}
                     </h3>
                   </div>
