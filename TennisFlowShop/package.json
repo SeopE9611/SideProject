@@ -21,6 +21,8 @@
     "check:admin-api-boundary": "node scripts/check-admin-api-boundary.mjs",
     "test:board-secret-policy": "node --test tests/board-secret-policy.test.mjs",
     "test:contract": "node scripts/run-contract-tests.mjs",
+    "test:contract:core": "node scripts/run-contract-tests.mjs",
+    "test:contract:advisory": "node scripts/run-advisory-contract-tests.mjs",
     "test:e2e:smoke": "node scripts/smoke.mjs",
     "test:e2e:admin-critical": "node scripts/run-admin-critical-smoke-with-server.mjs",
     "test:e2e:admin-community-metrics-smoke": "node scripts/smoke-admin-community-posts-metrics.mjs",
