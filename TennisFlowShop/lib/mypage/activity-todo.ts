@@ -14,6 +14,7 @@ export type MypageTodoReasonCode =
   | "rental_return_shipping_register"
   | "rental_confirm"
   | "rental_stringing_apply"
+  | "order_stringing_apply"
   | "product_review"
   | "product_stringing_review";
 
@@ -52,6 +53,11 @@ export const MYPAGE_TODO_REASON_META: Record<MypageTodoReasonCode, MypageTodoRea
     message: "반납 내용을 확인하고 수령 확인을 진행해주세요.",
   },
   rental_stringing_apply: {
+    kind: "required",
+    label: "다음 조치",
+    message: "교체서비스 신청을 이어갈 수 있어요.",
+  },
+  order_stringing_apply: {
     kind: "required",
     label: "다음 조치",
     message: "교체서비스 신청을 이어갈 수 있어요.",
@@ -198,6 +204,7 @@ export function resolveOrderTodoReason(params: {
   reviewPendingCount?: number | null;
   linkedApplications?: Array<ActivityTodoApplicationLike | null | undefined>;
   primaryApplication?: ActivityTodoApplicationLike | null;
+  withStringService?: boolean | null;
 }): MypageTodoReasonCode | null {
   const status = normalizeMypageTodoStatus(params.status);
 
@@ -208,6 +215,13 @@ export function resolveOrderTodoReason(params: {
   }
   if (resolveApplicationTrackingTodoReason(params.primaryApplication))
     return "application_inbound_tracking";
+  if (
+    !(params.linkedApplications ?? []).length &&
+    !params.primaryApplication &&
+    params.withStringService
+  ) {
+    return "order_stringing_apply";
+  }
   if (isOrderDeliveredStatus(params.status)) return "order_confirm";
 
   const isConfirmed = Boolean(params.userConfirmedAt) || isOrderConfirmedStatus(params.status);
@@ -235,7 +249,14 @@ export function resolveRentalTodoReason(params: RentalTodoParams): MypageTodoRea
   }
   if (isApplicationServiceReviewTodoPending(params.primaryApplication))
     return "product_stringing_review";
-  if (!params.stringingApplicationId && params.withStringService) return "rental_stringing_apply";
+  if (
+    !params.stringingApplicationId &&
+    !(params.linkedApplications ?? []).length &&
+    !params.primaryApplication &&
+    params.withStringService
+  ) {
+    return "rental_stringing_apply";
+  }
   return null;
 }
 

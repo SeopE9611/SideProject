@@ -11,6 +11,8 @@ import {
 } from "@/lib/mypage/activity-todo";
 import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
+import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-stage";
+import { getCustomerOrderPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import {
   resolveApplicationReviewTargetBundlesBatch,
   resolveOrderReviewTargetBundlesBatch,
@@ -38,27 +40,24 @@ function parseScopeParam(v: string | null): ActivityScope {
   return "all";
 }
 
-function resolveOrderPaymentStatus(o: any): string {
-  const topLevel = String(o?.paymentStatus ?? "").trim();
-  if (topLevel) return topLevel;
+function nullableTrim(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
 
-  const paymentInfoStatus = String(o?.paymentInfo?.status ?? "")
-    .trim()
-    .toLowerCase();
-  if (paymentInfoStatus === "pending") return "결제대기";
-  if (paymentInfoStatus === "paid") return "결제완료";
-  if (paymentInfoStatus === "failed") return "결제실패";
-  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled") return "결제취소";
-  if (paymentInfoStatus === "refunded") return "환불완료";
+function toNullableFiniteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
 
-  return "결제대기";
+function resolveRawPaymentStatus(doc: any): string | null {
+  return nullableTrim(doc?.paymentStatus) ?? nullableTrim(doc?.paymentInfo?.status);
+}
+
+function resolvePaymentMethod(doc: any): string | null {
+  return nullableTrim(doc?.paymentInfo?.method) ?? nullableTrim(doc?.paymentMethod);
 }
 
 function resolvePaymentProvider(doc: any): string | null {
-  const provider = String(
-    doc?.paymentInfo?.provider ?? doc?.paymentProvider ?? doc?.paymentMethod ?? "",
-  ).trim();
-  return provider || null;
+  return nullableTrim(doc?.paymentInfo?.provider) ?? nullableTrim(doc?.paymentProvider);
 }
 
 function resolveStringingPaymentContext(
@@ -82,7 +81,7 @@ function resolveStringingPaymentContext(
     paymentStatus:
       linkedPayment?.paymentStatus ??
       (appDoc?.paymentStatus || appDoc?.paymentInfo?.status
-        ? resolveOrderPaymentStatus(appDoc)
+        ? resolveRawPaymentStatus(appDoc)
         : null),
     paymentProvider: linkedPayment?.paymentProvider ?? resolvePaymentProvider(appDoc),
   };
@@ -94,17 +93,19 @@ type ActivityOrderSummary = {
   updatedAt: string;
   status: string;
   userConfirmedAt: string | null;
-  paymentStatus: string;
+  paymentStatus: string | null;
+  paymentStatusLabel: string;
   paymentProvider?: string | null;
   paymentMethod?: string | null;
   shippingMethod: string;
-  totalPrice: number;
+  totalPrice: number | null;
   firstItemName: string;
   firstItemImageUrl?: string | null;
   itemsCount: number;
   withStringService: boolean;
   stringingApplicationIds: string[];
   applicationSummaries: ActivityApplicationSummary[];
+  applicationHistorySummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
   cancelStatus?: string | null;
   cancelReasonSummary?: string | null;
@@ -112,6 +113,7 @@ type ActivityOrderSummary = {
   hasStringItem: boolean;
   hasProductItem: boolean;
   linkedApplicationCount: number;
+  hasActiveStringingApplication: boolean;
   reviewPendingCount: number;
   hasPendingReview: boolean;
   reviewAllDone: boolean;
@@ -135,6 +137,10 @@ type ActivityRentalSummary = {
   imageUrl?: string | null;
   days?: number;
   totalAmount?: number;
+  paymentStatus?: string | null;
+  paymentStatusLabel?: string;
+  paymentProvider?: string | null;
+  paymentMethod?: string | null;
   deposit?: number;
   fee?: number;
   withStringService: boolean;
@@ -146,6 +152,7 @@ type ActivityRentalSummary = {
   returnShippingWindowOpen: boolean;
   stringingApplicationIds: string[];
   applicationSummaries: ActivityApplicationSummary[];
+  applicationHistorySummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
   cancelStatus?: string | null;
   linkedApplicationCount: number;
@@ -355,18 +362,29 @@ function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
   return apps.find((app) => isActionableInboundTracking(app)) ?? apps[0];
 }
 
-function calcOrderTotal(o: any): number {
+function calcOrderTotal(o: any): number | null {
   // 기존 /api/users/me/orders 로직의 축약판(총액이 있으면 우선, 없으면 items 합산)
-  const explicit = o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
-  if (typeof explicit === "number") return explicit;
+  for (const value of [o.totalPrice, o.total, o.finalAmount, o.totalAmount]) {
+    const explicit = toNullableFiniteNumber(value);
+    if (explicit !== null) return explicit;
+  }
 
   const items: any[] = Array.isArray(o.items) ? o.items : [];
-  return items.reduce((sum, it) => {
-    const unit = it.price ?? it.unitPrice ?? 0;
-    const qty = it.quantity ?? it.qty ?? it.count ?? 1;
-    const line = it.total ?? unit * qty;
-    return sum + (typeof line === "number" ? line : 0);
-  }, 0);
+  if (items.length === 0) return null;
+  let total = 0;
+  for (const item of items) {
+    const lineTotal = toNullableFiniteNumber(item?.total);
+    if (lineTotal !== null) {
+      total += lineTotal;
+      continue;
+    }
+
+    const unitPrice = toNullableFiniteNumber(item?.price ?? item?.unitPrice);
+    const quantity = toNullableFiniteNumber(item?.quantity ?? item?.qty ?? item?.count ?? 1);
+    if (unitPrice === null || quantity === null) return null;
+    total += unitPrice * quantity;
+  }
+  return total;
 }
 
 function resolveOrderShippingMethod(shippingInfo: any): string {
@@ -650,7 +668,7 @@ export async function GET(req: Request) {
     (orders as any[]).map((order) => [
       String(order._id),
       {
-        paymentStatus: resolveOrderPaymentStatus(order),
+        paymentStatus: resolveRawPaymentStatus(order),
         paymentProvider: resolvePaymentProvider(order),
       },
     ]),
@@ -659,7 +677,7 @@ export async function GET(req: Request) {
     (rentals as any[]).map((rental) => [
       String(rental._id),
       {
-        paymentStatus: resolveOrderPaymentStatus(rental),
+        paymentStatus: resolveRawPaymentStatus(rental),
         paymentProvider: resolvePaymentProvider(rental),
       },
     ]),
@@ -752,6 +770,14 @@ export async function GET(req: Request) {
     apps.sort(compareByUpdatedThenCreatedDesc);
   }
 
+  const activeApplications = (apps: ActivityApplicationSummary[]) =>
+    apps.filter((app) =>
+      isApplicationEligibleForLinkedStage({
+        status: app.status,
+        cancelRequestStatus: app.cancelStatus,
+      }),
+    );
+
   const rentalRacketObjectIds = Array.from(
     new Set(
       (rentals as any[]).map((r) => String(r?.racketId ?? "")).filter((id) => ObjectId.isValid(id)),
@@ -791,7 +817,8 @@ export async function GET(req: Request) {
     const items = Array.isArray(o.items) ? o.items : [];
     const first = items[0] ?? null;
     const isConfirmed = Boolean(o?.userConfirmedAt) || isOrderConfirmedStatus(o?.status);
-    const linkedApps = appByOrderId.get(orderId) ?? [];
+    const applicationHistory = appByOrderId.get(orderId) ?? [];
+    const linkedApps = activeApplications(applicationHistory);
     const targetBundle = reviewBundlesByOrderId.get(orderId);
     const nextTarget = targetBundle?.nextTarget ?? null;
     const reviewPendingCount = isConfirmed ? (targetBundle?.counts.remaining ?? 0) : 0;
@@ -850,10 +877,15 @@ export async function GET(req: Request) {
             : typeof o.userConfirmedAt === "string"
               ? o.userConfirmedAt
               : null,
-        paymentStatus: resolveOrderPaymentStatus(o),
-        paymentProvider:
-          typeof o?.paymentInfo?.provider === "string" ? o.paymentInfo.provider : null,
-        paymentMethod: typeof o?.paymentInfo?.method === "string" ? o.paymentInfo.method : null,
+        paymentStatus: resolveRawPaymentStatus(o),
+        paymentStatusLabel: getCustomerOrderPaymentStatusLabel({
+          paymentStatus: resolveRawPaymentStatus(o),
+          paymentProvider: resolvePaymentProvider(o),
+          paymentMethod: resolvePaymentMethod(o),
+          totalPrice: calcOrderTotal(o),
+        }),
+        paymentProvider: resolvePaymentProvider(o),
+        paymentMethod: resolvePaymentMethod(o),
         shippingMethod: resolveOrderShippingMethod(o?.shippingInfo),
         totalPrice: calcOrderTotal(o),
         firstItemName: first?.name ?? "(상품명 없음)",
@@ -862,6 +894,7 @@ export async function GET(req: Request) {
         withStringService,
         stringingApplicationIds: linkedApps.map((app) => app.id),
         applicationSummaries: linkedApps,
+        applicationHistorySummaries: applicationHistory,
         stringingApplicationId: linked?.id ?? null,
         cancelStatus: rawCancelStatus,
         cancelReasonSummary,
@@ -869,6 +902,7 @@ export async function GET(req: Request) {
         hasStringItem,
         hasProductItem,
         linkedApplicationCount: linkedApps.length,
+        hasActiveStringingApplication: linkedApps.length > 0,
         reviewPendingCount,
         hasPendingReview,
         reviewAllDone,
@@ -884,7 +918,8 @@ export async function GET(req: Request) {
 
   for (const r of rentals as any[]) {
     const rentalId = String(r._id);
-    const linkedApps = appByRentalId.get(rentalId) ?? [];
+    const applicationHistory = appByRentalId.get(rentalId) ?? [];
+    const linkedApps = activeApplications(applicationHistory);
     const linked = pickPrimaryLinkedApplication(linkedApps);
 
     const createdAt = toISO(r.createdAt ?? new ObjectId(r._id).getTimestamp());
@@ -935,6 +970,15 @@ export async function GET(req: Request) {
         imageUrl: r.racketId ? (rentalImageByRacketId.get(String(r.racketId)) ?? null) : null,
         days: r.days,
         totalAmount: r?.amount?.total,
+        paymentStatus: resolveRawPaymentStatus(r),
+        paymentStatusLabel: getCustomerOrderPaymentStatusLabel({
+          paymentStatus: resolveRawPaymentStatus(r),
+          paymentProvider: resolvePaymentProvider(r),
+          paymentMethod: resolvePaymentMethod(r),
+          totalPrice: toNullableFiniteNumber(r?.amount?.total),
+        }),
+        paymentProvider: resolvePaymentProvider(r),
+        paymentMethod: resolvePaymentMethod(r),
         deposit: r?.amount?.deposit,
         fee: r?.amount?.fee,
         withStringService,
@@ -946,6 +990,7 @@ export async function GET(req: Request) {
         returnShippingWindowOpen,
         stringingApplicationIds: linkedApps.map((app) => app.id),
         applicationSummaries: linkedApps,
+        applicationHistorySummaries: applicationHistory,
         stringingApplicationId: linked?.id ?? null,
         cancelStatus: r?.cancelRequest?.status ?? null,
         linkedApplicationCount: linkedApps.length,
@@ -1063,6 +1108,7 @@ export async function GET(req: Request) {
           reviewPendingCount: group.order?.reviewPendingCount,
           linkedApplications: group.order?.applicationSummaries,
           primaryApplication: group.application,
+          withStringService: group.order?.withStringService,
         }),
       };
     }

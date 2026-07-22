@@ -6,6 +6,11 @@ import {
   getMypageNormalizedStatus,
   getMypageUserStatusLabel,
 } from "@/app/mypage/_lib/status-label";
+import {
+  getCustomerApplicationStatusLabel,
+  getCustomerOrderStatusLabel,
+  getCustomerRentalStatusLabel,
+} from "@/app/mypage/_lib/flow-display";
 import { EmptyState } from "@/components/public/EmptyState";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -109,11 +114,12 @@ type ActivityGroup = {
     id?: string;
     createdAt?: string;
     status: string;
-    paymentStatus?: string;
+    paymentStatus?: string | null;
+    paymentStatusLabel?: string;
     paymentProvider?: string | null;
     paymentMethod?: string | null;
     shippingMethod?: string;
-    totalPrice: number;
+    totalPrice: number | null;
     firstItemName?: string;
     firstItemImageUrl?: string | null;
     itemsCount: number;
@@ -131,6 +137,7 @@ type ActivityGroup = {
     nextReviewTarget?: CanonicalReviewTarget | null;
     reviewTargetBundle?: unknown;
     applicationSummaries?: ActivityApplicationSummary[];
+    applicationHistorySummaries?: ActivityApplicationSummary[];
   };
   rental?: {
     id?: string;
@@ -141,6 +148,10 @@ type ActivityGroup = {
     model?: string;
     imageUrl?: string | null;
     totalAmount?: number;
+    paymentStatus?: string | null;
+    paymentStatusLabel?: string;
+    paymentProvider?: string | null;
+    paymentMethod?: string | null;
     days?: number;
     linkedApplicationCount: number;
     stringingApplicationId?: string | null;
@@ -162,6 +173,7 @@ type ActivityGroup = {
     nextReviewTarget?: CanonicalReviewTarget | null;
     reviewTargetBundle?: unknown;
     applicationSummaries?: ActivityApplicationSummary[];
+    applicationHistorySummaries?: ActivityApplicationSummary[];
   };
   application?: ActivityApplicationSummary;
   todoReasonCode?: MypageTodoReasonCode | null;
@@ -397,8 +409,8 @@ const getFlowNextActionText = (
     if (normalized === "취소") return "취소가 완료되었습니다.";
     if (normalized === "환불" || normalized === "환불 처리중")
       return "환불 진행 상태를 확인해주세요.";
-    if (normalized === "대기중") return "결제를 완료해주세요.";
-    if (normalized === "결제완료") return "결제가 완료되었습니다. 상품 준비를 기다려주세요.";
+    if (normalized === "대기중") return "주문 내용을 확인하고 있습니다.";
+    if (normalized === "결제완료") return "상품 준비를 기다려주세요.";
     if (normalized === "처리중") {
       if (
         linkedApplication &&
@@ -454,8 +466,8 @@ const getFlowNextActionText = (
   if (viewKind === "rental") {
     const normalized = getMypageNormalizedStatus(group.rental?.status);
     if (normalized === "취소") return "대여가 취소되었습니다.";
-    if (normalized === "대기중") return "결제를 완료해주세요.";
-    if (normalized === "결제완료") return "대여 상품 출고 또는 수령 준비 중입니다.";
+    if (normalized === "대기중") return "대여 신청 내용을 확인하고 있습니다.";
+    if (normalized === "결제완료") return "대여 상품 출고 또는 수령을 준비하고 있습니다.";
     if (normalized === "대여중") return "대여 중입니다. 반납 일정을 확인해주세요.";
     if (isRentalReturnedStatus(group.rental?.status)) {
       const hasPendingServiceReview =
@@ -504,11 +516,7 @@ const getFlowNextActionText = (
 
 const FALLBACK_FLOW_IMAGE = "/placeholder.svg?height=96&width=96&query=tennis+gear";
 
-const getCompactStatusLabel = (label: string, kind: ActivityGroup["kind"]) => {
-  if (label === "대기중" && (kind === "order" || kind === "rental")) {
-    return "결제대기";
-  }
-
+const getCompactStatusLabel = (label: string) => {
   if (label === "구매확정") return "완료";
   if (label === "반납완료") return "완료";
 
@@ -997,7 +1005,12 @@ export default function TransactionFlowList() {
                   ? g.rental?.status
                   : g.application?.status;
             const normalizedStatus = getMypageNormalizedStatus(status);
-            const userStatusLabel = getMypageUserStatusLabel(status);
+            const userStatusLabel =
+              g.kind === "order"
+                ? getCustomerOrderStatusLabel(status)
+                : g.kind === "rental"
+                  ? getCustomerRentalStatusLabel(status)
+                  : getCustomerApplicationStatusLabel(status);
             const orderDisplayStatusLabel =
               g.kind === "order"
                 ? getOrderStatusLabelForDisplay(userStatusLabel, {
@@ -1097,11 +1110,17 @@ export default function TransactionFlowList() {
 
             const representativeStatusLabel = isCancelRequested
               ? "취소요청"
-              : getCompactStatusLabel(displayUserStatusLabel, g.kind);
+              : getCompactStatusLabel(displayUserStatusLabel);
 
             const representativeStatusBadgeSpec = isCancelRequested
               ? getWorkflowMetaBadgeSpec("cancel_requested")
               : displayStatusBadgeSpec;
+            const paymentStatusLabel =
+              displayKind === "order"
+                ? g.order?.paymentStatusLabel
+                : displayKind === "rental"
+                  ? g.rental?.paymentStatusLabel
+                  : null;
 
             const representativeImage = getRepresentativeImage(g, displayApplication);
             const shouldShowServiceIcon =
@@ -1146,6 +1165,11 @@ export default function TransactionFlowList() {
                     >
                       {representativeStatusLabel}
                     </Badge>
+                    {paymentStatusLabel ? (
+                      <Badge variant="outline" className="shrink-0 whitespace-nowrap">
+                        {paymentStatusLabel}
+                      </Badge>
+                    ) : null}
                   </div>
 
                   <p className="hidden break-keep text-ui-label font-medium text-muted-foreground md:block">
@@ -1363,7 +1387,19 @@ export default function TransactionFlowList() {
                     const actionableOrderApplication = linkedApps.find((app) =>
                       isApplicationTrackingNeeded(app),
                     );
-                    if (actionableOrderApplication?.id) {
+                    if (g.todoReasonCode === "order_stringing_apply") {
+                      addPrimaryActionCandidate({
+                        key: "order-apply-stringing",
+                        node: (
+                          <Button asChild size="sm" variant="highlight_soft" wrap="nowrap" className="w-full min-w-0 whitespace-nowrap">
+                            <Link href={`/services/apply?orderId=${orderId}`}>
+                              교체서비스 신청
+                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        ),
+                      });
+                    } else if (actionableOrderApplication?.id) {
                       addPrimaryActionCandidate({
                         key: "application-shipping",
                         node: (
@@ -1739,6 +1775,11 @@ export default function TransactionFlowList() {
                         >
                           {representativeStatusLabel}
                         </Badge>
+                        {paymentStatusLabel ? (
+                          <Badge variant="outline" className="shrink-0 whitespace-nowrap">
+                            {paymentStatusLabel}
+                          </Badge>
+                        ) : null}
                       </div>
 
                       <ResponsiveActionGroup
