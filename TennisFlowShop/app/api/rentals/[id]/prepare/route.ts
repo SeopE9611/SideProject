@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
-import { cookies } from "next/headers";
-import { verifyAccessToken } from "@/lib/auth.utils";
+import { getRentalAccess, rentalNotAvailable } from "@/app/api/rentals/_lib/rental-access";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import { z } from "zod";
 
@@ -62,30 +60,9 @@ const PrepareBodySchema = z
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 });
-    }
     const db = (await clientPromise).db();
-    const _id = new ObjectId(id);
-    const rental = await db.collection("rental_orders").findOne({ _id });
-    if (!rental) return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
-
-    // 1차 보호: 회원 대여건이면 소유자만 수정 가능 (비회원 보류)
-    if (rental.userId) {
-      const jar = await cookies();
-      const at = jar.get("accessToken")?.value;
-      // 토큰이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 FORBIDDEN으로 정리
-      let payload: any = null;
-      try {
-        payload = at ? verifyAccessToken(at) : null;
-      } catch {
-        payload = null;
-      }
-      const sub = typeof payload?.sub === "string" ? payload.sub : null;
-      if (!sub || !ObjectId.isValid(sub) || sub !== String(rental.userId)) {
-        return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
-      }
-    }
+    const access = await getRentalAccess(db, id);
+    if (!access.ok) return access.response;
     // JSON 파싱 실패 시 업데이트를 막아서 "기존 값이 null로 덮이는 사고" 방지
     let rawBody: unknown;
     try {
@@ -107,17 +84,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ ok: false, message: "INVALID_BANK" }, { status: 400 });
     }
 
-    await db.collection("rental_orders").updateOne(
-      { _id },
-      {
-        $set: {
-          payment: body?.payment ?? null, // 은행/입금자명 보관
-          shipping: body?.shipping ?? null, // 배송지 보관
-          refundAccount: body?.refundAccount ?? null,
-          updatedAt: new Date(),
-        },
+    const update = await db.collection("rental_orders").updateOne(access.accessFilter, {
+      $set: {
+        payment: body?.payment ?? null, // 은행/입금자명 보관
+        shipping: body?.shipping ?? null, // 배송지 보관
+        refundAccount: body?.refundAccount ?? null,
+        updatedAt: new Date(),
       },
-    );
+    });
+    if (!update.matchedCount) return rentalNotAvailable();
 
     return NextResponse.json({ ok: true, id });
   } catch (err) {

@@ -1,58 +1,44 @@
-import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import {
+  hasGuestRentalAccess,
+  signOrderAccessToken,
+  verifyOrderAccessToken,
+} from "@/lib/auth.utils";
+import { rentalNotAvailable } from "@/app/api/rentals/_lib/rental-access";
 import { getDb } from "@/lib/mongodb";
-import { signOrderAccessToken } from "@/lib/auth.utils";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-type GuestOrderMode = "off" | "legacy" | "on";
-
-function getGuestOrderMode(): GuestOrderMode {
-  const raw = (
-    process.env.GUEST_ORDER_MODE ??
-    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ??
-    "legacy"
-  ).trim();
-  return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
+function isGuestRentalModeEnabled() {
+  return (
+    (
+      process.env.GUEST_ORDER_MODE ??
+      process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ??
+      "legacy"
+    ).trim() === "on"
+  );
 }
 
-// POST /api/rentals/:id/guest-token
-// - 게스트 대여에 한해, 해당 대여로 접근 가능한 HttpOnly 쿠키를 심어준다.
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    if (getGuestOrderMode() !== "on") {
-      return NextResponse.json({ message: "not found" }, { status: 404 });
-    }
+  const { id: rawId } = await params;
+  const id = rawId.trim();
+  if (!isGuestRentalModeEnabled() || !ObjectId.isValid(id)) return rentalNotAvailable();
 
-    const { id } = await params;
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ message: "invalid rental id" }, { status: 400 });
-    }
+  const claims = verifyOrderAccessToken((await cookies()).get("orderAccessToken")?.value ?? "");
+  if (!hasGuestRentalAccess(claims, id)) return rentalNotAvailable();
 
-    const db = await getDb();
-    const rental = await db
-      .collection("rental_orders")
-      .findOne({ _id: new ObjectId(id) }, { projection: { _id: 1, userId: 1 } });
-    if (!rental) {
-      return NextResponse.json({ message: "rental not found" }, { status: 404 });
-    }
+  const rental = await (await getDb())
+    .collection("rental_orders")
+    .findOne({ _id: new ObjectId(id) }, { projection: { _id: 1, userId: 1 } });
+  if (!rental || rental.userId) return rentalNotAvailable();
 
-    const isGuestRental = !rental.userId;
-    if (!isGuestRental) {
-      return NextResponse.json({ message: "not a guest rental" }, { status: 400 });
-    }
-
-    const token = signOrderAccessToken({ rentalId: String(rental._id) });
-
-    const res = NextResponse.json({ success: true });
-    res.cookies.set("orderAccessToken", token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-    return res;
-  } catch (e) {
-    console.error("[guest-rental-token] error", e);
-    return NextResponse.json({ message: "server error" }, { status: 500 });
-  }
+  const response = NextResponse.json({ success: true });
+  response.cookies.set("orderAccessToken", signOrderAccessToken({ rentalId: id }), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
+  return response;
 }

@@ -10,23 +10,12 @@ import {
   previewText,
   truthyField,
 } from "@/lib/admin-alerts/formatters";
-import { verifyAccessToken } from "@/lib/auth.utils";
+import { getRentalAccess, rentalNotAvailable } from "@/app/api/rentals/_lib/rental-access";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
 import type { RentalCancelRequestStatus } from "@/lib/types/rental-order";
-import { ObjectId } from "mongodb";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-
-function safeVerifyAccessToken(token?: string | null) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
 
 export const dynamic = "force-dynamic";
 
@@ -68,33 +57,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
 
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 });
-    }
-
     const db = (await clientPromise).db();
-    const _id = new ObjectId(id);
-    const rental: any = await db.collection("rental_orders").findOne({ _id });
-
-    if (!rental) {
-      return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
-    }
-
-    // 1) 인증/인가: 회원 대여건이면 소유자만 취소 요청 가능
-    if (rental.userId) {
-      const jar = await cookies();
-      const at = jar.get("accessToken")?.value;
-      // 토큰이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 "FORBIDDEN"으로 정리
-      let payload: any = null;
-      try {
-        payload = at ? verifyAccessToken(at) : null;
-      } catch {
-        payload = null;
-      }
-      if (!payload || payload.sub !== String(rental.userId)) {
-        return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
-      }
-    }
+    const access = await getRentalAccess(db, id);
+    if (!access.ok) return access.response;
+    const { _id } = access;
+    const rental: any = access.rental;
 
     // 2) 비즈니스 룰
     const currentStatus: string = rental.status ?? "pending";
@@ -211,8 +178,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       refundAccount,
     };
 
-    await db.collection("rental_orders").updateOne(
-      { _id },
+    const update = await db.collection("rental_orders").updateOne(
+      { ...access.accessFilter, "cancelRequest.status": { $ne: "requested" } },
       {
         $set: {
           cancelRequest,
@@ -220,6 +187,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         },
       },
     );
+    if (!update.matchedCount) return rentalNotAvailable();
 
     // 5) 이력 기록 (status 자체는 아직 paid 유지)
     await writeRentalHistory(db, _id, {

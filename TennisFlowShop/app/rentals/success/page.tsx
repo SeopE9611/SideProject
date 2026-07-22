@@ -1,7 +1,7 @@
 import RentalsSuccessClient from "@/app/rentals/success/_components/RentalsSuccessClient";
 import BackButtonGuard from "@/app/rentals/success/_components/BackButtonGuard";
 import LoginGate from "@/components/system/LoginGate";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestRentalAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -35,10 +35,7 @@ function safeVerifyAccessToken(token?: string) {
 function safeVerifyOrderAccessToken(token?: string) {
   if (!token) return null;
   try {
-    return verifyOrderAccessToken(token) as {
-      orderId?: string;
-      rentalId?: string;
-    } | null;
+    return verifyOrderAccessToken(token);
   } catch {
     return null;
   }
@@ -139,7 +136,6 @@ async function getData(db: any, id: string, r: any) {
           status: r.paymentInfo.status ? String(r.paymentInfo.status) : null,
           provider: r.paymentInfo.provider ? String(r.paymentInfo.provider) : null,
           method: r.paymentInfo.method ? String(r.paymentInfo.method) : null,
-          tid: r.paymentInfo.tid ? String(r.paymentInfo.tid) : null,
           approvedAt: r.paymentInfo.approvedAt ? String(r.paymentInfo.approvedAt) : null,
           easyPayProvider: r.paymentInfo.easyPayProvider
             ? String(r.paymentInfo.easyPayProvider)
@@ -218,13 +214,16 @@ export default async function Page({
   const ownerUserId = rental.userId ? String(rental.userId) : null;
   const rentalOrderId = rental.orderId ? String(rental.orderId) : null;
   const isMemberOwner = !!(accessPayload?.sub && ownerUserId && accessPayload.sub === ownerUserId);
-  const isGuestOwner = !!(
-    orderAccessPayload &&
-    ((orderAccessPayload.orderId &&
-      (orderAccessPayload.orderId === rentalOrderId ||
-        orderAccessPayload.orderId === String(rental._id))) ||
-      (orderAccessPayload.rentalId && orderAccessPayload.rentalId === String(rental._id)))
-  );
+  const isGuestOwner =
+    hasGuestRentalAccess(orderAccessPayload, String(rental._id)) ||
+    Boolean(
+      !ownerUserId &&
+      orderAccessPayload &&
+      "orderId" in orderAccessPayload &&
+      orderAccessPayload.orderId &&
+      rentalOrderId &&
+      orderAccessPayload.orderId === rentalOrderId,
+    );
 
   if (!isMemberOwner && !isGuestOwner) return notFound();
 

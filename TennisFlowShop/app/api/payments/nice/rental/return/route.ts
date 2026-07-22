@@ -46,6 +46,20 @@ function redirect303(req: Request, path: string) {
   return NextResponse.redirect(new URL(path, req.url), { status: 303 });
 }
 
+function redirectToRentalSuccess(req: Request, rentalId: string, isGuest: boolean) {
+  const response = redirect303(req, `/rentals/success?id=${encodeURIComponent(rentalId)}`);
+  if (isGuest) {
+    response.cookies.set("orderAccessToken", signOrderAccessToken({ rentalId }), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  }
+  return response;
+}
+
 async function parseRequestPayload(req: Request): Promise<Record<string, string>> {
   const contentType = req.headers.get("content-type") || "";
   if (
@@ -122,7 +136,7 @@ export async function POST(req: Request) {
       );
     }
     if (session.status === "approved" && session.mongoOrderId) {
-      return redirect303(req, `/rentals/success?id=${encodeURIComponent(session.mongoOrderId)}`);
+      return redirectToRentalSuccess(req, String(session.mongoOrderId), !session.userId);
     }
 
     if (session.status === "failed") {
@@ -176,7 +190,7 @@ export async function POST(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirect303(req, `/rentals/success?id=${encodeURIComponent(latest.mongoOrderId)}`);
+        return redirectToRentalSuccess(req, String(latest.mongoOrderId), !latest.userId);
       }
 
       if (
@@ -254,7 +268,7 @@ export async function POST(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirect303(req, `/rentals/success?id=${encodeURIComponent(latest.mongoOrderId)}`);
+        return redirectToRentalSuccess(req, String(latest.mongoOrderId), !latest.userId);
       }
 
       if (
@@ -535,18 +549,7 @@ export async function POST(req: Request) {
         },
       );
 
-      const res = redirect303(req, `/rentals/success?id=${encodeURIComponent(rental.id)}`);
-      if (!session.userId) {
-        const token = signOrderAccessToken({ rentalId: rental.id });
-        res.cookies.set("orderAccessToken", token, {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-          path: "/",
-          maxAge: 60 * 60 * 24 * 7,
-        });
-      }
-      return res;
+      return redirectToRentalSuccess(req, rental.id, !session.userId);
     } catch (orderError: any) {
       const failureMessage = orderError?.message || "결제 승인 후 주문 생성에 실패했습니다.";
       await tryAutoCancelAfterApprove(failureMessage);
