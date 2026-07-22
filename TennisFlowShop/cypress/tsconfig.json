@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": false,
+    "typeRoots": ["../types", "../node_modules/@types", "../node_modules"],
+    "types": ["cypress", "node"],
+    "plugins": []
+  },
+  "include": ["./**/*.ts", "../cypress.config.ts"],
+  "exclude": ["../node_modules"]
+}
