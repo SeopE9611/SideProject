@@ -97,20 +97,33 @@ test("자유 게시판 본문 편집은 JSX 범위에서 본문 오류를 해제
   assert.match(editor, /invalid=\{Boolean\(fieldErrors\.content\)\}/);
 });
 
-test("free와 gear 작성 실패 처리는 서버 상세 메시지를 우선한다", () => {
-  for (const type of ["free", "gear"]) {
-    const source = writeSources.find((item) => item.type === type).source;
+test("작성 화면은 공용 API 오류 메시지 helper를 직접 연결한다", () => {
+  for (const { type, source } of writeSources) {
     const submit = handleSubmitBlock(source);
     assert.match(
+      source,
+      /import\s+\{\s*getApiErrorMessage\s*\}\s+from\s+["']@\/lib\/fetchers\/getApiErrorMessage["']/,
+      `${type} 작성은 공용 오류 메시지 helper를 직접 import해야 합니다.`,
+    );
+    assert.match(
       submit,
-      /Array\.isArray\(data\?\.details\)[\s\S]*?data\.details\[0\]\?\.message[\s\S]*?data\?\.message[\s\S]*?data\?\.error[\s\S]*?글 작성에 실패했습니다\. 잠시 후 다시 시도해 주세요\./,
-      `${type} 작성은 상세 메시지, message, error, 기본 메시지 순서를 지켜야 합니다.`,
+      /getApiErrorMessage\([\s\S]*?data[\s\S]*?WRITE_ERROR_MESSAGE/,
+      `${type} 작성 실패 처리는 fallback과 함께 공용 helper를 호출해야 합니다.`,
+    );
+    assert.doesNotMatch(
+      submit,
+      /(?:emitServerError|setErrorMsg)\(data\?\.error\)/,
+      `${type} 작성은 오류 객체를 UI 상태 함수에 직접 전달하면 안 됩니다.`,
     );
   }
 });
 
-test("market 작성 실패 처리는 handleSubmit에서 기존 서버 상세 메시지 우선 처리를 유지한다", () => {
+test("작성 화면은 공용 helper 결과를 기존 오류 UI로 전달한다", () => {
+  const freeSource = writeSources.find(({ type }) => type === "free").source;
   const marketSource = writeSources.find(({ type }) => type === "market").source;
-  const submit = handleSubmitBlock(marketSource);
-  assert.match(submit, /data\?\.details\?\.\[0\]\?\.message[\s\S]*?data\?\.error/);
+  const gearSource = writeSources.find(({ type }) => type === "gear").source;
+
+  assert.match(handleSubmitBlock(freeSource), /emitServerError\(getApiErrorMessage\(/);
+  assert.match(handleSubmitBlock(marketSource), /emitServerError\(getApiErrorMessage\(/);
+  assert.match(handleSubmitBlock(gearSource), /setErrorMsg\(getApiErrorMessage\(/);
 });
