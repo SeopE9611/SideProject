@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-const projectRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+// import.meta.url은 file URL이므로 pathname을 직접 쓰면 Windows 드라이브 문자와 URL 인코딩이 깨질 수 있어 Node 공식 변환 함수로 실제 파일 시스템 경로를 구한다.
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function readConfig(relativePath) {
   const configPath = path.join(projectRoot, relativePath);
