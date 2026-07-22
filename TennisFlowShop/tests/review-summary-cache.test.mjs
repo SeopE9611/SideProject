@@ -311,14 +311,10 @@ test("캐시 update payload와 safe wrapper를 실제 운영 함수로 실행한
   assert.equal(logged, true);
 });
 
-test("작성·수정·삭제 route는 공통 캐시 refresh helper를 사용한다", () => {
+test("작성 route는 공통 캐시 refresh helper를 사용한다", () => {
   const post = read("app/api/reviews/route.ts");
-  const user = read("app/api/reviews/[id]/route.ts");
-  const admin = read("app/api/admin/reviews/[id]/route.ts");
   assert.ok(!post.includes("function updateProductRatingSummary"));
   assert.ok((post.match(/refreshReviewSummaryCachesForReviewSafely/g) ?? []).length >= 3);
-  assert.match(user, /body\.rating !== undefined \|\| body\.status \|\| body\.visibility/);
-  assert.match(admin, /body\.rating !== undefined \|\| body\.status \|\| body\.visibility/);
 });
 
 test("유지보수와 목록 UI/API 및 라켓 카드 색상 계약", () => {

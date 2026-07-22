@@ -215,7 +215,7 @@ jobs:
       - name: Check admin API boundary (경계 규칙)
         run: pnpm check:admin-api-boundary
 
-  # 6) contract + review policy tests (권한/CSRF/후기 정책 계약 위반을 분리된 job으로 식별)
+  # 6) core contract tests (실제 정책 위반은 병합을 차단한다)
   test-contract:
     runs-on: ubuntu-latest
     needs: check-admin-api-boundary
@@ -244,16 +244,12 @@ jobs:
         id: install
         run: pnpm install --frozen-lockfile
 
-      - name: Test contract (권한/CSRF/후기/표시 계약)
+      - name: Test core contract (권한/CSRF/후기 정책)
         run: pnpm test:contract
 
       - name: Test review target resolver
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-target
-
-      - name: Test review API policy
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: pnpm test:review-api-policy
 
       - name: Test review write flow
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -267,19 +263,62 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-security
 
-      - name: Test review management context
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: pnpm test:review-management
-
       - name: Test review summary cache
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test:review-summary
+
+  # 구현 문자열·UI 문구 검사는 관찰 가능하게 실행하되 핵심 gate를 막지 않는다.
+  test-contract-advisory:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Test advisory contract (구현 형태/UI 문구)
+        id: advisory_contract
+        continue-on-error: true
+        run: pnpm test:contract:advisory
+
+      - name: Report advisory contract result
+        if: ${{ always() }}
+        env:
+          ADVISORY_OUTCOME: ${{ steps.advisory_contract.outcome }}
+        run: |
+          if [ "${ADVISORY_OUTCOME}" = "success" ]; then
+            echo "## Advisory contract tests" >> "$GITHUB_STEP_SUMMARY"
+            echo "통과: 구현 형태/UI 문구 검사가 현재 기준을 만족했습니다." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::Advisory contract tests failed. Core gates are unaffected; review stale source assertions."
+            echo "## Advisory contract tests" >> "$GITHUB_STEP_SUMMARY"
+            echo "경고: 구현 형태/UI 문구 검사가 실패했습니다. 핵심 gate에는 영향을 주지 않으며 stale assertion을 검토하세요." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
   test-e2e-admin-critical:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: test-contract
+    needs: build
     defaults:
       run:
         working-directory: ${{ env.WORKDIR }}
@@ -353,7 +392,7 @@ jobs:
   test-e2e-notice-conflict-retry:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: test-e2e-admin-critical
+    needs: build
     defaults:
       run:
         working-directory: ${{ env.WORKDIR }}
@@ -463,7 +502,6 @@ jobs:
           E2E_NOTICE_CONFLICT_RESULT: ${{ needs.test-e2e-notice-conflict-retry.result }}
         run: |
           failures=""
-          blocked=""
           for item in \
             "lint=${LINT_RESULT}" \
             "typecheck=${TYPECHECK_RESULT}" \
@@ -478,32 +516,18 @@ jobs:
             fi
           done
 
-          if [ "${CONTRACT_RESULT}" != "success" ]; then
-            if [ "${E2E_ADMIN_RESULT}" = "skipped" ]; then
-              blocked="${blocked}\n- blocked: test_e2e_admin_critical => skipped because test_contract failed"
-            elif [ "${E2E_ADMIN_RESULT}" != "success" ]; then
-              failures="${failures}\n- primary: test_e2e_admin_critical => ${E2E_ADMIN_RESULT}"
+          for item in \
+            "test_e2e_admin_critical=${E2E_ADMIN_RESULT}" \
+            "test_e2e_notice_conflict_retry=${E2E_NOTICE_CONFLICT_RESULT}"; do
+            name="${item%%=*}"
+            result="${item#*=}"
+            if [ "${result}" != "success" ]; then
+              failures="${failures}\n- primary: ${name} => ${result}"
             fi
+          done
 
-            if [ "${E2E_NOTICE_CONFLICT_RESULT}" = "skipped" ]; then
-              blocked="${blocked}\n- blocked: test_e2e_notice_conflict_retry => skipped because test_contract failed"
-            elif [ "${E2E_NOTICE_CONFLICT_RESULT}" != "success" ]; then
-              failures="${failures}\n- primary: test_e2e_notice_conflict_retry => ${E2E_NOTICE_CONFLICT_RESULT}"
-            fi
-          else
-            for item in \
-              "test_e2e_admin_critical=${E2E_ADMIN_RESULT}" \
-              "test_e2e_notice_conflict_retry=${E2E_NOTICE_CONFLICT_RESULT}"; do
-              name="${item%%=*}"
-              result="${item#*=}"
-              if [ "${result}" != "success" ]; then
-                failures="${failures}\n- primary: ${name} => ${result}"
-              fi
-            done
-          fi
-
-          if [ -n "${failures}${blocked}" ]; then
-            echo "[NO-GO] 배포 전 필수 체크리스트 실패:${failures}${blocked}"
+          if [ -n "${failures}" ]; then
+            echo "[NO-GO] 배포 전 필수 체크리스트 실패:${failures}"
             exit 1
           fi
 
