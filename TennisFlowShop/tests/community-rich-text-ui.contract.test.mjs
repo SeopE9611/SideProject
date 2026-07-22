@@ -58,3 +58,59 @@ test("정책은 free, market, gear만 리치 텍스트 대상으로 둔다", () 
   assert.match(source, /"gear"/);
   assert.doesNotMatch(source, /"brand"/);
 });
+
+const handleSubmitBlock = (source) => {
+  const start = source.indexOf("const handleSubmit");
+  assert.notEqual(start, -1, "handleSubmit 함수를 찾을 수 있어야 합니다.");
+  const end = source.indexOf("\n  return (", start);
+  return source.slice(start, end === -1 ? undefined : end);
+};
+
+const richTextEditorBlock = (source) => {
+  const start = source.indexOf("<RichTextEditor");
+  assert.notEqual(start, -1, "RichTextEditor JSX를 찾을 수 있어야 합니다.");
+  const end = source.indexOf("/>", start);
+  return source.slice(start, end + 2);
+};
+
+test("free, market, gear 작성은 handleSubmit에서 공용 리치 텍스트 작성 API를 사용한다", () => {
+  for (const { type, source } of writeSources) {
+    const submit = handleSubmitBlock(source);
+    assert.match(submit, /communityFetch\("\/api\/boards"/, `${type} 작성은 /api/boards를 사용해야 합니다.`);
+    assert.doesNotMatch(
+      submit,
+      /communityFetch\("\/api\/community\/posts"/,
+      `${type} 작성은 구형 POST 경로를 사용하면 안 됩니다.`,
+    );
+  }
+});
+
+test("자유 게시판 본문 편집은 JSX 범위에서 본문 오류를 해제하고 invalid 상태를 전달한다", () => {
+  const freeSource = writeSources.find(({ type }) => type === "free").source;
+  const editor = richTextEditorBlock(freeSource);
+
+  assert.match(editor, /onChange=\{\(change\) => \{[\s\S]*?setContent\(change\.html\);/);
+  assert.match(
+    editor,
+    /if \(fieldErrors\.content\) \{[\s\S]*?setFieldErrors\(\(prev\) => \(\{[\s\S]*?content: undefined,/,
+  );
+  assert.match(editor, /invalid=\{Boolean\(fieldErrors\.content\)\}/);
+});
+
+test("free와 gear 작성 실패 처리는 서버 상세 메시지를 우선한다", () => {
+  for (const type of ["free", "gear"]) {
+    const source = writeSources.find((item) => item.type === type).source;
+    const submit = handleSubmitBlock(source);
+    assert.match(
+      submit,
+      /Array\.isArray\(data\?\.details\)[\s\S]*?data\.details\[0\]\?\.message[\s\S]*?data\?\.message[\s\S]*?data\?\.error[\s\S]*?글 작성에 실패했습니다\. 잠시 후 다시 시도해 주세요\./,
+      `${type} 작성은 상세 메시지, message, error, 기본 메시지 순서를 지켜야 합니다.`,
+    );
+  }
+});
+
+test("market 작성 실패 처리는 handleSubmit에서 기존 서버 상세 메시지 우선 처리를 유지한다", () => {
+  const marketSource = writeSources.find(({ type }) => type === "market").source;
+  const submit = handleSubmitBlock(marketSource);
+  assert.match(submit, /data\?\.details\?\.\[0\]\?\.message[\s\S]*?data\?\.error/);
+});

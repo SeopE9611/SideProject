@@ -367,10 +367,16 @@ export default function FreeBoardWriteClient() {
       }
 
       if (!res.ok || !data?.ok) {
-        const msg = data?.error ?? "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
-        setErrorMsg(msg);
-        // 서버/네트워크류는 토스트 유지(UX 일관성)
-        showErrorToast(msg);
+        const detailMessage =
+          Array.isArray(data?.details) && typeof data.details[0]?.message === "string"
+            ? data.details[0].message
+            : null;
+        const msg =
+          detailMessage ??
+          data?.message ??
+          data?.error ??
+          "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        emitServerError(msg);
         return;
       }
 
@@ -493,15 +499,23 @@ export default function FreeBoardWriteClient() {
                 <Label>내용</Label>
                 <div ref={contentEditorRef}>
                   <RichTextEditor
-  value={content}
-  onChange={(change) => {
-    setContent(change.html);
-  }}
-  maxLength={COMMUNITY_RICH_TEXT_CONTENT_MAX}
-  placeholder="게시글 내용을 작성해 주세요."
-  ariaLabel="게시글 본문 편집기"
-  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
-/>
+                    value={content}
+                    onChange={(change) => {
+                      setContent(change.html);
+
+                      if (fieldErrors.content) {
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          content: undefined,
+                        }));
+                      }
+                    }}
+                    maxLength={COMMUNITY_RICH_TEXT_CONTENT_MAX}
+                    placeholder="게시글 내용을 작성해 주세요."
+                    ariaLabel="게시글 본문 편집기"
+                    disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+                    invalid={Boolean(fieldErrors.content)}
+                  />
                 </div>
                 {fieldErrors.content ? (
                   <p className="text-ui-label text-destructive">{fieldErrors.content}</p>

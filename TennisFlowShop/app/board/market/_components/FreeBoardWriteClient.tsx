@@ -505,7 +505,9 @@ export default function FreeBoardWriteClient() {
         payload.attachments = attachments;
       }
 
-      const res = await communityFetch("/api/community/posts", {
+      // free/market/gear 신규 작성은 /api/boards의 동일한 리치 텍스트 저장 경계를 사용해야 합니다.
+      // 구형 /api/community/posts는 일반 sanitizer와 HTML 원문 길이 정책이어서 사용하지 않습니다.
+      const res = await communityFetch("/api/boards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
