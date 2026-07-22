@@ -3,10 +3,19 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import {
+  prepareRichTextHtmlForSanitization,
+  richTextToValidationText,
+} from "@/components/editor/rich-text-utils";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
 import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
 import { resolveCommunityDisplayName } from "@/lib/community-display-name";
+import {
+  COMMUNITY_RICH_TEXT_CONTENT_MAX,
+  COMMUNITY_RICH_TEXT_CONTENT_MIN,
+  isCommunityRichTextType,
+} from "@/lib/community/community-rich-text-policy";
 import {
   COMMUNITY_BOARDS_ENABLED,
   communityBoardClosedResponse,
@@ -15,7 +24,12 @@ import { verifyCommunityCsrf } from "@/lib/community/security";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
 import { normalizeMarketMeta } from "@/lib/market";
 import { getDb } from "@/lib/mongodb";
-import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
+import {
+  normalizeSanitizedContent,
+  sanitizeHtml,
+  sanitizeRichTextHtml,
+  validateSanitizedLength,
+} from "@/lib/sanitize";
 import type { CommunityBoardType, CommunityPost } from "@/lib/types/community";
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from "@/lib/types/community";
 
@@ -139,11 +153,18 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     authorEmail: doc.authorEmail,
   });
 
+  // 읽기 경계에서도 과거 데이터와 오염된 레코드를 다시 정제하되, 조회 요청이 원본 DB를 변경하지는 않는다.
+  const responseContent = isCommunityRichTextType(doc.type)
+    ? await sanitizeRichTextHtml(
+        prepareRichTextHtmlForSanitization(String(doc.content ?? "")),
+      )
+    : String(doc.content ?? "");
+
   const item: CommunityPost = {
     id: String(doc._id),
     type: doc.type,
     title: doc.title,
-    content: doc.content,
+    content: responseContent,
     brand: doc.brand ?? null,
     marketMeta: doc.marketMeta ?? null,
 
@@ -215,7 +236,8 @@ async function getAuthUserId() {
 const patchBodySchema = z
   .object({
     title: z.string().min(1).max(100).optional(),
-    content: z.string().max(5000).optional(),
+    // 20,000자는 리치 HTML 원문 전송 상한이며, 실제 저장 정책은 정제 후 텍스트 5,000자로 검사한다.
+    content: z.string().max(20000).optional(),
     category: z.enum(COMMUNITY_CATEGORIES).optional(),
     images: z.array(z.string()).max(20).optional(), // supabase URL 문자열 배열
 
@@ -374,37 +396,69 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   let sanitizedContent: string | undefined;
   if (body.content !== undefined) {
-    sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
-    const contentLengthValidation = validateSanitizedLength(sanitizedContent, {
-      min: 1,
-      max: 5000,
-    });
+    // 요청의 type은 위조할 수 있으므로 DB에 저장된 게시판 종류를 기준으로 sanitizer 정책을 선택한다.
+    if (isCommunityRichTextType(doc.type)) {
+      const safeContent = await sanitizeRichTextHtml(body.content);
+      const validationText = richTextToValidationText(safeContent);
+      const contentLengthValidation = validateSanitizedLength(validationText, {
+        min: COMMUNITY_RICH_TEXT_CONTENT_MIN,
+        max: COMMUNITY_RICH_TEXT_CONTENT_MAX,
+      });
 
-    if (contentLengthValidation === "too_short") {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "validation_error",
-          details: [{ path: ["content"], message: "내용을 입력해 주세요." }],
-        },
-        { status: 400 },
-      );
-    }
+      if (contentLengthValidation) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "validation_error",
+            details: [
+              {
+                path: ["content"],
+                message:
+                  contentLengthValidation === "too_short"
+                    ? "내용은 10자 이상 입력해 주세요."
+                    : "내용은 5000자 이내로 입력해 주세요.",
+              },
+            ],
+          },
+          { status: 400 },
+        );
+      }
 
-    if (contentLengthValidation === "too_long") {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "validation_error",
-          details: [
-            {
-              path: ["content"],
-              message: "내용은 5000자 이내로 입력해 주세요.",
-            },
-          ],
-        },
-        { status: 400 },
-      );
+      sanitizedContent = safeContent;
+    } else {
+      // brand 등 비대상 게시판은 기존 일반 sanitizer 및 길이 정책을 그대로 유지한다.
+      sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
+      const contentLengthValidation = validateSanitizedLength(sanitizedContent, {
+        min: 1,
+        max: 5000,
+      });
+
+      if (contentLengthValidation === "too_short") {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "validation_error",
+            details: [{ path: ["content"], message: "내용을 입력해 주세요." }],
+          },
+          { status: 400 },
+        );
+      }
+
+      if (contentLengthValidation === "too_long") {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "validation_error",
+            details: [
+              {
+                path: ["content"],
+                message: "내용은 5000자 이내로 입력해 주세요.",
+              },
+            ],
+          },
+          { status: 400 },
+        );
+      }
     }
   }
 

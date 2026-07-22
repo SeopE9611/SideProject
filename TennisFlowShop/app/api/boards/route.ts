@@ -14,6 +14,11 @@ import {
   getValidCommunityUserObjectIds,
   resolveCommunityDisplayName,
 } from "@/lib/community-display-name";
+import {
+  COMMUNITY_RICH_TEXT_CONTENT_MAX,
+  COMMUNITY_RICH_TEXT_CONTENT_MIN,
+  isCommunityRichTextType,
+} from "@/lib/community/community-rich-text-policy";
 import { getMarketBrandOptions, isBrandRequiredCategory, normalizeMarketMeta } from "@/lib/market";
 import { verifyCommunityCsrf } from "@/lib/community/security";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
@@ -593,7 +598,36 @@ export async function POST(req: NextRequest) {
     return communityBoardClosedResponse();
   }
 
-  if (body.type === "free" || body.type === "market" || body.type === "gear") {
+  if (isCommunityRichTextType(body.type)) {
+    // 위험한 태그를 제거한 뒤 실제 입력 텍스트를 검사해야 HTML 태그 길이가 정책을 소모하지 않는다.
+    const safeContent = await sanitizeRichTextHtml(String(body.content ?? ""));
+    const validationText = richTextToValidationText(safeContent);
+    const contentLengthValidation = validateSanitizedLength(validationText, {
+      min: COMMUNITY_RICH_TEXT_CONTENT_MIN,
+      max: COMMUNITY_RICH_TEXT_CONTENT_MAX,
+    });
+
+    if (contentLengthValidation) {
+      return NextResponse.json(
+        {
+          ok: false,
+          version: API_VERSION,
+          error: "validation_error",
+          details: [
+            {
+              path: ["content"],
+              message:
+                contentLengthValidation === "too_short"
+                  ? "내용은 10자 이상 입력해 주세요."
+                  : "내용은 5000자 이내로 입력해 주세요.",
+            },
+          ],
+        },
+        { status: 400 },
+      );
+    }
+
+    // 본문이 유효하지 않으면 글 번호가 소비되지 않도록 DB 조회와 카운터 증가보다 먼저 검증한다.
     const db = await getDb();
     const now = new Date();
 
@@ -730,7 +764,7 @@ export async function POST(req: NextRequest) {
     const doc: Omit<CommunityPostMongoDoc, "_id"> = {
       type: body.type,
       title: body.title,
-      content: body.content,
+      content: safeContent,
       category: body.category ?? "general",
       brand: body.type === "market" ? normalizedBrand : null,
       marketMeta: body.type === "market" ? normalizedMarketMeta : null,
