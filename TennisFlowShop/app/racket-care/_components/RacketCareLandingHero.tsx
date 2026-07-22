@@ -40,15 +40,15 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
           </div>
           <div className="grid max-w-lg grid-cols-3 divide-x divide-border border-y border-border py-3">
             <div className="pr-3">
-              <p className="text-ui-card-title font-bold tracking-[-0.01em]">30초</p>
+              <p className="text-ui-card-title font-bold ">30초</p>
               <p className="text-ui-label text-muted-foreground">간편 등록</p>
             </div>
             <div className="px-3">
-              <p className="text-ui-card-title font-bold tracking-[-0.01em]">1-TAP</p>
+              <p className="text-ui-card-title font-bold ">1-TAP</p>
               <p className="text-ui-label text-muted-foreground">이력 활용</p>
             </div>
             <div className="pl-3">
-              <p className="text-ui-card-title font-bold tracking-[-0.01em]">무료</p>
+              <p className="text-ui-card-title font-bold ">무료</p>
               <p className="text-ui-label text-muted-foreground">교체 알림</p>
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-ui-kicker text-muted-foreground">DEMO · SAMPLE DASHBOARD</p>
-                  <h2 className="mt-2 break-keep text-ui-card-title-lg font-bold tracking-[-0.01em]">
+                  <h2 className="mt-2 break-keep text-ui-card-title-lg font-bold ">
                     예시 라켓 관리 화면
                   </h2>
                   <p className="text-ui-label text-muted-foreground">

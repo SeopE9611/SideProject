@@ -224,7 +224,7 @@ export default function QnaDetailPage() {
         {!isLoading && error && (
           <PublicSurface variant="feature" padding="lg" className="space-y-5">
             <div className="space-y-2">
-              <h2 className="text-balance font-brand-heading text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
+              <h2 className="text-balance font-ui-bold text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
                 {errorTitle}
               </h2>
               <p className="whitespace-pre-line break-words text-ui-body leading-relaxed text-muted-foreground">
@@ -303,7 +303,7 @@ export default function QnaDetailPage() {
                   <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-control border border-border bg-secondary text-foreground">
                     <MessageSquare className="h-5 w-5" />
                   </div>
-                  <h2 className="break-words text-balance font-brand-heading text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
+                  <h2 className="break-words text-balance font-ui-bold text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
                     {qna.title}
                   </h2>
                 </div>
@@ -424,7 +424,7 @@ export default function QnaDetailPage() {
                 <div className="border-b border-border bg-brand-highlight-muted/30 p-4 md:p-6">
                   <div className="flex items-center gap-2">
                     <MessageCircle className="h-5 w-5 text-foreground" />
-                    <h2 className="font-brand-heading text-ui-card-title-lg font-semibold text-foreground">
+                    <h2 className="font-ui-bold text-ui-card-title-lg font-semibold text-foreground">
                       관리자 답변 작성
                     </h2>
                   </div>
@@ -470,7 +470,7 @@ export default function QnaDetailPage() {
                       <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card">
                         <MessageCircle className="h-4 w-4 text-foreground" />
                       </div>
-                      <h2 className="font-brand-heading text-ui-section-title font-semibold text-foreground">
+                      <h2 className="font-ui-bold text-ui-section-title font-semibold text-foreground">
                         관리자 답변
                       </h2>
                       <Badge variant="success" className={badgeSizeSm}>

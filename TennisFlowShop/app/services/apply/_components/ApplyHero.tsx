@@ -27,7 +27,7 @@ export default function ApplyHero({ entryLabel }: Props) {
           </Badge>
         ) : undefined
       }
-      className="py-5 bp-sm:py-6 bp-lg:py-8 [&_h1]:font-brand-heading"
+      className="py-5 bp-sm:py-6 bp-lg:py-8 [&_h1]:font-ui-bold"
     />
   );
 }

@@ -446,7 +446,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     {detail && (
                       <div className="p-5 md:p-6">
                         <div className="pb-4 border-b border-border/40">
-                          <h2 className="mb-3 font-brand-heading text-ui-section-title font-semibold leading-tight text-foreground">
+                          <h2 className="mb-3 font-ui-bold text-ui-section-title font-semibold leading-tight text-foreground">
                             {detail.title || "(제목 없음)"}
                           </h2>
 

@@ -368,7 +368,7 @@ export default function NoticeListClient({
             </div>
             <div className="rounded-control border border-border bg-card px-4 py-3 text-ui-body-sm shadow-soft">
               총{" "}
-              <strong className="font-brand-heading text-ui-section-title text-brand-highlight-ink">
+              <strong className="font-ui-bold text-ui-section-title text-brand-highlight-ink">
                 {total ?? initialTotal ?? 0}
               </strong>
               건

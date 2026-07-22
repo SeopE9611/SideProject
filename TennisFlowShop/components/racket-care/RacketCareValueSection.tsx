@@ -13,7 +13,7 @@ export default function RacketCareValueSection() {
       <div className="grid gap-10 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-center">
         <div>
           <Badge variant="signal_solid">WHY · RACKET CARE</Badge>
-          <h2 className="mt-6 break-keep font-brand-heading text-ui-section-title bp-lg:text-[4rem] bp-lg:leading-none">
+          <h2 className="mt-6 break-keep font-ui-bold text-ui-section-title bp-lg:text-[4rem] bp-lg:leading-none">
             라켓 케어 하나로,
             <br />
             <span className="text-brand-highlight">라켓 관리 흐름</span>을 연결합니다.

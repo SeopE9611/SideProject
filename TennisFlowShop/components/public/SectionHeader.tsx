@@ -41,7 +41,6 @@ export function SectionHeader({
         <h2
           className={cn(
             "text-ui-section-title font-ui-bold tracking-normal text-foreground sm:text-ui-section-title-lg",
-            variant === "brand" && "font-brand-heading tracking-[-0.015em]",
           )}
         >
           {title}

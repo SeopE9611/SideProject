@@ -182,7 +182,7 @@ export default function MyPointsTab() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-ui-label font-medium text-brand-highlight-ink">보유 포인트</p>
-                  <p className="font-brand-heading text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold tracking-normal text-brand-highlight-ink">
+                  <p className="font-ui-bold text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold tracking-normal text-brand-highlight-ink">
                     {pointsBalance === null ? "-" : `${fmt(pointsBalance)}P`}
                   </p>
                   {typeof pointsDebt === "number" && pointsDebt > 0 && pointsBalance !== null && (
@@ -214,7 +214,7 @@ export default function MyPointsTab() {
                   <p className="text-ui-label font-medium text-muted-foreground">
                     적립 포인트 (이번 페이지)
                   </p>
-                  <p className="font-brand-heading text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-success">
+                  <p className="font-ui-bold text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-success">
                     +{fmt(stats.earned)}
                   </p>
                   <p className="text-ui-label text-muted-foreground">전체 기준</p>
@@ -236,7 +236,7 @@ export default function MyPointsTab() {
                   <p className="text-ui-label font-medium text-muted-foreground">
                     사용 포인트 (이번 페이지)
                   </p>
-                  <p className="font-brand-heading text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-destructive">
+                  <p className="font-ui-bold text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-destructive">
                     -{fmt(stats.spent)}
                   </p>
                   <p className="text-ui-label text-muted-foreground">전체 기준</p>
@@ -253,7 +253,7 @@ export default function MyPointsTab() {
                     <Calendar className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="font-brand-heading text-ui-card-title-lg bp-sm:text-ui-section-title">
+                    <CardTitle className="font-ui-bold text-ui-card-title-lg bp-sm:text-ui-section-title">
                       포인트 내역
                     </CardTitle>
                     <p className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground mt-0.5">

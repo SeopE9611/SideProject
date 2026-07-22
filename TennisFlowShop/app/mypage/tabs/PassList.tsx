@@ -93,7 +93,7 @@ export default function PassList() {
             <span className="rounded-control bg-brand-muted p-4 text-brand-highlight-ink">
               <Ticket className="h-8 w-8" aria-hidden="true" />
             </span>
-            <p className="mt-4 font-brand-heading text-ui-section-title text-foreground">
+            <p className="mt-4 font-ui-bold text-ui-section-title text-foreground">
               보유 중인 이용권이 없습니다
             </p>
             <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground">
@@ -122,7 +122,7 @@ export default function PassList() {
                     <Ticket className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <h3 className="break-keep font-brand-heading text-ui-card-title text-foreground">
+                    <h3 className="break-keep font-ui-bold text-ui-card-title text-foreground">
                       {passItem.planTitle ?? "교체서비스 패키지"} {passItem.packageSize}회권
                     </h3>
                     <p className="mt-1 text-ui-label text-muted-foreground">
@@ -166,7 +166,7 @@ export default function PassList() {
                       <p className="text-ui-body-sm font-medium text-muted-foreground">
                         남은 이용 횟수
                       </p>
-                      <p className="font-brand-heading text-ui-section-title tabular-nums text-brand-highlight-ink">
+                      <p className="font-ui-bold text-ui-section-title tabular-nums text-brand-highlight-ink">
                         {passItem.remainingCount}회{" "}
                         <span className="text-ui-body-sm font-medium text-muted-foreground">
                           / 총 {passItem.packageSize}회

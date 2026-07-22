@@ -406,7 +406,7 @@ export default function ProfileClient({ user }: Props) {
                       <User className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="font-brand-heading text-ui-section-title">
+                      <CardTitle className="font-ui-bold text-ui-section-title">
                         기본정보
                       </CardTitle>
                       <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
@@ -534,7 +534,7 @@ export default function ProfileClient({ user }: Props) {
                       <Shield className="h-6 w-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="font-brand-heading text-ui-section-title">
+                      <CardTitle className="font-ui-bold text-ui-section-title">
                         비밀번호 변경
                       </CardTitle>
                       <CardDescription>
@@ -622,7 +622,7 @@ export default function ProfileClient({ user }: Props) {
                       <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="font-brand-heading text-ui-section-title">
+                      <CardTitle className="font-ui-bold text-ui-section-title">
                         배송지 관리
                       </CardTitle>
                       <CardDescription>기본 배송지 정보를 관리할 수 있습니다.</CardDescription>
@@ -715,7 +715,7 @@ export default function ProfileClient({ user }: Props) {
                         <Bell className="h-6 w-6 text-primary" aria-hidden="true" />
                       </div>
                       <div>
-                        <CardTitle className="font-brand-heading text-ui-section-title">
+                        <CardTitle className="font-ui-bold text-ui-section-title">
                           마케팅 수신 동의
                         </CardTitle>
                         <CardDescription>

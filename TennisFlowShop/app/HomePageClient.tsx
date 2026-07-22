@@ -1009,7 +1009,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   </span>
                   <h3
                     className={cn(
-                      styles.marketingTitle,
+                      styles.uiTitle,
                       "mt-10 whitespace-pre-line text-ui-section-title leading-tight text-foreground",
                     )}
                   >
@@ -1038,7 +1038,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </span>
               <h3
                 className={cn(
-                  styles.marketingTitle,
+                  styles.uiTitle,
                   "mt-5 text-ui-section-title-lg leading-tight text-foreground",
                 )}
               >
@@ -1189,7 +1189,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <p className="text-ui-label font-medium">단계 {currentStep.no}</p>
                 <h3
                   className={cn(
-                    styles.marketingTitle,
+                    styles.uiTitle,
                     "mt-4 whitespace-pre-line text-ui-page-title leading-tight",
                   )}
                 >
@@ -1276,7 +1276,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-medium text-brand-highlight-foreground">
                 도깨비테니스 교체서비스
               </span>
-              <h2 className={cn(styles.marketingTitle, "mt-5 text-ui-page-title leading-tight")}>
+              <h2 className={cn(styles.uiTitle, "mt-5 text-ui-page-title leading-tight")}>
                 신청부터 장착 완료까지, 진행 과정을 한눈에 확인하세요.
               </h2>
               <p className="mt-5 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">
@@ -1357,7 +1357,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <div className={styles.recoContent}>
                 <h3
-                  className={cn(styles.marketingTitle, "text-ui-section-title-lg text-foreground")}
+                  className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}
                 >
                   {activePurposeInfo.title}
                 </h3>
@@ -1459,7 +1459,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           />
           <div className={styles.packages}>
             <div className={styles.packageIntro}>
-              <h3 className={cn(styles.marketingTitle, "text-ui-section-title-lg")}>
+              <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg")}>
                 필요한 횟수에 맞춰 패키지를 선택하세요.
               </h3>
               <p className="mt-4 break-keep text-ui-body leading-relaxed">
@@ -1529,7 +1529,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <div className={styles.racketShowcaseOverlay} aria-hidden="true" />
               <div className={styles.racketShowcaseCopy}>
                 <p className={styles.racketShowcaseEyebrow}>도깨비 인증 중고 라켓</p>
-                <h3 className={cn(styles.marketingTitle, styles.racketShowcaseTitle)}>
+                <h3 className={cn(styles.brandMarketingTitle, styles.racketShowcaseTitle)}>
                   상태를 확인하고 내 라켓을 찾아보세요.
                 </h3>
                 <p className={styles.racketShowcaseDescription}>
@@ -1629,7 +1629,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <div className={styles.racketEmptyCopy}>
                     <h3
                       className={cn(
-                        styles.marketingTitle,
+                        styles.uiTitle,
                         "text-ui-section-title-lg text-foreground",
                       )}
                     >
@@ -1710,7 +1710,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <p className="text-ui-label font-medium text-muted-foreground">교체 후 관리</p>
               <h3
                 className={cn(
-                  styles.marketingTitle,
+                  styles.uiTitle,
                   "mt-2 text-ui-section-title-lg text-foreground",
                 )}
               >

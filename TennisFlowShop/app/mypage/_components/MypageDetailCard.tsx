@@ -45,7 +45,6 @@ export default function MypageDetailCard({
             <CardTitle
               className={cn(
                 "flex min-w-0 items-center gap-2 text-ui-card-title font-medium",
-                isFeature && "font-brand-heading font-semibold tracking-[-0.015em]",
               )}
             >
               {icon ? (

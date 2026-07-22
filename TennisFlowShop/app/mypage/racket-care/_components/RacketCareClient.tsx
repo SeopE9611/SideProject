@@ -315,7 +315,7 @@ export default function RacketCareClient() {
         <div className="flex flex-col gap-4 border-y border-border py-5 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
           <div>
             <p className="text-ui-kicker text-brand-highlight-ink">MY RACKET WORKSPACE</p>
-            <h2 className="mt-2 break-keep text-ui-section-title font-bold tracking-[-0.01em]">
+            <h2 className="mt-2 break-keep text-ui-section-title font-bold ">
               내 라켓 관리
             </h2>
             <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
@@ -399,7 +399,7 @@ export default function RacketCareClient() {
             <CardContent className="grid gap-6 p-5 bp-sm:p-8 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-center">
               <div>
                 <Badge variant="signal">START RACKET CARE</Badge>
-                <h3 className="mt-4 break-keep text-ui-section-title font-bold tracking-[-0.01em]">
+                <h3 className="mt-4 break-keep text-ui-section-title font-bold ">
                   라켓을 등록하고
                   <br />
                   교체 타이밍을 놓치지 마세요.

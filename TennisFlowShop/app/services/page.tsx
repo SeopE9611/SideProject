@@ -159,7 +159,7 @@ export default async function ServicesPage() {
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
             <div className="max-w-3xl space-y-4">
               <p className="text-ui-label font-medium text-primary">스트링 교체 서비스</p>
-              <h1 className="text-balance font-brand-heading text-ui-page-title tracking-[-0.015em] text-foreground bp-sm:text-ui-page-title-lg">
+              <h1 className="text-balance font-ui-bold text-ui-page-title  text-foreground bp-sm:text-ui-page-title-lg">
                 스트링 교체, 내 상황에 맞는 흐름부터 선택하세요.
               </h1>
               <p className="text-pretty text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">

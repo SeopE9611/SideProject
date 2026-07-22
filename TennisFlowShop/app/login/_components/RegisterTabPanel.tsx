@@ -561,7 +561,7 @@ export default function RegisterTabPanel({
     <TabsContent value="register" className="mt-0">
       <div className="space-y-5">
         <div className="text-center">
-          <h2 className="font-brand-heading text-ui-page-title font-semibold text-foreground">
+          <h2 className="font-ui-bold text-ui-page-title font-semibold text-foreground">
             회원가입
           </h2>
           <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">

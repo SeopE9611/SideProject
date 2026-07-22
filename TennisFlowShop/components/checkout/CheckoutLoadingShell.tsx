@@ -28,7 +28,7 @@ function HeaderSkeleton() {
               <div className="text-ui-label font-semibold uppercase tracking-[0.18em]">
                 <Skeleton className="h-3 w-28" />
               </div>
-              <div className="mt-1 font-brand-heading leading-tight tracking-tight">
+              <div className="mt-1 font-ui-bold leading-tight tracking-tight">
                 <Skeleton className="h-8 w-44" />
               </div>
               <div className="mt-2 max-w-3xl leading-relaxed">

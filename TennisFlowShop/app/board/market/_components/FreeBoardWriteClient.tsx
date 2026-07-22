@@ -621,7 +621,7 @@ export default function FreeBoardWriteClient() {
                 <span className="text-ui-label text-muted-foreground">상품 등록 · 새 판매글</span>
               </div>
               <div>
-                <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+                <h1 className="font-ui-bold text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
                   상품 등록
                 </h1>
                 <p className="mt-2 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">

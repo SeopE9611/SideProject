@@ -1359,7 +1359,7 @@ export default function StringingApplicationDetailClient({
     ? "border-b border-border/70 bg-secondary/30 p-4 bp-sm:p-5 lg:p-6"
     : "border-b border-brand-highlight-ink/15 bg-brand-highlight-muted/45 px-4 py-4 bp-sm:px-5";
   const detailCardTitleClass = !isAdmin
-    ? "font-brand-heading font-semibold tracking-[-0.015em]"
+    ? "font-ui-bold font-semibold "
     : undefined;
   const detailIconClass = !isAdmin ? "text-brand-highlight-ink" : "text-primary";
   return (
