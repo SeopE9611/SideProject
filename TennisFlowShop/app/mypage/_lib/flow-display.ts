@@ -171,6 +171,32 @@ export function isCustomerBankTransferPayment({
   );
 }
 
+export type CustomerTransactionPaymentStatusParams = CustomerOrderPaymentStatusParams;
+
+export function getCustomerTransactionPaymentStatusLabel({
+  paymentStatus,
+  paymentMethod,
+  paymentProvider,
+  totalPrice,
+}: CustomerTransactionPaymentStatusParams): string {
+  const hasExplicitPaymentEvidence = Boolean(
+    normalize(paymentStatus) || normalize(paymentMethod) || normalize(paymentProvider),
+  );
+  const hasExplicitFreeTotal =
+    typeof totalPrice === "number" && Number.isFinite(totalPrice) && totalPrice <= 0;
+
+  if (hasExplicitFreeTotal || hasExplicitPaymentEvidence) {
+    return getCustomerOrderPaymentStatusLabel({
+      paymentStatus,
+      paymentMethod,
+      paymentProvider,
+      totalPrice,
+    });
+  }
+
+  return "결제 상태 확인 중";
+}
+
 export function getCustomerOrderPaymentStatusLabel({
   paymentStatus,
   paymentMethod,

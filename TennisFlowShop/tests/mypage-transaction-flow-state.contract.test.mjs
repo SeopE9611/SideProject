@@ -16,7 +16,7 @@ test("마이페이지 활동 API는 결제 원본 상태와 명시적 금액을 
   assert.ok(route.includes("function resolveRawPaymentStatus(doc: any): string | null"));
   assert.ok(route.includes("doc?.paymentStatus) ?? nullableTrim(doc?.paymentInfo?.status)"));
   assert.ok(route.includes("function toNullableFiniteNumber(value: unknown): number | null"));
-  assert.ok(route.includes("getCustomerOrderPaymentStatusLabel({"));
+  assert.ok(route.includes("getCustomerTransactionPaymentStatusLabel({"));
   assert.ok(!route.includes('return "결제대기";'));
 });
 
@@ -48,13 +48,15 @@ test("주문·대여 진행 상태와 결제 상태를 별도 배지로 보여�
 test("결제 정보가 완전히 누락된 활동은 확인 중으로 표시하고 명시적 0원은 기존 정책을 유지한다", () => {
   const route = normalized(read("app/api/mypage/activity/route.ts"));
 
-  assert.ok(route.includes("type ActivityPaymentStatusParams"));
-  assert.ok(route.includes("function resolveActivityPaymentStatusLabel"));
-  assert.ok(route.includes('return "결제 상태 확인 중"'));
-  assert.ok(route.includes("const hasExplicitPaymentEvidence = Boolean("));
-  assert.ok(route.includes("normalizedTotalPrice !== null && normalizedTotalPrice <= 0"));
-  assert.ok(route.includes("if (!hasExplicitPaymentEvidence) return"));
-  assert.ok(route.includes("paymentStatusLabel: resolveActivityPaymentStatusLabel({"));
+  const flowDisplay = normalized(read("app/mypage/_lib/flow-display.ts"));
+
+  assert.ok(route.includes("getCustomerTransactionPaymentStatusLabel({"));
+  assert.ok(!route.includes("resolveActivityPaymentStatusLabel"));
+  assert.ok(flowDisplay.includes("export function getCustomerTransactionPaymentStatusLabel"));
+  assert.ok(flowDisplay.includes('return "결제 상태 확인 중"'));
+  assert.ok(flowDisplay.includes("const hasExplicitPaymentEvidence = Boolean("));
+  assert.ok(flowDisplay.includes('typeof totalPrice === "number"'));
+  assert.ok(route.includes("paymentStatusLabel: getCustomerTransactionPaymentStatusLabel({"));
 });
 
 test("통합 거래 카드가 표시 문구와 원본 상태 기반 배지 tone을 분리한다", () => {

@@ -4,6 +4,8 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { canTransitIdempotent } from "@/app/features/rentals/utils/status";
+import { getCustomerTransactionPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
+import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,30 @@ const toNullableIsoString = (value: unknown) => {
   if (typeof value === "string") return value;
   return null;
 };
+
+function toNullableFiniteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function resolveRawPaymentStatus(doc: any, paymentInfo: Record<string, unknown>): string | null {
+  return nullableTrim(doc?.paymentStatus) ?? nullableTrim(paymentInfo.status);
+}
+
+function resolvePaymentMethod(
+  doc: any,
+  paymentInfo: Record<string, unknown>,
+  legacyPayment: Record<string, unknown>,
+): string | null {
+  return (
+    nullableTrim(paymentInfo.method) ??
+    nullableTrim(doc?.paymentMethod) ??
+    nullableTrim(legacyPayment.method)
+  );
+}
+
+function resolvePaymentProvider(doc: any, paymentInfo: Record<string, unknown>): string | null {
+  return nullableTrim(paymentInfo.provider) ?? nullableTrim(doc?.paymentProvider);
+}
 
 function firstImageUrl(...values: unknown[]): string | null {
   for (const value of values) {
@@ -98,6 +124,14 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     : null;
   let applicationSummary = null;
   let stringingApplication = null;
+  let activeStringingApplicationId: string | null = null;
+  let applicationHistorySummary: {
+    id: string;
+    status: string;
+    cancelRequestStatus: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+  } | null = null;
   if (appId && ObjectId.isValid(appId)) {
     const app = await db.collection("stringing_applications").findOne(
       {
@@ -118,83 +152,101 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
           desiredDateTime: 1,
           rentalId: 1,
           userId: 1,
+          cancelRequest: 1,
         },
       },
     );
     if (app) {
-      const lines = getApplicationLines((app as any).stringDetails);
-      const tensionSummary = getTensionSummary(lines);
-      const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? "").trim();
-      const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? "").trim();
-      const stringNames = Array.from(
-        new Set(lines.map((line: any) => String(line?.stringName ?? "").trim()).filter(Boolean)),
-      );
-      applicationSummary = {
-        status: String((app as any)?.status ?? "접수완료"),
-        lineCount: lines.length,
-        stringNames,
-        tensionSummary,
-        receptionLabel: getReceptionLabel((app as any).collectionMethod),
-        reservationLabel:
-          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
-      };
+      const applicationStatus = nullableTrim((app as any).status) ?? "접수완료";
+      const applicationCancelRequestStatus = nullableTrim((app as any)?.cancelRequest?.status);
+      const hasActiveStringingApplication = isApplicationEligibleForLinkedStage({
+        status: applicationStatus,
+        cancelRequestStatus: applicationCancelRequestStatus,
+      });
 
-      const collectionMethodRaw = String(
-        (app as any)?.collectionMethod ?? (app as any)?.shippingInfo?.collectionMethod ?? "",
-      ).trim();
-      const collectionMethod =
-        collectionMethodRaw === "SHOP_VISIT" || collectionMethodRaw === "visit"
-          ? "visit"
-          : collectionMethodRaw === "COURIER_VISIT" || collectionMethodRaw === "courier_pickup"
-            ? "courier_pickup"
-            : collectionMethodRaw === "SELF_SEND" || collectionMethodRaw === "self_ship"
-              ? "self_ship"
-              : collectionMethodRaw;
-      const selfShip = (app as any)?.shippingInfo?.selfShip ?? null;
-      const needsInboundTracking = false;
-      const normalizedLines = lines.map((line: any, index: number) => ({
-        id: nullableTrim(line?.id) ?? String(index),
-        racketType: nullableTrim(line?.racketType),
-        racketLabel: nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
-        stringName: nullableTrim(line?.stringName),
-        tensionMain: nullableTrim(line?.tensionMain),
-        tensionCross: nullableTrim(line?.tensionCross),
-        note: nullableTrim(line?.note),
-      }));
-      stringingApplication = {
-        id: appId,
-        rentalId: (app as any)?.rentalId ? String((app as any).rentalId) : null,
-        status: String((app as any)?.status ?? "접수완료"),
-        createdAt: toNullableIsoString((app as any)?.createdAt),
-        updatedAt: toNullableIsoString((app as any)?.updatedAt),
-        userConfirmedAt: toNullableIsoString((app as any)?.userConfirmedAt),
-        desiredDateTime: toNullableIsoString((app as any)?.desiredDateTime),
-        collectionMethod: collectionMethod || null,
-        receptionLabel: getReceptionLabel(collectionMethod),
-        preferredDate: preferredDate || null,
-        preferredTime: preferredTime || null,
-        reservationLabel:
-          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
-        requirements: nullableTrim((app as any)?.stringDetails?.requirements),
-        lineCount: lines.length,
-        stringNames,
-        tensionSummary,
-        totalPrice: typeof (app as any)?.totalPrice === "number" ? (app as any).totalPrice : null,
-        lines: normalizedLines,
-        needsInboundTracking,
-        shippingInfo: {
+      if (!hasActiveStringingApplication) {
+        applicationHistorySummary = {
+          id: appId,
+          status: applicationStatus,
+          cancelRequestStatus: applicationCancelRequestStatus,
+          createdAt: toNullableIsoString((app as any).createdAt),
+          updatedAt: toNullableIsoString((app as any).updatedAt),
+        };
+      } else {
+        activeStringingApplicationId = appId;
+        const lines = getApplicationLines((app as any).stringDetails);
+        const tensionSummary = getTensionSummary(lines);
+        const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? "").trim();
+        const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? "").trim();
+        const stringNames = Array.from(
+          new Set(lines.map((line: any) => String(line?.stringName ?? "").trim()).filter(Boolean)),
+        );
+        applicationSummary = {
+          status: applicationStatus,
+          lineCount: lines.length,
+          stringNames,
+          tensionSummary,
+          receptionLabel: getReceptionLabel((app as any).collectionMethod),
+          reservationLabel:
+            preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+        };
+
+        const collectionMethodRaw = String(
+          (app as any)?.collectionMethod ?? (app as any)?.shippingInfo?.collectionMethod ?? "",
+        ).trim();
+        const collectionMethod =
+          collectionMethodRaw === "SHOP_VISIT" || collectionMethodRaw === "visit"
+            ? "visit"
+            : collectionMethodRaw === "COURIER_VISIT" || collectionMethodRaw === "courier_pickup"
+              ? "courier_pickup"
+              : collectionMethodRaw === "SELF_SEND" || collectionMethodRaw === "self_ship"
+                ? "self_ship"
+                : collectionMethodRaw;
+        const selfShip = (app as any)?.shippingInfo?.selfShip ?? null;
+        const normalizedLines = lines.map((line: any, index: number) => ({
+          id: nullableTrim(line?.id) ?? String(index),
+          racketType: nullableTrim(line?.racketType),
+          racketLabel: nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
+          stringName: nullableTrim(line?.stringName),
+          tensionMain: nullableTrim(line?.tensionMain),
+          tensionCross: nullableTrim(line?.tensionCross),
+          note: nullableTrim(line?.note),
+        }));
+        stringingApplication = {
+          id: appId,
+          rentalId: (app as any)?.rentalId ? String((app as any).rentalId) : null,
+          status: applicationStatus,
+          createdAt: toNullableIsoString((app as any)?.createdAt),
+          updatedAt: toNullableIsoString((app as any)?.updatedAt),
+          userConfirmedAt: toNullableIsoString((app as any)?.userConfirmedAt),
+          desiredDateTime: toNullableIsoString((app as any)?.desiredDateTime),
           collectionMethod: collectionMethod || null,
-          deliveryRequest: nullableTrim((app as any)?.shippingInfo?.deliveryRequest),
-          selfShip: selfShip
-            ? {
-                courier: nullableTrim(selfShip.courier),
-                trackingNo: nullableTrim(selfShip.trackingNo),
-                shippedAt: toNullableIsoString(selfShip.shippedAt),
-                note: nullableTrim(selfShip.note),
-              }
-            : null,
-        },
-      };
+          receptionLabel: getReceptionLabel(collectionMethod),
+          preferredDate: preferredDate || null,
+          preferredTime: preferredTime || null,
+          reservationLabel:
+            preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+          requirements: nullableTrim((app as any)?.stringDetails?.requirements),
+          lineCount: lines.length,
+          stringNames,
+          tensionSummary,
+          totalPrice: toNullableFiniteNumber((app as any)?.totalPrice),
+          lines: normalizedLines,
+          needsInboundTracking: false,
+          shippingInfo: {
+            collectionMethod: collectionMethod || null,
+            deliveryRequest: nullableTrim((app as any)?.shippingInfo?.deliveryRequest),
+            selfShip: selfShip
+              ? {
+                  courier: nullableTrim(selfShip.courier),
+                  trackingNo: nullableTrim(selfShip.trackingNo),
+                  shippedAt: toNullableIsoString(selfShip.shippedAt),
+                  note: nullableTrim(selfShip.note),
+                }
+              : null,
+          },
+        };
+      }
     }
   }
 
@@ -228,6 +280,29 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
       ? (paymentRawSummary.easyPay as Record<string, unknown>)
       : {};
 
+  const paymentStatus = resolveRawPaymentStatus(doc, paymentInfo);
+  const paymentMethod = resolvePaymentMethod(doc, paymentInfo, legacyPayment);
+  const paymentProvider = resolvePaymentProvider(doc, paymentInfo);
+  const amountSource =
+    (doc as any)?.amount && typeof (doc as any).amount === "object" ? (doc as any).amount : {};
+  const fee = toNullableFiniteNumber(amountSource.fee);
+  const deposit = toNullableFiniteNumber(amountSource.deposit);
+  const stringPrice = toNullableFiniteNumber(amountSource.stringPrice);
+  const stringingFee = toNullableFiniteNumber(amountSource.stringingFee);
+  const explicitTotal = toNullableFiniteNumber(amountSource.total);
+  const totalAmount =
+    explicitTotal ??
+    (fee !== null && deposit !== null
+      ? fee + deposit + (stringPrice ?? 0) + (stringingFee ?? 0)
+      : null);
+  const amount = { fee, deposit, stringPrice, stringingFee, total: totalAmount };
+  const paymentStatusLabel = getCustomerTransactionPaymentStatusLabel({
+    paymentStatus,
+    paymentMethod,
+    paymentProvider,
+    totalPrice: totalAmount,
+  });
+
   // 응답 평탄화
   return NextResponse.json({
     id: doc._id.toString(),
@@ -238,17 +313,17 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     model: doc.model,
     days: doc.days,
     status: typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status, // pending | paid | out | returned
-    amount: doc.amount, // { fee, deposit, stringPrice?, stringingFee?, total }
+    amount,
+    totalAmount,
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null, // 출고 시각
     dueAt: doc.dueAt ?? null, // 반납 예정
     returnedAt: doc.returnedAt ?? null, // 반납 완료
     depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
-    paymentStatus: nullableTrim((doc as any)?.paymentStatus ?? paymentInfo.status),
-    paymentMethod: nullableTrim(
-      paymentInfo.method ?? (doc as any)?.paymentMethod ?? legacyPayment.method,
-    ),
-    paymentProvider: nullableTrim(paymentInfo.provider ?? (doc as any)?.paymentProvider),
+    paymentStatus,
+    paymentStatusLabel,
+    paymentMethod,
+    paymentProvider,
     paymentEasyPayProvider: nullableTrim(paymentInfo.easyPayProvider ?? paymentRawEasyPay.provider),
     paymentCardDisplayName: nullableTrim(paymentInfo.cardDisplayName),
     paymentCardCompany: nullableTrim(paymentInfo.cardCompany),
@@ -259,8 +334,11 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
     // ObjectId로 저장된 경우를 대비해 string으로 정규화
     stringingApplicationId: appId,
+    activeStringingApplicationId,
+    hasActiveStringingApplication: Boolean(activeStringingApplicationId),
     applicationSummary,
     stringingApplication,
+    applicationHistorySummary,
 
     /**
      * 교체 서비스 포함 여부(레거시/예외 케이스 보강)
