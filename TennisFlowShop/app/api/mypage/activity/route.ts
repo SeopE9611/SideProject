@@ -12,7 +12,7 @@ import {
 import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
 import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-stage";
-import { getCustomerOrderPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
+import { getCustomerTransactionPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import {
   resolveApplicationReviewTargetBundlesBatch,
   resolveOrderReviewTargetBundlesBatch,
@@ -58,43 +58,6 @@ function resolvePaymentMethod(doc: any): string | null {
 
 function resolvePaymentProvider(doc: any): string | null {
   return nullableTrim(doc?.paymentInfo?.provider) ?? nullableTrim(doc?.paymentProvider);
-}
-
-type ActivityPaymentStatusParams = {
-  paymentStatus?: string | null;
-  paymentMethod?: string | null;
-  paymentProvider?: string | null;
-  totalPrice?: number | null;
-};
-
-function resolveActivityPaymentStatusLabel({
-  paymentStatus,
-  paymentMethod,
-  paymentProvider,
-  totalPrice,
-}: ActivityPaymentStatusParams): string {
-  const normalizedTotalPrice = toNullableFiniteNumber(totalPrice);
-  const hasExplicitPaymentEvidence = Boolean(
-    nullableTrim(paymentStatus) || nullableTrim(paymentMethod) || nullableTrim(paymentProvider),
-  );
-
-  if (normalizedTotalPrice !== null && normalizedTotalPrice <= 0) {
-    return getCustomerOrderPaymentStatusLabel({
-      paymentStatus,
-      paymentMethod,
-      paymentProvider,
-      totalPrice: normalizedTotalPrice,
-    });
-  }
-
-  if (!hasExplicitPaymentEvidence) return "결제 상태 확인 중";
-
-  return getCustomerOrderPaymentStatusLabel({
-    paymentStatus,
-    paymentMethod,
-    paymentProvider,
-    totalPrice: normalizedTotalPrice,
-  });
 }
 
 function resolveStringingPaymentContext(
@@ -919,7 +882,7 @@ export async function GET(req: Request) {
               ? o.userConfirmedAt
               : null,
         paymentStatus,
-        paymentStatusLabel: resolveActivityPaymentStatusLabel({
+        paymentStatusLabel: getCustomerTransactionPaymentStatusLabel({
           paymentStatus,
           paymentMethod,
           paymentProvider,
@@ -1016,7 +979,7 @@ export async function GET(req: Request) {
         days: r.days,
         totalAmount: r?.amount?.total,
         paymentStatus,
-        paymentStatusLabel: resolveActivityPaymentStatusLabel({
+        paymentStatusLabel: getCustomerTransactionPaymentStatusLabel({
           paymentStatus,
           paymentMethod,
           paymentProvider,

@@ -6,6 +6,7 @@ import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
 import {
   getCustomerApplicationStatusLabel,
   getCustomerRentalStatusLabel,
+  getCustomerTransactionPaymentStatusLabel,
 } from "@/app/mypage/_lib/flow-display";
 import SiteContainer from "@/components/layout/SiteContainer";
 import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
@@ -13,6 +14,12 @@ import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { racketBrandLabel } from "@/lib/constants";
+import {
+  getApplicationStatusBadgeSpec,
+  getPaymentStatusBadgeSpec,
+  getRentalStatusBadgeSpec,
+  getWorkflowMetaBadgeSpec,
+} from "@/lib/badge-style";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { isRentalReturnedStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
@@ -53,18 +60,18 @@ type Rental = {
   days: number;
   status: "pending" | "paid" | "out" | "returned" | "canceled";
   amount?: {
-    fee?: number;
-    deposit?: number;
+    fee?: number | null;
+    deposit?: number | null;
     /**
      * 스트링 상품 금액 (스트링 선택 + 교체 신청한 경우에만 존재)
      * - 과거 데이터 호환을 위해 optional
      */
-    stringPrice?: number;
+    stringPrice?: number | null;
     /**
      * 교체 서비스비(장착비) (스트링 선택 + 교체 신청한 경우에만 존재)
      */
-    stringingFee?: number;
-    total?: number;
+    stringingFee?: number | null;
+    total?: number | null;
   };
   createdAt?: string;
   dueAt?: string | null;
@@ -72,6 +79,8 @@ type Rental = {
   returnedAt?: string | null;
   depositRefundedAt?: string | null;
   paymentStatus?: string | null;
+  paymentStatusLabel?: string | null;
+  totalAmount?: number | null;
   paymentMethod?: string | null;
   paymentProvider?: string | null;
   paymentEasyPayProvider?: string | null;
@@ -83,6 +92,15 @@ type Rental = {
 
   // 대여 기반 교체 서비스 신청서 연결
   stringingApplicationId?: string | null;
+  activeStringingApplicationId?: string | null;
+  hasActiveStringingApplication?: boolean;
+  applicationHistorySummary?: {
+    id: string;
+    status: string;
+    cancelRequestStatus?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+  } | null;
   isStringServiceApplied?: boolean;
   applicationSummary?: {
     status: string;
@@ -195,21 +213,6 @@ const getStatusIcon = (status: string) => {
       return <XCircle className="h-5 w-5 text-destructive" />;
     default:
       return <AlertCircle className="h-5 w-5 text-muted-foreground" />;
-  }
-};
-
-const getStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case "returned":
-      return "success";
-    case "out":
-      return "info";
-    case "paid":
-      return "success";
-    case "canceled":
-      return "danger";
-    default:
-      return "neutral";
   }
 };
 
@@ -366,14 +369,14 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   }, [loadRentalDetail]);
 
   // 교체 서비스 포함 여부(상세에서도 리스트와 동일한 분기 기준이 필요)
-  // - stringingApplicationId가 있으면: 이미 신청서가 연결된 상태
+  // - 원본 연결 ID와 별개로 활성 신청서 여부를 API가 명시한다.
   // - isStringServiceApplied=true인데 신청서 ID가 비어있는 레거시/예외 케이스를 대비
   const withStringService =
     Boolean(data?.withStringService) ||
     Boolean(data?.isStringServiceApplied) ||
     Boolean(data?.stringingApplicationId);
-  // 신청서 ID가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
-  const canApplyStringService = withStringService && !data?.stringingApplicationId;
+  // 활성 신청서가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
+  const canApplyStringService = withStringService && !data?.hasActiveStringingApplication;
 
   useEffect(() => {
     if (focusTarget !== "stringing") return;
@@ -386,13 +389,13 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     }, 80);
 
     return () => window.clearTimeout(timeout);
-  }, [focusTarget, withStringService, data?.stringingApplicationId]);
+  }, [focusTarget, withStringService, data?.hasActiveStringingApplication]);
 
   // 교체 신청하기 링크(대여 기반 신청)
   const applyHref = `/services/apply?rentalId=${encodeURIComponent(id)}`;
   const returnShippingHref = `/mypage/rentals/${id}/return-shipping`;
-  const stringingDetailHref = data?.stringingApplicationId
-    ? `/mypage?tab=orders&flowType=application&flowId=${data.stringingApplicationId}&from=orders`
+  const stringingDetailHref = data?.activeStringingApplicationId
+    ? `/mypage?tab=orders&flowType=application&flowId=${data.activeStringingApplicationId}&from=orders`
     : null;
 
   if (loading) {
@@ -427,14 +430,16 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     );
   }
 
-  // 결제 금액(표시용): 서버/DB 저장 구조와 동일하게 분해
-  // - stringPrice/stringingFee는 과거 데이터에는 없을 수 있으니 0 fallback
-  const fee = data.amount?.fee ?? 0;
-  const deposit = data.amount?.deposit ?? 0;
-  const stringPrice = data.amount?.stringPrice ?? 0;
-  const stringingFee = data.amount?.stringingFee ?? 0;
-  // 서버가 total을 계산해 저장하지만, 혹시 없을 경우를 대비해 동일 로직으로 fallback
-  const total = data.amount?.total ?? fee + deposit + stringPrice + stringingFee;
+  const fee = data.amount?.fee ?? null;
+  const deposit = data.amount?.deposit ?? null;
+  const stringPrice = data.amount?.stringPrice ?? null;
+  const stringingFee = data.amount?.stringingFee ?? null;
+  const total = data.totalAmount ?? data.amount?.total ?? null;
+  const amountValues = [fee, deposit, stringPrice, stringingFee];
+  const hasKnownAmount = amountValues.some((amount) => typeof amount === "number");
+  const hasOnlyZeroAmounts =
+    amountValues.every((amount) => typeof amount === "number") &&
+    amountValues.every((amount) => amount === 0);
 
   const banner = getDepositBanner({
     status: data.status,
@@ -449,9 +454,10 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   const rentalShippingMethod = normalizeRentalShippingMethod(data.shipping?.shippingMethod);
   const isVisitPickup = rentalShippingMethod === "pickup";
   const isLinkedStringingComplete =
-    !data.withStringService ||
-    isStringingCompletedStatus(data.stringingApplication?.status) ||
-    isStringingCompletedStatus(data.applicationSummary?.status);
+    !withStringService ||
+    (Boolean(data.hasActiveStringingApplication) &&
+      (isStringingCompletedStatus(data.stringingApplication?.status) ||
+        isStringingCompletedStatus(data.applicationSummary?.status)));
   const normalizedStatus = String(data.status ?? "")
     .trim()
     .toLowerCase();
@@ -465,15 +471,26 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     normalizedStatus.includes("취소");
   const canReceiveRental =
     isPaid && !isVisitPickup && hasOutboundShipping && isLinkedStringingComplete;
+  const rentalStatusLabel = getCustomerRentalStatusLabel(data.status);
+  const rentalStatusBadgeSpec = getRentalStatusBadgeSpec(data.status);
   const paymentStatusLabel =
-    data.paymentStatus ?? (isPending ? "결제대기" : isCanceled ? "결제취소" : "결제완료");
-  const displayStatusLabel = data.depositRefundedAt
-    ? "보증금 환급 완료"
-    : isPaid
-      ? hasOutboundShipping
-        ? "배송/수령 준비 중"
-        : "대여 준비 중"
-      : getCustomerRentalStatusLabel(data.status);
+    data.paymentStatusLabel ??
+    getCustomerTransactionPaymentStatusLabel({
+      paymentStatus: data.paymentStatus,
+      paymentMethod: data.paymentMethod,
+      paymentProvider: data.paymentProvider,
+      totalPrice: total,
+    });
+  const paymentStatusBadgeSpec = getPaymentStatusBadgeSpec(paymentStatusLabel);
+  const activeStringingStatus = data.hasActiveStringingApplication
+    ? (data.stringingApplication?.status ?? data.applicationSummary?.status ?? null)
+    : null;
+  const stringingStatusLabel = activeStringingStatus
+    ? getCustomerApplicationStatusLabel(activeStringingStatus)
+    : "신청서 작성 필요";
+  const stringingStatusBadgeSpec = activeStringingStatus
+    ? getApplicationStatusBadgeSpec(activeStringingStatus)
+    : getWorkflowMetaBadgeSpec("action_required");
 
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
   const isOnlineCancelRestricted =
@@ -537,9 +554,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     : stringPrice > 0 || stringingFee > 0
       ? "관리자 확인 중"
       : "선택된 스트링 정보 없음";
-  const linkedApplicationStatus =
-    linkedApplication?.status ?? data.applicationSummary?.status ?? null;
-  const linkedApplicationIsComplete = isStringingCompletedStatus(linkedApplicationStatus);
+
   const rentalNextActionMessage = canApplyStringService
     ? "연결된 교체서비스 신청서를 작성해 주세요."
     : canReceiveRental
@@ -547,11 +562,11 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
       : isReturnShippingAvailable
         ? "반납 절차를 진행해 주세요."
         : isPending
-          ? "결제 또는 입금 확인을 기다리고 있습니다."
+          ? "대여 신청 내용을 확인하고 있습니다."
           : isPaid
             ? isVisitPickup
-              ? "매장 수령 준비 상태를 확인해 주세요."
-              : "대여 상품 수령을 준비해 주세요."
+              ? "매장 수령 준비를 기다려 주세요."
+              : "대여 상품 출고를 기다려 주세요."
             : isOut
               ? "대여 기간과 반납 예정일을 확인해 주세요."
               : isReturned
@@ -616,12 +631,22 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         icon={<Briefcase aria-hidden="true" className="h-6 w-6 text-brand-highlight-ink" />}
         status={getStatusIcon(data.status)}
         statusTitle={
-          <Badge
-            variant={getStatusBadgeVariant(data.status)}
-            className="px-3 py-1 text-ui-body-sm font-medium"
-          >
-            {displayStatusLabel}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant={rentalStatusBadgeSpec.variant}
+              className="px-3 py-1 text-ui-body-sm font-medium"
+              aria-label={`대여 진행 상태: ${rentalStatusLabel}`}
+            >
+              {rentalStatusLabel}
+            </Badge>
+            <Badge
+              variant={paymentStatusBadgeSpec.variant}
+              className="px-3 py-1 text-ui-body-sm font-medium"
+              aria-label={`결제 상태: ${paymentStatusLabel}`}
+            >
+              {paymentStatusLabel}
+            </Badge>
+          </div>
         }
         identifier={`대여번호: ${data.id}`}
         actions={
@@ -702,7 +727,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             />
             <MypageInfoField
               label="총 결제금액"
-              value={formatCurrency(total)}
+              value={typeof total === "number" ? formatCurrency(total) : "금액 확인 중"}
               valueClassName="font-semibold"
             />
           </>
@@ -871,23 +896,19 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   description="진행 상태와 핵심 일정을 요약했습니다."
                   variant="feature"
                   icon={<Wrench className="h-5 w-5" />}
-                  action={
-                    linkedApplicationIsComplete ? <Badge variant="success">교체완료</Badge> : null
-                  }
                   contentClassName="space-y-4"
                 >
-                  {linkedApplication || data.applicationSummary ? (
+                  {data.hasActiveStringingApplication &&
+                  (linkedApplication || data.applicationSummary) ? (
                     <>
                       <div className="space-y-3 text-ui-body-sm">
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                           <p className="font-semibold text-foreground">대여 연계 교체서비스</p>
                           <Badge
-                            variant="info"
+                            variant={stringingStatusBadgeSpec.variant}
                             className="w-fit max-w-full whitespace-normal break-keep text-left"
                           >
-                            {getCustomerApplicationStatusLabel(
-                              linkedApplication?.status ?? data.applicationSummary?.status,
-                            )}
+                            {stringingStatusLabel}
                           </Badge>
                         </div>
                         <p className="break-keep text-foreground/80">
@@ -925,9 +946,22 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     </>
                   ) : canApplyStringService ? (
                     <div className="flex flex-col gap-3 border-l-2 border-brand-highlight-ink/50 bg-brand-highlight-muted/45 px-3 py-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                      <p className="text-muted-foreground">
-                        대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
-                      </p>
+                      <div className="space-y-2">
+                        <Badge variant={stringingStatusBadgeSpec.variant}>
+                          {stringingStatusLabel}
+                        </Badge>
+                        <p className="text-muted-foreground">
+                          대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
+                        </p>
+                        {data.applicationHistorySummary ? (
+                          <p className="text-muted-foreground">
+                            이전 교체서비스 신청:{" "}
+                            {getCustomerApplicationStatusLabel(
+                              data.applicationHistorySummary.status,
+                            )}
+                          </p>
+                        ) : null}
+                      </div>
                       <Button
                         variant="highlight_soft"
                         asChild
@@ -955,8 +989,9 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             >
               <div className="space-y-4">
                 <div className="space-y-1 text-ui-body-sm">
+                  <Badge variant={paymentStatusBadgeSpec.variant}>{paymentStatusLabel}</Badge>
                   <p className="font-medium text-foreground">
-                    {paymentStatusLabel} · {paymentSummary.userLabel}
+                    결제수단: {paymentSummary.userLabel}
                   </p>
                   {data.paymentApprovedAt ? (
                     <p className="text-muted-foreground">
@@ -973,7 +1008,12 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     stringingFee > 0 ? `교체서비스 ${formatCurrency(stringingFee)}` : null,
                   ]
                     .filter(Boolean)
-                    .join(" · ") || "추가 금액 없음"}
+                    .join(" · ") ||
+                    (hasKnownAmount
+                      ? hasOnlyZeroAmounts
+                        ? "추가 금액 없음"
+                        : "확인 가능한 금액 정보가 없습니다."
+                      : "금액 정보 확인 중")}
                 </p>
 
                 <p className="text-ui-body-sm text-muted-foreground">{depositRefundLabel}</p>
@@ -983,7 +1023,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                   <div className="flex-1">
                     <p className="text-ui-label font-medium text-muted-foreground">총 결제금액</p>
                     <p className="mt-1 break-words text-ui-section-title font-semibold text-brand-highlight-ink tabular-nums">
-                      {formatCurrency(total)}
+                      {typeof total === "number" ? formatCurrency(total) : "금액 확인 중"}
                     </p>
                   </div>
                 </div>
