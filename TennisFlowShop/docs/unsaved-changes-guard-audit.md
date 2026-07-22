@@ -69,3 +69,12 @@ rg -n "router\.push|router\.back|history\.back|Link href|popstate" app/<target-f
 - internal navigation(버튼/링크): 페이지 local confirm
 - browser/system back(popstate): `useBackNavigationGuard` (opt-in)
 - 전역 click/popstate interception은 복원하지 않음
+
+## 2026-07 게시판 작성·수정 coordinator
+
+- 게시판 write/edit 화면에만 전용 coordinator를 적용한다. dirty 등록 중에는 same-origin anchor capture로 Header·SideMenu·Footer 등의 Link를 함께 보호한다.
+- generic `useUnsavedChangesGuard`는 기존 beforeunload 전용 정책을 유지하며, 관리자·체크아웃·모달로 이 정책을 확산하지 않는다.
+- Header 등의 programmatic router navigation은 명시적 helper를 사용한다. 저장 성공 이동은 intentional navigation으로 동기 해제한다.
+- submitting/uploading은 저장 성공을 뜻하지 않으므로 guard 해제 조건이 아니다. 게시판 back은 입력 포커스와 관계없이 confirm-immediately 정책을 사용한다.
+- capture와 로컬 onClick은 같은 이벤트 턴 승인 상태를 공유해 중복 confirm을 막는다. beforeunload의 브라우저 기본 문구는 커스텀할 수 없다.
+- 기존 marker cleanup 설명은 정정한다. 현재 구현은 cleanup에서 `history.back()`이 아니라 `replaceState`로 marker 속성만 제거한다.

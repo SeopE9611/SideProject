@@ -24,11 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { communityFetch } from "@/lib/community/communityFetch.client";
-import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { normalizeMarketMeta, type MarketMeta } from "@/lib/market";
 import { supabase } from "@/lib/supabase";
 import type { CommunityPost } from "@/lib/types/community";
@@ -48,7 +44,6 @@ import {
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { MouseEvent as ReactMouseEvent } from "react";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 
@@ -162,28 +157,10 @@ export default function FreeBoardEditClient({ id }: Props) {
       selectedFiles.length > 0
     );
   }, [title, content, category, brand, images, selectedFiles.length, marketMeta]);
+  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } = useBoardUnsavedChangesGuard(isDirty);
 
-  useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
-  useBackNavigationGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
-
-  const confirmLeaveIfDirty = (go: () => void) => {
-    if (!isDirty) return go();
-    if (isSubmitting || isUploadingImages || isUploadingFiles) return;
-
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (ok) go();
-  };
-
-  const onLeaveLinkClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
-    if (!isDirty) return;
-    if (isSubmitting || isUploadingImages || isUploadingFiles) return;
-
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (!ok) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
+  const confirmLeaveIfDirty = confirmAndNavigate;
+  const onLeaveLinkClick = guardLinkClick;
 
   // 최초 로드 시 기존 제목/내용/이미지/첨부 세팅
   useEffect(() => {
@@ -634,7 +611,9 @@ export default function FreeBoardEditClient({ id }: Props) {
       }
 
       // 수정 후에는 상세 페이지로 이동
-      router.push(`/board/market/${id}`);
+      navigateAfterSave(() => {
+        router.push(`/board/market/${id}`);
+      });
       router.refresh();
     } catch (err) {
       console.error(err);

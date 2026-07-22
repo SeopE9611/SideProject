@@ -25,6 +25,7 @@ import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
+import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { cn } from "@/lib/utils";
 import {
   ChevronDown,
@@ -498,6 +499,13 @@ const Header = () => {
   const overflowMenuItems = menuItems.slice(visibleCount);
   const hasOverflow = overflowMenuItems.length > 0;
 
+  const guardedPush = (href: string, beforeNavigate?: () => void) =>
+    runBoardUnsavedChangesNavigation(() => {
+      // 확인을 취소한 경우 모바일 Sheet를 먼저 닫으면 작성 맥락이 사라지므로 승인 뒤에만 닫는다.
+      beforeNavigate?.();
+      router.push(href);
+    });
+
   const isActiveMenu = (item: (typeof menuItems)[number]) => {
     const p = pathname ?? "";
     if (item.isServiceMenu) return p === item.href;
@@ -641,8 +649,7 @@ const Header = () => {
                           <DropdownMenuItem
                             className="h-9"
                             onSelect={() => {
-                              setOpen(false);
-                              router.push("/mypage");
+                              guardedPush("/mypage");
                             }}
                           >
                             마이페이지
@@ -650,8 +657,7 @@ const Header = () => {
                           <DropdownMenuItem
                             className="h-9"
                             onSelect={() => {
-                              setOpen(false);
-                              router.push("/board/event");
+                              guardedPush("/board/event");
                             }}
                           >
                             이벤트
@@ -670,6 +676,7 @@ const Header = () => {
                           <DropdownMenuItem
                             className="h-9 text-destructive focus:text-destructive"
                             onSelect={async () => {
+                              if (!runBoardUnsavedChangesNavigation(() => {})) return;
                               // 로그아웃 직전 캐시를 선제적으로 비워
                               // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
                               headerPointsCache = null;
@@ -693,8 +700,7 @@ const Header = () => {
                       className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="쪽지함으로 이동"
                       onClick={() => {
-                        setOpen(false);
-                        router.push("/messages");
+                        guardedPush("/messages");
                       }}
                     >
                       <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -710,8 +716,7 @@ const Header = () => {
                       className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="장바구니로 이동"
                       onClick={() => {
-                        setOpen(false);
-                        router.push("/cart");
+                        guardedPush("/cart");
                       }}
                     >
                       <ShoppingCart className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -747,8 +752,7 @@ const Header = () => {
                     className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.strings.root))}
                     aria-current={isMobileRouteCurrent(NAV_LINKS.strings.root) ? "page" : undefined}
                     onClick={() => {
-                      setOpen(false);
-                      router.push(NAV_LINKS.strings.root);
+                      guardedPush(NAV_LINKS.strings.root, () => setOpen(false));
                     }}
                   >
                     전체 보기
@@ -770,8 +774,7 @@ const Header = () => {
                             <MobileBrandGrid
                               brands={NAV_LINKS.strings.brands}
                               onPick={(href) => {
-                                setOpen(false);
-                                router.push(href);
+                                guardedPush(href, () => setOpen(false));
                               }}
                             />
                           </div>
@@ -784,8 +787,7 @@ const Header = () => {
                     className={mobileMenuItemClass(isMobileRouteCurrent("/services"))}
                     aria-current={isMobileRouteCurrent("/services") ? "page" : undefined}
                     onClick={() => {
-                      setOpen(false);
-                      router.push("/services#service-start");
+                      guardedPush("/services#service-start", () => setOpen(false));
                     }}
                   >
                     <span className="min-w-0 truncate">교체서비스 시작하기</span>
@@ -810,8 +812,7 @@ const Header = () => {
                                 className={mobileMenuItemClass(isMobileRouteCurrent(it.href))}
                                 aria-current={isMobileRouteCurrent(it.href) ? "page" : undefined}
                                 onClick={() => {
-                                  setOpen(false);
-                                  router.push(it.href);
+                                  guardedPush(it.href, () => setOpen(false));
                                 }}
                               >
                                 {it.name}
@@ -829,8 +830,7 @@ const Header = () => {
                     className={mobileMenuItemClass(isMobileRouteCurrent("/services/packages"))}
                     aria-current={isMobileRouteCurrent("/services/packages") ? "page" : undefined}
                     onClick={() => {
-                      setOpen(false);
-                      router.push("/services/packages");
+                      guardedPush("/services/packages", () => setOpen(false));
                     }}
                   >
                     스트링 교체 할인 패키지
@@ -845,8 +845,7 @@ const Header = () => {
                   className={mobileMenuItemClass(academySectionActive)}
                   aria-current={academyCurrent ? "page" : undefined}
                   onClick={() => {
-                    setOpen(false);
-                    router.push(NAV_LINKS.academy.href);
+                    guardedPush(NAV_LINKS.academy.href, () => setOpen(false));
                   }}
                 >
                   <span className="min-w-0 break-keep whitespace-normal text-left">
@@ -875,8 +874,7 @@ const Header = () => {
                     className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.rackets.root))}
                     aria-current={isMobileRouteCurrent(NAV_LINKS.rackets.root) ? "page" : undefined}
                     onClick={() => {
-                      setOpen(false);
-                      router.push(NAV_LINKS.rackets.root);
+                      guardedPush(NAV_LINKS.rackets.root, () => setOpen(false));
                     }}
                   >
                     전체 보기
@@ -898,8 +896,7 @@ const Header = () => {
                             <MobileBrandGrid
                               brands={NAV_LINKS.rackets.brands}
                               onPick={(href) => {
-                                setOpen(false);
-                                router.push(href);
+                                guardedPush(href, () => setOpen(false));
                               }}
                             />
                           </div>
@@ -931,8 +928,7 @@ const Header = () => {
                       className={mobileMenuItemClass(isMobileRouteCurrent(it.href))}
                       aria-current={isMobileRouteCurrent(it.href) ? "page" : undefined}
                       onClick={() => {
-                        setOpen(false);
-                        router.push(it.href);
+                        guardedPush(it.href, () => setOpen(false));
                       }}
                     >
                       {it.name}
@@ -963,8 +959,7 @@ const Header = () => {
                       className={mobileMenuItemClass(isMobileRouteCurrent(it.href))}
                       aria-current={isMobileRouteCurrent(it.href) ? "page" : undefined}
                       onClick={() => {
-                        setOpen(false);
-                        router.push(it.href);
+                        guardedPush(it.href, () => setOpen(false));
                       }}
                     >
                       {it.name}
@@ -985,12 +980,11 @@ const Header = () => {
                   <Button
                     className="h-10 w-full justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-brand-highlight/90"
                     onClick={() => {
-                      setOpen(false);
                       const redirectTo =
                         typeof window !== "undefined"
                           ? window.location.pathname + window.location.search
                           : "/";
-                      router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+                      guardedPush(`/login?next=${encodeURIComponent(redirectTo)}`, () => setOpen(false));
                     }}
                   >
                     로그인
@@ -1166,8 +1160,7 @@ const Header = () => {
                                   }
                                   onSelect={(e) => {
                                     e.preventDefault();
-                                    setOverflowMenuOpen(false);
-                                    router.push(item.href);
+                                    guardedPush(item.href, () => setOverflowMenuOpen(false));
                                   }}
                                 >
                                   {item.name}

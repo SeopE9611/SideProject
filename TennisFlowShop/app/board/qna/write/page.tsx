@@ -15,11 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { communityFetch } from "@/lib/community/communityFetch.client";
-import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast } from "@/lib/toast";
 import { AlertCircle, ChevronLeft, ChevronRight, ImagePlus, Search, Upload, X } from "lucide-react";
@@ -116,24 +112,10 @@ export default function QnaWritePage() {
       isPrivate
     );
   }, [initialCategory, category, product?.id, title, content, selectedFiles.length, isPrivate]);
+  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } = useBoardUnsavedChangesGuard(isDirty);
 
-  useUnsavedChangesGuard(isDirty && !submitting);
-  useBackNavigationGuard(isDirty && !submitting);
-
-  const confirmGoIfDirty = (go: () => void) => {
-    if (!isDirty || submitting) return go();
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (!ok) return;
-    go();
-  };
-
-  const guardLinkLeave = (e: any) => {
-    if (!isDirty || submitting) return;
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (ok) return;
-    e?.preventDefault?.();
-    e?.stopPropagation?.();
-  };
+  const confirmGoIfDirty = confirmAndNavigate;
+  const guardLinkLeave = guardLinkClick;
 
   // 라이트박스(Dialog) 상태
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -481,7 +463,9 @@ export default function QnaWritePage() {
         throw new Error(json?.error || "저장 실패(로그인/권한을 확인해주세요)");
       }
       const createdId = typeof json?.id === "string" ? json.id : null;
-      router.replace(createdId ? `/board/qna/${createdId}` : "/board/qna");
+      navigateAfterSave(() => {
+        router.replace(createdId ? `/board/qna/${createdId}` : "/board/qna");
+      });
     } catch (e: any) {
       setFormError(e?.message || "저장 중 오류가 발생했습니다.");
       showErrorToast(e?.message || "저장 중 오류가 발생했습니다.");

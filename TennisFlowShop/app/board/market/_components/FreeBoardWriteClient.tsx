@@ -39,11 +39,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { getApiErrorMessage } from "@/lib/fetchers/getApiErrorMessage";
-import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { normalizeMarketMeta, type MarketMeta } from "@/lib/market";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -191,25 +187,12 @@ export default function FreeBoardWriteClient() {
   }, [title, content, category, brand, images.length, selectedFiles.length, marketMeta]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
-  useUnsavedChangesGuard(isDirty && !isSubmitting);
-  useBackNavigationGuard(isDirty && !isSubmitting);
+  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } = useBoardUnsavedChangesGuard(isDirty);
 
-  const guardLeave = (e: any) => {
-    if (!isDirty || isSubmitting) return;
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (!ok) {
-      e?.preventDefault?.();
-      e?.stopPropagation?.();
-    }
-  };
+  const guardLeave = guardLinkClick;
 
   const handleCancel = () => {
-    if (!isDirty || isSubmitting) {
-      router.back();
-      return;
-    }
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (ok) router.back();
+    confirmAndNavigate(() => router.back());
   };
 
   const focusField = (key: FieldKey) => {
@@ -541,7 +524,9 @@ export default function FreeBoardWriteClient() {
 
       const goId = data.id ?? data.item?._id ?? data.item?.id;
       showSuccessToast("게시글이 등록되었습니다.");
-      router.push(goId ? `/board/market/${goId}` : "/board/market");
+      navigateAfterSave(() => {
+        router.push(goId ? `/board/market/${goId}` : "/board/market");
+      });
       router.refresh();
     } catch (err) {
       console.error(err);

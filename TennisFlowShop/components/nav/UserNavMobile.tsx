@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useAuthStore } from "@/app/store/authStore";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
@@ -51,10 +52,9 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
         variant="outline"
         className="w-full justify-center"
         onClick={() => {
-          setOpen(false);
           const redirectTo =
             typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
-          router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+          runBoardUnsavedChangesNavigation(() => { setOpen(false); router.push(`/login?next=${encodeURIComponent(redirectTo)}`); });
         }}
       >
         로그인
@@ -89,8 +89,7 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
         variant="outline"
         className="w-full justify-center"
         onClick={() => {
-          setOpen(false);
-          router.push("/mypage");
+          runBoardUnsavedChangesNavigation(() => { setOpen(false); router.push("/mypage"); });
         }}
       >
         마이페이지
@@ -99,8 +98,7 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
         variant="outline"
         className="w-full justify-center"
         onClick={() => {
-          setOpen(false);
-          router.push("/messages");
+          runBoardUnsavedChangesNavigation(() => { setOpen(false); router.push("/messages"); });
         }}
       >
         쪽지함
@@ -114,6 +112,7 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
         variant="outline"
         className="w-full justify-center"
         onClick={async () => {
+          if (!runBoardUnsavedChangesNavigation(() => {})) return;
           setOpen(false);
           logout();
           await fetch("/api/logout", {

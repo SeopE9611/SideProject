@@ -14,6 +14,7 @@ import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { LayoutDashboard, LogOut, MessageSquare, Settings, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 
 export function UserNav() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export function UserNav() {
         onClick={() => {
           const redirectTo =
             typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
-          router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+          runBoardUnsavedChangesNavigation(() => router.push(`/login?next=${encodeURIComponent(redirectTo)}`));
         }}
       >
         <UserIcon className="h-5 w-5" />
@@ -110,11 +111,11 @@ export function UserNav() {
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuItem onClick={() => router.push("/mypage")}>
+        <DropdownMenuItem onClick={() => runBoardUnsavedChangesNavigation(() => router.push("/mypage"))}>
           <Settings className="mr-2 h-4 w-4" />
           마이페이지
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/messages")}>
+        <DropdownMenuItem onClick={() => runBoardUnsavedChangesNavigation(() => router.push("/messages"))}>
           <MessageSquare className="mr-2 h-4 w-4" />
           쪽지함
         </DropdownMenuItem>
@@ -128,6 +129,7 @@ export function UserNav() {
         )}
         <DropdownMenuItem
           onClick={async () => {
+            if (!runBoardUnsavedChangesNavigation(() => {})) return;
             logout();
             await fetch("/api/logout", {
               method: "POST",

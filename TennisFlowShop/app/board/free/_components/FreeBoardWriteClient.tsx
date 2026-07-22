@@ -21,11 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { getApiErrorMessage } from "@/lib/fetchers/getApiErrorMessage";
-import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -115,25 +111,12 @@ export default function FreeBoardWriteClient() {
   }, [title, contentValidationLength, category, images.length, selectedFiles.length]);
 
   // 탭닫기/새로고침 + 뒤로가기(popstate)까지 통합 보호
-  useUnsavedChangesGuard(isDirty && !isSubmitting);
-  useBackNavigationGuard(isDirty && !isSubmitting);
+  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } = useBoardUnsavedChangesGuard(isDirty);
 
-  const guardLeave = (e: any) => {
-    if (!isDirty || isSubmitting) return;
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (!ok) {
-      e?.preventDefault?.();
-      e?.stopPropagation?.();
-    }
-  };
+  const guardLeave = guardLinkClick;
 
   const handleCancel = () => {
-    if (!isDirty || isSubmitting) {
-      router.back();
-      return;
-    }
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (ok) router.back();
+    confirmAndNavigate(() => router.back());
   };
 
   const focusField = (key: FieldKey) => {
@@ -387,7 +370,9 @@ export default function FreeBoardWriteClient() {
 
       const goId = data.id ?? data.item?._id ?? data.item?.id;
       showSuccessToast("게시글이 등록되었습니다.");
-      router.push(goId ? `/board/free/${goId}` : "/board/free");
+      navigateAfterSave(() => {
+        router.push(goId ? `/board/free/${goId}` : "/board/free");
+      });
       router.refresh();
     } catch (err) {
       console.error(err);

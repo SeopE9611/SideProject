@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,8 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
       showErrorToast("알림 처리에 실패했습니다.");
       return;
     }
-    onClose();
-    if (href) router.push(href);
+    if (href) runBoardUnsavedChangesNavigation(() => { onClose(); router.push(href); });
+    else onClose();
   };
 
   const handleMarkAllAsRead = async () => {
@@ -85,8 +86,7 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
               variant="outline"
               className="w-full"
               onClick={() => {
-                onClose();
-                router.push("/notifications");
+                runBoardUnsavedChangesNavigation(() => { onClose(); router.push("/notifications"); });
               }}
             >
               전체 알림 보기
