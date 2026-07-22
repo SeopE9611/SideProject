@@ -876,11 +876,20 @@ export default function StringingApplicationDetailClient({
   const isRentalLinkedApplication = primaryLinkedSource === "rental";
   const isAmbiguousLinkedApplication =
     primaryLinkedSource === null && hasOrderLink && hasRentalLink;
-  const isUnresolvedLinkedApplication = primaryLinkedSource === null && hasAnyLinkedReference;
+  const isResolvedOrderLinkedApplication =
+    primaryLinkedSource === "order" && Boolean(linkedOrderSummary);
+  const isResolvedRentalLinkedApplication =
+    primaryLinkedSource === "rental" && Boolean(linkedRentalSummary);
+  const isMissingPrimaryLinkedDocument =
+    (primaryLinkedSource === "order" && !linkedOrderSummary) ||
+    (primaryLinkedSource === "rental" && !linkedRentalSummary);
+  const isUnresolvedLinkedApplication =
+    isMissingPrimaryLinkedDocument || (primaryLinkedSource === null && hasAnyLinkedReference);
   const isStandaloneApplication = primaryLinkedSource === null && !hasAnyLinkedReference;
   const isLinkedApplication = hasAnyLinkedReference || primaryLinkedSource !== null;
   const isEditableAllowed =
-    !isRentalLinkedApplication && (isAdmin || userEditableStatuses.includes(data.status));
+    !isRentalLinkedApplication &&
+    (isAdmin || (!isUnresolvedLinkedApplication && userEditableStatuses.includes(data.status)));
 
   // 요약 표시용 파생 값
   const stringTypeCount = data.stringDetails?.stringTypes?.length ?? 0;
@@ -967,7 +976,7 @@ export default function StringingApplicationDetailClient({
           "이 신청서는 주문과 대여 양쪽에 연결되어 있습니다. 연결 문서에서 결제와 진행 상태를 각각 확인해 주세요.",
         payment: "연결 결제 source 확인 필요",
       }
-    : isOrderLinkedApplication
+    : isResolvedOrderLinkedApplication
       ? {
           label: "주문 연결 하위 작업",
           title: "주문에 포함된 교체 작업",
@@ -975,7 +984,7 @@ export default function StringingApplicationDetailClient({
             "이 작업은 주문 상세와 연결되어 있습니다. 결제는 주문에서 처리되며, 진행 단계는 주문 상세의 연결 진행 단계와 함께 확인하세요.",
           payment: "결제는 주문 결제에 포함됨",
         }
-      : isRentalLinkedApplication
+      : isResolvedRentalLinkedApplication
         ? {
             label: "대여 연결 하위 작업",
             title: "대여에 포함된 교체 작업",
@@ -987,7 +996,12 @@ export default function StringingApplicationDetailClient({
           ? {
               label: "연결 거래 확인 중",
               title: "연결된 교체 작업",
-              description: "연결된 주문 또는 대여 정보를 확인하고 있습니다.",
+              description:
+                primaryLinkedSource === "order"
+                  ? "연결된 주문 정보를 불러오지 못했습니다. 연결 문서와 결제 상태를 확인하고 있습니다."
+                  : primaryLinkedSource === "rental"
+                    ? "연결된 대여 정보를 불러오지 못했습니다. 연결 문서와 결제 상태를 확인하고 있습니다."
+                    : "연결된 주문 또는 대여 정보를 확인하고 있습니다.",
               payment: "연결 결제 확인 필요",
             }
           : {
@@ -1041,9 +1055,9 @@ export default function StringingApplicationDetailClient({
   const applicationPaymentProvider = linkedPayment?.provider ?? null;
   const paymentContextLabel = packageApplied
     ? "패키지 사용"
-    : primaryLinkedSource === "order"
+    : isResolvedOrderLinkedApplication
       ? "주문 결제에 포함"
-      : primaryLinkedSource === "rental"
+      : isResolvedRentalLinkedApplication
         ? "대여 결제에 포함"
         : isAmbiguousLinkedApplication
           ? "주문·대여 연결 결제 확인 필요"
@@ -1052,14 +1066,14 @@ export default function StringingApplicationDetailClient({
             : "단독 신청서 결제";
   const paymentStatusLabel = packageApplied
     ? "결제 불필요"
-    : primaryLinkedSource === "order" && linkedOrderSummary
+    : isResolvedOrderLinkedApplication && linkedOrderSummary
       ? getCustomerTransactionPaymentStatusLabel({
           paymentStatus: linkedOrderSummary.paymentStatus,
           paymentMethod: linkedOrderSummary.paymentMethod,
           paymentProvider: linkedOrderSummary.paymentProvider,
           totalPrice: linkedOrderSummary.totalAmount,
         })
-      : primaryLinkedSource === "rental" && linkedRentalSummary
+      : isResolvedRentalLinkedApplication && linkedRentalSummary
         ? getCustomerTransactionPaymentStatusLabel({
             paymentStatus: linkedRentalSummary.paymentStatus,
             paymentMethod: linkedRentalSummary.paymentMethod,
@@ -1077,18 +1091,18 @@ export default function StringingApplicationDetailClient({
   const serviceAmount = totalPrice;
   const transactionPaymentAmount = packageApplied
     ? null
-    : primaryLinkedSource === "order"
-      ? (linkedOrderSummary?.totalAmount ?? null)
-      : primaryLinkedSource === "rental"
-        ? (linkedRentalSummary?.totalAmount ?? null)
+    : isResolvedOrderLinkedApplication && linkedOrderSummary
+      ? linkedOrderSummary.totalAmount
+      : isResolvedRentalLinkedApplication && linkedRentalSummary
+        ? linkedRentalSummary.totalAmount
         : isUnresolvedLinkedApplication
           ? null
           : totalPrice;
   const transactionPaymentAmountTitle = packageApplied
     ? "이번 결제"
-    : primaryLinkedSource === "order"
+    : isResolvedOrderLinkedApplication
       ? "주문 총 결제금액"
-      : primaryLinkedSource === "rental"
+      : isResolvedRentalLinkedApplication
         ? "대여 총 결제금액"
         : isUnresolvedLinkedApplication
           ? "연결 거래 결제금액"
@@ -1150,7 +1164,8 @@ export default function StringingApplicationDetailClient({
   const isCustomerCancelableStatus =
     (userEditableStatuses ?? []).includes(data.status) &&
     !completedLikeStatuses.includes(data.status);
-  const canShowUserCancelAction = !isAdmin && !isRentalLinkedApplication && !isCancelled;
+  const canShowUserCancelAction =
+    !isAdmin && !isRentalLinkedApplication && !isUnresolvedLinkedApplication && !isCancelled;
   const canUserRequestCancel =
     canShowUserCancelAction && !isCancelRequested && !isUserConfirmed && isCustomerCancelableStatus;
   const canUserWithdrawCancelRequest = canShowUserCancelAction && isCancelRequested;
@@ -1236,10 +1251,10 @@ export default function StringingApplicationDetailClient({
 
   const paymentMethodForDisplay = packageApplied
     ? linkedPayment?.method
-    : primaryLinkedSource === "order"
-      ? (linkedOrderSummary?.paymentMethod ?? linkedPayment?.method ?? null)
-      : primaryLinkedSource === "rental"
-        ? (linkedRentalSummary?.paymentMethod ?? linkedPayment?.method ?? null)
+    : isResolvedOrderLinkedApplication && linkedOrderSummary
+      ? (linkedOrderSummary.paymentMethod ?? linkedPayment?.method ?? null)
+      : isResolvedRentalLinkedApplication && linkedRentalSummary
+        ? (linkedRentalSummary.paymentMethod ?? linkedPayment?.method ?? null)
         : isUnresolvedLinkedApplication
           ? null
           : applicationPaymentMethod;
