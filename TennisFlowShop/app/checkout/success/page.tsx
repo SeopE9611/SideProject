@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { buildCheckoutSuccessLinks } from "@/lib/checkout-success-links";
 import { bankLabelMap } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
@@ -245,14 +245,7 @@ export default async function CheckoutSuccessPage({
       ownerUserId &&
       accessPayload.sub === ownerUserId
     );
-    const guestOrderId =
-      orderAccessPayload &&
-      "orderId" in orderAccessPayload &&
-      typeof orderAccessPayload.orderId === "string"
-        ? orderAccessPayload.orderId
-        : null;
-
-    const isGuestOwner = !!(guestOrderId && guestOrderId === String(order._id));
+    const isGuestOwner = hasGuestOrderAccess(orderAccessPayload, String(order._id));
     if (!isMemberOwner && !isGuestOwner) return notFound();
 
     const appParams = new URLSearchParams({ orderId: order._id.toString() });

@@ -1,4 +1,5 @@
-import { hasGuestRentalAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { hasGuestRentalCookieAccess } from "@/lib/auth/guest-resource-access.server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -20,14 +21,14 @@ export async function getRentalAccess(db: any, rentalId: string, allowAdmin = fa
 
   const jar = await cookies();
   const accessClaims = verifyAccessToken(jar.get("accessToken")?.value ?? "");
-  const orderClaims = verifyOrderAccessToken(jar.get("orderAccessToken")?.value ?? "");
+
   const isGuestRental = !rental.userId;
   const isMemberOwner =
     !isGuestRental &&
     typeof accessClaims?.sub === "string" &&
     accessClaims.sub === String(rental.userId);
   const isAdmin = allowAdmin && accessClaims?.role === "admin";
-  const isGuestOwner = isGuestRental && hasGuestRentalAccess(orderClaims, id);
+  const isGuestOwner = isGuestRental && hasGuestRentalCookieAccess(jar, id);
 
   if (!isMemberOwner && !isAdmin && !isGuestOwner) {
     return { ok: false as const, response: rentalNotAvailable() };

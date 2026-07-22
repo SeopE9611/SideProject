@@ -4,7 +4,7 @@ import {
   LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
   isApplicationEligibleForLinkedStage,
 } from "@/lib/admin/linked-flow-stage";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
@@ -310,7 +310,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const guestOwnsOrder = !!(
       isGuestOrder &&
       guestClaims &&
-      guestClaims.orderId === String(order._id)
+      hasGuestOrderAccess(guestClaims, String(order._id))
     );
 
     if (!isOwner && !isAdmin && !guestOwnsOrder) {

@@ -15,15 +15,16 @@ test("비회원 대여 접근 경계 계약", () => {
   const success = read("app/rentals/success/page.tsx");
 
   assert.match(auth, /hasGuestRentalAccess/);
-  assert.match(auth, /"rentalId" in claims/);
-  assert.match(rentals, /signOrderAccessToken\(\{ rentalId: result\.id \}\)/);
-  assert.match(guestToken, /verifyOrderAccessToken/);
-  assert.match(guestToken, /hasGuestRentalAccess/);
+  assert.match(auth, /signRentalAccessToken/);
+  assert.match(auth, /verifyRentalAccessToken/);
+  assert.match(rentals, /setGuestRentalAccessCookie/);
+  assert.match(guestToken, /hasGuestRentalCookieAccess/);
+  assert.match(guestToken, /setGuestRentalAccessCookie/);
   for (const source of [detail, prepare, cancelRequest, guestToken]) {
     assert.match(source, /RENTAL_NOT_AVAILABLE|rentalNotAvailable/);
   }
   assert.match(niceReturn, /redirectToRentalSuccess/);
-  assert.match(success, /hasGuestRentalAccess/);
+  assert.match(success, /hasGuestRentalCookieAccess/);
   assert.doesNotMatch(auth, /guestRentalLookupToken/);
   assert.doesNotMatch(guestToken, /guestOrderLookupToken/);
 });

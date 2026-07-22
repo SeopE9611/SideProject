@@ -1,9 +1,11 @@
-import {
-  verifyAccessToken,
-  verifyApplicationAccessToken,
-  verifyOrderAccessToken,
-} from "@/lib/auth.utils";
+import { verifyAccessToken, verifyApplicationAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import {
+  getGuestOrderAccessClaims,
+  getGuestRentalAccessClaims,
+  hasGuestOrderCookieAccess,
+  hasGuestRentalCookieAccess,
+} from "@/lib/auth/guest-resource-access.server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 
@@ -22,16 +24,16 @@ export async function canAccessStringingApplicationById(id: string, options: Acc
 
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value ?? null;
-  const orderAccessToken = cookieStore.get("orderAccessToken")?.value ?? null;
   const applicationAccessToken = cookieStore.get("applicationAccessToken")?.value ?? null;
 
   const accessPayload = accessToken ? verifyAccessToken(accessToken) : null;
-  const guestClaims = orderAccessToken ? verifyOrderAccessToken(orderAccessToken) : null;
   const applicationClaims = applicationAccessToken
     ? verifyApplicationAccessToken(applicationAccessToken)
     : null;
 
-  if (!accessPayload && !guestClaims && !applicationClaims) {
+  const guestOrderClaims = getGuestOrderAccessClaims(cookieStore);
+  const guestRentalClaims = getGuestRentalAccessClaims(cookieStore);
+  if (!accessPayload && !guestOrderClaims && !guestRentalClaims && !applicationClaims) {
     return {
       ok: false as const,
       response: Response.json({ error: "Unauthorized" }, { status: 401 }),
@@ -79,21 +81,20 @@ export async function canAccessStringingApplicationById(id: string, options: Acc
     !!requesterId &&
     !!(application as any).userId &&
     String((application as any).userId) === requesterId;
-  const guestOrderId =
-    typeof (guestClaims as any)?.orderId === "string" ? (guestClaims as any).orderId : null;
-  const guestRentalId =
-    typeof (guestClaims as any)?.rentalId === "string" ? (guestClaims as any).rentalId : null;
-
+  const applicationOrderId = (application as any).orderId
+    ? String((application as any).orderId)
+    : null;
+  const applicationRentalId = (application as any).rentalId
+    ? String((application as any).rentalId)
+    : null;
   const isGuestOrderOwner =
     options.allowGuestOrder &&
-    !!guestOrderId &&
-    !!(application as any).orderId &&
-    String((application as any).orderId) === guestOrderId;
+    !!applicationOrderId &&
+    hasGuestOrderCookieAccess(cookieStore, applicationOrderId);
   const isGuestRentalOwner =
     options.allowGuestRental &&
-    !!guestRentalId &&
-    !!(application as any).rentalId &&
-    String((application as any).rentalId) === guestRentalId;
+    !!applicationRentalId &&
+    hasGuestRentalCookieAccess(cookieStore, applicationRentalId);
   const tokenApplicationId =
     typeof applicationClaims?.applicationId === "string" ? applicationClaims.applicationId : null;
   const isStandaloneApplication =

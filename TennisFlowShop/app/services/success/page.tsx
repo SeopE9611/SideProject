@@ -14,9 +14,11 @@ import { Separator } from "@/components/ui/separator";
 import {
   verifyAccessToken,
   verifyApplicationAccessToken,
+  hasGuestOrderAccess,
   verifyOrderAccessToken,
 } from "@/lib/auth.utils";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
+import { hasGuestRentalCookieAccess } from "@/lib/auth/guest-resource-access.server";
 import clientPromise from "@/lib/mongodb";
 import { formatKoreanPhone } from "@/lib/phone";
 import jwt from "jsonwebtoken";
@@ -73,10 +75,7 @@ function safeVerifyAccessToken(token?: string) {
 function safeVerifyOrderAccessToken(token?: string) {
   if (!token) return null;
   try {
-    return verifyOrderAccessToken(token) as {
-      orderId?: string;
-      applicationId?: string;
-    } | null;
+    return verifyOrderAccessToken(token);
   } catch {
     return null;
   }
@@ -180,16 +179,20 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   const ownerUserId = application.userId ? String(application.userId) : null;
   const ownerOrderId = application.orderId ? String(application.orderId) : null;
+  const ownerRentalId = application.rentalId ? String(application.rentalId) : null;
   const ownerApplicationId = String(application._id);
 
   const isMemberOwner = !!(accessPayload?.sub && ownerUserId && accessPayload.sub === ownerUserId);
-  const isGuestOwner = !!(
-    (orderAccessPayload?.orderId && ownerOrderId && orderAccessPayload.orderId === ownerOrderId) ||
-    (applicationAccessPayload?.applicationId &&
-      applicationAccessPayload.applicationId === ownerApplicationId)
+  const isGuestOrderOwner = !!(
+    ownerOrderId && hasGuestOrderAccess(orderAccessPayload, ownerOrderId)
   );
+  const isGuestRentalOwner = !!(
+    ownerRentalId && hasGuestRentalCookieAccess(cookieStore, ownerRentalId)
+  );
+  const isApplicationTokenOwner = applicationAccessPayload?.applicationId === ownerApplicationId;
 
-  if (!isMemberOwner && !isGuestOwner) return notFound();
+  if (!isMemberOwner && !isGuestOrderOwner && !isGuestRentalOwner && !isApplicationTokenOwner)
+    return notFound();
 
   /**
    * 중첩 필드 방어
