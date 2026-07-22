@@ -7,6 +7,7 @@ import {
 } from "@/lib/mypage/activity-todo";
 import { toKstYmd } from "@/lib/date/kst";
 import { isOrderConfirmedStatus } from "@/lib/status/flow-status";
+import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-stage";
 import {
   resolveApplicationReviewTargetBundlesBatch,
   resolveOrderReviewTargetBundlesBatch,
@@ -97,6 +98,7 @@ export async function GET() {
             status: 1,
             userConfirmedAt: 1,
             items: 1,
+            shippingInfo: 1,
           },
         },
       )
@@ -173,6 +175,7 @@ export async function GET() {
           userConfirmedAt: 1,
           orderId: 1,
           rentalId: 1,
+          cancelRequest: 1,
         },
       },
     )
@@ -182,6 +185,14 @@ export async function GET() {
   const linkedTodoAppsByRentalId = new Map<string, ActivityTodoApplicationLike[]>();
 
   for (const doc of linkedApps as any[]) {
+    if (
+      !isApplicationEligibleForLinkedStage({
+        status: doc.status,
+        cancelRequestStatus: doc?.cancelRequest?.status,
+      })
+    ) {
+      continue;
+    }
     const shipping = doc.shippingInfo ?? {};
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
     const collectionMethod = normalizeCollection(
@@ -244,6 +255,7 @@ export async function GET() {
             : null,
       reviewPendingCount,
       linkedApplications: linkedTodoAppsByOrderId.get(orderId) ?? [],
+      withStringService: Boolean(order?.shippingInfo?.withStringService),
     });
 
     if (needsAction !== null) todoOrderCount += 1;
