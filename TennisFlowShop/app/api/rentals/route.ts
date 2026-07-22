@@ -2,7 +2,7 @@ import {
   createRentalOrderCore,
   type RentalCreatePayload,
 } from "@/app/features/rentals/api/create-rental-order-core";
-import { verifyAccessToken } from "@/lib/auth.utils";
+import { signOrderAccessToken, verifyAccessToken } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -195,12 +195,29 @@ export async function POST(req: Request) {
       initialStatus: "pending",
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       ok: true,
       id: result.id,
       stringingApplicationId: result.stringingApplicationId,
       stringingSubmitted: result.stringingSubmitted,
     });
+
+    if (allowGuestCheckout && !userObjectId && ObjectId.isValid(result.id)) {
+      const rental = await db
+        .collection("rental_orders")
+        .findOne({ _id: new ObjectId(result.id) }, { projection: { _id: 1, userId: 1 } });
+      if (rental && !rental.userId) {
+        response.cookies.set("orderAccessToken", signOrderAccessToken({ rentalId: result.id }), {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 7,
+        });
+      }
+    }
+
+    return response;
   } catch (e: any) {
     const msg = e instanceof Error ? e.message : "UNKNOWN_ERROR";
     console.error("[POST /api/rentals] failed", {

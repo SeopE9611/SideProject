@@ -94,6 +94,19 @@ export type GuestOrderLookupAccessTokenPayload = {
 
 const OBJECT_ID_TEXT_RE = /^[a-f0-9]{24}$/i;
 
+export function hasGuestRentalAccess(
+  claims: ReturnType<typeof verifyOrderAccessToken>,
+  rentalId: string,
+): boolean {
+  const normalizedRentalId = String(rentalId).trim();
+  return Boolean(
+    OBJECT_ID_TEXT_RE.test(normalizedRentalId) &&
+    claims &&
+    "rentalId" in claims &&
+    claims.rentalId === normalizedRentalId,
+  );
+}
+
 function normalizeGuestOrderLookupOrderIds(orderIds: unknown): string[] | null {
   if (!Array.isArray(orderIds) || orderIds.length > 50) return null;
 

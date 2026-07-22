@@ -628,6 +628,7 @@ export default function RentalsCheckoutClient({
 
       const res = await fetch("/api/rentals", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           "Idempotency-Key": idemKey,
