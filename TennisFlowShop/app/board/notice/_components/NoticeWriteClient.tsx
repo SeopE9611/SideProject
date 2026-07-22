@@ -20,11 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { communityFetch } from "@/lib/community/communityFetch.client";
-import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -231,17 +227,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
   ]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
-  useUnsavedChangesGuard(isDirty && !submitting);
-  useBackNavigationGuard(isDirty && !submitting);
+  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } = useBoardUnsavedChangesGuard(isDirty);
 
-  const guardLeave = (e: any) => {
-    if (!isDirty || submitting) return;
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
-    if (!ok) {
-      e?.preventDefault?.();
-      e?.stopPropagation?.();
-    }
-  };
+  const guardLeave = guardLinkClick;
 
   // 기존 첨부 제거 + 스토리지 삭제 경로 기록(옵션)
   const removeExistingAndMark = (idx: number) => {
@@ -304,7 +292,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
     if (!editId || !detail?.item || !isEditRouteMismatch) return;
     const targetBase =
       detail.item.category === "이벤트" ? "/board/event/write" : "/board/notice/write";
-    router.replace(`${targetBase}?id=${encodeURIComponent(editId)}`);
+    navigateAfterSave(() => {
+      router.replace(`${targetBase}?id=${encodeURIComponent(editId)}`);
+    });
   }, [editId, detail?.item, isEditRouteMismatch, router]);
 
   // 프리필: 상세 응답을 코드값으로 역변환해서 넣는다.
@@ -600,7 +590,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               : "공지사항이 등록되었습니다.",
         );
 
-        router.replace(`${detailBaseHref}/${goId}`);
+        navigateAfterSave(() => {
+
+          router.replace(`${detailBaseHref}/${goId}`);
+
+        });
         router.refresh();
         return;
       }
@@ -615,7 +609,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
             ? "이벤트가 등록되었습니다."
             : "공지사항이 등록되었습니다.",
       );
-      router.push(listHref);
+      navigateAfterSave(() => {
+        router.push(listHref);
+      });
       router.refresh();
     } catch (e: any) {
       showErrorToast(e?.message || "저장 중 오류가 발생했습니다.");

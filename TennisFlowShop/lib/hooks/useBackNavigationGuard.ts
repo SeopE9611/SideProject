@@ -2,6 +2,10 @@ import { useEffect } from "react";
 import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 
 const BACK_GUARD_MARKER_KEY = "__unsavedBackGuard";
+type BackNavigationGuardOptions = {
+  confirm?: (message: string) => boolean;
+  editableFocusPolicy?: "blur-first" | "confirm-immediately";
+};
 
 const isGuardState = (state: unknown, markerId: string) => {
   if (!state || typeof state !== "object") return false;
@@ -29,6 +33,7 @@ const isEditableElementFocused = () => {
 export function useBackNavigationGuard(
   enabled: boolean,
   message: string = UNSAVED_CHANGES_MESSAGE,
+  options: BackNavigationGuardOptions = {},
 ) {
   useEffect(() => {
     if (!enabled) return;
@@ -59,7 +64,7 @@ export function useBackNavigationGuard(
     const onPopState = () => {
       if (!active) return;
 
-      if (isEditableElementFocused()) {
+      if (options.editableFocusPolicy !== "confirm-immediately" && isEditableElementFocused()) {
         // 모바일 브라우저에서는 입력 포커스/키보드 상태 변화 중 popstate가 섞이는 경우가 있어,
         // 이때는 즉시 확인창을 띄우지 않고 포커스만 해제한 뒤 현재 페이지를 유지한다.
         const activeElement = document.activeElement;
@@ -70,7 +75,7 @@ export function useBackNavigationGuard(
         return;
       }
 
-      const shouldLeave = window.confirm(message);
+      const shouldLeave = options.confirm ? options.confirm(message) : window.confirm(message);
       if (!shouldLeave) {
         pushGuardEntry();
         return;
@@ -102,5 +107,5 @@ export function useBackNavigationGuard(
         );
       }
     };
-  }, [enabled, message]);
+  }, [enabled, message, options.confirm, options.editableFocusPolicy]);
 }

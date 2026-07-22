@@ -3,6 +3,7 @@
 import { Bell } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 
 import { NotificationPanel } from "@/components/notifications/NotificationPanel";
 import { Button } from "@/components/ui/button";
@@ -70,8 +71,7 @@ export function NotificationBell({
         aria-label={unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"}
         title="알림"
         onClick={() => {
-          onNavigate?.();
-          router.push("/notifications");
+          runBoardUnsavedChangesNavigation(() => { onNavigate?.(); router.push("/notifications"); });
         }}
       >
         <Bell className="h-5 w-5" aria-hidden="true" />
