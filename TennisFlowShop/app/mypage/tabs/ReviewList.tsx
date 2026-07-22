@@ -501,7 +501,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       >
         <CardContent className="flex flex-col gap-3 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-4">
           <div>
-            <p className="font-brand-heading text-ui-section-title text-foreground">후기 필터</p>
+            <p className="font-ui-bold text-ui-section-title text-foreground">후기 필터</p>
             <p className="mt-0.5 text-ui-label text-muted-foreground">
               공개 상태와 후기 유형을 선택해 관리 대상을 좁혀보세요.
             </p>
@@ -585,7 +585,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     )}
                   </div>
                   <div>
-                    <h3 className="mb-1 line-clamp-2 break-keep font-brand-heading text-ui-card-title text-foreground">
+                    <h3 className="mb-1 line-clamp-2 break-keep font-ui-bold text-ui-card-title text-foreground">
                       {it.title}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
@@ -736,7 +736,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       >
         <DialogContent className="rounded-panel border-border/80 bg-card shadow-soft sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-brand-heading text-ui-section-title">
+            <DialogTitle className="font-ui-bold text-ui-section-title">
               후기 수정
             </DialogTitle>
           </DialogHeader>

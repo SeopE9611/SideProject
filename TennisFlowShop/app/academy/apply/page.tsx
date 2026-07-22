@@ -431,7 +431,7 @@ export default async function AcademyApplyPage({
                       <p className="mb-1 text-ui-label font-medium uppercase tracking-wider text-muted-foreground">
                         선택한 클래스
                       </p>
-                      <h3 className="font-brand-heading text-ui-section-title font-semibold tracking-[-0.015em] text-foreground">
+                      <h3 className="font-ui-bold text-ui-section-title font-semibold text-foreground">
                         {selectedClass.name}
                       </h3>
                       {selectedClass.description && (

@@ -551,7 +551,7 @@ export default function QnaWritePage() {
             ].map(([step, title, copy]) => (
               <div key={step} className="rounded-control border border-border bg-card/70 p-4">
                 <span className="text-ui-kicker text-brand-highlight-ink">{step}</span>
-                <h2 className="mt-2 font-brand-heading text-ui-card-title font-semibold tracking-[-0.015em] text-foreground">
+                <h2 className="mt-2 font-ui-bold text-ui-card-title font-semibold text-foreground">
                   {title}
                 </h2>
                 <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">{copy}</p>
@@ -667,7 +667,7 @@ export default function QnaWritePage() {
                       aria-describedby={fieldErrors.product ? productErrorId : undefined}
                     >
                       <div className="rounded-control border border-border bg-muted/30 p-4">
-                        <div className="mb-3 font-brand-heading text-ui-card-title font-semibold tracking-[-0.015em]">
+                        <div className="mb-3 font-ui-bold text-ui-card-title font-semibold ">
                           내 구매상품
                         </div>
                         {!me && (
@@ -705,7 +705,7 @@ export default function QnaWritePage() {
                       </div>
 
                       <div className="rounded-control border border-border bg-muted/30 p-4">
-                        <div className="mb-3 font-brand-heading text-ui-card-title font-semibold tracking-[-0.015em]">
+                        <div className="mb-3 font-ui-bold text-ui-card-title font-semibold ">
                           전체 상품 검색
                         </div>
                         <div className="relative mb-3">

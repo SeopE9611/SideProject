@@ -425,7 +425,7 @@ export default function TensionGuidePage() {
               TENSION LAB
             </Badge>
             <div className="max-w-3xl space-y-4">
-              <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-[-0.02em] text-foreground bp-md:text-ui-page-title-lg">
+              <h1 className="font-ui-bold text-ui-page-title font-semibold text-foreground bp-md:text-ui-page-title-lg">
                 감이 아닌 플레이 조건으로 적정 장력을 좁혀보세요.
               </h1>
               <p className="text-ui-body leading-relaxed text-muted-foreground bp-md:text-ui-body-lg">

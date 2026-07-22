@@ -12,7 +12,7 @@ export default function RacketCareFinalCta({ primaryHref, primaryLabel }: Props)
       <div className="grid gap-6 bp-lg:grid-cols-[1fr_auto] bp-lg:items-end">
         <div>
           <p className="text-ui-kicker text-brand-highlight-ink">START YOUR RACKET CARE</p>
-          <h2 className="mt-4 break-keep font-brand-heading text-ui-section-title bp-lg:text-[3.5rem] bp-lg:leading-none">
+          <h2 className="mt-4 break-keep font-ui-bold text-ui-section-title bp-lg:text-[3.5rem] bp-lg:leading-none">
             라켓 관리를 기록이 아닌
             <br />
             하나의 흐름으로 바꿔보세요.

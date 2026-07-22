@@ -18,7 +18,7 @@ export default function ReviewHubHero() {
           <Badge variant="signal" className="w-fit">
             VERIFIED REVIEW
           </Badge>
-          <h1 className="mt-5 break-keep font-brand-heading text-ui-section-title font-bold tracking-[-0.01em] bp-lg:text-[3.25rem] bp-lg:leading-[1.05]">
+          <h1 className="mt-5 break-keep font-ui-bold text-ui-section-title font-bold bp-lg:text-[3.25rem] bp-lg:leading-[1.05]">
             실제 플레이에서 나온 후기
           </h1>
           <p className="mt-4 max-w-2xl break-keep text-ui-body text-muted-foreground">

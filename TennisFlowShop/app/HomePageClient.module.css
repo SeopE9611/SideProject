@@ -73,7 +73,14 @@
   word-break: keep-all;
 }
 
-.marketingTitle {
+.uiTitle {
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: normal;
+  word-break: keep-all;
+}
+
+.brandMarketingTitle {
   font-family: var(--home-brand-font-family);
   font-weight: 500;
   font-synthesis: none;

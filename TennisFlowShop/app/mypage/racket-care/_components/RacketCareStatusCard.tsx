@@ -71,7 +71,7 @@ export default function RacketCareStatusCard({
           <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0">
               <p className="text-ui-kicker text-brand-highlight-ink">RACKET DIAGNOSIS</p>
-              <CardTitle className="mt-2 break-words text-ui-card-title-lg font-bold tracking-[-0.01em]">
+              <CardTitle className="mt-2 break-words text-ui-card-title-lg font-bold ">
                 {item.nickname}
               </CardTitle>
               <p className="mt-1 break-words text-ui-body-sm text-muted-foreground">
@@ -110,13 +110,13 @@ export default function RacketCareStatusCard({
               <div className="grid gap-3 bp-sm:grid-cols-2">
                 <div className="rounded-control border border-border bg-card p-5">
                   <p className="text-ui-label text-muted-foreground">예상 교체일</p>
-                  <p className="mt-2 text-ui-card-title-lg font-bold tracking-[-0.01em]">
+                  <p className="mt-2 text-ui-card-title-lg font-bold ">
                     {dateLabel(item.careStatus.nextRecommendedAt)}
                   </p>
                 </div>
                 <div className="rounded-control border border-border bg-brand-highlight-muted p-5">
                   <p className="text-ui-label text-muted-foreground">D-day</p>
-                  <p className="mt-2 text-ui-card-title-lg font-bold tracking-[-0.01em] text-brand-highlight-ink">
+                  <p className="mt-2 text-ui-card-title-lg font-bold text-brand-highlight-ink">
                     {dday(item.careStatus.daysRemaining)}
                   </p>
                 </div>

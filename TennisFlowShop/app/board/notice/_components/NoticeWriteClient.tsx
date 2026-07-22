@@ -743,7 +743,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
           <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
             <div className="h-1 bg-brand-highlight" aria-hidden="true" />
             <CardHeader className="border-b bg-brand-highlight-muted/30">
-              <CardTitle className="flex items-center space-x-2 font-brand-heading text-ui-section-title">
+              <CardTitle className="flex items-center space-x-2 font-ui-bold text-ui-section-title">
                 <Megaphone className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
                 <span>{cardTitle}</span>
               </CardTitle>
@@ -752,7 +752,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               <PublicSurface variant="feature" padding="md" className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Tags className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
-                  <h3 className="font-brand-heading text-ui-card-title-lg">분류 설정</h3>
+                  <h3 className="font-ui-bold text-ui-card-title-lg">분류 설정</h3>
                 </div>
                 <p className="text-ui-body-sm text-muted-foreground">
                   게시판 성격에 맞는 의미 기반 카테고리를 지정합니다.
@@ -807,7 +807,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               <PublicSurface variant="feature" padding="md" className="space-y-3">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
-                  <h3 className="font-brand-heading text-ui-card-title-lg">본문 작성</h3>
+                  <h3 className="font-ui-bold text-ui-card-title-lg">본문 작성</h3>
                 </div>
                 <Label htmlFor="title" className="text-ui-body-lg font-semibold">
                   제목 <span className="text-destructive">*</span>
@@ -912,7 +912,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               <PublicSurface variant="feature" padding="md" className="space-y-3">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="h-5 w-5 text-brand-highlight-ink" aria-hidden="true" />
-                  <h3 className="font-brand-heading text-ui-card-title-lg">첨부 자료</h3>
+                  <h3 className="font-ui-bold text-ui-card-title-lg">첨부 자료</h3>
                 </div>
                 <Label htmlFor="image" className="text-ui-body-lg font-semibold">
                   첨부파일 (선택사항)

@@ -74,7 +74,7 @@ export default function MypageDashboardHero({ user, todoCount, summaryState }: P
 
           <h1
             id="mypage-dashboard-hero-title"
-            className="break-keep font-brand-heading text-[1.65rem] leading-tight tracking-[-0.015em] bp-sm:text-[2rem] bp-lg:text-[2.35rem]"
+            className="break-keep font-ui-bold text-[1.65rem] leading-tight bp-sm:text-[2rem] bp-lg:text-[2.35rem]"
           >
             {user.name ?? "회원"}님, 내 이용 현황을 한눈에 확인하세요.
           </h1>

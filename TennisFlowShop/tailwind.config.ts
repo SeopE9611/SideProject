@@ -61,6 +61,7 @@ const config: Config = {
     },
     extend: {
       fontWeight: {
+        semibold: "500",
         "ui-regular": "400",
         "ui-medium": "500",
         "ui-bold": "700",

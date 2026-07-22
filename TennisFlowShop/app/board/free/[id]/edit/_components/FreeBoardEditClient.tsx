@@ -391,7 +391,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <span className="mx-1">›</span>
                 <span>글 수정</span>
               </div>
-              <h1 className="font-brand-heading text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
+              <h1 className="font-ui-bold text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
                 자유 게시판 글 수정
               </h1>
               <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
@@ -509,7 +509,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                 {/* 내용 */}
                 <section className="space-y-2 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5">
-                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">
+                  <h2 className="font-ui-bold text-ui-body-lg font-semibold text-foreground">
                     본문 작성
                   </h2>
                   <Label>내용</Label>
@@ -531,7 +531,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                 {/* 첨부 영역: 이미지 / 파일 탭 (작성 페이지와 동일 패턴) */}
                 <section className="space-y-3 rounded-panel border border-border bg-card p-4 shadow-soft md:p-5">
-                  <h2 className="font-brand-heading text-ui-body-lg font-semibold text-foreground">
+                  <h2 className="font-ui-bold text-ui-body-lg font-semibold text-foreground">
                     첨부 파일
                   </h2>
                   <Label>첨부 (선택)</Label>

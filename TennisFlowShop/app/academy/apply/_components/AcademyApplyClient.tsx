@@ -146,7 +146,7 @@ function SectionCard({
             )}
             <div className="min-w-0">
               {title && (
-                <h2 className="font-brand-heading text-ui-body-lg font-semibold tracking-[-0.015em] text-foreground">
+                <h2 className="font-ui-bold text-ui-body-lg font-semibold text-foreground">
                   {title}
                 </h2>
               )}

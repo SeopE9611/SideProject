@@ -32,7 +32,7 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
           </span>
           <p className="mt-3 text-ui-kicker text-muted-foreground">EASY START</p>
         </div>
-        <h2 className="break-keep font-brand-heading text-ui-section-title bp-lg:text-[3rem] bp-lg:leading-[1.05]">
+        <h2 className="break-keep font-ui-bold text-ui-section-title bp-lg:text-[3rem] bp-lg:leading-[1.05]">
           내 기록에 맞는 방법으로
           <br />
           빠르게 시작하세요.
@@ -46,7 +46,7 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
           <Card key={method.no} variant="feature" className="rounded-panel">
             <CardContent className="p-5 bp-sm:p-6">
               <p className="text-ui-label font-semibold text-brand-highlight-ink">{method.no}</p>
-              <h3 className="mt-4 text-ui-card-title-lg font-bold tracking-[-0.01em]">
+              <h3 className="mt-4 text-ui-card-title-lg font-bold ">
                 {method.title}
               </h3>
               <p className="mt-3 break-keep text-ui-body-sm text-muted-foreground">{method.copy}</p>

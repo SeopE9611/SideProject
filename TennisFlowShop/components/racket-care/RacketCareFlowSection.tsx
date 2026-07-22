@@ -46,7 +46,7 @@ export default function RacketCareFlowSection() {
           </span>
           <p className="mt-3 text-ui-kicker text-muted-foreground">SMART CARE FLOW</p>
         </div>
-        <h2 className="break-keep font-brand-heading text-ui-section-title bp-lg:text-[3rem] bp-lg:leading-[1.05]">
+        <h2 className="break-keep font-ui-bold text-ui-section-title bp-lg:text-[3rem] bp-lg:leading-[1.05]">
           등록부터 교체 신청까지,
           <br />
           끊기지 않는 하나의 흐름
@@ -95,7 +95,7 @@ export default function RacketCareFlowSection() {
             <p className="text-ui-kicker text-brand-highlight-ink">
               USER FLOW · {String(active + 1).padStart(2, "0")}
             </p>
-            <h3 className="mt-5 break-keep text-ui-section-title font-bold tracking-[-0.01em]">
+            <h3 className="mt-5 break-keep text-ui-section-title font-bold ">
               {step.title}
             </h3>
             <p className="mt-4 max-w-md break-keep text-ui-body-sm text-muted-foreground">

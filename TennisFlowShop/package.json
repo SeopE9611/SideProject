@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start",
     "smoke": "node scripts/smoke.mjs",
-    "lint": "eslint . --cache && npm run check:no-new-any && npm run check:color-policy && npm run check:token-palette-consistency",
+    "lint": "eslint . --cache && npm run check:no-new-any && npm run check:color-policy && npm run check:token-palette-consistency && npm run check:typography-policy",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "typecheck": "tsc --noEmit",
@@ -45,7 +45,8 @@
     "test:review-security": "node --test tests/review-security-integrity.test.mjs",
     "db:check-review-duplicates": "node scripts/db/check-review-duplicates.mjs",
     "test:review-management": "node --test tests/review-management-context.test.mjs",
-    "test:review-summary": "node --test tests/review-summary-cache.test.mjs"
+    "test:review-summary": "node --test tests/review-summary-cache.test.mjs",
+    "check:typography-policy": "node scripts/check-typography-policy.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

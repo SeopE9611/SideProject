@@ -213,7 +213,7 @@ export const RICH_TEXT_DOCUMENT_CLASS_NAME = [
 
   "[&_h2]:mb-3",
   "[&_h2]:mt-7",
-  "[&_h2]:font-brand-heading",
+  "[&_h2]:font-ui-bold",
   "[&_h2]:text-ui-section-title",
   "[&_h2]:font-semibold",
   "[&_h2]:leading-snug",
@@ -221,7 +221,7 @@ export const RICH_TEXT_DOCUMENT_CLASS_NAME = [
 
   "[&_h3]:mb-2",
   "[&_h3]:mt-6",
-  "[&_h3]:font-brand-heading",
+  "[&_h3]:font-ui-bold",
   "[&_h3]:text-ui-card-title",
   "[&_h3]:font-semibold",
   "[&_h3]:leading-snug",
