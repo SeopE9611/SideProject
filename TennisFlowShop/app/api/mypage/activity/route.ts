@@ -60,6 +60,43 @@ function resolvePaymentProvider(doc: any): string | null {
   return nullableTrim(doc?.paymentInfo?.provider) ?? nullableTrim(doc?.paymentProvider);
 }
 
+type ActivityPaymentStatusParams = {
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
+  totalPrice?: number | null;
+};
+
+function resolveActivityPaymentStatusLabel({
+  paymentStatus,
+  paymentMethod,
+  paymentProvider,
+  totalPrice,
+}: ActivityPaymentStatusParams): string {
+  const normalizedTotalPrice = toNullableFiniteNumber(totalPrice);
+  const hasExplicitPaymentEvidence = Boolean(
+    nullableTrim(paymentStatus) || nullableTrim(paymentMethod) || nullableTrim(paymentProvider),
+  );
+
+  if (normalizedTotalPrice !== null && normalizedTotalPrice <= 0) {
+    return getCustomerOrderPaymentStatusLabel({
+      paymentStatus,
+      paymentMethod,
+      paymentProvider,
+      totalPrice: normalizedTotalPrice,
+    });
+  }
+
+  if (!hasExplicitPaymentEvidence) return "결제 상태 확인 중";
+
+  return getCustomerOrderPaymentStatusLabel({
+    paymentStatus,
+    paymentMethod,
+    paymentProvider,
+    totalPrice: normalizedTotalPrice,
+  });
+}
+
 function resolveStringingPaymentContext(
   appDoc: any,
   linkedPayment?: {
@@ -846,6 +883,10 @@ export async function GET(req: Request) {
     else if (reasonText) cancelReasonSummary = reasonText;
 
     const withStringService = Boolean(o?.shippingInfo?.withStringService);
+    const paymentStatus = resolveRawPaymentStatus(o);
+    const paymentMethod = resolvePaymentMethod(o);
+    const paymentProvider = resolvePaymentProvider(o);
+    const totalPrice = calcOrderTotal(o);
     const createdAt = toISO(o.createdAt ?? new ObjectId(o._id).getTimestamp());
     const updatedAt = toISO(o.updatedAt ?? o.createdAt ?? new ObjectId(o._id).getTimestamp());
     const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
@@ -877,17 +918,17 @@ export async function GET(req: Request) {
             : typeof o.userConfirmedAt === "string"
               ? o.userConfirmedAt
               : null,
-        paymentStatus: resolveRawPaymentStatus(o),
-        paymentStatusLabel: getCustomerOrderPaymentStatusLabel({
-          paymentStatus: resolveRawPaymentStatus(o),
-          paymentProvider: resolvePaymentProvider(o),
-          paymentMethod: resolvePaymentMethod(o),
-          totalPrice: calcOrderTotal(o),
+        paymentStatus,
+        paymentStatusLabel: resolveActivityPaymentStatusLabel({
+          paymentStatus,
+          paymentMethod,
+          paymentProvider,
+          totalPrice,
         }),
-        paymentProvider: resolvePaymentProvider(o),
-        paymentMethod: resolvePaymentMethod(o),
+        paymentProvider,
+        paymentMethod,
         shippingMethod: resolveOrderShippingMethod(o?.shippingInfo),
-        totalPrice: calcOrderTotal(o),
+        totalPrice,
         firstItemName: first?.name ?? "(상품명 없음)",
         firstItemImageUrl: pickOrderItemImage(first),
         itemsCount: items.length,
@@ -928,6 +969,10 @@ export async function GET(req: Request) {
 
     const withStringService =
       Boolean(r?.stringing?.requested) || Boolean(r?.stringingApplicationId);
+    const paymentStatus = resolveRawPaymentStatus(r);
+    const paymentMethod = resolvePaymentMethod(r);
+    const paymentProvider = resolvePaymentProvider(r);
+    const totalAmount = toNullableFiniteNumber(r?.amount?.total);
     const outboundTracking =
       typeof r?.shipping?.outbound?.trackingNumber === "string"
         ? r.shipping.outbound.trackingNumber.trim()
@@ -970,15 +1015,15 @@ export async function GET(req: Request) {
         imageUrl: r.racketId ? (rentalImageByRacketId.get(String(r.racketId)) ?? null) : null,
         days: r.days,
         totalAmount: r?.amount?.total,
-        paymentStatus: resolveRawPaymentStatus(r),
-        paymentStatusLabel: getCustomerOrderPaymentStatusLabel({
-          paymentStatus: resolveRawPaymentStatus(r),
-          paymentProvider: resolvePaymentProvider(r),
-          paymentMethod: resolvePaymentMethod(r),
-          totalPrice: toNullableFiniteNumber(r?.amount?.total),
+        paymentStatus,
+        paymentStatusLabel: resolveActivityPaymentStatusLabel({
+          paymentStatus,
+          paymentMethod,
+          paymentProvider,
+          totalPrice: totalAmount,
         }),
-        paymentProvider: resolvePaymentProvider(r),
-        paymentMethod: resolvePaymentMethod(r),
+        paymentProvider,
+        paymentMethod,
         deposit: r?.amount?.deposit,
         fee: r?.amount?.fee,
         withStringService,
