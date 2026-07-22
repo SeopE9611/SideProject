@@ -301,7 +301,16 @@ export default function FreeBoardWriteClient() {
       const data = await res.json();
 
       if (!res.ok || !data?.ok) {
-        setErrorMsg(data?.error ?? "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        const detailMessage =
+          Array.isArray(data?.details) && typeof data.details[0]?.message === "string"
+            ? data.details[0].message
+            : null;
+        const msg =
+          detailMessage ??
+          data?.message ??
+          data?.error ??
+          "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        setErrorMsg(msg);
         return;
       }
 
