@@ -260,6 +260,28 @@ const formatDateTime = (dateString: string) => {
 };
 const formatCurrency = (amount: number) => `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
 
+const isPositiveFiniteAmount = (value: number | null | undefined): value is number =>
+  typeof value === "number" && Number.isFinite(value) && value > 0;
+
+const getRentalStringingStatusBadgeSpec = (status?: string | null) => {
+  const raw = String(status ?? "").trim();
+  const normalized = raw.toLowerCase();
+
+  if (raw === "승인" || normalized === "approved") {
+    return getApplicationStatusBadgeSpec("작업 대기");
+  }
+
+  if (raw === "거절" || normalized === "rejected") {
+    return getApplicationStatusBadgeSpec("취소");
+  }
+
+  if (raw.includes("환불") || normalized === "refunded" || normalized === "refund_completed") {
+    return getApplicationStatusBadgeSpec("취소");
+  }
+
+  return getApplicationStatusBadgeSpec(raw);
+};
+
 type Props = {
   id: string;
   backUrl?: string;
@@ -437,9 +459,20 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   const total = data.totalAmount ?? data.amount?.total ?? null;
   const amountValues = [fee, deposit, stringPrice, stringingFee];
   const hasKnownAmount = amountValues.some((amount) => typeof amount === "number");
-  const hasOnlyZeroAmounts =
-    amountValues.every((amount) => typeof amount === "number") &&
-    amountValues.every((amount) => amount === 0);
+  const amountBreakdownItems = [
+    isPositiveFiniteAmount(fee) ? `대여료 ${formatCurrency(fee)}` : null,
+    isPositiveFiniteAmount(deposit) ? `보증금 ${formatCurrency(deposit)}` : null,
+    isPositiveFiniteAmount(stringPrice) ? `스트링 ${formatCurrency(stringPrice)}` : null,
+    isPositiveFiniteAmount(stringingFee) ? `교체서비스 ${formatCurrency(stringingFee)}` : null,
+  ].filter((item): item is string => Boolean(item));
+  const amountBreakdownLabel =
+    amountBreakdownItems.length > 0
+      ? amountBreakdownItems.join(" · ")
+      : total === 0
+        ? "추가 금액 없음"
+        : hasKnownAmount
+          ? "확인 가능한 금액 정보가 없습니다."
+          : "금액 정보 확인 중";
 
   const banner = getDepositBanner({
     status: data.status,
@@ -489,7 +522,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
     ? getCustomerApplicationStatusLabel(activeStringingStatus)
     : "신청서 작성 필요";
   const stringingStatusBadgeSpec = activeStringingStatus
-    ? getApplicationStatusBadgeSpec(activeStringingStatus)
+    ? getRentalStringingStatusBadgeSpec(activeStringingStatus)
     : getWorkflowMetaBadgeSpec("action_required");
 
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
@@ -551,7 +584,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   );
   const installedStringLabel = installedStringNames.length
     ? installedStringNames.join(", ")
-    : stringPrice > 0 || stringingFee > 0
+    : isPositiveFiniteAmount(stringPrice) || isPositiveFiniteAmount(stringingFee)
       ? "관리자 확인 중"
       : "선택된 스트링 정보 없음";
 
@@ -1001,19 +1034,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 </div>
 
                 <p className="break-keep text-ui-body-sm text-foreground/80">
-                  {[
-                    fee > 0 ? `대여료 ${formatCurrency(fee)}` : null,
-                    deposit > 0 ? `보증금 ${formatCurrency(deposit)}` : null,
-                    stringPrice > 0 ? `스트링 ${formatCurrency(stringPrice)}` : null,
-                    stringingFee > 0 ? `교체서비스 ${formatCurrency(stringingFee)}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ") ||
-                    (hasKnownAmount
-                      ? hasOnlyZeroAmounts
-                        ? "추가 금액 없음"
-                        : "확인 가능한 금액 정보가 없습니다."
-                      : "금액 정보 확인 중")}
+                  {amountBreakdownLabel}
                 </p>
 
                 <p className="text-ui-body-sm text-muted-foreground">{depositRefundLabel}</p>
