@@ -867,9 +867,18 @@ export default function StringingApplicationDetailClient({
 
   // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
   const primaryLinkedSource = data.primaryLinkedSource ?? null;
+  const linkedOrderSummary = data.linkedOrderSummary ?? null;
+  const linkedRentalSummary = data.linkedRentalSummary ?? null;
+  const hasOrderLink = Boolean(linkedOrderSummary || data.orderId);
+  const hasRentalLink = Boolean(linkedRentalSummary || data.rentalId);
+  const hasAnyLinkedReference = hasOrderLink || hasRentalLink;
   const isOrderLinkedApplication = primaryLinkedSource === "order";
   const isRentalLinkedApplication = primaryLinkedSource === "rental";
-  const isLinkedApplication = Boolean(data.orderId || data.rentalId || primaryLinkedSource);
+  const isAmbiguousLinkedApplication =
+    primaryLinkedSource === null && hasOrderLink && hasRentalLink;
+  const isUnresolvedLinkedApplication = primaryLinkedSource === null && hasAnyLinkedReference;
+  const isStandaloneApplication = primaryLinkedSource === null && !hasAnyLinkedReference;
+  const isLinkedApplication = hasAnyLinkedReference || primaryLinkedSource !== null;
   const isEditableAllowed =
     !isRentalLinkedApplication && (isAdmin || userEditableStatuses.includes(data.status));
 
@@ -950,13 +959,13 @@ export default function StringingApplicationDetailClient({
       ? `/admin/rentals/${encodeURIComponent(String(linkedRentalId))}`
       : null;
   const linkedStageCtaLabel = data.orderId ? "주문에서 진행 단계 변경" : "대여에서 진행 단계 확인";
-  const applicationContext = isRentalLinkedApplication
+  const applicationContext = isAmbiguousLinkedApplication
     ? {
-        label: "대여 연결 하위 작업",
-        title: "대여에 포함된 교체 작업",
+        label: "주문·대여 연결 작업",
+        title: "주문과 대여에 연결된 교체 작업",
         description:
-          "이 작업은 대여 상세와 연결되어 있습니다. 대여 흐름 안에서 입고·작업·인도 상태를 함께 확인하세요.",
-        payment: "결제는 대여 결제에 포함됨",
+          "이 신청서는 주문과 대여 양쪽에 연결되어 있습니다. 연결 문서에서 결제와 진행 상태를 각각 확인해 주세요.",
+        payment: "연결 결제 source 확인 필요",
       }
     : isOrderLinkedApplication
       ? {
@@ -966,13 +975,28 @@ export default function StringingApplicationDetailClient({
             "이 작업은 주문 상세와 연결되어 있습니다. 결제는 주문에서 처리되며, 진행 단계는 주문 상세의 연결 진행 단계와 함께 확인하세요.",
           payment: "결제는 주문 결제에 포함됨",
         }
-      : {
-          label: "단독 교체서비스 신청서",
-          title: "교체서비스 신청서",
-          description:
-            "이 신청서 자체가 대표 업무입니다. 접수·작업·완성 라켓 배송/수령을 이 화면에서 처리합니다.",
-          payment: "결제는 이 신청서에서 처리합니다.",
-        };
+      : isRentalLinkedApplication
+        ? {
+            label: "대여 연결 하위 작업",
+            title: "대여에 포함된 교체 작업",
+            description:
+              "이 작업은 대여 상세와 연결되어 있습니다. 대여 흐름 안에서 입고·작업·인도 상태를 함께 확인하세요.",
+            payment: "결제는 대여 결제에 포함됨",
+          }
+        : isUnresolvedLinkedApplication
+          ? {
+              label: "연결 거래 확인 중",
+              title: "연결된 교체 작업",
+              description: "연결된 주문 또는 대여 정보를 확인하고 있습니다.",
+              payment: "연결 결제 확인 필요",
+            }
+          : {
+              label: "단독 교체서비스 신청서",
+              title: "교체서비스 신청서",
+              description:
+                "이 신청서 자체가 대표 업무입니다. 접수·작업·완성 라켓 배송/수령을 이 화면에서 처리합니다.",
+              payment: "결제는 이 신청서에서 처리합니다.",
+            };
   const effectiveStockDeduction =
     data.stockDeduction ??
     (data as any).stringing?.stockDeduction ??
@@ -1015,15 +1039,17 @@ export default function StringingApplicationDetailClient({
   const applicationPaymentStatus = data.paymentStatus ?? linkedPayment?.status ?? null;
   const applicationPaymentMethod = linkedPayment?.method ?? null;
   const applicationPaymentProvider = linkedPayment?.provider ?? null;
-  const linkedOrderSummary = data.linkedOrderSummary ?? null;
-  const linkedRentalSummary = data.linkedRentalSummary ?? null;
   const paymentContextLabel = packageApplied
     ? "패키지 사용"
     : primaryLinkedSource === "order"
       ? "주문 결제에 포함"
       : primaryLinkedSource === "rental"
         ? "대여 결제에 포함"
-        : "단독 신청서 결제";
+        : isAmbiguousLinkedApplication
+          ? "주문·대여 연결 결제 확인 필요"
+          : isUnresolvedLinkedApplication
+            ? "연결 결제 확인 필요"
+            : "단독 신청서 결제";
   const paymentStatusLabel = packageApplied
     ? "결제 불필요"
     : primaryLinkedSource === "order" && linkedOrderSummary
@@ -1040,16 +1066,46 @@ export default function StringingApplicationDetailClient({
             paymentProvider: linkedRentalSummary.paymentProvider,
             totalPrice: linkedRentalSummary.totalAmount,
           })
-        : getCustomerTransactionPaymentStatusLabel({
-            paymentStatus: applicationPaymentStatus,
-            paymentMethod: applicationPaymentMethod,
-            paymentProvider: applicationPaymentProvider,
-            totalPrice,
-          });
+        : isUnresolvedLinkedApplication
+          ? "결제 상태 확인 중"
+          : getCustomerTransactionPaymentStatusLabel({
+              paymentStatus: applicationPaymentStatus,
+              paymentMethod: applicationPaymentMethod,
+              paymentProvider: applicationPaymentProvider,
+              totalPrice,
+            });
+  const serviceAmount = totalPrice;
+  const transactionPaymentAmount = packageApplied
+    ? null
+    : primaryLinkedSource === "order"
+      ? (linkedOrderSummary?.totalAmount ?? null)
+      : primaryLinkedSource === "rental"
+        ? (linkedRentalSummary?.totalAmount ?? null)
+        : isUnresolvedLinkedApplication
+          ? null
+          : totalPrice;
+  const transactionPaymentAmountTitle = packageApplied
+    ? "이번 결제"
+    : primaryLinkedSource === "order"
+      ? "주문 총 결제금액"
+      : primaryLinkedSource === "rental"
+        ? "대여 총 결제금액"
+        : isUnresolvedLinkedApplication
+          ? "연결 거래 결제금액"
+          : "최종 결제금액";
+  const transactionPaymentAmountLabel = packageApplied
+    ? "패키지 사용"
+    : isAmbiguousLinkedApplication
+      ? "연결 결제 확인 필요"
+      : isUnresolvedLinkedApplication
+        ? "연결 결제 확인 중"
+        : transactionPaymentAmount === null
+          ? "금액 확인 중"
+          : `${transactionPaymentAmount.toLocaleString()}원`;
   const paymentStatus = paymentStatusLabel;
   const linkedPaymentContextLabel = paymentContextLabel;
   const applicationStatusLabel = getCustomerApplicationStatusLabel(data.status);
-  const applicationStatusBadgeSpec = getApplicationStatusBadgeSpec(data.status);
+  const applicationStatusBadgeSpec = getCustomerStringingStatusBadgeSpec(data.status);
   const paymentStatusBadgeSpec = getPaymentStatusBadgeSpec(paymentStatusLabel);
   const linkedOrderStatusLabel = linkedOrderSummary
     ? getCustomerOrderStatusLabel(linkedOrderSummary.status)
@@ -1184,7 +1240,9 @@ export default function StringingApplicationDetailClient({
       ? (linkedOrderSummary?.paymentMethod ?? linkedPayment?.method ?? null)
       : primaryLinkedSource === "rental"
         ? (linkedRentalSummary?.paymentMethod ?? linkedPayment?.method ?? null)
-        : applicationPaymentMethod;
+        : isUnresolvedLinkedApplication
+          ? null
+          : applicationPaymentMethod;
   const standaloneBankKey = linkedPayment?.bank ?? data.shippingInfo?.bank ?? "kakao";
   const standaloneBankInfo = bankLabelMap[standaloneBankKey] ?? bankLabelMap.kakao;
   const standaloneDepositor = String(
@@ -1193,7 +1251,8 @@ export default function StringingApplicationDetailClient({
   const shouldShowCustomerBankAccount =
     !isAdmin &&
     !packageApplied &&
-    primaryLinkedSource === null &&
+    isStandaloneApplication &&
+    !isUnresolvedLinkedApplication &&
     totalPrice !== null &&
     totalPrice > 0 &&
     isBankTransferMethod(paymentMethodForDisplay) &&
@@ -1527,7 +1586,9 @@ export default function StringingApplicationDetailClient({
               <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
               <MypageInfoField
                 label="서비스 금액"
-                value={totalPrice === null ? "금액 확인 중" : `${totalPrice.toLocaleString()}원`}
+                value={
+                  serviceAmount === null ? "금액 확인 중" : `${serviceAmount.toLocaleString()}원`
+                }
               />
               {linkedOrderStatusLabel && (
                 <MypageInfoField
@@ -3193,18 +3254,18 @@ export default function StringingApplicationDetailClient({
                             <div className="space-y-1 text-ui-body-sm text-foreground/80">
                               <p>
                                 서비스 금액{" "}
-                                {totalPrice === null
+                                {serviceAmount === null
                                   ? "금액 확인 중"
-                                  : `${totalPrice.toLocaleString()}원`}
+                                  : `${serviceAmount.toLocaleString()}원`}
                               </p>
                               {packageApplied && <p>패키지 {packageUsedCount}회 사용</p>}
                             </div>
                             <div className="mt-3 rounded-xl border border-brand-highlight-ink/15 bg-brand-highlight-muted/35 p-4 ring-1 ring-brand-highlight-ink/15">
-                              <p className="text-ui-label text-muted-foreground">최종 결제금액</p>
+                              <p className="text-ui-label text-muted-foreground">
+                                {transactionPaymentAmountTitle}
+                              </p>
                               <p className="mt-1 text-right text-ui-title-sm font-semibold text-brand-highlight-ink">
-                                {totalPrice === null
-                                  ? "금액 확인 중"
-                                  : `${totalPrice.toLocaleString()}원`}
+                                {transactionPaymentAmountLabel}
                               </p>
                             </div>
                           </div>
@@ -3796,6 +3857,38 @@ export default function StringingApplicationDetailClient({
     </main>
   );
 }
+
+const getCustomerStringingStatusBadgeSpec = (status?: string | null) => {
+  const raw = String(status ?? "").trim();
+  const normalized = raw.toLowerCase();
+
+  if (raw === "승인" || normalized === "approved") {
+    return getApplicationStatusBadgeSpec("작업 대기");
+  }
+
+  if (raw === "거절" || normalized === "rejected") {
+    return getApplicationStatusBadgeSpec("취소");
+  }
+
+  if (raw.includes("환불") || normalized === "refunded" || normalized === "refund_completed") {
+    return getApplicationStatusBadgeSpec("취소");
+  }
+
+  if (raw === "검토중") {
+    return getApplicationStatusBadgeSpec("검토 중");
+  }
+
+  if (raw === "작업중") {
+    return getApplicationStatusBadgeSpec("작업 중");
+  }
+
+  if (raw === "작업완료") {
+    return getApplicationStatusBadgeSpec("교체완료");
+  }
+
+  return getApplicationStatusBadgeSpec(raw);
+};
+
 const isBankTransferMethod = (method?: string | null) => {
   const normalized = String(method ?? "")
     .trim()
