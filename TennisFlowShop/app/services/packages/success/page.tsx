@@ -12,7 +12,7 @@ import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatKoreanPhone } from "@/lib/phone";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import {
   ArrowRight,
   Calendar,
@@ -36,14 +36,38 @@ export const metadata: Metadata = {
   title: "패키지 결제 완료",
 };
 
-// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
+function resolvePackageSuccessViewer(
+  accessToken?: string,
+  refreshToken?: string,
+): JwtPayload | null {
+  const parseViewerPayload = (payload: unknown): JwtPayload | null => {
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+
+    const viewerPayload = payload as JwtPayload;
+    const viewerUserId = typeof viewerPayload.sub === "string" ? viewerPayload.sub : "";
+    if (!viewerUserId || viewerUserId !== viewerUserId.trim() || !ObjectId.isValid(viewerUserId)) {
+      return null;
+    }
+
+    return viewerPayload;
+  };
+
+  if (accessToken) {
+    try {
+      const viewerPayload = parseViewerPayload(verifyAccessToken(accessToken));
+      if (viewerPayload) return viewerPayload;
+    } catch {}
   }
+
+  if (refreshToken) {
+    try {
+      return parseViewerPayload(jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!));
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
 }
 
 export default async function PackageSuccessPage({
@@ -58,73 +82,48 @@ export default async function PackageSuccessPage({
 
   if (!packageOrderId || !ObjectId.isValid(packageOrderId)) return notFound();
 
-  // 비회원 주문/신청 차단 모드면, 패키지 success 페이지도 로그인 필수로 막는다.
-  // (packageOrderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)
-  const guestOrderMode = (
-    process.env.GUEST_ORDER_MODE ??
-    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ??
-    "legacy"
-  ).trim();
-  const allowGuestCheckout = guestOrderMode === "on";
-  if (!allowGuestCheckout) {
-    const gateCookieStore = await cookies();
-    const token = gateCookieStore.get("accessToken")?.value;
-    const payload = safeVerifyAccessToken(token);
-    if (!payload?.sub) {
-      const qs = new URLSearchParams();
-      qs.set("packageOrderId", String(packageOrderId));
-      const next = `/services/packages/success?${qs.toString()}`;
-      return <LoginGate next={next} variant="checkout" />;
-    }
-  }
-
-  const client = await clientPromise;
-  const db = client.db();
-  const packageOrder = await db
-    .collection("packageOrders")
-    .findOne({ _id: new ObjectId(packageOrderId) });
-
-  if (!packageOrder) return notFound();
-
   const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
-
-  let isLoggedIn = false;
-  if (refreshToken) {
-    try {
-      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
-      isLoggedIn = true;
-    } catch {}
+  const viewerPayload = resolvePackageSuccessViewer(accessToken, refreshToken);
+  if (!viewerPayload) {
+    const qs = new URLSearchParams();
+    qs.set("packageOrderId", packageOrderId);
+    const next = `/services/packages/success?${qs.toString()}`;
+    return <LoginGate next={next} variant="checkout" />;
   }
+
+  const viewerUserId = viewerPayload.sub;
+  if (typeof viewerUserId !== "string" || !ObjectId.isValid(viewerUserId)) return notFound();
+  const viewerObjectId = new ObjectId(viewerUserId);
 
   // --- 관리자 판별 ---
-  const cookieStore2 = await cookies();
-  const accessToken = cookieStore2.get("accessToken")?.value;
-
-  let authPayload: any = null;
-  try {
-    if (accessToken) authPayload = verifyAccessToken(accessToken);
-  } catch {}
-  if (!authPayload && refreshToken) {
-    try {
-      authPayload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
-    } catch {}
-  }
-
   // 토큰 페이로드 기반
   const tokenIsAdmin =
-    authPayload?.role === "admin" ||
-    authPayload?.roles?.includes?.("admin") ||
-    authPayload?.isAdmin === true;
+    viewerPayload.role === "admin" ||
+    (Array.isArray(viewerPayload.roles) && viewerPayload.roles.includes("admin")) ||
+    viewerPayload.isAdmin === true;
 
   // 이메일 화이트리스트(옵션)
   const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  const emailIsAdmin = ADMIN_EMAILS.includes((authPayload?.email ?? "").toLowerCase());
+  const emailIsAdmin = ADMIN_EMAILS.includes(
+    typeof viewerPayload.email === "string" ? viewerPayload.email.toLowerCase() : "",
+  );
 
   const isAdmin = tokenIsAdmin || emailIsAdmin;
+  const packageOrderObjectId = new ObjectId(packageOrderId);
+  const packageOrderFilter = isAdmin
+    ? { _id: packageOrderObjectId }
+    : { _id: packageOrderObjectId, userId: viewerObjectId };
+
+  const client = await clientPromise;
+  const db = client.db();
+  const packageOrder = await db.collection("packageOrders").findOne(packageOrderFilter);
+
+  if (!packageOrder) return notFound();
 
   // 운영 긴급 노출 스위치
   const showDevBtn = isAdmin || process.env.NEXT_PUBLIC_SHOW_DEV_BUTTON === "1";
@@ -173,9 +172,7 @@ export default async function PackageSuccessPage({
     popular: Number(packageInfo.sessions) === 30,
   });
   const isOnlinePayment = isTossPayment || isNicePayment;
-  const lookupHref = isLoggedIn
-    ? "/mypage?tab=passes"
-    : `/package-lookup/details/${packageOrder._id}`;
+  const lookupHref = "/mypage?tab=passes";
 
   return (
     <>
