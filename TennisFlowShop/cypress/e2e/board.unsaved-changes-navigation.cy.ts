@@ -23,11 +23,19 @@ describe("게시판 작성·수정 이탈 guard", () => {
 
   const makeDirty = () => cy.get("#title").clear().type(title);
 
+  const stubConfirm = (result?: boolean) => {
+    cy.window().then((win) => {
+      const confirmStub = cy.stub(win, "confirm");
+      if (result !== undefined) confirmStub.returns(result);
+      cy.wrap(confirmStub, { log: false }).as("confirm");
+    });
+  };
+
   beforeEach(stubSession);
 
   it("내부 Link 취소: capture와 React onClick이 confirm을 한 번만 호출한다", () => {
     openEditor(); makeDirty();
-    cy.window().then((win) => cy.stub(win, "confirm").returns(false).as("confirm"));
+    stubConfirm(false);
     cy.get('a[href="/"]').first().click();
     cy.get("@confirm").should("have.been.calledOnce");
     cy.location("pathname").should("eq", "/board/notice/write");
@@ -36,7 +44,7 @@ describe("게시판 작성·수정 이탈 guard", () => {
 
   it("내부 Link 승인: confirm 한 번 후 목적지로 이동한다", () => {
     openEditor(); makeDirty();
-    cy.window().then((win) => cy.stub(win, "confirm").returns(true).as("confirm"));
+    stubConfirm(true);
     cy.get('a[href="/"]').first().click();
     cy.get("@confirm").should("have.been.calledOnce");
     cy.location("pathname").should("eq", "/");
@@ -44,9 +52,9 @@ describe("게시판 작성·수정 이탈 guard", () => {
 
   it("모바일 메뉴 취소: Sheet를 닫지 않고 현재 페이지를 유지한다", () => {
     cy.viewport("iphone-6"); openEditor(); makeDirty();
-    cy.window().then((win) => cy.stub(win, "confirm").returns(false).as("confirm"));
-    cy.findByRole("button", { name: "메뉴 열기" }).first().click();
-    cy.findByRole("button", { name: "사용자 메뉴 더보기" }).click();
+    stubConfirm(false);
+    cy.get('button[aria-label="메뉴 열기"]').first().click();
+    cy.get('button[aria-label="사용자 메뉴 더보기"]').click();
     cy.contains('[role="menuitem"]', "마이페이지").click();
     cy.get("@confirm").should("have.been.calledOnce");
     cy.location("pathname").should("eq", "/board/notice/write");
@@ -56,7 +64,7 @@ describe("게시판 작성·수정 이탈 guard", () => {
   it("저장 성공: PATCH 뒤 이동은 confirm 없이 처리한다", () => {
     openEditor(); makeDirty();
     cy.intercept("PATCH", `/api/boards/${noticeId}`, { statusCode: 200, body: { ok: true, item: { _id: noticeId } } }).as("patchNotice");
-    cy.window().then((win) => cy.stub(win, "confirm").as("confirm"));
+    stubConfirm();
     cy.get(editor).click().type(" 저장 성공 본문");
     cy.contains("button", "공지사항 수정").click();
     cy.wait("@patchNotice");
@@ -69,7 +77,7 @@ describe("게시판 작성·수정 이탈 guard", () => {
     cy.intercept("PATCH", `/api/boards/${noticeId}`, { statusCode: 500, body: { ok: false, error: "저장 실패" } }).as("patchNotice");
     cy.get(editor).click().type(" 저장 실패 본문");
     cy.contains("button", "공지사항 수정").click(); cy.wait("@patchNotice");
-    cy.window().then((win) => cy.stub(win, "confirm").returns(false).as("confirm"));
+    stubConfirm(false);
     cy.get('a[href="/"]').first().click();
     cy.get("@confirm").should("have.been.calledOnce");
     cy.get("#title").should("have.value", title);
@@ -78,7 +86,7 @@ describe("게시판 작성·수정 이탈 guard", () => {
   it("첫 뒤로가기: contenteditable 포커스 상태에서도 즉시 한 번 확인한다", () => {
     cy.visit("/"); openEditor(); makeDirty();
     cy.get(editor).click().type(" 뒤로가기 본문");
-    cy.window().then((win) => cy.stub(win, "confirm").returns(false).as("confirm"));
+    stubConfirm(false);
     cy.go("back");
     cy.get("@confirm").should("have.been.calledOnce");
     cy.location("pathname").should("eq", "/board/notice/write");
