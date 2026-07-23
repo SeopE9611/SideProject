@@ -189,6 +189,10 @@ export default function PackageOrdersClient() {
     !!value && USAGE_VALUES.includes(value as PackageUsageFilter);
   const isPaymentFilter = (value: string | null): value is PackagePaymentFilter =>
     !!value && PAYMENT_VALUES.includes(value as PackagePaymentFilter);
+  const isActivationFilter = (value: string | null): value is PackageActivationFilter =>
+    !!value && ACTIVATION_VALUES.includes(value as PackageActivationFilter);
+  const isAttentionFilter = (value: string | null): value is PackageAttentionFilter =>
+    !!value && ATTENTION_VALUES.includes(value as PackageAttentionFilter);
   const isServiceTypeFilter = (value: string | null): value is "all" | ServiceType =>
     !!value && SERVICE_TYPE_VALUES.includes(value as "all" | ServiceType);
   const isPackageTypeFilter = (value: string | null): value is "all" | PackageType =>
@@ -232,21 +236,24 @@ export default function PackageOrdersClient() {
       let sortDirection: "asc" | "desc" = defaults.sortDirection;
       if (sortParam) {
         const [rk, rd] = sortParam.split(":");
+        const normalizedSortKey = rk === "status" ? "usage" : rk;
         if (
-          rk &&
+          normalizedSortKey &&
           [
             "customer",
             "purchaseDate",
             "expiryDate",
             "remainingSessions",
             "price",
-            "status",
+            "usage",
             "payment",
             "package",
             "progress",
-          ].includes(rk)
+            "activation",
+            "attention",
+          ].includes(normalizedSortKey)
         )
-          sortBy = rk as SortKey;
+          sortBy = normalizedSortKey as SortKey;
         if (rd === "asc" || rd === "desc") sortDirection = rd;
       }
 
@@ -587,6 +594,8 @@ export default function PackageOrdersClient() {
     usageFilter !== "all" ||
     packageTypeFilter !== "all" ||
     paymentFilter !== "all" ||
+    activationFilter !== "all" ||
+    attentionFilter !== "all" ||
     serviceTypeFilter !== "all" ||
     presetFilter === PAYMENT_CHECK_PRESET;
 
@@ -597,6 +606,8 @@ export default function PackageOrdersClient() {
       usageFilter: "all",
       packageTypeFilter: "all",
       paymentFilter: "all",
+      activationFilter: "all",
+      attentionFilter: "all",
       serviceTypeFilter: "all",
       presetFilter: null,
       page: 1,
@@ -610,6 +621,8 @@ export default function PackageOrdersClient() {
       usageFilter: PackageUsageFilter;
       packageTypeFilter: "all" | PackageType;
       paymentFilter: PackagePaymentFilter;
+      activationFilter: PackageActivationFilter;
+      attentionFilter: PackageAttentionFilter;
       serviceTypeFilter: "all" | ServiceType;
       presetFilter: PackagePresetFilter;
     }>,
@@ -619,6 +632,8 @@ export default function PackageOrdersClient() {
       usageFilter: "all",
       packageTypeFilter: "all",
       paymentFilter: "all",
+      activationFilter: "all",
+      attentionFilter: "all",
       serviceTypeFilter: "all",
       presetFilter: null,
       page: 1,
@@ -629,9 +644,17 @@ export default function PackageOrdersClient() {
   // 현재 적용된 필터를 사람이 읽기 쉬운 라벨로 변환합니다.
   const activeFilterLabels = [
     searchTerm.trim() ? `검색어: ${searchTerm.trim()}` : null,
-    usageFilter !== "all" ? `상태: ${usageFilter}` : null,
+    usageFilter !== "all" ? `이용권: ${getAdminPackageUsageLabel(usageFilter)}` : null,
     packageTypeFilter !== "all" ? `유형: ${packageTypeFilter}` : null,
-    paymentFilter !== "all" ? `결제: ${paymentFilter}` : null,
+    paymentFilter !== "all"
+      ? `결제: ${paymentFilter === "pending_any" ? "결제 확인 대기" : getAdminPackagePaymentLabel(paymentFilter)}`
+      : null,
+    activationFilter !== "all"
+      ? `활성화: ${getAdminPackageActivationLabel(activationFilter)}`
+      : null,
+    attentionFilter !== "all"
+      ? `운영: ${attentionFilter === "needs_attention" ? "확인 필요" : "확인 완료"}`
+      : null,
     serviceTypeFilter !== "all" ? `서비스: ${serviceTypeFilter}` : null,
     presetFilter === PAYMENT_CHECK_PRESET ? "패키지 결제/활성화 대기" : null,
   ].filter((label): label is string => Boolean(label));
@@ -665,8 +688,10 @@ export default function PackageOrdersClient() {
     progress: "text-center tabular-nums",
     buy: "text-right tabular-nums",
     expire: "text-right tabular-nums",
-    status: "text-center",
+    usage: "text-center",
     payment: "text-center",
+    activation: "text-center",
+    attention: "text-center",
     price: "text-right tabular-nums",
     actions: "text-right",
   } as const;
@@ -678,11 +703,6 @@ export default function PackageOrdersClient() {
     }
     return "none";
   };
-
-  // 연장 반영된 만료일
-  function getExpirySource(pkg: PackageListItem): string | null {
-    return pkg?.expiryDate ?? null;
-  }
 
   return (
     <AdminPageShell variant="wide" className="py-6">
@@ -696,18 +716,34 @@ export default function PackageOrdersClient() {
       />
 
       {/* 통계 카드 */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5 mb-6">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-6">
             <div className="flex min-w-0 items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
+                <p className="text-sm font-medium text-muted-foreground">전체 결과</p>
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
                   {kpiTotal === null ? "-" : kpiTotal}
                 </div>
               </div>
               <div className="shrink-0 bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
                 <Package className="h-6 w-6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={adminSurface.kpiCard}>
+          <CardContent className="p-6">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-muted-foreground">운영 확인 필요</p>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
+                  {kpiNeedsAttention === null ? "-" : kpiNeedsAttention}
+                </div>
+              </div>
+              <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
+                <Filter className="h-6 w-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -733,7 +769,7 @@ export default function PackageOrdersClient() {
           <CardContent className="p-6">
             <div className="flex min-w-0 items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">총 매출</p>
+                <p className="text-sm font-medium text-muted-foreground">결제 완료 금액</p>
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
                   {kpiRevenue === null ? "집계 중" : formatCurrency(kpiRevenue)}
                 </div>
@@ -749,7 +785,7 @@ export default function PackageOrdersClient() {
           <CardContent className="p-6">
             <div className="flex min-w-0 items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
+                <p className="text-sm font-medium text-muted-foreground">30일 내 만료</p>
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
                   {kpiExpSoon === null ? "-" : kpiExpSoon}
                 </div>
@@ -779,27 +815,33 @@ export default function PackageOrdersClient() {
           <Button
             type="button"
             size="sm"
-            variant={presetFilter === PAYMENT_CHECK_PRESET ? "default" : "outline"}
+            variant={attentionFilter === "needs_attention" ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
-                presetFilter: PAYMENT_CHECK_PRESET,
+                attentionFilter: "needs_attention",
               })
             }
           >
-            결제/활성화 대기
+            운영 확인 필요
           </Button>
 
           <Button
             type="button"
             size="sm"
-            variant={usageFilter === "available" ? "default" : "outline"}
+            variant={
+              usageFilter === "available" && paymentFilter === "paid" && attentionFilter === "clear"
+                ? "default"
+                : "outline"
+            }
             onClick={() =>
               applyQuickView({
                 usageFilter: "available",
+                paymentFilter: "paid",
+                attentionFilter: "clear",
               })
             }
           >
-            활성
+            사용 가능
           </Button>
 
           <Button
@@ -812,33 +854,29 @@ export default function PackageOrdersClient() {
               })
             }
           >
-            결제대기
+            결제 확인 대기
           </Button>
 
           <Button
             type="button"
             size="sm"
-            variant={usageFilter === "expired" ? "default" : "outline"}
+            variant={activationFilter === "pending_issue" ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
-                usageFilter: "expired",
+                activationFilter: "pending_issue",
               })
             }
           >
-            만료
+            발급 처리 중
           </Button>
 
           <Button
             type="button"
             size="sm"
-            variant={usageFilter === "cancelled" ? "default" : "outline"}
-            onClick={() =>
-              applyQuickView({
-                usageFilter: "cancelled",
-              })
-            }
+            variant={presetFilter === PAYMENT_CHECK_PRESET ? "default" : "outline"}
+            onClick={() => applyQuickView({ presetFilter: PAYMENT_CHECK_PRESET })}
           >
-            취소
+            결제·활성화 확인
           </Button>
         </CardContent>
       </Card>
@@ -912,7 +950,7 @@ export default function PackageOrdersClient() {
             </div>
 
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7">
               <Select
                 value={usageFilter}
                 onValueChange={(v) => {
@@ -920,15 +958,17 @@ export default function PackageOrdersClient() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="패키지 상태" />
+                  <SelectValue placeholder="이용권 상태" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">모든 상태</SelectItem>
-                  <SelectItem value="비활성">비활성</SelectItem>
-                  <SelectItem value="활성">활성</SelectItem>
-                  <SelectItem value="종료">종료</SelectItem>
-                  <SelectItem value="만료">만료</SelectItem>
-                  <SelectItem value="취소">취소</SelectItem>
+                  <SelectItem value="all">모든 이용권</SelectItem>
+                  <SelectItem value="available">사용 가능</SelectItem>
+                  <SelectItem value="not_issued">미발급</SelectItem>
+                  <SelectItem value="paused">일시정지</SelectItem>
+                  <SelectItem value="exhausted">횟수 소진</SelectItem>
+                  <SelectItem value="expired">기간 만료</SelectItem>
+                  <SelectItem value="cancelled">이용권 취소</SelectItem>
+                  <SelectItem value="unknown">상태 미확인</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -961,9 +1001,51 @@ export default function PackageOrdersClient() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">모든 결제</SelectItem>
-                  <SelectItem value="결제완료">결제완료</SelectItem>
-                  <SelectItem value="결제대기">결제대기</SelectItem>
-                  <SelectItem value="결제취소">결제취소</SelectItem>
+                  <SelectItem value="pending_any">결제 확인 대기</SelectItem>
+                  <SelectItem value="bank_pending">입금 확인 대기</SelectItem>
+                  <SelectItem value="pg_pending">PG 승인 확인 대기</SelectItem>
+                  <SelectItem value="pending">일반 결제 확인 대기</SelectItem>
+                  <SelectItem value="paid">결제 완료</SelectItem>
+                  <SelectItem value="failed">결제 실패</SelectItem>
+                  <SelectItem value="cancelled">결제 취소</SelectItem>
+                  <SelectItem value="refunding">환불 처리 중</SelectItem>
+                  <SelectItem value="refunded">환불 완료</SelectItem>
+                  <SelectItem value="unknown">결제 상태 미확인</SelectItem>
+                  <SelectItem value="not_required">결제 불필요</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={activationFilter}
+                onValueChange={(v) => isActivationFilter(v) && patchState({ activationFilter: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="활성화 상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">모든 활성화 상태</SelectItem>
+                  <SelectItem value="active">활성화 완료</SelectItem>
+                  <SelectItem value="awaiting_payment">결제 확인 후 활성화</SelectItem>
+                  <SelectItem value="pending_issue">발급 처리 중</SelectItem>
+                  <SelectItem value="paused">활성화 일시정지</SelectItem>
+                  <SelectItem value="ended">이용 종료</SelectItem>
+                  <SelectItem value="cancelled">활성화 취소</SelectItem>
+                  <SelectItem value="failed">발급 처리 실패</SelectItem>
+                  <SelectItem value="unknown">상태 미확인</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={attentionFilter}
+                onValueChange={(v) => isAttentionFilter(v) && patchState({ attentionFilter: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="운영 확인" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="needs_attention">확인 필요</SelectItem>
+                  <SelectItem value="clear">확인 완료</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -1016,7 +1098,7 @@ export default function PackageOrdersClient() {
         <CardContent className="relative overflow-x-auto px-3 sm:px-4">
           <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
             <Table
-              className="min-w-[1120px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
+              className="min-w-[1400px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
               aria-busy={isValidating && !shouldShowRows}
             >
               <TableHeader className="sticky top-0 bg-card shadow-sm">
@@ -1106,13 +1188,35 @@ export default function PackageOrdersClient() {
 
                   <SortableTH
                     k="payment"
-                    label="결제"
-                    className="w-[84px] hidden xl:table-cell"
+                    label="결제 상태"
+                    className="w-[112px]"
                     thClasses={thClasses}
                     ariaSort={ariaSort("payment")}
                     onSort={handleSort}
                     active={sortBy === "payment"}
                     icon={SortIcon("payment")}
+                  />
+
+                  <SortableTH
+                    k="activation"
+                    label="활성화 상태"
+                    className="w-[112px]"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("activation")}
+                    onSort={handleSort}
+                    active={sortBy === "activation"}
+                    icon={SortIcon("activation")}
+                  />
+
+                  <SortableTH
+                    k="attention"
+                    label="운영 확인"
+                    className="w-[112px]"
+                    thClasses={thClasses}
+                    ariaSort={ariaSort("attention")}
+                    onSort={handleSort}
+                    active={sortBy === "attention"}
+                    icon={SortIcon("attention")}
                   />
 
                   <SortableTH
@@ -1140,14 +1244,14 @@ export default function PackageOrdersClient() {
               <TableBody>
                 {!hasDataError && isValidating && !shouldShowRows && (
                   <TableRow>
-                    <TableCell colSpan={11} className="py-4">
+                    <TableCell colSpan={13} className="py-4">
                       <div className="space-y-2">
                         {Array.from({ length: 6 }).map((_, rowIdx) => (
                           <div
                             key={`admin-packages-loading-row-${rowIdx}`}
-                            className="grid grid-cols-11 gap-2"
+                            className="grid grid-cols-13 gap-2"
                           >
-                            {Array.from({ length: 11 }).map((__, colIdx) => (
+                            {Array.from({ length: 13 }).map((__, colIdx) => (
                               <Skeleton
                                 key={`admin-packages-loading-cell-${rowIdx}-${colIdx}`}
                                 className="h-7 w-full"
@@ -1163,7 +1267,7 @@ export default function PackageOrdersClient() {
                 {/** 빈 상태 */}
                 {shouldShowEmptyState && (
                   <TableRow>
-                    <TableCell colSpan={11} className="py-12">
+                    <TableCell colSpan={13} className="py-12">
                       <div className="flex flex-col items-center gap-3 text-center">
                         <div className="flex flex-col items-center gap-2">
                           <Search className="h-8 w-8 text-muted-foreground/50" />
@@ -1195,10 +1299,11 @@ export default function PackageOrdersClient() {
                 {shouldShowRows && (
                   <>
                     {packages!.map((pkg) => {
-                      const expirySource = pkg.expiryDate;
                       const hasSessionCounts =
                         typeof pkg.usedSessions === "number" &&
-                        typeof pkg.remainingSessions === "number";
+                        Number.isFinite(pkg.usedSessions) &&
+                        typeof pkg.remainingSessions === "number" &&
+                        Number.isFinite(pkg.remainingSessions);
                       const progressPercentage =
                         typeof pkg.progressPercent === "number" &&
                         Number.isFinite(pkg.progressPercent)
@@ -1290,9 +1395,6 @@ export default function PackageOrdersClient() {
                                   "bg-card text-foreground border-border",
                                 "font-medium",
                                 badgeSizeCls,
-                                getAdminPackageUsageBadgeSpec,
-                                getAdminPackageActivationBadgeSpec,
-                                getAdminPackageAttentionBadgeSpec,
                               )}
                             >
                               {pkg.packageType}
@@ -1308,11 +1410,17 @@ export default function PackageOrdersClient() {
                             )}
                           >
                             <div className="flex flex-col items-center leading-tight">
-                              <span className="font-bold text-lg">{pkg.remainingSessions}</span>
+                              <span className="font-bold text-lg">
+                                {!pkg.hasIssuedPass || !hasSessionCounts
+                                  ? "-"
+                                  : `${pkg.remainingSessions}회`}
+                              </span>
                               <span className="text-xs text-muted-foreground">
-                                {typeof pkg.totalSessions === "number"
-                                  ? `${pkg.totalSessions}회`
-                                  : "-"}
+                                {!pkg.hasIssuedPass
+                                  ? "미발급"
+                                  : !hasSessionCounts
+                                    ? "횟수 정보 확인 필요"
+                                    : `총 ${pkg.usedSessions! + pkg.remainingSessions!}회`}
                               </span>
                             </div>
                           </TableCell>
@@ -1366,14 +1474,14 @@ export default function PackageOrdersClient() {
                           <TableCell className={cn(tdClasses, col.expire)}>
                             <div className="flex flex-col items-end leading-tight">
                               <span>
-                                {!pkg.hasIssuedPass || !expirySource
+                                {!pkg.hasIssuedPass || !pkg.expiryDate
                                   ? "-"
-                                  : formatDateCompact(expirySource)}
+                                  : formatDateCompact(pkg.expiryDate)}
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 {!pkg.hasIssuedPass
                                   ? "미발급"
-                                  : !expirySource
+                                  : !pkg.expiryDate
                                     ? "만료일 확인 필요"
                                     : pkg.usageState === "expired"
                                       ? "만료됨"
@@ -1383,7 +1491,7 @@ export default function PackageOrdersClient() {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className={cn(tdClasses, col.status, "whitespace-nowrap")}>
+                          <TableCell className={cn(tdClasses, col.usage, "whitespace-nowrap")}>
                             <Badge
                               {...getAdminPackageUsageBadgeSpec(pkg.usageState)}
                               className={cn("shrink-0 whitespace-nowrap font-medium", badgeSizeCls)}
@@ -1392,14 +1500,7 @@ export default function PackageOrdersClient() {
                               {usageLabel}
                             </Badge>
                           </TableCell>
-                          {/* 결제 배지 (xl 이상) */}
-                          <TableCell
-                            className={cn(
-                              tdClasses,
-                              col.payment,
-                              "whitespace-nowrap hidden xl:table-cell",
-                            )}
-                          >
+                          <TableCell className={cn(tdClasses, col.payment, "whitespace-nowrap")}>
                             {(() => {
                               const paymentLabel = getAdminPackagePaymentLabel(pkg.paymentState);
                               const pay = getPaymentStatusBadgeSpec(paymentLabel);
@@ -1410,12 +1511,58 @@ export default function PackageOrdersClient() {
                                     "shrink-0 whitespace-nowrap font-medium",
                                     badgeSizeCls,
                                   )}
-                                  aria-label={`결제상태 ${String(pkg.paymentStatus)}`}
+                                  aria-label={`결제 상태 ${paymentLabel}`}
                                 >
                                   {paymentLabel}
                                 </Badge>
                               );
                             })()}
+                          </TableCell>
+
+                          <TableCell className={cn(tdClasses, col.activation, "whitespace-nowrap")}>
+                            <Badge
+                              {...getAdminPackageActivationBadgeSpec(pkg.activationState)}
+                              className={cn("shrink-0 whitespace-nowrap font-medium", badgeSizeCls)}
+                              aria-label={`활성화 상태 ${activationLabel}`}
+                            >
+                              {activationLabel}
+                            </Badge>
+                          </TableCell>
+
+                          <TableCell className={cn(tdClasses, col.attention, "whitespace-nowrap")}>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge
+                                    {...getAdminPackageAttentionBadgeSpec(pkg.requiresAttention)}
+                                    className={cn(
+                                      "shrink-0 whitespace-nowrap font-medium",
+                                      badgeSizeCls,
+                                    )}
+                                    aria-label={
+                                      pkg.requiresAttention
+                                        ? `운영 확인 필요: ${reasonLabels.length > 0 ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}`
+                                        : "운영 확인 완료"
+                                    }
+                                  >
+                                    {attentionLabel}
+                                  </Badge>
+                                </TooltipTrigger>
+                                {pkg.requiresAttention && (
+                                  <TooltipContent>
+                                    <p className="font-medium">운영 확인 필요</p>
+                                    <ul className="mt-1 list-disc pl-4">
+                                      {(reasonLabels.length > 0
+                                        ? reasonLabels
+                                        : ["운영 확인 사유 미확인"]
+                                      ).map((reason) => (
+                                        <li key={reason}>{reason}</li>
+                                      ))}
+                                    </ul>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
                           </TableCell>
 
                           {/* 금액 */}
