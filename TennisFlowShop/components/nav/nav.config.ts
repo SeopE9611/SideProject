@@ -14,6 +14,22 @@ export const NAV_FLAGS = {
   SHOW_BRAND_MENU: true,
 };
 
+/** 헤더와 모바일 메뉴가 공유하는 전역 사용자 내비게이션 기준값 */
+export const DESKTOP_PRIMARY_NAV_ITEMS = [
+  { name: "교체서비스", href: "/services" },
+  { name: "스트링", href: "/products" },
+  { name: "중고 라켓", href: "/rackets" },
+  { name: "패키지", href: "/services/packages" },
+  { name: "아카데미", href: "/academy" },
+  { name: "고객센터", href: "/support" },
+] as const;
+
+/** 데스크톱에서는 더보기 메뉴로 제공하는 보조 탐색 */
+export const DESKTOP_SECONDARY_NAV_ITEMS = [
+  { name: "커뮤니티", href: "/board" },
+  { name: "라켓 찾기", href: "/rackets/finder" },
+] as const;
+
 export const NAV_LINKS = {
   strings: {
     root: "/products",
@@ -47,13 +63,13 @@ export const NAV_LINKS = {
     ],
   },
   services: [
-    { name: "장착 서비스 홈", href: "/services" },
+    { name: "교체서비스 홈", href: "/services" },
     { name: "텐션 가이드", href: "/services/tension-guide" },
-    { name: "장착 비용 안내", href: "/services/pricing" },
-    { name: "매장/예약 안내", href: "/services/locations" },
+    { name: "가격 안내", href: "/services/pricing" },
+    { name: "매장·방문 안내", href: "/services/locations" },
   ],
   packages: [{ name: "패키지 안내", href: "/services/packages" }],
-  academy: { name: "도깨비테니스 아카데미", href: "/academy" },
+  academy: { name: "아카데미", href: "/academy" },
   support: [
     { name: "고객센터 홈", href: "/support" },
     { name: "공지사항", href: "/board/notice" },

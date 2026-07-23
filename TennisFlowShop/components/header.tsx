@@ -3,6 +3,11 @@
 import { useCartStore } from "@/app/store/cartStore";
 import SearchPreview from "@/components/SearchPreview";
 import SiteContainer from "@/components/layout/SiteContainer";
+import {
+  DESKTOP_PRIMARY_NAV_ITEMS,
+  DESKTOP_SECONDARY_NAV_ITEMS,
+  NAV_LINKS,
+} from "@/components/nav/nav.config";
 import { UserNav } from "@/components/nav/UserNav";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -22,7 +27,6 @@ import {
 import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
-import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import {
@@ -46,10 +50,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-/** 재질 카테고리(스트링 타입) 노출 온/오프 */
-const SHOW_MATERIAL_MENU = false;
-/** PC 헤더 상단 nav 임시 노출 온/오프 (복구용 플래그) */
-const SHOW_DESKTOP_HEADER_NAV = false;
+/** PC 헤더 상단 nav 노출 */
+const SHOW_DESKTOP_HEADER_NAV = true;
 
 /**
  * 헤더 포인트는 "네비게이션마다" 재조회할 필요가 없습니다.
@@ -68,7 +70,7 @@ function MobileBrandGrid({
   brands,
   onPick,
 }: {
-  brands: { name: string; href: string }[];
+  brands: readonly { name: string; href: string }[];
   onPick: (href: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -193,12 +195,12 @@ const Header = () => {
 
     // 가능한 한 많이 보여주되, 안 들어가면 끝에서부터 "..."로
     for (let visible = n; visible >= 0; visible--) {
-      const overflow = n - visible;
       const base = prefixWidth(visible);
-      const total = overflow === 0 ? base : base + (visible > 0 ? gap : 0) + dotsW;
+      // 보조 메뉴는 항상 더보기에서 제공하므로 버튼 공간을 항상 확보한다.
+      const total = base + (visible > 0 ? gap : 0) + dotsW;
 
       if (total <= available) {
-        nextOverflow = overflow;
+        nextOverflow = n - visible;
         found = true;
         break;
       }
@@ -354,62 +356,6 @@ const Header = () => {
      */
   }, [user?.id]);
 
-  const NAV_LINKS = {
-    strings: {
-      root: "/products",
-      brands: [
-        { name: "윌슨", href: "/products?brand=wilson" },
-        { name: "바볼랏", href: "/products?brand=babolat" },
-        { name: "럭실론", href: "/products?brand=luxilon" },
-        { name: "요넥스", href: "/products?brand=yonex" },
-        { name: "헤드", href: "/products?brand=head" },
-        { name: "테크니화이버", href: "/products?brand=tecnifibre" },
-        { name: "솔린코", href: "/products?brand=solinco" },
-        // { name: "프린스", href: "/products?brand=prince" },
-        { name: "던롭", href: "/products?brand=dunlop" },
-        { name: "MSV", href: "/products?brand=msv" },
-        { name: "볼키", href: "/products?brand=volkl" },
-        { name: "탑스핀", href: "/products?brand=topspin" },
-        { name: "기타", href: "/products?brand=other" },
-        { name: "하이브리드", href: "/products?material=hybrid" },
-      ],
-    },
-    rackets: {
-      root: "/rackets",
-      brands: [
-        { name: "헤드", href: "/rackets?brand=head" },
-        { name: "윌슨", href: "/rackets?brand=wilson" },
-        { name: "바볼랏", href: "/rackets?brand=babolat" },
-        { name: "테크니화이버", href: "/rackets?brand=tecnifibre" },
-      ],
-    },
-    services: [
-      { name: "장착 서비스 홈", href: "/services" },
-      { name: "텐션 가이드", href: "/services/tension-guide" },
-      { name: "장착 비용 안내", href: "/services/pricing" },
-      { name: "매장/예약 안내", href: "/services/locations" },
-    ],
-    packages: [{ name: "패키지 안내", href: "/services/packages" }],
-    academy: { name: "도깨비테니스 아카데미", href: "/academy" },
-    support: [
-      { name: "고객센터 홈", href: "/support" },
-      { name: "공지사항", href: "/board/notice" },
-      { name: "이벤트", href: "/board/event" },
-      { name: "문의", href: "/board/qna" },
-    ],
-
-    boards: [
-      ...(COMMUNITY_BOARDS_ENABLED
-        ? [
-            { name: "자유게시판", href: "/board/free" },
-            { name: "중고거래", href: "/board/market" },
-            { name: "장비 사용기", href: "/board/gear" },
-          ]
-        : []),
-      { name: "리뷰", href: "/reviews" },
-    ],
-  };
-
   const isMobileRouteCurrent = (href: string) => pathname === href;
 
   const isMobileSectionActive = (href: string) => {
@@ -474,28 +420,7 @@ const Header = () => {
   }, []);
 
   /** 탑 메뉴 항목들 */
-  const menuItems = [
-    {
-      name: "교체서비스 시작하기",
-      href: "/services",
-      hasMegaMenu: true,
-      isServiceMenu: true,
-    },
-    { name: "스트링", href: "/products", hasMegaMenu: true },
-    { name: "라켓", href: "/rackets", hasMegaMenu: true, isRacketMenu: true },
-    {
-      name: "패키지",
-      href: "/services/packages",
-      hasMegaMenu: true,
-      isPackageMenu: true,
-    },
-
-    { name: "고객센터", href: "/support" },
-
-    // 앞으로 커뮤니티(리뷰, 자유게시판 등) 허브가 될 /board
-    { name: "커뮤니티", href: "/board", hasMegaMenu: true, isBoardMenu: true },
-    { name: "라켓 검색", href: "/rackets/finder", hasMegaMenu: false },
-  ];
+  const menuItems = DESKTOP_PRIMARY_NAV_ITEMS;
 
   const visibleCount = Math.max(0, menuItems.length - overflowCount);
   const primaryMenuItems = menuItems.slice(0, visibleCount);
@@ -511,10 +436,10 @@ const Header = () => {
 
   const isActiveMenu = (item: (typeof menuItems)[number]) => {
     const p = pathname ?? "";
-    if (item.isServiceMenu) return p === item.href;
-    if (item.isRacketMenu)
-      return p === item.href || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
-    return p.startsWith(item.href);
+    if (item.href === "/services") return p === "/services" || (p.startsWith("/services/") && !p.startsWith("/services/packages"));
+    if (item.href === "/services/packages") return p === "/services/packages" || p.startsWith("/services/packages/");
+    if (item.href === "/rackets") return p === "/rackets" || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
+    return p === item.href || p.startsWith(`${item.href}/`);
   };
 
   return (
@@ -795,7 +720,7 @@ const Header = () => {
                       guardedPush("/services#service-start", () => setOpen(false));
                     }}
                   >
-                    <span className="min-w-0 truncate">교체서비스 시작하기</span>
+                    <span className="min-w-0 truncate">교체서비스</span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
@@ -806,7 +731,7 @@ const Header = () => {
                           value="strings-service"
                           className={mobileNestedTriggerClass}
                         >
-                          장착 서비스 안내
+                          교체서비스 안내
                         </AccordionTrigger>
                         <AccordionContent value="strings-service" className="pb-0 pt-1">
                           <div className="space-y-0.5">
@@ -838,7 +763,7 @@ const Header = () => {
                       guardedPush("/services/packages", () => setOpen(false));
                     }}
                   >
-                    스트링 교체 할인 패키지
+                    교체 패키지
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
                 </AccordionContent>
@@ -870,7 +795,7 @@ const Header = () => {
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
                     </div> */}
-                    <span className={mobileGroupTitleClass}>도깨비 인증 중고 라켓</span>
+                    <span className={mobileGroupTitleClass}>중고 라켓</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
@@ -909,6 +834,17 @@ const Header = () => {
                       </AccordionItem>
                     </Accordion>
                   </div>
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass(isMobileRouteCurrent("/rackets/finder"))}
+                    aria-current={isMobileRouteCurrent("/rackets/finder") ? "page" : undefined}
+                    onClick={() => {
+                      guardedPush("/rackets/finder", () => setOpen(false));
+                    }}
+                  >
+                    라켓 찾기
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
+                  </Button>
                 </AccordionContent>
               </AccordionItem>
 
@@ -1077,8 +1013,8 @@ const Header = () => {
                 </Link>
               </div>
             </div>
-            <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
-              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-5">
+            <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,1fr)_auto] xl:grid-cols-[minmax(0,1fr)_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
+              <div className="justify-self-start flex min-w-0 items-center gap-5">
                 <Link
                   href="/"
                   className="flex items-center gap-2 shrink-0 group"
@@ -1137,7 +1073,7 @@ const Header = () => {
                       })}
 
                       {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
-                      {overflowMenuItems.length > 0 && (
+                      {(overflowMenuItems.length > 0 || DESKTOP_SECONDARY_NAV_ITEMS.length > 0) && (
                         <DropdownMenu
                           modal={false}
                           open={overflowMenuOpen}
@@ -1157,6 +1093,27 @@ const Header = () => {
                           <DropdownMenuContent align="start" sideOffset={8}>
                             {overflowMenuItems.map((item) => {
                               const active = isActiveMenu(item);
+                              return (
+                                <DropdownMenuItem
+                                  key={item.name}
+                                  className={
+                                    active ? "bg-secondary text-foreground font-ui-medium" : undefined
+                                  }
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    guardedPush(item.href, () => setOverflowMenuOpen(false));
+                                  }}
+                                >
+                                  {item.name}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                            <div className="my-1 border-t border-border" role="separator" />
+                            {DESKTOP_SECONDARY_NAV_ITEMS.map((item) => {
+                              const active =
+                                item.href === "/rackets/finder"
+                                  ? pathname === item.href
+                                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
                               return (
                                 <DropdownMenuItem
                                   key={item.name}
