@@ -35,9 +35,13 @@ describe("공지사항 수정 동시 수정 충돌(409) 재시도 UX", () => {
     cy.wait("@getNoticeDetail");
 
     cy.get("#title").clear().type("동시 수정 충돌 테스트 제목");
-    cy.get("#content")
-      .clear()
-      .type("동시 수정 충돌 테스트 본문입니다. 재시도 UX를 확인하기 위한 충분한 길이입니다.");
+    cy.get('[contenteditable="true"][aria-label="공지사항 본문 편집기"]')
+      .should("be.visible")
+      .click()
+      .type(
+        "{selectall}{backspace}동시 수정 충돌 테스트 본문입니다. 재시도 UX를 확인하기 위한 충분한 길이입니다.",
+        { delay: 0 },
+      );
 
     cy.contains("button", "공지사항 수정").click();
     cy.wait("@patchConflict");
@@ -68,7 +72,13 @@ describe("공지사항 수정 동시 수정 충돌(409) 재시도 UX", () => {
       },
     }).as("refetchNoticeDetail");
 
+    cy.on("window:confirm", () => true);
     cy.contains("button", "다시 불러오기").click();
     cy.wait("@refetchNoticeDetail");
+    cy.get("#title").should("have.value", "최신 공지 제목");
+    cy.get('[contenteditable="true"][aria-label="공지사항 본문 편집기"]').should(
+      "contain.text",
+      "최신 공지 본문입니다. 재조회 반영 확인용 데이터입니다.",
+    );
   });
 });

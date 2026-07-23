@@ -12,7 +12,7 @@ import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatKoreanPhone } from "@/lib/phone";
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import {
   ArrowRight,
   Calendar,
@@ -26,7 +26,7 @@ import {
   Shield,
   Star,
 } from "lucide-react";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Document, type Filter } from "mongodb";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -36,20 +36,34 @@ export const metadata: Metadata = {
   title: "패키지 결제 완료",
 };
 
+type PackageSuccessViewerPayload = {
+  sub: string;
+  email?: string;
+  role?: string;
+  roles?: unknown;
+  isAdmin?: boolean;
+};
+
 function resolvePackageSuccessViewer(
   accessToken?: string,
   refreshToken?: string,
-): JwtPayload | null {
-  const parseViewerPayload = (payload: unknown): JwtPayload | null => {
+): PackageSuccessViewerPayload | null {
+  const parseViewerPayload = (payload: unknown): PackageSuccessViewerPayload | null => {
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
 
-    const viewerPayload = payload as JwtPayload;
+    const viewerPayload = payload as Record<string, unknown>;
     const viewerUserId = typeof viewerPayload.sub === "string" ? viewerPayload.sub : "";
     if (!viewerUserId || viewerUserId !== viewerUserId.trim() || !ObjectId.isValid(viewerUserId)) {
       return null;
     }
 
-    return viewerPayload;
+    return {
+      sub: viewerUserId,
+      email: typeof viewerPayload.email === "string" ? viewerPayload.email : undefined,
+      role: typeof viewerPayload.role === "string" ? viewerPayload.role : undefined,
+      roles: viewerPayload.roles,
+      isAdmin: viewerPayload.isAdmin === true,
+    };
   };
 
   if (accessToken) {
@@ -101,7 +115,8 @@ export default async function PackageSuccessPage({
   // 토큰 페이로드 기반
   const tokenIsAdmin =
     viewerPayload.role === "admin" ||
-    (Array.isArray(viewerPayload.roles) && viewerPayload.roles.includes("admin")) ||
+    (Array.isArray(viewerPayload.roles) &&
+      viewerPayload.roles.some((role) => role === "admin")) ||
     viewerPayload.isAdmin === true;
 
   // 이메일 화이트리스트(옵션)
@@ -115,7 +130,7 @@ export default async function PackageSuccessPage({
 
   const isAdmin = tokenIsAdmin || emailIsAdmin;
   const packageOrderObjectId = new ObjectId(packageOrderId);
-  const packageOrderFilter = isAdmin
+  const packageOrderFilter: Filter<Document> = isAdmin
     ? { _id: packageOrderObjectId }
     : { _id: packageOrderObjectId, userId: viewerObjectId };
 

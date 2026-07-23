@@ -26,7 +26,8 @@ export const advisoryContractFiles = [
   "board-unsaved-changes-navigation.contract.test.mjs", "checkout-success-links.contract.test.mjs",
   "community-rich-text-ui.contract.test.mjs", "display-policy-contract.test.mjs",
   "mypage-confirmation-items-contract.test.mjs", "mypage-transaction-flow-state.contract.test.mjs",
-  "notice-rich-text-ui.contract.test.mjs", "review-api-policy.test.mjs", "review-security-integrity.test.mjs",
+  "notice-rich-text-ui.contract.test.mjs", "package-order-success-access.contract.test.mjs",
+  "review-api-policy.test.mjs", "review-security-integrity.test.mjs",
   "review-domain-contract.test.mjs", "review-management-context.test.mjs",
   "review-summary-cache.advisory.test.mjs", "typescript-project-boundary.contract.test.mjs",
 ];
