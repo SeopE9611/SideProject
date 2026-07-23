@@ -14,6 +14,23 @@ export const NAV_FLAGS = {
   SHOW_BRAND_MENU: true,
 };
 
+/** 헤더와 모바일 메뉴가 공유하는 전역 사용자 내비게이션 기준값 */
+export const DESKTOP_PRIMARY_NAV_ITEMS = [
+  { name: "교체서비스", href: "/services" },
+  { name: "스트링", href: "/products" },
+  { name: "중고 라켓", href: "/rackets" },
+  { name: "패키지", href: "/services/packages" },
+  { name: "아카데미", href: "/academy" },
+  { name: "고객센터", href: "/support" },
+] as const;
+
+/** 주요 메뉴와 함께 제공하는 데스크톱 보조 탐색 */
+export const DESKTOP_SECONDARY_NAV_ITEMS = [
+  { name: "커뮤니티", href: "/board" },
+  { name: "라켓 찾기", href: "/rackets/finder" },
+  { name: "라켓 케어", href: "/racket-care" },
+] as const;
+
 export const NAV_LINKS = {
   strings: {
     root: "/products",

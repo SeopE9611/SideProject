@@ -3,6 +3,11 @@
 import { useCartStore } from "@/app/store/cartStore";
 import SearchPreview from "@/components/SearchPreview";
 import SiteContainer from "@/components/layout/SiteContainer";
+import {
+  DESKTOP_PRIMARY_NAV_ITEMS,
+  DESKTOP_SECONDARY_NAV_ITEMS,
+  NAV_LINKS,
+} from "@/components/nav/nav.config";
 import { UserNav } from "@/components/nav/UserNav";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -22,7 +27,6 @@ import {
 import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
-import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import {
@@ -31,7 +35,6 @@ import {
 } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { cn } from "@/lib/utils";
 import {
-  ChevronDown,
   ChevronRight,
   Gift,
   Headset,
@@ -44,12 +47,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-
-/** 재질 카테고리(스트링 타입) 노출 온/오프 */
-const SHOW_MATERIAL_MENU = false;
-/** PC 헤더 상단 nav 임시 노출 온/오프 (복구용 플래그) */
-const SHOW_DESKTOP_HEADER_NAV = false;
+import { useEffect, useRef, useState } from "react";
 
 /**
  * 헤더 포인트는 "네비게이션마다" 재조회할 필요가 없습니다.
@@ -68,7 +66,7 @@ function MobileBrandGrid({
   brands,
   onPick,
 }: {
-  brands: { name: string; href: string }[];
+  brands: readonly { name: string; href: string }[];
   onPick: (href: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -136,127 +134,10 @@ const Header = () => {
 
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  /**
-   * "인터랙티브" 오버플로우 메뉴
-   * - nav 실제 너비(픽셀 단위)를 ResizeObserver로 관측
-   * - 각 메뉴/더보기 버튼의 실제 렌더 폭을 숨은 측정 DOM에서 계산
-   * - 남는 폭에 따라 마지막 메뉴부터 1개씩 overflow로 이동
-   */
-  const navRef = useRef<HTMLElement | null>(null);
-  const measureRef = useRef<HTMLDivElement | null>(null);
 
-  const [overflowCount, setOverflowCount] = useState(0);
-  // "⋯ 더보기" 드롭다운은 Header(레이아웃)에 남아있어서 라우트 이동 시 open 상태가 유지될 수 있음
-  const [overflowMenuOpen, setOverflowMenuOpen] = useState(false);
-
-  const recomputeOverflow = useCallback(() => {
-    // nav 폭 + 실제 메뉴 텍스트 폭을 기준으로 overflow 계산
-    const navEl = navRef.current;
-    const root = measureRef.current;
-    if (!navEl || !root) return;
-
-    const wrap = root.querySelector<HTMLElement>("[data-measure-wrap]");
-    if (!wrap) return;
-
-    const style = window.getComputedStyle(wrap);
-    const gap = Number.parseFloat(style.columnGap || style.gap || "0") || 0;
-
-    const itemEls = Array.from(root.querySelectorAll<HTMLElement>("[data-measure-item]"));
-    const itemWidths = itemEls.map((el) => el.offsetWidth);
-
-    const dotsEl = root.querySelector<HTMLElement>("[data-measure-dots]");
-    const dotsW = dotsEl ? dotsEl.offsetWidth : 0;
-
-    const n = itemWidths.length;
-    if (n === 0) return;
-
-    // 핵심:
-    // getBoundingClientRect()/clientWidth는 padding까지 포함할 수 있어서
-    // 실제 "메뉴가 들어갈 수 있는 내용 영역(content box)"보다 크게 잡힐 수 있습니다.
-    // 그러면 코드상으로는 들어간다고 판단했지만
-    // 실제 화면에서는 첫 메뉴(예: 스트링)가 살짝 잘리는 현상이 생깁니다.
-    const navStyle = window.getComputedStyle(navEl);
-    const paddingLeft = Number.parseFloat(navStyle.paddingLeft || "0") || 0;
-    const paddingRight = Number.parseFloat(navStyle.paddingRight || "0") || 0;
-    const available = Math.max(0, navEl.clientWidth - paddingLeft - paddingRight);
-
-    const prefixWidth = (count: number) => {
-      if (count <= 0) return 0;
-      let w = 0;
-      for (let i = 0; i < count; i++) w += itemWidths[i] || 0;
-      w += gap * Math.max(0, count - 1);
-      return w;
-    };
-
-    let nextOverflow = 0;
-    let found = false;
-
-    // 가능한 한 많이 보여주되, 안 들어가면 끝에서부터 "..."로
-    for (let visible = n; visible >= 0; visible--) {
-      const overflow = n - visible;
-      const base = prefixWidth(visible);
-      const total = overflow === 0 ? base : base + (visible > 0 ? gap : 0) + dotsW;
-
-      if (total <= available) {
-        nextOverflow = overflow;
-        found = true;
-        break;
-      }
-    }
-
-    // FAIL-SAFE:
-    // 어떤 이유로든(폰트 로딩/활성 메뉴 bold/아주 작은 폭) 위 루프에서 매칭을 못 찾으면,
-    // 최소한 "⋯"는 보이도록 전부 overflow 처리.
-    if (!found) {
-      nextOverflow = n; // visibleCount = 0 → "⋯"만 노출
-    }
-
-    setOverflowCount((prev) => (prev === nextOverflow ? prev : nextOverflow));
-  }, []);
-
-  useLayoutEffect(() => {
-    recomputeOverflow();
-  }, [recomputeOverflow]);
-
-  // 페이지 이동 시 메뉴 상태/폭 변화에 맞춰 overflow 재계산
   useEffect(() => {
-    // 라우트 이동하면
-    // 1) 데스크톱 overflow 드롭다운 닫기
-    // 2) 모바일 Sheet도 함께 닫기
-    //    -> 메뉴 항목 중 일부에서 setOpen(false)를 빠뜨려도
-    //       페이지 이동 후 메뉴가 열린 상태로 남지 않게 하는 안전장치
-    setOverflowMenuOpen(false);
     setOpen(false);
-    recomputeOverflow();
-    // 스크롤 상태 변화로 헤더 여백이 바뀐 뒤에도 실측 폭을 다시 계산한다.
-  }, [recomputeOverflow, pathname]);
-
-  useEffect(() => {
-    const navEl = navRef.current;
-    if (!navEl) return;
-
-    const ro = new ResizeObserver(() => recomputeOverflow());
-    ro.observe(navEl);
-
-    const onResize = () => recomputeOverflow();
-    window.addEventListener("resize", onResize);
-
-    // 폰트 로딩(특히 첫 진입 시)이 끝난 뒤 텍스트 폭이 바뀌면 오차가 생길 수 있어
-    // best-effort로 한번 더 계산
-    const fonts = (document as any).fonts as FontFaceSet | undefined;
-    if (fonts?.ready) {
-      fonts.ready.then(() => recomputeOverflow()).catch(() => {});
-    }
-
-    // 첫 렌더 직후 한 틱 더(레이아웃 확정)
-    const t = window.setTimeout(() => recomputeOverflow(), 0);
-
-    return () => {
-      window.clearTimeout(t);
-      window.removeEventListener("resize", onResize);
-      ro.disconnect();
-    };
-  }, [recomputeOverflow]);
+  }, [pathname]);
 
   const { user, loading } = useCurrentUser();
   const displayName = user?.name?.trim() || "회원";
@@ -354,62 +235,6 @@ const Header = () => {
      */
   }, [user?.id]);
 
-  const NAV_LINKS = {
-    strings: {
-      root: "/products",
-      brands: [
-        { name: "윌슨", href: "/products?brand=wilson" },
-        { name: "바볼랏", href: "/products?brand=babolat" },
-        { name: "럭실론", href: "/products?brand=luxilon" },
-        { name: "요넥스", href: "/products?brand=yonex" },
-        { name: "헤드", href: "/products?brand=head" },
-        { name: "테크니화이버", href: "/products?brand=tecnifibre" },
-        { name: "솔린코", href: "/products?brand=solinco" },
-        // { name: "프린스", href: "/products?brand=prince" },
-        { name: "던롭", href: "/products?brand=dunlop" },
-        { name: "MSV", href: "/products?brand=msv" },
-        { name: "볼키", href: "/products?brand=volkl" },
-        { name: "탑스핀", href: "/products?brand=topspin" },
-        { name: "기타", href: "/products?brand=other" },
-        { name: "하이브리드", href: "/products?material=hybrid" },
-      ],
-    },
-    rackets: {
-      root: "/rackets",
-      brands: [
-        { name: "헤드", href: "/rackets?brand=head" },
-        { name: "윌슨", href: "/rackets?brand=wilson" },
-        { name: "바볼랏", href: "/rackets?brand=babolat" },
-        { name: "테크니화이버", href: "/rackets?brand=tecnifibre" },
-      ],
-    },
-    services: [
-      { name: "장착 서비스 홈", href: "/services" },
-      { name: "텐션 가이드", href: "/services/tension-guide" },
-      { name: "장착 비용 안내", href: "/services/pricing" },
-      { name: "매장/예약 안내", href: "/services/locations" },
-    ],
-    packages: [{ name: "패키지 안내", href: "/services/packages" }],
-    academy: { name: "도깨비테니스 아카데미", href: "/academy" },
-    support: [
-      { name: "고객센터 홈", href: "/support" },
-      { name: "공지사항", href: "/board/notice" },
-      { name: "이벤트", href: "/board/event" },
-      { name: "문의", href: "/board/qna" },
-    ],
-
-    boards: [
-      ...(COMMUNITY_BOARDS_ENABLED
-        ? [
-            { name: "자유게시판", href: "/board/free" },
-            { name: "중고거래", href: "/board/market" },
-            { name: "장비 사용기", href: "/board/gear" },
-          ]
-        : []),
-      { name: "리뷰", href: "/reviews" },
-    ],
-  };
-
   const isMobileRouteCurrent = (href: string) => pathname === href;
 
   const isMobileSectionActive = (href: string) => {
@@ -427,6 +252,9 @@ const Header = () => {
   const supportGroupActive = NAV_LINKS.support.some((it) => isMobileSectionActive(it.href));
   const academyCurrent = isMobileRouteCurrent(NAV_LINKS.academy.href);
   const academySectionActive = isMobileSectionActive(NAV_LINKS.academy.href);
+  const racketCareActive =
+    isMobileSectionActive("/racket-care") || isMobileSectionActive("/mypage/racket-care");
+  const racketCareCurrent = isMobileSectionActive("/racket-care");
 
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
   useEffect(() => {
@@ -473,34 +301,7 @@ const Header = () => {
     };
   }, []);
 
-  /** 탑 메뉴 항목들 */
-  const menuItems = [
-    {
-      name: "교체서비스 시작하기",
-      href: "/services",
-      hasMegaMenu: true,
-      isServiceMenu: true,
-    },
-    { name: "스트링", href: "/products", hasMegaMenu: true },
-    { name: "라켓", href: "/rackets", hasMegaMenu: true, isRacketMenu: true },
-    {
-      name: "패키지",
-      href: "/services/packages",
-      hasMegaMenu: true,
-      isPackageMenu: true,
-    },
-
-    { name: "고객센터", href: "/support" },
-
-    // 앞으로 커뮤니티(리뷰, 자유게시판 등) 허브가 될 /board
-    { name: "커뮤니티", href: "/board", hasMegaMenu: true, isBoardMenu: true },
-    { name: "라켓 검색", href: "/rackets/finder", hasMegaMenu: false },
-  ];
-
-  const visibleCount = Math.max(0, menuItems.length - overflowCount);
-  const primaryMenuItems = menuItems.slice(0, visibleCount);
-  const overflowMenuItems = menuItems.slice(visibleCount);
-  const hasOverflow = overflowMenuItems.length > 0;
+  const desktopNavItems = [...DESKTOP_PRIMARY_NAV_ITEMS, ...DESKTOP_SECONDARY_NAV_ITEMS];
 
   const guardedPush = (href: string, beforeNavigate?: () => void) =>
     runBoardUnsavedChangesNavigation(() => {
@@ -509,13 +310,19 @@ const Header = () => {
       router.push(href);
     });
 
-  const isActiveMenu = (item: (typeof menuItems)[number]) => {
+  const isActiveMenu = (item: (typeof desktopNavItems)[number]) => {
     const p = pathname ?? "";
-    if (item.isServiceMenu) return p === item.href;
-    if (item.isRacketMenu)
-      return p === item.href || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
-    return p.startsWith(item.href);
+    if (item.href === "/services") return p === "/services" || (p.startsWith("/services/") && !p.startsWith("/services/packages"));
+    if (item.href === "/services/packages") return p === "/services/packages" || p.startsWith("/services/packages/");
+    if (item.href === "/rackets") return p === "/rackets" || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
+    if (item.href === "/racket-care") {
+      return p === "/racket-care" || p.startsWith("/racket-care/") || p === "/mypage/racket-care" || p.startsWith("/mypage/racket-care/");
+    }
+    return p === item.href || p.startsWith(`${item.href}/`);
   };
+
+  const isCurrentMenu = (item: (typeof desktopNavItems)[number]) =>
+    item.href === "/racket-care" ? isMobileSectionActive("/racket-care") : isActiveMenu(item);
 
   return (
     <>
@@ -854,7 +661,7 @@ const Header = () => {
                   }}
                 >
                   <span className="min-w-0 break-keep whitespace-normal text-left">
-                    {NAV_LINKS.academy.name}
+                    아카데미
                   </span>
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" />
                 </Button>
@@ -870,7 +677,7 @@ const Header = () => {
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
                     </div> */}
-                    <span className={mobileGroupTitleClass}>도깨비 인증 중고 라켓</span>
+                    <span className={mobileGroupTitleClass}>중고 라켓</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
@@ -909,8 +716,33 @@ const Header = () => {
                       </AccordionItem>
                     </Accordion>
                   </div>
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass(isMobileRouteCurrent("/rackets/finder"))}
+                    aria-current={isMobileRouteCurrent("/rackets/finder") ? "page" : undefined}
+                    onClick={() => {
+                      guardedPush("/rackets/finder", () => setOpen(false));
+                    }}
+                  >
+                    라켓 찾기
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
+                  </Button>
                 </AccordionContent>
               </AccordionItem>
+
+              <div className={mobileMenuGroupClass}>
+                <Button
+                  variant="ghost"
+                  className={mobileMenuItemClass(racketCareActive)}
+                  aria-current={racketCareCurrent ? "page" : undefined}
+                  onClick={() => {
+                    guardedPush("/racket-care", () => setOpen(false));
+                  }}
+                >
+                  라켓 케어
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" />
+                </Button>
+              </div>
 
               {/* 게시판 */}
               <AccordionItem value="boards" className={cn("border-none", mobileMenuGroupClass)}>
@@ -1007,14 +839,14 @@ const Header = () => {
         <header
           ref={headerRef as any}
           data-scrolled={isScrolled}
-          className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"}`}
+          className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? "h-[64px] bp-lg:h-[100px]" : "h-[80px] bp-lg:h-[116px]"}`}
         >
           <div
             aria-hidden="true"
-            className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"} bg-background/95 border-b border-border/80 ${isScrolled ? "shadow-soft" : ""}`}
+            className={`absolute inset-0 z-0 pointer-events-none bg-background/95 border-b border-border/80 ${isScrolled ? "shadow-soft" : ""}`}
           />
           <SiteContainer
-            className="relative z-10 bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible"
+            className="relative z-10 flex h-full items-center justify-between overflow-visible bp-lg:mx-0 bp-lg:flex-col bp-lg:justify-center bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10"
           >
             <div className="grid w-full grid-cols-[52px_minmax(0,1fr)_52px] items-center bp-sm:grid-cols-[56px_minmax(0,1fr)_56px] bp-lg:hidden">
               <div className="justify-self-start">
@@ -1077,8 +909,8 @@ const Header = () => {
                 </Link>
               </div>
             </div>
-            <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
-              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-5">
+            <div className="hidden w-full min-w-0 flex-1 grid-cols-[auto_minmax(220px,1fr)_auto] items-center gap-3 bp-lg:grid xl:gap-6">
+              <div className="justify-self-start flex min-w-0 items-center gap-5">
                 <Link
                   href="/"
                   className="flex items-center gap-2 shrink-0 group"
@@ -1107,77 +939,7 @@ const Header = () => {
                     도깨비테니스
                   </div>
                 </Link>
-                {SHOW_DESKTOP_HEADER_NAV ? (
-                  <nav
-                    ref={navRef}
-                    className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden"
-                  >
-                    <div
-                      className={`flex w-full min-w-0 items-center gap-1.5 xl:gap-2 whitespace-nowrap ${
-                        // 메뉴가 전부 보일 때는 bounded width를 조금 더 줄여
-                        // 간격이 과하게 벌어지지 않게 정리합니다.
-                        hasOverflow
-                          ? "justify-start"
-                          : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
-                      }`}
-                    >
-                      {primaryMenuItems.map((item) => {
-                        const active = isActiveMenu(item);
-                        return (
-                          <Link
-                            key={item.name}
-                            href={item.href}
-                            className={`inline-flex h-10 shrink-0 items-center rounded-lg px-3 text-ui-body leading-none transition whitespace-nowrap ${active ? "bg-secondary text-foreground font-ui-medium" : "text-foreground hover:bg-secondary hover:text-foreground"}`}
-                            aria-current={active ? "page" : undefined}
-                            aria-label={`${item.name} 페이지로 이동`}
-                          >
-                            {item.name}
-                          </Link>
-                        );
-                      })}
 
-                      {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
-                      {overflowMenuItems.length > 0 && (
-                        <DropdownMenu
-                          modal={false}
-                          open={overflowMenuOpen}
-                          onOpenChange={setOverflowMenuOpen}
-                        >
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg px-3 text-ui-body leading-none transition whitespace-nowrap text-foreground hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                              aria-label="더보기 메뉴"
-                            >
-                              ⋯
-                              <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent align="start" sideOffset={8}>
-                            {overflowMenuItems.map((item) => {
-                              const active = isActiveMenu(item);
-                              return (
-                                <DropdownMenuItem
-                                  key={item.name}
-                                  className={
-                                    active ? "bg-secondary text-foreground font-ui-medium" : undefined
-                                  }
-                                  onSelect={(e) => {
-                                    e.preventDefault();
-                                    guardedPush(item.href, () => setOverflowMenuOpen(false));
-                                  }}
-                                >
-                                  {item.name}
-                                </DropdownMenuItem>
-                              );
-                            })}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  </nav>
-                ) : null}
               </div>
 
               {/* 검색 (PC 전용) */}
@@ -1191,35 +953,7 @@ const Header = () => {
                 </div>
               </div>
 
-              {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
-              {SHOW_DESKTOP_HEADER_NAV ? (
-                <div
-                  ref={measureRef}
-                  className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none"
-                >
-                  <div
-                    data-measure-wrap
-                    className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap"
-                  >
-                    {menuItems.map((it) => (
-                      <span
-                        key={`measure-${it.name}`}
-                        data-measure-item
-                        className="inline-flex h-10 shrink-0 items-center rounded-lg px-3 text-ui-body leading-none whitespace-nowrap font-ui-medium"
-                      >
-                        {it.name}
-                      </span>
-                    ))}
 
-                    <span
-                      data-measure-dots
-                      className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg px-3 text-ui-body leading-none whitespace-nowrap font-ui-medium"
-                    >
-                      ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                  </div>
-                </div>
-              ) : null}
 
               {/* 아이콘/유저 */}
               <div className="justify-self-end flex min-w-0 items-center gap-1.5 xl:gap-2 2xl:gap-3 min-w-fit shrink-0 pl-2">
@@ -1311,6 +1045,22 @@ const Header = () => {
                 </div>
               </div>
             </div>
+            <nav className="hidden w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 py-1 bp-lg:flex" aria-label="주요 메뉴">
+              {desktopNavItems.map((item) => {
+                const active = isActiveMenu(item);
+                const current = isCurrentMenu(item);
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`inline-flex h-9 shrink-0 items-center rounded-lg px-2.5 text-ui-body-sm leading-none transition ${active ? "bg-secondary text-foreground font-ui-medium" : "text-foreground hover:bg-secondary hover:text-foreground"}`}
+                    aria-current={current ? "page" : undefined}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
           </SiteContainer>
         </header>
       </Sheet>

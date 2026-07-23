@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const Footer = () => {
+const Footer = ({ showSideMenu = false }: { showSideMenu?: boolean }) => {
   /**
    * 비회원 주문(게스트) 기능 노출 정책
    * - public env: NEXT_PUBLIC_GUEST_ORDER_MODE = 'off' | 'legacy' | 'on'
@@ -110,7 +110,7 @@ const Footer = () => {
 
       {/* 태블릿/데스크탑용 기존 full footer */}
       <div className="hidden bp-md:block">
-        <div className="py-6 bp-lg:pl-72 bp-lg:pr-8 bp-sm:py-8 xl:pl-80 xl:pr-12 2xl:pr-16">
+        <div className={showSideMenu ? "py-6 bp-lg:pl-72 bp-lg:pr-8 bp-sm:py-8 xl:pl-80 xl:pr-12 2xl:pr-16" : "py-6 bp-lg:pr-8 bp-sm:py-8 xl:pr-12 2xl:pr-16"}>
           <SiteContainer variant="wide">
             <div className="space-y-6 bp-sm:space-y-8">
               <div className="grid w-full grid-cols-1 gap-y-6 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-sm:pb-6 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-8 bp-xl:grid-cols-[1.15fr_1fr_1fr_1fr_0.85fr]">
@@ -281,7 +281,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-surface-inverse-foreground/15 bg-surface-inverse">
-          <div className="py-4 bp-lg:pl-72 bp-lg:pr-8 bp-sm:py-5 xl:pl-80 xl:pr-12 2xl:pr-16">
+          <div className={showSideMenu ? "py-4 bp-lg:pl-72 bp-lg:pr-8 bp-sm:py-5 xl:pl-80 xl:pr-12 2xl:pr-16" : "py-4 bp-lg:pr-8 bp-sm:py-5 xl:pr-12 2xl:pr-16"}>
             <SiteContainer variant="wide">
               <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
                 <div className="min-w-0 space-y-2.5 text-ui-label leading-5 text-surface-inverse-muted">
