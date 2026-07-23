@@ -340,36 +340,6 @@
   );
 }
 
-.trustSection {
-  margin-block: 0;
-  padding-block: 86px;
-  background: hsl(var(--surface-inverse));
-  color: hsl(var(--surface-inverse-foreground));
-}
-
-.trustLayout {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 56px;
-  align-items: center;
-}
-
-.trustLayout h2 {
-  font-size: clamp(40px, 4.5vw, 50px);
-  line-height: 1.04;
-}
-
-.trustMatrix {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 15%, transparent);
-}
-
-.trustMatrix > div {
-  min-height: 145px;
-  padding: 24px;
-}
-
 .recoLayout {
   display: grid;
   grid-template-columns: minmax(220px, 0.68fr) minmax(0, 1.32fr);
@@ -1038,7 +1008,6 @@
   .pathDetail,
   .bento,
   .stepBody,
-  .trustLayout,
   .recoLayout,
   .packages,
   .infoGrid {
@@ -1124,23 +1093,6 @@
     min-height: 160px;
     padding: 18px;
     scroll-snap-align: start;
-  }
-
-  .trustMatrix {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .trustMatrix > div {
-    min-height: auto;
-    padding: 16px;
-  }
-
-  .trustMatrix h3 {
-    font-size: 16px;
-  }
-
-  .trustMatrix p {
-    font-size: 12px;
   }
 
   .bentoMain {
@@ -1238,11 +1190,5 @@
   .careBanner {
     align-items: flex-start;
     flex-direction: column;
-  }
-}
-
-@media (max-width: 359px) {
-  .trustMatrix {
-    grid-template-columns: 1fr;
   }
 }

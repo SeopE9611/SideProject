@@ -1346,46 +1346,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className={styles.trustSection}>
-        <SiteContainer variant="wide" className={styles.wrap}>
-          <div className={styles.trustLayout}>
-            <div>
-              <span className="rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-medium text-brand-highlight-foreground">
-                도깨비테니스 교체서비스
-              </span>
-              <h2 className={cn(styles.uiTitle, "mt-5 text-ui-page-title leading-tight")}>
-                신청부터 장착 완료까지, 진행 과정을 한눈에 확인하세요.
-              </h2>
-              <p className="mt-5 break-keep text-ui-body leading-relaxed text-surface-inverse-muted">
-                스트링 선택부터 수령 안내까지 교체 과정에 필요한 내용을 단계별로 확인할 수 있어요.
-              </p>
-            </div>
-            <div className={styles.trustMatrix}>
-              {[
-                ["신청 내용 확인", "라켓, 스트링, 텐션과 접수 방법을 신청 전에 한 번 더 확인해요."],
-                [
-                  "필요한 항목만 선택",
-                  "직접 선택과 추천 중 내게 필요한 방법으로 시작할 수 있어요.",
-                ],
-                ["작업 과정 안내", "라켓 접수부터 장착 완료까지 진행 과정을 확인할 수 있어요."],
-                ["교체 이력 관리", "완료된 교체 내역은 라켓 케어에서 이어서 관리할 수 있어요."],
-              ].map(([title, copy], idx) => (
-                <div
-                  key={title}
-                  className="border-b border-surface-inverse-foreground/15 p-6 last:border-b-0 bp-sm:border-r bp-sm:even:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"
-                >
-                  <b className="font-medium text-brand-highlight-ink">0{idx + 1}</b>
-                  <h3 className="mt-3 text-ui-card-title-lg font-medium">{title}</h3>
-                  <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-surface-inverse-muted">
-                    {copy}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </SiteContainer>
-      </section>
-
       <section className={styles.section} id="packages">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
