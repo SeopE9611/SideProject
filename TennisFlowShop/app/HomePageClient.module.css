@@ -209,86 +209,6 @@
   color: hsl(var(--surface-inverse-foreground));
 }
 
-.bento {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
-  gap: 14px;
-}
-
-.bentoMain {
-  position: relative;
-  min-height: 420px;
-  overflow: hidden;
-  border-radius: 30px;
-  color: hsl(var(--surface-inverse-foreground));
-}
-
-.bentoMainInner,
-.bentoImageWrap {
-  position: absolute;
-  inset: 0;
-}
-
-.bentoMainInner::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, hsl(var(--surface-inverse)) 96%, transparent) 0%,
-    color-mix(in srgb, hsl(var(--surface-inverse)) 72%, transparent) 58%,
-    color-mix(in srgb, hsl(var(--surface-inverse)) 52%, transparent) 100%
-  );
-  pointer-events: none;
-}
-
-.bentoCopy {
-  position: absolute;
-  z-index: 2;
-  inset: 38px auto 38px 38px;
-  display: flex;
-  width: min(560px, calc(100% - 76px));
-  flex-direction: column;
-  align-items: flex-start;
-  border-radius: 0;
-  background: transparent;
-  padding: 0;
-}
-
-.bentoTitle {
-  max-width: 560px;
-  margin-top: 22px;
-  color: hsl(var(--surface-inverse-foreground));
-  font-family: var(--home-brand-font-family);
-  font-size: clamp(36px, 4vw, 46px);
-  font-weight: 500;
-  font-synthesis: none;
-  line-height: 1.06;
-  letter-spacing: -0.035em;
-  word-break: keep-all;
-  text-wrap: balance;
-}
-
-.bentoDescription {
-  max-width: 560px;
-  margin-top: 16px;
-  color: hsl(var(--surface-inverse-foreground));
-  font-size: 15px;
-  line-height: 1.75;
-  word-break: keep-all;
-}
-
-.bentoCta {
-  margin-top: auto;
-}
-
-.bentoSide {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  gap: 14px;
-}
-
 .processWrap {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
@@ -299,45 +219,41 @@
 .stepTabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  min-height: 62px;
+  min-height: 56px;
 }
 
 .stepBody {
   display: grid;
-  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
-  min-height: 390px;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
 }
 
 .stepCopy {
-  padding: 48px;
+  padding: 34px 36px;
   background: hsl(var(--brand-highlight));
   color: hsl(var(--brand-highlight-foreground));
 }
 
-.stepCopy h3 {
-  font-size: clamp(36px, 4vw, 44px);
-  line-height: 1.07;
-}
-
-.stepVisual {
+.stepMeta {
   display: flex;
   align-items: center;
-  background: color-mix(in srgb, hsl(var(--muted)) 42%, hsl(var(--card)));
-  padding: 34px;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.formMock {
-  width: 100%;
-  max-width: none;
-  margin-inline: auto;
-  border: 1px solid hsl(var(--border));
-  border-radius: 20px;
+.stepCopy h3 {
+  max-width: 480px;
+  font-size: clamp(30px, 3vw, 38px);
+  line-height: 1.08;
+}
+
+.stepSummary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 34px 36px;
   background: hsl(var(--card));
-  padding: 24px;
-  box-shadow: var(
-    --shadow-soft,
-    0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 10%, transparent)
-  );
 }
 
 .recoLayout {
@@ -354,14 +270,12 @@
 
 .purposeList,
 .pathGrid,
-.bentoSide,
 .stepTabs {
   scrollbar-width: none;
 }
 
 .purposeList::-webkit-scrollbar,
 .pathGrid::-webkit-scrollbar,
-.bentoSide::-webkit-scrollbar,
 .stepTabs::-webkit-scrollbar {
   display: none;
 }
@@ -955,13 +869,6 @@
   padding: 26px 30px;
 }
 
-.bentoSideCard {
-  transition:
-    border-color 0.2s,
-    background-color 0.2s,
-    box-shadow 0.2s;
-}
-
 @media (hover: hover) and (pointer: fine) {
   .racketInventoryRow:hover {
     background: hsl(var(--muted) / 0.35);
@@ -969,15 +876,13 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .pathCardIdle:hover,
-  .bentoSideCard:hover {
+  .pathCardIdle:hover {
     box-shadow: 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pathCard,
-  .bentoSideCard,
   .racketInventoryRow,
   .racketBrandRailButton {
     transition: none;
@@ -987,8 +892,7 @@
     animation: none;
   }
 
-  .pathCardIdle:hover,
-  .bentoSideCard:hover {
+  .pathCardIdle:hover {
     box-shadow: none;
   }
 }
@@ -1006,7 +910,6 @@
   .sectionHead,
   .heroGrid,
   .pathDetail,
-  .bento,
   .stepBody,
   .recoLayout,
   .packages,
@@ -1016,11 +919,6 @@
 
   .heroVisual {
     min-height: 360px;
-  }
-
-  .bentoSide {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: none;
   }
 
   .purposeList {
@@ -1095,37 +993,17 @@
     scroll-snap-align: start;
   }
 
-  .bentoMain {
-    min-height: 390px;
-  }
-
-  .bentoMainInner::after {
-    background: color-mix(in srgb, hsl(var(--surface-inverse)) 84%, transparent);
-  }
-
-  .bentoCopy {
-    inset: 22px;
-    width: auto;
-  }
-
-  .bentoTitle {
-    font-size: clamp(30px, 9vw, 34px);
-  }
-
-  .bentoDescription {
-    font-size: 14px;
-  }
-
-  .stepCopy {
+  .stepCopy,
+  .stepSummary {
     padding: 24px;
   }
 
-  .stepVisual {
-    padding: 16px;
+  .stepMeta {
+    font-size: 12px;
   }
 
-  .formMock {
-    padding: 18px;
+  .stepCopy h3 {
+    font-size: 30px;
   }
 
   .packageRow {
@@ -1170,17 +1048,10 @@
     grid-column: 1 / -1;
   }
 
-  .bentoSide,
   .stepTabs {
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-  }
-
-  .bentoSideCard {
-    flex: 0 0 82%;
-    min-height: 96px;
-    scroll-snap-align: start;
   }
 
   .stepTabs > * {

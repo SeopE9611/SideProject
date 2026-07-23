@@ -172,11 +172,6 @@ const PROCESS_STEPS = [
     title: "내 상황에 맞는\n신청 방법 선택",
     description: "직접 선택, 추천, 보유 스트링 중 지금 가장 편한 방식으로 시작합니다.",
     checks: ["신청 경로 선택", "스트링 또는 상담 선택", "접수 방식 확인"],
-    progress: "25%",
-    mockTitle: "교체 신청",
-    question: "어떤 방식으로 시작할까요?",
-    options: ["추천받고 신청", "원하는 스트링 직접 선택", "보유 스트링 장착"],
-    cta: "다음 · 라켓 접수",
   },
   {
     key: "receive",
@@ -185,11 +180,6 @@ const PROCESS_STEPS = [
     title: "방문 또는 택배로\n라켓을 맡기세요",
     description: "매장 방문과 택배 접수 중 가능한 방법을 고르고 안내를 확인합니다.",
     checks: ["접수 방법 선택", "라켓 정보 입력", "도착 확인 안내"],
-    progress: "50%",
-    mockTitle: "라켓 접수",
-    question: "라켓은 어떻게 맡기시나요?",
-    options: ["매장 방문", "택배 접수"],
-    cta: "다음 · 전문 장착",
   },
   {
     key: "stringing",
@@ -198,11 +188,6 @@ const PROCESS_STEPS = [
     title: "선택한 조건으로\n정확하게 장착합니다",
     description: "스트링과 텐션 정보를 확인한 뒤 작업 상태를 안내합니다.",
     checks: ["스트링 정보 확인", "텐션 확인", "작업 완료 안내"],
-    progress: "75%",
-    mockTitle: "장착 진행",
-    question: "작업 전 확인할 내용은 무엇인가요?",
-    options: ["스트링", "텐션", "라켓 상태"],
-    cta: "다음 · 수령 및 관리",
   },
   {
     key: "care",
@@ -211,11 +196,6 @@ const PROCESS_STEPS = [
     title: "완성된 라켓을 받고\n다음 관리로 이어가세요",
     description: "수령 후 교체 이력을 라켓 케어에서 이어서 관리할 수 있습니다.",
     checks: ["수령 방법 확인", "교체 이력 저장", "다음 교체 시기 관리"],
-    progress: "100%",
-    mockTitle: "수령 안내",
-    question: "완료 후 어떤 안내를 받을까요?",
-    options: ["수령 안내", "교체 이력", "라켓 케어 연결"],
-    cta: "신청 방식 선택하기",
   },
 ] as const;
 
@@ -1146,90 +1126,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className={styles.section}>
-        <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="03"
-            eyebrow="주요 서비스"
-            title="교체서비스에 필요한 메뉴를 한곳에서 확인하세요."
-            description={
-              <>
-                교체 신청부터 스트링 추천, 패키지와 가격 안내까지
-                <br />
-                필요한 메뉴를 빠르게 확인할 수 있어요.
-              </>
-            }
-          />
-          <div className={styles.bento}>
-            <Link href="/services#service-start" className={styles.bentoMain}>
-              <div className={styles.bentoMainInner}>
-                <div className={styles.bentoImageWrap}>
-                  <Image
-                    src="/images/home/home-stringing-setup-clean.webp"
-                    alt="스트링 교체 준비가 된 라켓과 도구"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1199px) 100vw, 820px"
-                  />
-                </div>
-                <div className={styles.bentoCopy}>
-                  <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-medium text-brand-highlight-foreground">
-                    스트링 교체서비스
-                  </span>
-                  <h3 className={styles.bentoTitle}>라켓을 맡기는 순간부터 수령할 때까지</h3>
-                  <p className={styles.bentoDescription}>
-                    신청서 작성, 접수 방식 선택, 스트링·텐션 확인, 작업 완료 안내를 순서대로
-                    확인하세요.
-                  </p>
-                  <span className={cn(homeCtaHighlight, styles.bentoCta)}>
-                    교체서비스 시작하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-            <div className={styles.bentoSide}>
-              {[
-                [
-                  "내게 맞는 스트링 찾기",
-                  "플레이 스타일에 맞는 스트링 추천",
-                  "/products/recommend",
-                ],
-                ["교체 패키지", "교체 횟수에 맞는 패키지", "/services/packages"],
-                ["가격·이용 안내", "장착 비용과 이용 방법 확인", "/services/pricing"],
-              ].map(([title, desc, href]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    styles.bentoSideCard,
-                    "group flex min-h-32 items-center justify-between rounded-panel border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                  )}
-                >
-                  <span>
-                    <strong className="block text-ui-card-title-lg font-medium text-foreground">
-                      {title}
-                    </strong>
-                    <span className="mt-2 block break-keep text-ui-body-sm text-muted-foreground">
-                      {desc}
-                    </span>
-                  </span>
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-highlight-muted text-foreground">
-                    ↗
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </SiteContainer>
-      </section>
-
       <section className={styles.section} id="process">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="04"
+            no="03"
             eyebrow="교체 진행 순서"
-            title="신청부터 수령까지 필요한 정보만 보여드려요."
-            description="단계를 선택하면 준비할 내용과 진행 방법을 미리 확인할 수 있어요."
+            title="신청부터 수령까지, 4단계로 진행됩니다."
+            description="단계를 선택하면 준비할 내용과 다음 진행을 간단히 확인할 수 있어요."
           />
           <div className={styles.processWrap}>
             <div className={styles.stepTabs}>
@@ -1242,7 +1145,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     aria-pressed={active}
                     onClick={() => setActiveStepKey(step.key)}
                     className={cn(
-                      "min-w-40 border-b border-r border-border px-4 py-4 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                      "min-w-40 border-b border-r border-border px-4 py-3 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                       active
                         ? "bg-surface-inverse text-surface-inverse-foreground"
                         : "bg-card text-foreground hover:bg-muted/30",
@@ -1263,7 +1166,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             </div>
             <div className={styles.stepBody}>
               <div className={styles.stepCopy}>
-                <p className="text-ui-label font-medium">단계 {currentStep.no}</p>
+                <div className={styles.stepMeta}>
+                  <span>단계 {currentStep.no}</span>
+                  <span>
+                    {currentStepIndex + 1} / {PROCESS_STEPS.length}
+                  </span>
+                </div>
+
                 <h3
                   className={cn(
                     styles.uiTitle,
@@ -1272,74 +1181,39 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 >
                   {currentStep.title}
                 </h3>
+
                 <p className="mt-4 break-keep text-ui-body leading-relaxed">
                   {currentStep.description}
                 </p>
-                <div className="mt-6 grid gap-2">
+              </div>
+
+              <div className={styles.stepSummary}>
+                <p className="text-ui-label font-medium text-muted-foreground">
+                  이 단계에서 확인할 내용
+                </p>
+
+                <div className="mt-4 grid gap-3">
                   {currentStep.checks.map((check) => (
-                    <CheckLine key={check} inverse>
-                      {check}
-                    </CheckLine>
+                    <CheckLine key={check}>{check}</CheckLine>
                   ))}
                 </div>
+
                 {currentStepIndex < PROCESS_STEPS.length - 1 ? (
                   <button
                     type="button"
-                    className={cn(homeCtaDefault, "mt-7")}
+                    className={cn(homeCtaDefault, "mt-6 self-start")}
                     onClick={() => setActiveStepKey(PROCESS_STEPS[currentStepIndex + 1].key)}
                   >
                     다음 단계 보기
                   </button>
                 ) : (
-                  <Link className={cn(homeCtaDefault, "mt-7")} href="/services#service-start">
-                    신청 방식 선택하기
+                  <Link
+                    className={cn(homeCtaDefault, "mt-6 self-start")}
+                    href="/services#service-start"
+                  >
+                    교체서비스 신청하기
                   </Link>
                 )}
-              </div>
-              <div className={styles.stepVisual}>
-                <div
-                  className={styles.formMock}
-                  role="img"
-                  aria-label="교체서비스 신청 화면 미리보기"
-                >
-                  <div className="flex items-center justify-between border-b border-border pb-4">
-                    <strong className="font-medium">{currentStep.mockTitle}</strong>
-                    <span className="text-ui-label text-muted-foreground">진행 예시</span>
-                  </div>
-                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-brand-highlight"
-                      style={{ width: currentStep.progress }}
-                    />
-                  </div>
-                  <h4 className="mt-6 break-keep text-ui-section-title font-medium text-foreground">
-                    {currentStep.question}
-                  </h4>
-                  <div className="mt-4 grid gap-2">
-                    {currentStep.options.map((option, idx) => (
-                      <div
-                        key={option}
-                        className={cn(
-                          "flex items-center justify-between rounded-control border px-4 py-3",
-                          idx === 0
-                            ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
-                            : "border-border bg-card text-foreground",
-                        )}
-                      >
-                        <span>{option}</span>
-                        <span
-                          className={cn(
-                            "h-3 w-3 rounded-full",
-                            idx === 0 ? "bg-brand-highlight" : "bg-muted",
-                          )}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-5 rounded-control bg-brand-highlight px-4 py-3 text-center font-medium text-brand-highlight-foreground">
-                    {currentStep.cta}
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -1349,7 +1223,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section className={styles.section} id="packages">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="05"
+            no="04"
             eyebrow="패키지 비교"
             title="스트링을 자주 교체한다면 패키지로 편리하게 이용하세요."
             description={
@@ -1409,7 +1283,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={racketsSectionRef} className={styles.section} id="rackets">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="06"
+            no="05"
             eyebrow="도깨비 인증 중고 라켓"
             title={
               <>
@@ -1565,7 +1439,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={communitySectionRef} className={styles.section} id="info">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="07"
+            no="06"
             eyebrow="이용 안내"
             title="접수 방법과 필요한 안내를 한곳에서 확인하세요."
             description="공지사항과 이용 메뉴를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있습니다."
