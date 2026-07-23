@@ -134,6 +134,11 @@ const Header = () => {
 
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   const { user, loading } = useCurrentUser();
   const displayName = user?.name?.trim() || "회원";
   const isAdmin = isAdminRole(user?.role);
@@ -818,7 +823,7 @@ const Header = () => {
             className={`absolute inset-0 z-0 pointer-events-none bg-background/95 border-b border-border/80 ${isScrolled ? "shadow-soft" : ""}`}
           />
           <SiteContainer
-            className="relative z-10 h-full overflow-visible bp-lg:mx-0 bp-lg:max-w-none bp-lg:flex bp-lg:flex-col bp-lg:justify-center bp-lg:px-6 xl:px-8 2xl:px-10"
+            className="relative z-10 flex h-full items-center justify-between overflow-visible bp-lg:mx-0 bp-lg:flex-col bp-lg:justify-center bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10"
           >
             <div className="grid w-full grid-cols-[52px_minmax(0,1fr)_52px] items-center bp-sm:grid-cols-[56px_minmax(0,1fr)_56px] bp-lg:hidden">
               <div className="justify-self-start">

@@ -24,7 +24,7 @@ export const DESKTOP_PRIMARY_NAV_ITEMS = [
   { name: "고객센터", href: "/support" },
 ] as const;
 
-/** 데스크톱에서는 더보기 메뉴로 제공하는 보조 탐색 */
+/** 주요 메뉴와 함께 제공하는 데스크톱 보조 탐색 */
 export const DESKTOP_SECONDARY_NAV_ITEMS = [
   { name: "커뮤니티", href: "/board" },
   { name: "라켓 찾기", href: "/rackets/finder" },
