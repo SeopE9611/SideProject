@@ -55,3 +55,92 @@ assert.doesNotMatch(ui, /function calcProgressPercent/);
 assert.match(ui, /kpiNeedsAttention/);
 assert.match(ui, /kpiRevenue/);
 assert.match(ui, /kpiExpSoon/);
+
+const detailUi = read("app/admin/packages/[id]/PackageDetailClient.tsx");
+for (const value of [
+  "available",
+  "not_issued",
+  "paused",
+  "exhausted",
+  "expired",
+  "cancelled",
+  "unknown",
+  "pending_any",
+  "bank_pending",
+  "pg_pending",
+  "pending",
+  "paid",
+  "failed",
+  "refunding",
+  "refunded",
+  "not_required",
+  "active",
+  "awaiting_payment",
+  "pending_issue",
+  "ended",
+  "needs_attention",
+  "clear",
+])
+  assert.match(ui, new RegExp(`value="${value}"`));
+for (const legacy of ["활성", "비활성", "결제완료", "결제대기", "결제취소"])
+  assert.doesNotMatch(ui, new RegExp(`<SelectItem value="${legacy}">`));
+for (const value of [
+  'activationFilter !== "all"',
+  'attentionFilter !== "all"',
+  "운영 확인 필요",
+  "사용 가능",
+  "결제 확인 대기",
+  "발급 처리 중",
+  "결제·활성화 확인",
+  'usageFilter: "available"',
+  'paymentFilter: "paid"',
+  'attentionFilter: "clear"',
+  "normalizedSortKey",
+  "전체 결과",
+  "결제 완료 금액",
+  "30일 내 만료",
+  "xl:grid-cols-5",
+  "결제 상태",
+  "활성화 상태",
+  "운영 확인",
+  "운영 확인 사유 미확인",
+  "colSpan=\\{13\\}",
+  "grid-cols-13",
+  "횟수 정보 확인 필요",
+])
+  assert.match(ui, new RegExp(value));
+assert.ok(ui.includes("Array.from({ length: 13 })"));
+assert.doesNotMatch(ui, /총 매출|만료 예정/);
+assert.match(ui, /aria-label={`결제 상태 \$\{paymentLabel\}`}/);
+assert.match(ui, /aria-label={`활성화 상태 \$\{activationLabel\}`}/);
+for (const value of [
+  "terminal_payment_with_live_pass",
+  "payment_failed",
+  "payment_refunding",
+  "payment_unknown",
+  "pass_issue_pending",
+  "pass_unknown",
+  "isServerCompatiblePaid",
+  'rawPaymentStatus === "결제완료"',
+  "isServerCompatiblePass",
+  'rawPassStatus !== "cancelled"',
+  "canExtendPackage",
+  "canAdjustSessions",
+  "disabled={!canExtendPackage}",
+  "disabled={!canAdjustSessions}",
+  "금액 확인 필요",
+  "횟수 정보 확인 필요",
+  "패스 미발급",
+  "만료일 확인 필요",
+  "현재 잔여 횟수를 확인할 수 없습니다",
+  "총 횟수 확인 필요",
+])
+  assert.match(detailUi, new RegExp(value));
+for (const value of [
+  /data\.paymentStatus === "결제완료"/,
+  /data\.passStatus === "취소"/,
+  /\(data\.remainingSessions \?\? 0\) <= 0/,
+  /data\.price \?\? 0/,
+  /\(data\.remainingSessions \?\? 0\) \+/,
+])
+  assert.doesNotMatch(detailUi, value);

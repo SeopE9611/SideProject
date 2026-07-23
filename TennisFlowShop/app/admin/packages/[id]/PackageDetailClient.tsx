@@ -59,8 +59,11 @@ import useSWR from "swr";
 import PackageCurrentStatusSelect from "@/app/features/packages/components/PackageCurrentStatusSelect";
 import {
   getAdminPackageActivationLabel,
+  getAdminPackageActivationBadgeSpec,
+  getAdminPackageAttentionBadgeSpec,
   getAdminPackageAttentionReasonLabel,
   getAdminPackagePaymentLabel,
+  getAdminPackageUsageBadgeSpec,
   getAdminPackageUsageLabel,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
 import { adminMutator } from "@/lib/admin/adminFetcher";
@@ -83,12 +86,6 @@ const toDateSafe = (v: string | Date | null | undefined) => {
 const fmtKDate = (v: string | Date | null | undefined) => {
   const d = toDateSafe(v);
   return d ? format(d, "yyyy. MM. dd.") : "-";
-};
-const daysUntil = (v: string | Date | null | undefined) => {
-  const d = toDateSafe(v);
-  if (!d) return 0;
-  const diffMs = d.getTime() - Date.now();
-  return Math.max(0, Math.ceil(diffMs / 86400000));
 };
 const fmtDate = (v?: string | Date | null) => {
   if (!v) return "-";
@@ -373,69 +370,109 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
     );
   }
 
-  // 날짜/진행 계산
+  // 서버 읽기 모델을 그대로 사용해 상태와 작업 가능 여부를 표시합니다.
   const expiry = toDateSafe(data.expiryDate);
-  const daysLeft = daysUntil(expiry);
-  const expired = !!expiry && expiry.getTime() < Date.now();
-
-  const progressPercentage = data.progressPercent ?? null;
-  const isPaid = data.paymentStatus === "결제완료";
-  const isCancelled = data.passStatus === "취소";
-  const isExpired = daysLeft <= 0;
+  const hasSessionCounts =
+    typeof data.usedSessions === "number" &&
+    Number.isFinite(data.usedSessions) &&
+    typeof data.remainingSessions === "number" &&
+    Number.isFinite(data.remainingSessions);
+  const progressPercentage =
+    typeof data.progressPercent === "number" && Number.isFinite(data.progressPercent)
+      ? Math.round(data.progressPercent)
+      : null;
+  const isServerCompatiblePaid = data.rawPaymentStatus === "결제완료";
+  const isServerCompatiblePass = data.hasIssuedPass && data.rawPassStatus !== "cancelled";
   const isNicePayment =
     String(data.paymentProvider ?? "")
       .trim()
       .toLowerCase() === "nicepay";
 
-  const totalSessions =
-    data.usedSessions !== null && data.remainingSessions !== null
-      ? data.usedSessions + data.remainingSessions
-      : null;
-
-  const canExtendPackage = isPaid && !isCancelled;
-  const canAdjustSessions = isPaid && !isCancelled && !isExpired;
-
-  const packageGuide = isCancelled
+  const canExtendPackage = isServerCompatiblePaid && isServerCompatiblePass;
+  const canAdjustSessions =
+    isServerCompatiblePaid && isServerCompatiblePass && data.usageState !== "expired";
+  const hasReason = (reason: string) => data.attentionReasons.includes(reason as never);
+  const packageGuide = hasReason("terminal_payment_with_live_pass")
     ? {
-        title: "취소된 패키지입니다",
+        title: "결제 종료 상태와 이용권 상태가 일치하지 않습니다",
         description:
-          "결제취소 또는 패키지권 취소 상태이므로 연장/횟수 조절 작업을 진행하지 않습니다.",
+          "결제는 실패·취소·환불 상태이지만 연결 이용권이 사용 가능하거나 일시정지 상태입니다. 결제사와 이용권 상태를 모두 확인하세요.",
         toneClass: "border-destructive/30 bg-destructive/10 text-destructive",
       }
-    : !isPaid
+    : hasReason("payment_failed")
       ? {
-          title: "결제 상태 확인이 필요합니다",
-          description:
-            "결제완료 전에는 패키지 연장이나 횟수 조절을 진행할 수 없습니다. 결제 상태를 먼저 확인하세요.",
+          title: "결제 실패 상태를 확인하세요",
+          description: "결제사 승인 결과와 주문 상태를 확인하세요.",
           toneClass: "border-warning/30 bg-warning/10 text-warning",
         }
-      : isExpired
+      : hasReason("payment_refunding")
         ? {
-            title: "만료된 패키지입니다",
-            description:
-              "이미 만료된 패키지입니다. 운영 정책에 따라 연장이 필요한지 먼저 확인하세요.",
+            title: "환불 진행 상태를 확인하세요",
+            description: "환불 처리 결과와 연결 이용권 상태를 확인하세요.",
             toneClass: "border-warning/30 bg-warning/10 text-warning",
           }
-        : (data.remainingSessions ?? 0) <= 0
+        : hasReason("payment_unknown")
           ? {
-              title: "잔여 횟수가 없습니다",
-              description:
-                "모든 횟수를 사용한 패키지입니다. 추가 이용이 필요한 경우 횟수 조절 또는 새 패키지 구매 안내가 필요합니다.",
+              title: "결제 상태를 확인하세요",
+              description: "결제사와 주문의 최신 결제 상태를 확인하세요.",
               toneClass: "border-warning/30 bg-warning/10 text-warning",
             }
-          : daysLeft <= 7
+          : hasReason("pass_issue_pending")
             ? {
-                title: "만료 임박 패키지입니다",
-                description:
-                  "만료일까지 7일 이하로 남았습니다. 고객 문의 시 연장 가능 여부를 함께 확인하세요.",
+                title: "패스 발급 상태를 확인하세요",
+                description: "결제는 확인됐지만 연결 패스가 아직 발급되지 않았습니다.",
                 toneClass: "border-warning/30 bg-warning/10 text-warning",
               }
-            : {
-                title: "정상 이용 가능한 패키지입니다",
-                description:
-                  "결제완료 상태이며 잔여 횟수와 만료일이 남아 있습니다. 사용 이력과 신청서 연결 상태를 확인하세요.",
-                toneClass: "border-primary/20 bg-primary/5 text-foreground",
-              };
+            : hasReason("pass_unknown")
+              ? {
+                  title: "이용권 상태를 확인하세요",
+                  description: "연결 이용권의 최신 상태를 확인하세요.",
+                  toneClass: "border-warning/30 bg-warning/10 text-warning",
+                }
+              : data.usageState === "paused"
+                ? {
+                    title: "패키지권이 일시정지되어 있습니다",
+                    description: "일시정지 사유와 재개 가능 여부를 확인하세요.",
+                    toneClass: "border-warning/30 bg-warning/10 text-warning",
+                  }
+                : data.usageState === "expired"
+                  ? {
+                      title: "기간이 만료된 패키지입니다",
+                      description: "연장 후 횟수 조절이 가능합니다.",
+                      toneClass: "border-warning/30 bg-warning/10 text-warning",
+                    }
+                  : data.usageState === "exhausted"
+                    ? {
+                        title: "잔여 횟수가 없습니다",
+                        description: "추가 이용이 필요하면 횟수 조절 또는 새 패키지를 안내하세요.",
+                        toneClass: "border-warning/30 bg-warning/10 text-warning",
+                      }
+                    : data.usageState === "cancelled" ||
+                        data.paymentState === "cancelled" ||
+                        data.paymentState === "refunded"
+                      ? {
+                          title: "종료된 패키지입니다",
+                          description: "결제와 이용권 상태를 확인하세요.",
+                          toneClass: "border-destructive/30 bg-destructive/10 text-destructive",
+                        }
+                      : data.paymentState === "paid" &&
+                          data.usageState === "available" &&
+                          !data.requiresAttention
+                        ? {
+                            title: "정상 이용 가능한 패키지입니다",
+                            description: "사용 이력과 신청서 연결 상태를 확인하세요.",
+                            toneClass: "border-primary/20 bg-primary/5 text-foreground",
+                          }
+                        : {
+                            title: "최신 상태를 확인하세요",
+                            description: "결제·이용권·활성화 상태를 확인하세요.",
+                            toneClass: "border-warning/30 bg-warning/10 text-warning",
+                          };
+
+  const adjustedRemainingPreview =
+    typeof data.remainingSessions === "number" && Number.isFinite(data.remainingSessions)
+      ? Math.max(0, data.remainingSessions + sessionAdjustment.amount)
+      : null;
 
   const currentExpiryDate = data?.expiryDate ? new Date(data.expiryDate) : null;
   const baseForPreview = ((): Date => {
@@ -594,7 +631,14 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <Target className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">남은 횟수</span>
             </div>
-            <p className="text-lg font-semibold text-primary">{data.remainingSessions}회</p>
+            <p className="text-lg font-semibold text-primary">
+              {!data.hasIssuedPass
+                ? "미발급"
+                : typeof data.remainingSessions === "number" &&
+                    Number.isFinite(data.remainingSessions)
+                  ? `${data.remainingSessions}회`
+                  : "확인 필요"}
+            </p>
           </div>
 
           <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
@@ -603,10 +647,11 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <span className="text-sm text-muted-foreground">결제 금액</span>
             </div>
             <p className="text-lg font-medium">
-              {new Intl.NumberFormat("ko-KR", {
-                style: "currency",
-                currency: "KRW",
-              }).format(data.price ?? 0)}
+              {typeof data.price === "number" && Number.isFinite(data.price)
+                ? new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW" }).format(
+                    data.price,
+                  )
+                : "금액 확인 필요"}
             </p>
           </div>
 
@@ -615,7 +660,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">만료일</span>
             </div>
-            <p className="text-lg font-medium">{fmtKDate(expiry)}</p>
+            <p className="text-lg font-medium">
+              {!data.hasIssuedPass ? "미발급" : data.expiryDate ? fmtKDate(expiry) : "확인 필요"}
+            </p>
           </div>
           <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
             <div className="flex items-center gap-2 mb-1.5">
@@ -736,7 +783,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           <CardContent className="p-6 space-y-3">
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
               <span className="text-sm text-muted-foreground">이용권 상태</span>
-              <Badge variant="outline">{getAdminPackageUsageLabel(data.usageState)}</Badge>
+              <Badge {...getAdminPackageUsageBadgeSpec(data.usageState)}>
+                {getAdminPackageUsageLabel(data.usageState)}
+              </Badge>
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
@@ -794,17 +843,26 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg bg-card p-3 text-sm">
                 활성화 상태:{" "}
-                <Badge variant="outline">
+                <Badge {...getAdminPackageActivationBadgeSpec(data.activationState)}>
                   {getAdminPackageActivationLabel(data.activationState)}
                 </Badge>
               </div>
               <div className="rounded-lg bg-card p-3 text-sm">
-                운영 확인: {data.requiresAttention ? "확인 필요" : "확인 완료"}
+                운영 확인:{" "}
+                <Badge {...getAdminPackageAttentionBadgeSpec(data.requiresAttention)}>
+                  {data.requiresAttention ? "확인 필요" : "확인 완료"}
+                </Badge>
                 {data.requiresAttention && (
                   <ul className="mt-2 list-disc pl-4 text-xs">
-                    {data.attentionReasons.map((reason) => (
-                      <li key={reason}>{getAdminPackageAttentionReasonLabel(reason)}</li>
-                    ))}
+                    {(data.attentionReasons.length > 0 ? data.attentionReasons : [null]).map(
+                      (reason) => (
+                        <li key={reason ?? "unknown"}>
+                          {reason
+                            ? getAdminPackageAttentionReasonLabel(reason)
+                            : "운영 확인 사유 미확인"}
+                        </li>
+                      ),
+                    )}
                   </ul>
                 )}
               </div>
@@ -814,10 +872,14 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-muted-foreground">이용 진행률</span>
                 <span className="text-sm font-medium">
-                  {progressPercentage === null ? "패스 미발급" : `${progressPercentage}%`}
+                  {!data.hasIssuedPass
+                    ? "패스 미발급"
+                    : !hasSessionCounts || progressPercentage === null
+                      ? "횟수 정보 확인 필요"
+                      : `${progressPercentage}%`}
                 </span>
               </div>
-              {progressPercentage !== null && (
+              {data.hasIssuedPass && hasSessionCounts && progressPercentage !== null && (
                 <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
                   <div
                     className="h-2 rounded-full bg-primary transition-all"
@@ -826,8 +888,17 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 </div>
               )}
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>사용: {data.usedSessions}회</span>
-                <span>남은: {data.remainingSessions}회</span>
+                <span>
+                  사용: {!data.hasIssuedPass || !hasSessionCounts ? "-" : `${data.usedSessions}회`}
+                </span>
+                <span>
+                  남은:{" "}
+                  {!data.hasIssuedPass
+                    ? "미발급"
+                    : !hasSessionCounts
+                      ? "-"
+                      : `${data.remainingSessions}회`}
+                </span>
               </div>
             </div>
 
@@ -837,38 +908,55 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <span
                   className={cn(
                     "text-sm font-medium",
-                    expired
+                    data.usageState === "expired"
                       ? "text-muted-foreground"
-                      : daysLeft <= 7
-                        ? "text-destructive"
-                        : daysLeft <= 30
-                          ? "text-primary"
-                          : "text-primary",
+                      : data.isExpirySoon
+                        ? "text-warning"
+                        : "text-primary",
                   )}
                 >
-                  {expired ? "만료됨" : `${daysLeft}일 남음`}
+                  {!data.hasIssuedPass
+                    ? "패스 미발급"
+                    : !data.expiryDate
+                      ? "만료일 확인 필요"
+                      : data.usageState === "expired"
+                        ? "만료됨"
+                        : typeof data.daysUntilExpiry === "number"
+                          ? `${data.daysUntilExpiry}일 남음`
+                          : "만료일 확인 필요"}
                 </span>
               </div>
             </div>
 
-            {!isPaid && data.paymentStatus !== "결제취소" && (
+            {!isServerCompatiblePaid && (
               <p className="text-xs text-primary">
-                결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.
+                현재 서버 작업 정책상 원본 결제 상태가 `결제완료`인 주문에서만 연장·횟수 조절을 할
+                수 있습니다.
               </p>
             )}
-            {isCancelled && (
+            {!data.hasIssuedPass && (
               <p className="text-xs text-destructive">
-                결제취소 상태이므로 모든 작업이 비활성화되었습니다.
+                연결 패스가 없어 운영 작업을 진행할 수 없습니다.
               </p>
             )}
-            {isExpired && isPaid && !isCancelled && (
-              <p className="text-xs text-muted-foreground">만료된 패키지권은 연장만 가능합니다.</p>
+            {data.rawPassStatus === "cancelled" && (
+              <p className="text-xs text-destructive">
+                취소된 이용권에서는 운영 작업을 진행할 수 없습니다.
+              </p>
+            )}
+            {data.usageState === "expired" && (
+              <p className="text-xs text-muted-foreground">
+                만료된 이용권은 연장 후 횟수 조절이 가능합니다.
+              </p>
             )}
             <div className="rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
               <span className="text-foreground">작업 가능 여부</span>
               <span className="ml-2">
                 연장 {canExtendPackage ? "가능" : "불가"} · 횟수 조절{" "}
-                {canAdjustSessions ? "가능" : "불가"} · 총 {totalSessions}회
+                {canAdjustSessions ? "가능" : "불가"} ·{" "}
+                {hasSessionCounts
+                  ? `총 ${data.usedSessions! + data.remainingSessions!}회`
+                  : "총 횟수 확인 필요"}
               </span>
             </div>
           </CardContent>
@@ -878,7 +966,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!isPaid || isCancelled}
+                disabled={!canExtendPackage}
                 onClick={() => setShowExtensionForm(true)}
                 className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
               >
@@ -888,7 +976,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!isPaid || isCancelled || isExpired}
+                disabled={!canAdjustSessions}
                 onClick={() => setEditingSessions(true)}
                 className="border-border hover:bg-muted dark:hover:bg-muted"
               >
@@ -1140,16 +1228,24 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <div>
                 <Label htmlFor="adjustment">조절 수량</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  현재 남은 횟수: {data.remainingSessions}회
-                  {sessionAdjustment.amount !== 0 && (
-                    <span
-                      className={cn(
-                        "ml-2 font-medium",
-                        sessionAdjustment.amount > 0 ? "text-primary" : "text-destructive",
-                      )}
-                    >
-                      → {(data.remainingSessions ?? 0) + sessionAdjustment.amount}회
-                    </span>
+                  현재 남은 횟수:{" "}
+                  {typeof data.remainingSessions === "number" &&
+                  Number.isFinite(data.remainingSessions)
+                    ? `${data.remainingSessions}회`
+                    : "확인 필요"}
+                  {adjustedRemainingPreview === null ? (
+                    <span className="ml-2">현재 잔여 횟수를 확인할 수 없습니다.</span>
+                  ) : (
+                    sessionAdjustment.amount !== 0 && (
+                      <span
+                        className={cn(
+                          "ml-2 font-medium",
+                          sessionAdjustment.amount > 0 ? "text-primary" : "text-destructive",
+                        )}
+                      >
+                        → {adjustedRemainingPreview}회
+                      </span>
+                    )
                   )}
                 </p>
                 <div className="flex items-center gap-2">
