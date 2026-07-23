@@ -9,6 +9,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { shouldRestoreActive } from "@/lib/pass-status";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { getAdminPackageOperationCapabilities } from "@/lib/admin/package-operation-capabilities";
 
 type PassHistoryItem = {
   _id: OID;
@@ -69,16 +70,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "order not found" }, { status: 404 });
     }
 
-    if (pkgOrder.paymentStatus !== "결제완료") {
-      return NextResponse.json(
-        { error: "결제완료 상태에서만 연장이 가능합니다." },
-        { status: 409 },
-      );
-    }
-
-    if (passDoc.status === PASS_STATUS.cancelled) {
-      return NextResponse.json({ error: "취소된 패키지권입니다." }, { status: 409 });
-    }
+    const operationCapabilities = getAdminPackageOperationCapabilities({
+      paymentStatus: pkgOrder.paymentStatus,
+      hasIssuedPass: true,
+      passStatus: passDoc.status,
+      expiresAt: passDoc.expiresAt,
+      remainingCount: passDoc.remainingCount,
+      now,
+    });
+    if (!operationCapabilities.canExtend)
+      return NextResponse.json({ error: operationCapabilities.blockReasons[0] }, { status: 409 });
 
     const currentExpiry = passDoc.expiresAt ? new Date(passDoc.expiresAt) : null;
     let nextExpiry: Date;
