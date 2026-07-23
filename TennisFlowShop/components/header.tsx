@@ -254,6 +254,7 @@ const Header = () => {
   const academySectionActive = isMobileSectionActive(NAV_LINKS.academy.href);
   const racketCareActive =
     isMobileSectionActive("/racket-care") || isMobileSectionActive("/mypage/racket-care");
+  const racketCareCurrent = isMobileSectionActive("/racket-care");
 
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
   useEffect(() => {
@@ -319,6 +320,9 @@ const Header = () => {
     }
     return p === item.href || p.startsWith(`${item.href}/`);
   };
+
+  const isCurrentMenu = (item: (typeof desktopNavItems)[number]) =>
+    item.href === "/racket-care" ? isMobileSectionActive("/racket-care") : isActiveMenu(item);
 
   return (
     <>
@@ -730,7 +734,7 @@ const Header = () => {
                 <Button
                   variant="ghost"
                   className={mobileMenuItemClass(racketCareActive)}
-                  aria-current={racketCareActive ? "page" : undefined}
+                  aria-current={racketCareCurrent ? "page" : undefined}
                   onClick={() => {
                     guardedPush("/racket-care", () => setOpen(false));
                   }}
@@ -1044,12 +1048,13 @@ const Header = () => {
             <nav className="hidden w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 py-1 bp-lg:flex" aria-label="주요 메뉴">
               {desktopNavItems.map((item) => {
                 const active = isActiveMenu(item);
+                const current = isCurrentMenu(item);
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={`inline-flex h-9 shrink-0 items-center rounded-lg px-2.5 text-ui-body-sm leading-none transition ${active ? "bg-secondary text-foreground font-ui-medium" : "text-foreground hover:bg-secondary hover:text-foreground"}`}
-                    aria-current={active ? "page" : undefined}
+                    aria-current={current ? "page" : undefined}
                   >
                     {item.name}
                   </Link>
