@@ -33,6 +33,25 @@ for (const value of [
   "markPackageOrderPaid",
   "appendAdminAudit",
   "pass status sync error",
-  "return NextResponse.json\(\{ ok: true \}\)",
+  "return NextResponse\\.json\\(\\{ ok: true \\}\\)",
 ])
   assert.match(detail, new RegExp(value));
+
+assert.match(helper, /\$toLower/);
+assert.match(helper, /legacyPassStatus/);
+assert.match(helper, /legacyPaymentStatus/);
+for (const value of ["활성", "일시정지", "종료", "만료", "취소", "대기"])
+  assert.match(helper, new RegExp(value));
+assert.doesNotMatch(detail, /passStatusKo/);
+for (const value of ["legacyPassStatus", "legacyPaymentStatus"])
+  assert.match(types, new RegExp(value));
+for (const value of ["paymentStatusLabel", "usageStatusLabel", "activationStatusLabel"])
+  assert.doesNotMatch(types, new RegExp(value));
+assert.match(ui, /usageFilter/);
+assert.match(ui, /activationFilter/);
+assert.match(ui, /attentionFilter/);
+assert.doesNotMatch(ui, /function computeListStatus/);
+assert.doesNotMatch(ui, /function calcProgressPercent/);
+assert.match(ui, /kpiNeedsAttention/);
+assert.match(ui, /kpiRevenue/);
+assert.match(ui, /kpiExpSoon/);

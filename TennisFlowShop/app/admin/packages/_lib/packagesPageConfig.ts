@@ -1,99 +1,63 @@
 import { adminFetcher } from "@/lib/admin/adminFetcher";
+import { badgeStyleSpec } from "@/lib/badge-style";
 import type {
+  AdminPackageActivationState,
+  AdminPackageAttentionReason,
   AdminPackageDetailDto,
   AdminPackageListItemDto,
   AdminPackageListResponseDto,
   AdminPackageMetricsDto,
-  AdminPackagePassStatus,
-  AdminPackagePaymentStatus,
+  AdminPackagePaymentState,
   AdminPackageServiceType,
   AdminPackageType,
+  AdminPackageUsageState,
 } from "@/types/admin/packages";
 
 export type PackageOrder = AdminPackageDetailDto;
-
 export type PackageType = AdminPackageType;
 export type ServiceType = AdminPackageServiceType;
-export type PassStatus = AdminPackagePassStatus;
-export type PaymentStatus = AdminPackagePaymentStatus;
+export type PackageUsageFilter = "all" | AdminPackageUsageState;
+export type PackagePaymentFilter = "all" | "pending_any" | AdminPackagePaymentState;
+export type PackageActivationFilter = "all" | AdminPackageActivationState;
+export type PackageAttentionFilter = "all" | "needs_attention" | "clear";
 export type SortKey =
   | "customer"
   | "purchaseDate"
   | "expiryDate"
   | "remainingSessions"
   | "price"
-  | "status"
-  | "payment"
   | "package"
-  | "progress";
-
-export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
-  비활성: "비활성",
-  활성: "활성",
-  종료: "종료",
-  만료: "만료",
-  취소: "취소",
-};
-
-export const packageStatusColors: Record<PassStatus | "대기", string> = {
-  비활성: "bg-muted text-muted-foreground border-border",
-  활성: "bg-success/10 text-success border-border dark:bg-success/15",
-  종료: "bg-background text-foreground border-border",
-  만료: "bg-background text-foreground border-border",
-  취소: "bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15",
-  대기: "bg-background text-foreground border-border",
-};
-
+  | "progress"
+  | "usage"
+  | "payment"
+  | "activation"
+  | "attention";
 export type PackageListItem = AdminPackageListItemDto;
-
-export interface Paginated<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
 export type PackageMetrics = AdminPackageMetricsDto;
-
 export type PackagesResponse = AdminPackageListResponseDto;
 
 export const badgeSizeCls = "px-2.5 py-0.5 text-xs leading-[1.05] rounded-md";
-
-export function normalizePackagePaymentStatus(status?: string | null): PaymentStatus {
-  if (status === "결제완료" || status === "결제대기" || status === "결제취소") return status;
-  const lower = String(status ?? "")
-    .trim()
-    .toLowerCase();
-  if (lower === "paid" || lower === "payment_completed") return "결제완료";
-  if (lower === "pending") return "결제대기";
-  if (lower === "canceled" || lower === "cancelled") return "결제취소";
-  return "결제대기";
-}
-
 export const packageTypeColors: Record<PackageType, string> = {
   "10회권": "bg-muted text-foreground border-border",
   "30회권": "bg-primary/10 text-primary border-border dark:bg-primary/20",
   "50회권": "bg-success/10 text-success border-border dark:bg-success/15",
   "100회권": "bg-warning/10 text-warning border-border dark:bg-warning/15",
 };
-
 export const fetcher = adminFetcher;
-
 export const DEFAULT_PACKAGE_LIST_FILTERS = {
-  page: 1 as number,
-  limit: 10 as number,
-  status: "all" as "all" | PassStatus,
+  page: 1,
+  limit: 10,
+  usage: "all" as PackageUsageFilter,
+  payment: "all" as PackagePaymentFilter,
+  activation: "all" as PackageActivationFilter,
+  attention: "all" as PackageAttentionFilter,
   package: "all" as "all" | PackageType,
-  payment: "all" as "all" | PaymentStatus,
   service: "all" as "all" | ServiceType,
   sortBy: null as SortKey | null,
   sortDirection: "asc" as "asc" | "desc",
-  q: "" as string,
+  q: "",
 };
-
-export function getAdminPackagePaymentLabel(
-  state: import("@/types/admin/packages").AdminPackagePaymentState,
-) {
+export function getAdminPackagePaymentLabel(state: AdminPackagePaymentState) {
   return (
     {
       not_required: "결제 불필요",
@@ -109,9 +73,7 @@ export function getAdminPackagePaymentLabel(
     } as const
   )[state];
 }
-export function getAdminPackageUsageLabel(
-  state: import("@/types/admin/packages").AdminPackageUsageState,
-) {
+export function getAdminPackageUsageLabel(state: AdminPackageUsageState) {
   return (
     {
       available: "사용 가능",
@@ -124,9 +86,7 @@ export function getAdminPackageUsageLabel(
     } as const
   )[state];
 }
-export function getAdminPackageActivationLabel(
-  state: import("@/types/admin/packages").AdminPackageActivationState,
-) {
+export function getAdminPackageActivationLabel(state: AdminPackageActivationState) {
   return (
     {
       active: "활성화 완료",
@@ -140,9 +100,7 @@ export function getAdminPackageActivationLabel(
     } as const
   )[state];
 }
-export function getAdminPackageAttentionReasonLabel(
-  reason: import("@/types/admin/packages").AdminPackageAttentionReason,
-) {
+export function getAdminPackageAttentionReasonLabel(reason: AdminPackageAttentionReason) {
   return (
     {
       payment_pending: "결제 확인 필요",
@@ -156,3 +114,34 @@ export function getAdminPackageAttentionReasonLabel(
     } as const
   )[reason];
 }
+export const getAdminPackageUsageBadgeSpec = (state: AdminPackageUsageState) =>
+  badgeStyleSpec(
+    (
+      {
+        available: "success",
+        paused: "warning",
+        not_issued: "info",
+        exhausted: "neutral",
+        expired: "danger",
+        cancelled: "danger",
+        unknown: "warning",
+      } as const
+    )[state],
+  );
+export const getAdminPackageActivationBadgeSpec = (state: AdminPackageActivationState) =>
+  badgeStyleSpec(
+    (
+      {
+        active: "success",
+        awaiting_payment: "warning",
+        pending_issue: "info",
+        paused: "warning",
+        ended: "neutral",
+        cancelled: "danger",
+        failed: "danger",
+        unknown: "warning",
+      } as const
+    )[state],
+  );
+export const getAdminPackageAttentionBadgeSpec = (requiresAttention: boolean) =>
+  badgeStyleSpec(requiresAttention ? "warning" : "success");
