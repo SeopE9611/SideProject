@@ -192,6 +192,17 @@ export default function PassList() {
               const usageBadgeSpec = getPassUsageBadgeSpec(passItem.usageStatus);
               const paymentStatusBadgeSpec = getPaymentStatusBadgeSpec(passItem.paymentStatusLabel);
               const activationBadgeSpec = getPassActivationBadgeSpec(passItem.activationStatus);
+              const packageTitle = passItem.planTitle?.trim() || "교체서비스 패키지";
+              const packageSizeTitle =
+                typeof passItem.packageSize === "number" && Number.isFinite(passItem.packageSize)
+                  ? `${passItem.packageSize}회권`
+                  : "횟수 확인 중";
+              const packageSizeSummary =
+                typeof passItem.packageSize === "number" && Number.isFinite(passItem.packageSize)
+                  ? `패키지 총 ${passItem.packageSize}회`
+                  : "패키지 총 횟수 확인 중";
+              const canStartStringingService =
+                passItem.usageStatus === "available" && passItem.displayGroup === "available";
               return (
                 <article
                   key={passItem.id}
@@ -204,8 +215,7 @@ export default function PassList() {
                       </span>
                       <div className="min-w-0">
                         <h3 className="break-keep font-ui-bold text-ui-card-title text-foreground">
-                          {passItem.planTitle ?? "교체서비스 패키지"}{" "}
-                          {passItem.packageSize ?? "횟수 확인 중"}회권
+                          {packageTitle} · {packageSizeTitle}
                         </h3>
                         <p className="mt-1 text-ui-label text-muted-foreground">
                           구매일{" "}
@@ -308,7 +318,7 @@ export default function PassList() {
                     </>
                   ) : (
                     <p className="mt-4 text-ui-body-sm text-muted-foreground">
-                      패키지 총 {passItem.packageSize ?? "횟수 확인 중"}회 · 아직 발급되지 않음
+                      {packageSizeSummary} · 아직 발급되지 않음
                     </p>
                   )}
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -320,7 +330,7 @@ export default function PassList() {
                         주문·결제 정보
                       </a>
                     ) : null}
-                    {passItem.usageStatus === "available" ? (
+                    {canStartStringingService ? (
                       <a
                         href="/services#service-start"
                         className="text-ui-body-sm font-medium text-brand-highlight-ink underline-offset-4 hover:underline"
