@@ -153,7 +153,16 @@ export async function GET() {
     const passItems = passes.map((p) => {
       const orderId = p.orderId ? String(p.orderId) : null;
       const order = orderId ? packageOrderById.get(orderId) : undefined;
+      const packageSize = toNullableFiniteNumber(p.packageSize);
+      const usedCount = toNullableFiniteNumber(p.usedCount);
       const remainingCount = toNullableFiniteNumber(p.remainingCount);
+      const payment = paymentFields(order);
+      const paymentStatusToken = paymentToken(payment.paymentStatus);
+      const orderStatusToken = paymentToken(nullableTrim(order?.status));
+      const hasFailedPayment = isFailedPayment(paymentStatusToken);
+      const hasCancelledOrRefundedPayment =
+        isCancelledPayment(paymentStatusToken) || isCancelledPayment(orderStatusToken);
+      const hasTerminalPaymentState = hasFailedPayment || hasCancelledOrRefundedPayment;
       const expiresAtDate = toValidDateOrNull(p.expiresAt);
       const endedByCount = remainingCount !== null && remainingCount <= 0;
       const expiredByTime = expiresAtDate !== null && expiresAtDate.getTime() <= now.getTime();
@@ -198,9 +207,9 @@ export async function GET() {
       const remainingMs = expiresAtDate ? expiresAtDate.getTime() - now.getTime() : null;
       return {
         id: String(p._id),
-        packageSize: p.packageSize,
-        usedCount: p.usedCount,
-        remainingCount: p.remainingCount,
+        packageSize,
+        usedCount,
+        remainingCount,
         status: rawStatus,
         rawStatus,
         purchasedAt: p.purchasedAt,
@@ -230,11 +239,12 @@ export async function GET() {
         orderStatus: nullableTrim(order?.status),
         usageStatus,
         usageStatusLabel,
-        ...paymentFields(order),
+        ...payment,
         activationStatus,
         activationStatusLabel,
-        displayGroup:
-          usageStatus === "available"
+        displayGroup: hasTerminalPaymentState
+          ? "history"
+          : usageStatus === "available"
             ? "available"
             : usageStatus === "paused" || usageStatus === "unknown"
               ? "waiting"
@@ -246,6 +256,7 @@ export async function GET() {
       .filter((order) => !issuedOrderIdSet.has(String(order._id)))
       .map((order) => {
         const payment = paymentFields(order);
+        const packageSize = toNullableFiniteNumber(order.packageInfo?.sessions);
         const token = paymentToken(payment.paymentStatus);
         const orderToken = paymentToken(nullableTrim(order.status));
         const cancelled = isCancelledPayment(token) || isCancelledPayment(orderToken);
@@ -269,7 +280,7 @@ export async function GET() {
         const usageStatus = cancelled ? "cancelled" : "not_issued";
         return {
           id: `order:${String(order._id)}`,
-          packageSize: order.packageInfo?.sessions,
+          packageSize,
           usedCount: null,
           remainingCount: null,
           status: activationStatus,

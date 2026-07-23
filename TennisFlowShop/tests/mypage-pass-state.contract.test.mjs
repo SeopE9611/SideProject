@@ -53,6 +53,31 @@ test("패키지권 API는 null 만료일과 명시적 횟수를 안전하게 계
   assert.ok(!route.includes("new Date(p.expiresAt)"));
 });
 
+test("실제 패키지권 API는 결제 종료 상태를 내역으로 분류하고 횟수 DTO를 정규화한다", () => {
+  const route = read("app/api/passes/me/route.ts");
+  assert.ok(route.includes("const payment = paymentFields(order)"));
+  assert.ok(route.includes("const paymentStatusToken = paymentToken(payment.paymentStatus)"));
+  assert.ok(route.includes("const orderStatusToken = paymentToken(nullableTrim(order?.status))"));
+  assert.ok(route.includes("const hasFailedPayment = isFailedPayment(paymentStatusToken)"));
+  assert.ok(route.includes("const hasCancelledOrRefundedPayment ="));
+  assert.ok(
+    route.includes(
+      "const hasTerminalPaymentState = hasFailedPayment || hasCancelledOrRefundedPayment",
+    ),
+  );
+  assert.ok(route.includes('displayGroup: hasTerminalPaymentState\n          ? "history"'));
+  assert.ok(route.includes("const packageSize = toNullableFiniteNumber(p.packageSize)"));
+  assert.ok(route.includes("const usedCount = toNullableFiniteNumber(p.usedCount)"));
+  assert.ok(route.includes("const remainingCount = toNullableFiniteNumber(p.remainingCount)"));
+  assert.ok(
+    route.includes("const packageSize = toNullableFiniteNumber(order.packageInfo?.sessions)"),
+  );
+  assert.ok(!route.includes("packageSize: p.packageSize"));
+  assert.ok(!route.includes("usedCount: p.usedCount"));
+  assert.ok(!route.includes("remainingCount: p.remainingCount"));
+  assert.ok(!route.includes("packageSize: order.packageInfo?.sessions"));
+});
+
 test("패키지권 목록은 모든 그룹과 독립 상태 배지를 표시한다", () => {
   const client = read("app/mypage/tabs/PassList.tsx");
   assert.ok(client.includes('title: "사용 가능한 패키지권"'));
@@ -75,4 +100,22 @@ test("패키지권 목록은 모든 그룹과 독립 상태 배지를 표시한�
   assert.ok(client.includes("PassListSkeleton"));
   assert.ok(client.includes("AsyncState"));
   assert.ok(client.includes("authenticatedSWRFetcher"));
+});
+
+test("패키지권 목록은 결제 종료 패스 CTA와 횟수 fallback을 안전하게 처리한다", () => {
+  const client = read("app/mypage/tabs/PassList.tsx");
+  assert.ok(client.includes("const canStartStringingService ="));
+  assert.ok(
+    client.includes(
+      'passItem.usageStatus === "available" && passItem.displayGroup === "available"',
+    ),
+  );
+  assert.ok(client.includes("const packageSizeTitle ="));
+  assert.ok(client.includes("Number.isFinite(passItem.packageSize)"));
+  assert.ok(client.includes("? `${passItem.packageSize}회권`"));
+  assert.ok(client.includes(': "횟수 확인 중"'));
+  assert.ok(!client.includes('"횟수 확인 중"}회권'));
+  assert.ok(client.includes("const packageSizeSummary ="));
+  assert.ok(client.includes("`패키지 총 ${passItem.packageSize}회`"));
+  assert.ok(!client.includes('"횟수 확인 중"}회'));
 });
