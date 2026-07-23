@@ -57,6 +57,8 @@ export async function GET(req: Request) {
         { "userSnapshot.name": { $regex: q, $options: "i" } },
         { "userSnapshot.email": { $regex: q, $options: "i" } },
         { "serviceInfo.name": { $regex: q, $options: "i" } },
+        { "serviceInfo.email": { $regex: q, $options: "i" } },
+        { "shippingInfo.name": { $regex: q, $options: "i" } },
       ];
       if (ObjectId.isValid(q)) or.push({ _id: new ObjectId(q) });
       match.$or = or;
@@ -225,8 +227,10 @@ export async function GET(req: Request) {
                 daysUntilExpiry: 1,
                 isExpirySoon: 1,
                 progressPercent: 1,
+                legacyPassStatus: 1,
+                legacyPaymentStatus: 1,
                 paymentStatus: "$rawPaymentStatus",
-                passStatus: "$usageState",
+                passStatus: "$legacyPassStatus",
                 serviceType: 1,
               },
             },

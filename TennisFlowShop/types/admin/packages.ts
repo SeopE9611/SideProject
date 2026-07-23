@@ -51,7 +51,7 @@ export interface AdminPackageListItemDto {
   id: string;
   userId: string;
   customer: AdminPackageCustomerDto;
-  packageType: AdminPackageType;
+  packageType: string;
   totalSessions: number | null;
   remainingSessions: number | null;
   usedSessions: number | null;
@@ -61,12 +61,9 @@ export interface AdminPackageListItemDto {
   rawPassStatus: string | null;
   hasIssuedPass: boolean;
   paymentState: AdminPackagePaymentState;
-  paymentStatusLabel: string;
   paymentNeedsCheck: boolean;
   usageState: AdminPackageUsageState;
-  usageStatusLabel: string;
   activationState: AdminPackageActivationState;
-  activationStatusLabel: string;
   requiresAttention: boolean;
   attentionReasons: AdminPackageAttentionReason[];
   daysUntilExpiry: number | null;
@@ -74,8 +71,10 @@ export interface AdminPackageListItemDto {
   progressPercent: number | null;
   purchaseDate: string | null;
   expiryDate: string | null;
-  passStatus: AdminPackagePassStatus | "대기";
-  paymentStatus: AdminPackagePaymentStatus | string;
+  legacyPassStatus: AdminPackagePassStatusDetail;
+  legacyPaymentStatus: AdminPackagePaymentStatus | null;
+  passStatus: AdminPackagePassStatusDetail;
+  paymentStatus: string | null;
   serviceType: AdminPackageServiceType;
 }
 
@@ -130,7 +129,7 @@ export interface AdminPackageDetailDto {
   id: string;
   userId?: string;
   customer: Required<AdminPackageCustomerDto>;
-  packageType: AdminPackageType;
+  packageType: string;
   totalSessions: number | null;
   remainingSessions: number | null;
   usedSessions: number | null;
@@ -140,12 +139,9 @@ export interface AdminPackageDetailDto {
   rawPassStatus: string | null;
   hasIssuedPass: boolean;
   paymentState: AdminPackagePaymentState;
-  paymentStatusLabel: string;
   paymentNeedsCheck: boolean;
   usageState: AdminPackageUsageState;
-  usageStatusLabel: string;
   activationState: AdminPackageActivationState;
-  activationStatusLabel: string;
   requiresAttention: boolean;
   attentionReasons: AdminPackageAttentionReason[];
   daysUntilExpiry: number | null;
@@ -153,8 +149,10 @@ export interface AdminPackageDetailDto {
   progressPercent: number | null;
   purchaseDate: string;
   expiryDate: string | null;
+  legacyPassStatus: AdminPackagePassStatusDetail;
+  legacyPaymentStatus: AdminPackagePaymentStatus | null;
   passStatus: AdminPackagePassStatusDetail;
-  paymentStatus: AdminPackagePaymentStatus;
+  paymentStatus: string | null;
   paymentMethod?: string | null;
   paymentProvider?: string | null;
   paymentTid?: string | null;

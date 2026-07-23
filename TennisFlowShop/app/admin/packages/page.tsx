@@ -10,12 +10,17 @@ import {
   getAdminPackageUsageLabel,
   getAdminPackageActivationLabel,
   getAdminPackageAttentionReasonLabel,
+  getAdminPackageUsageBadgeSpec,
+  getAdminPackageActivationBadgeSpec,
+  getAdminPackageAttentionBadgeSpec,
   packageTypeColors,
   type PackageListItem,
   type PackageType,
   type PackagesResponse,
-  type PassStatus,
-  type PaymentStatus,
+  type PackageUsageFilter,
+  type PackagePaymentFilter,
+  type PackageActivationFilter,
+  type PackageAttentionFilter,
   type ServiceType,
   type SortKey,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
@@ -131,13 +136,15 @@ export default function PackageOrdersClient() {
 
   const DEFAULTS = DEFAULT_PACKAGE_LIST_FILTERS;
 
-  const PASS_STATUS_VALUES: ReadonlyArray<"all" | PassStatus> = [
+  const USAGE_VALUES: ReadonlyArray<PackageUsageFilter> = [
     "all",
-    "비활성",
-    "활성",
-    "종료",
-    "만료",
-    "취소",
+    "available",
+    "not_issued",
+    "paused",
+    "exhausted",
+    "expired",
+    "cancelled",
+    "unknown",
   ];
   const PACKAGE_TYPE_VALUES: ReadonlyArray<"all" | PackageType> = [
     "all",
@@ -146,18 +153,42 @@ export default function PackageOrdersClient() {
     "50회권",
     "100회권",
   ];
-  const PAYMENT_STATUS_VALUES: ReadonlyArray<"all" | PaymentStatus> = [
+  const PAYMENT_VALUES: ReadonlyArray<PackagePaymentFilter> = [
     "all",
-    "결제완료",
-    "결제대기",
-    "결제취소",
+    "pending_any",
+    "bank_pending",
+    "pg_pending",
+    "pending",
+    "paid",
+    "failed",
+    "cancelled",
+    "refunding",
+    "refunded",
+    "unknown",
+    "not_required",
+  ];
+  const ACTIVATION_VALUES: ReadonlyArray<PackageActivationFilter> = [
+    "all",
+    "active",
+    "awaiting_payment",
+    "pending_issue",
+    "paused",
+    "ended",
+    "cancelled",
+    "failed",
+    "unknown",
+  ];
+  const ATTENTION_VALUES: ReadonlyArray<PackageAttentionFilter> = [
+    "all",
+    "needs_attention",
+    "clear",
   ];
   const SERVICE_TYPE_VALUES: ReadonlyArray<"all" | ServiceType> = ["all", "방문", "출장"];
 
-  const isPassStatusFilter = (value: string | null): value is "all" | PassStatus =>
-    !!value && PASS_STATUS_VALUES.includes(value as "all" | PassStatus);
-  const isPaymentStatusFilter = (value: string | null): value is "all" | PaymentStatus =>
-    !!value && PAYMENT_STATUS_VALUES.includes(value as "all" | PaymentStatus);
+  const isUsageFilter = (value: string | null): value is PackageUsageFilter =>
+    !!value && USAGE_VALUES.includes(value as PackageUsageFilter);
+  const isPaymentFilter = (value: string | null): value is PackagePaymentFilter =>
+    !!value && PAYMENT_VALUES.includes(value as PackagePaymentFilter);
   const isServiceTypeFilter = (value: string | null): value is "all" | ServiceType =>
     !!value && SERVICE_TYPE_VALUES.includes(value as "all" | ServiceType);
   const isPackageTypeFilter = (value: string | null): value is "all" | PackageType =>
@@ -166,9 +197,11 @@ export default function PackageOrdersClient() {
   const { state, patchState, setPage } = useAdminListQueryState<{
     page: number;
     searchTerm: string;
-    statusFilter: "all" | PassStatus;
+    usageFilter: PackageUsageFilter;
     packageTypeFilter: "all" | PackageType;
-    paymentFilter: "all" | PaymentStatus;
+    paymentFilter: PackagePaymentFilter;
+    activationFilter: PackageActivationFilter;
+    attentionFilter: PackageAttentionFilter;
     serviceTypeFilter: "all" | ServiceType;
     presetFilter: PackagePresetFilter;
     sortBy: SortKey | null;
@@ -180,9 +213,11 @@ export default function PackageOrdersClient() {
     defaults: {
       page: DEFAULTS.page,
       searchTerm: DEFAULTS.q,
-      statusFilter: DEFAULTS.status,
+      usageFilter: DEFAULTS.usage,
       packageTypeFilter: DEFAULTS.package,
       paymentFilter: DEFAULTS.payment,
+      activationFilter: DEFAULTS.activation,
+      attentionFilter: DEFAULTS.attention,
       serviceTypeFilter: DEFAULTS.service,
       presetFilter: null,
       sortBy: DEFAULTS.sortBy,
@@ -221,12 +256,35 @@ export default function PackageOrdersClient() {
           Number.parseInt(sp.get("page") || String(defaults.page), 10) || defaults.page,
         ),
         searchTerm: (sp.get("q") || defaults.searchTerm).trim(),
-        statusFilter: isPassStatusFilter(sp.get("status"))
-          ? (sp.get("status") as "all" | PassStatus)
-          : defaults.statusFilter,
-        paymentFilter: isPaymentStatusFilter(sp.get("payment"))
-          ? (sp.get("payment") as "all" | PaymentStatus)
-          : defaults.paymentFilter,
+        usageFilter: isUsageFilter(sp.get("usage"))
+          ? (sp.get("usage") as PackageUsageFilter)
+          : ((
+              {
+                활성: "available",
+                비활성: "paused",
+                일시정지: "paused",
+                종료: "exhausted",
+                만료: "expired",
+                취소: "cancelled",
+                대기: "not_issued",
+              } as Record<string, PackageUsageFilter>
+            )[sp.get("status") ?? ""] ?? defaults.usageFilter),
+        paymentFilter: isPaymentFilter(sp.get("payment"))
+          ? (sp.get("payment") as PackagePaymentFilter)
+          : ((
+              { 결제완료: "paid", 결제대기: "pending_any", 결제취소: "cancelled" } as Record<
+                string,
+                PackagePaymentFilter
+              >
+            )[sp.get("payment") ?? ""] ?? defaults.paymentFilter),
+        activationFilter: ACTIVATION_VALUES.includes(
+          sp.get("activation") as PackageActivationFilter,
+        )
+          ? (sp.get("activation") as PackageActivationFilter)
+          : defaults.activationFilter,
+        attentionFilter: ATTENTION_VALUES.includes(sp.get("attention") as PackageAttentionFilter)
+          ? (sp.get("attention") as PackageAttentionFilter)
+          : defaults.attentionFilter,
         serviceTypeFilter: isServiceTypeFilter(sp.get("service"))
           ? (sp.get("service") as "all" | ServiceType)
           : defaults.serviceTypeFilter,
@@ -241,12 +299,14 @@ export default function PackageOrdersClient() {
     },
     toQueryParams: (queryState) => ({
       q: queryState.searchTerm.trim(),
-      status: queryState.statusFilter,
+      usage: queryState.usageFilter,
       package:
         queryState.packageTypeFilter !== "all"
           ? queryState.packageTypeFilter.replace("회권", "")
           : "all",
       payment: queryState.paymentFilter,
+      activation: queryState.activationFilter,
+      attention: queryState.attentionFilter,
       service: queryState.serviceTypeFilter,
       preset: queryState.presetFilter,
       sort: queryState.sortBy ? `${queryState.sortBy}:${queryState.sortDirection}` : undefined,
@@ -255,9 +315,11 @@ export default function PackageOrdersClient() {
     }),
     pageResetKeys: [
       "searchTerm",
-      "statusFilter",
+      "usageFilter",
       "packageTypeFilter",
       "paymentFilter",
+      "activationFilter",
+      "attentionFilter",
       "serviceTypeFilter",
       "presetFilter",
       "sortBy",
@@ -268,15 +330,16 @@ export default function PackageOrdersClient() {
   const {
     page,
     searchTerm,
-    statusFilter,
+    usageFilter,
     packageTypeFilter,
     paymentFilter,
+    activationFilter,
+    attentionFilter,
     serviceTypeFilter,
     presetFilter,
     sortBy,
     sortDirection,
   } = state;
-  const [nowTs] = useState(() => new Date().getTime());
   const debouncedSearch = useDebouncedValue(searchTerm, 300);
 
   // 한 페이지에 보여줄 항목 수
@@ -286,9 +349,11 @@ export default function PackageOrdersClient() {
     () =>
       buildQueryString({
         q: debouncedSearch.trim(),
-        status: statusFilter,
+        usage: usageFilter,
         package: packageTypeFilter !== "all" ? packageTypeFilter.replace("회권", "") : "all",
         payment: paymentFilter,
+        activation: activationFilter,
+        attention: attentionFilter,
         service: serviceTypeFilter,
         preset: presetFilter,
         sort: sortBy ? `${sortBy}:${sortDirection}` : undefined,
@@ -297,9 +362,11 @@ export default function PackageOrdersClient() {
       }),
     [
       debouncedSearch,
-      statusFilter,
+      usageFilter,
       packageTypeFilter,
       paymentFilter,
+      activationFilter,
+      attentionFilter,
       serviceTypeFilter,
       presetFilter,
       sortBy,
@@ -348,40 +415,15 @@ export default function PackageOrdersClient() {
 
   const metrics = data?.metrics;
 
-  // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
-  const kpiTotal: number | null = hasResolvedData
-    ? typeof metrics?.total === "number"
-      ? metrics.total
-      : totalCount
-    : null;
-
-  // 사용 가능 수
-  const kpiAvailable: number | null = hasResolvedData
-    ? typeof metrics?.available === "number"
-      ? metrics.available
-      : null
-    : null;
-
-  // 총 매출
-  const kpiRevenue: number | null = hasResolvedData
-    ? typeof metrics?.revenue === "number"
-      ? metrics.revenue
-      : null
-    : null;
-
-  // 만료 예정
-  const kpiExpSoon = useMemo<number | null>(() => {
-    if (!hasResolvedData) return null;
-    if (typeof metrics?.expirySoon === "number") return metrics.expirySoon;
-    if (!packages) return null;
-
-    return packages.filter((pkg) => {
-      const exp = pkg.expiryDate ?? null;
-      const days = getDaysUntilExpiry(exp);
-      const s = computeListStatus(pkg.passStatus, pkg.paymentStatus, exp);
-      return s.label !== "취소" && days <= 30 && days > 0;
-    }).length;
-  }, [hasResolvedData, metrics?.expirySoon, packages]);
+  const kpiTotal = hasResolvedData && typeof metrics?.total === "number" ? metrics.total : null;
+  const kpiAvailable =
+    hasResolvedData && typeof metrics?.available === "number" ? metrics.available : null;
+  const kpiNeedsAttention =
+    hasResolvedData && typeof metrics?.needsAttention === "number" ? metrics.needsAttention : null;
+  const kpiRevenue =
+    hasResolvedData && typeof metrics?.revenue === "number" ? metrics.revenue : null;
+  const kpiExpSoon =
+    hasResolvedData && typeof metrics?.expirySoon === "number" ? metrics.expirySoon : null;
 
   // 공통 로딩 플래그
   const isInitialLoading = isValidating && !data;
@@ -532,18 +574,6 @@ export default function PackageOrdersClient() {
     return null;
   }
 
-  // 만료일까지 남은 일수
-  function getDaysUntilExpiry(v?: string | number | Date | null) {
-    const d = toDateSafe(v);
-    if (!d) return 0;
-
-    const endOfDay = new Date(d);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const diffMs = endOfDay.getTime() - nowTs;
-    return Math.ceil(diffMs / 86400000);
-  }
-
   // 금액 포맷터
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("ko-KR", {
@@ -554,7 +584,7 @@ export default function PackageOrdersClient() {
   // 현재 화면이 "필터/검색 적용 중"인지 여부
   const hasAnyFilter =
     !!searchTerm ||
-    statusFilter !== "all" ||
+    usageFilter !== "all" ||
     packageTypeFilter !== "all" ||
     paymentFilter !== "all" ||
     serviceTypeFilter !== "all" ||
@@ -564,7 +594,7 @@ export default function PackageOrdersClient() {
   const resetFilters = () => {
     patchState({
       searchTerm: "",
-      statusFilter: "all",
+      usageFilter: "all",
       packageTypeFilter: "all",
       paymentFilter: "all",
       serviceTypeFilter: "all",
@@ -577,16 +607,16 @@ export default function PackageOrdersClient() {
   // 서버가 이미 받는 필터 값만 사용하고, 새 API query는 만들지 않습니다.
   const applyQuickView = (
     nextState: Partial<{
-      statusFilter: "all" | PassStatus;
+      usageFilter: PackageUsageFilter;
       packageTypeFilter: "all" | PackageType;
-      paymentFilter: "all" | PaymentStatus;
+      paymentFilter: PackagePaymentFilter;
       serviceTypeFilter: "all" | ServiceType;
       presetFilter: PackagePresetFilter;
     }>,
   ) => {
     patchState({
       searchTerm: "",
-      statusFilter: "all",
+      usageFilter: "all",
       packageTypeFilter: "all",
       paymentFilter: "all",
       serviceTypeFilter: "all",
@@ -599,7 +629,7 @@ export default function PackageOrdersClient() {
   // 현재 적용된 필터를 사람이 읽기 쉬운 라벨로 변환합니다.
   const activeFilterLabels = [
     searchTerm.trim() ? `검색어: ${searchTerm.trim()}` : null,
-    statusFilter !== "all" ? `상태: ${statusFilter}` : null,
+    usageFilter !== "all" ? `상태: ${usageFilter}` : null,
     packageTypeFilter !== "all" ? `유형: ${packageTypeFilter}` : null,
     paymentFilter !== "all" ? `결제: ${paymentFilter}` : null,
     serviceTypeFilter !== "all" ? `서비스: ${serviceTypeFilter}` : null,
@@ -608,42 +638,9 @@ export default function PackageOrdersClient() {
 
   const currentViewLabel = !hasAnyFilter
     ? "전체 패키지"
-    : presetFilter === PAYMENT_CHECK_PRESET &&
-        !searchTerm.trim() &&
-        statusFilter === "all" &&
-        packageTypeFilter === "all" &&
-        paymentFilter === "all" &&
-        serviceTypeFilter === "all"
-      ? "결제/활성화 대기"
-      : statusFilter === "활성" &&
-          !searchTerm.trim() &&
-          packageTypeFilter === "all" &&
-          paymentFilter === "all" &&
-          serviceTypeFilter === "all" &&
-          !presetFilter
-        ? "사용 가능"
-        : paymentFilter === "결제대기" &&
-            !searchTerm.trim() &&
-            statusFilter === "all" &&
-            packageTypeFilter === "all" &&
-            serviceTypeFilter === "all" &&
-            !presetFilter
-          ? "결제대기"
-          : statusFilter === "만료" &&
-              !searchTerm.trim() &&
-              packageTypeFilter === "all" &&
-              paymentFilter === "all" &&
-              serviceTypeFilter === "all" &&
-              !presetFilter
-            ? "만료 패키지"
-            : statusFilter === "취소" &&
-                !searchTerm.trim() &&
-                packageTypeFilter === "all" &&
-                paymentFilter === "all" &&
-                serviceTypeFilter === "all" &&
-                !presetFilter
-              ? "취소 패키지"
-              : "사용자 지정 조건";
+    : presetFilter === PAYMENT_CHECK_PRESET
+      ? "결제/활성화 확인"
+      : "사용자 지정 조건";
 
   // 정렬 헤더 클릭 핸들러
   const handleSort = (key: SortKey) => {
@@ -681,57 +678,6 @@ export default function PackageOrdersClient() {
     }
     return "none";
   };
-
-  // 진행률 계산
-  function calcProgressPercent(usedRaw: unknown, remainingRaw: unknown) {
-    const used = Math.max(0, Number(usedRaw) || 0);
-    const remaining = Math.max(0, Number(remainingRaw) || 0);
-    const total = used + remaining;
-    if (total <= 0) return { percent: 0, used, remaining, total };
-    const percent = Math.min(100, Math.max(0, Math.round((used / total) * 100)));
-    return { percent, used, remaining, total };
-  }
-
-  // 상태 계산 함수
-  function computeListStatus(
-    passStatus?: string | null,
-    paymentStatus?: string | null,
-    passExpiresAt?: string | number | Date | null,
-  ) {
-    if (passStatus === "종료") return { label: "종료", tone: "muted" as const };
-    if (passStatus === "대기") return { label: "대기", tone: "muted" as const };
-    if (passStatus === "취소") return { label: "취소", tone: "destructive" as const };
-    if (passStatus === "비활성") return { label: "비활성", tone: "warning" as const };
-    if (paymentStatus === "결제취소") return { label: "취소", tone: "destructive" as const };
-
-    const d = toDateSafe(passExpiresAt);
-    let expired = false;
-    if (d) {
-      const eod = new Date(d);
-      eod.setHours(23, 59, 59, 999);
-      expired = eod.getTime() < nowTs;
-    }
-
-    if (expired) return { label: "만료", tone: "muted" as const };
-    if (paymentStatus && paymentStatus !== "결제완료")
-      return { label: "비활성", tone: "warning" as const };
-    return { label: "활성", tone: "success" as const };
-  }
-
-  // 상태 뱃지 스타일
-  function statusBadgeClass(tone: "destructive" | "muted" | "warning" | "success") {
-    switch (tone) {
-      case "destructive":
-        return "bg-destructive/10 text-destructive border border-destructive/30 dark:bg-destructive/15";
-      case "muted":
-        return "bg-background text-foreground border border-border";
-      case "warning":
-        return "bg-warning/10 text-warning border border-warning/30 dark:bg-warning/15";
-      case "success":
-      default:
-        return "bg-primary/10 text-primary border border-border dark:bg-primary/20";
-    }
-  }
 
   // 연장 반영된 만료일
   function getExpirySource(pkg: PackageListItem): string | null {
@@ -833,7 +779,7 @@ export default function PackageOrdersClient() {
           <Button
             type="button"
             size="sm"
-            variant={currentViewLabel === "결제/활성화 대기" ? "default" : "outline"}
+            variant={presetFilter === PAYMENT_CHECK_PRESET ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
                 presetFilter: PAYMENT_CHECK_PRESET,
@@ -846,10 +792,10 @@ export default function PackageOrdersClient() {
           <Button
             type="button"
             size="sm"
-            variant={currentViewLabel === "사용 가능" ? "default" : "outline"}
+            variant={usageFilter === "available" ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
-                statusFilter: "활성",
+                usageFilter: "available",
               })
             }
           >
@@ -859,10 +805,10 @@ export default function PackageOrdersClient() {
           <Button
             type="button"
             size="sm"
-            variant={currentViewLabel === "결제대기" ? "default" : "outline"}
+            variant={paymentFilter === "pending_any" ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
-                paymentFilter: "결제대기",
+                paymentFilter: "pending_any",
               })
             }
           >
@@ -872,10 +818,10 @@ export default function PackageOrdersClient() {
           <Button
             type="button"
             size="sm"
-            variant={currentViewLabel === "만료 패키지" ? "default" : "outline"}
+            variant={usageFilter === "expired" ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
-                statusFilter: "만료",
+                usageFilter: "expired",
               })
             }
           >
@@ -885,10 +831,10 @@ export default function PackageOrdersClient() {
           <Button
             type="button"
             size="sm"
-            variant={currentViewLabel === "취소 패키지" ? "default" : "outline"}
+            variant={usageFilter === "cancelled" ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
-                statusFilter: "취소",
+                usageFilter: "cancelled",
               })
             }
           >
@@ -968,9 +914,9 @@ export default function PackageOrdersClient() {
             {/* 필터 컴포넌트들 */}
             <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               <Select
-                value={statusFilter}
+                value={usageFilter}
                 onValueChange={(v) => {
-                  if (isPassStatusFilter(v)) patchState({ statusFilter: v });
+                  if (isUsageFilter(v)) patchState({ usageFilter: v });
                 }}
               >
                 <SelectTrigger>
@@ -1007,7 +953,7 @@ export default function PackageOrdersClient() {
               <Select
                 value={paymentFilter}
                 onValueChange={(v) => {
-                  if (isPaymentStatusFilter(v)) patchState({ paymentFilter: v });
+                  if (isPaymentFilter(v)) patchState({ paymentFilter: v });
                 }}
               >
                 <SelectTrigger>
@@ -1148,14 +1094,14 @@ export default function PackageOrdersClient() {
                   />
 
                   <SortableTH
-                    k="status"
-                    label="상태"
+                    k="usage"
+                    label="이용권 상태"
                     className="w-[72px]"
                     thClasses={thClasses}
-                    ariaSort={ariaSort("status")}
+                    ariaSort={ariaSort("usage")}
                     onSort={handleSort}
-                    active={sortBy === "status"}
-                    icon={SortIcon("status")}
+                    active={sortBy === "usage"}
+                    icon={SortIcon("usage")}
                   />
 
                   <SortableTH
@@ -1249,20 +1195,22 @@ export default function PackageOrdersClient() {
                 {shouldShowRows && (
                   <>
                     {packages!.map((pkg) => {
-                      // 진행률 계산(used / (used + remaining))
-                      const { percent: progressPercentage, total: currentTotal } =
-                        calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
-
-                      // 만료일 소스(연장 반영)
-                      const expirySource = pkg.expiryDate ?? null;
-
-                      // 상태/남은일수 계산
-                      const listState = computeListStatus(
-                        pkg.passStatus,
-                        pkg.paymentStatus,
-                        expirySource,
+                      const expirySource = pkg.expiryDate;
+                      const hasSessionCounts =
+                        typeof pkg.usedSessions === "number" &&
+                        typeof pkg.remainingSessions === "number";
+                      const progressPercentage =
+                        typeof pkg.progressPercent === "number" &&
+                        Number.isFinite(pkg.progressPercent)
+                          ? Math.round(pkg.progressPercent)
+                          : null;
+                      const usageLabel = getAdminPackageUsageLabel(pkg.usageState);
+                      const paymentLabel = getAdminPackagePaymentLabel(pkg.paymentState);
+                      const activationLabel = getAdminPackageActivationLabel(pkg.activationState);
+                      const reasonLabels = pkg.attentionReasons.map(
+                        getAdminPackageAttentionReasonLabel,
                       );
-                      const daysUntilExpiry = getDaysUntilExpiry(expirySource);
+                      const attentionLabel = pkg.requiresAttention ? "확인 필요" : "확인 완료";
 
                       return (
                         // 라이트/다크 줄 배경 토큰 통일
@@ -1338,13 +1286,13 @@ export default function PackageOrdersClient() {
                             <Badge
                               className={cn(
                                 "border",
-                                packageTypeColors[pkg.packageType],
+                                packageTypeColors[pkg.packageType as PackageType] ??
+                                  "bg-card text-foreground border-border",
                                 "font-medium",
                                 badgeSizeCls,
-                                getAdminPackagePaymentLabel,
-                                getAdminPackageUsageLabel,
-                                getAdminPackageActivationLabel,
-                                getAdminPackageAttentionReasonLabel,
+                                getAdminPackageUsageBadgeSpec,
+                                getAdminPackageActivationBadgeSpec,
+                                getAdminPackageAttentionBadgeSpec,
                               )}
                             >
                               {pkg.packageType}
@@ -1362,29 +1310,39 @@ export default function PackageOrdersClient() {
                             <div className="flex flex-col items-center leading-tight">
                               <span className="font-bold text-lg">{pkg.remainingSessions}</span>
                               <span className="text-xs text-muted-foreground">
-                                {pkg.totalSessions ?? currentTotal}회
+                                {typeof pkg.totalSessions === "number"
+                                  ? `${pkg.totalSessions}회`
+                                  : "-"}
                               </span>
                             </div>
                           </TableCell>
 
                           {/* 진행률 (바 + %) */}
                           <TableCell className={cn(tdClasses, col.progress, "whitespace-nowrap")}>
-                            <div className="flex flex-col items-center gap-1">
-                              <div
-                                className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card"
-                                role="progressbar"
-                                aria-label="진행률"
-                                aria-valuemin={0}
-                                aria-valuemax={100}
-                                aria-valuenow={progressPercentage}
-                              >
+                            {!pkg.hasIssuedPass ? (
+                              <span className="text-xs text-muted-foreground">패스 미발급</span>
+                            ) : !hasSessionCounts || progressPercentage === null ? (
+                              <span className="text-xs text-muted-foreground">
+                                횟수 정보 확인 필요
+                              </span>
+                            ) : (
+                              <div className="flex flex-col items-center gap-1">
                                 <div
-                                  className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                                  style={{ width: `${progressPercentage}%` }}
-                                />
+                                  className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card"
+                                  role="progressbar"
+                                  aria-label="진행률"
+                                  aria-valuemin={0}
+                                  aria-valuemax={100}
+                                  aria-valuenow={progressPercentage}
+                                >
+                                  <div
+                                    className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                                    style={{ width: `${progressPercentage}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium">{progressPercentage}%</span>
                               </div>
-                              <span className="text-xs font-medium">{progressPercentage}%</span>
-                            </div>
+                            )}
                           </TableCell>
 
                           {/* 구매일(날짜/시간 두 줄) */}
@@ -1404,55 +1362,36 @@ export default function PackageOrdersClient() {
                             );
                           })()}
 
-                          {/* 만료일(날짜/시간 + 보조 라벨) */}
-                          {(() => {
-                            const { date, time } = formatDateSplit(expirySource);
-                            return (
-                              <TableCell className={cn(tdClasses, col.expire)}>
-                                <div className="flex flex-col items-end leading-tight">
-                                  <span className="whitespace-nowrap text-sm tabular-nums">
-                                    {date}
-                                  </span>
-                                  <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-                                    {time}
-                                  </span>
-                                  {listState.label !== "취소" &&
-                                    daysUntilExpiry <= 30 &&
-                                    daysUntilExpiry > 0 && (
-                                      <span className="text-xs text-warning font-medium">
-                                        {daysUntilExpiry}일 남음
-                                      </span>
-                                    )}
-                                  {listState.label === "만료" && (
-                                    <span className="text-xs text-destructive font-medium">
-                                      만료됨
-                                    </span>
-                                  )}
-                                </div>
-                              </TableCell>
-                            );
-                          })()}
-
-                          {/* 상태 배지 */}
-                          <TableCell className={cn(tdClasses, col.status, "whitespace-nowrap")}>
-                            {(() => {
-                              const badgeCls = statusBadgeClass(listState.tone);
-                              return (
-                                <Badge
-                                  className={cn(
-                                    badgeCls,
-                                    "shrink-0 whitespace-nowrap font-medium",
-                                    badgeSizeCls,
-                                  )}
-                                  title={`만료기준: ${formatDate(expirySource)}`}
-                                  aria-label={`표시상태 ${listState.label}`}
-                                >
-                                  {listState.label}
-                                </Badge>
-                              );
-                            })()}
+                          {/* 만료일 및 서버 상태 */}
+                          <TableCell className={cn(tdClasses, col.expire)}>
+                            <div className="flex flex-col items-end leading-tight">
+                              <span>
+                                {!pkg.hasIssuedPass || !expirySource
+                                  ? "-"
+                                  : formatDateCompact(expirySource)}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {!pkg.hasIssuedPass
+                                  ? "미발급"
+                                  : !expirySource
+                                    ? "만료일 확인 필요"
+                                    : pkg.usageState === "expired"
+                                      ? "만료됨"
+                                      : pkg.isExpirySoon && typeof pkg.daysUntilExpiry === "number"
+                                        ? `${pkg.daysUntilExpiry}일 남음`
+                                        : ""}
+                              </span>
+                            </div>
                           </TableCell>
-
+                          <TableCell className={cn(tdClasses, col.status, "whitespace-nowrap")}>
+                            <Badge
+                              {...getAdminPackageUsageBadgeSpec(pkg.usageState)}
+                              className={cn("shrink-0 whitespace-nowrap font-medium", badgeSizeCls)}
+                              aria-label={`이용권 상태 ${usageLabel}`}
+                            >
+                              {usageLabel}
+                            </Badge>
+                          </TableCell>
                           {/* 결제 배지 (xl 이상) */}
                           <TableCell
                             className={cn(

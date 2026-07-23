@@ -9,7 +9,11 @@ const token = (field: string): Document => ({
         input: {
           $replaceAll: {
             input: {
-              $trim: { input: { $cond: [{ $eq: [{ $type: field }, "string"] }, field, ""] } },
+              $toLower: {
+                $trim: {
+                  input: { $cond: [{ $eq: [{ $type: field }, "string"] }, field, ""] },
+                },
+              },
             },
             find: " ",
             replacement: "",
@@ -49,7 +53,7 @@ export function buildAdminPackageStateStages(): Document[] {
         },
         paymentMethod: "$paymentInfo.method",
         paymentProvider: "$paymentInfo.provider",
-        hasIssuedPass: { $ne: [{ $type: "$passDoc" }, "missing"] },
+        hasIssuedPass: { $eq: [{ $type: "$passDoc" }, "object"] },
       },
     },
     {
@@ -384,6 +388,32 @@ export function buildAdminPackageStateStages(): Document[] {
             { $concat: [{ $toString: "$packageInfo.sessions" }, "회권"] },
             "-",
           ],
+        },
+        legacyPassStatus: {
+          $switch: {
+            branches: [
+              { case: { $eq: ["$usageState", "available"] }, then: "활성" },
+              { case: { $eq: ["$usageState", "paused"] }, then: "일시정지" },
+              { case: { $eq: ["$usageState", "exhausted"] }, then: "종료" },
+              { case: { $eq: ["$usageState", "expired"] }, then: "만료" },
+              { case: { $eq: ["$usageState", "cancelled"] }, then: "취소" },
+              { case: { $eq: ["$usageState", "not_issued"] }, then: "대기" },
+            ],
+            default: "비활성",
+          },
+        },
+        legacyPaymentStatus: {
+          $switch: {
+            branches: [
+              { case: { $eq: ["$paymentState", "paid"] }, then: "결제완료" },
+              {
+                case: { $in: ["$paymentState", ["bank_pending", "pg_pending", "pending"]] },
+                then: "결제대기",
+              },
+              { case: { $in: ["$paymentState", ["cancelled", "refunded"]] }, then: "결제취소" },
+            ],
+            default: null,
+          },
         },
       },
     },

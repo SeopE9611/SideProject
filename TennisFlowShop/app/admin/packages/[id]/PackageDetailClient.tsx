@@ -741,12 +741,19 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
               <span className="text-sm text-muted-foreground">통합 상태 변경</span>
-              <PackageCurrentStatusSelect
-                orderId={packageId}
-                passStatus={data.passStatus}
-                paymentStatus={data.paymentStatus ?? "결제대기"}
-                onUpdated={() => mutate()}
-              />
+              {data.legacyPassStatus && data.legacyPaymentStatus ? (
+                <PackageCurrentStatusSelect
+                  orderId={packageId}
+                  passStatus={data.legacyPassStatus}
+                  paymentStatus={data.legacyPaymentStatus}
+                  onUpdated={() => mutate()}
+                />
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  현재 상태는 통합 상태 변경에서 지원하지 않습니다. 결제 상태와 이용권 상태를 각각
+                  확인해 주세요.
+                </span>
+              )}
             </div>
 
             <p className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
