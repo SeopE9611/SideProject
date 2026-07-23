@@ -16,6 +16,7 @@ import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
 import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatKoreanPhone } from "@/lib/phone";
+import { getServerNowMs } from "@/lib/server-time";
 import jwt from "jsonwebtoken";
 import {
   ArrowRight,
@@ -98,12 +99,12 @@ function getPaymentLifecycle(
   if (["refunded", "refund", "refundcompleted", "환불", "환불완료"].includes(paymentToken))
     return "refunded";
   if (["canceled", "cancelled", "결제취소", "취소"].includes(paymentToken)) return "cancelled";
-  if (["failed", "결제실패", "paymentfailed"].includes(paymentToken)) return "failed";
-  if (["paid", "결제완료", "paymentcompleted"].includes(paymentToken)) return "paid";
-  if (["pending", "결제대기", "대기중", "paymentpending"].includes(paymentToken)) return "pending";
   if (["refunded", "refund", "refundcompleted", "환불", "환불완료"].includes(orderToken))
     return "refunded";
   if (["canceled", "cancelled", "결제취소", "취소"].includes(orderToken)) return "cancelled";
+  if (["failed", "결제실패", "paymentfailed"].includes(paymentToken)) return "failed";
+  if (["paid", "결제완료", "paymentcompleted"].includes(paymentToken)) return "paid";
+  if (["pending", "결제대기", "대기중", "paymentpending"].includes(paymentToken)) return "pending";
   return "unknown";
 }
 
@@ -223,11 +224,13 @@ export default async function PackageSuccessPage({
         )
     : null;
 
+  const nowMs = getServerNowMs();
   const packageInfo = packageOrder.packageInfo;
   const serviceInfo = packageOrder.serviceInfo;
   const paymentInfo = packageOrder.paymentInfo;
   const rawPaymentStatus =
     nullableTrim(packageOrder.paymentStatus) ?? nullableTrim(paymentInfo?.status);
+  const orderStatus = nullableTrim(packageOrder.status);
   const paymentMethod = nullableTrim(paymentInfo?.method);
   const paymentProvider = nullableTrim(paymentInfo?.provider);
   const paymentTotalAmount = toNullableFiniteNumber(packageOrder.totalPrice);
@@ -244,13 +247,21 @@ export default async function PackageSuccessPage({
     depositor: paymentInfo?.depositor,
   });
   const paymentMethodLabel = paymentSummary.userLabel;
+  const paymentLifecycle = getPaymentLifecycle(rawPaymentStatus, orderStatus);
+  const paymentStatusForDisplay =
+    paymentLifecycle === "refunded"
+      ? "환불"
+      : paymentLifecycle === "cancelled"
+        ? "결제취소"
+        : paymentLifecycle === "failed"
+          ? "결제실패"
+          : rawPaymentStatus;
   const paymentStatusLabel = getCustomerTransactionPaymentStatusLabel({
-    paymentStatus: rawPaymentStatus,
+    paymentStatus: paymentStatusForDisplay,
     paymentMethod,
     paymentProvider,
     totalPrice: paymentTotalAmount,
   });
-  const paymentLifecycle = getPaymentLifecycle(rawPaymentStatus, nullableTrim(packageOrder.status));
   const hasTerminalPaymentState =
     paymentLifecycle === "failed" ||
     paymentLifecycle === "cancelled" ||
@@ -270,7 +281,7 @@ export default async function PackageSuccessPage({
       ? "cancelled"
       : remainingCount !== null && remainingCount <= 0
         ? "exhausted"
-        : (expiresAt !== null && expiresAt.getTime() <= Date.now()) || passStatusToken === "expired"
+        : (expiresAt !== null && expiresAt.getTime() <= nowMs) || passStatusToken === "expired"
           ? "expired"
           : ["paused", "suspended"].includes(passStatusToken)
             ? "paused"
@@ -323,7 +334,8 @@ export default async function PackageSuccessPage({
       : usageStatus === "paused" || usageStatus === "not_issued" || usageStatus === "unknown"
         ? "waiting"
         : "history";
-  const canStartStringingService = usageStatus === "available" && displayGroup === "available";
+  const canStartStringingService =
+    paymentLifecycle === "paid" && usageStatus === "available" && displayGroup === "available";
   const normalizedPaymentProvider = compactToken(paymentProvider);
   const isNicePayment = normalizedPaymentProvider === "nicepay";
   const isTossPayment = ["tosspayments", "toss"].includes(normalizedPaymentProvider);
@@ -694,7 +706,7 @@ export default async function PackageSuccessPage({
                     <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-foreground mb-1">
-                        {isTossPayment || isNicePayment ? "결제 안내" : "입금 안내"}
+                        {isBankTransfer ? "입금 안내" : "결제 안내"}
                       </h4>
                       <p className="text-ui-body-sm text-muted-foreground">
                         {activationDescription}
