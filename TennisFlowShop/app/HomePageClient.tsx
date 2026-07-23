@@ -910,10 +910,142 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </section>
       )}
 
-      <section className={styles.section} id="paths">
+      <section ref={stringsSectionRef} className={styles.section} id="strings">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
             no="01"
+            eyebrow="플레이 목적별 추천"
+            title="플레이 스타일에 맞는 스트링을 찾아보세요."
+            description="편안함, 스핀, 컨트롤, 내구성 중 원하는 기준을 선택하면 관련 스트링을 먼저 보여드려요."
+          />
+          <div className={styles.recoLayout}>
+            <div className={styles.purposeList}>
+              {PURPOSES.map((purpose) => (
+                <button
+                  key={purpose.key}
+                  type="button"
+                  aria-pressed={activePurpose === purpose.key}
+                  onClick={() => setActivePurpose(purpose.key)}
+                  className={cn(
+                    "flex min-w-40 items-center justify-between rounded-control border px-4 py-4 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                    activePurpose === purpose.key
+                      ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
+                      : "border-border bg-card text-foreground hover:bg-muted/30",
+                  )}
+                >
+                  <span>{purpose.title}</span>
+                  <span
+                    className={
+                      activePurpose === purpose.key
+                        ? "text-brand-highlight"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {purpose.no}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className={styles.recoPanel}>
+              <div className={styles.recoImageWrap}>
+                <Image
+                  src="/images/home/home-string-product-showcase.webp"
+                  alt="테니스 스트링 상품 쇼케이스"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1199px) 100vw, 920px"
+                />
+              </div>
+              <div className={styles.recoContent}>
+                <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}>
+                  {activePurposeInfo.title}
+                </h3>
+                <p className="mt-2 break-keep text-ui-body text-muted-foreground">
+                  {activePurposeInfo.desc}
+                </p>
+                <div className="mt-5 flex max-w-full items-center gap-2 overflow-hidden">
+                  <button
+                    type="button"
+                    aria-label="이전 브랜드 보기"
+                    aria-controls={STRING_BRAND_RAIL_ID}
+                    disabled={!stringBrandRailState.canScrollPrev}
+                    onClick={() => scrollBrandRail(stringBrandRailRef, -1)}
+                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
+                  >
+                    <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                  </button>
+                  <div className="relative min-w-0 flex-1">
+                    <div
+                      id={STRING_BRAND_RAIL_ID}
+                      className={brandRailClass}
+                      ref={stringBrandRailRef}
+                    >
+                      <button
+                        type="button"
+                        data-string-brand="all"
+                        aria-pressed={activeStringBrand === "all"}
+                        onClick={() => setActiveStringBrand("all")}
+                        className={getBrandTabClass(activeStringBrand === "all")}
+                      >
+                        전체
+                      </button>
+                      {STRING_BRANDS.map((b) => (
+                        <button
+                          key={b.value}
+                          type="button"
+                          data-string-brand={b.value}
+                          aria-pressed={activeStringBrand === b.value}
+                          onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
+                          className={getBrandTabClass(activeStringBrand === b.value)}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollPrev && (
+                      <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-card to-transparent" />
+                    )}
+                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollNext && (
+                      <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="다음 브랜드 보기"
+                    aria-controls={STRING_BRAND_RAIL_ID}
+                    disabled={!stringBrandRailState.canScrollNext}
+                    onClick={() => scrollBrandRail(stringBrandRailRef, 1)}
+                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
+                  >
+                    <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                  </button>
+                </div>
+                <HorizontalProducts
+                  title={activePurposeInfo.title}
+                  subtitle={activePurposeInfo.desc}
+                  items={premiumItems}
+                  moreHref={recommendationMoreHref}
+                  variant="home"
+                  showHeader={false}
+                  showMoreCard={true}
+                  loading={stringProductsLoading}
+                  error={stringProductsError}
+                  onRetry={retryStringProducts}
+                  emptyTitle="추천할 스트링이 없습니다"
+                  emptyDescription="다른 플레이 기준이나 브랜드를 선택해보세요."
+                  errorTitle="스트링을 불러오지 못했어요"
+                  errorDescription="잠시 후 다시 시도해 주세요."
+                />
+              </div>
+            </div>
+          </div>
+        </SiteContainer>
+      </section>
+
+      <section className={styles.section} id="paths">
+        <SiteContainer variant="wide" className={styles.wrap}>
+          <HomeEditorialHeader
+            no="02"
             eyebrow="신청 방식 선택"
             title="지금 상황에 맞는 신청 방법을 선택하세요."
             description={
@@ -1017,7 +1149,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section className={styles.section}>
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="02"
+            no="03"
             eyebrow="주요 서비스"
             title="교체서비스에 필요한 메뉴를 한곳에서 확인하세요."
             description={
@@ -1094,7 +1226,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section className={styles.section} id="process">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="03"
+            no="04"
             eyebrow="교체 진행 순서"
             title="신청부터 수령까지 필요한 정보만 보여드려요."
             description="단계를 선택하면 준비할 내용과 진행 방법을 미리 확인할 수 있어요."
@@ -1249,138 +1381,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   </p>
                 </div>
               ))}
-            </div>
-          </div>
-        </SiteContainer>
-      </section>
-
-      <section ref={stringsSectionRef} className={styles.section} id="strings">
-        <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="04"
-            eyebrow="플레이 목적별 추천"
-            title="플레이 스타일에 맞는 스트링을 찾아보세요."
-            description="편안함, 스핀, 컨트롤, 내구성 중 원하는 기준을 선택하면 관련 스트링을 먼저 보여드려요."
-          />
-          <div className={styles.recoLayout}>
-            <div className={styles.purposeList}>
-              {PURPOSES.map((purpose) => (
-                <button
-                  key={purpose.key}
-                  type="button"
-                  aria-pressed={activePurpose === purpose.key}
-                  onClick={() => setActivePurpose(purpose.key)}
-                  className={cn(
-                    "flex min-w-40 items-center justify-between rounded-control border px-4 py-4 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                    activePurpose === purpose.key
-                      ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
-                      : "border-border bg-card text-foreground hover:bg-muted/30",
-                  )}
-                >
-                  <span>{purpose.title}</span>
-                  <span
-                    className={
-                      activePurpose === purpose.key
-                        ? "text-brand-highlight"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {purpose.no}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <div className={styles.recoPanel}>
-              <div className={styles.recoImageWrap}>
-                <Image
-                  src="/images/home/home-string-product-showcase.webp"
-                  alt="테니스 스트링 상품 쇼케이스"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1199px) 100vw, 920px"
-                />
-              </div>
-              <div className={styles.recoContent}>
-                <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}>
-                  {activePurposeInfo.title}
-                </h3>
-                <p className="mt-2 break-keep text-ui-body text-muted-foreground">
-                  {activePurposeInfo.desc}
-                </p>
-                <div className="mt-5 flex max-w-full items-center gap-2 overflow-hidden">
-                  <button
-                    type="button"
-                    aria-label="이전 브랜드 보기"
-                    aria-controls={STRING_BRAND_RAIL_ID}
-                    disabled={!stringBrandRailState.canScrollPrev}
-                    onClick={() => scrollBrandRail(stringBrandRailRef, -1)}
-                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
-                  >
-                    <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-                  </button>
-                  <div className="relative min-w-0 flex-1">
-                    <div
-                      id={STRING_BRAND_RAIL_ID}
-                      className={brandRailClass}
-                      ref={stringBrandRailRef}
-                    >
-                      <button
-                        type="button"
-                        data-string-brand="all"
-                        aria-pressed={activeStringBrand === "all"}
-                        onClick={() => setActiveStringBrand("all")}
-                        className={getBrandTabClass(activeStringBrand === "all")}
-                      >
-                        전체
-                      </button>
-                      {STRING_BRANDS.map((b) => (
-                        <button
-                          key={b.value}
-                          type="button"
-                          data-string-brand={b.value}
-                          aria-pressed={activeStringBrand === b.value}
-                          onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                          className={getBrandTabClass(activeStringBrand === b.value)}
-                        >
-                          {b.label}
-                        </button>
-                      ))}
-                    </div>
-                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollPrev && (
-                      <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-card to-transparent" />
-                    )}
-                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollNext && (
-                      <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent" />
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    aria-label="다음 브랜드 보기"
-                    aria-controls={STRING_BRAND_RAIL_ID}
-                    disabled={!stringBrandRailState.canScrollNext}
-                    onClick={() => scrollBrandRail(stringBrandRailRef, 1)}
-                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
-                  >
-                    <ChevronRight aria-hidden="true" className="h-4 w-4" />
-                  </button>
-                </div>
-                <HorizontalProducts
-                  title={activePurposeInfo.title}
-                  subtitle={activePurposeInfo.desc}
-                  items={premiumItems}
-                  moreHref={recommendationMoreHref}
-                  variant="home"
-                  showHeader={false}
-                  showMoreCard={true}
-                  loading={stringProductsLoading}
-                  error={stringProductsError}
-                  onRetry={retryStringProducts}
-                  emptyTitle="추천할 스트링이 없습니다"
-                  emptyDescription="다른 플레이 기준이나 브랜드를 선택해보세요."
-                  errorTitle="스트링을 불러오지 못했어요"
-                  errorDescription="잠시 후 다시 시도해 주세요."
-                />
-              </div>
             </div>
           </div>
         </SiteContainer>
