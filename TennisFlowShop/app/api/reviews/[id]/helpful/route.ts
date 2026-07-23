@@ -7,6 +7,12 @@ import { getHelpfulReviewBlockReason } from "@/lib/reviews/review-api-guards";
 
 type DbAny = any;
 
+type HelpfulReviewRecord = {
+  userId?: unknown;
+  status?: unknown;
+  moderationStatus?: unknown;
+};
+
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const db = await getDb();
 
@@ -40,7 +46,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const reviews = db.collection("reviews");
 
   // 리뷰 존재 검증(삭제/미존재 리뷰에 투표 로그가 남는 데이터 오염 방지)
-  const exists = await reviews.findOne(
+  const exists = await reviews.findOne<HelpfulReviewRecord>(
     { _id: reviewId, isDeleted: { $ne: true } },
     { projection: { _id: 1, userId: 1, status: 1, moderationStatus: 1 } },
   );
