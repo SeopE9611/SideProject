@@ -41,6 +41,12 @@ export type AdminPackageAttentionReason =
   | "pass_unknown"
   | "terminal_payment_with_live_pass";
 
+export interface AdminPackageOperationCapabilities {
+  canExtend: boolean;
+  canAdjustSessions: boolean;
+  blockReasons: string[];
+}
+
 export interface AdminPackageCustomerDto {
   name?: string;
   email?: string;
@@ -153,6 +159,7 @@ export interface AdminPackageDetailDto {
   legacyPaymentStatus: AdminPackagePaymentStatus | null;
   passStatus: AdminPackagePassStatusDetail;
   paymentStatus: string | null;
+  operationCapabilities: AdminPackageOperationCapabilities;
   paymentMethod?: string | null;
   paymentProvider?: string | null;
   paymentTid?: string | null;

@@ -16,6 +16,8 @@ for (const value of [
   "AdminPackageActivationState",
   "AdminPackageAttentionReason",
   "rawPaymentStatus",
+  "AdminPackageOperationCapabilities",
+  "operationCapabilities",
   "usageState",
   "activationState",
   "requiresAttention",
@@ -120,10 +122,8 @@ for (const value of [
   "payment_unknown",
   "pass_issue_pending",
   "pass_unknown",
-  "isServerCompatiblePaid",
-  'rawPaymentStatus === "결제완료"',
-  "isServerCompatiblePass",
-  'rawPassStatus !== "cancelled"',
+  "operationCapabilities",
+  "blockReasons",
   "canExtendPackage",
   "canAdjustSessions",
   "disabled={!canExtendPackage}",
@@ -136,6 +136,18 @@ for (const value of [
   "총 횟수 확인 필요",
 ])
   assert.match(detailUi, new RegExp(value));
+const capabilities = read("lib/admin/package-operation-capabilities.ts");
+for (const value of [
+  "getAdminPackageOperationCapabilities",
+  "canExtend",
+  "canAdjustSessions",
+  "cancelled",
+  "canceled",
+  "취소",
+  "Number.isFinite(remainingCount)",
+  "expiresAt <= now",
+])
+  assert.match(capabilities, new RegExp(value));
 for (const value of [
   /data\.paymentStatus === "결제완료"/,
   /data\.passStatus === "취소"/,
