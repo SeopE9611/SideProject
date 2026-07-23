@@ -33,7 +33,7 @@ test("패키지 성공 페이지는 DB 조회 전에 access token과 refresh tok
 test("일반 회원은 소유권을 포함해 조회하고 관리자는 주문 ID로 조회한다", () => {
   assert.match(
     source,
-    /const packageOrderFilter = isAdmin\s*\?\s*\{\s*_id: packageOrderObjectId\s*\}\s*:\s*\{\s*_id: packageOrderObjectId,\s*userId: viewerObjectId\s*\}/,
+    /const packageOrderFilter(?:\s*:\s*Filter<Document>)?\s*=\s*isAdmin\s*\?\s*\{\s*_id: packageOrderObjectId\s*\}\s*:\s*\{\s*_id: packageOrderObjectId,\s*userId: viewerObjectId\s*\}/,
   );
   assert.match(source, /const viewerObjectId = new ObjectId\(viewerUserId\)/);
   assert.match(source, /findOne\(packageOrderFilter\)/);
