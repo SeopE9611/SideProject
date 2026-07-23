@@ -95,8 +95,12 @@ const CUSTOMER_PAYMENT_STATUS_LABELS: Record<string, string> = {
   cancelled: "결제 취소",
   결제취소: "결제 취소",
   refunded: "환불 완료",
+  refund: "환불 완료",
   refund_completed: "환불 완료",
+  환불: "환불 완료",
   환불완료: "환불 완료",
+  refunding: "환불 처리 중",
+  환불처리중: "환불 처리 중",
 };
 
 export function getCustomerOrderStatusLabel(status?: string | null) {

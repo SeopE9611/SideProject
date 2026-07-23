@@ -1,5 +1,9 @@
 import BackButtonGuard from "@/app/checkout/success/_components/BackButtonGuard";
 import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPackageCard";
+import {
+  getCustomerTransactionPaymentStatusLabel,
+  isCustomerBankTransferPayment,
+} from "@/app/mypage/_lib/flow-display";
 import { normalizePackageCardData } from "@/app/services/packages/_lib/packageCard";
 import { toPackageVariant } from "@/app/services/packages/_lib/packageVariant";
 import DevMarkPaidButton from "@/app/services/packages/success/DevMarkPaidButton";
@@ -33,7 +37,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "패키지 결제 완료",
+  title: "패키지 주문 결과",
 };
 
 type PackageSuccessViewerPayload = {
@@ -43,6 +47,69 @@ type PackageSuccessViewerPayload = {
   roles?: unknown;
   isAdmin?: boolean;
 };
+
+type PackagePaymentLifecycle = "pending" | "paid" | "failed" | "cancelled" | "refunded" | "unknown";
+type PackageUsageStatus =
+  | "available"
+  | "paused"
+  | "exhausted"
+  | "expired"
+  | "cancelled"
+  | "not_issued"
+  | "unknown";
+type PackageActivationStatus =
+  | "active"
+  | "awaiting_payment"
+  | "pending_issue"
+  | "paused"
+  | "ended"
+  | "cancelled"
+  | "failed"
+  | "unknown";
+type PackageDisplayGroup = "available" | "waiting" | "history";
+
+function nullableTrim(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function toNullableFiniteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function toValidDateOrNull(value: unknown): Date | null {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function compactToken(value: string | null) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+}
+
+function getPaymentLifecycle(
+  paymentStatus: string | null,
+  orderStatus: string | null,
+): PackagePaymentLifecycle {
+  const paymentToken = compactToken(paymentStatus);
+  const orderToken = compactToken(orderStatus);
+  if (["refunded", "refund", "refundcompleted", "환불", "환불완료"].includes(paymentToken))
+    return "refunded";
+  if (["canceled", "cancelled", "결제취소", "취소"].includes(paymentToken)) return "cancelled";
+  if (["failed", "결제실패", "paymentfailed"].includes(paymentToken)) return "failed";
+  if (["paid", "결제완료", "paymentcompleted"].includes(paymentToken)) return "paid";
+  if (["pending", "결제대기", "대기중", "paymentpending"].includes(paymentToken)) return "pending";
+  if (["refunded", "refund", "refundcompleted", "환불", "환불완료"].includes(orderToken))
+    return "refunded";
+  if (["canceled", "cancelled", "결제취소", "취소"].includes(orderToken)) return "cancelled";
+  return "unknown";
+}
+
+function formatPaymentTotalAmount(amount: number | null): string {
+  return amount === null ? "금액 확인 중" : `${amount.toLocaleString()}원`;
+}
 
 function resolvePackageSuccessViewer(
   accessToken?: string,
@@ -115,8 +182,7 @@ export default async function PackageSuccessPage({
   // 토큰 페이로드 기반
   const tokenIsAdmin =
     viewerPayload.role === "admin" ||
-    (Array.isArray(viewerPayload.roles) &&
-      viewerPayload.roles.some((role) => role === "admin")) ||
+    (Array.isArray(viewerPayload.roles) && viewerPayload.roles.some((role) => role === "admin")) ||
     viewerPayload.isAdmin === true;
 
   // 이메일 화이트리스트(옵션)
@@ -142,21 +208,32 @@ export default async function PackageSuccessPage({
 
   // 운영 긴급 노출 스위치
   const showDevBtn = isAdmin || process.env.NEXT_PUBLIC_SHOW_DEV_BUTTON === "1";
-
-  // 안전한 가격 표시 함수
-  const formatPrice = (price: any): string => {
-    const numPrice = Number(price);
-    return isNaN(numPrice) || numPrice === null || numPrice === undefined
-      ? "0"
-      : numPrice.toLocaleString();
-  };
+  const packageOrderUserId =
+    packageOrder.userId instanceof ObjectId
+      ? packageOrder.userId
+      : typeof packageOrder.userId === "string" && ObjectId.isValid(packageOrder.userId)
+        ? new ObjectId(packageOrder.userId)
+        : null;
+  const servicePass = packageOrderUserId
+    ? await db
+        .collection("service_passes")
+        .findOne(
+          { orderId: packageOrderObjectId, userId: packageOrderUserId },
+          { projection: { status: 1, remainingCount: 1, expiresAt: 1 } },
+        )
+    : null;
 
   const packageInfo = packageOrder.packageInfo;
   const serviceInfo = packageOrder.serviceInfo;
   const paymentInfo = packageOrder.paymentInfo;
+  const rawPaymentStatus =
+    nullableTrim(packageOrder.paymentStatus) ?? nullableTrim(paymentInfo?.status);
+  const paymentMethod = nullableTrim(paymentInfo?.method);
+  const paymentProvider = nullableTrim(paymentInfo?.provider);
+  const paymentTotalAmount = toNullableFiniteNumber(packageOrder.totalPrice);
   const paymentSummary = getPaymentDisplaySummary({
-    method: paymentInfo?.method,
-    provider: paymentInfo?.provider ?? "manual_bank_transfer",
+    method: paymentMethod,
+    provider: paymentProvider,
     easyPayProvider: paymentInfo?.easyPayProvider ?? paymentInfo?.rawSummary?.easyPay?.provider,
     cardDisplayName: paymentInfo?.cardDisplayName,
     cardCompany: paymentInfo?.cardCompany,
@@ -167,12 +244,186 @@ export default async function PackageSuccessPage({
     depositor: paymentInfo?.depositor,
   });
   const paymentMethodLabel = paymentSummary.userLabel;
-  const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
-  const normalizedPaymentProvider = String(paymentInfo?.provider ?? "")
-    .trim()
-    .toLowerCase();
+  const paymentStatusLabel = getCustomerTransactionPaymentStatusLabel({
+    paymentStatus: rawPaymentStatus,
+    paymentMethod,
+    paymentProvider,
+    totalPrice: paymentTotalAmount,
+  });
+  const paymentLifecycle = getPaymentLifecycle(rawPaymentStatus, nullableTrim(packageOrder.status));
+  const hasTerminalPaymentState =
+    paymentLifecycle === "failed" ||
+    paymentLifecycle === "cancelled" ||
+    paymentLifecycle === "refunded";
+  const isBankTransfer = isCustomerBankTransferPayment({
+    paymentMethod,
+    paymentProvider,
+    totalPrice: paymentTotalAmount,
+  });
+  const rawPassStatus = nullableTrim(servicePass?.status);
+  const remainingCount = toNullableFiniteNumber(servicePass?.remainingCount);
+  const expiresAt = toValidDateOrNull(servicePass?.expiresAt);
+  const passStatusToken = compactToken(rawPassStatus);
+  const usageStatus: PackageUsageStatus = !servicePass
+    ? "not_issued"
+    : passStatusToken === "cancelled"
+      ? "cancelled"
+      : remainingCount !== null && remainingCount <= 0
+        ? "exhausted"
+        : (expiresAt !== null && expiresAt.getTime() <= Date.now()) || passStatusToken === "expired"
+          ? "expired"
+          : ["paused", "suspended"].includes(passStatusToken)
+            ? "paused"
+            : passStatusToken === "active"
+              ? "available"
+              : "unknown";
+  const activationStatus: PackageActivationStatus = servicePass
+    ? usageStatus === "available"
+      ? "active"
+      : usageStatus === "paused"
+        ? "paused"
+        : usageStatus === "exhausted" || usageStatus === "expired"
+          ? "ended"
+          : usageStatus === "cancelled"
+            ? "cancelled"
+            : "unknown"
+    : paymentLifecycle === "pending"
+      ? "awaiting_payment"
+      : paymentLifecycle === "paid"
+        ? "pending_issue"
+        : paymentLifecycle === "failed"
+          ? "failed"
+          : paymentLifecycle === "cancelled" || paymentLifecycle === "refunded"
+            ? "cancelled"
+            : "unknown";
+  const activationStatusLabel = {
+    active: "활성화 완료",
+    awaiting_payment: "결제 확인 후 활성화",
+    pending_issue: "발급 처리 중",
+    paused: "활성화 일시정지",
+    ended: "이용 종료",
+    cancelled: "활성화 취소",
+    failed: "발급 처리 실패",
+    unknown: "활성화 상태 확인 중",
+  }[activationStatus];
+  const activationDescription = {
+    active: "패키지권을 사용할 수 있습니다.",
+    awaiting_payment: "결제 또는 입금 확인 후 활성화됩니다.",
+    pending_issue: "패키지권 발급을 기다리고 있습니다.",
+    paused: "현재 패키지권 사용이 일시정지되어 있습니다.",
+    ended: "보유 횟수 또는 이용 기간을 확인해 주세요.",
+    cancelled: "취소 또는 환불된 패키지는 사용할 수 없습니다.",
+    failed: "결제 또는 발급 처리 결과를 확인해 주세요.",
+    unknown: "패키지권 내역에서 최신 상태를 확인해 주세요.",
+  }[activationStatus];
+  const displayGroup: PackageDisplayGroup = hasTerminalPaymentState
+    ? "history"
+    : usageStatus === "available"
+      ? "available"
+      : usageStatus === "paused" || usageStatus === "not_issued" || usageStatus === "unknown"
+        ? "waiting"
+        : "history";
+  const canStartStringingService = usageStatus === "available" && displayGroup === "available";
+  const normalizedPaymentProvider = compactToken(paymentProvider);
   const isNicePayment = normalizedPaymentProvider === "nicepay";
-  const isTossPayment = normalizedPaymentProvider === "tosspayments";
+  const isTossPayment = ["tosspayments", "toss"].includes(normalizedPaymentProvider);
+  const isOnlinePayment = isTossPayment || isNicePayment;
+  const approvedAt = toValidDateOrNull(paymentInfo?.approvedAt);
+  const shouldShowBankAccount =
+    isBankTransfer &&
+    paymentStatusLabel === "입금 확인 대기" &&
+    paymentTotalAmount !== null &&
+    paymentTotalAmount > 0 &&
+    Boolean(paymentInfo?.bank && bankLabelMap[paymentInfo.bank]) &&
+    !hasTerminalPaymentState;
+  const canShowDevMarkPaidButton =
+    showDevBtn && isBankTransfer && paymentLifecycle === "pending" && !hasTerminalPaymentState;
+  const packageResultPresentation = hasTerminalPaymentState
+    ? paymentLifecycle === "failed"
+      ? {
+          status: "error" as const,
+          title: "패키지 결제를 완료하지 못했습니다",
+          description:
+            "결제 또는 발급 처리 결과를 확인해 주세요. 실패한 주문에서는 패키지권을 사용할 수 없습니다.",
+          nextActionTitle: "패키지권 확인",
+          nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+        }
+      : paymentLifecycle === "cancelled"
+        ? {
+            status: "warning" as const,
+            title: "패키지 결제가 취소되었습니다",
+            description: "취소된 주문에서는 패키지권을 사용할 수 없습니다.",
+            nextActionTitle: "패키지권 확인",
+            nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+          }
+        : {
+            status: "warning" as const,
+            title: "패키지 결제가 환불되었습니다",
+            description: "환불된 주문에서는 패키지권을 사용할 수 없습니다.",
+            nextActionTitle: "패키지권 확인",
+            nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+          }
+    : usageStatus === "paused"
+      ? {
+          status: "warning" as const,
+          title: "패키지권이 일시정지되어 있습니다",
+          description:
+            "결제는 확인됐지만 현재 패키지권 사용이 일시정지되어 있습니다. 패키지권 내역에서 상태를 확인해 주세요.",
+          nextActionTitle: "패키지권 확인",
+          nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+        }
+      : usageStatus === "exhausted" || usageStatus === "expired"
+        ? {
+            status: "info" as const,
+            title: "패키지 이용이 종료되었습니다",
+            description: "보유 횟수를 모두 사용했거나 이용 기간이 만료되었습니다.",
+            nextActionTitle: "패키지권 확인",
+            nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+          }
+        : paymentLifecycle === "paid" && usageStatus === "available"
+          ? {
+              status: "success" as const,
+              title: "패키지 결제와 활성화가 완료되었습니다",
+              description:
+                "패키지권을 사용할 수 있습니다. 교체서비스 신청 시 보유 횟수에서 차감됩니다.",
+              nextActionTitle: "바로 신청 가능",
+              nextActionDescription: "교체서비스 신청",
+            }
+          : paymentLifecycle === "paid" && usageStatus === "not_issued"
+            ? {
+                status: "info" as const,
+                title: "패키지 결제가 완료되었습니다",
+                description:
+                  "결제는 완료됐으며 패키지권 발급을 처리하고 있습니다. 중복 결제하지 말고 패키지권 내역을 확인해 주세요.",
+                nextActionTitle: "패키지권 확인",
+                nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+              }
+            : paymentLifecycle === "pending" && isBankTransfer
+              ? {
+                  status: "info" as const,
+                  title: "패키지 주문이 접수되었습니다",
+                  description:
+                    "입금 확인 후 패키지권이 활성화됩니다. 활성화 전에는 패키지를 사용할 수 없습니다.",
+                  nextActionTitle: "입금 확인 필요",
+                  nextActionDescription: "입금 후 패키지권 확인",
+                }
+              : paymentLifecycle === "pending"
+                ? {
+                    status: "info" as const,
+                    title: "패키지 결제 상태를 확인하고 있습니다",
+                    description:
+                      "결제 처리 결과를 확인 중입니다. 중복 결제하지 말고 패키지권 내역을 확인해 주세요.",
+                    nextActionTitle: "패키지권 확인",
+                    nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+                  }
+                : {
+                    status: "warning" as const,
+                    title: "패키지 주문 상태를 확인하고 있습니다",
+                    description:
+                      "결제 또는 패키지권 활성화 상태를 확인 중입니다. 패키지권 내역에서 최신 상태를 확인해 주세요.",
+                    nextActionTitle: "패키지권 확인",
+                    nextActionDescription: "마이페이지에서 최신 상태를 확인하세요",
+                  };
 
   const packageCard = normalizePackageCardData({
     id: String(packageInfo.id ?? ""),
@@ -186,7 +437,6 @@ export default async function PackageSuccessPage({
     benefits: Array.isArray(packageInfo.benefits) ? packageInfo.benefits : undefined,
     popular: Number(packageInfo.sessions) === 30,
   });
-  const isOnlinePayment = isTossPayment || isNicePayment;
   const lookupHref = "/mypage?tab=passes";
 
   return (
@@ -196,55 +446,41 @@ export default async function PackageSuccessPage({
         <div className="border-b border-border bg-background text-foreground">
           <SiteContainer className="py-8 md:py-12">
             <ResultState
-              status={isPaid ? "success" : "info"}
-              title={
-                isOnlinePayment ? "패키지 결제가 완료되었습니다" : "패키지 주문이 접수되었습니다"
-              }
-              description={
-                isOnlinePayment
-                  ? "결제가 확인되어 패키지가 즉시 활성화되었습니다. 아래에서 주문 요약과 다음 행동을 확인해주세요."
-                  : "주문 정보가 접수되었습니다. 입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지 사용이 제한됩니다."
-              }
+              status={packageResultPresentation.status}
+              title={packageResultPresentation.title}
+              description={packageResultPresentation.description}
               className="px-0 py-0 sm:py-0"
             >
               <PublicSurface variant="muted" className="space-y-4">
                 <div className="grid grid-cols-1 text-ui-body-sm md:grid-cols-3 md:divide-x md:divide-border">
                   <div className="border-b border-border p-4 md:border-b-0">
-                    <p className="font-semibold text-foreground">
-                      {isOnlinePayment ? "결제 완료" : "주문 접수"}
-                    </p>
+                    <p className="font-semibold text-foreground">{paymentStatusLabel}</p>
                     <p className="mt-1 text-muted-foreground">{paymentMethodLabel}</p>
                   </div>
                   <div className="border-b border-border p-4 md:border-b-0">
-                    <p className="font-semibold text-foreground">
-                      {isPaid ? "패키지 활성화 완료" : "패키지 활성화 대기"}
-                    </p>
-                    <p className="mt-1 text-muted-foreground">
-                      {isPaid ? "현재 사용 가능합니다" : "입금 전 사용 불가"}
-                    </p>
+                    <p className="font-semibold text-foreground">{activationStatusLabel}</p>
+                    <p className="mt-1 text-muted-foreground">{activationDescription}</p>
                   </div>
                   <div className="p-4">
                     <p className="font-semibold text-foreground">
-                      {isPaid ? "바로 신청 가능" : "입금 확인 필요"}
+                      {packageResultPresentation.nextActionTitle}
                     </p>
                     <p className="mt-1 text-muted-foreground">
-                      {isPaid ? "교체서비스 신청" : "입금 후 패키지권 확인"}
+                      {packageResultPresentation.nextActionDescription}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
+                  {canStartStringingService ? (
+                    <Button variant="default" className="h-12 flex-1 font-semibold" asChild>
+                      <Link href="/services#service-start" className="flex items-center gap-2">
+                        교체서비스 시작하기
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  ) : null}
                   <Button
-                    variant={isPaid ? "default" : "outline"}
-                    className="h-12 flex-1 font-semibold"
-                    asChild
-                  >
-                    <Link href="/services#service-start" className="flex items-center gap-2">
-                      교체서비스 시작하기
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant={isPaid ? "outline" : "default"}
+                    variant={canStartStringingService ? "outline" : "default"}
                     className="h-12 flex-1 font-semibold"
                     asChild
                   >
@@ -330,23 +566,23 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                     <CheckCircle className="h-5 w-5 text-primary" />
                     <div>
-                      <p className="text-ui-body-sm text-muted-foreground">결제/활성화 상태</p>
-                      <p className="font-semibold text-foreground">
-                        {isPaid ? "결제 완료 · 활성화 완료" : "입금 확인 대기 · 활성화 대기"}
-                      </p>
+                      <p className="text-ui-body-sm text-muted-foreground">결제 상태</p>
+                      <p className="font-semibold text-foreground">{paymentStatusLabel}</p>
+                      <p className="mt-2 text-ui-body-sm text-muted-foreground">활성화 상태</p>
+                      <p className="font-semibold text-foreground">{activationStatusLabel}</p>
                     </div>
                   </PublicSurface>
                   <PublicSurface variant="inverse" padding="sm" className="rounded-control">
                     <div className="flex items-end justify-between gap-4 text-ui-card-title-lg font-semibold sm:text-ui-section-title">
                       <span>총 결제 금액</span>
                       <span className="shrink-0 text-brand-highlight">
-                        {formatPrice(packageOrder.totalPrice)}원
+                        {formatPaymentTotalAmount(paymentTotalAmount)}
                       </span>
                     </div>
                   </PublicSurface>
                 </div>
 
-                {!isTossPayment && !isNicePayment ? (
+                {shouldShowBankAccount ? (
                   <PublicSurface variant="muted" padding="sm">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCard className="h-5 w-5 text-primary" />
@@ -374,20 +610,21 @@ export default async function PackageSuccessPage({
                       </p>
                     </div>
                   </PublicSurface>
-                ) : (
+                ) : isOnlinePayment ? (
                   <PublicSurface variant="muted" padding="sm">
                     <h3 className="font-semibold text-foreground mb-3">
                       {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
                     </h3>
-                    <p className="text-ui-body-sm text-muted-foreground">결제 상태: 결제 완료</p>
-                    <p className="text-ui-body-sm text-muted-foreground mt-1">
-                      승인 시각:{" "}
-                      {paymentInfo?.approvedAt
-                        ? new Date(paymentInfo.approvedAt).toLocaleString("ko-KR")
-                        : "-"}
+                    <p className="text-ui-body-sm text-muted-foreground">
+                      결제 상태: {paymentStatusLabel}
                     </p>
+                    {approvedAt ? (
+                      <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                        승인 시각: {approvedAt.toLocaleString("ko-KR")}
+                      </p>
+                    ) : null}
                   </PublicSurface>
-                )}
+                ) : null}
               </div>
 
               <div className="my-6 border-t border-border" />
@@ -436,7 +673,7 @@ export default async function PackageSuccessPage({
               <div className="px-4 md:px-6">
                 <DevMarkPaidButton
                   orderId={packageOrder._id.toString()}
-                  show={showDevBtn && !isPaid}
+                  show={canShowDevMarkPaidButton}
                 />
               </div>
             </SummaryCard>
@@ -460,9 +697,7 @@ export default async function PackageSuccessPage({
                         {isTossPayment || isNicePayment ? "결제 안내" : "입금 안내"}
                       </h4>
                       <p className="text-ui-body-sm text-muted-foreground">
-                        {isOnlinePayment
-                          ? `${isNicePayment ? "카드/간편" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
-                          : "입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지를 사용할 수 없습니다."}
+                        {activationDescription}
                       </p>
                     </div>
                   </PublicSurface>
