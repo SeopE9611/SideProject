@@ -252,6 +252,8 @@ const Header = () => {
   const supportGroupActive = NAV_LINKS.support.some((it) => isMobileSectionActive(it.href));
   const academyCurrent = isMobileRouteCurrent(NAV_LINKS.academy.href);
   const academySectionActive = isMobileSectionActive(NAV_LINKS.academy.href);
+  const racketCareActive =
+    isMobileSectionActive("/racket-care") || isMobileSectionActive("/mypage/racket-care");
 
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
   useEffect(() => {
@@ -312,6 +314,9 @@ const Header = () => {
     if (item.href === "/services") return p === "/services" || (p.startsWith("/services/") && !p.startsWith("/services/packages"));
     if (item.href === "/services/packages") return p === "/services/packages" || p.startsWith("/services/packages/");
     if (item.href === "/rackets") return p === "/rackets" || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
+    if (item.href === "/racket-care") {
+      return p === "/racket-care" || p.startsWith("/racket-care/") || p === "/mypage/racket-care" || p.startsWith("/mypage/racket-care/");
+    }
     return p === item.href || p.startsWith(`${item.href}/`);
   };
 
@@ -652,7 +657,7 @@ const Header = () => {
                   }}
                 >
                   <span className="min-w-0 break-keep whitespace-normal text-left">
-                    도깨비테니스 아카데미
+                    아카데미
                   </span>
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" />
                 </Button>
@@ -668,7 +673,7 @@ const Header = () => {
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
                     </div> */}
-                    <span className={mobileGroupTitleClass}>도깨비 인증 중고 라켓</span>
+                    <span className={mobileGroupTitleClass}>중고 라켓</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
@@ -720,6 +725,20 @@ const Header = () => {
                   </Button>
                 </AccordionContent>
               </AccordionItem>
+
+              <div className={mobileMenuGroupClass}>
+                <Button
+                  variant="ghost"
+                  className={mobileMenuItemClass(racketCareActive)}
+                  aria-current={racketCareActive ? "page" : undefined}
+                  onClick={() => {
+                    guardedPush("/racket-care", () => setOpen(false));
+                  }}
+                >
+                  라켓 케어
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" />
+                </Button>
+              </div>
 
               {/* 게시판 */}
               <AccordionItem value="boards" className={cn("border-none", mobileMenuGroupClass)}>

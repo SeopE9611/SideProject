@@ -28,6 +28,7 @@ export const DESKTOP_PRIMARY_NAV_ITEMS = [
 export const DESKTOP_SECONDARY_NAV_ITEMS = [
   { name: "커뮤니티", href: "/board" },
   { name: "라켓 찾기", href: "/rackets/finder" },
+  { name: "라켓 케어", href: "/racket-care" },
 ] as const;
 
 export const NAV_LINKS = {

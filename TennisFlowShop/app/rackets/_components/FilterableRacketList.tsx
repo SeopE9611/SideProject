@@ -645,9 +645,6 @@ export default function FilterableRacketList({
             <SummaryCard className="overflow-hidden" contentClassName="p-4 bp-sm:p-5 bp-lg:p-6">
               <div className="grid min-w-0 gap-3 bp-md:grid-cols-[minmax(0,1fr)_auto] bp-md:items-end bp-md:gap-6">
                 <div className="min-w-0 space-y-1.5">
-                  <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-primary">
-                    Racket Finder
-                  </p>
                   <h2 className="text-ui-card-title-lg font-semibold text-foreground">라켓 목록</h2>
                   <p className="max-w-2xl text-ui-body-sm leading-6 text-muted-foreground">
                     브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요.

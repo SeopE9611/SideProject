@@ -734,9 +734,6 @@ export default function FilterableProductList({
             <SummaryCard className="overflow-hidden" contentClassName="p-4 bp-sm:p-5 bp-lg:p-6">
               <div className="grid min-w-0 gap-3 bp-md:grid-cols-[minmax(0,1fr)_auto] bp-md:items-end bp-md:gap-6">
                 <div className="min-w-0 space-y-1.5">
-                  <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-primary">
-                    String Catalog
-                  </p>
                   <h2 className="text-ui-card-title-lg font-semibold text-foreground">
                     스트링 상품
                   </h2>
