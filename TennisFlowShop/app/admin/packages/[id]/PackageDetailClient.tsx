@@ -389,6 +389,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
   const canExtendPackage = operationCapabilities.canExtend;
   const canAdjustSessions = operationCapabilities.canAdjustSessions;
+  const areAllOperationsBlocked = !canExtendPackage && !canAdjustSessions;
   const hasReason = (reason: string) => data.attentionReasons.includes(reason as never);
   const packageGuide = hasReason("terminal_payment_with_live_pass")
     ? {
@@ -926,27 +927,6 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               </div>
             </div>
 
-            {!isServerCompatiblePaid && (
-              <p className="text-xs text-primary">
-                현재 서버 작업 정책상 원본 결제 상태가 `결제완료`인 주문에서만 연장·횟수 조절을 할
-                수 있습니다.
-              </p>
-            )}
-            {!data.hasIssuedPass && (
-              <p className="text-xs text-destructive">
-                연결 패스가 없어 운영 작업을 진행할 수 없습니다.
-              </p>
-            )}
-            {data.rawPassStatus === "cancelled" && (
-              <p className="text-xs text-destructive">
-                취소된 이용권에서는 운영 작업을 진행할 수 없습니다.
-              </p>
-            )}
-            {data.usageState === "expired" && (
-              <p className="text-xs text-muted-foreground">
-                만료된 이용권은 연장 후 횟수 조절이 가능합니다.
-              </p>
-            )}
             <div className="rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
               <span className="text-foreground">작업 가능 여부</span>
               <span className="ml-2">
@@ -957,7 +937,16 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   : "총 횟수 확인 필요"}
               </span>
               {operationCapabilities.blockReasons.length > 0 && (
-                <p className="mt-2 text-destructive">{operationCapabilities.blockReasons.join(" ")}</p>
+                <ul
+                  className={cn(
+                    "mt-2 space-y-1",
+                    areAllOperationsBlocked ? "text-destructive" : "text-muted-foreground",
+                  )}
+                >
+                  {operationCapabilities.blockReasons.map((reason) => (
+                    <li key={reason}>• {reason}</li>
+                  ))}
+                </ul>
               )}
             </div>
           </CardContent>
