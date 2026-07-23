@@ -781,7 +781,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsSource.length;
   const currentPath = APPLICATION_PATHS[activeApplicationPath];
-  const heroPath = currentPath;
   const currentStepIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStepKey);
   const currentStep = PROCESS_STEPS[currentStepIndex] ?? PROCESS_STEPS[0];
   const activePurposeInfo =
@@ -819,7 +818,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 </span>
                 <h1 className={styles.heroTitle}>
                   스트링부터 텐션까지
-                  <span className={styles.heroOutline}>내 플레이에 맞게</span>
+                  <span className={styles.heroTitleSecondLine}>내 플레이에 맞게</span>
                 </h1>
                 <p className="mt-5 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">
                   스트링 선택부터 텐션 상담, 라켓 접수와 수령까지. 복잡한 교체 과정을 쉽게
@@ -827,23 +826,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 </p>
                 <div className="mt-7 grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                   <Link className={homeCtaHighlight} href="/services#service-start">
-                    교체서비스 시작하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                    교체서비스 신청하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </Link>
-                  <Link className={homeCtaDefault} href="/products/recommend">
-                    내게 맞는 스트링 찾기
+                  <Link className={homeCtaDefault} href="/products">
+                    스트링 둘러보기
                   </Link>
-                </div>
-                <div className={styles.heroTrust}>
-                  {[
-                    ["방문·택배", "두 가지 접수 방식"],
-                    ["직접 선택·상담", "준비 상태에 맞춘 신청"],
-                    ["패키지", "반복 교체 이용 가능"],
-                  ].map(([title, desc]) => (
-                    <div key={title} className={styles.heroTrustItem}>
-                      <strong>{title}</strong>
-                      <span>{desc}</span>
-                    </div>
-                  ))}
                 </div>
               </div>
               <div className={styles.heroVisual}>
@@ -856,48 +843,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     className="object-cover"
                     sizes="(max-width: 1199px) calc(100vw - 24px), 680px"
                   />
-                </div>
-                <div className={styles.heroPlan}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-ui-label font-medium uppercase tracking-[0.12em] text-surface-inverse-muted">
-                        MY STRINGING PLAN
-                      </p>
-                      <h2 className="mt-2 text-ui-section-title font-ui-medium tracking-normal">
-                        교체 신청 미리보기
-                      </h2>
-                    </div>
-                    <span className="rounded-full bg-brand-highlight px-2.5 py-1 text-ui-caption font-medium text-brand-highlight-foreground">
-                      선택
-                    </span>
-                  </div>
-                  <div className={styles.heroPlanModes}>
-                    {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        aria-pressed={activeApplicationPath === key}
-                        onClick={() => setActiveApplicationPath(key)}
-                        className={cn(
-                          "rounded-control border px-3 py-2 text-left text-ui-label font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                          activeApplicationPath === key
-                            ? "border-brand-highlight bg-brand-highlight text-brand-highlight-foreground"
-                            : "border-surface-inverse-foreground/15 bg-card/10 text-surface-inverse-foreground hover:border-surface-inverse-foreground/30",
-                        )}
-                      >
-                        {APPLICATION_PATHS[key].label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className={styles.heroPlanDetails}>
-                    <PlanCell label="스트링" value={heroPath.string} />
-                    <PlanCell label="텐션" value={heroPath.tension} />
-                    <PlanCell label="접수 방법" value={heroPath.method} />
-                    <PlanCell label="선택 방식" value={heroPath.label} />
-                  </div>
-                  <Link className={cn(homeCtaHighlight, "mt-5 w-full")} href={heroPath.href}>
-                    {heroPath.cta}
-                  </Link>
                 </div>
               </div>
             </div>
@@ -1356,9 +1301,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 />
               </div>
               <div className={styles.recoContent}>
-                <h3
-                  className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}
-                >
+                <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}>
                   {activePurposeInfo.title}
                 </h3>
                 <p className="mt-2 break-keep text-ui-body text-muted-foreground">
@@ -1627,12 +1570,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               ) : (
                 <div className={styles.racketEmpty}>
                   <div className={styles.racketEmptyCopy}>
-                    <h3
-                      className={cn(
-                        styles.uiTitle,
-                        "text-ui-section-title-lg text-foreground",
-                      )}
-                    >
+                    <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}>
                       {activeBrand === "all"
                         ? "검수된 중고 라켓을 준비 중입니다."
                         : `현재 ${racketBrandLabel(activeBrand)} 중고 라켓이 없습니다.`}
@@ -1708,12 +1646,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <div className={styles.careBanner}>
             <div>
               <p className="text-ui-label font-medium text-muted-foreground">교체 후 관리</p>
-              <h3
-                className={cn(
-                  styles.uiTitle,
-                  "mt-2 text-ui-section-title-lg text-foreground",
-                )}
-              >
+              <h3 className={cn(styles.uiTitle, "mt-2 text-ui-section-title-lg text-foreground")}>
                 교체 이력은 라켓 케어에서 이어서 관리하세요.
               </h3>
               <p className="mt-2 break-keep text-ui-body text-muted-foreground">
@@ -1763,17 +1696,6 @@ function getPurposeScore(features: ApiProduct["features"], purpose: PurposeKey) 
     default:
       return 0;
   }
-}
-
-function PlanCell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-control border border-surface-inverse-foreground/15 bg-card/10 p-3">
-      <span className="block text-ui-caption text-surface-inverse-muted">{label}</span>
-      <strong className="mt-1 block text-ui-body-sm font-medium text-surface-inverse-foreground">
-        {value}
-      </strong>
-    </div>
-  );
 }
 
 function CheckLine({ children, inverse = false }: { children: string; inverse?: boolean }) {
