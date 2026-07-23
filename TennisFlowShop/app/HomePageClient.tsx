@@ -1235,15 +1235,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             }
           />
           <div className={styles.packages}>
-            <div className={styles.packageIntro}>
-              <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg")}>
-                필요한 횟수에 맞춰 패키지를 선택하세요.
-              </h3>
-              <p className="mt-4 break-keep text-ui-body leading-relaxed">
-                교체 횟수와 가격을 비교해 내게 맞는 패키지를 선택할 수 있어요.
+            <div className={styles.packageToolbar}>
+              <p className="break-keep text-ui-body-sm text-muted-foreground">
+                아래에서 횟수와 가격을 비교하고, 전체 안내에서 이용 조건을 확인하세요.
               </p>
-              <Link className={cn(homeCtaDefault, "mt-6")} href="/services/packages">
-                패키지 자세히 보기
+
+              <Link
+                className={cn(homeCtaOutline, styles.packageToolbarAction)}
+                href="/services/packages"
+              >
+                패키지 전체 보기
               </Link>
             </div>
             <div className={styles.packageTable}>
