@@ -38,6 +38,7 @@ export const coreContractFiles = [
 
 export const advisoryContractFiles = [
   "admin-boards-brand-compat.contract.test.mjs",
+  "admin-package-read-model.contract.test.mjs",
   "admin-boards-metrics.snapshot.test.mjs",
   "board-unsaved-changes-navigation.contract.test.mjs",
   "checkout-success-links.contract.test.mjs",

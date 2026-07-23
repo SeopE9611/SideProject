@@ -3,6 +3,43 @@ export type AdminPackageServiceType = "방문" | "출장";
 export type AdminPackagePassStatus = "비활성" | "활성" | "종료" | "만료" | "취소";
 export type AdminPackagePassStatusDetail = "대기" | "일시정지" | AdminPackagePassStatus;
 export type AdminPackagePaymentStatus = "결제완료" | "결제대기" | "결제취소";
+export type AdminPackagePaymentState =
+  | "not_required"
+  | "bank_pending"
+  | "pg_pending"
+  | "pending"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refunding"
+  | "refunded"
+  | "unknown";
+export type AdminPackageUsageState =
+  | "available"
+  | "paused"
+  | "exhausted"
+  | "expired"
+  | "cancelled"
+  | "not_issued"
+  | "unknown";
+export type AdminPackageActivationState =
+  | "active"
+  | "awaiting_payment"
+  | "pending_issue"
+  | "paused"
+  | "ended"
+  | "cancelled"
+  | "failed"
+  | "unknown";
+export type AdminPackageAttentionReason =
+  | "payment_pending"
+  | "payment_failed"
+  | "payment_refunding"
+  | "payment_unknown"
+  | "pass_issue_pending"
+  | "pass_paused"
+  | "pass_unknown"
+  | "terminal_payment_with_live_pass";
 
 export interface AdminPackageCustomerDto {
   name?: string;
@@ -15,10 +52,26 @@ export interface AdminPackageListItemDto {
   userId: string;
   customer: AdminPackageCustomerDto;
   packageType: AdminPackageType;
-  totalSessions: number;
-  remainingSessions: number;
-  usedSessions: number;
-  price: number;
+  totalSessions: number | null;
+  remainingSessions: number | null;
+  usedSessions: number | null;
+  price: number | null;
+  rawOrderStatus: string | null;
+  rawPaymentStatus: string | null;
+  rawPassStatus: string | null;
+  hasIssuedPass: boolean;
+  paymentState: AdminPackagePaymentState;
+  paymentStatusLabel: string;
+  paymentNeedsCheck: boolean;
+  usageState: AdminPackageUsageState;
+  usageStatusLabel: string;
+  activationState: AdminPackageActivationState;
+  activationStatusLabel: string;
+  requiresAttention: boolean;
+  attentionReasons: AdminPackageAttentionReason[];
+  daysUntilExpiry: number | null;
+  isExpirySoon: boolean;
+  progressPercent: number | null;
   purchaseDate: string | null;
   expiryDate: string | null;
   passStatus: AdminPackagePassStatus | "대기";
@@ -28,7 +81,8 @@ export interface AdminPackageListItemDto {
 
 export interface AdminPackageMetricsDto {
   total: number;
-  active: number;
+  available: number;
+  needsAttention: number;
   revenue: number;
   expirySoon: number;
 }
@@ -38,7 +92,7 @@ export interface AdminPackageListResponseDto {
   total: number;
   page: number;
   pageSize: number;
-  metrics?: AdminPackageMetricsDto;
+  metrics: AdminPackageMetricsDto;
 }
 
 export interface AdminPackageOperationHistoryDto {
@@ -77,10 +131,26 @@ export interface AdminPackageDetailDto {
   userId?: string;
   customer: Required<AdminPackageCustomerDto>;
   packageType: AdminPackageType;
-  totalSessions: number;
-  remainingSessions: number;
-  usedSessions: number;
-  price: number;
+  totalSessions: number | null;
+  remainingSessions: number | null;
+  usedSessions: number | null;
+  price: number | null;
+  rawOrderStatus: string | null;
+  rawPaymentStatus: string | null;
+  rawPassStatus: string | null;
+  hasIssuedPass: boolean;
+  paymentState: AdminPackagePaymentState;
+  paymentStatusLabel: string;
+  paymentNeedsCheck: boolean;
+  usageState: AdminPackageUsageState;
+  usageStatusLabel: string;
+  activationState: AdminPackageActivationState;
+  activationStatusLabel: string;
+  requiresAttention: boolean;
+  attentionReasons: AdminPackageAttentionReason[];
+  daysUntilExpiry: number | null;
+  isExpirySoon: boolean;
+  progressPercent: number | null;
   purchaseDate: string;
   expiryDate: string | null;
   passStatus: AdminPackagePassStatusDetail;

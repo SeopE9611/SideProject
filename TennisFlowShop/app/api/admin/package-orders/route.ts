@@ -1,379 +1,198 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
-import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
+import { ObjectId, type Document } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
+import { buildAdminPackageStateStages } from "@/lib/admin/package-state-read-model";
 
 type SortKey =
   | "customer"
   | "purchaseDate"
   | "expiryDate"
   | "remainingSessions"
-  | "usedSessions"
-  | "totalSessions"
-  | "progress"
-  | "status"
-  | "payment"
   | "price"
-  | "service"
-  | "package";
+  | "package"
+  | "progress"
+  | "usage"
+  | "payment"
+  | "activation"
+  | "attention"
+  | "status";
+const legacyUsage: Record<string, string> = {
+  활성: "available",
+  비활성: "paused",
+  일시정지: "paused",
+  종료: "exhausted",
+  만료: "expired",
+  취소: "cancelled",
+  대기: "not_issued",
+};
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
-
   try {
-    // 쿼리 파싱
-    const url = new URL(req.url);
-    const sp = url.searchParams;
-
-    const page = Math.max(1, parseInt(sp.get("page") || "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(sp.get("limit") || "10", 10)));
-    const skip = (page - 1) * limit;
-
-    const q = (sp.get("q") || "").trim();
-    const status = sp.get("status");
-    const payment = sp.get("payment");
-    const preset = sp.get("preset");
-    const pkg = sp.get("package");
-    const service = sp.get("service");
-    const sortParam = sp.get("sort");
-
-    const match: any = {};
-    if (preset === "payment-check") {
-      match.$and = [createPackagePaymentCheckFilter()];
-    }
-    // if (status && status !== 'all') match.status = status;
-    if (payment && payment !== "all") match.paymentStatus = payment;
-    if (pkg && pkg !== "all") match["packageInfo.sessions"] = Number(pkg);
-    if (service && service !== "all") {
-      match["serviceInfo.serviceMethod"] = {
-        $regex: service === "출장" ? "출장" : "방문",
-        $options: "i",
-      };
-    }
+    const sp = new URL(req.url).searchParams;
+    const page = Math.max(1, Number(sp.get("page")) || 1);
+    const limit = Math.min(50, Math.max(1, Number(sp.get("limit")) || 10));
+    const usage = sp.get("usage") ?? legacyUsage[sp.get("status") ?? ""] ?? "all";
+    const paymentRaw = sp.get("payment") ?? "all";
+    const payment =
+      (
+        { 결제완료: "paid", 결제대기: "pending_any", 결제취소: "cancelled" } as Record<
+          string,
+          string
+        >
+      )[paymentRaw] ?? paymentRaw;
+    const activation = sp.get("activation") ?? "all",
+      attention = sp.get("attention") ?? "all",
+      preset = sp.get("preset");
+    const match: Document = {};
+    const q = (sp.get("q") ?? "").trim();
+    if (sp.get("package") && sp.get("package") !== "all")
+      match["packageInfo.sessions"] = Number(sp.get("package"));
+    if (sp.get("service") && sp.get("service") !== "all")
+      match["serviceInfo.serviceMethod"] = { $regex: sp.get("service"), $options: "i" };
     if (q) {
-      const or: any[] = [
+      const or: Document[] = [
         { "userSnapshot.name": { $regex: q, $options: "i" } },
         { "userSnapshot.email": { $regex: q, $options: "i" } },
         { "serviceInfo.name": { $regex: q, $options: "i" } },
-        { "serviceInfo.email": { $regex: q, $options: "i" } },
-        { "shippingInfo.name": { $regex: q, $options: "i" } },
       ];
-      if (/^[0-9a-fA-F]{24}$/.test(q)) or.push({ _id: new ObjectId(q) });
+      if (ObjectId.isValid(q)) or.push({ _id: new ObjectId(q) });
       match.$or = or;
     }
-
-    // 정렬 문서
-    let sortDoc: Record<string, 1 | -1> = { createdAt: -1, _id: -1 };
-    if (sortParam) {
-      const [rawKey, rawDir] = String(sortParam).split(":");
-      const dir: 1 | -1 = rawDir === "asc" ? 1 : -1;
-
-      const map: Record<SortKey, string> = {
-        customer: "customerName",
-        purchaseDate: "purchaseDate",
-        expiryDate: "expiryDate",
-        remainingSessions: "passRemaining",
-        usedSessions: "passUsed",
-        totalSessions: "packageSessions",
-        progress: "progressRate",
-        status: "statusRank",
-        payment: "paymentRank",
-        price: "totalPrice",
-        service: "serviceRank",
-        package: "packageSessions",
-      };
-
-      const key = map[rawKey as SortKey] ?? "createdAt";
-      sortDoc = { [key]: dir, createdAt: -1, _id: -1 };
-    }
-
-    const db = (await clientPromise).db();
-    const col = db.collection("packageOrders");
-
-    const pipeline: any[] = [
+    const [rawKey, rawDir] = (sp.get("sort") ?? "").split(":");
+    const key = rawKey === "status" ? "usage" : (rawKey as SortKey);
+    const dir = rawDir === "asc" ? 1 : -1;
+    const sortMap: Record<SortKey, string> = {
+      customer: "customerName",
+      purchaseDate: "createdAt",
+      expiryDate: "expiryDate",
+      remainingSessions: "remainingSessions",
+      price: "price",
+      package: "totalSessions",
+      progress: "progressPercent",
+      usage: "usageRank",
+      payment: "paymentRank",
+      activation: "activationRank",
+      attention: "requiresAttention",
+      status: "usageRank",
+    };
+    const pipeline: Document[] = [
       { $match: match },
-
-      // 사용자 조인
-      {
-        $lookup: {
-          from: "users",
-          localField: "userId",
-          foreignField: "_id",
-          as: "userDocs",
-        },
-      },
+      { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userDocs" } },
       { $addFields: { userDoc: { $first: "$userDocs" } } },
-
-      // service_passes 조인 (orderId ←→ _id)
       {
         $lookup: {
           from: "service_passes",
           let: { orderId: "$_id" },
           pipeline: [
             { $match: { $expr: { $eq: ["$orderId", "$$orderId"] } } },
-            {
-              $project: {
-                status: 1,
-                expiresAt: 1,
-                remainingCount: 1,
-                usedCount: 1,
-                packageSize: 1,
-              },
-            },
+            { $project: { status: 1, expiresAt: 1, remainingCount: 1, usedCount: 1 } },
           ],
           as: "passDocs",
         },
       },
       { $addFields: { passDoc: { $first: "$passDocs" } } },
-
-      // 만료일 계산
+      ...buildAdminPackageStateStages(),
       {
         $addFields: {
-          passUsed: { $ifNull: ["$passDoc.usedCount", 0] },
-          passRemaining: {
-            $ifNull: ["$passDoc.remainingCount", "$packageInfo.sessions"],
+          customerName: {
+            $ifNull: ["$serviceInfo.name", { $ifNull: ["$userSnapshot.name", "$userDoc.name"] }],
           },
-          packageType: {
-            $concat: [{ $toString: "$packageInfo.sessions" }, "회권"],
-          },
-
-          purchaseDate: "$createdAt",
-          _calcExpiry: {
-            $ifNull: ["$passDoc.expiresAt", null],
-          },
-
           serviceType: {
             $cond: [
               {
                 $regexMatch: {
-                  input: { $ifNull: ["$serviceInfo.serviceMethod", "방문"] },
+                  input: { $ifNull: ["$serviceInfo.serviceMethod", ""] },
                   regex: "출장",
-                  options: "i",
                 },
               },
               "출장",
               "방문",
             ],
           },
-        },
-      },
-
-      // 패스 상태(만료 우선)
-      {
-        $addFields: {
-          passStatusKo: {
-            $let: {
-              vars: { exp: "$_calcExpiry" },
-              in: {
-                $switch: {
-                  branches: [
-                    // 1) 결제취소 또는 패스 취소
-                    {
-                      case: {
-                        $or: [
-                          { $eq: ["$paymentStatus", "결제취소"] },
-                          { $eq: ["$passDoc.status", "cancelled"] },
-                        ],
-                      },
-                      then: "취소",
-                    },
-                    // 2) 패스 미발급이면 대기(활성 전)
-                    { case: { $not: ["$passDoc"] }, then: "대기" },
-                    // 3) 패스가 실제로 있고 남은 횟수가 0 이하이면 종료
-                    {
-                      case: {
-                        $and: [
-                          { $ne: ["$passDoc", null] },
-                          {
-                            $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0],
-                          },
-                        ],
-                      },
-                      then: "종료",
-                    },
-                    // 4) 시간 만료
-                    {
-                      case: {
-                        $and: [{ $ne: ["$$exp", null] }, { $lte: ["$$exp", "$$NOW"] }],
-                      },
-                      then: "만료",
-                    },
-                    // 5) 일시정지/레거시 suspended, 결제미완료 → 비활성
-                    {
-                      case: {
-                        $or: [
-                          { $in: ["$passDoc.status", ["paused", "suspended"]] },
-                          { $ne: ["$paymentStatus", "결제완료"] },
-                        ],
-                      },
-                      then: "비활성",
-                    },
-                  ],
-                  // 6) 그 외는 활성
-                  default: "활성",
-                },
-              },
-            },
+          usageRank: {
+            $indexOfArray: [
+              ["cancelled", "expired", "exhausted", "not_issued", "unknown", "paused", "available"],
+              "$usageState",
+            ],
           },
-        },
-      },
-
-      // 만료까지 남은 일수(정수, 오늘 포함 올림). 음수면 이미 만료.
-      // - $$NOW(UTC 기준)와의 차이를 일수로 환산
-      // - 클라의 "만료 예정" 계산(getDaysUntilExpiry)과 의미를 맞추기 위한 서버 측 지표
-      {
-        $addFields: {
-          _daysUntilExpiry: {
-            $ceil: {
-              $divide: [
-                { $subtract: ["$_calcExpiry", "$$NOW"] }, // 만료시각 - 현재시각
-                86400000, // 1일(ms)
-              ],
-            },
-          },
-        },
-      },
-
-      // 정렬용 계산 필드
-      {
-        $addFields: {
-          // 진행률: used / (used + remaining)
-          progressRate: {
-            $let: {
-              vars: {
-                u: { $ifNull: ["$passUsed", 0] },
-                r: { $ifNull: ["$passRemaining", 0] },
-              },
-              in: {
-                $cond: [
-                  { $gt: [{ $add: ["$$u", "$$r"] }, 0] },
-                  { $divide: ["$$u", { $add: ["$$u", "$$r"] }] },
-                  0,
-                ],
-              },
-            },
-          },
-
-          // 상태 정렬 우선순위: 취소(-2) < 종료(-1) < 만료(0) < 비활성(1) < 활성(2)
-          statusRank: {
-            $switch: {
-              branches: [
-                { case: { $eq: ["$passStatusKo", "취소"] }, then: -2 },
-                { case: { $eq: ["$passStatusKo", "종료"] }, then: -1 },
-                { case: { $eq: ["$passStatusKo", "만료"] }, then: 0 },
-                { case: { $eq: ["$passStatusKo", "비활성"] }, then: 1 },
-                { case: { $eq: ["$passStatusKo", "활성"] }, then: 2 },
-              ],
-              default: 0,
-            },
-          },
-
-          // 결제 정렬 우선순위: 결제취소(-1) < 결제대기(0) < 결제완료(1)
           paymentRank: {
-            $switch: {
-              branches: [
-                { case: { $eq: ["$paymentStatus", "결제취소"] }, then: -1 },
-                { case: { $eq: ["$paymentStatus", "결제대기"] }, then: 0 },
-                { case: { $eq: ["$paymentStatus", "결제완료"] }, then: 1 },
+            $indexOfArray: [
+              [
+                "cancelled",
+                "refunded",
+                "refunding",
+                "failed",
+                "unknown",
+                "pending",
+                "bank_pending",
+                "pg_pending",
+                "not_required",
+                "paid",
               ],
-              default: 0,
-            },
+              "$paymentState",
+            ],
           },
-
-          // 패키지/서비스 정렬 보조
-          packageSessions: { $ifNull: ["$packageInfo.sessions", 0] }, // 10/30/50/100회권 숫자 기준
-          serviceRank: { $cond: [{ $eq: ["$serviceType", "출장"] }, 1, 0] }, // 방문(0) < 출장(1)
-        },
-      },
-      // 계산된 상태로 서버-사이드 필터 (필요할 때만 붙이기)
-      ...(status && status !== "all" ? [{ $match: { passStatusKo: status } }] : []),
-
-      // 고객 표시용 필드
-      {
-        $addFields: {
-          customerName: {
-            $let: {
-              vars: {
-                cands: [
-                  { $ifNull: ["$serviceInfo.name", ""] },
-                  { $ifNull: ["$shippingInfo.name", ""] },
-                  { $ifNull: ["$userSnapshot.name", ""] },
-                  { $ifNull: ["$userDoc.name", ""] },
-                  { $ifNull: ["$userDoc.profile.name", ""] },
-                ],
-              },
-              in: {
-                $first: {
-                  $filter: {
-                    input: "$$cands",
-                    as: "v",
-                    cond: {
-                      $gt: [{ $strLenCP: { $trim: { input: "$$v" } } }, 0],
-                    },
-                  },
-                },
-              },
-            },
-          },
-          customerEmail: {
-            $let: {
-              vars: {
-                cands: [
-                  { $ifNull: ["$serviceInfo.email", ""] },
-                  { $ifNull: ["$userSnapshot.email", ""] },
-                  { $ifNull: ["$userDoc.email", ""] },
-                ],
-              },
-              in: {
-                $first: {
-                  $filter: {
-                    input: "$$cands",
-                    as: "v",
-                    cond: {
-                      $gt: [{ $strLenCP: { $trim: { input: "$$v" } } }, 0],
-                    },
-                  },
-                },
-              },
-            },
-          },
-          customerPhone: {
-            $let: {
-              vars: {
-                cands: [
-                  { $ifNull: ["$serviceInfo.phone", ""] },
-                  { $ifNull: ["$shippingInfo.phone", ""] },
-                  { $ifNull: ["$userDoc.phone", ""] },
-                  { $ifNull: ["$userDoc.profile.phone", ""] },
-                  { $ifNull: ["$userDoc.phoneNumber", ""] },
-                ],
-              },
-              in: {
-                $first: {
-                  $filter: {
-                    input: "$$cands",
-                    as: "v",
-                    cond: {
-                      $gt: [{ $strLenCP: { $trim: { input: "$$v" } } }, 0],
-                    },
-                  },
-                },
-              },
-            },
+          activationRank: {
+            $indexOfArray: [
+              [
+                "cancelled",
+                "failed",
+                "unknown",
+                "awaiting_payment",
+                "pending_issue",
+                "paused",
+                "ended",
+                "active",
+              ],
+              "$activationState",
+            ],
           },
         },
       },
-
-      { $sort: sortDoc },
-
+      ...(usage !== "all" ? [{ $match: { usageState: usage } }] : []),
+      ...(payment !== "all"
+        ? [
+            {
+              $match: {
+                paymentState:
+                  payment === "pending_any"
+                    ? { $in: ["bank_pending", "pg_pending", "pending"] }
+                    : payment,
+              },
+            },
+          ]
+        : []),
+      ...(activation !== "all" ? [{ $match: { activationState: activation } }] : []),
+      ...(attention !== "all"
+        ? [{ $match: { requiresAttention: attention === "needs_attention" } }]
+        : []),
+      ...(preset === "payment-check"
+        ? [
+            {
+              $match: {
+                attentionReasons: {
+                  $in: [
+                    "payment_pending",
+                    "payment_failed",
+                    "payment_refunding",
+                    "payment_unknown",
+                    "pass_issue_pending",
+                    "terminal_payment_with_live_pass",
+                  ],
+                },
+              },
+            },
+          ]
+        : []),
+      { $sort: { [sortMap[key] ?? "createdAt"]: dir, createdAt: -1, _id: -1 } },
       {
         $facet: {
           items: [
-            { $skip: skip },
+            { $skip: (page - 1) * limit },
             { $limit: limit },
-            // facet > items > $project 에서 날짜를 문자열로 직렬화
             {
               $project: {
                 _id: 0,
@@ -381,57 +200,89 @@ export async function GET(req: Request) {
                 userId: { $toString: "$userId" },
                 customer: {
                   name: "$customerName",
-                  email: "$customerEmail",
-                  phone: "$customerPhone",
+                  email: "$userSnapshot.email",
+                  phone: "$serviceInfo.phone",
                 },
                 packageType: "$packageType",
-                totalSessions: "$packageInfo.sessions",
-                remainingSessions: "$passRemaining",
-                usedSessions: "$passUsed",
-                price: "$totalPrice",
-
-                purchaseDate: {
-                  $ifNull: [
-                    {
-                      $dateToString: {
-                        date: "$purchaseDate",
-                        format: "%Y-%m-%dT%H:%M:%S.%LZ",
-                        timezone: "UTC",
-                      },
-                    },
-                    null,
-                  ],
-                },
-                expiryDate: {
-                  $ifNull: [
-                    {
-                      $dateToString: {
-                        date: "$_calcExpiry",
-                        format: "%Y-%m-%dT%H:%M:%S.%LZ",
-                        timezone: "UTC",
-                      },
-                    },
-                    null,
-                  ],
-                },
-
-                passStatus: "$passStatusKo",
-                status: "$status",
-                paymentStatus: "$paymentStatus",
-                serviceType: "$serviceType",
+                totalSessions: 1,
+                remainingSessions: 1,
+                usedSessions: 1,
+                price: 1,
+                purchaseDate: "$createdAt",
+                expiryDate: 1,
+                rawOrderStatus: 1,
+                rawPaymentStatus: 1,
+                rawPassStatus: 1,
+                paymentMethod: 1,
+                paymentProvider: 1,
+                hasIssuedPass: 1,
+                paymentState: 1,
+                paymentNeedsCheck: 1,
+                usageState: 1,
+                activationState: 1,
+                requiresAttention: 1,
+                attentionReasons: 1,
+                daysUntilExpiry: 1,
+                isExpirySoon: 1,
+                progressPercent: 1,
+                paymentStatus: "$rawPaymentStatus",
+                passStatus: "$usageState",
+                serviceType: 1,
               },
             },
           ],
           total: [{ $count: "count" }],
+          metrics: [
+            {
+              $group: {
+                _id: null,
+                total: { $sum: 1 },
+                available: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $and: [
+                          { $eq: ["$usageState", "available"] },
+                          { $eq: ["$paymentState", "paid"] },
+                          { $eq: ["$requiresAttention", false] },
+                        ],
+                      },
+                      1,
+                      0,
+                    ],
+                  },
+                },
+                needsAttention: { $sum: { $cond: ["$requiresAttention", 1, 0] } },
+                revenue: {
+                  $sum: {
+                    $cond: [{ $eq: ["$paymentState", "paid"] }, { $ifNull: ["$price", 0] }, 0],
+                  },
+                },
+                expirySoon: { $sum: { $cond: ["$isExpirySoon", 1, 0] } },
+              },
+            },
+          ],
         },
       },
     ];
-
-    const agg = await col.aggregate(pipeline).toArray();
-    const items = agg?.[0]?.items ?? [];
-    const total = agg?.[0]?.total?.[0]?.count ?? 0;
-
-    return NextResponse.json({ items, total, page, pageSize: limit });
+    const result =
+      (
+        await (await clientPromise).db().collection("packageOrders").aggregate(pipeline).toArray()
+      )[0] ?? {};
+    const metrics = result.metrics?.[0] ?? {
+      total: 0,
+      available: 0,
+      needsAttention: 0,
+      revenue: 0,
+      expirySoon: 0,
+    };
+    return NextResponse.json({
+      items: result.items ?? [],
+      total: result.total?.[0]?.count ?? 0,
+      page,
+      pageSize: limit,
+      metrics,
+    });
   } catch (e) {
     console.error("[/api/package-orders] GET error", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });

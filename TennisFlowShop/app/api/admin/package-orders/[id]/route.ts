@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { markPackageOrderPaid } from "@/lib/package-orders/mark-paid";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { buildAdminPackageStateStages } from "@/lib/admin/package-state-read-model";
 
 function normalizePassStatus(
   status: ServicePass["status"],
@@ -248,22 +249,6 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
         // 패스/표시용 계산 + 사용 이력 변환
         {
           $addFields: {
-            passUsed: { $ifNull: ["$passDoc.usedCount", 0] },
-            passRemaining: {
-              $ifNull: ["$passDoc.remainingCount", "$packageInfo.sessions"],
-            },
-            packageType: {
-              $concat: [{ $toString: "$packageInfo.sessions" }, "회권"],
-            },
-
-            // 구매일/만료일 계산: 패스 값 우선
-            _calcExpiry: {
-              $ifNull: ["$passDoc.expiresAt", null],
-            },
-            expiryDate: {
-              $ifNull: ["$passDoc.expiresAt", null],
-            },
-
             serviceType: {
               $cond: [
                 {
@@ -443,71 +428,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
             },
           },
         },
-
-        // 패스 상태(만료일 우선 적용)
-        {
-          $addFields: {
-            passStatusKo: {
-              $let: {
-                vars: { exp: "$_calcExpiry" },
-                in: {
-                  $switch: {
-                    branches: [
-                      // 결제취소 또는 패스 취소
-                      {
-                        case: {
-                          $or: [
-                            { $eq: ["$paymentStatus", "결제취소"] },
-                            { $eq: ["$passDoc.status", "cancelled"] },
-                          ],
-                        },
-                        then: "취소",
-                      },
-                      // 패스 미발급이면 대기
-                      { case: { $not: ["$passDoc"] }, then: "대기" },
-                      // 패스가 실제로 있고 남은 횟수 0 이하면 종료
-                      {
-                        case: {
-                          $and: [
-                            { $ne: ["$passDoc", null] },
-                            {
-                              $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0],
-                            },
-                          ],
-                        },
-                        then: "종료",
-                      },
-                      // 시간 만료
-                      {
-                        case: {
-                          $and: [{ $ne: ["$$exp", null] }, { $lte: ["$$exp", "$$NOW"] }],
-                        },
-                        then: "만료",
-                      },
-                      // 일시정지/legacy suspended 또는 결제미완료
-                      {
-                        case: {
-                          $or: [
-                            {
-                              $in: ["$passDoc.status", ["paused", "suspended"]],
-                            },
-                            { $ne: ["$paymentStatus", "결제완료"] },
-                          ],
-                        },
-                        then: "비활성",
-                      },
-                      {
-                        case: { $eq: ["$paymentStatus", "결제완료"] },
-                        then: "활성",
-                      },
-                    ],
-                    default: "대기",
-                  },
-                },
-              },
-            },
-          },
-        },
+        ...buildAdminPackageStateStages(),
 
         // 고객 표시용: 후보 배열에서 "공백 아닌 첫 값" 선택
         {
@@ -597,14 +518,29 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
               phone: "$customerPhone",
             },
             packageType: "$packageType",
-            totalSessions: "$packageInfo.sessions",
-            remainingSessions: "$passRemaining",
-            usedSessions: "$passUsed",
-            price: "$totalPrice",
+            totalSessions: 1,
+            remainingSessions: 1,
+            usedSessions: 1,
+            price: 1,
+            rawOrderStatus: 1,
+            rawPaymentStatus: 1,
+            rawPassStatus: 1,
+            hasIssuedPass: 1,
+            paymentState: 1,
+            paymentNeedsCheck: 1,
+            usageState: 1,
+            activationState: 1,
+            requiresAttention: 1,
+            attentionReasons: 1,
+            daysUntilExpiry: 1,
+            isExpirySoon: 1,
+            progressPercent: 1,
             purchaseDate: "$createdAt",
-            expiryDate: "$expiryDate",
+            expiryDate: 1,
             status: "$status",
             paymentStatus: "$paymentStatus",
+            legacyPaymentStatus: "$paymentStatus",
+            legacyPassStatus: "$passStatusKo",
             paymentMethod: "$paymentInfo.method",
             paymentProvider: "$paymentInfo.provider",
             paymentTid: "$paymentInfo.tid",

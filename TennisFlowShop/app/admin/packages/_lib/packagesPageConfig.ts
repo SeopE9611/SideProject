@@ -90,3 +90,69 @@ export const DEFAULT_PACKAGE_LIST_FILTERS = {
   sortDirection: "asc" as "asc" | "desc",
   q: "" as string,
 };
+
+export function getAdminPackagePaymentLabel(
+  state: import("@/types/admin/packages").AdminPackagePaymentState,
+) {
+  return (
+    {
+      not_required: "결제 불필요",
+      bank_pending: "입금 확인 대기",
+      pg_pending: "PG 승인 확인 대기",
+      pending: "결제 확인 대기",
+      paid: "결제 완료",
+      failed: "결제 실패",
+      cancelled: "결제 취소",
+      refunding: "환불 처리 중",
+      refunded: "환불 완료",
+      unknown: "결제 상태 미확인",
+    } as const
+  )[state];
+}
+export function getAdminPackageUsageLabel(
+  state: import("@/types/admin/packages").AdminPackageUsageState,
+) {
+  return (
+    {
+      available: "사용 가능",
+      paused: "일시정지",
+      exhausted: "횟수 소진",
+      expired: "기간 만료",
+      cancelled: "이용권 취소",
+      not_issued: "미발급",
+      unknown: "이용권 상태 미확인",
+    } as const
+  )[state];
+}
+export function getAdminPackageActivationLabel(
+  state: import("@/types/admin/packages").AdminPackageActivationState,
+) {
+  return (
+    {
+      active: "활성화 완료",
+      awaiting_payment: "결제 확인 후 활성화",
+      pending_issue: "발급 처리 중",
+      paused: "활성화 일시정지",
+      ended: "이용 종료",
+      cancelled: "활성화 취소",
+      failed: "발급 처리 실패",
+      unknown: "활성화 상태 미확인",
+    } as const
+  )[state];
+}
+export function getAdminPackageAttentionReasonLabel(
+  reason: import("@/types/admin/packages").AdminPackageAttentionReason,
+) {
+  return (
+    {
+      payment_pending: "결제 확인 필요",
+      payment_failed: "결제 실패 확인 필요",
+      payment_refunding: "환불 진행 확인 필요",
+      payment_unknown: "결제 상태 확인 필요",
+      pass_issue_pending: "패스 발급 확인 필요",
+      pass_paused: "일시정지 상태 확인 필요",
+      pass_unknown: "패스 상태 확인 필요",
+      terminal_payment_with_live_pass: "결제 종료·이용권 상태 불일치",
+    } as const
+  )[reason];
+}
