@@ -6,7 +6,10 @@ import { useDebouncedValue } from "@/app/admin/packages/_hooks/useDebouncedValue
 import {
   DEFAULT_PACKAGE_LIST_FILTERS,
   badgeSizeCls,
-  normalizePackagePaymentStatus,
+  getAdminPackagePaymentLabel,
+  getAdminPackageUsageLabel,
+  getAdminPackageActivationLabel,
+  getAdminPackageAttentionReasonLabel,
   packageTypeColors,
   type PackageListItem,
   type PackageType,
@@ -352,18 +355,18 @@ export default function PackageOrdersClient() {
       : totalCount
     : null;
 
-  // 활성 패키지 수
-  const kpiActive: number | null = hasResolvedData
-    ? typeof metrics?.active === "number"
-      ? metrics.active
-      : (packages?.filter((pkg) => pkg.passStatus === "활성").length ?? 0)
+  // 사용 가능 수
+  const kpiAvailable: number | null = hasResolvedData
+    ? typeof metrics?.available === "number"
+      ? metrics.available
+      : null
     : null;
 
   // 총 매출
   const kpiRevenue: number | null = hasResolvedData
     ? typeof metrics?.revenue === "number"
       ? metrics.revenue
-      : (packages?.reduce((sum, pkg) => sum + pkg.price, 0) ?? 0)
+      : null
     : null;
 
   // 만료 예정
@@ -618,7 +621,7 @@ export default function PackageOrdersClient() {
           paymentFilter === "all" &&
           serviceTypeFilter === "all" &&
           !presetFilter
-        ? "활성 패키지"
+        ? "사용 가능"
         : paymentFilter === "결제대기" &&
             !searchTerm.trim() &&
             statusFilter === "all" &&
@@ -768,9 +771,9 @@ export default function PackageOrdersClient() {
           <CardContent className="p-6">
             <div className="flex min-w-0 items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
+                <p className="text-sm font-medium text-muted-foreground">사용 가능</p>
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-success">
-                  {kpiActive === null ? "-" : kpiActive}
+                  {kpiAvailable === null ? "-" : kpiAvailable}
                 </div>
               </div>
               <div className="shrink-0 bg-success/10 dark:bg-success/15 rounded-xl p-3">
@@ -843,7 +846,7 @@ export default function PackageOrdersClient() {
           <Button
             type="button"
             size="sm"
-            variant={currentViewLabel === "활성 패키지" ? "default" : "outline"}
+            variant={currentViewLabel === "사용 가능" ? "default" : "outline"}
             onClick={() =>
               applyQuickView({
                 statusFilter: "활성",
@@ -1338,6 +1341,10 @@ export default function PackageOrdersClient() {
                                 packageTypeColors[pkg.packageType],
                                 "font-medium",
                                 badgeSizeCls,
+                                getAdminPackagePaymentLabel,
+                                getAdminPackageUsageLabel,
+                                getAdminPackageActivationLabel,
+                                getAdminPackageAttentionReasonLabel,
                               )}
                             >
                               {pkg.packageType}
@@ -1455,7 +1462,7 @@ export default function PackageOrdersClient() {
                             )}
                           >
                             {(() => {
-                              const paymentLabel = normalizePackagePaymentStatus(pkg.paymentStatus);
+                              const paymentLabel = getAdminPackagePaymentLabel(pkg.paymentState);
                               const pay = getPaymentStatusBadgeSpec(paymentLabel);
                               return (
                                 <Badge
@@ -1475,7 +1482,7 @@ export default function PackageOrdersClient() {
                           {/* 금액 */}
                           <TableCell className={cn(tdClasses, col.price, "whitespace-nowrap")}>
                             <span className="whitespace-nowrap font-medium tabular-nums">
-                              {formatCurrency(pkg.price)}
+                              {pkg.price === null ? "-" : formatCurrency(pkg.price)}
                             </span>
                           </TableCell>
 

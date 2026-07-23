@@ -57,6 +57,12 @@ import { type MouseEvent as ReactMouseEvent, useEffect, useState } from "react";
 import useSWR from "swr";
 
 import PackageCurrentStatusSelect from "@/app/features/packages/components/PackageCurrentStatusSelect";
+import {
+  getAdminPackageActivationLabel,
+  getAdminPackageAttentionReasonLabel,
+  getAdminPackagePaymentLabel,
+  getAdminPackageUsageLabel,
+} from "@/app/admin/packages/_lib/packagesPageConfig";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { getMerchandisingBadgeSpec, getPaymentStatusBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -372,10 +378,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   const daysLeft = daysUntil(expiry);
   const expired = !!expiry && expiry.getTime() < Date.now();
 
-  const progressPercentage =
-    data.usedSessions + data.remainingSessions > 0
-      ? Math.round((data.usedSessions / (data.usedSessions + data.remainingSessions)) * 100)
-      : 0;
+  const progressPercentage = data.progressPercent ?? null;
   const isPaid = data.paymentStatus === "결제완료";
   const isCancelled = data.passStatus === "취소";
   const isExpired = daysLeft <= 0;
@@ -384,7 +387,10 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
       .trim()
       .toLowerCase() === "nicepay";
 
-  const totalSessions = data.usedSessions + data.remainingSessions;
+  const totalSessions =
+    data.usedSessions !== null && data.remainingSessions !== null
+      ? data.usedSessions + data.remainingSessions
+      : null;
 
   const canExtendPackage = isPaid && !isCancelled;
   const canAdjustSessions = isPaid && !isCancelled && !isExpired;
@@ -410,7 +416,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               "이미 만료된 패키지입니다. 운영 정책에 따라 연장이 필요한지 먼저 확인하세요.",
             toneClass: "border-warning/30 bg-warning/10 text-warning",
           }
-        : data.remainingSessions <= 0
+        : (data.remainingSessions ?? 0) <= 0
           ? {
               title: "잔여 횟수가 없습니다",
               description:
@@ -600,7 +606,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               {new Intl.NumberFormat("ko-KR", {
                 style: "currency",
                 currency: "KRW",
-              }).format(data.price)}
+              }).format(data.price ?? 0)}
             </p>
           </div>
 
@@ -618,10 +624,10 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </div>
             <Badge
               variant={
-                getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus)).variant
+                getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState)).variant
               }
             >
-              {getPackagePaymentDisplayLabel(data.paymentStatus)}
+              {getAdminPackagePaymentLabel(data.paymentState)}
             </Badge>
           </div>
         </div>
@@ -729,12 +735,12 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           </CardHeader>
           <CardContent className="p-6 space-y-3">
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
-              <span className="text-sm text-muted-foreground">패키지권 상태</span>
-              <Badge variant="outline">{data.passStatus}</Badge>
+              <span className="text-sm text-muted-foreground">이용권 상태</span>
+              <Badge variant="outline">{getAdminPackageUsageLabel(data.usageState)}</Badge>
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
-              <span className="text-sm text-muted-foreground">현재 상태</span>
+              <span className="text-sm text-muted-foreground">통합 상태 변경</span>
               <PackageCurrentStatusSelect
                 orderId={packageId}
                 passStatus={data.passStatus}
@@ -743,16 +749,20 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               />
             </div>
 
+            <p className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
+              이 상태 변경 기능은 현재 결제 상태와 연결 패스 상태를 함께 변경합니다. 조회 상태와
+              별개의 운영 작업이므로 변경 전 결제사 및 이용권 상태를 확인하세요.
+            </p>
             <div className="p-3 rounded-lg bg-card space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">결제 상태</span>
                 <Badge
                   variant={
-                    getPaymentStatusBadgeSpec(getPackagePaymentDisplayLabel(data.paymentStatus))
+                    getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState))
                       .variant
                   }
                 >
-                  {getPackagePaymentDisplayLabel(data.paymentStatus)}
+                  {getAdminPackagePaymentLabel(data.paymentState)}
                 </Badge>
               </div>
               {isNicePayment && (
@@ -774,17 +784,40 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               )}
             </div>
 
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="rounded-lg bg-card p-3 text-sm">
+                활성화 상태:{" "}
+                <Badge variant="outline">
+                  {getAdminPackageActivationLabel(data.activationState)}
+                </Badge>
+              </div>
+              <div className="rounded-lg bg-card p-3 text-sm">
+                운영 확인: {data.requiresAttention ? "확인 필요" : "확인 완료"}
+                {data.requiresAttention && (
+                  <ul className="mt-2 list-disc pl-4 text-xs">
+                    {data.attentionReasons.map((reason) => (
+                      <li key={reason}>{getAdminPackageAttentionReasonLabel(reason)}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
             <div className="p-3 rounded-lg bg-card">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-muted-foreground">이용 진행률</span>
-                <span className="text-sm font-medium">{progressPercentage}%</span>
+                <span className="text-sm font-medium">
+                  {progressPercentage === null ? "패스 미발급" : `${progressPercentage}%`}
+                </span>
               </div>
-              <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
-                <div
-                  className="h-2 rounded-full bg-primary transition-all"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
+              {progressPercentage !== null && (
+                <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
+                  <div
+                    className="h-2 rounded-full bg-primary transition-all"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+              )}
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
                 <span>사용: {data.usedSessions}회</span>
                 <span>남은: {data.remainingSessions}회</span>
@@ -1108,7 +1141,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                         sessionAdjustment.amount > 0 ? "text-primary" : "text-destructive",
                       )}
                     >
-                      → {data.remainingSessions + sessionAdjustment.amount}회
+                      → {(data.remainingSessions ?? 0) + sessionAdjustment.amount}회
                     </span>
                   )}
                 </p>
