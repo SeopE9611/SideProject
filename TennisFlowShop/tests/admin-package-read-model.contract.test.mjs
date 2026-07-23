@@ -1,6 +1,27 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 const read = (p) => readFileSync(p, "utf8");
+const operationCapabilitiesSource = read("lib/admin/package-operation-capabilities.ts");
+const operationCapabilitiesModule = await import(
+  `data:text/javascript,${encodeURIComponent(
+    ts.transpileModule(operationCapabilitiesSource, {
+      compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+    }).outputText,
+  )}`,
+);
+const { getAdminPackageOperationCapabilities } = operationCapabilitiesModule;
+const fixedNow = new Date("2026-07-23T12:00:00.000Z");
+const getCapabilities = (overrides = {}) =>
+  getAdminPackageOperationCapabilities({
+    paymentStatus: "결제완료",
+    hasIssuedPass: true,
+    passStatus: "active",
+    expiresAt: new Date("2026-07-24T12:00:00.000Z"),
+    remainingCount: 3,
+    now: fixedNow,
+    ...overrides,
+  });
 const helper = read("lib/admin/package-state-read-model.ts"),
   list = read("app/api/admin/package-orders/route.ts"),
   detail = read("app/api/admin/package-orders/[id]/route.ts"),
@@ -136,7 +157,7 @@ for (const value of [
   "총 횟수 확인 필요",
 ])
   assert.match(detailUi, new RegExp(value));
-const capabilities = read("lib/admin/package-operation-capabilities.ts");
+const capabilities = operationCapabilitiesSource;
 for (const value of [
   "getAdminPackageOperationCapabilities",
   "canExtend",
@@ -156,3 +177,68 @@ for (const value of [
   /\(data\.remainingSessions \?\? 0\) \+/,
 ])
   assert.doesNotMatch(detailUi, value);
+
+assert.deepEqual(getCapabilities(), {
+  canExtend: true,
+  canAdjustSessions: true,
+  blockReasons: [],
+});
+
+for (const scenario of [
+  {
+    overrides: { paymentStatus: "결제대기" },
+    reason: "결제완료 상태에서만 운영 작업을 할 수 있습니다.",
+  },
+  {
+    overrides: { hasIssuedPass: false },
+    reason: "연결된 이용권이 없어 운영 작업을 할 수 없습니다.",
+  },
+  {
+    overrides: { passStatus: null },
+    reason: "이용권 상태를 확인할 수 없어 운영 작업을 할 수 없습니다.",
+  },
+  {
+    overrides: { passStatus: "" },
+    reason: "이용권 상태를 확인할 수 없어 운영 작업을 할 수 없습니다.",
+  },
+  {
+    overrides: { passStatus: "unknown" },
+    reason: "이용권 상태를 확인할 수 없어 운영 작업을 할 수 없습니다.",
+  },
+  ...["cancelled", "canceled", "취소"].map((passStatus) => ({
+    overrides: { passStatus },
+    reason: "취소된 이용권에서는 운영 작업을 할 수 없습니다.",
+  })),
+]) {
+  const result = getCapabilities(scenario.overrides);
+  assert.equal(result.canExtend, false);
+  assert.equal(result.canAdjustSessions, false);
+  assert.ok(result.blockReasons.includes(scenario.reason));
+}
+
+const unissued = getCapabilities({ hasIssuedPass: false });
+assert.ok(unissued.blockReasons.every((reason) => !reason.includes("할 수 있습니다.")));
+
+for (const overrides of [
+  { expiresAt: fixedNow },
+  { expiresAt: new Date("2026-07-23T11:59:59.999Z") },
+  { remainingCount: null },
+  { remainingCount: Number.NaN },
+  { remainingCount: "3" },
+]) {
+  const result = getCapabilities(overrides);
+  assert.equal(result.canExtend, true);
+  assert.equal(result.canAdjustSessions, false);
+}
+
+assert.ok(
+  getCapabilities({ expiresAt: fixedNow }).blockReasons.includes(
+    "만료된 이용권은 연장 후 횟수를 조절할 수 있습니다.",
+  ),
+);
+assert.ok(
+  getCapabilities({ remainingCount: null }).blockReasons.includes(
+    "현재 잔여 횟수를 확인할 수 없어 횟수를 조절할 수 없습니다.",
+  ),
+);
+assert.equal(getCapabilities({ remainingCount: 0 }).canAdjustSessions, true);
