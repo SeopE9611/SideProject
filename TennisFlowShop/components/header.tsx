@@ -442,6 +442,16 @@ const Header = () => {
     return p === item.href || p.startsWith(`${item.href}/`);
   };
 
+  const isActiveSecondaryMenu = (item: (typeof DESKTOP_SECONDARY_NAV_ITEMS)[number]) => {
+    const p = pathname ?? "";
+    if (item.href === "/rackets/finder") return p === item.href;
+    return p === item.href || p.startsWith(`${item.href}/`);
+  };
+
+  const isMoreMenuActive =
+    overflowMenuItems.some(isActiveMenu) ||
+    DESKTOP_SECONDARY_NAV_ITEMS.some(isActiveSecondaryMenu);
+
   return (
     <>
       {/* 스킵 링크 */}
@@ -1082,8 +1092,8 @@ const Header = () => {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg px-3 text-ui-body leading-none transition whitespace-nowrap text-foreground hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                              aria-label="더보기 메뉴"
+                              className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-lg px-3 text-ui-body leading-none transition whitespace-nowrap hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${isMoreMenuActive ? "bg-secondary text-foreground font-ui-medium" : "text-foreground"}`}
+                              aria-label={isMoreMenuActive ? "더보기 메뉴, 현재 섹션 포함" : "더보기 메뉴"}
                             >
                               ⋯
                               <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -1108,12 +1118,11 @@ const Header = () => {
                                 </DropdownMenuItem>
                               );
                             })}
-                            <div className="my-1 border-t border-border" role="separator" />
+                            {overflowMenuItems.length > 0 && DESKTOP_SECONDARY_NAV_ITEMS.length > 0 && (
+                              <div className="my-1 border-t border-border" role="separator" />
+                            )}
                             {DESKTOP_SECONDARY_NAV_ITEMS.map((item) => {
-                              const active =
-                                item.href === "/rackets/finder"
-                                  ? pathname === item.href
-                                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                              const active = isActiveSecondaryMenu(item);
                               return (
                                 <DropdownMenuItem
                                   key={item.name}
