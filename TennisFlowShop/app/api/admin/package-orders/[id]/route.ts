@@ -8,6 +8,7 @@ import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { markPackageOrderPaid } from "@/lib/package-orders/mark-paid";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { buildAdminPackageStateStages } from "@/lib/admin/package-state-read-model";
+import { getAdminPackageOperationCapabilities } from "@/lib/admin/package-operation-capabilities";
 
 function normalizePassStatus(
   status: ServicePass["status"],
@@ -561,7 +562,17 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     const item = rows[0] || null;
     if (!item) return NextResponse.json({ error: "Not Found" }, { status: 404 });
 
-    return NextResponse.json({ item });
+    const expiryDate = item.expiryDate ? new Date(item.expiryDate) : null;
+    const operationCapabilities = getAdminPackageOperationCapabilities({
+      paymentStatus: item.rawPaymentStatus,
+      hasIssuedPass: item.hasIssuedPass,
+      passStatus: item.rawPassStatus,
+      expiresAt: expiryDate,
+      remainingCount: item.remainingSessions,
+      now: new Date(),
+    });
+
+    return NextResponse.json({ item: { ...item, operationCapabilities } });
   } catch (e) {
     console.error("[GET /api/package-orders/[id]] error", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });

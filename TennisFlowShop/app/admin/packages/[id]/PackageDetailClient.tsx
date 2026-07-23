@@ -343,7 +343,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <Skeleton className="h-9 w-24" />
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Skeleton key={index} className="h-24 rounded-xl" />
               ))}
@@ -381,16 +381,14 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
     typeof data.progressPercent === "number" && Number.isFinite(data.progressPercent)
       ? Math.round(data.progressPercent)
       : null;
-  const isServerCompatiblePaid = data.rawPaymentStatus === "결제완료";
-  const isServerCompatiblePass = data.hasIssuedPass && data.rawPassStatus !== "cancelled";
+  const operationCapabilities = data.operationCapabilities;
   const isNicePayment =
     String(data.paymentProvider ?? "")
       .trim()
       .toLowerCase() === "nicepay";
 
-  const canExtendPackage = isServerCompatiblePaid && isServerCompatiblePass;
-  const canAdjustSessions =
-    isServerCompatiblePaid && isServerCompatiblePass && data.usageState !== "expired";
+  const canExtendPackage = operationCapabilities.canExtend;
+  const canAdjustSessions = operationCapabilities.canAdjustSessions;
   const hasReason = (reason: string) => data.attentionReasons.includes(reason as never);
   const packageGuide = hasReason("terminal_payment_with_live_pass")
     ? {
@@ -958,6 +956,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   ? `총 ${data.usedSessions! + data.remainingSessions!}회`
                   : "총 횟수 확인 필요"}
               </span>
+              {operationCapabilities.blockReasons.length > 0 && (
+                <p className="mt-2 text-destructive">{operationCapabilities.blockReasons.join(" ")}</p>
+              )}
             </div>
           </CardContent>
 
