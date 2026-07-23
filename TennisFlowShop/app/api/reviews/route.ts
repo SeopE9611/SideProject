@@ -772,10 +772,20 @@ export async function GET(req: Request) {
         { rating: after.rating as number, _id: { $lt: new ObjectId(String(after.id)) } },
       ];
     } else {
+      const rawCreatedAt = after.createdAt;
+      if (
+        typeof rawCreatedAt !== "string" &&
+        !(rawCreatedAt instanceof Date)
+      ) {
+        return invalidCursorResponse();
+      }
+      const cursorCreatedAt =
+        rawCreatedAt instanceof Date ? rawCreatedAt : new Date(rawCreatedAt);
+
       cursorCond.$or = [
-        { createdAt: { $lt: new Date(after.createdAt as string | Date) } },
+        { createdAt: { $lt: cursorCreatedAt } },
         {
-          createdAt: new Date(after.createdAt as string | Date),
+          createdAt: cursorCreatedAt,
           _id: { $lt: new ObjectId(String(after.id)) },
         },
       ];
