@@ -63,13 +63,13 @@ export const NAV_LINKS = {
     ],
   },
   services: [
-    { name: "교체서비스 홈", href: "/services" },
+    { name: "장착 서비스 홈", href: "/services" },
     { name: "텐션 가이드", href: "/services/tension-guide" },
-    { name: "가격 안내", href: "/services/pricing" },
-    { name: "매장·방문 안내", href: "/services/locations" },
+    { name: "장착 비용 안내", href: "/services/pricing" },
+    { name: "매장/예약 안내", href: "/services/locations" },
   ],
   packages: [{ name: "패키지 안내", href: "/services/packages" }],
-  academy: { name: "아카데미", href: "/academy" },
+  academy: { name: "도깨비테니스 아카데미", href: "/academy" },
   support: [
     { name: "고객센터 홈", href: "/support" },
     { name: "공지사항", href: "/board/notice" },
