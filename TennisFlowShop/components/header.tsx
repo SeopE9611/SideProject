@@ -238,7 +238,16 @@ const Header = () => {
   const academySectionActive = isMobileSectionActive(NAV_LINKS.academy.href);
   const racketCareActive =
     isMobileSectionActive("/racket-care") || isMobileSectionActive("/mypage/racket-care");
-  const racketCareCurrent = isMobileRouteCurrent("/racket-care");
+  const isMobileQuickLinkCurrent = (group: "strings" | "rackets", id: string, href: string) => {
+    if (group === "strings") {
+      return id === "all" ? isStringsRootActive : isMobileRouteCurrent(href);
+    }
+
+    if (id === "all") return isRacketsRootActive;
+    if (id === "rental") return pathname === NAV_LINKS.rackets.root && activeRentOnly;
+    if (id === "care") return racketCareActive;
+    return isMobileRouteCurrent(href);
+  };
   const defaultMobileGroup = servicesGroupActive
     ? "services"
     : stringsGroupActive
@@ -319,7 +328,7 @@ const Header = () => {
           className="w-[min(88vw,340px)] max-w-[340px] h-[100dvh] max-h-[100dvh] overflow-hidden bg-background p-0 flex flex-col border-r border-border/80"
         >
           {/* 상단 로고/검색 */}
-          <div className="shrink-0 border-b border-border/80 bg-card px-4 pt-5 pb-3 bp-sm:px-5 bp-sm:pt-6 bp-sm:pb-4">
+          <div className="shrink-0 border-b border-border/80 bg-card px-4 pt-4 pb-2 bp-sm:px-5 bp-sm:pt-5 bp-sm:pb-3">
             <Link
               href="/"
               className="inline-flex min-w-0 items-center gap-2 group"
@@ -348,7 +357,7 @@ const Header = () => {
                 도깨비테니스
               </div>
             </Link>
-            <div className="mt-4">
+            <div className="mt-3">
               <SearchPreview
                 placeholder="스트링 / 라켓 검색"
                 className="w-full"
@@ -356,13 +365,13 @@ const Header = () => {
                 variant="chrome"
               />
             </div>
-            <div className="mt-3">
+            <div className="mt-2">
               {user && (
-                <div className="rounded-control border border-border/80 bg-muted/20 p-3">
+                <div className="rounded-control border border-border/80 bg-muted/20 p-2">
                   <div className="flex min-w-0 items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <div className="min-w-0 max-w-[150px] truncate text-ui-body-sm font-ui-medium text-foreground bp-sm:max-w-[180px]">
+                        <div className="min-w-0 max-w-[120px] truncate text-ui-body-sm font-ui-medium text-foreground bp-sm:max-w-[150px]">
                           {displayName} 님
                         </div>
                         {hasKakao && (
@@ -389,25 +398,25 @@ const Header = () => {
                             {getUserRoleLabel(user?.role)}
                           </IdentityBadge>
                         )}
+                        <Link
+                          href="/mypage?tab=points"
+                          onClick={() => setOpen(false)}
+                          className="inline-flex min-w-0 items-center gap-1 text-ui-micro font-ui-medium text-muted-foreground tabular-nums hover:text-foreground"
+                          aria-label="포인트 보기"
+                        >
+                          <span className="text-ui-micro font-ui-medium">P</span>
+                          {pointsStatus === "loading" ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                              <span className="sr-only">포인트 불러오는 중</span>
+                            </>
+                          ) : pointsStatus === "error" ? (
+                            <span>-</span>
+                          ) : (
+                            <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
+                          )}
+                        </Link>
                       </div>
-                      <Link
-                        href="/mypage?tab=points"
-                        onClick={() => setOpen(false)}
-                        className="mt-1 inline-flex min-w-0 items-center gap-1 text-ui-micro font-ui-medium text-muted-foreground tabular-nums hover:text-foreground"
-                        aria-label="포인트 보기"
-                      >
-                        <span className="text-ui-micro font-ui-medium">P</span>
-                        {pointsStatus === "loading" ? (
-                          <>
-                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
-                            <span className="sr-only">포인트 불러오는 중</span>
-                          </>
-                        ) : pointsStatus === "error" ? (
-                          <span>-</span>
-                        ) : (
-                          <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
-                        )}
-                      </Link>
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1">
@@ -483,10 +492,10 @@ const Header = () => {
                     </div>
                   </div>
 
-                  <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-ui-label font-ui-medium text-muted-foreground">
+                  <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-ui-label font-ui-medium text-muted-foreground">
                     <button
                       type="button"
-                      className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-10 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="쪽지함으로 이동"
                       onClick={() => {
                         guardedPush("/messages", () => setOpen(false));
@@ -502,7 +511,7 @@ const Header = () => {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-10 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="마이페이지로 이동"
                       onClick={() => {
                         guardedPush("/mypage", () => setOpen(false));
@@ -562,24 +571,21 @@ const Header = () => {
                   className={cn(mobileAccordionContentClass, "space-y-0.5")}
                   motion="navigation"
                 >
-                  <Button
-                    variant="ghost"
-                    className={mobileMenuItemClass(isStringsRootActive)}
-                    aria-current={isMobileHrefCurrent(NAV_LINKS.strings.root) ? "page" : undefined}
-                    onClick={() => guardedPush(NAV_LINKS.strings.root, () => setOpen(false))}
-                  >
-                    전체 보기
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className={mobileMenuItemClass(isMobileSectionActive(NAV_LINKS.strings.quickLinks[1].href))}
-                    aria-current={isMobileRouteCurrent(NAV_LINKS.strings.quickLinks[1].href) ? "page" : undefined}
-                    onClick={() => guardedPush(NAV_LINKS.strings.quickLinks[1].href, () => setOpen(false))}
-                  >
-                    스트링 추천
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
+                  {NAV_LINKS.strings.quickLinks.filter((item) => item.mobile).map((item) => {
+                    const current = isMobileQuickLinkCurrent("strings", item.id, item.href);
+                    return (
+                      <Button
+                        key={item.id}
+                        variant="ghost"
+                        className={mobileMenuItemClass(current)}
+                        aria-current={current ? "page" : undefined}
+                        onClick={() => guardedPush(item.href, () => setOpen(false))}
+                      >
+                        {item.name}
+                        <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Button>
+                    );
+                  })}
                 </AccordionContent>
               </AccordionItem>
 
@@ -597,51 +603,21 @@ const Header = () => {
                   className={cn(mobileAccordionContentClass, "space-y-0.5")}
                   motion="navigation"
                 >
-                  <Button
-                    variant="ghost"
-                    className={mobileMenuItemClass(isRacketsRootActive)}
-                    aria-current={isMobileHrefCurrent(NAV_LINKS.rackets.root) ? "page" : undefined}
-                    onClick={() => guardedPush(NAV_LINKS.rackets.root, () => setOpen(false))}
-                  >
-                    전체 보기
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className={mobileMenuItemClass(pathname === NAV_LINKS.rackets.root && activeRentOnly)}
-                    aria-current={isMobileHrefCurrent(NAV_LINKS.rackets.quickLinks[1].href) ? "page" : undefined}
-                    onClick={() => guardedPush(NAV_LINKS.rackets.quickLinks[1].href, () => setOpen(false))}
-                  >
-                    대여 가능한 라켓
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.rackets.quickLinks[2].href))}
-                    aria-current={isMobileRouteCurrent(NAV_LINKS.rackets.quickLinks[2].href) ? "page" : undefined}
-                    onClick={() => guardedPush(NAV_LINKS.rackets.quickLinks[2].href, () => setOpen(false))}
-                  >
-                    라켓 찾기
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.rackets.quickLinks[3].href))}
-                    aria-current={isMobileRouteCurrent(NAV_LINKS.rackets.quickLinks[3].href) ? "page" : undefined}
-                    onClick={() => guardedPush(NAV_LINKS.rackets.quickLinks[3].href, () => setOpen(false))}
-                  >
-                    라켓 비교
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className={mobileMenuItemClass(racketCareActive)}
-                    aria-current={racketCareCurrent ? "page" : undefined}
-                    onClick={() => guardedPush(NAV_LINKS.rackets.quickLinks[4].href, () => setOpen(false))}
-                  >
-                    라켓 케어
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
+                  {NAV_LINKS.rackets.quickLinks.filter((item) => item.mobile).map((item) => {
+                    const current = isMobileQuickLinkCurrent("rackets", item.id, item.href);
+                    return (
+                      <Button
+                        key={item.id}
+                        variant="ghost"
+                        className={mobileMenuItemClass(current)}
+                        aria-current={current ? "page" : undefined}
+                        onClick={() => guardedPush(item.href, () => setOpen(false))}
+                      >
+                        {item.name}
+                        <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Button>
+                    );
+                  })}
                 </AccordionContent>
               </AccordionItem>
 

@@ -22,10 +22,10 @@ export const NAV_LINKS = {
   strings: {
     root: "/products",
     quickLinks: [
-      { name: "전체 스트링", href: "/products", description: "전체 상품을 둘러보세요." },
-      { name: "스트링 추천", href: "/products/recommend", description: "플레이 성향에 맞춰 추천받으세요." },
-      { name: "텐션 가이드", href: "/services/tension-guide", description: "적정 텐션을 알아보세요." },
-      { name: "교체서비스 시작하기", href: "/services", description: "접수 방식을 확인하고 신청하세요.", cta: true },
+      { id: "all", name: "전체 스트링", href: "/products", description: "전체 상품을 둘러보세요.", mobile: true },
+      { id: "recommend", name: "스트링 추천", href: "/products/recommend", description: "플레이 성향에 맞춰 추천받으세요.", mobile: true },
+      { id: "tension", name: "텐션 가이드", href: "/services/tension-guide", description: "적정 텐션을 알아보세요.", mobile: false },
+      { id: "service", name: "교체서비스 시작하기", href: "/services", description: "접수 방식을 확인하고 신청하세요.", cta: true, mobile: false },
     ],
     /** 브랜드별 링크(슬러그는 실제 필터 키에 맞춰 수정 가능) */
     brands: [
@@ -49,11 +49,11 @@ export const NAV_LINKS = {
   rackets: {
     root: "/rackets",
     quickLinks: [
-      { name: "전체 보기", href: "/rackets", description: "인증 중고 라켓을 둘러보세요." },
-      { name: "대여 가능한 라켓", href: "/rackets?rentOnly=1", description: "대여 가능 상품만 확인하세요." },
-      { name: "라켓 찾기", href: "/rackets/finder", description: "내게 맞는 라켓을 찾아보세요." },
-      { name: "라켓 비교", href: "/rackets/compare", description: "사양을 한눈에 비교하세요." },
-      { name: "라켓 케어", href: "/racket-care", description: "보유 라켓을 등록하고 관리하세요." },
+      { id: "all", name: "전체 보기", href: "/rackets", description: "인증 중고 라켓을 둘러보세요.", mobile: true },
+      { id: "rental", name: "대여 가능한 라켓", href: "/rackets?rentOnly=1", description: "대여 가능 상품만 확인하세요.", mobile: true },
+      { id: "finder", name: "라켓 찾기", href: "/rackets/finder", description: "내게 맞는 라켓을 찾아보세요.", mobile: true },
+      { id: "compare", name: "라켓 비교", href: "/rackets/compare", description: "사양을 한눈에 비교하세요.", mobile: true },
+      { id: "care", name: "라켓 케어", href: "/racket-care", description: "보유 라켓을 등록하고 관리하세요.", mobile: true },
     ],
     /** 브랜드별 링크(초기에는 문자열과 동일한 브랜드 집합 사용, 추후 /api/rackets 필터 키에 맞춰 조정) */
     brands: [
