@@ -39,7 +39,7 @@ test("Cypress TypeScript 프로젝트는 앱 설정을 상속하면서 자체 �
   assert.equal(config.extends, "../tsconfig.json");
   assert.equal(options.noEmit, true);
   assert.equal(options.incremental, false);
-  assert.deepEqual(options.types, ["cypress", "node"]);
+  assert.deepEqual(options.types, ["cypress", "node", "@testing-library/cypress"]);
   assert.deepEqual(options.plugins, []);
   assert.ok(config.include.includes("./**/*.ts"));
   assert.ok(config.include.includes("../cypress.config.ts"));

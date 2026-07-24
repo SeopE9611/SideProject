@@ -54,7 +54,7 @@ describe("헤더 내비게이션", () => {
       "aria-expanded",
       "true",
     );
-    cy.focused().tab();
+    cy.press(Cypress.Keyboard.Keys.TAB);
     cy.focused().should("contain.text", "교체서비스 시작하기");
     cy.focused().type("{esc}");
     cy.contains('nav[aria-label="주요 메뉴"] button', "교체서비스")

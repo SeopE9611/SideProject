@@ -4,7 +4,7 @@
     "noEmit": true,
     "incremental": false,
     "typeRoots": ["../types", "../node_modules/@types", "../node_modules"],
-    "types": ["cypress", "node"],
+    "types": ["cypress", "node", "@testing-library/cypress"],
     "plugins": []
   },
   "include": ["./**/*.ts", "../cypress.config.ts"],
