@@ -113,6 +113,7 @@ export function AccordionTrigger({ value, variant = "default", className, childr
     >
       <span>{children}</span>
       <ChevronDown
+        aria-hidden="true"
         className={cn(
           "h-4 w-4 transition-transform duration-200 motion-reduce:transition-none",
           open && "rotate-180",
@@ -140,6 +141,7 @@ export function AccordionContent({ value, motion = "default", className, childre
       role="region"
       aria-labelledby={triggerId}
       aria-hidden={open ? "false" : "true"}
+      inert={open ? undefined : ""}
       data-state={open ? "open" : "closed"}
       className={cn(
         motion === "navigation"
