@@ -148,7 +148,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           disableTransitionOnChange
         >
           <div className="flex min-h-screen flex-col">
-            {/* Header/Footer/SideMenu는 AppShell이 경로별로 처리 */}
+            {/* Header/Footer는 AppShell이 경로별로 처리 */}
             <AppShell>{children}</AppShell>
 
             {/* 우측 하단 카카오 문의 위젯(관리자 페이지는 자동 숨김) */}
