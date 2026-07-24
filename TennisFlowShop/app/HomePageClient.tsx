@@ -281,6 +281,17 @@ const getBrandTabClass = (isActive: boolean) =>
       : "border-border bg-card text-foreground hover:border-foreground/20 hover:bg-muted/30",
   );
 
+const racketBrandRailClass =
+  "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
+
+const getRacketBrandTabClass = (isActive: boolean) =>
+  cn(
+    "min-h-9 shrink-0 whitespace-nowrap rounded-control border px-3.5 py-2 text-ui-label font-medium transition-[background-color,color,border-color,opacity] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+    isActive
+      ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
+      : "border-border bg-card text-foreground hover:border-foreground/20 hover:bg-muted/30",
+  );
+
 function HomeEditorialHeader({
   no,
   eyebrow,
@@ -1286,35 +1297,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <HomeEditorialHeader
             no="05"
             eyebrow="도깨비 인증 중고 라켓"
-            title={
-              <>
-                검수된 중고 라켓을
-                <br />
-                구매와 대여로 만나보세요.
-              </>
-            }
-            description="최근 등록된 라켓의 상태와 가격, 대여 가능 여부를 빠르게 확인할 수 있어요."
+            title="최근 등록된 인증 중고 라켓을 확인하세요."
+            description="상태와 가격, 대여 가능 여부를 비교하고 전체 목록에서 더 많은 라켓을 확인할 수 있어요."
           />
           <div className={styles.racketShowcase}>
-            <div className={styles.racketShowcaseImagePanel}>
-              <Image
-                src="/images/home/home-racket-section-showcase.webp"
-                alt="도깨비 인증 중고 라켓 카테고리 쇼케이스"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1023px) 100vw, 42vw"
-              />
-              <div className={styles.racketShowcaseOverlay} aria-hidden="true" />
-              <div className={styles.racketShowcaseCopy}>
-                <p className={styles.racketShowcaseEyebrow}>도깨비 인증 중고 라켓</p>
-                <h3 className={cn(styles.brandMarketingTitle, styles.racketShowcaseTitle)}>
-                  상태를 확인하고 내 라켓을 찾아보세요.
-                </h3>
-                <p className={styles.racketShowcaseDescription}>
-                  검수된 라켓을 구매·대여하고 스트링 서비스까지 이어보세요.
-                </p>
-              </div>
-            </div>
             <div className={styles.racketInventoryPanel}>
               <div className={styles.racketInventoryHeader}>
                 <div>
@@ -1342,7 +1328,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <div
                     id={RACKET_BRAND_RAIL_ID}
                     aria-label="중고 라켓 브랜드 필터"
-                    className={brandRailClass}
+                    className={racketBrandRailClass}
                     ref={racketBrandRailRef}
                   >
                     <button
@@ -1350,7 +1336,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       data-racket-brand="all"
                       aria-pressed={activeBrand === "all"}
                       onClick={() => setActiveBrand("all")}
-                      className={getBrandTabClass(activeBrand === "all")}
+                      className={getRacketBrandTabClass(activeBrand === "all")}
                     >
                       전체
                     </button>
@@ -1361,7 +1347,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                         data-racket-brand={b.value}
                         aria-pressed={activeBrand === b.value}
                         onClick={() => setActiveBrand(b.value as BrandKey)}
-                        className={getBrandTabClass(activeBrand === b.value)}
+                        className={getRacketBrandTabClass(activeBrand === b.value)}
                       >
                         {b.label}
                       </button>
@@ -1694,7 +1680,7 @@ function RacketInventoryRow({ racket }: { racket: RItem }) {
           alt={imageAlt || "중고 라켓 상품 이미지"}
           fill
           className="object-contain"
-          sizes="(max-width: 767px) 92px, 104px"
+          sizes="(max-width: 767px) 84px, 92px"
         />
       </div>
       <div className={styles.racketInventoryInfo}>
