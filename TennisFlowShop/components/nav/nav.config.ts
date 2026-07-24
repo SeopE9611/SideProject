@@ -8,27 +8,16 @@ const communityBoardLinks = COMMUNITY_BOARDS_ENABLED
     ]
   : [];
 
-export const NAV_FLAGS = {
-  /** 재질 카테고리(스트링 타입) 노출 온/오프 */
-  SHOW_MATERIAL_MENU: false,
-  SHOW_BRAND_MENU: true,
-};
-
 /** 헤더와 모바일 메뉴가 공유하는 전역 사용자 내비게이션 기준값 */
-export const DESKTOP_PRIMARY_NAV_ITEMS = [
-  { name: "교체서비스", href: "/services" },
-  { name: "스트링", href: "/products" },
-  { name: "중고 라켓", href: "/rackets" },
-  { name: "패키지", href: "/services/packages" },
-  { name: "아카데미", href: "/academy" },
-  { name: "고객센터", href: "/support" },
-] as const;
-
-/** 주요 메뉴와 함께 제공하는 데스크톱 보조 탐색 */
-export const DESKTOP_SECONDARY_NAV_ITEMS = [
-  { name: "커뮤니티", href: "/board" },
-  { name: "라켓 찾기", href: "/rackets/finder" },
-  { name: "라켓 케어", href: "/racket-care" },
+export const DESKTOP_NAV_ITEMS = [
+  { name: "교체서비스", kind: "services" },
+  { name: "스트링", kind: "strings" },
+  { name: "중고 라켓", kind: "rackets" },
+  { name: "패키지", kind: "link", href: "/services/packages" },
+  { name: "아카데미", kind: "link", href: "/academy" },
+  { name: "라켓 케어", kind: "link", href: "/racket-care" },
+  { name: "커뮤니티", kind: "boards" },
+  { name: "고객센터", kind: "support" },
 ] as const;
 
 export const NAV_LINKS = {
@@ -64,10 +53,10 @@ export const NAV_LINKS = {
     ],
   },
   services: [
-    { name: "장착 서비스 홈", href: "/services" },
+    { name: "교체서비스 시작하기", href: "/services" },
     { name: "텐션 가이드", href: "/services/tension-guide" },
-    { name: "장착 비용 안내", href: "/services/pricing" },
-    { name: "매장/예약 안내", href: "/services/locations" },
+    { name: "가격 안내", href: "/services/pricing" },
+    { name: "매장·방문 안내", href: "/services/locations" },
   ],
   packages: [{ name: "패키지 안내", href: "/services/packages" }],
   academy: { name: "도깨비테니스 아카데미", href: "/academy" },
