@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 
 type MenuKind = (typeof DESKTOP_NAV_ITEMS)[number]["kind"];
 type OpenMenuKind = Exclude<MenuKind, "link"> | null;
-type MenuLink = { name: string; href: string; description?: string };
+type MenuLink = { id?: string; name: string; href: string; description?: string; mobile?: boolean };
 
 const OPEN_DELAY_MS = 150;
 const CLOSE_DELAY_MS = 280;
@@ -128,7 +128,7 @@ function CommerceMegaMenu({
         "grid max-w-full gap-5",
         isStrings
           ? "w-[min(840px,calc(100vw-4.5rem))] grid-cols-[250px_minmax(0,1fr)]"
-          : "w-[min(640px,calc(100vw-4.5rem))] grid-cols-[240px_minmax(0,1fr)]",
+          : "w-[min(590px,calc(100vw-4.5rem))] grid-cols-[225px_minmax(0,1fr)]",
       )}
     >
       <section className="border-r border-border pr-5">
