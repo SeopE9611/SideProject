@@ -1297,8 +1297,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <HomeEditorialHeader
             no="05"
             eyebrow="도깨비 인증 중고 라켓"
-            title="최근 등록된 인증 중고 라켓을 확인하세요."
-            description="상태와 가격, 대여 가능 여부를 비교하고 전체 목록에서 더 많은 라켓을 확인할 수 있어요."
+            title="도깨비에서 인증된 중고 라켓을 확인하세요."
+            description="상태와 대여 가능 여부를 비교하고 전체 목록에서 더 많은 라켓을 확인할 수 있어요."
           />
           <div className={styles.racketShowcase}>
             <div className={styles.racketInventoryPanel}>
