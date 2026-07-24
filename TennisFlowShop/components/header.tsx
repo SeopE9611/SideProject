@@ -565,7 +565,11 @@ const Header = () => {
             <Accordion type="single" className="space-y-1">
               {/* 교체서비스 */}
               <AccordionItem value="services" className="border-none">
-                <AccordionTrigger value="services" className={mobileTopLevelTriggerClass(servicesGroupActive)}>
+                <AccordionTrigger
+                  value="services"
+                  variant="navigation"
+                  className={mobileTopLevelTriggerClass(servicesGroupActive)}
+                >
                   <span className={mobileGroupTitleClass}>교체서비스</span>
                 </AccordionTrigger>
                 <AccordionContent
@@ -590,7 +594,11 @@ const Header = () => {
 
               {/* 스트링 */}
               <AccordionItem value="strings" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="strings" className={mobileTopLevelTriggerClass(stringsGroupActive)}>
+                <AccordionTrigger
+                  value="strings"
+                  variant="navigation"
+                  className={mobileTopLevelTriggerClass(stringsGroupActive)}
+                >
                   <span className={mobileGroupTitleClass}>스트링</span>
                 </AccordionTrigger>
                 <AccordionContent
@@ -639,7 +647,11 @@ const Header = () => {
 
               {/* 중고 라켓 */}
               <AccordionItem value="rackets" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="rackets" className={mobileTopLevelTriggerClass(racketsGroupActive)}>
+                <AccordionTrigger
+                  value="rackets"
+                  variant="navigation"
+                  className={mobileTopLevelTriggerClass(racketsGroupActive)}
+                >
                   <span className={mobileGroupTitleClass}>중고 라켓</span>
                 </AccordionTrigger>
                 <AccordionContent
@@ -729,6 +741,7 @@ const Header = () => {
               <AccordionItem value="boards" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger
                   value="boards"
+                  variant="navigation"
                   className={mobileTopLevelTriggerClass(boardsGroupActive)}
                 >
                   <span className={mobileGroupTitleClass}>커뮤니티</span>
@@ -759,6 +772,7 @@ const Header = () => {
               <AccordionItem value="support" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger
                   value="support"
+                  variant="navigation"
                   className={mobileTopLevelTriggerClass(supportGroupActive)}
                 >
                   <span className={mobileGroupTitleClass}>고객센터</span>
