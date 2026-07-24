@@ -16,7 +16,7 @@ type MenuLink = { id?: string; name: string; href: string; description?: string;
 const OPEN_DELAY_MS = 150;
 const CLOSE_DELAY_MS = 280;
 const panelLinkClass =
-  "group flex min-h-11 items-center justify-between rounded-control border border-transparent px-3 py-2 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:border-border hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-popover";
+  "group flex min-h-11 items-center justify-between rounded-control border border-transparent px-3 py-2 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:border-border hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover";
 
 const isSectionActive = (pathname: string, href: string) =>
   pathname === href || pathname.startsWith(`${href}/`);
@@ -168,7 +168,7 @@ function CommerceMegaMenu({
               href={brand.href}
               aria-current={isCurrentHref(brand.href, pathname, currentSearch) ? "page" : undefined}
               className={cn(
-                "flex min-h-11 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-popover",
+                "flex min-h-11 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover",
                 isCurrentHref(brand.href, pathname, currentSearch) && "bg-muted/60",
               )}
               onClick={onLinkClick}
@@ -189,6 +189,7 @@ export default function DesktopHeaderNavigation() {
   const [openMenu, setOpenMenu] = useState<OpenMenuKind>(null);
   const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerCloseMenusRef = useRef<Set<Exclude<MenuKind, "link">>>(new Set());
 
   const clearTimeouts = () => {
     if (openTimeoutRef.current) {
@@ -200,13 +201,27 @@ export default function DesktopHeaderNavigation() {
       closeTimeoutRef.current = null;
     }
   };
-  const scheduleOpen = (kind: OpenMenuKind) => {
+  const scheduleOpen = (kind: Exclude<MenuKind, "link">) => {
     clearTimeouts();
-    openTimeoutRef.current = setTimeout(() => setOpenMenu(kind), OPEN_DELAY_MS);
+    const delay = openMenu === null ? OPEN_DELAY_MS : 0;
+    openTimeoutRef.current = setTimeout(() => {
+      setOpenMenu((current) => {
+        if (current && current !== kind) pointerCloseMenusRef.current.add(current);
+        return kind;
+      });
+    }, delay);
   };
-  const scheduleClose = () => {
+  const scheduleClose = (kind: Exclude<MenuKind, "link">) => {
     clearTimeouts();
-    closeTimeoutRef.current = setTimeout(() => setOpenMenu(null), CLOSE_DELAY_MS);
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpenMenu((current) => {
+        if (current === kind) {
+          pointerCloseMenusRef.current.add(kind);
+          return null;
+        }
+        return current;
+      });
+    }, CLOSE_DELAY_MS);
   };
   const closeAfterNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (
@@ -223,12 +238,22 @@ export default function DesktopHeaderNavigation() {
   };
 
   useEffect(() => {
+    clearTimeouts();
     setOpenMenu(null);
   }, [navigationSignature]);
-  useEffect(() => () => clearTimeouts(), []);
+  useEffect(
+    () => () => {
+      clearTimeouts();
+      pointerCloseMenusRef.current.clear();
+    },
+    [],
+  );
 
   return (
-    <nav className="hidden h-11 w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 bp-lg:flex" aria-label="주요 메뉴">
+    <nav
+      className="hidden h-11 w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 bp-lg:flex"
+      aria-label="주요 메뉴"
+    >
       {DESKTOP_NAV_ITEMS.map((item) => {
         const active =
           item.kind === "link"
@@ -244,7 +269,7 @@ export default function DesktopHeaderNavigation() {
                 isCurrentHref(item.href, pathname, searchParams.toString()) ? "page" : undefined
               }
               className={cn(
-                "relative inline-flex h-11 items-center rounded-control px-3 text-ui-body font-ui-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "relative inline-flex h-11 items-center rounded-control px-3 text-ui-body font-ui-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active &&
                   "bg-brand-highlight-muted after:absolute after:bottom-1 after:left-3 after:right-3 after:h-0.5 after:bg-brand-highlight-ink",
               )}
@@ -276,7 +301,11 @@ export default function DesktopHeaderNavigation() {
           <Popover
             key={item.name}
             open={isOpen}
-            onOpenChange={(nextOpen) => setOpenMenu(nextOpen ? item.kind : null)}
+            onOpenChange={(nextOpen) =>
+              setOpenMenu((current) =>
+                nextOpen ? item.kind : current === item.kind ? null : current,
+              )
+            }
           >
             <div
               className="relative"
@@ -286,7 +315,7 @@ export default function DesktopHeaderNavigation() {
               }}
               onPointerLeave={(event) => {
                 if (event.pointerType !== "mouse") return;
-                scheduleClose();
+                scheduleClose(item.kind);
               }}
             >
               <PopoverTrigger asChild>
@@ -294,7 +323,7 @@ export default function DesktopHeaderNavigation() {
                   type="button"
                   aria-expanded={isOpen}
                   className={cn(
-                    "relative inline-flex h-11 items-center gap-1 rounded-control px-3 text-ui-body font-ui-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    "relative inline-flex h-11 items-center gap-1 rounded-control px-3 text-ui-body font-ui-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     isOpen && "bg-secondary",
                     active &&
                       "bg-brand-highlight-muted after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-brand-highlight-ink",
@@ -313,6 +342,9 @@ export default function DesktopHeaderNavigation() {
                 sideOffset={4}
                 collisionPadding={16}
                 onOpenAutoFocus={(event) => event.preventDefault()}
+                onCloseAutoFocus={(event) => {
+                  if (pointerCloseMenusRef.current.delete(item.kind)) event.preventDefault();
+                }}
                 className="w-auto max-w-[calc(100vw-2rem)] rounded-panel border-border bg-popover p-5 text-popover-foreground shadow-float"
               >
                 {content}
