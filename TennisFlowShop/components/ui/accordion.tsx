@@ -86,10 +86,11 @@ export function AccordionItem({ value, className, children }: ItemProps) {
 
 type TriggerProps = {
   value: string;
+  variant?: "default" | "navigation";
   className?: string;
   children: React.ReactNode;
 };
-export function AccordionTrigger({ value, className, children }: TriggerProps) {
+export function AccordionTrigger({ value, variant = "default", className, children }: TriggerProps) {
   const ctx = React.useContext(AccordionCtx)!;
   const open = ctx.openSet.has(value);
   const triggerId = ctx.getTriggerId(value);
@@ -104,7 +105,8 @@ export function AccordionTrigger({ value, className, children }: TriggerProps) {
       onClick={() => ctx.toggle(value)}
       data-state={open ? "open" : "closed"}
       className={cn(
-        "flex w-full items-center justify-between py-3 text-left text-ui-body-sm",
+        "flex w-full items-center justify-between py-3 text-left",
+        variant === "default" && "text-ui-body-sm",
         "focus-visible:ring-2 ring-ring rounded-lg",
         className,
       )}

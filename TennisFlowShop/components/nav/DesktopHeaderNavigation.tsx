@@ -221,14 +221,19 @@ export default function DesktopHeaderNavigation() {
   return (
     <nav className="hidden w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 py-1 bp-lg:flex" aria-label="주요 메뉴">
       {DESKTOP_NAV_ITEMS.map((item) => {
-        const active = item.kind === "link" ? false : isMenuActive(item.kind, pathname);
+        const active =
+          item.kind === "link"
+            ? isSectionActive(pathname, item.href)
+            : isMenuActive(item.kind, pathname);
 
         if (item.kind === "link") {
           return (
             <Link
               key={item.name}
               href={item.href}
-              aria-current={isCurrentLink(item.href, pathname) ? "page" : undefined}
+              aria-current={
+                isCurrentHref(item.href, pathname, searchParams.toString()) ? "page" : undefined
+              }
               className={cn(
                 "relative inline-flex h-9 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active &&
