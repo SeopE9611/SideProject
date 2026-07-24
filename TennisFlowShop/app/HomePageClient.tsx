@@ -1680,7 +1680,7 @@ function RacketInventoryRow({ racket }: { racket: RItem }) {
           alt={imageAlt || "중고 라켓 상품 이미지"}
           fill
           className="object-contain"
-          sizes="(max-width: 767px) 84px, 92px"
+          sizes="(max-width: 767px) 84px, (max-width: 1199px) 88px, 92px"
         />
       </div>
       <div className={styles.racketInventoryInfo}>
