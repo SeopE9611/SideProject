@@ -238,15 +238,31 @@ const Header = () => {
   const academySectionActive = isMobileSectionActive(NAV_LINKS.academy.href);
   const racketCareActive =
     isMobileSectionActive("/racket-care") || isMobileSectionActive("/mypage/racket-care");
-  const isMobileQuickLinkCurrent = (group: "strings" | "rackets", id: string, href: string) => {
+  type MobileQuickLinkState = {
+    active: boolean;
+    current: boolean;
+  };
+  const getMobileQuickLinkState = (
+    group: "strings" | "rackets",
+    id: string,
+    href: string,
+  ): MobileQuickLinkState => {
     if (group === "strings") {
-      return id === "all" ? isStringsRootActive : isMobileRouteCurrent(href);
+      return {
+        active: id === "all" ? isStringsRootActive : isMobileRouteCurrent(href),
+        current: id === "all" ? isMobileHrefCurrent(href) : isMobileRouteCurrent(href),
+      };
     }
 
-    if (id === "all") return isRacketsRootActive;
-    if (id === "rental") return pathname === NAV_LINKS.rackets.root && activeRentOnly;
-    if (id === "care") return racketCareActive;
-    return isMobileRouteCurrent(href);
+    if (id === "all") return { active: isRacketsRootActive, current: isMobileHrefCurrent(href) };
+    if (id === "rental") {
+      return {
+        active: pathname === NAV_LINKS.rackets.root && activeRentOnly,
+        current: isMobileHrefCurrent(href),
+      };
+    }
+    if (id === "care") return { active: racketCareActive, current: isMobileRouteCurrent(href) };
+    return { active: isMobileRouteCurrent(href), current: isMobileRouteCurrent(href) };
   };
   const defaultMobileGroup = servicesGroupActive
     ? "services"
@@ -572,13 +588,13 @@ const Header = () => {
                   motion="navigation"
                 >
                   {NAV_LINKS.strings.quickLinks.filter((item) => item.mobile).map((item) => {
-                    const current = isMobileQuickLinkCurrent("strings", item.id, item.href);
+                    const state = getMobileQuickLinkState("strings", item.id, item.href);
                     return (
                       <Button
                         key={item.id}
                         variant="ghost"
-                        className={mobileMenuItemClass(current)}
-                        aria-current={current ? "page" : undefined}
+                        className={mobileMenuItemClass(state.active)}
+                        aria-current={state.current ? "page" : undefined}
                         onClick={() => guardedPush(item.href, () => setOpen(false))}
                       >
                         {item.name}
@@ -604,13 +620,13 @@ const Header = () => {
                   motion="navigation"
                 >
                   {NAV_LINKS.rackets.quickLinks.filter((item) => item.mobile).map((item) => {
-                    const current = isMobileQuickLinkCurrent("rackets", item.id, item.href);
+                    const state = getMobileQuickLinkState("rackets", item.id, item.href);
                     return (
                       <Button
                         key={item.id}
                         variant="ghost"
-                        className={mobileMenuItemClass(current)}
-                        aria-current={current ? "page" : undefined}
+                        className={mobileMenuItemClass(state.active)}
+                        aria-current={state.current ? "page" : undefined}
                         onClick={() => guardedPush(item.href, () => setOpen(false))}
                       >
                         {item.name}

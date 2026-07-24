@@ -141,7 +141,7 @@ export function AccordionContent({ value, motion = "default", className, childre
       role="region"
       aria-labelledby={triggerId}
       aria-hidden={open ? "false" : "true"}
-      inert={open ? undefined : ""}
+      inert={!open}
       data-state={open ? "open" : "closed"}
       className={cn(
         motion === "navigation"
