@@ -757,27 +757,22 @@
 
 .infoGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
+  gap: 14px;
   align-items: stretch;
 }
 
 .utilityGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
-.careBanner {
+.utilityGrid a {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-top: 16px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 30px;
-  background: color-mix(in srgb, hsl(var(--brand-highlight-muted)) 36%, hsl(var(--card)));
-  padding: 26px 30px;
+  min-height: 112px;
+  flex-direction: column;
+  justify-content: center;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -961,13 +956,9 @@
   }
 
   .utilityGrid a {
-    min-height: 72px;
+    min-height: 88px;
     padding: 14px;
     white-space: normal;
-  }
-
-  .utilityGrid a:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
   }
 
   .stepTabs {
@@ -978,10 +969,5 @@
 
   .stepTabs > * {
     min-width: 120px;
-  }
-
-  .careBanner {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }

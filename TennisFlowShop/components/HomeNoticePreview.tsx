@@ -20,11 +20,12 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
   const { data, error, isLoading, mutate } = useSWR<{
     ok: boolean;
     items: Notice[];
-  }>("/api/boards?type=notice&excludeCategory=event&limit=5", fetcher, {
+  }>("/api/boards?type=notice&excludeCategory=event&limit=3", fetcher, {
     fallbackData: initialItems ? { ok: true, items: initialItems } : undefined,
     revalidateOnMount: initialItems ? false : undefined,
   });
   const items = data?.ok ? data.items : [];
+  const visibleItems = items.slice(0, 3);
   const hasError = Boolean(error) || (data && !data.ok);
 
   return (
@@ -52,7 +53,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
       <div className="flex-1 px-2 bp-sm:px-3 py-2 bp-sm:py-3">
         {isLoading ? (
           <div className="flex flex-col gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
                 className="flex items-center justify-between rounded-xl px-3 bp-sm:px-4 py-3 bp-sm:py-3.5"
@@ -72,9 +73,9 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
             className="mx-2 my-2"
             onAction={() => mutate()}
           />
-        ) : items.length > 0 ? (
+        ) : visibleItems.length > 0 ? (
           <div className="flex flex-col gap-0.5">
-            {items.map((p, idx) => (
+            {visibleItems.map((p, idx) => (
               <Link
                 key={p._id ?? `${p.createdAt}-${idx}`}
                 className="group flex items-center justify-between gap-3 rounded-xl px-3 bp-sm:px-4 py-3 bp-sm:py-3.5 transition-colors hover:bg-muted/40"

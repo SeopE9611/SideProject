@@ -1428,31 +1428,26 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <HomeEditorialHeader
             no="06"
             eyebrow="이용 안내"
-            title="접수 방법과 필요한 안내를 한곳에서 확인하세요."
-            description="공지사항과 이용 메뉴를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있습니다."
+            title="공지와 이용 안내를 확인하세요."
+            description="운영 정보와 문의 경로를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있어요."
           />
           <div className={styles.infoGrid}>
             {shouldLoadCommunity ? (
               <HomeNoticePreview initialItems={initialHomeData?.notices} />
             ) : (
-              <div className="h-[260px] animate-pulse rounded-panel border border-border bg-muted" />
+              <div className="h-[240px] animate-pulse rounded-panel border border-border bg-muted" />
             )}
             <div className={styles.utilityGrid}>
               {[
-                [
-                  "교체서비스 시작 방식",
-                  "새 스트링·라켓 구매/대여·보유 장비 중 이용 방식을 선택합니다.",
-                  "/services#service-start",
-                ],
-                ["비용 기준 확인", "장착비와 서비스 비용을 안내합니다.", "/services/pricing"],
-                ["영업시간·매장 위치", "운영시간과 위치를 확인합니다.", "/services/locations"],
-                ["문의하기", "Q&A로 궁금한 점을 남깁니다.", "/board/qna"],
-                ["이용 후기", "실제 교체 경험을 확인합니다.", "/reviews"],
+                ["비용 기준 확인", "장착비와 서비스 비용을 확인하세요.", "/services/pricing"],
+                ["영업시간·매장 위치", "운영시간과 방문 위치를 확인하세요.", "/services/locations"],
+                ["문의하기", "Q&A로 궁금한 점을 남기세요.", "/board/qna"],
+                ["라켓 케어", "교체 이력과 다음 교체 시기를 관리하세요.", "/racket-care"],
               ].map(([title, desc, href]) => (
                 <Link
                   key={href}
                   href={href}
-                  className="rounded-panel border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                  className="rounded-panel border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
                   <strong className="block text-ui-card-title font-medium text-foreground">
                     {title}
@@ -1463,20 +1458,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 </Link>
               ))}
             </div>
-          </div>
-          <div className={styles.careBanner}>
-            <div>
-              <p className="text-ui-label font-medium text-muted-foreground">교체 후 관리</p>
-              <h3 className={cn(styles.uiTitle, "mt-2 text-ui-section-title-lg text-foreground")}>
-                교체 이력은 라켓 케어에서 이어서 관리하세요.
-              </h3>
-              <p className="mt-2 break-keep text-ui-body text-muted-foreground">
-                완료된 교체 이력을 저장하면 다음 교체 시기와 라켓 상태를 확인할 수 있어요.
-              </p>
-            </div>
-            <Link className={homeCtaOutline} href="/racket-care">
-              라켓 케어 알아보기
-            </Link>
           </div>
         </SiteContainer>
       </section>
