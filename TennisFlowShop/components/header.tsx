@@ -264,6 +264,12 @@ const Header = () => {
     if (id === "care") return { active: racketCareActive, current: isMobileRouteCurrent(href) };
     return { active: isMobileRouteCurrent(href), current: isMobileRouteCurrent(href) };
   };
+  const stringsBrandGroupActive = NAV_LINKS.strings.brands.some((brand) =>
+    isMobileHrefCurrent(brand.href),
+  );
+  const racketsBrandGroupActive = NAV_LINKS.rackets.brands.some((brand) =>
+    isMobileHrefCurrent(brand.href),
+  );
   const defaultMobileGroup = servicesGroupActive
     ? "services"
     : stringsGroupActive
@@ -602,6 +608,35 @@ const Header = () => {
                       </Button>
                     );
                   })}
+                  <Accordion type="single" defaultValue={stringsBrandGroupActive ? "brands" : undefined}>
+                    <AccordionItem value="brands" className="border-none">
+                      <AccordionTrigger
+                        value="brands"
+                        variant="navigation"
+                        className={mobileMenuItemClass(stringsBrandGroupActive)}
+                      >
+                        브랜드
+                      </AccordionTrigger>
+                      <AccordionContent value="brands" className="pt-1" motion="navigation">
+                        <div className="grid grid-cols-2 gap-1">
+                          {NAV_LINKS.strings.brands.map((brand) => {
+                            const current = isMobileHrefCurrent(brand.href);
+                            return (
+                              <Button
+                                key={brand.href}
+                                variant="ghost"
+                                className={mobileMenuItemClass(current)}
+                                aria-current={current ? "page" : undefined}
+                                onClick={() => guardedPush(brand.href, () => setOpen(false))}
+                              >
+                                {brand.name}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </AccordionContent>
               </AccordionItem>
 
@@ -634,6 +669,35 @@ const Header = () => {
                       </Button>
                     );
                   })}
+                  <Accordion type="single" defaultValue={racketsBrandGroupActive ? "brands" : undefined}>
+                    <AccordionItem value="brands" className="border-none">
+                      <AccordionTrigger
+                        value="brands"
+                        variant="navigation"
+                        className={mobileMenuItemClass(racketsBrandGroupActive)}
+                      >
+                        브랜드
+                      </AccordionTrigger>
+                      <AccordionContent value="brands" className="pt-1" motion="navigation">
+                        <div className="grid grid-cols-2 gap-1">
+                          {NAV_LINKS.rackets.brands.map((brand) => {
+                            const current = isMobileHrefCurrent(brand.href);
+                            return (
+                              <Button
+                                key={brand.href}
+                                variant="ghost"
+                                className={mobileMenuItemClass(current)}
+                                aria-current={current ? "page" : undefined}
+                                onClick={() => guardedPush(brand.href, () => setOpen(false))}
+                              >
+                                {brand.name}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </AccordionContent>
               </AccordionItem>
 
