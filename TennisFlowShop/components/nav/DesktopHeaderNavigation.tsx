@@ -13,9 +13,10 @@ type MenuKind = (typeof DESKTOP_NAV_ITEMS)[number]["kind"];
 type OpenMenuKind = Exclude<MenuKind, "link"> | null;
 type MenuLink = { name: string; href: string; description?: string };
 
-const CLOSE_DELAY_MS = 150;
+const OPEN_DELAY_MS = 150;
+const CLOSE_DELAY_MS = 280;
 const panelLinkClass =
-  "group flex min-h-10 items-center justify-between rounded-control border border-transparent px-3 py-2 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:border-border hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "group flex min-h-11 items-center justify-between rounded-control border border-transparent px-3 py-2 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:border-border hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-popover";
 
 const isSectionActive = (pathname: string, href: string) =>
   pathname === href || pathname.startsWith(`${href}/`);
@@ -76,7 +77,7 @@ function CompactMenu({
     kind === "services"
       ? NAV_LINKS.services
       : kind === "boards"
-        ? [{ name: "커뮤니티 홈", href: "/board" }, ...NAV_LINKS.boards]
+        ? [NAV_LINKS.boards.root, ...NAV_LINKS.boards.links]
         : NAV_LINKS.support;
 
   return (
@@ -89,7 +90,14 @@ function CompactMenu({
           className={panelLinkClass}
           onClick={onLinkClick}
         >
-          {link.name}
+          <span>
+            <span className="block">{link.name}</span>
+            {link.description && (
+              <span className="block text-ui-caption font-normal text-muted-foreground">
+                {link.description}
+              </span>
+            )}
+          </span>
           <ChevronRight className="h-3.5 w-3.5 text-brand-highlight-ink" aria-hidden="true" />
         </Link>
       ))}
@@ -109,20 +117,9 @@ function CommerceMegaMenu({
   currentSearch: string;
 }) {
   const isStrings = kind === "strings";
-  const quickLinks: readonly MenuLink[] = isStrings
-    ? [
-        { name: "모든 스트링", href: NAV_LINKS.strings.root, description: "전체 상품을 둘러보세요." },
-        { name: "스트링 추천", href: "/products/recommend", description: "플레이 성향에 맞춰 추천받으세요." },
-        { name: "교체서비스 시작하기", href: "/services", description: "전문가 교체서비스를 신청하세요." },
-        { name: "텐션 가이드", href: "/services/tension-guide", description: "적정 텐션을 알아보세요." },
-      ]
-    : [
-        { name: "모든 중고 라켓", href: NAV_LINKS.rackets.root, description: "인증 중고 라켓을 둘러보세요." },
-        { name: "대여 가능한 라켓", href: "/rackets?rentOnly=1", description: "대여 가능 상품만 확인하세요." },
-        { name: "라켓 찾기", href: "/rackets/finder", description: "내게 맞는 라켓을 찾아보세요." },
-        { name: "라켓 비교", href: "/rackets/compare", description: "사양을 한눈에 비교하세요." },
-        { name: "라켓 케어", href: "/racket-care", description: "보유 라켓을 등록하고 관리하세요." },
-      ];
+  const quickLinks: readonly (MenuLink & { cta?: boolean })[] = isStrings
+    ? NAV_LINKS.strings.quickLinks
+    : NAV_LINKS.rackets.quickLinks;
   const brands = isStrings ? NAV_LINKS.strings.brands : NAV_LINKS.rackets.brands;
 
   return (
@@ -142,7 +139,10 @@ function CommerceMegaMenu({
               key={link.href}
               href={link.href}
               aria-current={isCurrentHref(link.href, pathname, currentSearch) ? "page" : undefined}
-              className={panelLinkClass}
+              className={cn(
+                panelLinkClass,
+                link.cta && "bg-brand-highlight-muted hover:bg-brand-highlight-muted",
+              )}
               onClick={onLinkClick}
             >
               <span>
@@ -168,7 +168,7 @@ function CommerceMegaMenu({
               href={brand.href}
               aria-current={isCurrentHref(brand.href, pathname, currentSearch) ? "page" : undefined}
               className={cn(
-                "flex min-h-10 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex min-h-11 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-popover",
                 isCurrentHref(brand.href, pathname, currentSearch) && "bg-muted/60",
               )}
               onClick={onLinkClick}
@@ -187,16 +187,25 @@ export default function DesktopHeaderNavigation() {
   const searchParams = useSearchParams();
   const navigationSignature = `${pathname}?${searchParams.toString()}`;
   const [openMenu, setOpenMenu] = useState<OpenMenuKind>(null);
+  const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const clearCloseTimeout = () => {
+  const clearTimeouts = () => {
+    if (openTimeoutRef.current) {
+      clearTimeout(openTimeoutRef.current);
+      openTimeoutRef.current = null;
+    }
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
     }
   };
+  const scheduleOpen = (kind: OpenMenuKind) => {
+    clearTimeouts();
+    openTimeoutRef.current = setTimeout(() => setOpenMenu(kind), OPEN_DELAY_MS);
+  };
   const scheduleClose = () => {
-    clearCloseTimeout();
+    clearTimeouts();
     closeTimeoutRef.current = setTimeout(() => setOpenMenu(null), CLOSE_DELAY_MS);
   };
   const closeAfterNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -216,10 +225,10 @@ export default function DesktopHeaderNavigation() {
   useEffect(() => {
     setOpenMenu(null);
   }, [navigationSignature]);
-  useEffect(() => () => clearCloseTimeout(), []);
+  useEffect(() => () => clearTimeouts(), []);
 
   return (
-    <nav className="hidden w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 py-1 bp-lg:flex" aria-label="주요 메뉴">
+    <nav className="hidden h-11 w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 bp-lg:flex" aria-label="주요 메뉴">
       {DESKTOP_NAV_ITEMS.map((item) => {
         const active =
           item.kind === "link"
@@ -235,7 +244,7 @@ export default function DesktopHeaderNavigation() {
                 isCurrentHref(item.href, pathname, searchParams.toString()) ? "page" : undefined
               }
               className={cn(
-                "relative inline-flex h-9 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "relative inline-flex h-11 items-center rounded-control px-3 text-ui-body font-ui-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active &&
                   "bg-brand-highlight-muted after:absolute after:bottom-1 after:left-3 after:right-3 after:h-0.5 after:bg-brand-highlight-ink",
               )}
@@ -273,8 +282,7 @@ export default function DesktopHeaderNavigation() {
               className="relative"
               onPointerEnter={(event) => {
                 if (event.pointerType !== "mouse") return;
-                clearCloseTimeout();
-                setOpenMenu(item.kind);
+                scheduleOpen(item.kind);
               }}
               onPointerLeave={(event) => {
                 if (event.pointerType !== "mouse") return;
@@ -286,10 +294,10 @@ export default function DesktopHeaderNavigation() {
                   type="button"
                   aria-expanded={isOpen}
                   className={cn(
-                    "inline-flex h-9 items-center gap-1 rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    (active || isOpen) && "bg-secondary",
+                    "relative inline-flex h-11 items-center gap-1 rounded-control px-3 text-ui-body font-ui-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-highlight-ink focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    isOpen && "bg-secondary",
                     active &&
-                      "after:absolute after:bottom-1 after:left-3 after:right-3 after:h-0.5 after:bg-brand-highlight-ink",
+                      "bg-brand-highlight-muted after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-brand-highlight-ink",
                   )}
                 >
                   {item.name}
@@ -305,7 +313,7 @@ export default function DesktopHeaderNavigation() {
                 sideOffset={4}
                 collisionPadding={16}
                 onOpenAutoFocus={(event) => event.preventDefault()}
-                className="w-auto max-w-[calc(100vw-2rem)] rounded-panel border-border p-5 shadow-float"
+                className="w-auto max-w-[calc(100vw-2rem)] rounded-panel border-border bg-popover p-5 text-popover-foreground shadow-float"
               >
                 {content}
               </PopoverContent>
