@@ -43,7 +43,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 /**
@@ -62,9 +62,11 @@ let headerPointsCache: {
 function MobileBrandGrid({
   brands,
   onPick,
+  isActive,
 }: {
   brands: readonly { name: string; href: string }[];
   onPick: (href: string) => void;
+  isActive: (href: string) => boolean;
 }) {
   return (
     <div>
@@ -76,6 +78,7 @@ function MobileBrandGrid({
               variant="outline"
               className={cn(
                 "relative z-0 h-10 min-w-0 justify-center rounded-control border-border bg-transparent px-2 text-ui-label hover:bg-muted/40 transition-[background-color,color,border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                isActive(b.href) && "bg-muted/60 font-ui-medium text-foreground",
               )}
               onClick={() => onPick(b.href)}
             >
@@ -110,6 +113,7 @@ const Header = () => {
   const router = useRouter();
   const headerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // 장바구니 아이템 총 수량 (Zustand selector로 필요한 값만 구독)
   const cartCount = useCartStore((s) => s.items.reduce((sum, it) => sum + (it.quantity || 0), 0));
@@ -218,7 +222,16 @@ const Header = () => {
      */
   }, [user?.id]);
 
+  const currentSearch = searchParams.toString();
   const isMobileRouteCurrent = (href: string) => pathname === href;
+  const isMobileHrefCurrent = (href: string) => {
+    const target = new URL(href, "https://dokkaebi-tennis.local");
+    const targetSearch = new URLSearchParams(target.search);
+    const current = new URLSearchParams(currentSearch);
+    targetSearch.sort();
+    current.sort();
+    return pathname === target.pathname && targetSearch.toString() === current.toString();
+  };
 
   const isMobileSectionActive = (href: string) => {
     if (href === "/") {
@@ -231,6 +244,28 @@ const Header = () => {
   const servicesGroupActive = isMobileSectionActive("/services") && !isMobileSectionActive("/services/packages");
   const stringsGroupActive = isMobileSectionActive(NAV_LINKS.strings.root);
   const racketsGroupActive = isMobileSectionActive(NAV_LINKS.rackets.root);
+  const activeStringBrand = searchParams.get("brand");
+  const activeStringMaterial = searchParams.get("material");
+  const activeRacketBrand = searchParams.get("brand");
+  const activeRentOnly = searchParams.get("rentOnly") === "1";
+  const isStringsRootActive =
+    pathname === NAV_LINKS.strings.root && !activeStringBrand && !activeStringMaterial;
+  const isStringHybridActive =
+    pathname === NAV_LINKS.strings.root && activeStringMaterial === "hybrid";
+  const isStringBrandActive = (href: string) => {
+    const target = new URL(href, "https://dokkaebi-tennis.local");
+    const brand = target.searchParams.get("brand");
+    const material = target.searchParams.get("material");
+    return (
+      pathname === NAV_LINKS.strings.root &&
+      (brand ? activeStringBrand === brand : material === "hybrid" && activeStringMaterial === "hybrid")
+    );
+  };
+  const isRacketsRootActive = pathname === NAV_LINKS.rackets.root && !activeRacketBrand && !activeRentOnly;
+  const isRacketBrandActive = (href: string) => {
+    const target = new URL(href, "https://dokkaebi-tennis.local");
+    return pathname === NAV_LINKS.rackets.root && activeRacketBrand === target.searchParams.get("brand");
+  };
   const boardsGroupActive =
     (isMobileSectionActive("/board") &&
       !["/board/notice", "/board/event", "/board/qna"].some((href) => isMobileSectionActive(href))) ||
@@ -536,10 +571,51 @@ const Header = () => {
                   <span className="inline-flex items-center gap-2.5 text-ui-card-title font-ui-medium"><span className={mobileGroupTitleClass}>스트링</span></span>
                 </AccordionTrigger>
                 <AccordionContent value="strings" className="space-y-0.5 pb-2 pt-1">
-                  <Button variant="ghost" className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.strings.root))} aria-current={isMobileRouteCurrent(NAV_LINKS.strings.root) ? "page" : undefined} onClick={() => guardedPush(NAV_LINKS.strings.root, () => setOpen(false))}>전체 보기<ChevronRight className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" className={mobileMenuItemClass(isMobileRouteCurrent("/products/recommend"))} aria-current={isMobileRouteCurrent("/products/recommend") ? "page" : undefined} onClick={() => guardedPush("/products/recommend", () => setOpen(false))}>스트링 추천<ChevronRight className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" className={mobileMenuItemClass(false)} onClick={() => guardedPush("/products?material=hybrid", () => setOpen(false))}>하이브리드<ChevronRight className="h-3.5 w-3.5" /></Button>
-                  <div className={mobileNestedGroupClass}><Accordion type="single"><AccordionItem value="strings-brand" className="border-none"><AccordionTrigger value="strings-brand" className={mobileNestedTriggerClass}>브랜드</AccordionTrigger><AccordionContent value="strings-brand" className="pb-0 pt-1"><div className="px-1 pt-2"><MobileBrandGrid brands={NAV_LINKS.strings.brands} onPick={(href) => guardedPush(href, () => setOpen(false))} /></div></AccordionContent></AccordionItem></Accordion></div>
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass(isStringsRootActive)}
+                    aria-current={isMobileHrefCurrent(NAV_LINKS.strings.root) ? "page" : undefined}
+                    onClick={() => guardedPush(NAV_LINKS.strings.root, () => setOpen(false))}
+                  >
+                    전체 보기
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass(isMobileSectionActive("/products/recommend"))}
+                    aria-current={isMobileRouteCurrent("/products/recommend") ? "page" : undefined}
+                    onClick={() => guardedPush("/products/recommend", () => setOpen(false))}
+                  >
+                    스트링 추천
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass(isStringHybridActive)}
+                    aria-current={isMobileHrefCurrent("/products?material=hybrid") ? "page" : undefined}
+                    onClick={() => guardedPush("/products?material=hybrid", () => setOpen(false))}
+                  >
+                    하이브리드
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                  <div className={mobileNestedGroupClass}>
+                    <Accordion type="single">
+                      <AccordionItem value="strings-brand" className="border-none">
+                        <AccordionTrigger value="strings-brand" className={mobileNestedTriggerClass}>
+                          브랜드
+                        </AccordionTrigger>
+                        <AccordionContent value="strings-brand" className="pb-0 pt-1">
+                          <div className="px-1 pt-2">
+                            <MobileBrandGrid
+                              brands={NAV_LINKS.strings.brands}
+                              isActive={isStringBrandActive}
+                              onPick={(href) => guardedPush(href, () => setOpen(false))}
+                            />
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -549,11 +625,44 @@ const Header = () => {
                   <span className="inline-flex items-center gap-2.5 text-ui-card-title font-ui-medium"><span className={mobileGroupTitleClass}>중고 라켓</span></span>
                 </AccordionTrigger>
                 <AccordionContent value="rackets" className="space-y-0.5 pb-2 pt-1">
-                  <Button variant="ghost" className={mobileMenuItemClass(isMobileRouteCurrent(NAV_LINKS.rackets.root))} aria-current={isMobileRouteCurrent(NAV_LINKS.rackets.root) ? "page" : undefined} onClick={() => guardedPush(NAV_LINKS.rackets.root, () => setOpen(false))}>전체 보기<ChevronRight className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" className={mobileMenuItemClass(false)} onClick={() => guardedPush("/rackets?rentOnly=1", () => setOpen(false))}>대여 가능한 라켓<ChevronRight className="h-3.5 w-3.5" /></Button>
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass(isRacketsRootActive)}
+                    aria-current={isMobileHrefCurrent(NAV_LINKS.rackets.root) ? "page" : undefined}
+                    onClick={() => guardedPush(NAV_LINKS.rackets.root, () => setOpen(false))}
+                  >
+                    전체 보기
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass(pathname === NAV_LINKS.rackets.root && activeRentOnly)}
+                    aria-current={isMobileHrefCurrent("/rackets?rentOnly=1") ? "page" : undefined}
+                    onClick={() => guardedPush("/rackets?rentOnly=1", () => setOpen(false))}
+                  >
+                    대여 가능한 라켓
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
                   <Button variant="ghost" className={mobileMenuItemClass(isMobileRouteCurrent("/rackets/finder"))} aria-current={isMobileRouteCurrent("/rackets/finder") ? "page" : undefined} onClick={() => guardedPush("/rackets/finder", () => setOpen(false))}>라켓 찾기<ChevronRight className="h-3.5 w-3.5" /></Button>
                   <Button variant="ghost" className={mobileMenuItemClass(isMobileRouteCurrent("/rackets/compare"))} aria-current={isMobileRouteCurrent("/rackets/compare") ? "page" : undefined} onClick={() => guardedPush("/rackets/compare", () => setOpen(false))}>라켓 비교<ChevronRight className="h-3.5 w-3.5" /></Button>
-                  <div className={mobileNestedGroupClass}><Accordion type="single"><AccordionItem value="rackets-brand" className="border-none"><AccordionTrigger value="rackets-brand" className={mobileNestedTriggerClass}>브랜드</AccordionTrigger><AccordionContent value="rackets-brand" className="pb-0 pt-1"><div className="px-1 pt-2"><MobileBrandGrid brands={NAV_LINKS.rackets.brands} onPick={(href) => guardedPush(href, () => setOpen(false))} /></div></AccordionContent></AccordionItem></Accordion></div>
+                  <div className={mobileNestedGroupClass}>
+                    <Accordion type="single">
+                      <AccordionItem value="rackets-brand" className="border-none">
+                        <AccordionTrigger value="rackets-brand" className={mobileNestedTriggerClass}>
+                          브랜드
+                        </AccordionTrigger>
+                        <AccordionContent value="rackets-brand" className="pb-0 pt-1">
+                          <div className="px-1 pt-2">
+                            <MobileBrandGrid
+                              brands={NAV_LINKS.rackets.brands}
+                              isActive={isRacketBrandActive}
+                              onPick={(href) => guardedPush(href, () => setOpen(false))}
+                            />
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 

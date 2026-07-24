@@ -8,12 +8,6 @@ const communityBoardLinks = COMMUNITY_BOARDS_ENABLED
     ]
   : [];
 
-export const NAV_FLAGS = {
-  /** 재질 카테고리(스트링 타입) 노출 온/오프 */
-  SHOW_MATERIAL_MENU: false,
-  SHOW_BRAND_MENU: true,
-};
-
 /** 헤더와 모바일 메뉴가 공유하는 전역 사용자 내비게이션 기준값 */
 export const DESKTOP_NAV_ITEMS = [
   { name: "교체서비스", kind: "services" },
