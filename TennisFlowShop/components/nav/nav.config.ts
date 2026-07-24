@@ -13,9 +13,7 @@ export const DESKTOP_NAV_ITEMS = [
   { name: "교체서비스", kind: "services" },
   { name: "스트링", kind: "strings" },
   { name: "중고 라켓", kind: "rackets" },
-  { name: "패키지", kind: "link", href: "/services/packages" },
   { name: "아카데미", kind: "link", href: "/academy" },
-  { name: "라켓 케어", kind: "link", href: "/racket-care" },
   { name: "커뮤니티", kind: "boards" },
   { name: "고객센터", kind: "support" },
 ] as const;
@@ -57,8 +55,8 @@ export const NAV_LINKS = {
     { name: "텐션 가이드", href: "/services/tension-guide" },
     { name: "가격 안내", href: "/services/pricing" },
     { name: "매장·방문 안내", href: "/services/locations" },
+    { name: "스트링 교체 패키지", href: "/services/packages" },
   ],
-  packages: [{ name: "패키지 안내", href: "/services/packages" }],
   academy: { name: "도깨비테니스 아카데미", href: "/academy" },
   support: [
     { name: "고객센터 홈", href: "/support" },

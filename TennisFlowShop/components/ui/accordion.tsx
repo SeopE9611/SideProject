@@ -102,24 +102,31 @@ export function AccordionTrigger({ value, className, children }: TriggerProps) {
       aria-expanded={open}
       aria-controls={contentId}
       onClick={() => ctx.toggle(value)}
+      data-state={open ? "open" : "closed"}
       className={cn(
-        "flex w-full items-center justify-between py-3 text-left text-ui-body-sm font-medium",
+        "flex w-full items-center justify-between py-3 text-left text-ui-body-sm",
         "focus-visible:ring-2 ring-ring rounded-lg",
         className,
       )}
     >
       <span>{children}</span>
-      <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
+      <ChevronDown
+        className={cn(
+          "h-4 w-4 transition-transform duration-200 motion-reduce:transition-none",
+          open && "rotate-180",
+        )}
+      />
     </button>
   );
 }
 
 type ContentProps = {
   value: string;
+  motion?: "default" | "navigation";
   className?: string;
   children: React.ReactNode;
 };
-export function AccordionContent({ value, className, children }: ContentProps) {
+export function AccordionContent({ value, motion = "default", className, children }: ContentProps) {
   const ctx = React.useContext(AccordionCtx)!;
   const open = ctx.openSet.has(value);
   const triggerId = ctx.getTriggerId(value);
@@ -133,8 +140,16 @@ export function AccordionContent({ value, className, children }: ContentProps) {
       aria-hidden={open ? "false" : "true"}
       data-state={open ? "open" : "closed"}
       className={cn(
-        "grid overflow-hidden transition-all duration-200 ease-out",
-        open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none",
+        motion === "navigation"
+          ? "grid overflow-hidden transition-[grid-template-rows] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+          : "grid overflow-hidden transition-all duration-200 ease-out",
+        motion === "navigation"
+          ? open
+            ? "grid-rows-[1fr]"
+            : "grid-rows-[0fr] pointer-events-none"
+          : open
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0 pointer-events-none",
       )}
     >
       <div className={cn("min-h-0", className)}>{children}</div>
