@@ -23,11 +23,15 @@ const isSectionActive = (pathname: string, href: string) =>
 function isMenuActive(kind: MenuKind, pathname: string) {
   switch (kind) {
     case "services":
-      return isSectionActive(pathname, "/services") && !isSectionActive(pathname, "/services/packages");
+      return isSectionActive(pathname, "/services");
     case "strings":
       return isSectionActive(pathname, "/products");
     case "rackets":
-      return isSectionActive(pathname, "/rackets");
+      return (
+        isSectionActive(pathname, "/rackets") ||
+        isSectionActive(pathname, "/racket-care") ||
+        isSectionActive(pathname, "/mypage/racket-care")
+      );
     case "boards":
       return (
         (isSectionActive(pathname, "/board") &&
@@ -48,23 +52,25 @@ function isMenuActive(kind: MenuKind, pathname: string) {
   }
 }
 
-function isLinkActive(href: string, pathname: string) {
-  if (href === "/racket-care") {
-    return isSectionActive(pathname, href) || isSectionActive(pathname, "/mypage/racket-care");
-  }
-  return isSectionActive(pathname, href);
-}
-
-function isCurrentLink(href: string, pathname: string) {
-  return href === "/racket-care" ? isSectionActive(pathname, href) : pathname === href;
+function isCurrentHref(href: string, pathname: string, currentSearch: string) {
+  const target = new URL(href, "https://dokkaebi-tennis.local");
+  const targetSearch = new URLSearchParams(target.search);
+  const current = new URLSearchParams(currentSearch);
+  targetSearch.sort();
+  current.sort();
+  return pathname === target.pathname && targetSearch.toString() === current.toString();
 }
 
 function CompactMenu({
   kind,
   onLinkClick,
+  pathname,
+  currentSearch,
 }: {
   kind: Exclude<MenuKind, "link" | "strings" | "rackets">;
   onLinkClick: React.MouseEventHandler<HTMLAnchorElement>;
+  pathname: string;
+  currentSearch: string;
 }) {
   const links: readonly MenuLink[] =
     kind === "services"
@@ -76,7 +82,13 @@ function CompactMenu({
   return (
     <div className="w-64 max-w-full space-y-1">
       {links.map((link) => (
-        <Link key={link.href} href={link.href} className={panelLinkClass} onClick={onLinkClick}>
+        <Link
+          key={link.href}
+          href={link.href}
+          aria-current={isCurrentHref(link.href, pathname, currentSearch) ? "page" : undefined}
+          className={panelLinkClass}
+          onClick={onLinkClick}
+        >
           {link.name}
           <ChevronRight className="h-3.5 w-3.5 text-brand-highlight-ink" aria-hidden="true" />
         </Link>
@@ -88,16 +100,19 @@ function CompactMenu({
 function CommerceMegaMenu({
   kind,
   onLinkClick,
+  pathname,
+  currentSearch,
 }: {
   kind: "strings" | "rackets";
   onLinkClick: React.MouseEventHandler<HTMLAnchorElement>;
+  pathname: string;
+  currentSearch: string;
 }) {
   const isStrings = kind === "strings";
   const quickLinks: readonly MenuLink[] = isStrings
     ? [
         { name: "모든 스트링", href: NAV_LINKS.strings.root, description: "전체 상품을 둘러보세요." },
         { name: "스트링 추천", href: "/products/recommend", description: "플레이 성향에 맞춰 추천받으세요." },
-        { name: "하이브리드", href: "/products?material=hybrid", description: "복합 재질 스트링을 확인하세요." },
         { name: "교체서비스 시작하기", href: "/services", description: "전문가 교체서비스를 신청하세요." },
         { name: "텐션 가이드", href: "/services/tension-guide", description: "적정 텐션을 알아보세요." },
       ]
@@ -106,6 +121,7 @@ function CommerceMegaMenu({
         { name: "대여 가능한 라켓", href: "/rackets?rentOnly=1", description: "대여 가능 상품만 확인하세요." },
         { name: "라켓 찾기", href: "/rackets/finder", description: "내게 맞는 라켓을 찾아보세요." },
         { name: "라켓 비교", href: "/rackets/compare", description: "사양을 한눈에 비교하세요." },
+        { name: "라켓 케어", href: "/racket-care", description: "보유 라켓을 등록하고 관리하세요." },
       ];
   const brands = isStrings ? NAV_LINKS.strings.brands : NAV_LINKS.rackets.brands;
 
@@ -122,7 +138,13 @@ function CommerceMegaMenu({
         <p className="mb-2 text-ui-label font-ui-medium text-muted-foreground">빠른 이동</p>
         <div className="space-y-1">
           {quickLinks.map((link) => (
-            <Link key={link.href} href={link.href} className={panelLinkClass} onClick={onLinkClick}>
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={isCurrentHref(link.href, pathname, currentSearch) ? "page" : undefined}
+              className={panelLinkClass}
+              onClick={onLinkClick}
+            >
               <span>
                 <span className="block">{link.name}</span>
                 <span className="block text-ui-caption font-normal text-muted-foreground">
@@ -144,7 +166,11 @@ function CommerceMegaMenu({
             <Link
               key={brand.href}
               href={brand.href}
-              className="flex min-h-10 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-current={isCurrentHref(brand.href, pathname, currentSearch) ? "page" : undefined}
+              className={cn(
+                "flex min-h-10 items-center rounded-control px-3 text-ui-body-sm font-ui-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isCurrentHref(brand.href, pathname, currentSearch) && "bg-muted/60",
+              )}
               onClick={onLinkClick}
             >
               {brand.name}
@@ -195,8 +221,7 @@ export default function DesktopHeaderNavigation() {
   return (
     <nav className="hidden w-full items-center justify-center gap-1 whitespace-nowrap border-t border-border/70 py-1 bp-lg:flex" aria-label="주요 메뉴">
       {DESKTOP_NAV_ITEMS.map((item) => {
-        const active =
-          item.kind === "link" ? isLinkActive(item.href, pathname) : isMenuActive(item.kind, pathname);
+        const active = item.kind === "link" ? false : isMenuActive(item.kind, pathname);
 
         if (item.kind === "link") {
           return (
@@ -218,9 +243,19 @@ export default function DesktopHeaderNavigation() {
         const isOpen = openMenu === item.kind;
         const content =
           item.kind === "strings" || item.kind === "rackets" ? (
-            <CommerceMegaMenu kind={item.kind} onLinkClick={closeAfterNavigation} />
+            <CommerceMegaMenu
+              kind={item.kind}
+              onLinkClick={closeAfterNavigation}
+              pathname={pathname}
+              currentSearch={searchParams.toString()}
+            />
           ) : (
-            <CompactMenu kind={item.kind} onLinkClick={closeAfterNavigation} />
+            <CompactMenu
+              kind={item.kind}
+              onLinkClick={closeAfterNavigation}
+              pathname={pathname}
+              currentSearch={searchParams.toString()}
+            />
           );
 
         return (
