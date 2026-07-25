@@ -91,7 +91,7 @@
 }
 
 .hero {
-  padding-block: 42px 72px;
+  padding-block: 42px 0;
 }
 
 .heroShell {
@@ -147,6 +147,72 @@
 .heroImageWrap {
   position: absolute;
   inset: 0;
+}
+
+.quickNav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.quickNavItem {
+  display: flex;
+  min-width: 0;
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  background: hsl(var(--card));
+  padding: 16px 18px;
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+.quickNavCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.quickNavTitle {
+  color: hsl(var(--foreground));
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.quickNavDescription {
+  margin-top: 4px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.quickNavIcon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 14px;
+  background: hsl(var(--brand-highlight-muted));
+  color: hsl(var(--foreground));
+}
+
+.quickNavItem:focus-visible {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
 }
 
 .pathGrid {
@@ -248,44 +314,209 @@
   background: hsl(var(--card));
 }
 
-.recoLayout {
-  display: grid;
-  grid-template-columns: minmax(220px, 0.68fr) minmax(0, 1.32fr);
-  gap: 14px;
+.stringSection {
+  padding-block: 84px 76px;
 }
 
-.purposeList {
-  display: grid;
-  align-content: start;
+.stringSectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.stringSectionEyebrow {
+  margin: 0 0 10px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.11em;
+}
+
+.stringSectionTitle {
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-family: var(--home-brand-font-family);
+  font-size: clamp(36px, 4vw, 52px);
+  font-weight: 500;
+  font-synthesis: none;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.stringSectionDescription {
+  max-width: 640px;
+  margin: 14px 0 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.stringSectionMore {
+  flex-shrink: 0;
+}
+
+.purposeTabs {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
-.purposeList,
+.purposeTab {
+  min-height: 42px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--card));
+  padding: 10px 18px;
+  color: hsl(var(--foreground));
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: keep-all;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.purposeTab:focus-visible {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
+}
+
+.purposeTabActive {
+  border-color: hsl(var(--surface-inverse));
+  background: hsl(var(--surface-inverse));
+  color: hsl(var(--surface-inverse-foreground));
+}
+
+.stringCuration {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.76fr) minmax(0, 1.24fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.curationVisual {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 30px;
+  background: hsl(var(--muted));
+  color: hsl(var(--surface-inverse-foreground));
+}
+
+.curationVisual img {
+  object-position: center;
+}
+
+.curationVisualOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 2%, transparent) 0%,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 18%, transparent) 44%,
+    color-mix(in srgb, hsl(var(--surface-inverse)) 88%, transparent) 100%
+  );
+}
+
+.curationVisualCopy {
+  position: absolute;
+  z-index: 1;
+  inset: auto 0 0;
+  padding: 30px;
+}
+
+.curationVisualKicker {
+  margin: 0;
+  color: hsl(var(--brand-highlight));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.09em;
+}
+
+.curationVisualTitle {
+  margin: 12px 0 0;
+  font-family: var(--home-brand-font-family);
+  font-size: clamp(32px, 3.5vw, 42px);
+  font-weight: 500;
+  font-synthesis: none;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.curationVisualDescription {
+  max-width: 380px;
+  margin: 14px 0 0;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.curationVisualLink {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  border-radius: 999px;
+  background: hsl(var(--brand-highlight));
+  padding: 10px 16px;
+  color: hsl(var(--brand-highlight-foreground));
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.curationProducts {
+  min-width: 0;
+  padding: 24px 0 18px 6px;
+}
+
+.curationProductsHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.curationProductsEyebrow {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.curationProductsTitle {
+  margin: 6px 0 0;
+  color: hsl(var(--foreground));
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
 .pathGrid,
 .stepTabs {
   scrollbar-width: none;
 }
 
-.purposeList::-webkit-scrollbar,
 .pathGrid::-webkit-scrollbar,
 .stepTabs::-webkit-scrollbar {
   display: none;
-}
-
-.recoPanel {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 30px;
-  background: hsl(var(--card));
-}
-
-.recoImageWrap {
-  position: relative;
-  height: 250px;
-}
-
-.recoContent {
-  padding: 28px;
 }
 
 .packages {
@@ -782,16 +1013,42 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .quickNavItem:hover {
+    border-color: color-mix(in srgb, hsl(var(--foreground)) 20%, hsl(var(--border)));
+    background: color-mix(in srgb, hsl(var(--muted)) 32%, hsl(var(--card)));
+    transform: translateY(-2px);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
   .pathCardIdle:hover {
     box-shadow: 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
   }
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .purposeTab:not(.purposeTabActive):hover {
+    border-color: color-mix(in srgb, hsl(var(--foreground)) 22%, hsl(var(--border)));
+    background: color-mix(in srgb, hsl(var(--muted)) 36%, hsl(var(--card)));
+  }
+
+  .curationVisualLink:hover {
+    background: color-mix(in srgb, hsl(var(--brand-highlight)) 88%, hsl(var(--card)));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .quickNavItem,
+  .purposeTab,
+  .curationVisualLink,
   .pathCard,
   .racketInventoryRow,
   .racketBrandRailButton {
     transition: none;
+  }
+
+  .quickNavItem:hover {
+    transform: none;
   }
 
   .racketSkeletonRow {
@@ -803,21 +1060,11 @@
   }
 }
 
-@media (min-width: 1200px) {
-  .purposeList {
-    position: sticky;
-    top: calc(var(--header-h, 80px) + 20px);
-    align-self: start;
-    z-index: 2;
-  }
-}
-
 @media (max-width: 1199px) {
   .sectionHead,
   .heroGrid,
   .pathDetail,
   .stepBody,
-  .recoLayout,
   .infoGrid {
     grid-template-columns: 1fr;
   }
@@ -826,10 +1073,20 @@
     min-height: 360px;
   }
 
-  .purposeList {
-    position: static;
-    display: flex;
-    overflow-x: auto;
+  .stringSectionHeader {
+    align-items: flex-start;
+  }
+
+  .stringCuration {
+    grid-template-columns: 1fr;
+  }
+
+  .curationVisual {
+    min-height: 340px;
+  }
+
+  .curationProducts {
+    padding: 0;
   }
 }
 
@@ -864,7 +1121,7 @@
   }
 
   .hero {
-    padding-block: 16px 46px;
+    padding-block: 16px 0;
   }
 
   .heroGrid {
@@ -883,6 +1140,122 @@
 
   .heroVisual {
     min-height: 240px;
+  }
+
+  .quickNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .quickNavItem {
+    min-height: 72px;
+    gap: 10px;
+    border-radius: 16px;
+    padding: 13px 14px;
+  }
+
+  .quickNavTitle {
+    font-size: 14px;
+  }
+
+  .quickNavDescription {
+    font-size: 11px;
+  }
+
+  .quickNavIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+  }
+
+  .stringSection {
+    padding-block: 44px 36px;
+  }
+
+  .stringSectionHeader {
+    display: block;
+    margin-bottom: 18px;
+  }
+
+  .stringSectionEyebrow {
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+
+  .stringSectionTitle {
+    font-size: 32px;
+    line-height: 1.1;
+  }
+
+  .stringSectionDescription {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .stringSectionMore {
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .purposeTabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .purposeTab {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .purposeTab:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .stringCuration {
+    gap: 14px;
+  }
+
+  .curationVisual {
+    min-height: 320px;
+    border-radius: 24px;
+  }
+
+  .curationVisualCopy {
+    padding: 22px;
+  }
+
+  .curationVisualTitle {
+    font-size: 30px;
+  }
+
+  .curationVisualDescription {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
+  .curationVisualLink {
+    min-height: 40px;
+    margin-top: 18px;
+  }
+
+  .curationProducts {
+    padding: 0;
+  }
+
+  .curationProductsHeader {
+    margin-bottom: 14px;
+  }
+
+  .curationProductsTitle {
+    font-size: 20px;
   }
 
   .pathGrid {
@@ -940,14 +1313,6 @@
     grid-column: 2 / 3;
     grid-row: 1 / 3;
     align-self: center;
-  }
-
-  .recoImageWrap {
-    height: 180px;
-  }
-
-  .recoContent {
-    padding: 18px;
   }
 
   .utilityGrid {

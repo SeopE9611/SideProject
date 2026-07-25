@@ -8,7 +8,7 @@ import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
-import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
+import { RACKET_BRANDS, racketBrandLabel, stringBrandLabel } from "@/lib/constants";
 import type {
   HomePreviewData,
   HomePreviewPackage,
@@ -23,7 +23,16 @@ import {
 } from "@/lib/points.policy";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  ShoppingBag,
+  Wrench,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -65,9 +74,6 @@ const getMerchandisingBadges = (product: ApiProduct): MerchandisingBadge[] => {
 const BRAND_KEYS = ["all", ...RACKET_BRANDS.map((b) => b.value as string)] as const;
 type BrandKey = (typeof BRAND_KEYS)[number];
 
-const STRING_BRAND_KEYS = ["all", ...STRING_BRANDS.map((b) => b.value)] as const;
-type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
-
 type BrandRailState = {
   canScrollPrev: boolean;
   canScrollNext: boolean;
@@ -75,7 +81,6 @@ type BrandRailState = {
 };
 
 const BRAND_RAIL_SCROLL_EPSILON = 2;
-const STRING_BRAND_RAIL_ID = "home-string-brand-rail";
 const RACKET_BRAND_RAIL_ID = "home-racket-brand-rail";
 const BRAND_RAIL_EDGE_PADDING = 40;
 
@@ -86,6 +91,33 @@ type PromoBanner = {
   alt?: string;
   href?: string;
 };
+
+const HOME_QUICK_LINKS = [
+  {
+    href: "/products",
+    title: "스트링 쇼핑",
+    description: "추천·인기 상품",
+    icon: ShoppingBag,
+  },
+  {
+    href: "/services#service-start",
+    title: "교체서비스",
+    description: "직접 선택·상담",
+    icon: Wrench,
+  },
+  {
+    href: "/rackets",
+    title: "인증 중고 라켓",
+    description: "구매·대여 재고",
+    icon: BadgeCheck,
+  },
+  {
+    href: "/academy",
+    title: "테니스 아카데미",
+    description: "레슨·클래스",
+    icon: GraduationCap,
+  },
+] as const;
 
 const PROMO_BANNERS: PromoBanner[] = (() => {
   const raw = process.env.NEXT_PUBLIC_HOME_PROMO_BANNERS_JSON;
@@ -271,15 +303,6 @@ const getImageSrc = (images?: string[]) => {
 const homeCtaHighlight = buttonVariants({ variant: "highlight", size: "tall" });
 const homeCtaDefault = buttonVariants({ variant: "default", size: "tall" });
 const homeCtaOutline = buttonVariants({ variant: "outline", size: "tall" });
-const brandRailClass =
-  "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:none] bp-sm:gap-2.5 [&::-webkit-scrollbar]:hidden";
-const getBrandTabClass = (isActive: boolean) =>
-  cn(
-    "min-h-11 shrink-0 whitespace-nowrap rounded-control border px-5 py-2.5 text-ui-body-sm font-medium transition-[background-color,color,border-color,opacity] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-    isActive
-      ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
-      : "border-border bg-card text-foreground hover:border-foreground/20 hover:bg-muted/30",
-  );
 
 const racketBrandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
@@ -319,12 +342,6 @@ function HomeEditorialHeader({
 
 export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
-  const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
-  const [stringBrandRailState, setStringBrandRailState] = useState<BrandRailState>({
-    canScrollPrev: false,
-    canScrollNext: false,
-    hasOverflow: false,
-  });
   const [racketBrandRailState, setRacketBrandRailState] = useState<BrandRailState>({
     canScrollPrev: false,
     canScrollNext: false,
@@ -334,7 +351,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeStepKey, setActiveStepKey] = useState<ProcessStepKey>("apply");
   const [activePurpose, setActivePurpose] = useState<PurposeKey>("comfort");
   const router = useRouter();
-  const stringBrandRailRef = useRef<HTMLDivElement>(null);
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
 
   const getNextBrandRailState = useCallback((rail: HTMLDivElement): BrandRailState => {
@@ -345,20 +361,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       hasOverflow: maxScrollLeft > BRAND_RAIL_SCROLL_EPSILON,
     };
   }, []);
-
-  const updateStringBrandRailState = useCallback(() => {
-    const rail = stringBrandRailRef.current;
-    if (!rail) return;
-    const nextState = getNextBrandRailState(rail);
-
-    setStringBrandRailState((prev) =>
-      prev.canScrollPrev === nextState.canScrollPrev &&
-      prev.canScrollNext === nextState.canScrollNext &&
-      prev.hasOverflow === nextState.hasOverflow
-        ? prev
-        : nextState,
-    );
-  }, [getNextBrandRailState]);
 
   const updateRacketBrandRailState = useCallback(() => {
     const rail = racketBrandRailRef.current;
@@ -389,8 +391,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   );
 
   useEffect(() => {
-    const rails = [stringBrandRailRef.current, racketBrandRailRef.current].filter(
-      (rail): rail is HTMLDivElement => Boolean(rail),
+    const rails = [racketBrandRailRef.current].filter((rail): rail is HTMLDivElement =>
+      Boolean(rail),
     );
 
     const handleWheel = (event: WheelEvent) => {
@@ -414,10 +416,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   }, []);
 
   useEffect(() => {
-    const rails = [
-      { rail: stringBrandRailRef.current, update: updateStringBrandRailState },
-      { rail: racketBrandRailRef.current, update: updateRacketBrandRailState },
-    ].filter((item): item is { rail: HTMLDivElement; update: () => void } => Boolean(item.rail));
+    const rails = [{ rail: racketBrandRailRef.current, update: updateRacketBrandRailState }].filter(
+      (item): item is { rail: HTMLDivElement; update: () => void } => Boolean(item.rail),
+    );
     if (rails.length === 0) return;
 
     rails.forEach(({ rail, update }) => {
@@ -438,31 +439,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       window.removeEventListener("resize", handleResize);
       resizeObserver?.disconnect();
     };
-  }, [updateRacketBrandRailState, updateStringBrandRailState]);
-
-  useEffect(() => {
-    const rail = stringBrandRailRef.current;
-    if (!rail) return;
-    const activeButton = rail.querySelector<HTMLButtonElement>(
-      `[data-string-brand="${activeStringBrand}"]`,
-    );
-    if (!activeButton) return;
-
-    const railStart = rail.scrollLeft;
-    const railEnd = railStart + rail.clientWidth;
-    const buttonStart = activeButton.offsetLeft;
-    const buttonEnd = buttonStart + activeButton.offsetWidth;
-    const edgePadding = BRAND_RAIL_EDGE_PADDING;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const behavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
-
-    if (buttonStart < railStart + edgePadding) {
-      rail.scrollTo({ left: Math.max(0, buttonStart - edgePadding), behavior });
-    } else if (buttonEnd > railEnd - edgePadding) {
-      rail.scrollTo({ left: buttonEnd - rail.clientWidth + edgePadding, behavior });
-    }
-  }, [activeStringBrand]);
+  }, [updateRacketBrandRailState]);
 
   useEffect(() => {
     const rail = racketBrandRailRef.current;
@@ -501,12 +478,18 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const rb = params.get("racketBrand") as BrandKey | null;
-    const sb = params.get("stringBrand") as StringBrandKey | null;
 
-    if (rb && BRAND_KEYS.includes(rb)) setActiveBrand(rb);
-    if (sb && STRING_BRAND_KEYS.includes(sb)) setActiveStringBrand(sb);
+    const url = new URL(window.location.href);
+    const rb = url.searchParams.get("racketBrand") as BrandKey | null;
+
+    if (rb && BRAND_KEYS.includes(rb)) {
+      setActiveBrand(rb);
+    }
+
+    if (url.searchParams.has("stringBrand")) {
+      url.searchParams.delete("stringBrand");
+      window.history.replaceState(null, "", url.toString());
+    }
   }, []);
 
   const firstRender = useRef(true);
@@ -521,23 +504,21 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const [shouldLoadStrings, setShouldLoadStrings] = useState(hasInitialProducts);
   const [shouldLoadRackets, setShouldLoadRackets] = useState(hasInitialRackets);
   const stringsFetchedRef = useRef(hasInitialProducts);
-  const [stringByBrand, setStringByBrand] = useState<Record<string, ApiProduct[]>>({});
-  const [allProductsTotal, setAllProductsTotal] = useState(initialHomeData?.products?.total ?? 0);
-  const [stringTotalsByBrand, setStringTotalsByBrand] = useState<Record<string, number>>({});
-  const [stringsLoadingByBrand, setStringsLoadingByBrand] = useState<Record<string, boolean>>({});
-  const [stringsErrorByBrand, setStringsErrorByBrand] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     if (firstRender.current) {
       firstRender.current = false;
       return;
     }
+
     const url = new URL(window.location.href);
     url.searchParams.set("racketBrand", activeBrand);
-    url.searchParams.set("stringBrand", activeStringBrand);
+    url.searchParams.delete("stringBrand");
+
     window.history.replaceState(null, "", url.toString());
-  }, [activeBrand, activeStringBrand]);
+  }, [activeBrand]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -677,40 +658,12 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const items: ApiProduct[] = json.products ?? json.items ?? [];
-      const total =
-        typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
       setAllProducts(items);
-      setAllProductsTotal(total);
     } catch {
       setAllProducts([]);
-      setAllProductsTotal(0);
       setProductsError(true);
     } finally {
       setLoading(false);
-    }
-  }, []);
-
-  const loadStringBrand = useCallback(async (brand: StringBrandKey) => {
-    if (brand === "all") return;
-    setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
-    setStringsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
-    try {
-      const res = await fetch(`/api/products?brand=${brand}&sort=createdAt_desc&limit=10`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      const items: ApiProduct[] = json.products ?? json.items ?? [];
-      const total =
-        typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
-      setStringByBrand((prev) => ({ ...prev, [brand]: items }));
-      setStringTotalsByBrand((prev) => ({ ...prev, [brand]: total }));
-    } catch {
-      setStringByBrand((prev) => ({ ...prev, [brand]: [] }));
-      setStringTotalsByBrand((prev) => ({ ...prev, [brand]: 0 }));
-      setStringsErrorByBrand((prev) => ({ ...prev, [brand]: true }));
-    } finally {
-      setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: false }));
     }
   }, []);
 
@@ -721,34 +674,27 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   }, [fetchHomeProducts, shouldLoadStrings]);
 
   useEffect(() => {
-    if (!shouldLoadStrings || activeStringBrand === "all") return;
-    if (stringByBrand[activeStringBrand]) return;
-    void loadStringBrand(activeStringBrand);
-  }, [activeStringBrand, loadStringBrand, shouldLoadStrings, stringByBrand]);
-
-  useEffect(() => {
     if (!shouldLoadRackets) return;
     if (racketsFetchedRef.current.has(activeBrand)) return;
     racketsFetchedRef.current.add(activeBrand);
     void loadUsedRackets(activeBrand);
   }, [activeBrand, loadUsedRackets, shouldLoadRackets]);
 
-  const homeStringProducts = useMemo(() => allProducts, [allProducts]);
-  const premiumItemsSource = useMemo(() => {
-    if (activeStringBrand === "all") return homeStringProducts;
-    return stringByBrand[activeStringBrand] ?? [];
-  }, [activeStringBrand, homeStringProducts, stringByBrand]);
-
   const sortedProductsByPurpose = useMemo(() => {
-    return premiumItemsSource
+    return allProducts
       .map((product, index) => {
         const features = product.features;
         const score = getPurposeScore(features, activePurpose);
-        return { product, index, score };
+
+        return {
+          product,
+          index,
+          score,
+        };
       })
       .sort((a, b) => (b.score === a.score ? a.index - b.index : b.score - a.score))
       .map(({ product }) => product);
-  }, [activePurpose, premiumItemsSource]);
+  }, [activePurpose, allProducts]);
 
   const premiumItems: HomeCardItem[] = useMemo(
     () =>
@@ -777,20 +723,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const activePurposeInfo =
     PURPOSES.find((purpose) => purpose.key === activePurpose) ?? PURPOSES[0];
   const recommendationMoreHref = useMemo(
-    () => getPurposeProductHref(activePurpose, activeStringBrand),
-    [activePurpose, activeStringBrand],
+    () => getPurposeProductHref(activePurpose),
+    [activePurpose],
   );
-  const stringProductsLoading =
-    !shouldLoadStrings ||
-    (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]));
-  const stringProductsError =
-    activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand]);
+
+  const stringProductsLoading = !shouldLoadStrings || loading;
+  const stringProductsError = productsError;
+
   const retryStringProducts = () => {
-    if (activeStringBrand === "all") {
-      void fetchHomeProducts();
-      return;
-    }
-    void loadStringBrand(activeStringBrand);
+    void fetchHomeProducts();
   };
   return (
     <div className={styles.page}>
@@ -805,22 +746,27 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <div className={styles.heroGrid}>
               <div className={styles.heroCopy}>
                 <span className="w-fit rounded-full bg-brand-highlight px-3 py-1.5 text-ui-label font-medium text-brand-highlight-foreground">
-                  스트링 교체서비스
+                  스트링 교체 전문점
                 </span>
+
                 <h1 className={styles.heroTitle}>
-                  스트링부터 텐션까지
-                  <span className={styles.heroTitleSecondLine}>내 플레이에 맞게</span>
+                  스트링 선택부터
+                  <span className={styles.heroTitleSecondLine}>장착까지 한 번에</span>
                 </h1>
+
                 <p className="mt-5 max-w-2xl break-keep text-ui-body leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body-lg">
-                  스트링 선택부터 텐션 상담, 라켓 접수와 수령까지. 복잡한 교체 과정을 쉽게
-                  안내해드려요.
+                  상품을 고르는 순간부터 장착 완료까지 한 흐름으로 연결합니다. 직접 선택이 어렵다면
+                  플레이 성향에 맞춰 추천받을 수 있어요.
                 </p>
+
                 <div className="mt-7 grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-                  <Link className={homeCtaHighlight} href="/services#service-start">
-                    교체서비스 신청하기 <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  <Link className={homeCtaHighlight} href="/products">
+                    추천 스트링 보기
+                    <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </Link>
-                  <Link className={homeCtaDefault} href="/products">
-                    스트링 둘러보기
+
+                  <Link className={homeCtaDefault} href="/services#service-start">
+                    교체서비스 신청
                   </Link>
                 </div>
               </div>
@@ -838,6 +784,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
             </div>
           </div>
+          <nav className={styles.quickNav} aria-label="주요 서비스 바로가기">
+            {HOME_QUICK_LINKS.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <Link key={item.href} href={item.href} className={styles.quickNavItem}>
+                  <span className={styles.quickNavCopy}>
+                    <strong className={styles.quickNavTitle}>{item.title}</strong>
+                    <span className={styles.quickNavDescription}>{item.description}</span>
+                  </span>
+
+                  <span className={styles.quickNavIcon} aria-hidden="true">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
         </SiteContainer>
       </section>
 
@@ -901,133 +865,107 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </section>
       )}
 
-      <section ref={stringsSectionRef} className={styles.section} id="strings">
+      <section
+        ref={stringsSectionRef}
+        className={cn(styles.section, styles.stringSection)}
+        id="strings"
+      >
         <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="01"
-            eyebrow="플레이 목적별 추천"
-            title="플레이 스타일에 맞는 스트링을 찾아보세요."
-            description="편안함, 스핀, 컨트롤, 내구성 중 원하는 기준을 선택하면 관련 스트링을 먼저 보여드려요."
-          />
-          <div className={styles.recoLayout}>
-            <div className={styles.purposeList}>
-              {PURPOSES.map((purpose) => (
+          <header className={styles.stringSectionHeader}>
+            <div>
+              <p className={styles.stringSectionEyebrow}>01 · STRING CURATION</p>
+
+              <h2 className={styles.stringSectionTitle}>플레이 스타일별 추천 스트링</h2>
+
+              <p className={styles.stringSectionDescription}>
+                복잡한 브랜드 필터 대신 원하는 플레이 기준을 선택하고 실제 상품부터 확인하세요.
+              </p>
+            </div>
+
+            <Link className={cn(homeCtaOutline, styles.stringSectionMore)} href="/products">
+              전체 스트링 보기
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          </header>
+
+          <div className={styles.purposeTabs} role="tablist" aria-label="스트링 추천 기준">
+            {PURPOSES.map((purpose) => {
+              const active = activePurpose === purpose.key;
+
+              return (
                 <button
                   key={purpose.key}
                   type="button"
-                  aria-pressed={activePurpose === purpose.key}
+                  role="tab"
+                  aria-selected={active}
+                  aria-controls="home-string-curation-products"
                   onClick={() => setActivePurpose(purpose.key)}
-                  className={cn(
-                    "flex min-w-40 items-center justify-between rounded-control border px-4 py-4 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                    activePurpose === purpose.key
-                      ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
-                      : "border-border bg-card text-foreground hover:bg-muted/30",
-                  )}
+                  className={cn(styles.purposeTab, active && styles.purposeTabActive)}
                 >
-                  <span>{purpose.title}</span>
-                  <span
-                    className={
-                      activePurpose === purpose.key
-                        ? "text-brand-highlight"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {purpose.no}
-                  </span>
+                  {purpose.title}
                 </button>
-              ))}
-            </div>
-            <div className={styles.recoPanel}>
-              <div className={styles.recoImageWrap}>
-                <Image
-                  src="/images/home/home-string-product-showcase.webp"
-                  alt="테니스 스트링 상품 쇼케이스"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1199px) 100vw, 920px"
-                />
+              );
+            })}
+          </div>
+
+          <div className={styles.stringCuration}>
+            <article className={styles.curationVisual}>
+              <Image
+                src="/images/home/home-string-product-showcase.webp"
+                alt="테니스 스트링 상품 큐레이션"
+                fill
+                className="object-cover"
+                sizes="(max-width: 767px) calc(100vw - 24px), (max-width: 1199px) calc(100vw - 48px), 420px"
+              />
+
+              <div className={styles.curationVisualOverlay} aria-hidden="true" />
+
+              <div className={styles.curationVisualCopy}>
+                <p className={styles.curationVisualKicker}>PLAY STYLE {activePurposeInfo.no}</p>
+
+                <h3 className={styles.curationVisualTitle}>{activePurposeInfo.title}</h3>
+
+                <p className={styles.curationVisualDescription}>{activePurposeInfo.desc}</p>
+
+                <Link className={styles.curationVisualLink} href={recommendationMoreHref}>
+                  이 기준 상품 더 보기
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
               </div>
-              <div className={styles.recoContent}>
-                <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}>
-                  {activePurposeInfo.title}
-                </h3>
-                <p className="mt-2 break-keep text-ui-body text-muted-foreground">
-                  {activePurposeInfo.desc}
-                </p>
-                <div className="mt-5 flex max-w-full items-center gap-2 overflow-hidden">
-                  <button
-                    type="button"
-                    aria-label="이전 브랜드 보기"
-                    aria-controls={STRING_BRAND_RAIL_ID}
-                    disabled={!stringBrandRailState.canScrollPrev}
-                    onClick={() => scrollBrandRail(stringBrandRailRef, -1)}
-                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
-                  >
-                    <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-                  </button>
-                  <div className="relative min-w-0 flex-1">
-                    <div
-                      id={STRING_BRAND_RAIL_ID}
-                      className={brandRailClass}
-                      ref={stringBrandRailRef}
-                    >
-                      <button
-                        type="button"
-                        data-string-brand="all"
-                        aria-pressed={activeStringBrand === "all"}
-                        onClick={() => setActiveStringBrand("all")}
-                        className={getBrandTabClass(activeStringBrand === "all")}
-                      >
-                        전체
-                      </button>
-                      {STRING_BRANDS.map((b) => (
-                        <button
-                          key={b.value}
-                          type="button"
-                          data-string-brand={b.value}
-                          aria-pressed={activeStringBrand === b.value}
-                          onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                          className={getBrandTabClass(activeStringBrand === b.value)}
-                        >
-                          {b.label}
-                        </button>
-                      ))}
-                    </div>
-                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollPrev && (
-                      <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-card to-transparent" />
-                    )}
-                    {stringBrandRailState.hasOverflow && stringBrandRailState.canScrollNext && (
-                      <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent" />
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    aria-label="다음 브랜드 보기"
-                    aria-controls={STRING_BRAND_RAIL_ID}
-                    disabled={!stringBrandRailState.canScrollNext}
-                    onClick={() => scrollBrandRail(stringBrandRailRef, 1)}
-                    className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control border border-border bg-card text-foreground transition-[background-color,color,border-color,opacity] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40 bp-sm:inline-flex"
-                  >
-                    <ChevronRight aria-hidden="true" className="h-4 w-4" />
-                  </button>
+            </article>
+
+            <div
+              id="home-string-curation-products"
+              className={styles.curationProducts}
+              role="tabpanel"
+              aria-live="polite"
+            >
+              <div className={styles.curationProductsHeader}>
+                <div>
+                  <p className={styles.curationProductsEyebrow}>추천 상품</p>
+
+                  <h3 className={styles.curationProductsTitle}>
+                    {activePurposeInfo.title} 기준으로 먼저 볼 상품
+                  </h3>
                 </div>
-                <HorizontalProducts
-                  title={activePurposeInfo.title}
-                  subtitle={activePurposeInfo.desc}
-                  items={premiumItems}
-                  moreHref={recommendationMoreHref}
-                  variant="home"
-                  showHeader={false}
-                  showMoreCard={true}
-                  loading={stringProductsLoading}
-                  error={stringProductsError}
-                  onRetry={retryStringProducts}
-                  emptyTitle="추천할 스트링이 없습니다"
-                  emptyDescription="다른 플레이 기준이나 브랜드를 선택해보세요."
-                  errorTitle="스트링을 불러오지 못했어요"
-                  errorDescription="잠시 후 다시 시도해 주세요."
-                />
               </div>
+
+              <HorizontalProducts
+                title={activePurposeInfo.title}
+                subtitle={activePurposeInfo.desc}
+                items={premiumItems}
+                moreHref={recommendationMoreHref}
+                variant="home"
+                showHeader={false}
+                showMoreCard={false}
+                loading={stringProductsLoading}
+                error={stringProductsError}
+                onRetry={retryStringProducts}
+                emptyTitle="추천할 스트링이 없습니다"
+                emptyDescription="다른 플레이 기준을 선택해보세요."
+                errorTitle="스트링을 불러오지 못했어요"
+                errorDescription="잠시 후 다시 시도해 주세요."
+              />
             </div>
           </div>
         </SiteContainer>
@@ -1473,16 +1411,11 @@ const PURPOSE_PRODUCT_QUERY: Record<PurposeKey, string> = {
   beginner: "comfort=70&control=70",
 };
 
-function getPurposeProductHref(purpose: PurposeKey, brand: StringBrandKey) {
+function getPurposeProductHref(purpose: PurposeKey) {
   const params = new URLSearchParams(PURPOSE_PRODUCT_QUERY[purpose]);
-
-  if (brand !== "all") {
-    params.set("brand", brand);
-  }
 
   return `/products?${params.toString()}#product-list`;
 }
-
 function getPurposeScore(features: ApiProduct["features"], purpose: PurposeKey) {
   switch (purpose) {
     case "comfort":
