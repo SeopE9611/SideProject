@@ -215,103 +215,230 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
 }
 
-.pathGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+.stringingServiceSection {
+  padding-block: 92px;
+  background: hsl(var(--surface-inverse));
+  color: hsl(var(--surface-inverse-foreground));
+  scroll-margin-top: 80px;
 }
 
-.pathCard {
-  position: relative;
-  min-height: 220px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 22px;
-  background: hsl(var(--card));
-  padding: 22px;
-  overflow: hidden;
-  text-align: left;
+.stringingServiceHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 48px;
+  align-items: end;
+  padding-bottom: 38px;
+  border-bottom: 1px solid
+    color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 18%, transparent);
+}
+
+.stringingServiceEyebrow {
+  margin: 0 0 14px;
+  color: hsl(var(--brand-highlight));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+}
+
+.stringingServiceTitle {
+  margin: 0;
+  max-width: 760px;
+  color: hsl(var(--surface-inverse-foreground));
+  font-size: clamp(40px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.stringingServiceTitle span {
+  display: block;
+}
+
+.stringingServiceDescription {
+  margin: 0;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 16px;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.stringingServiceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  padding-top: 48px;
+}
+
+.applicationPathColumn {
+  min-width: 0;
+  padding-right: 48px;
+}
+
+.applicationPathHeading h3,
+.serviceProcessHeading h3 {
+  margin: 0;
+  color: hsl(var(--surface-inverse-foreground));
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.applicationPathHeading p,
+.serviceProcessHeading p {
+  margin: 7px 0 0;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.applicationPathTabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.applicationPathTab {
+  display: flex;
+  min-width: 0;
+  min-height: 62px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid
+    color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 24%, transparent);
+  border-radius: 12px;
+  background: transparent;
+  padding: 10px 12px;
+  color: hsl(var(--surface-inverse-foreground));
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  word-break: keep-all;
   transition:
     border-color 0.2s,
     background-color 0.2s,
-    box-shadow 0.2s;
+    color 0.2s;
 }
 
-.pathCardIdle:hover {
-  border-color: color-mix(in srgb, hsl(var(--foreground)) 24%, hsl(var(--border)));
+.applicationPathTab span {
+  color: hsl(var(--brand-highlight));
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.pathCardActive {
+.applicationPathTabActive {
   border-color: hsl(var(--brand-highlight));
-  background: color-mix(in srgb, hsl(var(--brand-highlight-muted)) 48%, hsl(var(--card)));
-  box-shadow: 0 0 0 2px color-mix(in srgb, hsl(var(--brand-highlight)) 36%, transparent);
-}
-
-.pathDetail {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  min-height: 280px;
-  margin-top: 15px;
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 22px;
-  background: hsl(var(--card));
-}
-
-.detailCopy {
-  padding: 36px;
-}
-
-.detailPreview {
-  padding: 30px;
-  background: hsl(var(--surface-inverse));
-  color: hsl(var(--surface-inverse-foreground));
-}
-
-.processWrap {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 30px;
-  background: hsl(var(--card));
-}
-
-.stepTabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  min-height: 56px;
-}
-
-.stepBody {
-  display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-}
-
-.stepCopy {
-  padding: 34px 36px;
   background: hsl(var(--brand-highlight));
   color: hsl(var(--brand-highlight-foreground));
 }
 
-.stepMeta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+.applicationPathTabActive span {
+  color: hsl(var(--brand-highlight-foreground));
+}
+
+.applicationPathTab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--brand-highlight)) 42%, transparent);
+}
+
+.applicationPathPanel {
+  padding-top: 30px;
+}
+
+.applicationPathLabel {
+  display: inline-flex;
+  color: hsl(var(--brand-highlight));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.applicationPathPanel h3 {
+  margin: 12px 0 0;
+  max-width: 540px;
+  color: hsl(var(--surface-inverse-foreground));
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+.applicationPathPanel > p {
+  margin: 12px 0 0;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.applicationPathChecks {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.applicationPathCta {
+  margin-top: 26px;
+}
+
+.serviceProcessColumn {
+  min-width: 0;
+  padding-left: 48px;
+  border-left: 1px solid
+    color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 18%, transparent);
+  scroll-margin-top: 80px;
+}
+
+.serviceProcessList {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.serviceProcessItem {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 18px;
+  padding: 20px 0;
+  border-top: 1px solid
+    color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 15%, transparent);
+}
+
+.serviceProcessItem:last-child {
+  border-bottom: 1px solid
+    color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 15%, transparent);
+}
+
+.serviceProcessNumber {
+  color: hsl(var(--brand-highlight));
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
-.stepCopy h3 {
-  max-width: 480px;
-  font-size: clamp(30px, 3vw, 38px);
-  line-height: 1.08;
+.serviceProcessCopy h3 {
+  margin: 0;
+  color: hsl(var(--surface-inverse-foreground));
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
-.stepSummary {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 34px 36px;
-  background: hsl(var(--card));
+.serviceProcessCopy p {
+  margin: 6px 0 0;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.serviceProcessLink {
+  margin-top: 24px;
 }
 
 .stringSection {
@@ -507,16 +634,6 @@
   font-weight: 700;
   line-height: 1.3;
   word-break: keep-all;
-}
-
-.pathGrid,
-.stepTabs {
-  scrollbar-width: none;
-}
-
-.pathGrid::-webkit-scrollbar,
-.stepTabs::-webkit-scrollbar {
-  display: none;
 }
 
 .packages {
@@ -1021,12 +1138,10 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .pathCardIdle:hover {
-    box-shadow: 0 12px 34px color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
+  .applicationPathTab:not(.applicationPathTabActive):hover {
+    border-color: hsl(var(--brand-highlight));
   }
-}
 
-@media (hover: hover) and (pointer: fine) {
   .purposeTab:not(.purposeTabActive):hover {
     border-color: color-mix(in srgb, hsl(var(--foreground)) 22%, hsl(var(--border)));
     background: color-mix(in srgb, hsl(var(--muted)) 36%, hsl(var(--card)));
@@ -1041,7 +1156,7 @@
   .quickNavItem,
   .purposeTab,
   .curationVisualLink,
-  .pathCard,
+  .applicationPathTab,
   .racketInventoryRow,
   .racketBrandRailButton {
     transition: none;
@@ -1054,17 +1169,11 @@
   .racketSkeletonRow {
     animation: none;
   }
-
-  .pathCardIdle:hover {
-    box-shadow: none;
-  }
 }
 
 @media (max-width: 1199px) {
   .sectionHead,
   .heroGrid,
-  .pathDetail,
-  .stepBody,
   .infoGrid {
     grid-template-columns: 1fr;
   }
@@ -1087,6 +1196,28 @@
 
   .curationProducts {
     padding: 0;
+  }
+
+  .stringingServiceHeader,
+  .stringingServiceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stringingServiceHeader {
+    gap: 22px;
+  }
+
+  .applicationPathColumn {
+    padding-right: 0;
+    padding-bottom: 48px;
+  }
+
+  .serviceProcessColumn {
+    padding-top: 48px;
+    padding-left: 0;
+    border-top: 1px solid
+      color-mix(in srgb, hsl(var(--surface-inverse-foreground)) 18%, transparent);
+    border-left: 0;
   }
 }
 
@@ -1258,30 +1389,57 @@
     font-size: 20px;
   }
 
-  .pathGrid {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
+  .stringingServiceSection {
+    padding-block: 52px;
   }
 
-  .pathCard {
-    flex: 0 0 82%;
-    min-height: 160px;
-    padding: 18px;
-    scroll-snap-align: start;
+  .stringingServiceHeader {
+    gap: 18px;
+    padding-bottom: 28px;
   }
 
-  .stepCopy,
-  .stepSummary {
-    padding: 24px;
+  .stringingServiceTitle {
+    font-size: clamp(32px, 9vw, 36px);
   }
 
-  .stepMeta {
-    font-size: 12px;
+  .stringingServiceDescription {
+    font-size: 14px;
   }
 
-  .stepCopy h3 {
-    font-size: 30px;
+  .stringingServiceGrid {
+    padding-top: 34px;
+  }
+
+  .applicationPathColumn {
+    padding-bottom: 36px;
+  }
+
+  .applicationPathTabs {
+    grid-template-columns: 1fr;
+  }
+
+  .applicationPathTab {
+    width: 100%;
+    min-height: 58px;
+  }
+
+  .applicationPathPanel h3 {
+    font-size: 24px;
+  }
+
+  .applicationPathCta,
+  .serviceProcessLink {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .serviceProcessColumn {
+    padding-top: 36px;
+  }
+
+  .serviceProcessItem {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 12px;
   }
 
   .packageToolbar {
@@ -1324,15 +1482,5 @@
     min-height: 88px;
     padding: 14px;
     white-space: normal;
-  }
-
-  .stepTabs {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-  }
-
-  .stepTabs > * {
-    min-width: 120px;
   }
 }
