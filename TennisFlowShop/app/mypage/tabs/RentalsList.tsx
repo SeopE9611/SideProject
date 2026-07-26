@@ -8,7 +8,7 @@ import AsyncState from "@/components/system/AsyncState";
 import { StackedCardListSkeleton } from "@/components/system/loading";
 import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import {
   Clock,
   CreditCard,

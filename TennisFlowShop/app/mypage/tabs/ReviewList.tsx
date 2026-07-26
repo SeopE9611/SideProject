@@ -7,7 +7,7 @@ import useSWRInfinite from "swr/infinite";
 
 import AsyncState from "@/components/system/AsyncState";
 import ReviewListSkeleton from "@/app/mypage/tabs/_components/ReviewListSkeleton";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {

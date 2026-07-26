@@ -2,7 +2,7 @@
 
 import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/AcademyApplicationsListSkeleton";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";

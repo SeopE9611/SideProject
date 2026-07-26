@@ -11,7 +11,7 @@ import {
 import SiteContainer from "@/components/layout/SiteContainer";
 import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { racketBrandLabel } from "@/lib/constants";
 import {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { MessageSquarePlus, Check } from "lucide-react";
 import { buildReviewWriteHref } from "@/lib/reviews/review-target";
 

@@ -16,7 +16,7 @@ import {
   racketCompareRows,
 } from "@/app/rackets/compare/_components/racketCompareRows";
 import { EmptyState } from "@/components/public/EmptyState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { racketBrandLabel } from "@/lib/constants";

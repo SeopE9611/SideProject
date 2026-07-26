@@ -13,7 +13,7 @@ import {
   pointTxTypeLabel,
   safeLocalDateTime,
 } from "@/lib/points.display";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,

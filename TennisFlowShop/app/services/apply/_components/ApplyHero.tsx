@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicPageHero } from "@/components/public/PublicPageHero";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Wrench } from "lucide-react";
 
 type Props = {

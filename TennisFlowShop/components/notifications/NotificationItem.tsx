@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { cn } from "@/lib/utils";
 import type { NotificationListItem } from "@/lib/hooks/useNotificationList";
@@ -61,12 +60,12 @@ export function NotificationItem({
       />
       <span className="min-w-0 flex-1 space-y-1">
         <span className="flex min-w-0 flex-wrap items-center gap-2">
-          <Badge
+          <SemanticBadge
             variant={unread ? "brand" : "secondary"}
             className="h-5 shrink-0 px-1.5 text-ui-micro"
           >
             {TYPE_LABEL[item.type] ?? "알림"}
-          </Badge>
+          </SemanticBadge>
           <span className="shrink-0 text-ui-label text-muted-foreground">
             {relativeTime(item.createdAt)}
           </span>

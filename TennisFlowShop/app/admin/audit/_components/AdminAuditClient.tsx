@@ -7,7 +7,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Search, ListFilter, ClipboardList } from "lucide-react";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";

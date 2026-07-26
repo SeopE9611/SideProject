@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";

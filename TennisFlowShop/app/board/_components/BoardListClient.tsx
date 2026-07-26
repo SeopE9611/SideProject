@@ -27,7 +27,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {

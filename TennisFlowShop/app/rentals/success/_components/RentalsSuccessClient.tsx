@@ -3,7 +3,6 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { ResultState } from "@/components/public";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -354,12 +353,12 @@ export default function RentalsSuccessClient({ data }: Props) {
                           : "라켓 정보 없음"}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <Badge
+                        <SemanticBadge
                           variant={badgeToneVariant("brand")}
                           className="px-2 py-0.5 text-ui-label"
                         >
                           상태 {data.racket?.condition}
-                        </Badge>
+                        </SemanticBadge>
                         <span className="text-ui-body-sm text-muted-foreground">
                           대여 기간: {data.period}일
                         </span>

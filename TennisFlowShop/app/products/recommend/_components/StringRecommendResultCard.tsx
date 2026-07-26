@@ -1,6 +1,6 @@
 import type { RecommendedStringProduct } from "@/app/products/recommend/_types";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { stringBrandLabel, stringMaterialLabel } from "@/lib/constants";

@@ -1,7 +1,7 @@
 "use client";
 
 import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { ShoppingBag } from "lucide-react";
 
 type RentalCheckoutStringingServiceAdapter = ReturnType<

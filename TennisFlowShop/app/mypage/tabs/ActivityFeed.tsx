@@ -11,7 +11,7 @@ import {
   getCustomerRentalStatusLabel,
 } from "@/app/mypage/_lib/flow-display";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

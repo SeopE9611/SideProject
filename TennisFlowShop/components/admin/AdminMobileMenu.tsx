@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { SIDEBAR_SECTIONS, ADMIN_MOBILE_QUICK_ITEMS } from "@/components/admin/sidebar-navigation";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,

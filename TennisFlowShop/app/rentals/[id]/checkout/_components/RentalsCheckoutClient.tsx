@@ -10,7 +10,7 @@ import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyB
 import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
 import CheckoutSection from "@/components/checkout/CheckoutSection";
 import RefundBankCombobox from "@/components/refund/RefundBankCombobox";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";

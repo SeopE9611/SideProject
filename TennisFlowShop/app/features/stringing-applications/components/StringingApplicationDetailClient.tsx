@@ -38,7 +38,7 @@ import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard
 import SiteContainer from "@/components/layout/SiteContainer";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import {
   Card,

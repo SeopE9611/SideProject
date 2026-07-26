@@ -5,7 +5,7 @@ import type React from "react";
 import { CreditCard, Ticket } from "lucide-react";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

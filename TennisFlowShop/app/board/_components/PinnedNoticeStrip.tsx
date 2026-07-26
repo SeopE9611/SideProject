@@ -1,7 +1,7 @@
 import { Bell, Megaphone, Pin } from "lucide-react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { cn } from "@/lib/utils";
 
 const pinnedNoticeMobileTitleClampClass =

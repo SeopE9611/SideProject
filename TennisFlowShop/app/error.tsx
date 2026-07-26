@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { ResultState } from "@/components/public";
 

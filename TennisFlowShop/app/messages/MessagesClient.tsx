@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { EmptyState, PublicPageHero, ResultState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";

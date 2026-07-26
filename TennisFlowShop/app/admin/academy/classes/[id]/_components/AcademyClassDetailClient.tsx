@@ -10,7 +10,7 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 
 import {

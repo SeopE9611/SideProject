@@ -2,7 +2,7 @@
 import { RichTextContent } from "@/components/editor/RichTextContent";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";

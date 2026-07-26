@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { APPLICATION_STATUSES } from "@/lib/application-status";
 import { useRouter } from "next/navigation";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";

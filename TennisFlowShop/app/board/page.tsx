@@ -1,5 +1,5 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Eye, MessageSquare, Plus, Star, Pin, Megaphone } from "lucide-react";

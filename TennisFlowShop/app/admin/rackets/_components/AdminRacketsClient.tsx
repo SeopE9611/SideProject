@@ -4,7 +4,6 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
-import { Badge } from "@/components/ui/badge";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
@@ -54,9 +53,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
-function StockChip({ id, total }: { id: string; total: number }) {
+function RacketStockCells({ item }: { item: Item }) {
   const { data } = useSWR<{ ok: boolean; available: number }>(
-    `/api/admin/rentals/active-count/${id}`,
+    `/api/admin/rentals/active-count/${item.id}`,
     authenticatedSWRFetcher,
     {
       dedupingInterval: 5000,
@@ -64,13 +63,40 @@ function StockChip({ id, total }: { id: string; total: number }) {
       revalidateOnReconnect: false,
     },
   );
-  const qty = Math.max(1, total ?? 1);
+  const qty = Math.max(1, item.quantity ?? 1);
   const avail = Math.max(0, Number(data?.available ?? 0));
+  const ready = data !== undefined;
+  const rentedCount = Math.max(0, qty - avail);
   const soldOut = avail <= 0;
   return (
-    <SemanticBadge tone={soldOut ? "warning" : "success"} size="xs" className="font-normal">
-      {qty > 1 ? (soldOut ? `0/${qty}` : `${avail}/${qty}`) : soldOut ? "대여 중" : "대여 가능"}
-    </SemanticBadge>
+    <>
+      <TableCell className={adminDataTable.cellCenter}>
+        <RacketBadge
+          kind="availability"
+          state={getRacketAvailabilityState({
+            ready,
+            quantity: qty,
+            available: avail,
+            rentedCount,
+            rentalEnabled: item.rental?.enabled,
+            status: item.status,
+            isVisible: item.isVisible,
+          })}
+          size="sm"
+        />
+      </TableCell>
+      <TableCell className={adminDataTable.cellCenter}>
+        <SemanticBadge tone={soldOut ? "warning" : "success"} size="xs" className="font-normal">
+          {!ready
+            ? "확인 중"
+            : qty > 1
+              ? `${avail}/${qty}`
+              : soldOut
+                ? "대여 중"
+                : "대여 가능"}
+        </SemanticBadge>
+      </TableCell>
+    </>
   );
 }
 
@@ -98,25 +124,12 @@ type Item = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const variants: Record<
-    string,
-    {
-      label: string;
-      variant: "default" | "secondary" | "destructive" | "outline";
-    }
-  > = {
-    available: { label: "판매가능", variant: "default" },
-    rented: { label: "대여중", variant: "secondary" },
-    sold: { label: "판매완료", variant: "destructive" },
-    inactive: { label: "비노출 상태", variant: "outline" },
-    비노출: { label: "비노출 상태", variant: "outline" },
-  };
-  const config = variants[status] || { label: status, variant: "outline" };
-  return (
-    <Badge variant={config.variant} className="shrink-0 whitespace-nowrap">
-      {config.label}
-    </Badge>
-  );
+  return <RacketBadge kind="availability" state={getRacketAvailabilityState({
+    ready: true,
+    quantity: 1,
+    available: 1,
+    status,
+  })} size="sm" className="shrink-0" />;
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
@@ -468,14 +481,14 @@ export default function AdminRacketsClient() {
 
             {activeFilterLabels.length > 0 ? (
               activeFilterLabels.map((label) => (
-                <Badge key={label} variant="secondary" className="text-xs">
+                <SemanticBadge key={label} tone="neutral" size="xs">
                   {label}
-                </Badge>
+                </SemanticBadge>
               ))
             ) : (
-              <Badge variant="outline" className="text-xs">
+              <SemanticBadge tone="neutral" emphasis="outline" size="xs">
                 전체 조건
-              </Badge>
+              </SemanticBadge>
             )}
           </div>
 
@@ -676,37 +689,18 @@ export default function AdminRacketsClient() {
                           <div className="flex flex-col items-center gap-1">
                             <StatusBadge status={item.status} />
                             {item.isVisible === false && (
-                              <Badge
-                                variant="outline"
-                                className="shrink-0 whitespace-nowrap border-warning/60 text-warning"
-                              >
+                              <SemanticBadge tone="warning" emphasis="outline" size="sm">
                                 숨김
-                              </Badge>
+                              </SemanticBadge>
                             )}
                             {(item.status === "inactive" || item.status === "비노출") && (
-                              <Badge variant="outline" className="shrink-0 whitespace-nowrap">
+                              <SemanticBadge tone="neutral" emphasis="outline" size="sm">
                                 기존 비노출 상태
-                              </Badge>
+                              </SemanticBadge>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className={adminDataTable.cellCenter}>
-                          <RacketBadge
-                            kind="availability"
-                            state={getRacketAvailabilityState({
-                              ready: true,
-                              quantity: item.quantity ?? 1,
-                              available: item.quantity ?? 1,
-                              rentalEnabled: item.rental?.enabled,
-                              status: item.status,
-                              isVisible: item.isVisible,
-                            })}
-                            size="sm"
-                          />
-                        </TableCell>
-                        <TableCell className={adminDataTable.cellCenter}>
-                          <StockChip id={item.id} total={item.quantity ?? 1} />
-                        </TableCell>
+                        <RacketStockCells item={item} />
                         <TableCell className={adminDataTable.actionCell}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
