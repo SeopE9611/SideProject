@@ -37,6 +37,7 @@ type ProductDoc = {
   ratingAverage?: number;
   isDeleted?: boolean;
   isVisible?: boolean;
+  isNew?: boolean | string | number;
 };
 
 const productListProjection = {
@@ -194,7 +195,14 @@ export async function GET(req: NextRequest) {
     if (exposureFilters.length > 0) {
       const exposureOr = exposureFilters.map((item) => {
         if (item === "featured") return { "inventory.isFeatured": true };
-        if (item === "new") return { "inventory.isNew": true };
+        if (item === "new") {
+          return {
+            $or: [
+              { "inventory.isNew": { $in: [true, "true", 1] } },
+              { isNew: { $in: [true, "true", 1] } },
+            ],
+          };
+        }
         return { "inventory.isSale": true };
       });
       (filter as any).$and = [...(((filter as any).$and as any[]) ?? []), { $or: exposureOr }];

@@ -13,6 +13,7 @@ import type {
   HomePreviewPackage,
   HomePreviewProduct,
   HomePreviewRacket,
+  HomeProductGroupKey,
 } from "@/lib/home/home-preview";
 import {
   isSignupBonusActive,
@@ -22,7 +23,11 @@ import {
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
-import { commerceBadgeSpecs, type RacketAvailabilityState } from "@/lib/badge-style";
+import {
+  commerceBadgeSpec,
+  commerceBadgeSpecs,
+  type RacketAvailabilityState,
+} from "@/lib/badge-style";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,14 +38,7 @@ type HomePageRedesignProps = {
   initialHomeData?: HomePreviewData | null;
 };
 
-type ProductFilter =
-  | "curated"
-  | "new"
-  | "comfort"
-  | "spin"
-  | "control"
-  | "durability"
-  | "beginner";
+type ProductFilter = HomeProductGroupKey;
 type ConciergeKey = "comfort" | "spin" | "power";
 type BrandKey = "all" | (typeof RACKET_BRANDS)[number]["value"];
 type RacketRequestStatus = "loading" | "success" | "error";
@@ -207,9 +205,6 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
     useState<ProductFilter>("curated");
   const [activeConcierge, setActiveConcierge] = useState<ConciergeKey>("comfort");
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
-  const [products, setProducts] = useState<HomePreviewProduct[]>(
-    initialHomeData?.products?.items ?? [],
-  );
   const [racketsByBrand, setRacketsByBrand] = useState<Record<string, HomePreviewRacket[]>>(
     initialHomeData?.rackets ? { all: initialHomeData.rackets.items } : {},
   );
@@ -239,30 +234,6 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
 
     return () => window.clearInterval(timer);
   }, [heroPaused]);
-
-  useEffect(() => {
-    if (products.length > 0) return;
-
-    let cancelled = false;
-    const loadProducts = async () => {
-      try {
-        const response = await fetch("/api/products?limit=10", {
-          credentials: "include",
-        });
-        if (!response.ok) return;
-        const payload = await response.json();
-        const items = payload.products ?? payload.items ?? [];
-        if (!cancelled && Array.isArray(items)) setProducts(items);
-      } catch {
-        // 서버 미리보기 데이터가 없을 때만 조용히 재시도합니다.
-      }
-    };
-
-    void loadProducts();
-    return () => {
-      cancelled = true;
-    };
-  }, [products.length]);
 
   const loadRackets = async (brand: BrandKey) => {
     const currentStatus = racketRequestStatusRef.current[brand];
@@ -327,46 +298,9 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
     void loadRackets(brand);
   };
 
-  const visibleProducts = useMemo(() => {
-    const withIndex = products.map((product, index) => ({ product, index }));
-    const performanceScore = (product: HomePreviewProduct) => {
-      if (activeProductFilter === "beginner") {
-        const comfort = Number(product.features?.comfort ?? 0);
-        const control = Number(product.features?.control ?? 0);
-        return comfort > 0 && control > 0 ? comfort * 0.6 + control * 0.4 : 0;
-      }
-      if (activeProductFilter !== "curated" && activeProductFilter !== "new") {
-        return Number(product.features?.[activeProductFilter] ?? 0);
-      }
-      return 0;
-    };
-    const score = (product: HomePreviewProduct) => {
-      return (
-        (isTruthy(product.inventory?.isFeatured) ? 200 : 0) +
-        (isTruthy(product.inventory?.isSale) ? 50 : 0) +
-        Number(product.features?.control ?? 0)
-      );
-    };
-
-    const relevant = withIndex.filter(({ product }) => {
-      if (activeProductFilter === "curated") return true;
-      if (activeProductFilter === "new") {
-        return isTruthy(product.inventory?.isNew) || isTruthy(product.isNew);
-      }
-      return performanceScore(product) > 0;
-    });
-
-    return relevant
-      .sort((a, b) => {
-        const aScore =
-          activeProductFilter === "curated" ? score(a.product) : performanceScore(a.product);
-        const bScore =
-          activeProductFilter === "curated" ? score(b.product) : performanceScore(b.product);
-        return bScore - aScore || a.index - b.index;
-      })
-      .map(({ product }) => product)
-      .slice(0, 4);
-  }, [activeProductFilter, products]);
+  const productGroups = initialHomeData?.products?.groups;
+  const visibleProducts = productGroups?.[activeProductFilter] ?? [];
+  const productGroupsLoaded = Boolean(productGroups);
 
   const concierge =
     CONCIERGE_CHOICES.find((choice) => choice.key === activeConcierge) ??
@@ -488,13 +422,19 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           {visibleProducts.length > 0 ? (
             <div className={styles.productRail}>
               {visibleProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  ensureNewBadge={activeProductFilter === "new"}
+                />
               ))}
             </div>
           ) : (
             <EmptyState
               title={
-                activeProductFilter === "new"
+                !productGroupsLoaded
+                  ? "상품 정보를 불러오지 못했습니다"
+                  : activeProductFilter === "new"
                   ? "현재 등록된 신상품이 없습니다"
                   : "조건에 맞는 스트링을 준비하고 있습니다"
               }
@@ -767,10 +707,16 @@ function SectionHeader({
   );
 }
 
-function ProductCard({ product }: { product: HomePreviewProduct }) {
+function ProductCard({
+  product,
+  ensureNewBadge,
+}: {
+  product: HomePreviewProduct;
+  ensureNewBadge: boolean;
+}) {
   const price = getProductPrice(product);
   const isDiscounted = price < product.price;
-  const badges = commerceBadgeSpecs(
+  const commerceBadges = commerceBadgeSpecs(
     {
       isSoldOut: product.inventory?.status === "outofstock",
       isSale: isTruthy(product.inventory?.isSale),
@@ -780,6 +726,12 @@ function ProductCard({ product }: { product: HomePreviewProduct }) {
     },
     "image",
   );
+  const newBadge = commerceBadgeSpec("new", "image");
+  const badges = ensureNewBadge
+    ? [commerceBadges.find((badge) => badge.label !== newBadge.label), newBadge].filter(
+        (badge): badge is typeof newBadge => Boolean(badge),
+      )
+    : commerceBadges;
 
   return (
     <article className={styles.productCard}>
@@ -840,7 +792,7 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
     "image",
   );
   const badgeCountBeforeMarketing = Number(Boolean(availability)) + 1;
-  const visibleMarketingBadges = marketingBadges.slice(0, Math.max(0, 2 - badgeCountBeforeMarketing));
+  const visibleMarketingBadges = marketingBadges.slice(0, Math.max(0, 3 - badgeCountBeforeMarketing));
 
   return (
     <article className={styles.racketCard}>

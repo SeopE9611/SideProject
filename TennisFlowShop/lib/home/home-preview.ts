@@ -39,6 +39,17 @@ export type HomePreviewProduct = {
   };
 };
 
+export type HomeProductGroupKey =
+  | "curated"
+  | "new"
+  | "comfort"
+  | "spin"
+  | "control"
+  | "durability"
+  | "beginner";
+
+export type HomePreviewProductGroups = Record<HomeProductGroupKey, HomePreviewProduct[]>;
+
 export type HomePreviewRacket = {
   id: string;
   brand: string;
@@ -86,7 +97,11 @@ export type HomePreviewMarketPost = {
 };
 
 export type HomePreviewData = {
-  products?: { items: HomePreviewProduct[]; total: number };
+  products?: {
+    items: HomePreviewProduct[];
+    total: number;
+    groups: HomePreviewProductGroups;
+  };
   rackets?: { items: HomePreviewRacket[]; total: number };
   notices?: HomePreviewNotice[];
   marketPosts?: HomePreviewMarketPost[];
@@ -161,24 +176,106 @@ async function loadProducts() {
     "inventory.manageStock": 1,
     "inventory.allowBackorder": 1,
   };
-  const [total, docs] = await Promise.all([
+  const truthyValues = [true, "true", 1];
+  const withVisibility = (condition: Filter<ProductDoc>): Filter<ProductDoc> => ({
+    $and: [filter, condition],
+  });
+  const featureQueries = (["comfort", "spin", "control", "durability"] as const).map(
+    (feature) =>
+      collection
+        .find(withVisibility({ [`features.${feature}`]: { $gt: 0 } } as Filter<ProductDoc>), {
+          projection,
+        })
+        .sort({ [`features.${feature}`]: -1, _id: -1 })
+        .limit(4)
+        .toArray(),
+  );
+  const [total, curated, newest, comfort, spin, control, durability, beginner] =
+    await Promise.all([
     collection.countDocuments(filter),
-    collection.find(filter, { projection }).sort({ _id: -1 }).limit(10).toArray(),
+    collection
+      .aggregate<ProductDoc>([
+        { $match: filter },
+        {
+          $addFields: {
+            _homeScore: {
+              $add: [
+                { $cond: [{ $in: ["$inventory.isFeatured", truthyValues] }, 200, 0] },
+                { $cond: [{ $in: ["$inventory.isSale", truthyValues] }, 50, 0] },
+                { $convert: { input: "$features.control", to: "double", onError: 0, onNull: 0 } },
+              ],
+            },
+          },
+        },
+        { $sort: { _homeScore: -1, _id: -1 } },
+        { $limit: 4 },
+        { $project: projection },
+      ])
+      .toArray(),
+    collection
+      .find(
+        withVisibility({
+          $or: [
+            { "inventory.isNew": { $in: truthyValues } },
+            { isNew: { $in: truthyValues } },
+          ],
+        }),
+        { projection },
+      )
+      .sort({ _id: -1 })
+      .limit(4)
+      .toArray(),
+    ...featureQueries,
+    collection
+      .aggregate<ProductDoc>([
+        {
+          $match: withVisibility({
+            "features.comfort": { $gt: 0 },
+            "features.control": { $gt: 0 },
+          }),
+        },
+        {
+          $addFields: {
+            _homeScore: {
+              $add: [
+                { $multiply: [{ $toDouble: "$features.comfort" }, 0.6] },
+                { $multiply: [{ $toDouble: "$features.control" }, 0.4] },
+              ],
+            },
+          },
+        },
+        { $sort: { _homeScore: -1, _id: -1 } },
+        { $limit: 4 },
+        { $project: projection },
+      ])
+      .toArray(),
   ]);
 
+  const toProduct = (product: ProductDoc): HomePreviewProduct => ({
+    _id: product._id.toString(),
+    name: product.name ?? "",
+    price: product.price ?? 0,
+    images: product.images,
+    brand: product.brand,
+    isNew: product.isNew,
+    material: product.material,
+    features: product.features,
+    inventory: product.inventory,
+  });
+  const groups: HomePreviewProductGroups = {
+    curated: curated.map(toProduct),
+    new: newest.map(toProduct),
+    comfort: comfort.map(toProduct),
+    spin: spin.map(toProduct),
+    control: control.map(toProduct),
+    durability: durability.map(toProduct),
+    beginner: beginner.map(toProduct),
+  };
+
   return {
-    items: docs.map((product) => ({
-      _id: product._id.toString(),
-      name: product.name ?? "",
-      price: product.price ?? 0,
-      images: product.images,
-      brand: product.brand,
-      isNew: product.isNew,
-      material: product.material,
-      features: product.features,
-      inventory: product.inventory,
-    })),
+    items: groups.curated,
     total,
+    groups,
   };
 }
 
