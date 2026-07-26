@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CatalogCardFrame, CatalogPrice, CatalogRating } from "@/components/commerce";
 import { Button } from "@/components/ui/button";
-import { CommerceBadge } from "@/components/badges/CommerceBadge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
@@ -152,12 +152,9 @@ const RacketCard = React.memo(
     const marketingBadges = (
       <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
         {marketingBadgeSpecs.map((badge) => (
-          <CommerceBadge
-            key={badge.label}
-            kind={badge.label === "NEW" ? "new" : badge.label === "추천" ? "recommended" : "sale"}
-            surface="image"
-            discountRate={discountRate}
-          />
+          <SemanticBadge key={badge.label} {...badge}>
+            {badge.label}
+          </SemanticBadge>
         ))}
       </div>
     );
@@ -324,20 +321,6 @@ const RacketCard = React.memo(
       />
     );
   },
-  (prev, next) =>
-    prev.racket.id === next.racket.id &&
-    prev.viewMode === next.viewMode &&
-    prev.brandLabel === next.brandLabel &&
-    Boolean(prev.isApplyFlow) === Boolean(next.isApplyFlow) &&
-    prev.racket.marketing?.isFeatured === next.racket.marketing?.isFeatured &&
-    prev.racket.marketing?.isNew === next.racket.marketing?.isNew &&
-    prev.racket.marketing?.isSale === next.racket.marketing?.isSale &&
-    prev.racket.marketing?.salePrice === next.racket.marketing?.salePrice &&
-    prev.racket.price === next.racket.price &&
-    prev.racket.ratingAvg === next.racket.ratingAvg &&
-    prev.racket.ratingAverage === next.racket.ratingAverage &&
-    prev.racket.ratingCount === next.racket.ratingCount &&
-    prev.racket.reviewCount === next.racket.reviewCount,
 );
 
 export default RacketCard;

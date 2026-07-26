@@ -44,6 +44,7 @@ export type HItem = {
   price: number;
   images?: string[];
   brand?: string;
+  isNew?: boolean | string | number;
   href?: string;
   merchandisingBadges?: Array<"품절" | "SALE" | "NEW" | "추천" | "입고예정">;
   inventory?: {
@@ -311,6 +312,9 @@ export default function HorizontalProducts({
             p.inventory?.isNew === true ||
             p.inventory?.isNew === "true" ||
             p.inventory?.isNew === 1 ||
+            p.isNew === true ||
+            p.isNew === "true" ||
+            p.isNew === 1 ||
             legacyBadges.includes("NEW"),
           isRecommended:
             p.marketing?.isFeatured === true ||
