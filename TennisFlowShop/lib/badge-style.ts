@@ -230,7 +230,10 @@ export function normalizeCommerceDiscountRate(discountRate?: number): number | n
 export function commerceBadgeSpecs(
   input: CommerceBadgeInput,
   surface: BadgeSurface = "inline",
-  options?: { ensureNew?: boolean },
+  options?: {
+    ensureNew?: boolean;
+    excludeKinds?: readonly CommerceBadgeKind[];
+  },
 ): BadgeDisplaySpec[] {
   const kinds: CommerceBadgeKind[] = [];
   if (input.isNew) kinds.push("new");
@@ -240,19 +243,24 @@ export function commerceBadgeSpecs(
   if (input.isGenuine) kinds.push("genuine");
   if (input.isSoldOut) kinds.push("sold_out");
 
-  const specs = kinds
-    .map((kind) => commerceBadgeSpec(kind, surface, input.discountRate))
-    .sort((a, b) => b.priority - a.priority);
+  const excludedKinds = options?.excludeKinds ?? [];
+  const includedKinds = kinds.filter((kind) => !excludedKinds.includes(kind));
+  const entries = includedKinds
+    .map((kind) => ({ kind, spec: commerceBadgeSpec(kind, surface, input.discountRate) }))
+    .sort((a, b) => b.spec.priority - a.spec.priority);
+  const specs = entries.map(({ spec }) => spec);
   if (surface !== "image") return specs;
 
-  const visible = specs.slice(0, 2);
-  if (!options?.ensureNew || !input.isNew || visible.some((spec) => spec.label === "NEW")) {
+  const visibleEntries = entries.slice(0, 2);
+  const visible = visibleEntries.map(({ spec }) => spec);
+  if (!options?.ensureNew || !includedKinds.includes("new")) {
     return visible;
   }
 
-  const newSpec = specs.find((spec) => spec.label === "NEW");
+  if (visibleEntries.some(({ kind }) => kind === "new")) return visible;
+  const newSpec = entries.find(({ kind }) => kind === "new")?.spec;
   if (!newSpec) return visible;
-  const preservedSoldOut = visible.find((spec) => spec.label === "품절");
+  const preservedSoldOut = visibleEntries.find(({ kind }) => kind === "sold_out")?.spec;
   return preservedSoldOut ? [preservedSoldOut, newSpec] : [visible[0], newSpec].filter(Boolean);
 }
 

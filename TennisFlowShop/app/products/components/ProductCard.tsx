@@ -222,7 +222,7 @@ const ProductCard = React.memo(
         discountRate: isSale ? ((regularPrice - salePrice) / regularPrice) * 100 : undefined,
       },
       "image",
-      { ensureNew: ensureNewBadge },
+      { ensureNew: ensureNewBadge, excludeKinds: ["sale"] },
     );
 
     const priceBlock = (align: "left" | "right" = "right") => (

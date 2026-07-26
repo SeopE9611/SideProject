@@ -1,4 +1,5 @@
 import type { RecommendedStringProduct } from "@/app/products/recommend/_types";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,9 +73,7 @@ export default function StringRecommendResultCard({
                 <span className="text-ui-label text-muted-foreground line-through">
                   {regularPrice.toLocaleString()}원
                 </span>
-                <Badge variant="destructive" className="text-ui-micro">
-                  {saleRate}% OFF
-                </Badge>
+                <CommerceBadge kind="sale" surface="inline" discountRate={saleRate} size="xs" />
               </div>
             </div>
           ) : (

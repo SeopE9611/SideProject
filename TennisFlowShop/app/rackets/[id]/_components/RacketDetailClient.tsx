@@ -14,9 +14,9 @@ import {
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
+import ReviewVisibilityBadge from "@/components/reviews/ReviewVisibilityBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -500,6 +500,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       discountRate,
     },
     "image",
+    { excludeKinds: ["sale"] },
   );
 
   const images = racket.images || [];
@@ -622,7 +623,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               eyebrow="Used racket"
               badges={
                 <>
-                  <Badge variant="outline">{racketBrandLabel(racket.brand)}</Badge>
+                  <SemanticBadge tone="neutral" emphasis="outline">
+                    {racketBrandLabel(racket.brand)}
+                  </SemanticBadge>
                   <RacketBadge kind="condition" state={racket.condition} />
                   <RacketBadge kind="availability" state={availabilityState} />
                 </>
@@ -992,7 +995,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                     <div className="min-w-0 break-words font-semibold text-foreground sm:truncate">
                                       {review?.status === "hidden"
                                         ? review?.ownedByMe
-                                          ? `${review?.user ?? "내 후기"} (비공개)`
+                                          ? (review?.user ?? "내 후기")
                                           : "비공개 후기"
                                         : (review?.user ?? "익명")}
                                     </div>
@@ -1002,10 +1005,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                       contextLabel={review?.contextLabel}
                                     />
 
-                                    {review?.status === "hidden" && (
-                                      <Badge variant="outline" className="shrink-0 text-ui-label">
-                                        비공개
-                                      </Badge>
+                                    {review?.status === "hidden" && review?.ownedByMe && (
+                                      <ReviewVisibilityBadge />
                                     )}
                                   </div>
 

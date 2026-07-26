@@ -148,6 +148,7 @@ const RacketCard = React.memo(
         discountRate,
       },
       "image",
+      { excludeKinds: ["sale"] },
     );
     const marketingBadges = (
       <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
