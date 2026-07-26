@@ -978,11 +978,15 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                   {mergedReviews.length > 0 ? (
                     <div className="space-y-4 sm:space-y-6">
-                      {mergedReviews.map((review: any, index: number) => (
-                        <Card
-                          key={String(review?._id ?? index)}
-                          className="rounded-xl border border-border bg-card shadow-none sm:rounded-2xl"
-                        >
+                      {mergedReviews.map((review: any, index: number) => {
+                        const canIdentifyHiddenReview =
+                          review?.ownedByMe === true || review?.adminView === true;
+
+                        return (
+                          <Card
+                            key={String(review?._id ?? index)}
+                            className="rounded-xl border border-border bg-card shadow-none sm:rounded-2xl"
+                          >
                           <CardContent className="space-y-3 p-4 sm:p-6">
                             <div className="flex min-w-0 flex-wrap items-start justify-between gap-3 sm:gap-4">
                               <div className="flex min-w-0 items-start gap-3">
@@ -994,8 +998,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                                     <div className="min-w-0 break-words font-semibold text-foreground sm:truncate">
                                       {review?.status === "hidden"
-                                        ? review?.ownedByMe
-                                          ? (review?.user ?? "내 후기")
+                                        ? canIdentifyHiddenReview
+                                          ? (review?.user ?? (review?.ownedByMe ? "내 후기" : "사용자"))
                                           : "비공개 후기"
                                         : (review?.user ?? "익명")}
                                     </div>
@@ -1005,7 +1009,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                       contextLabel={review?.contextLabel}
                                     />
 
-                                    {review?.status === "hidden" && review?.ownedByMe && (
+                                    {review?.status === "hidden" && canIdentifyHiddenReview && (
                                       <ReviewVisibilityBadge />
                                     )}
                                   </div>
@@ -1319,8 +1323,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                               </div>
                             ) : null}
                           </CardContent>
-                        </Card>
-                      ))}
+                          </Card>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="rounded-xl border border-border bg-muted/30 p-4 text-ui-body-sm text-muted-foreground sm:rounded-2xl sm:p-6">

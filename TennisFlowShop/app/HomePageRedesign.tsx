@@ -778,7 +778,7 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
       isSale: racket.marketing?.isSale === true,
       isRecommended: racket.marketing?.isFeatured === true,
       isNew: racket.marketing?.isNew === true,
-      discountRate: getDiscountRate(racket.price, price),
+      discountRate,
     },
     "image",
   );
@@ -827,7 +827,6 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
           </small>
           <div>
             <strong>{formatPrice(price)}</strong>
-            {discountRate > 0 && <em>{discountRate}% 할인</em>}
           </div>
         </div>
       </Link>
