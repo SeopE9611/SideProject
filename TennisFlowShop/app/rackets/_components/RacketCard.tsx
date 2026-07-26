@@ -6,17 +6,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { CatalogCardFrame, CatalogPrice, CatalogRating } from "@/components/commerce";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
+import { RacketBadge } from "@/components/badges/RacketBadge";
 import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
-import StatusBadge from "@/components/badges/StatusBadge";
 import {
-  badgeToneClass,
-  badgeToneVariant,
-  merchandisingImageBadgeClass,
-  merchandisingImageBadgeVariant,
-  usedBadgeMeta,
+  commerceBadgeSpecs,
+  getRacketAvailabilityState,
 } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
@@ -34,7 +31,7 @@ type RacketItem = {
   brand: string;
   model: string;
   price: number;
-  condition: "A" | "B" | "C";
+  condition: "A" | "B" | "C" | "D";
   images: string[];
   status: "available" | "sold" | "rented" | "inactive";
   rental?: {
@@ -98,73 +95,23 @@ type RacketAvailabilityState = ReturnType<typeof useRacketAvailability>;
 type RacketAvailBadgeProps = Pick<
   RacketAvailabilityState,
   "qty" | "avail" | "rentedCount" | "isSold" | "isAllRented" | "ready"
->;
-
-function ConditionBadge({ state }: { state: string }) {
-  const meta = usedBadgeMeta("condition", state);
-
-  return (
-    <Badge
-      variant="neutral"
-      className={cn("rounded px-2 py-0.5 text-ui-label font-medium shadow-sm", meta.className)}
-    >
-      상태: {meta.label}
-    </Badge>
-  );
-}
+> & { rentalEnabled?: boolean };
 
 function RacketAvailBadge({
   qty,
   avail,
   rentedCount,
-  isSold,
-  isAllRented,
   ready,
+  rentalEnabled,
 }: RacketAvailBadgeProps) {
-  // 로딩 중에 1/1 같은 가짜 값이 보이는 깜빡임 방지
-  if (!ready) {
-    return (
-      <Badge
-        variant={badgeToneVariant("neutral")}
-        className="px-2 py-1 text-ui-label font-medium whitespace-nowrap animate-pulse"
-      >
-        구매·대여 가능 여부 확인 중
-      </Badge>
-    );
-  }
-
-  // 판매 완료(보유 0)
-  if (isSold) {
-    return (
-      <Badge
-        variant={badgeToneVariant("neutral")}
-        className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
-      >
-        현재 구매·대여 불가
-      </Badge>
-    );
-  }
-
-  // 전량 대여중
-  if (isAllRented) {
-    return (
-      <Badge
-        variant={badgeToneVariant("danger")}
-        className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
-      >
-        현재 대여 중
-      </Badge>
-    );
-  }
-
-  return (
-    <Badge
-      variant={badgeToneVariant("brand")}
-      className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
-    >
-      구매·대여 가능 {avail}개
-    </Badge>
-  );
+  const state = getRacketAvailabilityState({
+    ready,
+    quantity: qty,
+    available: avail,
+    rentedCount,
+    rentalEnabled,
+  });
+  return <RacketBadge kind="availability" state={state} />;
 }
 
 const RacketCard = React.memo(
@@ -193,30 +140,25 @@ const RacketCard = React.memo(
     const salePrice = getEffectiveRacketPrice(racket);
     const discountRate = getRacketDiscountRate(racket);
     const hasSalePrice = discountRate > 0;
-    const benefitBadgeClass = {
-      off: badgeToneClass("danger"),
-    };
-
+    const marketingBadgeSpecs = commerceBadgeSpecs(
+      {
+        isRecommended: racket.marketing?.isFeatured,
+        isNew: racket.marketing?.isNew,
+        isSale: hasSalePrice,
+        discountRate,
+      },
+      "image",
+    );
     const marketingBadges = (
       <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
-        {racket.marketing?.isFeatured && (
-          <Badge
-            variant={merchandisingImageBadgeVariant("추천")}
-            shape="pill"
-            className={cn(merchandisingImageBadgeClass)}
-          >
-            추천
-          </Badge>
-        )}
-        {racket.marketing?.isNew && (
-          <Badge
-            variant={merchandisingImageBadgeVariant("NEW")}
-            shape="pill"
-            className={cn(merchandisingImageBadgeClass)}
-          >
-            NEW
-          </Badge>
-        )}
+        {marketingBadgeSpecs.map((badge) => (
+          <CommerceBadge
+            key={badge.label}
+            kind={badge.label === "NEW" ? "new" : badge.label === "추천" ? "recommended" : "sale"}
+            surface="image"
+            discountRate={discountRate}
+          />
+        ))}
       </div>
     );
 
@@ -305,7 +247,7 @@ const RacketCard = React.memo(
         className={racketImageWrapClass}
         aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
       >
-        {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
+        {marketingBadgeSpecs.length > 0 && marketingBadges}
         <Image
           src={racket.images?.[0] || "/placeholder.svg?height=300&width=300&query=tennis+racket"}
           alt={`${displayBrandLabel} ${racket.model}`}
@@ -338,9 +280,8 @@ const RacketCard = React.memo(
         </Link>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {ratingBadge}
-          <ConditionBadge state={racket.condition} />
-          <RacketAvailBadge {...availability} />
-          {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
+          <RacketBadge kind="condition" state={racket.condition} />
+          <RacketAvailBadge {...availability} rentalEnabled={racket.rental?.enabled} />
         </div>
       </div>
     );

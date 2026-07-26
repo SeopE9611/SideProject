@@ -1,5 +1,6 @@
 import { stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import { commerceBadgeSpecs } from "@/lib/badge-style";
 
 import type {
   ColorInventoryRow,
@@ -18,16 +19,21 @@ export function getGuestOrderModeClient(): GuestOrderMode {
 export const isTruthyBadgeField = (value: unknown) =>
   value === true || value === "true" || value === 1;
 
-export function getProductDetailBadges(product: any): ProductBadge[] {
+export function getProductDetailBadges(product: any, isSoldOut = false): ProductBadge[] {
   const inventory = product?.inventory;
-  const isNew = isTruthyBadgeField(inventory?.isNew);
-  const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
-
-  const badges: ProductBadge[] = [];
-  if (isNew) badges.push("NEW");
-  if (isFeatured) badges.push("추천");
-
-  return badges.slice(0, 2);
+  const regularPrice = Number(product?.price ?? 0);
+  const salePrice = Number(inventory?.salePrice ?? 0);
+  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
+  return commerceBadgeSpecs(
+    {
+      isNew: isTruthyBadgeField(inventory?.isNew) || isTruthyBadgeField(product?.isNew),
+      isRecommended: isTruthyBadgeField(inventory?.isFeatured),
+      isSale,
+      isSoldOut,
+      discountRate: isSale ? ((regularPrice - salePrice) / regularPrice) * 100 : undefined,
+    },
+    "image",
+  );
 }
 
 export function normalizeColorRows(product: any): ColorInventoryRow[] {

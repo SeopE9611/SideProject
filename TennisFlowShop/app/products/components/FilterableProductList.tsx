@@ -1009,6 +1009,7 @@ export default function FilterableProductList({
                         viewMode={viewMode}
                         brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand}
                         isApplyFlow={isApplyFlow}
+                        ensureNewBadge={exposureFilter.includes("new")}
                       />
                     </div>
                   );
