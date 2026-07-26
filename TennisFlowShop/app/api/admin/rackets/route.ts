@@ -10,7 +10,7 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { HOME_PREVIEW_CACHE_TAG } from "@/lib/home/home-preview";
+import { HOME_RACKETS_CACHE_TAG } from "@/lib/home/home-preview";
 
 export const dynamic = "force-dynamic";
 function normalizeRacketMarketing(value: any) {
@@ -244,6 +244,6 @@ export async function POST(req: Request) {
     },
     req,
   );
-  revalidateTag(HOME_PREVIEW_CACHE_TAG);
+  revalidateTag(HOME_RACKETS_CACHE_TAG);
   return NextResponse.json({ ok: true, id: res.insertedId.toString() });
 }

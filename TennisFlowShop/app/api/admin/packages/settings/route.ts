@@ -8,6 +8,8 @@ import { loadPackageSettings, savePackageSettings } from "@/app/features/package
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { HOME_PACKAGES_CACHE_TAG } from "@/lib/home/home-preview";
+import { revalidateTag } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -108,6 +110,7 @@ export async function PUT(req: Request) {
 
     const beforeSettings = await loadPackageSettings();
     await savePackageSettings({ packageConfigs, generalSettings });
+    revalidateTag(HOME_PACKAGES_CACHE_TAG);
 
     const beforeSummary = summarizePackageSettings(beforeSettings.packageConfigs);
     const afterSummary = summarizePackageSettings(packageConfigs);

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const initialHomeData = await getHomePreviewData();
+  const { data, status } = await getHomePreviewData();
 
-  return <HomePageRedesign initialHomeData={initialHomeData} />;
+  return <HomePageRedesign initialHomeData={data} initialHomeStatus={status} />;
 }

@@ -22,6 +22,8 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidateTag } from "next/cache";
+import { HOME_NOTICES_CACHE_TAG } from "@/lib/home/home-preview";
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = "tennis-images";
@@ -691,6 +693,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // 5) 갱신된 문서를 다시 읽어와서 반환(+선택: 최신 updatedAt 헤더 제공)
   const updated = await BoardRepo.findOneById(db, String(post._id));
+  if (post.type === "notice") revalidateTag(HOME_NOTICES_CACHE_TAG);
 
   // 관리자 액션 감사 로그(상태 변경 중심)
   if (parsed.data.status && parsed.data.status !== post.status) {
@@ -802,6 +805,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
 
   await BoardRepo.deleteOneById(db, id);
+  if (post.type === "notice") revalidateTag(HOME_NOTICES_CACHE_TAG);
 
   const deleteAuditSource =
     req.headers.get("x-admin-audit-source")?.trim().slice(0, 120) || "boards_delete_api";

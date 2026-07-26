@@ -114,6 +114,14 @@ export type HomePreviewData = {
   packages?: HomePreviewPackage[];
 };
 
+export type HomePreviewSection = "products" | "rackets" | "packages" | "notices";
+export type HomePreviewServerStatus = "success" | "error";
+export type HomePreviewStatus = Record<HomePreviewSection, HomePreviewServerStatus>;
+export type HomePreviewResult = {
+  data: HomePreviewData;
+  status: HomePreviewStatus;
+};
+
 type ProductDoc = {
   _id: ObjectId;
   name?: string;
@@ -133,7 +141,10 @@ type ProductDoc = {
   isDeleted?: boolean;
 };
 
-export const HOME_PREVIEW_CACHE_TAG = "home-preview";
+export const HOME_PRODUCTS_CACHE_TAG = "home-preview-products";
+export const HOME_RACKETS_CACHE_TAG = "home-preview-rackets";
+export const HOME_PACKAGES_CACHE_TAG = "home-preview-packages";
+export const HOME_NOTICES_CACHE_TAG = "home-preview-notices";
 const HOME_PREVIEW_REVALIDATE_SECONDS = 60;
 
 type RacketDoc = {
@@ -422,30 +433,66 @@ async function loadMarketPosts() {
   }));
 }
 
-async function safe<T>(source: string, loader: () => Promise<T>) {
-  try {
-    return await loader();
-  } catch (error) {
-    console.error(`[home-preview] failed to load initial data: ${source}`, error);
-    return undefined;
-  }
-}
-
-async function loadHomePreviewData(): Promise<HomePreviewData | null> {
-  // 홈 공개 미리보기 데이터는 사용자별 쿠키/인증과 무관하므로 서버에서 짧게 캐시해
-  // 첫 진입 후 클라이언트 중복 fetch 의존도를 낮춘다.
-  const [products, rackets, notices, packages] = await Promise.all([
-    safe("products", loadProducts),
-    safe("rackets", loadRackets),
-    safe("notices", loadNotices),
-    safe("packages", loadPackages),
-  ]);
-
-  if (!products && !rackets && !notices && !packages) return null;
-  return { products, rackets, notices, packages };
-}
-
-export const getHomePreviewData = unstable_cache(loadHomePreviewData, ["home-preview-public-v4"], {
+export const getCachedHomeProducts = unstable_cache(loadProducts, ["home-preview-products-v1"], {
   revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
-  tags: [HOME_PREVIEW_CACHE_TAG],
+  tags: [HOME_PRODUCTS_CACHE_TAG],
 });
+
+export const getCachedHomeRackets = unstable_cache(loadRackets, ["home-preview-rackets-v1"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_RACKETS_CACHE_TAG],
+});
+
+export const getCachedHomePackages = unstable_cache(loadPackages, ["home-preview-packages-v1"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_PACKAGES_CACHE_TAG],
+});
+
+export const getCachedHomeNotices = unstable_cache(loadNotices, ["home-preview-notices-v1"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_NOTICES_CACHE_TAG],
+});
+
+const sectionLoaders = {
+  products: getCachedHomeProducts,
+  rackets: getCachedHomeRackets,
+  packages: getCachedHomePackages,
+  notices: getCachedHomeNotices,
+} satisfies Record<HomePreviewSection, () => Promise<unknown>>;
+
+function logSectionError(section: HomePreviewSection, source: "initial" | "revalidate-api", error: unknown) {
+  const errorName = error instanceof Error ? error.name : "UnknownError";
+  const message = error instanceof Error ? error.message : "Unknown section load failure";
+  console.error("[home-preview] section load failed", { section, source, errorName, message });
+}
+
+export async function loadHomePreviewSections(
+  sections: readonly HomePreviewSection[],
+  source: "initial" | "revalidate-api",
+): Promise<{ data: HomePreviewData; status: Partial<HomePreviewStatus> }> {
+  const settled = await Promise.allSettled(sections.map((section) => sectionLoaders[section]()));
+  const data: HomePreviewData = {};
+  const status: Partial<HomePreviewStatus> = {};
+
+  settled.forEach((result, index) => {
+    const section = sections[index];
+    if (result.status === "fulfilled") {
+      status[section] = "success";
+      if (section === "products") data.products = result.value as HomePreviewData["products"];
+      if (section === "rackets") data.rackets = result.value as HomePreviewData["rackets"];
+      if (section === "packages") data.packages = result.value as HomePreviewData["packages"];
+      if (section === "notices") data.notices = result.value as HomePreviewData["notices"];
+    } else {
+      status[section] = "error";
+      logSectionError(section, source, result.reason);
+    }
+  });
+
+  return { data, status };
+}
+
+export async function getHomePreviewData(): Promise<HomePreviewResult> {
+  const sections: readonly HomePreviewSection[] = ["products", "rackets", "packages", "notices"];
+  const result = await loadHomePreviewSections(sections, "initial");
+  return { data: result.data, status: result.status as HomePreviewStatus };
+}

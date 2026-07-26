@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
@@ -13,6 +13,8 @@ import type {
   HomePreviewPackage,
   HomePreviewProduct,
   HomePreviewRacket,
+  HomePreviewSection,
+  HomePreviewStatus,
   HomeProductGroupKey,
 } from "@/lib/home/home-preview";
 import {
@@ -34,12 +36,20 @@ import styles from "./HomePageRedesign.module.css";
 
 type HomePageRedesignProps = {
   initialHomeData?: HomePreviewData | null;
+  initialHomeStatus?: HomePreviewStatus;
 };
 
 type ProductFilter = HomeProductGroupKey;
 type ConciergeKey = "comfort" | "spin" | "power";
 type BrandKey = "all" | (typeof RACKET_BRANDS)[number]["value"];
 type RacketRequestStatus = "loading" | "success" | "error";
+type SectionRequestStatus = "idle" | "loading" | "success" | "error";
+type RecoverableSection = Exclude<HomePreviewSection, "rackets">;
+
+type HomePreviewRecoveryResponse = {
+  data: HomePreviewData;
+  status: Partial<HomePreviewStatus>;
+};
 
 const HERO_SLIDES = [
   {
@@ -188,7 +198,10 @@ const formatNoticeDate = (value: string) => {
   }).format(date);
 };
 
-export default function HomePageRedesign({ initialHomeData }: HomePageRedesignProps) {
+export default function HomePageRedesign({
+  initialHomeData,
+  initialHomeStatus,
+}: HomePageRedesignProps) {
   const router = useRouter();
   const [activeHero, setActiveHero] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
@@ -196,14 +209,82 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
     useState<ProductFilter>("curated");
   const [activeConcierge, setActiveConcierge] = useState<ConciergeKey>("comfort");
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
+  const [productGroups, setProductGroups] = useState(initialHomeData?.products?.groups);
+  const [packages, setPackages] = useState(initialHomeData?.packages ?? []);
+  const [notices, setNotices] = useState(initialHomeData?.notices ?? []);
+  const [sectionRequestStatus, setSectionRequestStatus] = useState<
+    Record<RecoverableSection, SectionRequestStatus>
+  >({
+    products: initialHomeStatus?.products === "error" ? "error" : "success",
+    packages: initialHomeStatus?.packages === "error" ? "error" : "success",
+    notices: initialHomeStatus?.notices === "error" ? "error" : "success",
+  });
   const [racketsByBrand, setRacketsByBrand] = useState<Record<string, HomePreviewRacket[]>>(
     initialHomeData?.rackets ? { all: initialHomeData.rackets.items } : {},
   );
   const [racketRequestStatus, setRacketRequestStatus] = useState<
     Partial<Record<BrandKey, RacketRequestStatus>>
-  >({});
-  const racketRequestStatusRef = useRef<Partial<Record<BrandKey, RacketRequestStatus>>>({});
+  >(initialHomeStatus?.rackets === "error" ? { all: "error" } : {});
+  const racketRequestStatusRef = useRef<Partial<Record<BrandKey, RacketRequestStatus>>>(
+    initialHomeStatus?.rackets === "error" ? { all: "error" } : {},
+  );
   const racketRequestControllers = useRef(new Map<BrandKey, AbortController>());
+  const recoveryController = useRef<AbortController | null>(null);
+  const recoveryRequestId = useRef(0);
+  const automaticRecoveryStarted = useRef(false);
+
+  const recoverSections = useCallback(async (sections: readonly RecoverableSection[]) => {
+    if (sections.length === 0 || recoveryController.current) return;
+
+    const controller = new AbortController();
+    const requestId = ++recoveryRequestId.current;
+    recoveryController.current = controller;
+    setSectionRequestStatus((current) => {
+      const next = { ...current };
+      sections.forEach((section) => { next[section] = "loading"; });
+      return next;
+    });
+
+    try {
+      const response = await fetch(`/api/home-preview?sections=${sections.join(",")}`, {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      const payload: unknown = await response.json();
+      if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
+        throw new Error("Invalid home preview response");
+      }
+      const result = payload as HomePreviewRecoveryResponse;
+      if (controller.signal.aborted || requestId !== recoveryRequestId.current) return;
+
+      if (result.status.products === "success" && result.data.products) {
+        setProductGroups(result.data.products.groups);
+      }
+      if (result.status.packages === "success" && result.data.packages) {
+        setPackages(result.data.packages);
+      }
+      if (result.status.notices === "success" && result.data.notices) {
+        setNotices(result.data.notices);
+      }
+      setSectionRequestStatus((current) => {
+        const next = { ...current };
+        sections.forEach((section) => {
+          next[section] = result.status[section] === "success" ? "success" : "error";
+        });
+        return next;
+      });
+    } catch {
+      if (!controller.signal.aborted && requestId === recoveryRequestId.current) {
+        setSectionRequestStatus((current) => {
+          const next = { ...current };
+          sections.forEach((section) => { next[section] = "error"; });
+          return next;
+        });
+      }
+    } finally {
+      if (recoveryController.current === controller) recoveryController.current = null;
+    }
+  }, []);
 
   const signupPromo = useMemo(
     () => ({
@@ -240,6 +321,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           ? "?sort=createdAt_desc&limit=8&withTotal=1"
           : `?brand=${encodeURIComponent(brand)}&sort=createdAt_desc&limit=8&withTotal=1`;
       const response = await fetch(`/api/rackets${query}`, {
+        cache: "no-store",
         credentials: "include",
         signal: controller.signal,
       });
@@ -272,6 +354,21 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
   }, []);
 
   useEffect(() => {
+    if (automaticRecoveryStarted.current) return;
+    automaticRecoveryStarted.current = true;
+    const failedSections = (["products", "packages", "notices"] as const).filter(
+      (section) => initialHomeStatus?.[section] === "error",
+    );
+    void recoverSections(failedSections);
+  }, [initialHomeStatus, recoverSections]);
+
+  useEffect(() => () => {
+    recoveryRequestId.current += 1;
+    recoveryController.current?.abort();
+    recoveryController.current = null;
+  }, []);
+
+  useEffect(() => {
     const controllers = racketRequestControllers.current;
     return () => {
       controllers.forEach((controller, brand) => {
@@ -289,16 +386,12 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
     void loadRackets(brand);
   };
 
-  const productGroups = initialHomeData?.products?.groups;
   const visibleProducts = productGroups?.[activeProductFilter] ?? [];
-  const productGroupsLoaded = Boolean(productGroups);
 
   const concierge =
     CONCIERGE_CHOICES.find((choice) => choice.key === activeConcierge) ??
     CONCIERGE_CHOICES[0];
   const visibleRackets = (racketsByBrand[activeBrand] ?? []).slice(0, 4);
-  const packages = initialHomeData?.packages ?? [];
-  const notices = initialHomeData?.notices ?? [];
   const hero = HERO_SLIDES[activeHero];
 
   return (
@@ -410,7 +503,18 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
             ))}
           </div>
 
-          {visibleProducts.length > 0 ? (
+          {sectionRequestStatus.products === "loading" ? (
+            <div className={styles.loadingRail} aria-label="상품 정보를 불러오는 중">
+              {[0, 1, 2, 3].map((item) => <span key={item} />)}
+            </div>
+          ) : sectionRequestStatus.products === "error" ? (
+            <EmptyState
+              title="상품 정보를 불러오지 못했습니다"
+              href="/products"
+              linkLabel="전체 스트링 보기"
+              onRetry={() => void recoverSections(["products"])}
+            />
+          ) : visibleProducts.length > 0 ? (
             <div className={styles.productRail}>
               {visibleProducts.map((product) => (
                 <ProductCard
@@ -423,9 +527,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           ) : (
             <EmptyState
               title={
-                !productGroupsLoaded
-                  ? "상품 정보를 불러오지 못했습니다"
-                  : activeProductFilter === "new"
+                activeProductFilter === "new"
                   ? "현재 등록된 신상품이 없습니다"
                   : "조건에 맞는 스트링을 준비하고 있습니다"
               }
@@ -536,6 +638,13 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
             <div className={styles.loadingRail} aria-label="중고 라켓을 불러오는 중">
               {[0, 1, 2, 3].map((item) => <span key={item} />)}
             </div>
+          ) : racketRequestStatus[activeBrand] === "error" ? (
+            <EmptyState
+              title="중고 라켓 정보를 불러오지 못했습니다"
+              href="/rackets"
+              linkLabel="전체 재고 확인하기"
+              onRetry={() => void loadRackets(activeBrand)}
+            />
           ) : (
             <EmptyState
               title={`${activeBrand === "all" ? "" : `${racketBrandLabel(activeBrand)} `}중고 라켓을 준비하고 있습니다.`}
@@ -594,7 +703,18 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
             linkLabel="패키지 전체 보기"
           />
 
-          {packages.length > 0 ? (
+          {sectionRequestStatus.packages === "loading" ? (
+            <div className={styles.packageLoading} aria-label="패키지 정보를 불러오는 중">
+              {[0, 1, 2].map((item) => <span key={item} />)}
+            </div>
+          ) : sectionRequestStatus.packages === "error" ? (
+            <EmptyState
+              title="패키지 정보를 불러오지 못했습니다"
+              href="/services/packages"
+              linkLabel="패키지 안내 보기"
+              onRetry={() => void recoverSections(["packages"])}
+            />
+          ) : packages.length > 0 ? (
             <div className={styles.packageGrid}>
               {packages.map((pkg) => (
                 <PackageCard key={pkg.id} pkg={pkg} featured={pkg.isPopular} />
@@ -640,7 +760,14 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
         <SiteContainer variant="wide" className={styles.wrap}>
           <div className={styles.noticeRow}>
             <span>NOTICE</span>
-            {notices[0] ? (
+            {sectionRequestStatus.notices === "loading" ? (
+              <span className={styles.noticeStatus} aria-live="polite">공지사항을 불러오는 중입니다</span>
+            ) : sectionRequestStatus.notices === "error" ? (
+              <span className={styles.noticeStatus} aria-live="polite">
+                공지사항을 불러오지 못했습니다
+                <button type="button" onClick={() => void recoverSections(["notices"])}>다시 시도</button>
+              </span>
+            ) : notices[0] ? (
               <Link href={`/board/notice/${notices[0]._id}`}>
                 <time>{formatNoticeDate(notices[0].createdAt)}</time>
                 {notices[0].title}
@@ -907,15 +1034,20 @@ function EmptyState({
   title,
   href,
   linkLabel,
+  onRetry,
 }: {
   title: string;
   href: string;
   linkLabel: string;
+  onRetry?: () => void;
 }) {
   return (
-    <div className={styles.emptyState}>
+    <div className={styles.emptyState} aria-live="polite">
       <p>{title}</p>
-      <Link href={href}>{linkLabel} <ArrowRight aria-hidden="true" /></Link>
+      <div>
+        {onRetry && <button type="button" onClick={onRetry}>다시 시도</button>}
+        <Link href={href}>{linkLabel} <ArrowRight aria-hidden="true" /></Link>
+      </div>
     </div>
   );
 }
