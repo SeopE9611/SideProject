@@ -284,6 +284,7 @@ const getImageSrc = (images?: string[]) => {
 const homeCtaHighlight = buttonVariants({ variant: "highlight", size: "tall" });
 const homeCtaDefault = buttonVariants({ variant: "default", size: "tall" });
 const homeCtaOutline = buttonVariants({ variant: "outline", size: "tall" });
+const homeCtaOutlineCompact = buttonVariants({ variant: "outline", size: "default" });
 
 const racketBrandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
@@ -1142,194 +1143,203 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className={styles.section} id="packages">
+      <section className={styles.commerceSection} aria-labelledby="home-commerce-title">
         <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="04"
-            eyebrow="패키지 비교"
-            title="스트링을 자주 교체한다면 패키지로 편리하게 이용하세요."
-            description={
-              <>
-                이용 횟수와 가격, 회당 금액과 절감 혜택을
-                <br />
-                한눈에 비교해보세요.
-              </>
-            }
-          />
-          <div className={styles.packages}>
-            <div className={styles.packageToolbar}>
-              <p className="break-keep text-ui-body-sm text-muted-foreground">
-                아래에서 횟수와 가격을 비교하고, 전체 안내에서 이용 조건을 확인하세요.
-              </p>
-
-              <Link
-                className={cn(homeCtaOutline, styles.packageToolbarAction)}
-                href="/services/packages"
-              >
-                패키지 전체 보기
-              </Link>
+          <header className={styles.commerceHeader}>
+            <div>
+              <p className={styles.commerceEyebrow}>04 · PACKAGES &amp; PRE-OWNED RACKETS</p>
+              <h2 id="home-commerce-title" className={styles.commerceTitle}>
+                교체 패키지와 검수된 중고 라켓을 한눈에
+              </h2>
             </div>
-            <div className={styles.packageTable}>
-              {packagesError ? (
-                <div className="space-y-4 p-6 text-ui-body text-muted-foreground">
-                  <div>
-                    <strong className="block text-ui-card-title font-medium text-foreground">
-                      패키지 정보를 불러오지 못했어요.
-                    </strong>
-                    <p className="mt-2">
-                      잠시 후 다시 시도하거나 전체 패키지 안내에서 확인해 주세요.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button className={homeCtaOutline} type="button" onClick={fetchHomePackages}>
-                      다시 시도
-                    </button>
-                    <Link className={homeCtaOutline} href="/services/packages">
-                      패키지 전체 보기
-                    </Link>
-                  </div>
-                </div>
-              ) : homePackages.length > 0 ? (
-                homePackages.map((pkg) => <PackageRow key={pkg.id} pkg={pkg} />)
-              ) : (
-                <div className="p-6 text-ui-body text-muted-foreground">
-                  {packagesLoading
-                    ? "패키지 정보를 불러오는 중입니다."
-                    : "현재 표시할 패키지가 없습니다. 패키지 전체 안내에서 이용 가능 여부를 확인해 주세요."}
-                </div>
-              )}
-            </div>
-          </div>
-        </SiteContainer>
-      </section>
-
-      <section ref={racketsSectionRef} className={styles.section} id="rackets">
-        <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="05"
-            eyebrow="도깨비 인증 중고 라켓"
-            title="도깨비에서 인증된 중고 라켓을 확인하세요."
-            description="상태와 대여 가능 여부를 비교하고 전체 목록에서 더 많은 라켓을 확인할 수 있어요."
-          />
-          <div className={styles.racketShowcase}>
-            <div className={styles.racketInventoryPanel}>
-              <div className={styles.racketInventoryHeader}>
+            <p className={styles.commerceDescription}>
+              이용 횟수에 맞는 패키지를 비교하고,
+              <br />
+              브랜드별 중고 라켓을 바로 확인하세요.
+            </p>
+          </header>
+          <div className={styles.commerceGrid}>
+            <article
+              id="packages"
+              className={cn(styles.commercePanel, styles.packageModule)}
+            >
+              <header className={styles.commercePanelHeader}>
                 <div>
-                  <p className={styles.racketInventoryKicker}>최근 등록 라켓</p>
-                  <h3 className={styles.racketInventoryTitle}>
-                    {activeBrand === "all" ? "전체 브랜드" : racketBrandLabel(activeBrand)}
+                  <p className={styles.commercePanelKicker}>STRINGING PACKAGE</p>
+                  <h3 className={styles.commercePanelTitle}>
+                    자주 교체한다면 패키지가 편리해요.
                   </h3>
+                  <p className={styles.commercePanelDescription}>
+                    이용 횟수와 회당 금액을 비교해 필요한 패키지를 선택하세요.
+                  </p>
                 </div>
-                <p className={styles.racketInventoryCount}>
-                  {racketTotal > 0 ? `총 ${racketTotal}개` : "재고 확인 중"}
-                </p>
-              </div>
-              <div className={styles.racketBrandRailWrap}>
-                <button
-                  type="button"
-                  aria-label="이전 라켓 브랜드 보기"
-                  aria-controls={RACKET_BRAND_RAIL_ID}
-                  disabled={!racketBrandRailState.canScrollPrev}
-                  onClick={() => scrollBrandRail(racketBrandRailRef, -1)}
-                  className={styles.racketBrandRailButton}
+                <Link
+                  href="/services/packages"
+                  className={styles.commercePanelHeaderAction}
                 >
-                  <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-                </button>
-                <div className={styles.racketBrandRailViewport}>
-                  <div
-                    id={RACKET_BRAND_RAIL_ID}
-                    aria-label="중고 라켓 브랜드 필터"
-                    className={racketBrandRailClass}
-                    ref={racketBrandRailRef}
-                  >
-                    <button
-                      type="button"
-                      data-racket-brand="all"
-                      aria-pressed={activeBrand === "all"}
-                      onClick={() => setActiveBrand("all")}
-                      className={getRacketBrandTabClass(activeBrand === "all")}
-                    >
-                      전체
-                    </button>
-                    {RACKET_BRANDS.map((b) => (
-                      <button
-                        key={b.value}
-                        type="button"
-                        data-racket-brand={b.value}
-                        aria-pressed={activeBrand === b.value}
-                        onClick={() => setActiveBrand(b.value as BrandKey)}
-                        className={getRacketBrandTabClass(activeBrand === b.value)}
-                      >
-                        {b.label}
+                  패키지 전체 보기
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </header>
+              <div className={styles.packageModuleBody}>
+                {packagesError ? (
+                  <div className="space-y-4 p-6 text-ui-body text-muted-foreground">
+                    <div>
+                      <strong className="block text-ui-card-title font-medium text-foreground">
+                        패키지 정보를 불러오지 못했어요.
+                      </strong>
+                      <p className="mt-2">
+                        잠시 후 다시 시도하거나 전체 패키지 안내에서 확인해 주세요.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button className={homeCtaOutline} type="button" onClick={fetchHomePackages}>
+                        다시 시도
                       </button>
-                    ))}
-                  </div>
-                  {racketBrandRailState.hasOverflow && racketBrandRailState.canScrollPrev && (
-                    <div className={styles.racketBrandRailFadeLeft} aria-hidden="true" />
-                  )}
-                  {racketBrandRailState.hasOverflow && racketBrandRailState.canScrollNext && (
-                    <div className={styles.racketBrandRailFadeRight} aria-hidden="true" />
-                  )}
-                </div>
-                <button
-                  type="button"
-                  aria-label="다음 라켓 브랜드 보기"
-                  aria-controls={RACKET_BRAND_RAIL_ID}
-                  disabled={!racketBrandRailState.canScrollNext}
-                  onClick={() => scrollBrandRail(racketBrandRailRef, 1)}
-                  className={styles.racketBrandRailButton}
-                >
-                  <ChevronRight aria-hidden="true" className="h-4 w-4" />
-                </button>
-              </div>
-              {visibleRackets.length > 0 ? (
-                <RacketInventoryList
-                  activeBrand={activeBrand}
-                  rackets={visibleRackets}
-                  total={racketTotal}
-                />
-              ) : usedRacketsError ? (
-                <EmptyPanel
-                  title="중고 라켓을 불러오지 못했어요"
-                  action={
-                    usedRacketsError
-                      ? () => loadUsedRackets(activeBrand, { force: true })
-                      : undefined
-                  }
-                />
-              ) : usedRacketsLoading || !shouldLoadRackets ? (
-                <RacketInventorySkeleton />
-              ) : (
-                <div className={styles.racketEmpty}>
-                  <div className={styles.racketEmptyCopy}>
-                    <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}>
-                      {activeBrand === "all"
-                        ? "검수된 중고 라켓을 준비 중입니다."
-                        : `현재 ${racketBrandLabel(activeBrand)} 중고 라켓이 없습니다.`}
-                    </h3>
-                    <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">
-                      {activeBrand === "all"
-                        ? "전체 목록에서 입고 소식을 확인해 주세요."
-                        : "다른 브랜드의 등록 라켓을 확인해 보세요."}
-                    </p>
-                    <div className="mt-6 flex flex-wrap gap-2">
-                      {activeBrand !== "all" && (
-                        <button
-                          type="button"
-                          className={homeCtaOutline}
-                          onClick={() => setActiveBrand("all")}
-                        >
-                          전체 브랜드 보기
-                        </button>
-                      )}
-                      <Link className={homeCtaOutline} href="/rackets">
-                        중고 라켓 전체 보기
+                      <Link className={homeCtaOutline} href="/services/packages">
+                        패키지 전체 보기
                       </Link>
                     </div>
                   </div>
+                ) : homePackages.length > 0 ? (
+                  homePackages.map((pkg) => <PackageRow key={pkg.id} pkg={pkg} />)
+                ) : (
+                  <div className="p-6 text-ui-body text-muted-foreground">
+                    {packagesLoading
+                      ? "패키지 정보를 불러오는 중입니다."
+                      : "현재 표시할 패키지가 없습니다. 패키지 전체 안내에서 이용 가능 여부를 확인해 주세요."}
+                  </div>
+                )}
+              </div>
+            </article>
+
+            <article
+              ref={racketsSectionRef}
+              id="rackets"
+              className={cn(styles.commercePanel, styles.racketModule)}
+            >
+              <header className={styles.commercePanelHeader}>
+                <div>
+                  <p className={styles.commercePanelKicker}>CERTIFIED PRE-OWNED</p>
+                  <h3 className={styles.commercePanelTitle}>검수된 중고 라켓을 확인하세요.</h3>
+                  <p className={styles.commercePanelDescription}>
+                    브랜드와 상태, 판매·대여 정보를 비교할 수 있어요.
+                  </p>
                 </div>
-              )}
-            </div>
+                <p className={styles.commercePanelCount}>
+                  {racketTotal > 0 ? `총 ${racketTotal}개` : "재고 확인 중"}
+                </p>
+              </header>
+              <div className={styles.racketModuleFilter}>
+                <div className={styles.racketBrandRailWrap}>
+                  <button
+                    type="button"
+                    aria-label="이전 라켓 브랜드 보기"
+                    aria-controls={RACKET_BRAND_RAIL_ID}
+                    disabled={!racketBrandRailState.canScrollPrev}
+                    onClick={() => scrollBrandRail(racketBrandRailRef, -1)}
+                    className={styles.racketBrandRailButton}
+                  >
+                    <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                  </button>
+                  <div className={styles.racketBrandRailViewport}>
+                    <div
+                      id={RACKET_BRAND_RAIL_ID}
+                      aria-label="중고 라켓 브랜드 필터"
+                      className={racketBrandRailClass}
+                      ref={racketBrandRailRef}
+                    >
+                      <button
+                        type="button"
+                        data-racket-brand="all"
+                        aria-pressed={activeBrand === "all"}
+                        onClick={() => setActiveBrand("all")}
+                        className={getRacketBrandTabClass(activeBrand === "all")}
+                      >
+                        전체
+                      </button>
+                      {RACKET_BRANDS.map((b) => (
+                        <button
+                          key={b.value}
+                          type="button"
+                          data-racket-brand={b.value}
+                          aria-pressed={activeBrand === b.value}
+                          onClick={() => setActiveBrand(b.value as BrandKey)}
+                          className={getRacketBrandTabClass(activeBrand === b.value)}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                    {racketBrandRailState.hasOverflow && racketBrandRailState.canScrollPrev && (
+                      <div className={styles.racketBrandRailFadeLeft} aria-hidden="true" />
+                    )}
+                    {racketBrandRailState.hasOverflow && racketBrandRailState.canScrollNext && (
+                      <div className={styles.racketBrandRailFadeRight} aria-hidden="true" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="다음 라켓 브랜드 보기"
+                    aria-controls={RACKET_BRAND_RAIL_ID}
+                    disabled={!racketBrandRailState.canScrollNext}
+                    onClick={() => scrollBrandRail(racketBrandRailRef, 1)}
+                    className={styles.racketBrandRailButton}
+                  >
+                    <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <div className={styles.racketModuleBody}>
+                {visibleRackets.length > 0 ? (
+                  <RacketInventoryList
+                    activeBrand={activeBrand}
+                    rackets={visibleRackets}
+                    total={racketTotal}
+                  />
+                ) : usedRacketsError ? (
+                  <EmptyPanel
+                    title="중고 라켓을 불러오지 못했어요"
+                    action={
+                      usedRacketsError
+                        ? () => loadUsedRackets(activeBrand, { force: true })
+                        : undefined
+                    }
+                  />
+                ) : usedRacketsLoading || !shouldLoadRackets ? (
+                  <RacketInventorySkeleton />
+                ) : (
+                  <div className={styles.racketEmpty}>
+                    <div className={styles.racketEmptyCopy}>
+                      <h3 className={cn(styles.uiTitle, "text-ui-section-title-lg text-foreground")}>
+                        {activeBrand === "all"
+                          ? "검수된 중고 라켓을 준비 중입니다."
+                          : `현재 ${racketBrandLabel(activeBrand)} 중고 라켓이 없습니다.`}
+                      </h3>
+                      <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">
+                        {activeBrand === "all"
+                          ? "전체 목록에서 입고 소식을 확인해 주세요."
+                          : "다른 브랜드의 등록 라켓을 확인해 보세요."}
+                      </p>
+                      <div className="mt-6 flex flex-wrap gap-2">
+                        {activeBrand !== "all" && (
+                          <button
+                            type="button"
+                            className={homeCtaOutline}
+                            onClick={() => setActiveBrand("all")}
+                          >
+                            전체 브랜드 보기
+                          </button>
+                        )}
+                        <Link className={homeCtaOutline} href="/rackets">
+                          중고 라켓 전체 보기
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </article>
           </div>
         </SiteContainer>
       </section>
@@ -1337,7 +1347,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={communitySectionRef} className={styles.section} id="info">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="06"
+            no="05"
             eyebrow="이용 안내"
             title="공지와 이용 안내를 확인하세요."
             description="운영 정보와 문의 경로를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있어요."
@@ -1450,10 +1460,10 @@ function PackageRow({ pkg }: { pkg: HomePreviewPackage }) {
         </span>
       </div>
       <Link
-        className={cn(homeCtaOutline, styles.packageAction)}
+        className={cn(homeCtaOutlineCompact, styles.packageAction)}
         href={`/services/packages/checkout?package=${pkg.id}`}
       >
-        이 패키지 보기
+        패키지 보기
       </Link>
     </div>
   );
@@ -1550,7 +1560,7 @@ function RacketInventoryRow({ racket }: { racket: RItem }) {
           alt={imageAlt || "중고 라켓 상품 이미지"}
           fill
           className="object-contain"
-          sizes="(max-width: 767px) 84px, (max-width: 1199px) 88px, 92px"
+          sizes="(max-width: 767px) 72px, 76px"
         />
       </div>
       <div className={styles.racketInventoryInfo}>
