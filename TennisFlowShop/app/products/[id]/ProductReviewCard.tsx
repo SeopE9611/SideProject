@@ -1,6 +1,7 @@
 import Image from "next/image";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
+import ReviewVisibilityBadge from "@/components/reviews/ReviewVisibilityBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -54,9 +55,9 @@ export default function ProductReviewCard({
                 <span className="break-words font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
                   {review.status === "hidden"
                     ? review.ownedByMe
-                      ? `${review.user ?? "내 후기"} (비공개)`
+                      ? (review.user ?? "내 후기")
                       : review.adminView
-                        ? `${review.user ?? "사용자"} (비공개)`
+                        ? (review.user ?? "사용자")
                         : "비공개 후기"
                     : (review.user ?? "익명")}
                 </span>
@@ -64,6 +65,9 @@ export default function ProductReviewCard({
                   reviewContext={review.reviewContext}
                   contextLabel={review.contextLabel}
                 />
+                {review.status === "hidden" && (review.ownedByMe || review.adminView) && (
+                  <ReviewVisibilityBadge />
+                )}
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <ProductReviewRatingStars rating={review.rating} />

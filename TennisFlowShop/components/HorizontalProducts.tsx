@@ -327,6 +327,7 @@ export default function HorizontalProducts({
           discountRate: saleRate,
         },
         "image",
+        { excludeKinds: ["sale"] },
       );
       return (
         <Link key={p._id} href={p.href ?? `/products/${p._id}`} className={cardSurfaceClass}>

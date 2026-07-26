@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 
 type Props = {
   regularPrice: number;
@@ -18,10 +19,13 @@ export function CatalogPrice({
   const displayPrice = isSale ? salePrice : regularPrice;
   const saleRate =
     isSale && regularPrice > 0 ? Math.round(((regularPrice - salePrice!) / regularPrice) * 100) : 0;
+  const accessiblePrice = isSale
+    ? `${label ? `${label} ` : ""}${displayPrice.toLocaleString()}원, 정상가 ${regularPrice.toLocaleString()}원, ${saleRate}% 할인`
+    : `${label ? `${label} ` : ""}${displayPrice.toLocaleString()}원`;
   return (
     <div
       className={cn("min-w-0 space-y-1", align === "end" && "text-right")}
-      aria-label={`${label ? `${label} ` : ""}${displayPrice.toLocaleString()}원`}
+      aria-label={accessiblePrice}
     >
       <div
         className={cn(
@@ -42,11 +46,7 @@ export function CatalogPrice({
         >
           {displayPrice.toLocaleString()}원
         </span>
-        {isSale ? (
-          <span className="shrink-0 whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-ui-label font-ui-medium text-foreground">
-            {saleRate}%
-          </span>
-        ) : null}
+        {isSale ? <CommerceBadge kind="sale" surface="inline" discountRate={saleRate} /> : null}
       </div>
       {isSale ? (
         <div

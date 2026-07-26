@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { getReviewContextLabel, type ReviewContext } from "@/lib/reviews/review-target";
 
 type ReviewContextBadgeProps = {
@@ -11,5 +11,9 @@ export default function ReviewContextBadge({
   contextLabel,
 }: ReviewContextBadgeProps) {
   const label = contextLabel || getReviewContextLabel(reviewContext);
-  return <Badge variant="outline">{label}</Badge>;
+  return (
+    <SemanticBadge tone="neutral" emphasis="outline">
+      {label}
+    </SemanticBadge>
+  );
 }

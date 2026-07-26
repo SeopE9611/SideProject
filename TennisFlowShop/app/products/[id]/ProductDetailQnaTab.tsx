@@ -1,13 +1,8 @@
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  badgeBaseOutlined,
-  badgeSizeSm,
-  getAnswerStatusBadgeSpec,
-  getQnaCategoryBadgeSpec,
-} from "@/lib/badge-style";
+import { getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { Lock, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { fmtDate } from "./ProductDetailClient.utils";
@@ -94,27 +89,18 @@ export default function ProductDetailQnaTab({
                         <div className="flex-1 min-w-0">
                           <div className="space-y-1 min-w-0">
                             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                              <Badge
-                                variant={getQnaCategoryBadgeSpec(q.category).variant}
-                                className={`${badgeBaseOutlined} ${badgeSizeSm}`}
-                              >
+                              <SemanticBadge tone={getQnaCategoryBadgeSpec(q.category).tone}>
                                 {q.category ?? "상품문의"}
-                              </Badge>
+                              </SemanticBadge>
                               {q.isSecret && (
-                                <Badge
-                                  variant="outline"
-                                  className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border/40 dark:border-border shrink-0`}
-                                >
+                                <SemanticBadge tone="neutral" emphasis="outline">
                                   <Lock className="h-3 w-3 mr-1" />
                                   비밀글
-                                </Badge>
+                                </SemanticBadge>
                               )}
-                              <Badge
-                                variant={getAnswerStatusBadgeSpec(!!q.answer).variant}
-                                className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
-                              >
+                              <SemanticBadge tone={getAnswerStatusBadgeSpec(!!q.answer).tone}>
                                 {q.answer ? "답변 완료" : "답변 대기"}
-                              </Badge>
+                              </SemanticBadge>
                             </div>
                             <div className="line-clamp-2 min-w-0 break-keep break-words text-ui-body-sm font-semibold leading-relaxed text-foreground hover:text-foreground sm:text-ui-body">
                               {q.title}

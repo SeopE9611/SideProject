@@ -33,6 +33,7 @@ export function getProductDetailBadges(product: any, isSoldOut = false): Product
       discountRate: isSale ? ((regularPrice - salePrice) / regularPrice) * 100 : undefined,
     },
     "image",
+    { excludeKinds: ["sale"] },
   );
 }
 
