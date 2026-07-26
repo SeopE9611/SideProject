@@ -390,32 +390,15 @@
 }
 
 .productBadges,
-.racketImage > span {
+.racketBadges {
   position: absolute;
   z-index: 1;
   top: 14px;
   left: 14px;
-}
-
-.productBadges {
   display: flex;
+  max-width: calc(100% - 28px);
+  flex-wrap: wrap;
   gap: 6px;
-}
-
-.productBadges > span,
-.racketImage > span {
-  border-radius: 999px;
-  background: var(--home-highlight);
-  padding: 6px 9px 5px;
-  color: var(--home-highlight-text);
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.03em;
-}
-
-.racketImage > span {
-  background: var(--home-inverse);
-  color: var(--home-inverse-text);
 }
 
 .productMeta,
@@ -818,24 +801,8 @@
   color: var(--home-ink);
 }
 
-.packageCard > p,
-.packageCardFeatured > p {
+.packageBadge {
   display: inline-flex;
-  min-height: 26px;
-  align-items: center;
-  border-radius: 999px;
-  background: var(--home-soft);
-  margin: 0;
-  padding: 0 10px;
-  color: color-mix(in srgb, var(--home-highlight) 65%, var(--home-ink));
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.13em;
-}
-
-.packageCardFeatured > p {
-  background: var(--home-highlight);
-  color: var(--home-highlight-text);
 }
 
 .packageCard h3,
@@ -928,7 +895,7 @@
 }
 
 .trustIntro h2 {
-  font-size: clamp(30px, 3vw, 40px);
+  font-size: clamp(40px, 3.2vw, 48px);
 }
 
 .trustIntro > a {
@@ -939,7 +906,8 @@
   border-bottom: 1px solid var(--home-ink);
   padding-bottom: 5px;
   color: var(--home-ink);
-  font-size: 12px;
+  min-height: 44px;
+  font-size: 14px;
   font-weight: 750;
 }
 
@@ -950,20 +918,20 @@
 
 .trustItem > span {
   color: color-mix(in srgb, var(--home-highlight) 60%, var(--home-ink));
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 850;
 }
 
 .trustItem h3 {
   margin: 52px 0 0;
   font-family: var(--home-font);
-  font-size: 19px;
+  font-size: 24px;
 }
 
 .trustItem p {
   margin: 11px 0 0;
   color: var(--home-muted);
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -973,12 +941,13 @@
   align-items: center;
   border-top: 1px solid var(--home-ink);
   border-bottom: 1px solid var(--home-line);
-  padding-block: 18px;
-  font-size: 12px;
+  min-height: 64px;
+  padding-block: 22px;
+  font-size: 15px;
 }
 
 .noticeRow > span {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 850;
   letter-spacing: 0.14em;
 }
@@ -1008,23 +977,23 @@
 .supportCards > a {
   position: relative;
   display: grid;
-  min-height: 128px;
+  min-height: 156px;
   align-content: end;
   border: 1px solid var(--home-line);
   border-radius: 16px;
   background: var(--home-card);
-  padding: 23px;
+  padding: 28px;
   color: var(--home-ink);
 }
 
 .supportCards span {
   color: var(--home-muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .supportCards strong {
   margin-top: 8px;
-  font-size: 15px;
+  font-size: 20px;
 }
 
 .supportCards svg {
@@ -1032,6 +1001,8 @@
   top: 22px;
   right: 22px;
   color: color-mix(in srgb, var(--home-highlight) 62%, var(--home-ink));
+  width: 24px;
+  height: 24px;
 }
 
 .emptyState {
@@ -1094,6 +1065,10 @@
 
   .trustGrid {
     gap: 24px;
+  }
+
+  .trustIntro h2 {
+    font-size: 33px;
   }
 
   .packageGrid {
@@ -1396,6 +1371,11 @@
 
   .trustItem h3 {
     margin-top: 24px;
+    font-size: 22px;
+  }
+
+  .trustItem p {
+    font-size: 15px;
   }
 
   .supportSection {
@@ -1405,6 +1385,8 @@
   .noticeRow {
     grid-template-columns: 1fr auto;
     gap: 11px;
+    min-height: 76px;
+    font-size: 14px;
   }
 
   .noticeRow > span {
@@ -1428,7 +1410,12 @@
   }
 
   .supportCards > a {
-    min-height: 106px;
+    min-height: 120px;
+    padding: 24px;
+  }
+
+  .supportCards strong {
+    font-size: 18px;
   }
 
   .emptyState {
