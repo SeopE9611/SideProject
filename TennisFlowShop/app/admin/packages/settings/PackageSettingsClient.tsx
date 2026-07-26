@@ -6,6 +6,7 @@ import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
@@ -17,7 +18,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator } from "@/lib/admin/adminFetcher";
-import { getMerchandisingBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   UNSAVED_CHANGES_MESSAGE,
@@ -731,9 +731,7 @@ export default function PackageSettingsClient() {
                           </div>
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {pkg.isPopular && (
-                              <Badge variant={getMerchandisingBadgeSpec("popular").variant}>
-                                추천
-                              </Badge>
+                              <CommerceBadge kind="recommended" surface="inline" size="sm" />
                             )}
                             {!pkg.isActive && <Badge variant="secondary">비활성</Badge>}
                           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import SiteContainer from "@/components/layout/SiteContainer";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { ResultState } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -260,9 +261,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <Package className="h-5 w-5 text-foreground" />
                 대여 정보
                 {withService && (
-                  <span className="rounded-full border border-border px-2 py-0.5 text-ui-label font-medium text-muted-foreground">
+                  <SemanticBadge tone="neutral" emphasis="outline" size="md" shape="pill">
                     교체서비스 포함
-                  </span>
+                  </SemanticBadge>
                 )}
               </CardTitle>
               <CardDescription className="mt-2 text-ui-body-sm">

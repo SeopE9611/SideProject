@@ -1,10 +1,10 @@
 "use client";
 
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ImageIcon, Palette, Percent, Ruler, Sparkles, Tag, TrendingUp } from "lucide-react";
+import { ImageIcon, Palette, Ruler, Tag } from "lucide-react";
 
 interface ProductPreviewCardProps {
   basicInfo: {
@@ -74,27 +74,21 @@ export function ProductPreviewCard({
       {/* Badges */}
       <div className="mb-4 flex flex-wrap gap-1.5">
         {inventory.isNew && (
-          <Badge variant="info">
-            <Sparkles className="mr-1 h-3 w-3" />
-            신상품
-          </Badge>
+          <CommerceBadge kind="new" surface="inline" size="sm" />
         )}
         {inventory.isFeatured && (
-          <Badge variant="warning">
-            <TrendingUp className="mr-1 h-3 w-3" />
-            추천
-          </Badge>
+          <CommerceBadge kind="recommended" surface="inline" size="sm" />
         )}
-        {inventory.isSale && (
-          <Badge variant="destructive">
-            <Percent className="mr-1 h-3 w-3" />
-            할인
-          </Badge>
+        {inventory.isSale && inventory.salePrice > 0 && inventory.salePrice < basicInfo.price && (
+          <CommerceBadge
+            kind="sale"
+            surface="inline"
+            size="sm"
+            discountRate={((basicInfo.price - inventory.salePrice) / basicInfo.price) * 100}
+          />
         )}
         {inventory.status === "outofstock" && (
-          <Badge variant="secondary" className="bg-muted text-muted-foreground">
-            품절
-          </Badge>
+          <CommerceBadge kind="sold_out" surface="inline" size="sm" />
         )}
       </div>
 

@@ -12,6 +12,8 @@ import {
   type Step,
 } from "@/components/admin/product-form";
 import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
+import { RacketBadge } from "@/components/badges/RacketBadge";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1027,25 +1029,24 @@ export default function AdminRacketForm({
                   <Badge variant="outline" className="text-xs">
                     {racketStatusLabel(form.status)}
                   </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    {form.condition}급
-                  </Badge>
+                  <RacketBadge kind="condition" state={form.condition} size="xs" />
                   {form.marketing.isNew && (
-                    <Badge variant="secondary" className="text-xs">
-                      NEW
-                    </Badge>
+                    <CommerceBadge kind="new" surface="inline" size="xs" />
                   )}
                   {form.marketing.isFeatured && (
-                    <Badge variant="secondary" className="text-xs">
-                      추천
-                    </Badge>
+                    <CommerceBadge kind="recommended" surface="inline" size="xs" />
                   )}
                   {form.marketing.isSale &&
                     form.marketing.salePrice > 0 &&
                     form.marketing.salePrice < form.price && (
-                      <Badge variant="destructive" className="text-xs">
-                        SALE
-                      </Badge>
+                      <CommerceBadge
+                        kind="sale"
+                        surface="inline"
+                        size="xs"
+                        discountRate={
+                          ((form.price - form.marketing.salePrice) / form.price) * 100
+                        }
+                      />
                     )}
                 </div>
               </div>

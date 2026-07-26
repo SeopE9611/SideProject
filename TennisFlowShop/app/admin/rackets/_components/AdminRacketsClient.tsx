@@ -5,6 +5,9 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
+import { RacketBadge } from "@/components/badges/RacketBadge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -31,7 +34,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import { usedBadgeMeta } from "@/lib/badge-style";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { cn } from "@/lib/utils";
@@ -65,9 +67,9 @@ function StockChip({ id, total }: { id: string; total: number }) {
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;
   return (
-    <Badge variant={soldOut ? "destructive" : "default"} className="font-normal">
+    <SemanticBadge tone={soldOut ? "warning" : "success"} size="xs" className="font-normal">
       {qty > 1 ? (soldOut ? `0/${qty}` : `${avail}/${qty}`) : soldOut ? "대여 중" : "대여 가능"}
-    </Badge>
+    </SemanticBadge>
   );
 }
 
@@ -117,17 +119,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
-  const meta = usedBadgeMeta("condition", condition);
-  const labelMap: Record<string, string> = {
-    A: "A급 (최상)",
-    B: "B급 (양호)",
-    C: "C급 (보통)",
-  };
-  return (
-    <Badge className={cn(meta.className, "shrink-0 whitespace-nowrap")}>
-      {labelMap[condition] || meta.label}
-    </Badge>
-  );
+  return <RacketBadge kind="condition" state={condition} size="sm" />;
 }
 
 export default function AdminRacketsClient() {
@@ -653,12 +645,19 @@ export default function AdminRacketsClient() {
                                 {item.model}
                               </div>
                               <div className="mt-1 flex flex-wrap gap-1">
-                                {item.marketing?.isNew && <Badge variant="secondary">NEW</Badge>}
-                                {item.marketing?.isFeatured && (
-                                  <Badge variant="secondary">추천</Badge>
+                                {item.marketing?.isNew && (
+                                  <CommerceBadge kind="new" surface="inline" size="sm" />
                                 )}
-                                {item.marketing?.isSale && (
-                                  <Badge variant="destructive">SALE</Badge>
+                                {item.marketing?.isFeatured && (
+                                  <CommerceBadge kind="recommended" surface="inline" size="sm" />
+                                )}
+                                {item.marketing?.isSale && Number(item.marketing.salePrice) > 0 && Number(item.marketing.salePrice) < Number(item.price) && (
+                                  <CommerceBadge
+                                    kind="sale"
+                                    surface="inline"
+                                    size="sm"
+                                    discountRate={((Number(item.price) - Number(item.marketing.salePrice)) / Number(item.price)) * 100}
+                                  />
                                 )}
                               </div>
                             </div>
@@ -691,16 +690,11 @@ export default function AdminRacketsClient() {
                           </div>
                         </TableCell>
                         <TableCell className={adminDataTable.cellCenter}>
-                          <Badge
-                            className={cn(
-                              item.rental?.enabled
-                                ? usedBadgeMeta("rental", "available").className
-                                : usedBadgeMeta("rental", "unavailable").className,
-                              "shrink-0 whitespace-nowrap",
-                            )}
-                          >
-                            {item.rental?.enabled ? "가능" : "불가"}
-                          </Badge>
+                          <RacketBadge
+                            kind="availability"
+                            state={item.rental?.enabled ? "purchase_rental_available" : "purchase_available"}
+                            size="sm"
+                          />
                         </TableCell>
                         <TableCell className={adminDataTable.cellCenter}>
                           <StockChip id={item.id} total={item.quantity ?? 1} />

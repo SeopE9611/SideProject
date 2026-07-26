@@ -23,6 +23,8 @@ import {
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import { isStringProductSoldOut } from "@/lib/products/string-stock";
 import { commerceBadgeSpecs, type RacketAvailabilityState } from "@/lib/badge-style";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
@@ -161,13 +163,6 @@ const formatPrice = (value: number) =>
 const getImageSrc = (images?: string[]) => {
   const src = images?.[0] || "/placeholder.svg";
   return src.startsWith("/") || src.startsWith("http") ? src : `/${src}`;
-};
-
-const getProductPrice = (product: HomePreviewProduct) => {
-  const salePrice = Number(product.inventory?.salePrice);
-  return isTruthy(product.inventory?.isSale) && Number.isFinite(salePrice) && salePrice > 0
-    ? salePrice
-    : product.price;
 };
 
 const getDiscountRate = (regularPrice: number, salePrice: number) => {
@@ -710,12 +705,12 @@ function ProductCard({
   product: HomePreviewProduct;
   ensureNewBadge: boolean;
 }) {
-  const price = getProductPrice(product);
+  const price = getEffectiveProductPrice(product);
   const isDiscounted = price < product.price;
   const badges = commerceBadgeSpecs(
     {
-      isSoldOut: product.inventory?.status === "outofstock",
-      isSale: isTruthy(product.inventory?.isSale),
+      isSoldOut: isStringProductSoldOut(product),
+      isSale: isDiscounted,
       isRecommended: isTruthy(product.inventory?.isFeatured),
       isNew: isTruthy(product.inventory?.isNew) || isTruthy(product.isNew),
       discountRate: getDiscountRate(product.price, price),

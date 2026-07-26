@@ -1,10 +1,9 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec } from "@/lib/badge-style";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
+import { getOrderStatusBadgeSpec } from "@/lib/badge-style";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
-import { cn } from "@/lib/utils";
 import useSWR from "swr";
 import { getCustomerOrderStatusLabel } from "../../_lib/flow-display";
 
@@ -38,8 +37,8 @@ export function OrderStatusBadge({ orderId, initialStatus, shippingMethod }: Pro
   const customerDisplayLabel = getCustomerOrderStatusLabel(displayLabel);
   const spec = getOrderStatusBadgeSpec(data?.status);
   return (
-    <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>
+    <SemanticBadge tone={spec.tone} size="md">
       {customerDisplayLabel}
-    </Badge>
+    </SemanticBadge>
   );
 }

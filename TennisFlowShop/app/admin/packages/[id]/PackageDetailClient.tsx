@@ -7,6 +7,7 @@ import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -67,7 +68,7 @@ import {
   getAdminPackageUsageLabel,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
 import { adminMutator } from "@/lib/admin/adminFetcher";
-import { getMerchandisingBadgeSpec, getPaymentStatusBadgeSpec } from "@/lib/badge-style";
+import { getPaymentStatusBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   UNSAVED_CHANGES_MESSAGE,
@@ -1006,12 +1007,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge
-                            variant={getMerchandisingBadgeSpec("discount").variant}
-                            className="text-xs"
-                          >
+                          <SemanticBadge tone="danger" size="sm">
                             -{u.sessionsUsed}회 차감
-                          </Badge>
+                          </SemanticBadge>
                         </div>
                         <p className="font-medium mb-1">{u.summary}</p>
                         <p className="text-sm text-muted-foreground">

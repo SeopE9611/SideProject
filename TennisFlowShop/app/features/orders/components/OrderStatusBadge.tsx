@@ -1,10 +1,9 @@
 "use client";
 
 import useSWR from "swr";
-import { Badge } from "@/components/ui/badge";
-import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec } from "@/lib/badge-style";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
+import { getOrderStatusBadgeSpec } from "@/lib/badge-style";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
-import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((res) => res.json());
 
@@ -24,8 +23,8 @@ export function OrderStatusBadge({ orderId, initialStatus, shippingMethod }: Pro
   });
   const spec = getOrderStatusBadgeSpec(data?.status);
   return (
-    <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>
+    <SemanticBadge tone={spec.tone} size="sm">
       {getOrderStatusLabelForDisplay(data?.status ?? initialStatus, shippingMethod)}
-    </Badge>
+    </SemanticBadge>
   );
 }

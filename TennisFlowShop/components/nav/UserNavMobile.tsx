@@ -6,7 +6,7 @@ import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedCha
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useAuthStore } from "@/app/store/authStore";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
-import { Badge } from "@/components/ui/badge";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 
 interface UserNavMobileProps {
@@ -80,8 +80,8 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
         <div className="flex flex-col items-center gap-1">
           <p className="text-ui-label text-muted-foreground">소셜 로그인</p>
           <div className="flex flex-wrap justify-center gap-1">
-            {hasKakao && <Badge variant="brand">카카오</Badge>}
-            {hasNaver && <Badge variant="success">네이버</Badge>}
+            {hasKakao && <IdentityBadge tone="kakao">카카오</IdentityBadge>}
+            {hasNaver && <IdentityBadge tone="naver">네이버</IdentityBadge>}
           </div>
         </div>
       )}

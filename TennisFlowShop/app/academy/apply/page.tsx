@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import AcademyApplyClient from "@/app/academy/apply/_components/AcademyApplyClient";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { PublicPageHero, PublicSurface, ResultState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import { getAcademyScheduleDisplay } from "@/lib/academy-display";
@@ -406,8 +407,11 @@ export default async function AcademyApplyPage({
                   {/* Class Header */}
                   <div className="border-b border-border bg-muted/30 px-5 py-4 md:px-6">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-ui-label font-medium ${selectedClass.status === "closed" ? "bg-muted text-muted-foreground" : "bg-success/10 text-success"}`}
+                      <SemanticBadge
+                        tone={selectedClass.status === "closed" ? "neutral" : "success"}
+                        emphasis={selectedClass.status === "closed" ? "outline" : "soft"}
+                        size="md"
+                        shape="pill"
                       >
                         {selectedClass.status === "closed" ? (
                           <Clock className="h-3 w-3" aria-hidden />
@@ -415,13 +419,13 @@ export default async function AcademyApplyPage({
                           <CheckCircle2 className="h-3 w-3" aria-hidden />
                         )}
                         {selectedClass.statusLabel}
-                      </span>
-                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-ui-label font-medium text-muted-foreground">
+                      </SemanticBadge>
+                      <SemanticBadge tone="neutral" emphasis="outline" size="md" shape="pill">
                         {selectedClass.lessonTypeLabel}
-                      </span>
-                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-ui-label font-medium text-muted-foreground">
+                      </SemanticBadge>
+                      <SemanticBadge tone="neutral" emphasis="outline" size="md" shape="pill">
                         {selectedClass.levelLabel}
-                      </span>
+                      </SemanticBadge>
                     </div>
                   </div>
 

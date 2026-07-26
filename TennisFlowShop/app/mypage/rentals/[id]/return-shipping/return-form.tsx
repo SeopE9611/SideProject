@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Truck } from "lucide-react";
 
 import { PublicPageHero, PublicSurface, SummaryCard } from "@/components/public";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -130,10 +131,10 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
           description="택배사와 운송장 번호를 확인한 뒤 저장해 주세요."
           action={
             hasExisting ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1 text-ui-label font-medium text-success">
+              <SemanticBadge tone="success" size="md" shape="pill">
                 <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                 등록된 정보 있음
-              </span>
+              </SemanticBadge>
             ) : undefined
           }
           contentClassName="space-y-5"

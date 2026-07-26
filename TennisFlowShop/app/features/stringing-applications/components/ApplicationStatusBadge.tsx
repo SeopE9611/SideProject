@@ -1,9 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { badgeBase, badgeSizeSm, getApplicationStatusBadgeSpec } from "@/lib/badge-style";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
+import { getApplicationStatusBadgeSpec } from "@/lib/badge-style";
 import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
-import { cn } from "@/lib/utils";
 
 interface Props {
   status: string;
@@ -14,8 +13,8 @@ export default function ApplicationStatusBadge({ status }: Props) {
   const label = getCommonApplicationStatusLabel(status) ?? status;
 
   return (
-    <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>
+    <SemanticBadge tone={spec.tone} size="sm">
       {label}
-    </Badge>
+    </SemanticBadge>
   );
 }

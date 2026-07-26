@@ -32,7 +32,7 @@ import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-in
 import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
-import { hasSelectableStringStock } from "@/lib/products/string-stock";
+import { isStringProductSoldOut } from "@/lib/products/string-stock";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -241,9 +241,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
   const cartCtaLabel = "장바구니 담기";
   const standalonePausedNotice = "현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.";
-  const isFullySoldOut =
-    String(product.inventory?.status ?? "") === "outofstock" ||
-    !hasSelectableStringStock(product);
+  const isFullySoldOut = isStringProductSoldOut(product);
   const isSelectedOptionUnavailable = hasVariantInventories
     ? selectedVariantSoldOut
     : isFullySoldOut;

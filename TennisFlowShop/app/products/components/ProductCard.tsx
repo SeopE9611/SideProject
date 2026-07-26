@@ -12,7 +12,7 @@ import { commerceBadgeSpecs } from "@/lib/badge-style";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
-import { hasSelectableStringStock } from "@/lib/products/string-stock";
+import { isStringProductSoldOut } from "@/lib/products/string-stock";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Eye, Heart } from "lucide-react";
@@ -192,15 +192,7 @@ const ProductCard = React.memo(
       salePrice < regularPrice;
     const displayPrice = isSale ? salePrice : regularPrice;
     const stockRaw = typeof inventory?.stock === "number" ? inventory.stock : null;
-    const manageStock = inventory?.manageStock === true;
-    const allowBackorder = inventory?.allowBackorder === true;
-    const status = String(inventory?.status ?? "");
-
-    const optionBasedSoldOut = !hasSelectableStringStock(product);
-    const isSoldOut =
-      status === "outofstock" ||
-      optionBasedSoldOut ||
-      (manageStock && (stockRaw ?? 0) <= 0 && !allowBackorder);
+    const isSoldOut = isStringProductSoldOut(product);
     const stockForItem = typeof stockRaw === "number" ? stockRaw : undefined;
     const canCheckoutWithService = isMountableStringByFee(product.mountingFee);
     const featureEntries = getFeatureEntries(product.features);
