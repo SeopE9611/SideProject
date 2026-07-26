@@ -32,6 +32,7 @@ import { reviewInputMessage, validateReviewInput } from "@/lib/reviews/review-in
 import { getReviewManagedVisibilityStatus } from "@/lib/reviews/review-managed-status";
 import { normalizeReviewSummary } from "@/lib/reviews/review-summary";
 import { useReviewPhotoUploadSession } from "@/lib/reviews/useReviewPhotoUploadSession";
+import { hasSelectableStringStock } from "@/lib/products/string-stock";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -240,9 +241,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
     canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
   const cartCtaLabel = "장바구니 담기";
   const standalonePausedNotice = "현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.";
-  const isProductSoldOut = hasVariantInventories
+  const isFullySoldOut =
+    String(product.inventory?.status ?? "") === "outofstock" ||
+    !hasSelectableStringStock(product);
+  const isSelectedOptionUnavailable = hasVariantInventories
     ? selectedVariantSoldOut
-    : Boolean(product.inventory?.manageStock && product.inventory.stock <= 0);
+    : isFullySoldOut;
   const soldOutHelper = hasVariantInventories
     ? "선택한 색상과 게이지(굵기) 조합의 재고가 없습니다. 다른 옵션을 선택해주세요."
     : "현재 상품 구매 가능 재고가 없습니다.";
@@ -992,7 +996,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
   }, [images, product?.name, product?.price, productBrandLabel, productId]);
 
-  const merchandisingBadges = getProductDetailBadges(product, isProductSoldOut);
+  const merchandisingBadges = getProductDetailBadges(product, isFullySoldOut);
 
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
@@ -1265,7 +1269,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               }
               actions={
-                isProductSoldOut ? (
+                isSelectedOptionUnavailable ? (
                   <CommercePurchaseActions
                     primary={
                       <Button
@@ -1519,6 +1523,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               images: rp.images ?? [],
               brand: displayBrandLabel(rp.brand) || rp.brand,
               href: `/products/${rp._id}`,
+              isNew: rp.isNew,
               inventory: rp.inventory,
             }),
           )}
