@@ -274,8 +274,9 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
       });
       if (!response.ok) throw new Error(`Failed to load rackets: ${response.status}`);
       const payload = await response.json();
-      const items = Array.isArray(payload) ? payload : (payload.items ?? []);
-      if (!controller.signal.aborted && Array.isArray(items)) {
+      const items = Array.isArray(payload) ? payload : payload.items;
+      if (!Array.isArray(items)) throw new Error("Invalid racket response");
+      if (!controller.signal.aborted) {
         setRacketsByBrand((current) => ({ ...current, [brand]: items }));
         racketRequestStatusRef.current[brand] = "success";
         setRacketRequestStatus((current) => ({ ...current, [brand]: "success" }));
@@ -302,7 +303,12 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
   useEffect(() => {
     const controllers = racketRequestControllers.current;
     return () => {
-      controllers.forEach((controller) => controller.abort());
+      controllers.forEach((controller, brand) => {
+        controller.abort();
+        if (racketRequestStatusRef.current[brand] === "loading") {
+          delete racketRequestStatusRef.current[brand];
+        }
+      });
       controllers.clear();
     };
   }, []);
