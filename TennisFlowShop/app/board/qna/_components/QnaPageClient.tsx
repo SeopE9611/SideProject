@@ -3,7 +3,7 @@ import ErrorBox from "@/app/board/_components/ErrorBox";
 import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
 import { QnaRowSkeleton } from "@/app/board/qna/_components/QnaListLoadingShell";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

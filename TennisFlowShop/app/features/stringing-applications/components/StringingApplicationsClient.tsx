@@ -6,7 +6,6 @@
 // import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 // import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 // import Link from 'next/link';
-// import { Badge } from '@/components/ui/badge';
 // import { AlertTriangle } from 'lucide-react';
 
 // type Application = {
@@ -71,9 +70,9 @@
 //                   {orderId && (
 //                     <div className="text-ui-label text-muted-foreground flex items-center gap-2">
 //                       <Link href={`/admin/orders/${orderId}`}>
-//                         <Badge variant="outline" className="text-ui-micro">
+//                         <SemanticBadge variant="outline" className="text-ui-micro">
 //                           연결된 주문 상세 보기
-//                         </Badge>
+//                         </SemanticBadge>
 //                       </Link>
 //                       <span>주문 ID 끝자리 {orderId.slice(-6)}</span>
 //                     </div>

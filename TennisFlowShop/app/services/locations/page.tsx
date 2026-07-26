@@ -1,7 +1,7 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowUpRight, Clock, Mail, MapPin, Phone, Train } from "lucide-react";
 import Link from "next/link";

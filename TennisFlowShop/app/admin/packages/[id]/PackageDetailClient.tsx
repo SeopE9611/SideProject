@@ -6,7 +6,6 @@ import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import {
@@ -783,9 +782,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           <CardContent className="p-6 space-y-3">
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
               <span className="text-sm text-muted-foreground">이용권 상태</span>
-              <Badge {...getAdminPackageUsageBadgeSpec(data.usageState)}>
+              <SemanticBadge {...getAdminPackageUsageBadgeSpec(data.usageState)}>
                 {getAdminPackageUsageLabel(data.usageState)}
-              </Badge>
+              </SemanticBadge>
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
@@ -843,15 +842,15 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg bg-card p-3 text-sm">
                 활성화 상태:{" "}
-                <Badge {...getAdminPackageActivationBadgeSpec(data.activationState)}>
+                <SemanticBadge {...getAdminPackageActivationBadgeSpec(data.activationState)}>
                   {getAdminPackageActivationLabel(data.activationState)}
-                </Badge>
+                </SemanticBadge>
               </div>
               <div className="rounded-lg bg-card p-3 text-sm">
                 운영 확인:{" "}
-                <Badge {...getAdminPackageAttentionBadgeSpec(data.requiresAttention)}>
+                <SemanticBadge {...getAdminPackageAttentionBadgeSpec(data.requiresAttention)}>
                   {data.requiresAttention ? "확인 필요" : "확인 완료"}
-                </Badge>
+                </SemanticBadge>
                 {data.requiresAttention && (
                   <ul className="mt-2 list-disc pl-4 text-xs">
                     {(data.attentionReasons.length > 0 ? data.attentionReasons : [null]).map(

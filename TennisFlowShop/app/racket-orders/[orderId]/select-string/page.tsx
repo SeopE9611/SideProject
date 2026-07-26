@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 
 import type { Metadata } from "next";
 

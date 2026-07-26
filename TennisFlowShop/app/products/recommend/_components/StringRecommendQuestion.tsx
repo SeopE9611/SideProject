@@ -1,5 +1,5 @@
 import type { RecommendQuestion } from "@/app/products/recommend/_types";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 

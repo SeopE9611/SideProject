@@ -13,7 +13,7 @@ import ReviewWriteMobileBar from "@/components/reviews/ReviewWriteMobileBar";
 import ReviewWriteProgress from "@/components/reviews/ReviewWriteProgress";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";

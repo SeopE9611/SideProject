@@ -14,7 +14,7 @@ import OrderDetailSkeleton from "@/app/mypage/orders/_components/OrderDetailSkel
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { refreshOnce } from "@/lib/auth/refresh-mutex";

@@ -11,7 +11,7 @@ import {
   StepProgress,
   type Step,
 } from "@/components/admin/product-form";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";

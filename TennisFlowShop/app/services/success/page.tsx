@@ -8,7 +8,7 @@ import BackButtonGuard from "@/app/services/_components/BackButtonGuard";
 import SiteContainer from "@/components/layout/SiteContainer";
 import LoginGate from "@/components/system/LoginGate";
 import { ResultState, SummaryCard } from "@/components/public";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {

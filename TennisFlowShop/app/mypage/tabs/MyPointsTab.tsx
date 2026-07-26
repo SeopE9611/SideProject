@@ -28,7 +28,7 @@ import {
   ArrowRight,
   Calendar,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type PointsHistoryRes = {

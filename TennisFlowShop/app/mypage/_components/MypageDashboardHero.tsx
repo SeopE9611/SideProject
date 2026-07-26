@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { IdentityBadge } from "@/components/ui/identity-badge";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";

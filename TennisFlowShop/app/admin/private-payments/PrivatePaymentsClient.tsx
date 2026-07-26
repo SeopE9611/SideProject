@@ -14,7 +14,7 @@ import { adminSurface, adminTypography } from "@/components/admin/admin-typograp
 import { formatKoreanDateTime } from "@/lib/korean-date";
 import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

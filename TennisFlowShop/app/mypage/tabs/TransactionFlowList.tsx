@@ -13,7 +13,7 @@ import {
 } from "@/app/mypage/_lib/flow-display";
 import { EmptyState } from "@/components/public/EmptyState";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { ResponsiveActionGroup } from "@/components/ui/responsive-action-group";
 import { Card, CardContent } from "@/components/ui/card";

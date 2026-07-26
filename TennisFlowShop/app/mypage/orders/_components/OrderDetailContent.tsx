@@ -1,7 +1,6 @@
 // 삭제 보류
 // import Link from 'next/link';
 // import { ArrowLeft, Calendar, CreditCard, Download, Mail, MapPin, Package, Phone, ShoppingCart, Truck, User } from 'lucide-react';
-// import { Badge } from '@/components/ui/badge';
 // import { Button } from '@/components/ui/button';
 // import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 // import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -204,7 +203,7 @@
 //                     <div>
 //                       <div className="text-ui-body-sm font-medium">결제 상태</div>
 //                       <div>
-//                         <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+//                         <SemanticBadge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</SemanticBadge>
 //                       </div>
 //                     </div>
 //                     <div>

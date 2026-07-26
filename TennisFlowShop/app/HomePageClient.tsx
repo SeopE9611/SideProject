@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import HorizontalProducts from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { buttonVariants } from "@/components/ui/button";
 import { badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
 import { RACKET_BRANDS, racketBrandLabel, stringBrandLabel } from "@/lib/constants";

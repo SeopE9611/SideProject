@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import { AdminSectionHeader } from "@/components/admin/AdminPageSection";

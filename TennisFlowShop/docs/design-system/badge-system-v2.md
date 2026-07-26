@@ -43,6 +43,9 @@
 - 각 컴포넌트는 계산된 spec의 shape를 그대로 재사용하고 같은 결정을 하드코딩하지 않는다.
 - 저수준 `Badge`는 인라인 문맥과 버튼 내부에서 유효한 HTML을 만들도록 `span`을 렌더링한다.
 - 라켓 케어의 교체 상태와 D-day는 `SemanticBadge`로 렌더링한다.
+- 활성 화면은 저수준 `Badge`를 직접 import하지 않는다. 기존 `variant` 기반 화면은
+  `SemanticBadge`의 호환 입력을 거쳐 V2 루트·크기·모양 규칙을 공유하고, 새 코드와 공용
+  상태 spec은 `tone`·`emphasis`를 우선 사용한다.
 
 ## 스트링 상품 품절 정책
 

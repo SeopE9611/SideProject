@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import LoginGate from "@/components/system/LoginGate";
 import { badgeToneVariant, getOrderStatusTone, getPaymentStatusTone } from "@/lib/badge-style";
 import { formatKoreanPhone } from "@/lib/phone";

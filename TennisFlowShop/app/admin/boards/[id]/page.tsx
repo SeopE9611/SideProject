@@ -4,7 +4,7 @@ import { ArrowLeft, Calendar, Eye, MessageSquare, Settings, User } from "lucide-
 import type { Metadata } from "next";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { sanitizeHtml } from "@/lib/sanitize";

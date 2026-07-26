@@ -5,7 +5,7 @@ import { normalizeCollection } from "@/app/features/stringing-applications/lib/c
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/public/EmptyState";
 import { PublicSurface } from "@/components/public/PublicSurface";

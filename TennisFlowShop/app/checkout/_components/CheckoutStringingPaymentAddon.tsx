@@ -2,7 +2,7 @@
 
 import { AlertTriangle, CheckCircle2, Info, Ticket } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 

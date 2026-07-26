@@ -20,7 +20,7 @@ import CheckoutSection from "@/components/checkout/CheckoutSection";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";

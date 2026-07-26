@@ -11,7 +11,7 @@ import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import {
   Card,

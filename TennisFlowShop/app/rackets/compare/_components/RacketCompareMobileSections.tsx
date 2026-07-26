@@ -10,7 +10,7 @@ import {
   toCompareNumber,
   type RacketCompareRow,
 } from "@/app/rackets/compare/_components/racketCompareRows";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { racketBrandLabel } from "@/lib/constants";
 import { cn } from "@/lib/utils";

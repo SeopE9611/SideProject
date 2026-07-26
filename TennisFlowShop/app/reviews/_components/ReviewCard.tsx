@@ -4,7 +4,7 @@ import { getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import ReviewPhotoStrip from "@/components/reviews/ReviewPhotoStrip";
 import ReviewRatingDisplay from "@/components/reviews/ReviewRatingDisplay";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {

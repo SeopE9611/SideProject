@@ -2,7 +2,7 @@
 
 import AsyncState from "@/components/system/AsyncState";
 import QnaListSkeleton from "@/app/mypage/tabs/_components/QnaListSkeleton";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";

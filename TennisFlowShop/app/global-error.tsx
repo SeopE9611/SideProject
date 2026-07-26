@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { ResultState } from "@/components/public";
 
 export default function GlobalError({

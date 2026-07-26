@@ -1,7 +1,7 @@
 import { FileText, ImageIcon, Package } from "lucide-react";
 
 import SiteContainer from "@/components/layout/SiteContainer";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {

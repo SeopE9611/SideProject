@@ -8,7 +8,7 @@ import { hasCompletedStringingApplication } from "@/app/order-lookup/_lib/string
 import SiteContainer from "@/components/layout/SiteContainer";
 import { EmptyState, PublicPageHero, ResultState } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";

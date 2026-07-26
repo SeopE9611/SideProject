@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function RacketCareValueSection() {

@@ -4,7 +4,7 @@
 
 import KpiCard from "@/app/admin/settlements/_components/KpiCard";
 import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";

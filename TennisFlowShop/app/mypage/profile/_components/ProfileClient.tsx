@@ -30,7 +30,7 @@ import WithdrawalReasonSelect from "@/app/mypage/profile/_components/WithdrawalR
 import { useRouter } from "next/navigation";
 import { MdSportsTennis } from "react-icons/md";
 import TennisProfileForm from "@/app/mypage/profile/_components/TennisProfileForm";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { IdentityBadge } from "@/components/ui/identity-badge";
 import {
   UNSAVED_CHANGES_MESSAGE,
