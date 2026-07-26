@@ -23,11 +23,7 @@ import {
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
-import {
-  commerceBadgeSpec,
-  commerceBadgeSpecs,
-  type RacketAvailabilityState,
-} from "@/lib/badge-style";
+import { commerceBadgeSpecs, type RacketAvailabilityState } from "@/lib/badge-style";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -716,7 +712,7 @@ function ProductCard({
 }) {
   const price = getProductPrice(product);
   const isDiscounted = price < product.price;
-  const commerceBadges = commerceBadgeSpecs(
+  const badges = commerceBadgeSpecs(
     {
       isSoldOut: product.inventory?.status === "outofstock",
       isSale: isTruthy(product.inventory?.isSale),
@@ -725,13 +721,8 @@ function ProductCard({
       discountRate: getDiscountRate(product.price, price),
     },
     "image",
+    { ensureNew: ensureNewBadge },
   );
-  const newBadge = commerceBadgeSpec("new", "image");
-  const badges = ensureNewBadge
-    ? [commerceBadges.find((badge) => badge.label !== newBadge.label), newBadge].filter(
-        (badge): badge is typeof newBadge => Boolean(badge),
-      )
-    : commerceBadges;
 
   return (
     <article className={styles.productCard}>

@@ -992,7 +992,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
   }, [images, product?.name, product?.price, productBrandLabel, productId]);
 
-  const merchandisingBadges = getProductDetailBadges(product);
+  const merchandisingBadges = getProductDetailBadges(product, isProductSoldOut);
 
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
@@ -1519,7 +1519,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
               images: rp.images ?? [],
               brand: displayBrandLabel(rp.brand) || rp.brand,
               href: `/products/${rp._id}`,
-              merchandisingBadges: getProductDetailBadges(rp),
               inventory: rp.inventory,
             }),
           )}

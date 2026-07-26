@@ -6,9 +6,9 @@ import { useWishlist } from "@/app/features/wishlist/useWishlist";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { CatalogCardFrame, CatalogPrice, CatalogRating } from "@/components/commerce";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
-import { merchandisingImageBadgeClass, merchandisingImageBadgeVariant } from "@/lib/badge-style";
+import { commerceBadgeSpecs } from "@/lib/badge-style";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
@@ -163,10 +163,17 @@ type Props = {
   viewMode: "grid" | "list";
   brandLabel: string;
   isApplyFlow?: boolean;
+  ensureNewBadge?: boolean;
 };
 
 const ProductCard = React.memo(
-  function ProductCard({ product, viewMode, brandLabel, isApplyFlow = false }: Props) {
+  function ProductCard({
+    product,
+    viewMode,
+    brandLabel,
+    isApplyFlow = false,
+    ensureNewBadge = false,
+  }: Props) {
     const router = useRouter();
     const ratingAvg = Number(product.ratingAvg ?? product.ratingAverage ?? 0);
     const ratingCount = Number(product.ratingCount ?? 0);
@@ -199,29 +206,24 @@ const ProductCard = React.memo(
     const featureEntries = getFeatureEntries(product.features);
     const shouldShowStandaloneServiceBadge =
       !isApplyFlow && canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
-    const merchandisingBadges = [
-      ...(inventory?.isNew === true ||
-      inventory?.isNew === "true" ||
-      inventory?.isNew === 1 ||
-      product.isNew
-        ? (["NEW"] as const)
-        : []),
-      ...(inventory?.isFeatured === true ||
-      inventory?.isFeatured === "true" ||
-      inventory?.isFeatured === 1
-        ? (["추천"] as const)
-        : []),
-    ];
-
-    const soldOutOverlay = isSoldOut ? (
-      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/35">
-        <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-          <Badge variant="secondary" className="text-ui-body-sm font-ui-medium">
-            품절
-          </Badge>
-        </div>
-      </div>
-    ) : null;
+    const merchandisingBadges = commerceBadgeSpecs(
+      {
+        isNew:
+          inventory?.isNew === true ||
+          inventory?.isNew === "true" ||
+          inventory?.isNew === 1 ||
+          product.isNew,
+        isRecommended:
+          inventory?.isFeatured === true ||
+          inventory?.isFeatured === "true" ||
+          inventory?.isFeatured === 1,
+        isSale,
+        isSoldOut,
+        discountRate: isSale ? ((regularPrice - salePrice) / regularPrice) * 100 : undefined,
+      },
+      "image",
+      { ensureNew: ensureNewBadge },
+    );
 
     const priceBlock = (align: "left" | "right" = "right") => (
       <CatalogPrice
@@ -284,18 +286,12 @@ const ProductCard = React.memo(
             className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.01]"
           />
         </Link>
-        {soldOutOverlay}
         {merchandisingBadges.length > 0 && (
           <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
             {merchandisingBadges.map((badge) => (
-              <Badge
-                key={`${product._id}-${badge}`}
-                variant={merchandisingImageBadgeVariant(badge)}
-                shape="pill"
-                className={cn(merchandisingImageBadgeClass)}
-              >
-                {badge}
-              </Badge>
+              <SemanticBadge key={`${product._id}-${badge.label}`} {...badge}>
+                {badge.label}
+              </SemanticBadge>
             ))}
           </div>
         )}
@@ -353,12 +349,9 @@ const ProductCard = React.memo(
         </div>
         <PerformanceSummary entries={featureEntries} />
         {shouldShowStandaloneServiceBadge && (
-          <Badge
-            variant="secondary"
-            className="mt-3 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-ui-caption"
-          >
+          <SemanticBadge tone="neutral" size="md" shape="pill" className="mt-3 shrink-0">
             교체서비스 전용
-          </Badge>
+          </SemanticBadge>
         )}
       </div>
     );

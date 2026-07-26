@@ -14,6 +14,8 @@ import {
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
+import { RacketBadge } from "@/components/badges/RacketBadge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,9 +29,9 @@ import {
 import { TabsContent } from "@/components/ui/tabs";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
-  merchandisingImageBadgeClass,
-  merchandisingImageBadgeVariant,
-  usedBadgeMeta,
+  commerceBadgeSpecs,
+  getRacketAvailabilityState,
+  racketConditionBadgeSpec,
 } from "@/lib/badge-style";
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
@@ -483,6 +485,22 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   // 상태 구분
   const isSold = stock.quantity <= 0; // 판매 완료(보유 0)
   const isAllRented = !isSold && soldOut && rentedCount > 0; // 전량 대여중(임시 품절)
+  const availabilityState = getRacketAvailabilityState({
+    ready: true,
+    quantity: stock.quantity,
+    available: stock.available,
+    rentedCount,
+    rentalEnabled: racket?.rental?.enabled,
+  });
+  const marketingBadges = commerceBadgeSpecs(
+    {
+      isRecommended: racket?.marketing?.isFeatured,
+      isNew: racket?.marketing?.isNew,
+      isSale: hasSalePrice,
+      discountRate,
+    },
+    "image",
+  );
 
   const images = racket.images || [];
   const open = searchParams.get("open"); // 'rent' 면 자동 오픈
@@ -589,24 +607,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             emptyLabel="라켓 이미지가 없습니다"
             badges={
               <>
-                {racket?.marketing?.isFeatured && (
-                  <Badge
-                    variant={merchandisingImageBadgeVariant("추천")}
-                    shape="pill"
-                    className={cn(merchandisingImageBadgeClass)}
-                  >
-                    추천
-                  </Badge>
-                )}
-                {racket?.marketing?.isNew && (
-                  <Badge
-                    variant={merchandisingImageBadgeVariant("NEW")}
-                    shape="pill"
-                    className={cn(merchandisingImageBadgeClass)}
-                  >
-                    NEW
-                  </Badge>
-                )}
+                {marketingBadges.map((badge) => (
+                  <SemanticBadge key={badge.label} {...badge}>
+                    {badge.label}
+                  </SemanticBadge>
+                ))}
               </>
             }
           />
@@ -618,12 +623,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               badges={
                 <>
                   <Badge variant="outline">{racketBrandLabel(racket.brand)}</Badge>
-                  <Badge variant="outline">
-                    {usedBadgeMeta("condition", racket.condition).label}
-                  </Badge>
-                  <Badge variant="outline">
-                    {soldOut ? (isAllRented ? "전량 대여중" : "품절") : `재고 ${stock.available}개`}
-                  </Badge>
+                  <RacketBadge kind="condition" state={racket.condition} />
+                  <RacketBadge kind="availability" state={availabilityState} />
                 </>
               }
               title={
@@ -850,7 +851,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   <div className="rounded-xl border border-border bg-muted/30 p-4 sm:rounded-2xl sm:p-6">
                     <p className="break-words break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은{" "}
-                      {usedBadgeMeta("condition", racket.condition).label}이며, 전문가의 검수를 거쳐
+                      {racketConditionBadgeSpec(racket.condition).label}이며, 전문가의 검수를 거쳐
                       안전하게 사용하실 수 있습니다.
                       {racket?.rental?.enabled && " 대여 서비스도 이용 가능합니다."}
                     </p>
@@ -938,7 +939,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           상태
                         </span>
                         <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
-                          상태: {usedBadgeMeta("condition", racket.condition).label}
+                          상태: {racketConditionBadgeSpec(racket.condition).label}
                         </span>
                       </div>
                     </div>

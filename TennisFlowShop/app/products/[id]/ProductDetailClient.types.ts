@@ -1,6 +1,8 @@
 export type GuestOrderMode = "off" | "legacy" | "on";
 
-export type ProductBadge = "NEW" | "추천";
+import type { BadgeDisplaySpec } from "@/lib/badge-style";
+
+export type ProductBadge = BadgeDisplaySpec;
 
 export type GaugeInventoryRow = {
   value: string;

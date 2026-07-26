@@ -1,8 +1,9 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Button } from "@/components/ui/button";
-import { merchandisingImageBadgeClass, merchandisingImageBadgeVariant } from "@/lib/badge-style";
+import { commerceBadgeSpecs } from "@/lib/badge-style";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
@@ -48,6 +49,9 @@ export type HItem = {
   inventory?: {
     isSale?: boolean | string | number;
     salePrice?: number | string | null;
+    isFeatured?: boolean | string | number;
+    isNew?: boolean | string | number;
+    status?: string;
   };
   marketing?: {
     isFeatured?: boolean;
@@ -299,6 +303,27 @@ export default function HorizontalProducts({
         : isSale
           ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
           : 0;
+      const legacyBadges = p.merchandisingBadges ?? [];
+      const imageBadges = commerceBadgeSpecs(
+        {
+          isNew:
+            p.marketing?.isNew === true ||
+            p.inventory?.isNew === true ||
+            p.inventory?.isNew === "true" ||
+            p.inventory?.isNew === 1 ||
+            legacyBadges.includes("NEW"),
+          isRecommended:
+            p.marketing?.isFeatured === true ||
+            p.inventory?.isFeatured === true ||
+            p.inventory?.isFeatured === "true" ||
+            p.inventory?.isFeatured === 1 ||
+            legacyBadges.includes("추천"),
+          isSale: isSale || legacyBadges.includes("SALE"),
+          isSoldOut: p.inventory?.status === "outofstock" || legacyBadges.includes("품절"),
+          discountRate: saleRate,
+        },
+        "image",
+      );
       return (
         <Link key={p._id} href={p.href ?? `/products/${p._id}`} className={cardSurfaceClass}>
           <div className={imageSurfaceClass}>
@@ -323,21 +348,13 @@ export default function HorizontalProducts({
               </div>
             )}
 
-            {(p.merchandisingBadges?.length ?? 0) > 0 && (
-              <div className="absolute top-2.5 left-2.5 right-2.5 bp-sm:top-3 bp-sm:left-3 bp-sm:right-3 flex items-center gap-2 z-10">
-                {(p.merchandisingBadges ?? [])
-                  .filter((label) => label === "NEW" || label === "추천")
-                  .slice(0, 2)
-                  .map((label) => (
-                    <Badge
-                      key={`${p._id}-${label}`}
-                      variant={merchandisingImageBadgeVariant(label)}
-                      shape="pill"
-                      className={cn(merchandisingImageBadgeClass)}
-                    >
-                      {label}
-                    </Badge>
-                  ))}
+            {imageBadges.length > 0 && (
+              <div className="absolute top-2.5 left-2.5 right-2.5 bp-sm:top-3 bp-sm:left-3 bp-sm:right-3 flex flex-wrap items-center gap-2 z-10">
+                {imageBadges.map((badge) => (
+                  <SemanticBadge key={`${p._id}-${badge.label}`} {...badge}>
+                    {badge.label}
+                  </SemanticBadge>
+                ))}
               </div>
             )}
           </div>
@@ -359,12 +376,7 @@ export default function HorizontalProducts({
                   <span className="text-ui-label text-muted-foreground line-through">
                     {regularPrice.toLocaleString()}원
                   </span>
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 whitespace-nowrap border-destructive/30 bg-destructive/10 text-ui-caption text-destructive"
-                  >
-                    {saleRate}% OFF
-                  </Badge>
+                  <CommerceBadge kind="sale" surface="inline" discountRate={saleRate} />
                 </div>
               )}
             </div>

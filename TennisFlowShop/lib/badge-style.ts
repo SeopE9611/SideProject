@@ -230,6 +230,7 @@ export function normalizeCommerceDiscountRate(discountRate?: number): number | n
 export function commerceBadgeSpecs(
   input: CommerceBadgeInput,
   surface: BadgeSurface = "inline",
+  options?: { ensureNew?: boolean },
 ): BadgeDisplaySpec[] {
   const kinds: CommerceBadgeKind[] = [];
   if (input.isNew) kinds.push("new");
@@ -242,7 +243,17 @@ export function commerceBadgeSpecs(
   const specs = kinds
     .map((kind) => commerceBadgeSpec(kind, surface, input.discountRate))
     .sort((a, b) => b.priority - a.priority);
-  return surface === "image" ? specs.slice(0, 2) : specs;
+  if (surface !== "image") return specs;
+
+  const visible = specs.slice(0, 2);
+  if (!options?.ensureNew || !input.isNew || visible.some((spec) => spec.label === "NEW")) {
+    return visible;
+  }
+
+  const newSpec = specs.find((spec) => spec.label === "NEW");
+  if (!newSpec) return visible;
+  const preservedSoldOut = visible.find((spec) => spec.label === "품절");
+  return preservedSoldOut ? [preservedSoldOut, newSpec] : [visible[0], newSpec].filter(Boolean);
 }
 
 export type WorkflowMetaBadgeKind =
@@ -725,6 +736,20 @@ export type RacketAvailabilityState =
   | "sold"
   | "unavailable"
   | "loading";
+
+export function getRacketAvailabilityState(input: {
+  ready: boolean;
+  quantity: number;
+  available: number;
+  rentedCount?: number;
+  rentalEnabled?: boolean;
+}): RacketAvailabilityState {
+  if (!input.ready) return "loading";
+  if (input.quantity <= 0) return "sold";
+  if (input.available <= 0) return (input.rentedCount ?? 0) > 0 ? "all_rented" : "unavailable";
+  if (input.available === 1 && input.quantity > 1) return "low_stock";
+  return input.rentalEnabled ? "purchase_rental_available" : "purchase_available";
+}
 
 const RACKET_CONDITION_META: Record<
   RacketConditionState,
