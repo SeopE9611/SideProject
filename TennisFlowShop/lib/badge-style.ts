@@ -18,6 +18,7 @@ const SEMANTIC_BADGE = {
     "bg-destructive/10 text-destructive border border-destructive/45 dark:bg-destructive/18 dark:border-destructive/55 dark:text-destructive",
   brand:
     "bg-primary/10 text-primary border border-primary/40 dark:bg-primary/18 dark:border-primary/55 dark:text-primary",
+  signal: "border-brand-highlight-ink/30 bg-brand-highlight-muted text-brand-highlight-ink",
   destructive:
     "bg-destructive/10 text-destructive border border-destructive/45 dark:bg-destructive/18 dark:border-destructive/55 dark:text-destructive",
 } as const;
@@ -37,6 +38,7 @@ const IMAGE_BADGE = {
   warning: `${IMAGE_BADGE_SURFACE} bg-warning text-warning-foreground`,
   danger: `${IMAGE_BADGE_SURFACE} bg-destructive text-destructive-foreground`,
   brand: `${IMAGE_BADGE_SURFACE} bg-primary text-primary-foreground`,
+  signal: `${IMAGE_BADGE_SURFACE} bg-brand-highlight text-brand-highlight-foreground`,
   destructive: `${IMAGE_BADGE_SURFACE} bg-destructive text-destructive-foreground`,
 } as const;
 
@@ -66,6 +68,7 @@ export const SEMANTIC_BADGE_VARIANT = {
   warning: "warning",
   danger: "danger",
   brand: "brand",
+  signal: "signal",
   destructive: "danger",
 } as const;
 
@@ -73,6 +76,57 @@ export type BadgeSemanticVariant = (typeof SEMANTIC_BADGE_VARIANT)[BadgeSemantic
 
 export function badgeToneVariant(tone: BadgeSemanticTone): BadgeSemanticVariant {
   return SEMANTIC_BADGE_VARIANT[tone];
+}
+
+export type BadgeEmphasis = "soft" | "solid" | "outline";
+export type BadgeSize = "xs" | "sm" | "md";
+export type BadgeShape = "pill" | "rounded";
+
+export type BadgeDisplayVariant =
+  | BadgeSemanticVariant
+  | "neutral_solid"
+  | "info_solid"
+  | "success_solid"
+  | "warning_solid"
+  | "danger_solid"
+  | "brand_solid"
+  | "signal_solid"
+  | "neutral_outline"
+  | "info_outline"
+  | "success_outline"
+  | "warning_outline"
+  | "danger_outline"
+  | "brand_outline"
+  | "signal_outline";
+
+export type BadgeDisplaySpec = {
+  label: string;
+  tone: BadgeSemanticTone;
+  emphasis: BadgeEmphasis;
+  size: BadgeSize;
+  shape: BadgeShape;
+  priority: number;
+  variant: BadgeDisplayVariant;
+  className?: string;
+};
+
+export function badgeVariantForTone(
+  tone: BadgeSemanticTone,
+  emphasis: BadgeEmphasis = "soft",
+): BadgeDisplayVariant {
+  const normalizedTone = tone === "destructive" ? "danger" : tone;
+  if (emphasis === "solid") return `${normalizedTone}_solid` as BadgeDisplayVariant;
+  if (emphasis === "outline") return `${normalizedTone}_outline` as BadgeDisplayVariant;
+  return badgeToneVariant(tone);
+}
+
+export function badgeDisplaySpec(
+  input: Omit<BadgeDisplaySpec, "variant">,
+): BadgeDisplaySpec {
+  return {
+    ...input,
+    variant: badgeVariantForTone(input.tone, input.emphasis),
+  };
 }
 
 export type BadgeStyleSpec = {
@@ -106,6 +160,89 @@ export type MerchandisingBadgeKind = "popular" | "recommended" | "new" | "genuin
 export function getMerchandisingBadgeSpec(kind: MerchandisingBadgeKind) {
   if (kind === "genuine") return badgeStyleSpec("info");
   return badgeStyleSpec("brand");
+}
+
+export type CommerceBadgeKind =
+  | "new"
+  | "recommended"
+  | "sale"
+  | "popular"
+  | "genuine"
+  | "sold_out";
+
+export type CommerceBadgeInput = {
+  isNew?: boolean;
+  isRecommended?: boolean;
+  isSale?: boolean;
+  isPopular?: boolean;
+  isGenuine?: boolean;
+  isSoldOut?: boolean;
+  discountRate?: number;
+};
+
+const COMMERCE_BADGE_META: Record<
+  CommerceBadgeKind,
+  { label: string; tone: BadgeSemanticTone; priority: number }
+> = {
+  new: { label: "NEW", tone: "info", priority: 70 },
+  recommended: { label: "추천", tone: "signal", priority: 80 },
+  sale: { label: "SALE", tone: "danger", priority: 90 },
+  popular: { label: "인기", tone: "brand", priority: 60 },
+  genuine: { label: "정품", tone: "info", priority: 50 },
+  sold_out: { label: "품절", tone: "neutral", priority: 100 },
+};
+
+export function commerceBadgeSpec(
+  kind: CommerceBadgeKind,
+  surface: BadgeSurface = "inline",
+  discountRate?: number,
+): BadgeDisplaySpec {
+  const meta = COMMERCE_BADGE_META[kind];
+  const normalizedDiscountRate = normalizeCommerceDiscountRate(discountRate);
+  const emphasis: BadgeEmphasis =
+    kind === "genuine"
+      ? "outline"
+      : kind === "sold_out" || surface === "image"
+        ? "solid"
+        : "soft";
+
+  return badgeDisplaySpec({
+    label:
+      kind === "sale" && normalizedDiscountRate !== null
+        ? `${normalizedDiscountRate}% 할인`
+        : meta.label,
+    tone: meta.tone,
+    emphasis,
+    size: "md",
+    shape: "pill",
+    priority: meta.priority,
+  });
+}
+
+export function normalizeCommerceDiscountRate(discountRate?: number): number | null {
+  if (typeof discountRate !== "number" || !Number.isFinite(discountRate) || discountRate <= 0)
+    return null;
+  const roundedRate = Math.round(discountRate);
+  if (roundedRate <= 0) return null;
+  return Math.min(roundedRate, 100);
+}
+
+export function commerceBadgeSpecs(
+  input: CommerceBadgeInput,
+  surface: BadgeSurface = "inline",
+): BadgeDisplaySpec[] {
+  const kinds: CommerceBadgeKind[] = [];
+  if (input.isNew) kinds.push("new");
+  if (input.isRecommended) kinds.push("recommended");
+  if (input.isSale) kinds.push("sale");
+  if (input.isPopular) kinds.push("popular");
+  if (input.isGenuine) kinds.push("genuine");
+  if (input.isSoldOut) kinds.push("sold_out");
+
+  const specs = kinds
+    .map((kind) => commerceBadgeSpec(kind, surface, input.discountRate))
+    .sort((a, b) => b.priority - a.priority);
+  return surface === "image" ? specs.slice(0, 2) : specs;
 }
 
 export type WorkflowMetaBadgeKind =
@@ -577,6 +714,88 @@ export const attachFileColor = SEMANTIC_BADGE.neutral;
 
 /** ---------------------- Used Rackets 배지(대여/상태) ---------------------- */
 export type UsedBadgeKind = "rental" | "condition";
+
+export type RacketConditionState = "A" | "B" | "C" | "D";
+export type RacketAvailabilityState =
+  | "purchase_available"
+  | "purchase_rental_available"
+  | "low_stock"
+  | "rented"
+  | "all_rented"
+  | "sold"
+  | "unavailable"
+  | "loading";
+
+const RACKET_CONDITION_META: Record<
+  RacketConditionState,
+  { label: string; tone: BadgeSemanticTone }
+> = {
+  A: { label: "A · 최상", tone: "success" },
+  B: { label: "B · 양호", tone: "info" },
+  C: { label: "C · 보통", tone: "warning" },
+  D: { label: "D · 사용감 있음", tone: "danger" },
+};
+
+const RACKET_AVAILABILITY_META: Record<
+  RacketAvailabilityState,
+  { label: string; tone: BadgeSemanticTone; emphasis: BadgeEmphasis }
+> = {
+  purchase_available: { label: "구매 가능", tone: "success", emphasis: "soft" },
+  purchase_rental_available: {
+    label: "구매·대여 가능",
+    tone: "success",
+    emphasis: "soft",
+  },
+  low_stock: { label: "재고 부족", tone: "warning", emphasis: "soft" },
+  rented: { label: "대여 중", tone: "warning", emphasis: "soft" },
+  all_rented: { label: "전량 대여 중", tone: "warning", emphasis: "soft" },
+  sold: { label: "판매 완료", tone: "neutral", emphasis: "solid" },
+  unavailable: { label: "현재 이용 불가", tone: "neutral", emphasis: "outline" },
+  loading: { label: "상태 확인 중", tone: "neutral", emphasis: "outline" },
+};
+
+export function racketConditionBadgeSpec(
+  state?: string | null,
+  surface: BadgeSurface = "inline",
+): BadgeDisplaySpec {
+  const rawState = String(state ?? "").trim();
+  const normalized = rawState.toUpperCase();
+  const known = RACKET_CONDITION_META[normalized as RacketConditionState];
+  return badgeDisplaySpec({
+    label: known?.label ?? (rawState || "상태 확인"),
+    tone: known?.tone ?? "neutral",
+    emphasis: surface === "image" ? "solid" : "soft",
+    size: "md",
+    shape: "rounded",
+    priority: 0,
+  });
+}
+
+export function racketAvailabilityBadgeSpec(
+  state: RacketAvailabilityState,
+  surface: BadgeSurface = "inline",
+): BadgeDisplaySpec {
+  const meta = RACKET_AVAILABILITY_META[state];
+  return badgeDisplaySpec({
+    label: meta.label,
+    tone: meta.tone,
+    emphasis: surface === "image" ? "solid" : meta.emphasis,
+    size: "md",
+    shape: "rounded",
+    priority: 0,
+  });
+}
+
+export function racketInspectionBadgeSpec(surface: BadgeSurface = "inline"): BadgeDisplaySpec {
+  return badgeDisplaySpec({
+    label: "검수 완료",
+    tone: "info",
+    emphasis: surface === "image" ? "solid" : "outline",
+    size: "md",
+    shape: "rounded",
+    priority: 0,
+  });
+}
 
 const USED_BADGE_PROMINENT = {
   rentalAvailable: "success",
