@@ -839,7 +839,7 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
     },
     "image",
   );
-  const badgeCountBeforeMarketing = Number(Boolean(availability)) + Number(Boolean(racket.condition));
+  const badgeCountBeforeMarketing = Number(Boolean(availability)) + 1;
   const visibleMarketingBadges = marketingBadges.slice(0, Math.max(0, 2 - badgeCountBeforeMarketing));
 
   return (
@@ -857,8 +857,10 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
             {availability && (
               <RacketBadge kind="availability" state={availability} surface="image" />
             )}
-            {racket.condition && (
+            {racket.condition ? (
               <RacketBadge kind="condition" state={racket.condition} surface="image" />
+            ) : (
+              <RacketBadge kind="inspection" surface="image" />
             )}
             {visibleMarketingBadges.map((badge) => (
               <SemanticBadge
@@ -871,9 +873,6 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
                 {badge.label}
               </SemanticBadge>
             ))}
-            {!availability && !racket.condition && visibleMarketingBadges.length === 0 && (
-              <RacketBadge kind="inspection" surface="image" />
-            )}
           </div>
         </div>
         <div className={styles.racketMeta}>
@@ -955,7 +954,7 @@ function PackageCard({
       <h3>{pkg.name}</h3>
       <strong>{pkg.sessions}회</strong>
       <small>{pkg.description || `유효기간 ${pkg.validityDays}일`}</small>
-      <div>
+      <div className={styles.packagePrice}>
         <b>{formatPrice(pkg.price)}</b>
         {perSession > 0 && <span>회당 {formatPrice(perSession)}</span>}
       </div>
