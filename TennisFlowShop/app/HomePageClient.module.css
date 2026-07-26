@@ -458,7 +458,7 @@
 .experienceEyebrow,
 .experienceKicker {
   margin: 0;
-  color: hsl(var(--brand-highlight-foreground));
+  color: hsl(var(--brand-highlight-ink));
   font-size: 12px;
   font-weight: 700;
   line-height: 1.4;
@@ -498,40 +498,39 @@
 
 .academyFeature {
   position: relative;
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
   min-height: 500px;
   overflow: hidden;
   border-radius: 30px;
-  background: hsl(var(--muted));
+  background: hsl(var(--surface-inverse));
   color: hsl(var(--surface-inverse-foreground));
   isolation: isolate;
 }
 
+.academyFeatureMedia {
+  position: relative;
+  min-width: 0;
+  min-height: 500px;
+  overflow: hidden;
+  background: hsl(var(--muted));
+}
+
 .academyFeatureImage {
   object-fit: cover;
+  object-position: center;
   transform: scale(1);
   transition: transform 0.35s ease;
 }
 
-.academyFeatureOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to bottom,
-    transparent 24%,
-    color-mix(in srgb, hsl(var(--surface-inverse)) 26%, transparent) 52%,
-    color-mix(in srgb, hsl(var(--surface-inverse)) 92%, transparent) 100%
-  );
-}
-
 .academyFeatureCopy {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
+  position: static;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: flex-end;
   padding: 36px;
+  background: hsl(var(--surface-inverse));
 }
 
 .academyFeatureCopy .experienceKicker {
@@ -560,6 +559,7 @@
 
 .academyFeatureAction {
   display: inline-flex;
+  width: fit-content;
   align-items: center;
   gap: 8px;
   margin-top: 24px;
@@ -1418,7 +1418,12 @@
   }
 
   .academyFeature {
-    min-height: 380px;
+    grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+    min-height: 420px;
+  }
+
+  .academyFeatureMedia {
+    min-height: 420px;
   }
 
   .careFeature {
@@ -1471,8 +1476,13 @@
   }
 
   .academyFeature {
-    min-height: 330px;
+    grid-template-columns: 1fr;
+    min-height: 0;
     border-radius: 24px;
+  }
+
+  .academyFeatureMedia {
+    min-height: 300px;
   }
 
   .academyFeatureCopy {
@@ -1486,6 +1496,11 @@
   .academyFeatureDescription {
     margin-top: 12px;
     font-size: 14px;
+  }
+
+  .academyFeatureDescription br,
+  .careFeatureDescription br {
+    display: none;
   }
 
   .academyFeatureAction {

@@ -1074,24 +1074,29 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
           <div className={styles.experienceGrid}>
             <Link href="/academy" className={styles.academyFeature}>
-              <Image
-                src="/brand/academy-hero-tennis-court.webp"
-                alt=""
-                fill
-                className={styles.academyFeatureImage}
-                sizes="(max-width: 1199px) 100vw, 68vw"
-              />
-              <span className={styles.academyFeatureOverlay} aria-hidden="true" />
+              <div className={styles.academyFeatureMedia}>
+                <Image
+                  src="/brand/academy-hero-tennis-court.webp"
+                  alt=""
+                  fill
+                  className={styles.academyFeatureImage}
+                  sizes="(max-width: 767px) calc(100vw - 24px), (max-width: 1199px) 56vw, 44vw"
+                />
+              </div>
+
               <div className={styles.academyFeatureCopy}>
                 <span className={styles.experienceKicker}>DOKEBI TENNIS ACADEMY</span>
+
                 <h3 className={styles.academyFeatureTitle}>
                   목표와 레벨에 맞춰 배우는 테니스
                 </h3>
+
                 <p className={styles.academyFeatureDescription}>
                   입문자부터 실전 플레이어까지,
                   <br />
                   레슨 방향과 모집 클래스를 확인할 수 있어요.
                 </p>
+
                 <span className={styles.academyFeatureAction}>
                   아카데미 보기
                   <ArrowRight aria-hidden="true" className="h-4 w-4" />
