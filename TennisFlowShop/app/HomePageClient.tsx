@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import HorizontalProducts from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -296,31 +296,6 @@ const getRacketBrandTabClass = (isActive: boolean) =>
       ? "border-surface-inverse bg-surface-inverse text-surface-inverse-foreground"
       : "border-border bg-card text-foreground hover:border-foreground/20 hover:bg-muted/30",
   );
-
-function HomeEditorialHeader({
-  no,
-  eyebrow,
-  title,
-  description,
-}: {
-  no: string;
-  eyebrow: string;
-  title: ReactNode;
-  description: ReactNode;
-}) {
-  return (
-    <div className={styles.sectionHead}>
-      <div className={styles.sectionHeadMain}>
-        <div className={styles.sectionNo}>
-          <span className={styles.sectionNoCircle}>{no}</span>
-          <span className={styles.sectionEyebrow}>{eyebrow}</span>
-        </div>
-        <h2 className={styles.sectionTitle}>{title}</h2>
-      </div>
-      <p className={styles.sectionDescription}>{description}</p>
-    </div>
-  );
-}
 
 export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
@@ -698,6 +673,17 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsSource.length;
+  const hasResolvedRacketTotal = Object.prototype.hasOwnProperty.call(
+    racketTotalsByBrand,
+    activeBrand,
+  );
+  const racketCountLabel = hasResolvedRacketTotal
+    ? `총 ${racketTotal}개`
+    : !shouldLoadRackets || usedRacketsLoading
+      ? "재고 확인 중"
+      : usedRacketsError
+        ? "재고 확인 실패"
+        : `총 ${racketTotal}개`;
   const currentPath = APPLICATION_PATHS[activeApplicationPath];
   const activePurposeInfo =
     PURPOSES.find((purpose) => purpose.key === activePurpose) ?? PURPOSES[0];
@@ -1149,7 +1135,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <div>
               <p className={styles.commerceEyebrow}>04 · PACKAGES &amp; PRE-OWNED RACKETS</p>
               <h2 id="home-commerce-title" className={styles.commerceTitle}>
-                교체 패키지와 검수된 중고 라켓을 한눈에
+                스트링 교체 패키지와 검수된 중고 라켓을 한눈에
               </h2>
             </div>
             <p className={styles.commerceDescription}>
@@ -1167,7 +1153,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <div>
                   <p className={styles.commercePanelKicker}>STRINGING PACKAGE</p>
                   <h3 className={styles.commercePanelTitle}>
-                    자주 교체한다면 패키지가 편리해요.
+                    스트링을 자주 교체한다면 패키지가 편리해요.
                   </h3>
                   <p className={styles.commercePanelDescription}>
                     이용 횟수와 회당 금액을 비교해 필요한 패키지를 선택하세요.
@@ -1226,9 +1212,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     브랜드와 상태, 판매·대여 정보를 비교할 수 있어요.
                   </p>
                 </div>
-                <p className={styles.commercePanelCount}>
-                  {racketTotal > 0 ? `총 ${racketTotal}개` : "재고 확인 중"}
-                </p>
+                <p className={styles.commercePanelCount}>{racketCountLabel}</p>
               </header>
               <div className={styles.racketModuleFilter}>
                 <div className={styles.racketBrandRailWrap}>
@@ -1344,41 +1328,49 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section ref={communitySectionRef} className={styles.section} id="info">
+      <section
+        ref={communitySectionRef}
+        className={styles.supportSection}
+        id="info"
+        aria-labelledby="home-support-title"
+      >
         <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="05"
-            eyebrow="이용 안내"
-            title="공지와 이용 안내를 확인하세요."
-            description="운영 정보와 문의 경로를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있어요."
-          />
-          <div className={styles.infoGrid}>
+          <header className={styles.supportHeader}>
+            <div>
+              <p className={styles.supportEyebrow}>05 · NOTICE &amp; SUPPORT</p>
+              <h2 id="home-support-title" className={styles.supportTitle}>
+                공지사항과 자주 찾는 메뉴
+              </h2>
+            </div>
+            <p className={styles.supportDescription}>
+              새 소식을 확인하고 비용, 매장 위치, 문의, 라켓 케어로 바로 이동하세요.
+            </p>
+          </header>
+          <div className={styles.supportGrid}>
             {shouldLoadCommunity ? (
               <HomeNoticePreview initialItems={initialHomeData?.notices} />
             ) : (
-              <div className="h-[240px] animate-pulse rounded-panel border border-border bg-muted" />
+              <div
+                className={styles.noticeSkeleton}
+                aria-label="공지사항을 불러오는 중입니다"
+              />
             )}
-            <div className={styles.utilityGrid}>
+            <nav className={styles.supportLinks} aria-label="자주 찾는 이용 메뉴">
               {[
                 ["비용 기준 확인", "장착비와 서비스 비용을 확인하세요.", "/services/pricing"],
                 ["영업시간·매장 위치", "운영시간과 방문 위치를 확인하세요.", "/services/locations"],
                 ["문의하기", "Q&A로 궁금한 점을 남기세요.", "/board/qna"],
                 ["라켓 케어", "교체 이력과 다음 교체 시기를 관리하세요.", "/racket-care"],
-              ].map(([title, desc, href]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="rounded-panel border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-                >
-                  <strong className="block text-ui-card-title font-medium text-foreground">
-                    {title}
-                  </strong>
-                  <span className="mt-2 block break-keep text-ui-body-sm font-normal leading-relaxed text-muted-foreground">
-                    {desc}
+              ].map(([title, description, href]) => (
+                <Link key={href} href={href} className={styles.supportLink}>
+                  <span className={styles.supportLinkCopy}>
+                    <strong className={styles.supportLinkTitle}>{title}</strong>
+                    <span className={styles.supportLinkDescription}>{description}</span>
                   </span>
+                  <ArrowRight aria-hidden="true" className={styles.supportLinkArrow} />
                 </Link>
               ))}
-            </div>
+            </nav>
           </div>
         </SiteContainer>
       </section>
