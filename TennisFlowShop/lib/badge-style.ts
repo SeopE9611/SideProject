@@ -202,9 +202,11 @@ export function commerceBadgeSpec(
   const emphasis: BadgeEmphasis =
     kind === "genuine"
       ? "outline"
-      : kind === "sold_out" || surface === "image"
-        ? "solid"
-        : "soft";
+      : kind === "popular"
+        ? surface === "image"
+          ? "solid"
+          : "soft"
+        : "solid";
 
   return badgeDisplaySpec({
     label:

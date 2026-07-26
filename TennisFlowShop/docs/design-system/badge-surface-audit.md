@@ -2,10 +2,13 @@
 
 ## 표시 원칙
 
-- 현재가와 정상가를 함께 보여 주는 화면은 가격 영역의 `CatalogPrice` 또는 인라인
-  `CommerceBadge`가 `N% 할인`을 한 번 표시한다. 같은 카드의 이미지 뱃지에서는 `sale`을
-  제외한다.
-- 메인 상품·라켓 카드는 가격 영역에 할인율이 없으므로 기존 이미지 할인 뱃지를 유지한다.
+- 현재가와 정상가를 함께 보여 주는 상품·라켓 상세 화면은 가격 영역의 `CatalogPrice` 또는
+  인라인 `CommerceBadge`가 `N% 할인`을 한 번 표시한다. 같은 카드의 이미지 뱃지에서는
+  `sale`을 제외한다.
+- 메인 상품은 이미지 commerce 뱃지가 할인율을 담당한다. 메인 라켓도 가격 옆 중복 할인율을
+  제거하고 이미지 commerce 뱃지만 할인율을 담당한다.
+- 표시 위치와 크기는 다를 수 있지만 `sale`의 색상·채움·문구·모양은 동일하다. `surface`는
+  commerce 핵심 상태의 시각적 정체성을 바꾸지 않는다.
 - `NEW`, 추천, 품절은 할인과 다른 의미다. 이미지 최대 두 개 제한과 품절 우선순위를 유지하고,
   신상품 필터에서는 `ensureNew`로 `NEW` 노출을 보장한다.
 - 옵션 품절, CTA 구매 불가, 대여 상태는 각각 제어 상태·행동 결과를 설명하므로 상품 상태 뱃지와
@@ -15,7 +18,7 @@
 
 | 경로/컴포넌트                                                                      | 화면 영역                          | 의미                            | 데이터 원천                       | 렌더러                                            | 중복 여부                               | 이번 결정                                                                               |
 | ---------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------- | --------------------------------- | ------------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------- |
-| `app/HomePageRedesign.tsx`                                                         | 메인 상품·라켓 이미지              | 할인, NEW, 추천, 품절           | inventory, marketing, 재고        | `commerceBadgeSpecs` + `SemanticBadge`            | 가격 영역에 할인율이 없어 중복 아님     | 이미지 할인 유지                                                                        |
+| `app/HomePageRedesign.tsx`                                                         | 메인 상품·라켓 이미지              | 할인, NEW, 추천, 품절           | inventory, marketing, 재고        | `commerceBadgeSpecs` + `SemanticBadge`            | 라켓 가격 옆 할인율과 이미지 뱃지 중복  | 라켓 가격 옆 중복 할인율 제거, 상품·라켓 모두 이미지 할인 유지                          |
 | `app/products/components/ProductCard.tsx`                                          | 상품 목록 그리드·리스트            | NEW, 추천, 품절                 | inventory, 상품, 옵션 재고        | 이미지 `SemanticBadge`, 가격 `CatalogPrice`       | 이미지와 가격의 할인 중복 가능          | 이미지 sale 제외, 가격에만 할인 표시; `ensureNew` 유지                                  |
 | `app/products/[id]/ProductDetailImageGallery.tsx` / `ProductDetailClient.utils.ts` | 상품 상세 이미지 갤러리            | NEW, 추천, 품절                 | inventory, 상품, 계산된 전체 품절 | `SemanticBadge`                                   | 구매 패널 가격과 할인 중복              | 이미지 sale 제외                                                                        |
 | `app/products/[id]/ProductDetailClient.tsx`                                        | 상품 상세 구매 패널·가격           | 판매가, 정상가, 할인            | price, inventory.salePrice        | `CatalogPrice`                                    | 이미지 할인과 중복 가능                 | `N% 할인`의 단일 소유 위치로 지정                                                       |
@@ -47,7 +50,8 @@
   설명·스펙, 후기·문의, 스트링 선택 진입을 함께 확인했다. condition·availability 판정은
   `RacketBadge`에 그대로 두었다.
 - 후기의 문맥과 공개 여부는 서로 다른 의미다. 문맥은 neutral outline `ReviewContextBadge`,
-  관리자가 식별할 수 있는 비공개 상태는 같은 계열의 `ReviewVisibilityBadge`로 통일했다.
+  본인 또는 `adminView`로 식별할 수 있는 비공개 상태는 같은 계열의 `ReviewVisibilityBadge`로
+  통일했다.
 - Q&A 카테고리·답변 상태는 기존 spec의 tone을 사용하고, 비밀글은 neutral outline으로 유지했다.
 
 ## 범위 밖
