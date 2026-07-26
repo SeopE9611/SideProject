@@ -80,6 +80,8 @@ type Props = {
   errorTitle?: string;
   errorDescription?: string;
   variant?: "default" | "home";
+  /** 모바일에서 다음 카드 일부를 노출해 가로 탐색 가능성을 보여줌 */
+  mobilePeek?: boolean;
 };
 
 export default function HorizontalProducts({
@@ -100,6 +102,7 @@ export default function HorizontalProducts({
   errorTitle,
   errorDescription,
   variant = "default",
+  mobilePeek = false,
 }: Props) {
   // 한 화면에 몇 장 보여줄지(2/3/4장 고정)
   const [itemsPerPage, setItemsPerPage] = useState(4);
@@ -197,12 +200,16 @@ export default function HorizontalProducts({
   }, [items, itemsPerPage, loading, error, showMoreCard]);
 
   const shouldCenter = slides.length <= itemsPerPage;
+  const shouldUseMobilePeek =
+    variant === "home" && mobilePeek && slides.length > itemsPerPage;
 
   // 슬라이드 폭
   const slideClass =
     cardWidthClass ??
     (variant === "home"
-      ? "flex-none basis-full bp-sm:basis-[calc((100%_-_16px)/2)] bp-lg:basis-[calc((100%_-_48px)/3)]"
+      ? shouldUseMobilePeek
+        ? "flex-none basis-[88%] bp-sm:basis-[calc((100%_-_16px)/2)] bp-lg:basis-[calc((100%_-_48px)/3)]"
+        : "flex-none basis-full bp-sm:basis-[calc((100%_-_16px)/2)] bp-lg:basis-[calc((100%_-_48px)/3)]"
       : "flex-none basis-[calc((100%-12px)/2)] " +
         "bp-sm:basis-[calc((100%-16px)/2)] " +
         "bp-md-only:basis-[calc((100%-40px)/3)] " +
@@ -266,7 +273,10 @@ export default function HorizontalProducts({
     ? "flex h-full flex-col items-center justify-center rounded-panel border border-border/80 bg-card p-3 text-center text-foreground shadow-none bp-sm:p-4 bp-md:p-5"
     : "flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center text-foreground shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7";
   const imageSurfaceClass = isHomeVariant
-    ? "relative mb-3 aspect-square overflow-hidden rounded-control border border-border/70 bg-muted/30 bp-sm:mb-4 bp-md:mb-5"
+    ? cn(
+        "relative mb-3 overflow-hidden rounded-control border border-border/70 bg-muted/30 bp-sm:mb-4 bp-md:mb-5",
+        mobilePeek ? "aspect-[4/3] bp-sm:aspect-square" : "aspect-square",
+      )
     : "relative mb-4 aspect-square overflow-hidden rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-5 bp-md:mb-6";
 
   const ItemCard = ({ p }: { p: HItem }) =>
@@ -301,7 +311,11 @@ export default function HorizontalProducts({
                   "object-contain p-3 bp-sm:p-4 bp-md:p-5",
                   !isHomeVariant && "transition-transform duration-500 group-hover:scale-105",
                 )}
-                sizes="(max-width: 767px) calc((100vw - 36px) / 2), (max-width: 1199px) calc((100vw - 88px) / 3), 282px"
+                sizes={
+                  isHomeVariant && mobilePeek
+                    ? "(max-width: 575px) 88vw, (max-width: 1199px) calc((100vw - 64px) / 2), 282px"
+                    : "(max-width: 767px) calc((100vw - 36px) / 2), (max-width: 1199px) calc((100vw - 88px) / 3), 282px"
+                }
               />
             ) : (
               <div className="flex h-full items-center justify-center text-ui-section-title-lg font-semibold text-muted-foreground/50 bp-sm:text-ui-page-title bp-md:text-ui-page-title-lg">
@@ -534,12 +548,17 @@ export default function HorizontalProducts({
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
                   className={cn(
-                    "h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12",
+                    isHomeVariant && mobilePeek
+                      ? "h-11 w-11 bp-md:h-12 bp-md:w-12"
+                      : "h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12",
                     isHomeVariant ? "rounded-control" : "rounded-full",
                   )}
                   onClick={() => scrollByPage("left")}
                 >
-                  <ChevronLeft className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
+                  <ChevronLeft
+                    aria-hidden="true"
+                    className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5"
+                  />
                 </Button>
 
                 <Button
@@ -548,17 +567,30 @@ export default function HorizontalProducts({
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
                   className={cn(
-                    "h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12",
+                    isHomeVariant && mobilePeek
+                      ? "h-11 w-11 bp-md:h-12 bp-md:w-12"
+                      : "h-9 w-9 bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12",
                     isHomeVariant ? "rounded-control" : "rounded-full",
                   )}
                   onClick={() => scrollByPage("right")}
                 >
-                  <ChevronRight className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5"
+                  />
                 </Button>
               </div>
 
-              <p className="hidden text-ui-body-sm text-muted-foreground bp-sm:block">
-                드래그하거나 터치로 넘겨보세요
+              <p
+                className={cn(
+                  isHomeVariant && mobilePeek
+                    ? "block text-ui-caption text-muted-foreground"
+                    : "hidden text-ui-body-sm text-muted-foreground bp-sm:block",
+                )}
+              >
+                {isHomeVariant && mobilePeek
+                  ? "좌우로 밀어 다른 상품도 확인하세요"
+                  : "드래그하거나 터치로 넘겨보세요"}
               </p>
             </div>
           )}

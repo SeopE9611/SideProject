@@ -921,6 +921,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 items={premiumItems}
                 moreHref={recommendationMoreHref}
                 variant="home"
+                mobilePeek
                 showHeader={false}
                 showMoreCard={false}
                 loading={stringProductsLoading}
@@ -1072,20 +1073,20 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
 
               <div className={styles.academyFeatureCopy}>
-                <span className={styles.experienceKicker}>DOKEBI TENNIS ACADEMY</span>
+                <span className={styles.experienceKicker}>ACADEMY GUIDE</span>
 
                 <h3 className={styles.academyFeatureTitle}>
-                  목표와 레벨에 맞춰 배우는 테니스
+                  레슨 일정과 모집 클래스를 확인하세요.
                 </h3>
 
                 <p className={styles.academyFeatureDescription}>
-                  입문자부터 실전 플레이어까지,
+                  레벨별 수업 안내와 상담·신청 방법을
                   <br />
-                  레슨 방향과 모집 클래스를 확인할 수 있어요.
+                  아카데미 페이지에서 확인할 수 있어요.
                 </p>
 
                 <span className={styles.academyFeatureAction}>
-                  아카데미 보기
+                  아카데미 안내 보기
                   <ArrowRight aria-hidden="true" className="h-4 w-4" />
                 </span>
               </div>
@@ -1350,10 +1351,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             {shouldLoadCommunity ? (
               <HomeNoticePreview initialItems={initialHomeData?.notices} />
             ) : (
-              <div
-                className={styles.noticeSkeleton}
-                aria-label="공지사항을 불러오는 중입니다"
-              />
+              <div className={styles.noticeSkeleton} role="status">
+                <span className="sr-only">공지사항을 불러오는 중입니다</span>
+              </div>
             )}
             <nav className={styles.supportLinks} aria-label="자주 찾는 이용 메뉴">
               {[
