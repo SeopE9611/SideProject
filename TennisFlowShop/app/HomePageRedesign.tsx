@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
+import { RacketBadge } from "@/components/badges/RacketBadge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { RACKET_BRANDS, racketBrandLabel, stringBrandLabel } from "@/lib/constants";
@@ -19,6 +22,7 @@ import {
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
+import { commerceBadgeSpecs, type RacketAvailabilityState } from "@/lib/badge-style";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -172,13 +176,18 @@ const getProductPrice = (product: HomePreviewProduct) => {
     : product.price;
 };
 
-const getProductBadge = (product: HomePreviewProduct) => {
-  const badges: string[] = [];
-  if (product.inventory?.status === "outofstock") badges.push("품절");
-  if (isTruthy(product.inventory?.isNew) || isTruthy(product.isNew)) badges.push("NEW");
-  if (isTruthy(product.inventory?.isFeatured)) badges.push("추천");
-  if (isTruthy(product.inventory?.isSale)) badges.push("SALE");
-  return badges.slice(0, 2);
+const getDiscountRate = (regularPrice: number, salePrice: number) => {
+  if (!Number.isFinite(regularPrice) || !Number.isFinite(salePrice) || regularPrice <= 0)
+    return undefined;
+  if (salePrice <= 0 || salePrice >= regularPrice) return undefined;
+  return ((regularPrice - salePrice) / regularPrice) * 100;
+};
+
+const getRacketAvailability = (status?: string): RacketAvailabilityState | null => {
+  if (status === "sold") return "sold";
+  if (status === "rented") return "rented";
+  if (status === "inactive") return "unavailable";
+  return null;
 };
 
 const formatNoticeDate = (value: string) => {
@@ -682,9 +691,9 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
               </Link>
             </div>
             {[
-              ["01", "상품 선택", "플레이 성향과 제품 특성을 비교해 스트링을 고릅니다."],
-              ["02", "전문 장착", "방문·택배로 접수하고 원하는 텐션으로 장착합니다."],
-              ["03", "이력 관리", "마지막 교체일과 라켓별 관리 기록을 이어서 확인합니다."],
+              ["01", "상품 선택", "플레이 성향과 제품 특성을 비교해 알맞은 스트링을 고릅니다"],
+              ["02", "전문 장착", "방문이나 택배로 접수하고 원하는 텐션으로 장착합니다"],
+              ["03", "이력 관리", "마지막 교체일과 라켓별 관리 기록을 이어서 확인합니다"],
             ].map(([number, title, description]) => (
               <article key={number} className={styles.trustItem}>
                 <span>{number}</span>
@@ -759,9 +768,18 @@ function SectionHeader({
 }
 
 function ProductCard({ product }: { product: HomePreviewProduct }) {
-  const badges = getProductBadge(product);
   const price = getProductPrice(product);
   const isDiscounted = price < product.price;
+  const badges = commerceBadgeSpecs(
+    {
+      isSoldOut: product.inventory?.status === "outofstock",
+      isSale: isTruthy(product.inventory?.isSale),
+      isRecommended: isTruthy(product.inventory?.isFeatured),
+      isNew: isTruthy(product.inventory?.isNew) || isTruthy(product.isNew),
+      discountRate: getDiscountRate(product.price, price),
+    },
+    "image",
+  );
 
   return (
     <article className={styles.productCard}>
@@ -776,7 +794,17 @@ function ProductCard({ product }: { product: HomePreviewProduct }) {
           />
           {badges.length > 0 && (
             <div className={styles.productBadges}>
-              {badges.map((badge) => <span key={badge}>{badge}</span>)}
+              {badges.map((badge) => (
+                <SemanticBadge
+                  key={badge.label}
+                  tone={badge.tone}
+                  emphasis={badge.emphasis}
+                  size={badge.size}
+                  shape={badge.shape}
+                >
+                  {badge.label}
+                </SemanticBadge>
+              ))}
             </div>
           )}
         </div>
@@ -801,6 +829,18 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
   const price = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
   const brand = racketBrandLabel(racket.brand);
+  const availability = getRacketAvailability(racket.status);
+  const marketingBadges = commerceBadgeSpecs(
+    {
+      isSale: racket.marketing?.isSale === true,
+      isRecommended: racket.marketing?.isFeatured === true,
+      isNew: racket.marketing?.isNew === true,
+      discountRate: getDiscountRate(racket.price, price),
+    },
+    "image",
+  );
+  const badgeCountBeforeMarketing = Number(Boolean(availability)) + Number(Boolean(racket.condition));
+  const visibleMarketingBadges = marketingBadges.slice(0, Math.max(0, 2 - badgeCountBeforeMarketing));
 
   return (
     <article className={styles.racketCard}>
@@ -813,7 +853,28 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
             className={styles.containImage}
             sizes="(max-width: 767px) 82vw, (max-width: 1199px) 25vw, 300px"
           />
-          <span>{racket.condition ? `${racket.condition}급 검수` : "검수완료"}</span>
+          <div className={styles.racketBadges}>
+            {availability && (
+              <RacketBadge kind="availability" state={availability} surface="image" />
+            )}
+            {racket.condition && (
+              <RacketBadge kind="condition" state={racket.condition} surface="image" />
+            )}
+            {visibleMarketingBadges.map((badge) => (
+              <SemanticBadge
+                key={badge.label}
+                tone={badge.tone}
+                emphasis={badge.emphasis}
+                size={badge.size}
+                shape={badge.shape}
+              >
+                {badge.label}
+              </SemanticBadge>
+            ))}
+            {!availability && !racket.condition && visibleMarketingBadges.length === 0 && (
+              <RacketBadge kind="inspection" surface="image" />
+            )}
+          </div>
         </div>
         <div className={styles.racketMeta}>
           <p>{brand}</p>
@@ -882,7 +943,15 @@ function PackageCard({
 
   return (
     <article className={featured ? styles.packageCardFeatured : styles.packageCard}>
-      <p>{featured ? "추천 패키지" : "교체 패키지"}</p>
+      <div className={styles.packageBadge}>
+        {featured ? (
+          <CommerceBadge kind="recommended" surface="inline" size="md" />
+        ) : (
+          <SemanticBadge tone="neutral" emphasis="soft" size="md">
+            교체 패키지
+          </SemanticBadge>
+        )}
+      </div>
       <h3>{pkg.name}</h3>
       <strong>{pkg.sessions}회</strong>
       <small>{pkg.description || `유효기간 ${pkg.validityDays}일`}</small>
