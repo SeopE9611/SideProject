@@ -13,7 +13,7 @@ import RacketCareHero from "@/app/mypage/racket-care/_components/RacketCareHero"
 import RacketCareMobileNav from "@/app/mypage/racket-care/_components/RacketCareMobileNav";
 import RacketCareRegistrationDialog from "@/app/mypage/racket-care/_components/RacketCareRegistrationDialog";
 import RacketCareStatusCard from "@/app/mypage/racket-care/_components/RacketCareStatusCard";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -32,9 +32,9 @@ import { toast } from "sonner";
 import useSWR from "swr";
 
 const stateMeta = {
-  good: { label: "양호", badge: "success" },
-  prepare: { label: "교체 준비", badge: "warning" },
-  due: { label: "교체 권장", badge: "danger" },
+  good: { label: "양호", tone: "success" },
+  prepare: { label: "교체 준비", tone: "warning" },
+  due: { label: "교체 권장", tone: "danger" },
 } as const;
 
 function emptyForm(): CareForm {
@@ -365,16 +365,22 @@ export default function RacketCareClient() {
                       >
                         <span className="flex flex-wrap items-start justify-between gap-2">
                           <span className="min-w-0 break-words font-semibold">{item.nickname}</span>
-                          <Badge variant={itemMeta.badge} wrap="normal">
+                          <SemanticBadge tone={itemMeta.tone} size="md" wrap="normal">
                             {itemMeta.label}
-                          </Badge>
+                          </SemanticBadge>
                         </span>
                         <span className="mt-1 block break-words text-ui-label text-muted-foreground">
                           {item.racket.brand} {item.racket.model}
                         </span>
-                        <span className="mt-3 inline-flex rounded-full bg-muted/30 px-2 py-1 text-ui-label text-muted-foreground">
+                        <SemanticBadge
+                          tone="neutral"
+                          emphasis="outline"
+                          size="sm"
+                          shape="pill"
+                          className="mt-3"
+                        >
                           {dday(item.careStatus.daysRemaining)}
-                        </span>
+                        </SemanticBadge>
                       </button>
                     );
                   })}
@@ -398,7 +404,7 @@ export default function RacketCareClient() {
           <Card variant="feature" className="overflow-hidden rounded-panel">
             <CardContent className="grid gap-6 p-5 bp-sm:p-8 bp-lg:grid-cols-[0.9fr_1.1fr] bp-lg:items-center">
               <div>
-                <Badge variant="signal">START RACKET CARE</Badge>
+                <SemanticBadge tone="signal">START RACKET CARE</SemanticBadge>
                 <h3 className="mt-4 break-keep text-ui-section-title font-bold ">
                   라켓을 등록하고
                   <br />

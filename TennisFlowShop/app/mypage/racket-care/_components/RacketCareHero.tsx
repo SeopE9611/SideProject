@@ -4,7 +4,7 @@ import type {
   CareItem,
   StartCreateOptions,
 } from "@/app/mypage/racket-care/_components/racket-care-client.types";
-import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Target } from "lucide-react";
@@ -17,9 +17,9 @@ const freqLabels: Record<string, string> = {
   heavy: "주 4회 이상",
 };
 const stateMeta = {
-  good: { label: "양호", badge: "success" },
-  prepare: { label: "교체 준비", badge: "warning" },
-  due: { label: "교체 권장", badge: "danger" },
+  good: { label: "양호", tone: "success" },
+  prepare: { label: "교체 준비", tone: "warning" },
+  due: { label: "교체 권장", tone: "danger" },
 } as const;
 function dateLabel(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -59,7 +59,7 @@ export default function RacketCareHero({
       <div className="relative grid gap-9 bp-lg:grid-cols-[minmax(0,1.08fr)_minmax(380px,0.92fr)] bp-lg:items-center">
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="signal">NEW · RACKET CARE PASS</Badge>
+            <SemanticBadge tone="signal">NEW · RACKET CARE PASS</SemanticBadge>
             <span className="text-ui-label text-muted-foreground">내 라켓 전용 관리 대시보드</span>
           </div>
           <h1 className="break-keep font-brand-display text-[2.75rem] leading-none text-foreground bp-sm:text-[4.4rem] bp-lg:text-[5.2rem]">
@@ -132,9 +132,9 @@ export default function RacketCareHero({
                       </p>
                     </div>
                     {meta ? (
-                      <Badge variant={meta.badge} wrap="normal">
+                      <SemanticBadge tone={meta.tone} size="md" wrap="normal">
                         {meta.label}
-                      </Badge>
+                      </SemanticBadge>
                     ) : null}
                   </div>
                   <div className="mx-auto mt-6 grid w-full max-w-[230px] place-items-center">
