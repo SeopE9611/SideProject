@@ -441,6 +441,202 @@
   margin-top: 24px;
 }
 
+.experienceSection {
+  padding-block: 88px;
+  background: color-mix(in srgb, hsl(var(--muted)) 38%, hsl(var(--background)));
+  scroll-margin-top: 80px;
+}
+
+.experienceHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 48px;
+  align-items: end;
+  margin-bottom: 32px;
+}
+
+.experienceEyebrow,
+.experienceKicker {
+  margin: 0;
+  color: hsl(var(--brand-highlight-ink));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+}
+
+.experienceEyebrow {
+  margin-bottom: 14px;
+}
+
+.experienceTitle {
+  margin: 0;
+  max-width: 760px;
+  color: hsl(var(--foreground));
+  font-family: var(--home-brand-font-family);
+  font-size: clamp(40px, 4vw, 48px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.experienceDescription {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 16px;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.experienceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.academyFeature {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  min-height: 500px;
+  overflow: hidden;
+  border-radius: 30px;
+  background: hsl(var(--surface-inverse));
+  color: hsl(var(--surface-inverse-foreground));
+  isolation: isolate;
+}
+
+.academyFeatureMedia {
+  position: relative;
+  min-width: 0;
+  min-height: 500px;
+  overflow: hidden;
+  background: hsl(var(--muted));
+}
+
+.academyFeatureImage {
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1);
+  transition: transform 0.35s ease;
+}
+
+.academyFeatureCopy {
+  position: static;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 36px;
+  background: hsl(var(--surface-inverse));
+}
+
+.academyFeatureCopy .experienceKicker {
+  color: hsl(var(--brand-highlight));
+}
+
+.academyFeatureTitle {
+  margin: 12px 0 0;
+  max-width: 620px;
+  color: hsl(var(--surface-inverse-foreground));
+  font-family: var(--home-brand-font-family);
+  font-size: clamp(34px, 3.2vw, 44px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  word-break: keep-all;
+}
+
+.academyFeatureDescription {
+  margin: 16px 0 0;
+  color: hsl(var(--surface-inverse-muted));
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.academyFeatureAction {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  border-radius: 999px;
+  background: hsl(var(--brand-highlight));
+  padding: 11px 16px;
+  color: hsl(var(--brand-highlight-foreground));
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.academyFeature:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, hsl(var(--ring)) 42%, transparent);
+}
+
+.careFeature {
+  display: flex;
+  min-width: 0;
+  min-height: 500px;
+  flex-direction: column;
+  border: 1px solid color-mix(in srgb, hsl(var(--brand-highlight)) 28%, hsl(var(--border)));
+  border-radius: 30px;
+  background: color-mix(in srgb, hsl(var(--brand-highlight-muted)) 72%, hsl(var(--card)));
+  padding: 34px;
+}
+
+.careFeatureTitle {
+  margin: 14px 0 0;
+  color: hsl(var(--foreground));
+  font-size: clamp(28px, 2.4vw, 32px);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.025em;
+  word-break: keep-all;
+}
+
+.careFeatureDescription {
+  margin: 16px 0 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.careFeatureList {
+  margin: 34px 0 0;
+  padding: 0;
+  border-top: 1px solid hsl(var(--border));
+  list-style: none;
+}
+
+.careFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-block: 15px;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.careFeatureItem svg {
+  flex: none;
+  border-radius: 999px;
+  background: hsl(var(--brand-highlight));
+  padding: 2px;
+  color: hsl(var(--brand-highlight-foreground));
+}
+
+.careFeatureAction {
+  width: 100%;
+  margin-top: auto;
+}
+
 .stringSection {
   padding-block: 84px 76px;
 }
@@ -1130,6 +1326,10 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .academyFeature:hover .academyFeatureImage {
+    transform: scale(1.025);
+  }
+
   .quickNavItem:hover {
     border-color: color-mix(in srgb, hsl(var(--foreground)) 20%, hsl(var(--border)));
     background: color-mix(in srgb, hsl(var(--muted)) 32%, hsl(var(--card)));
@@ -1160,6 +1360,14 @@
   .racketInventoryRow,
   .racketBrandRailButton {
     transition: none;
+  }
+
+  .academyFeatureImage {
+    transition: none;
+  }
+
+  .academyFeature:hover .academyFeatureImage {
+    transform: none;
   }
 
   .quickNavItem:hover {
@@ -1199,8 +1407,27 @@
   }
 
   .stringingServiceHeader,
-  .stringingServiceGrid {
+  .stringingServiceGrid,
+  .experienceHeader,
+  .experienceGrid {
     grid-template-columns: 1fr;
+  }
+
+  .experienceHeader {
+    gap: 20px;
+  }
+
+  .academyFeature {
+    grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+    min-height: 420px;
+  }
+
+  .academyFeatureMedia {
+    min-height: 420px;
+  }
+
+  .careFeature {
+    min-height: auto;
   }
 
   .stringingServiceHeader {
@@ -1222,6 +1449,81 @@
 }
 
 @media (max-width: 767px) {
+  .experienceSection {
+    padding-block: 52px;
+  }
+
+  .experienceHeader {
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .experienceTitle {
+    font-size: 32px;
+  }
+
+  .experienceDescription {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .experienceDescription br {
+    display: none;
+  }
+
+  .experienceGrid {
+    gap: 13px;
+  }
+
+  .academyFeature {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    border-radius: 24px;
+  }
+
+  .academyFeatureMedia {
+    min-height: 300px;
+  }
+
+  .academyFeatureCopy {
+    padding: 22px;
+  }
+
+  .academyFeatureTitle {
+    font-size: 29px;
+  }
+
+  .academyFeatureDescription {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .academyFeatureDescription br,
+  .careFeatureDescription br {
+    display: none;
+  }
+
+  .academyFeatureAction {
+    margin-top: 18px;
+  }
+
+  .careFeature {
+    border-radius: 24px;
+    padding: 22px;
+  }
+
+  .careFeatureTitle {
+    font-size: 27px;
+  }
+
+  .careFeatureList {
+    margin-top: 26px;
+  }
+
+  .careFeatureAction {
+    margin-top: 24px;
+  }
+
   .section {
     padding-block: 36px;
   }
