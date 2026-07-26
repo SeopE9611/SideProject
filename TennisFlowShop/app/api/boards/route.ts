@@ -42,6 +42,8 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidateTag } from "next/cache";
+import { HOME_NOTICES_CACHE_TAG } from "@/lib/home/home-preview";
 import {
   communityBoardClosedResponse,
   isClosedCommunityType,
@@ -891,6 +893,7 @@ export async function POST(req: NextRequest) {
   };
 
   const r = await db.collection<BoardCreateMongoDoc>("board_posts").insertOne(doc);
+  if (body.type === "notice") revalidateTag(HOME_NOTICES_CACHE_TAG);
   logInfo({
     msg: "boards:post:created",
     status: 200,

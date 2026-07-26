@@ -5,6 +5,8 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { HOME_PRODUCTS_CACHE_TAG } from "@/lib/home/home-preview";
+import { revalidateTag } from "next/cache";
 import type {
   AdminProductsListRequestDto,
   AdminProductsListResponseDto,
@@ -318,6 +320,7 @@ export async function POST(req: NextRequest) {
       shippingFee: requestDto.shippingFee,
       isVisible: requestDto.raw.isVisible === false ? false : true,
     });
+    revalidateTag(HOME_PRODUCTS_CACHE_TAG);
 
     const createdDoc = {
       ...requestDto.raw,

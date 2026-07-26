@@ -13,6 +13,8 @@ import type {
 } from "@/types/admin/products";
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
+import { HOME_PRODUCTS_CACHE_TAG } from "@/lib/home/home-preview";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
@@ -262,6 +264,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (result.matchedCount === 0) {
       return NextResponse.json({ message: "상품 업데이트 실패" }, { status: 500 });
     }
+    revalidateTag(HOME_PRODUCTS_CACHE_TAG);
 
     const afterDoc = (await db.collection("products").findOne({ _id: new ObjectId(id) })) as Record<
       string,
@@ -345,6 +348,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (result.matchedCount === 0) {
       return NextResponse.json({ message: "상품을 찾을 수 없습니다." }, { status: 404 });
     }
+    revalidateTag(HOME_PRODUCTS_CACHE_TAG);
     const before = toProductAuditSnapshot(beforeDoc);
     await appendAdminAudit(
       db,

@@ -11,7 +11,7 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { HOME_PREVIEW_CACHE_TAG } from "@/lib/home/home-preview";
+import { HOME_RACKETS_CACHE_TAG } from "@/lib/home/home-preview";
 
 function toRacketAuditSnapshot(doc: any) {
   return {
@@ -191,7 +191,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     },
     req,
   );
-  revalidateTag(HOME_PREVIEW_CACHE_TAG);
+  revalidateTag(HOME_RACKETS_CACHE_TAG);
   return NextResponse.json({ ok: true });
 }
 
@@ -234,7 +234,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
     },
     req,
   );
-  revalidateTag(HOME_PREVIEW_CACHE_TAG);
+  revalidateTag(HOME_RACKETS_CACHE_TAG);
   return NextResponse.json({ ok: true });
 }
 function normalizeRacketMarketing(value: any) {
