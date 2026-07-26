@@ -156,9 +156,6 @@ const APPLICATION_PATHS = {
     detailTitle: "스트링과 텐션을 알고 있다면 바로 신청하세요.",
     detailDescription: "상품을 선택한 뒤 신청서를 바로 작성할 수 있어요.",
     checks: ["상품 페이지에서 스트링 선택", "텐션 직접 입력", "방문 또는 택배 접수 선택"],
-    string: "직접 선택",
-    tension: "직접 입력",
-    method: "방문 / 택배",
     cta: "직접 선택하고 신청하기",
     href: "/products?from=apply",
   },
@@ -171,9 +168,6 @@ const APPLICATION_PATHS = {
     detailTitle: "어떤 스트링이 맞을지 고민된다면 플레이 스타일부터 선택해보세요.",
     detailDescription: "타구감, 스핀, 컨트롤처럼 원하는 플레이를 기준으로 추천을 확인합니다.",
     checks: ["플레이 목적 선택", "추천 상품 비교", "상담 후 텐션 결정"],
-    string: "추천 상품",
-    tension: "상담 후 결정",
-    method: "방문 / 택배",
     cta: "내게 맞는 스트링 찾기",
     href: "/products/recommend",
   },
@@ -186,9 +180,6 @@ const APPLICATION_PATHS = {
     detailTitle: "가지고 계신 스트링으로 장착만 신청할 수 있어요.",
     detailDescription: "스트링 정보와 원하는 텐션을 남기면 라켓 접수 후 장착을 진행해요.",
     checks: ["보유 스트링 정보 입력", "원하는 텐션 입력 또는 상담", "라켓 접수 방식 선택"],
-    string: "보유 스트링",
-    tension: "직접 입력 / 상담",
-    method: "방문 / 택배",
     cta: "보유 스트링 장착 신청하기",
     href: "/services/apply?mode=single",
   },
@@ -201,37 +192,27 @@ const PROCESS_STEPS = [
     key: "apply",
     no: "01",
     tab: "교체 신청",
-    title: "내 상황에 맞는\n신청 방법 선택",
     description: "직접 선택, 추천, 보유 스트링 중 지금 가장 편한 방식으로 시작합니다.",
-    checks: ["신청 경로 선택", "스트링 또는 상담 선택", "접수 방식 확인"],
   },
   {
     key: "receive",
     no: "02",
     tab: "라켓 접수",
-    title: "방문 또는 택배로\n라켓을 맡기세요",
     description: "매장 방문과 택배 접수 중 가능한 방법을 고르고 안내를 확인합니다.",
-    checks: ["접수 방법 선택", "라켓 정보 입력", "도착 확인 안내"],
   },
   {
     key: "stringing",
     no: "03",
     tab: "전문 장착",
-    title: "선택한 조건으로\n정확하게 장착합니다",
     description: "스트링과 텐션 정보를 확인한 뒤 작업 상태를 안내합니다.",
-    checks: ["스트링 정보 확인", "텐션 확인", "작업 완료 안내"],
   },
   {
     key: "care",
     no: "04",
     tab: "수령 및 관리",
-    title: "완성된 라켓을 받고\n다음 관리로 이어가세요",
     description: "수령 후 교체 이력을 라켓 케어에서 이어서 관리할 수 있습니다.",
-    checks: ["수령 방법 확인", "교체 이력 저장", "다음 교체 시기 관리"],
   },
 ] as const;
-
-type ProcessStepKey = (typeof PROCESS_STEPS)[number]["key"];
 
 const PURPOSES = [
   {
@@ -348,7 +329,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     hasOverflow: false,
   });
   const [activeApplicationPath, setActiveApplicationPath] = useState<ApplicationPathKey>("consult");
-  const [activeStepKey, setActiveStepKey] = useState<ProcessStepKey>("apply");
   const [activePurpose, setActivePurpose] = useState<PurposeKey>("comfort");
   const router = useRouter();
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
@@ -718,8 +698,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsSource.length;
   const currentPath = APPLICATION_PATHS[activeApplicationPath];
-  const currentStepIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStepKey);
-  const currentStep = PROCESS_STEPS[currentStepIndex] ?? PROCESS_STEPS[0];
   const activePurposeInfo =
     PURPOSES.find((purpose) => purpose.key === activePurpose) ?? PURPOSES[0];
   const recommendationMoreHref = useMemo(
@@ -971,199 +949,104 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      <section className={styles.section} id="paths">
+      <section className={styles.stringingServiceSection} id="paths">
         <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="02"
-            eyebrow="신청 방식 선택"
-            title="지금 상황에 맞는 신청 방법을 선택하세요."
-            description={
-              <>
-                원하는 스트링을 직접 선택하거나 추천받을 수 있어요.
-                <br />
-                보유한 스트링으로 장착만 신청하는 것도 가능합니다.
-              </>
-            }
-          />
-          <div className={styles.pathGrid}>
-            {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => {
-              const path = APPLICATION_PATHS[key];
-              const active = activeApplicationPath === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setActiveApplicationPath(key)}
-                  className={cn(
-                    styles.pathCard,
-                    active ? styles.pathCardActive : styles.pathCardIdle,
-                  )}
-                >
-                  <span className="text-ui-label font-medium text-muted-foreground">
-                    {path.no} · {path.label}
-                  </span>
-                  <span
-                    className={cn(
-                      "absolute right-5 top-5 grid h-9 w-9 place-items-center rounded-full border",
-                      active
-                        ? "border-brand-highlight bg-brand-highlight text-brand-highlight-foreground"
-                        : "border-border bg-muted text-foreground",
-                    )}
-                  >
-                    ↗
-                  </span>
-                  <h3
-                    className={cn(
-                      styles.uiTitle,
-                      "mt-10 whitespace-pre-line text-ui-section-title leading-tight text-foreground",
-                    )}
-                  >
-                    {path.title}
-                  </h3>
-                  <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
-                    {path.description}
-                  </p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-ui-label font-medium text-foreground">
-                    <span
-                      className={cn(
-                        "h-2 w-2 rounded-full",
-                        active ? "bg-brand-highlight" : "bg-muted",
-                      )}
-                    />
-                    {active ? "선택됨" : "선택하기"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <div className={styles.pathDetail}>
-            <div className={styles.detailCopy}>
-              <span className="rounded-full bg-brand-highlight-muted px-3 py-1.5 text-ui-label font-medium text-foreground">
-                {currentPath.label}
-              </span>
-              <h3
-                className={cn(
-                  styles.uiTitle,
-                  "mt-5 text-ui-section-title-lg leading-tight text-foreground",
-                )}
-              >
-                {currentPath.detailTitle}
-              </h3>
-              <p className="mt-3 break-keep text-ui-body leading-relaxed text-muted-foreground">
-                {currentPath.detailDescription}
-              </p>
-              <div className="mt-6 grid gap-2">
-                {currentPath.checks.map((check) => (
-                  <CheckLine key={check}>{check}</CheckLine>
-                ))}
-              </div>
-              <Link className={cn(homeCtaHighlight, "mt-6")} href={currentPath.href}>
-                {currentPath.cta}
-              </Link>
+          <header className={styles.stringingServiceHeader}>
+            <div>
+              <p className={styles.stringingServiceEyebrow}>02 · STRINGING SERVICE</p>
+              <h2 className={styles.stringingServiceTitle}>
+                신청 방법부터 수령까지,
+                <span>한곳에서 확인하세요.</span>
+              </h2>
             </div>
-            <div className={styles.detailPreview}>
-              <p className="text-ui-label font-medium uppercase tracking-[0.12em] text-surface-inverse-muted">
-                신청 요약
-              </p>
-              <PreviewLine label="스트링" value={currentPath.string} />
-              <PreviewLine label="텐션" value={currentPath.tension} />
-              <PreviewLine label="접수 방법" value={currentPath.method} />
-              <PreviewLine label="다음 이동" value={currentPath.cta} />
-            </div>
-          </div>
-        </SiteContainer>
-      </section>
+            <p className={styles.stringingServiceDescription}>
+              직접 선택, 추천, 보유 스트링 중 편한 방법으로 시작하고
+              <br />
+              방문 또는 택배로 라켓을 맡길 수 있어요.
+            </p>
+          </header>
 
-      <section className={styles.section} id="process">
-        <SiteContainer variant="wide" className={styles.wrap}>
-          <HomeEditorialHeader
-            no="03"
-            eyebrow="교체 진행 순서"
-            title="신청부터 수령까지, 4단계로 진행됩니다."
-            description="단계를 선택하면 준비할 내용과 다음 진행을 간단히 확인할 수 있어요."
-          />
-          <div className={styles.processWrap}>
-            <div className={styles.stepTabs}>
-              {PROCESS_STEPS.map((step) => {
-                const active = activeStepKey === step.key;
-                return (
-                  <button
-                    key={step.key}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setActiveStepKey(step.key)}
-                    className={cn(
-                      "min-w-40 border-b border-r border-border px-4 py-3 text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                      active
-                        ? "bg-surface-inverse text-surface-inverse-foreground"
-                        : "bg-card text-foreground hover:bg-muted/30",
-                    )}
-                  >
-                    <small
+          <div className={styles.stringingServiceGrid}>
+            <div className={styles.applicationPathColumn}>
+              <div className={styles.applicationPathHeading}>
+                <h3>어떻게 시작할까요?</h3>
+                <p>현재 상황에 가장 가까운 방법을 선택하세요.</p>
+              </div>
+              <div
+                className={styles.applicationPathTabs}
+                role="tablist"
+                aria-label="교체서비스 신청 방법"
+              >
+                {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => {
+                  const path = APPLICATION_PATHS[key];
+                  const active = activeApplicationPath === key;
+                  return (
+                    <button
+                      key={key}
+                      id={`application-path-tab-${key}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      aria-controls="application-path-panel"
+                      onClick={() => setActiveApplicationPath(key)}
                       className={cn(
-                        "mb-1 block font-medium",
-                        active ? "text-brand-highlight" : "text-muted-foreground",
+                        styles.applicationPathTab,
+                        active && styles.applicationPathTabActive,
                       )}
                     >
-                      {step.no}
-                    </small>
-                    {step.tab}
-                  </button>
-                );
-              })}
-            </div>
-            <div className={styles.stepBody}>
-              <div className={styles.stepCopy}>
-                <div className={styles.stepMeta}>
-                  <span>단계 {currentStep.no}</span>
-                  <span>
-                    {currentStepIndex + 1} / {PROCESS_STEPS.length}
-                  </span>
-                </div>
-
-                <h3
-                  className={cn(
-                    styles.uiTitle,
-                    "mt-4 whitespace-pre-line text-ui-page-title leading-tight",
-                  )}
-                >
-                  {currentStep.title}
-                </h3>
-
-                <p className="mt-4 break-keep text-ui-body leading-relaxed">
-                  {currentStep.description}
-                </p>
+                      <span>{path.no}</span>
+                      {path.label}
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className={styles.stepSummary}>
-                <p className="text-ui-label font-medium text-muted-foreground">
-                  이 단계에서 확인할 내용
-                </p>
-
-                <div className="mt-4 grid gap-3">
-                  {currentStep.checks.map((check) => (
-                    <CheckLine key={check}>{check}</CheckLine>
+              <div
+                id="application-path-panel"
+                className={styles.applicationPathPanel}
+                role="tabpanel"
+                aria-labelledby={`application-path-tab-${activeApplicationPath}`}
+              >
+                <span className={styles.applicationPathLabel}>{currentPath.label}</span>
+                <h3>{currentPath.detailTitle}</h3>
+                <p>{currentPath.detailDescription}</p>
+                <div className={styles.applicationPathChecks}>
+                  {currentPath.checks.map((check) => (
+                    <CheckLine key={check} inverse>
+                      {check}
+                    </CheckLine>
                   ))}
                 </div>
-
-                {currentStepIndex < PROCESS_STEPS.length - 1 ? (
-                  <button
-                    type="button"
-                    className={cn(homeCtaDefault, "mt-6 self-start")}
-                    onClick={() => setActiveStepKey(PROCESS_STEPS[currentStepIndex + 1].key)}
-                  >
-                    다음 단계 보기
-                  </button>
-                ) : (
-                  <Link
-                    className={cn(homeCtaDefault, "mt-6 self-start")}
-                    href="/services#service-start"
-                  >
-                    교체서비스 신청하기
-                  </Link>
-                )}
+                <Link
+                  className={cn(homeCtaHighlight, styles.applicationPathCta)}
+                  href={currentPath.href}
+                >
+                  {currentPath.cta}
+                </Link>
               </div>
+            </div>
+
+            <div className={styles.serviceProcessColumn} id="process">
+              <div className={styles.serviceProcessHeading}>
+                <h3>교체는 이렇게 진행돼요.</h3>
+                <p>신청부터 수령까지 네 단계로 진행됩니다.</p>
+              </div>
+              <ol className={styles.serviceProcessList}>
+                {PROCESS_STEPS.map((step) => {
+                  return (
+                    <li key={step.key} className={styles.serviceProcessItem}>
+                      <span className={styles.serviceProcessNumber}>{step.no}</span>
+                      <div className={styles.serviceProcessCopy}>
+                        <h3>{step.tab}</h3>
+                        <p>{step.description}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+              <Link className={cn(homeCtaDefault, styles.serviceProcessLink)} href="/services">
+                교체서비스 전체 안내 보기
+              </Link>
             </div>
           </div>
         </SiteContainer>
@@ -1172,7 +1055,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section className={styles.section} id="packages">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="04"
+            no="03"
             eyebrow="패키지 비교"
             title="스트링을 자주 교체한다면 패키지로 편리하게 이용하세요."
             description={
@@ -1233,7 +1116,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={racketsSectionRef} className={styles.section} id="rackets">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="05"
+            no="04"
             eyebrow="도깨비 인증 중고 라켓"
             title="도깨비에서 인증된 중고 라켓을 확인하세요."
             description="상태와 대여 가능 여부를 비교하고 전체 목록에서 더 많은 라켓을 확인할 수 있어요."
@@ -1364,7 +1247,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={communitySectionRef} className={styles.section} id="info">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="06"
+            no="05"
             eyebrow="이용 안내"
             title="공지와 이용 안내를 확인하세요."
             description="운영 정보와 문의 경로를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있어요."
@@ -1438,31 +1321,14 @@ function CheckLine({ children, inverse = false }: { children: string; inverse?: 
     <div
       className={cn(
         "flex items-center gap-2 text-ui-body-sm font-medium",
-        inverse ? "text-brand-highlight-foreground" : "text-foreground",
+        inverse ? "text-surface-inverse-foreground" : "text-foreground",
       )}
     >
-      <span
-        className={cn(
-          "grid h-5 w-5 shrink-0 place-items-center rounded-full",
-          inverse
-            ? "bg-surface-inverse text-surface-inverse-foreground"
-            : "bg-brand-highlight text-brand-highlight-foreground",
-        )}
-      >
+      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-highlight text-brand-highlight-foreground">
         <Check aria-hidden="true" className="h-3 w-3" />
       </span>
-      {children}
-    </div>
-  );
-}
 
-function PreviewLine({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b border-surface-inverse-foreground/15 py-4">
-      <span className="text-ui-body-sm text-surface-inverse-muted">{label}</span>
-      <strong className="text-right text-ui-body-sm font-medium text-surface-inverse-foreground">
-        {value}
-      </strong>
+      {children}
     </div>
   );
 }
