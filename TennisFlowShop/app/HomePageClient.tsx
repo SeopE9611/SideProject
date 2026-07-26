@@ -1052,10 +1052,95 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
+      <section
+        className={styles.experienceSection}
+        id="experience"
+        aria-labelledby="home-experience-title"
+      >
+        <SiteContainer variant="wide" className={styles.wrap}>
+          <header className={styles.experienceHeader}>
+            <div>
+              <p className={styles.experienceEyebrow}>03 · ACADEMY &amp; RACKET CARE</p>
+              <h2 id="home-experience-title" className={styles.experienceTitle}>
+                배우는 시간부터 라켓 관리까지
+              </h2>
+            </div>
+            <p className={styles.experienceDescription}>
+              아카데미에서 기본기와 실전 감각을 쌓고,
+              <br />
+              라켓 케어에서 교체 이력과 다음 관리 시기를 확인하세요.
+            </p>
+          </header>
+
+          <div className={styles.experienceGrid}>
+            <Link href="/academy" className={styles.academyFeature}>
+              <Image
+                src="/brand/academy-hero-tennis-court.webp"
+                alt=""
+                fill
+                className={styles.academyFeatureImage}
+                sizes="(max-width: 1199px) 100vw, 68vw"
+              />
+              <span className={styles.academyFeatureOverlay} aria-hidden="true" />
+              <div className={styles.academyFeatureCopy}>
+                <span className={styles.experienceKicker}>DOKEBI TENNIS ACADEMY</span>
+                <h3 className={styles.academyFeatureTitle}>
+                  목표와 레벨에 맞춰 배우는 테니스
+                </h3>
+                <p className={styles.academyFeatureDescription}>
+                  입문자부터 실전 플레이어까지,
+                  <br />
+                  레슨 방향과 모집 클래스를 확인할 수 있어요.
+                </p>
+                <span className={styles.academyFeatureAction}>
+                  아카데미 보기
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
+
+            <article className={styles.careFeature}>
+              <div>
+                <p className={styles.experienceKicker}>RACKET CARE</p>
+                <h3 className={styles.careFeatureTitle}>
+                  교체 이력과 다음 관리 시기를 놓치지 마세요.
+                </h3>
+                <p className={styles.careFeatureDescription}>
+                  마지막 교체일과 플레이 빈도를 바탕으로
+                  <br />
+                  예상 교체일과 라켓 상태를 확인할 수 있어요.
+                </p>
+              </div>
+              <ul className={styles.careFeatureList}>
+                <li className={styles.careFeatureItem}>
+                  <Check aria-hidden="true" className="h-4 w-4" />
+                  <span>교체 이력 저장</span>
+                </li>
+                <li className={styles.careFeatureItem}>
+                  <Check aria-hidden="true" className="h-4 w-4" />
+                  <span>예상 교체일 확인</span>
+                </li>
+                <li className={styles.careFeatureItem}>
+                  <Check aria-hidden="true" className="h-4 w-4" />
+                  <span>라켓별 관리 기록</span>
+                </li>
+              </ul>
+              <Link
+                href="/racket-care"
+                className={cn(homeCtaHighlight, styles.careFeatureAction)}
+              >
+                라켓 케어 보기
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
+            </article>
+          </div>
+        </SiteContainer>
+      </section>
+
       <section className={styles.section} id="packages">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="03"
+            no="04"
             eyebrow="패키지 비교"
             title="스트링을 자주 교체한다면 패키지로 편리하게 이용하세요."
             description={
@@ -1116,7 +1201,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={racketsSectionRef} className={styles.section} id="rackets">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="04"
+            no="05"
             eyebrow="도깨비 인증 중고 라켓"
             title="도깨비에서 인증된 중고 라켓을 확인하세요."
             description="상태와 대여 가능 여부를 비교하고 전체 목록에서 더 많은 라켓을 확인할 수 있어요."
@@ -1247,7 +1332,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={communitySectionRef} className={styles.section} id="info">
         <SiteContainer variant="wide" className={styles.wrap}>
           <HomeEditorialHeader
-            no="05"
+            no="06"
             eyebrow="이용 안내"
             title="공지와 이용 안내를 확인하세요."
             description="운영 정보와 문의 경로를 확인하고, 교체 후에는 라켓 케어로 이어갈 수 있어요."
