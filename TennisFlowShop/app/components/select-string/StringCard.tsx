@@ -1,7 +1,7 @@
 "use client";
 
 import { CatalogPrice } from "@/components/commerce/CatalogPrice";
-import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -195,9 +195,7 @@ export function StringCard({
         )}
         {isSoldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-            <Badge variant="secondary" className="text-ui-body-sm font-semibold">
-              품절
-            </Badge>
+            <CommerceBadge kind="sold_out" surface="inline" size="md" />
           </div>
         )}
       </div>

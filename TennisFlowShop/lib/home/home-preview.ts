@@ -37,6 +37,12 @@ export type HomePreviewProduct = {
     manageStock?: boolean | string | number;
     allowBackorder?: boolean | string | number;
   };
+  gaugeOptions?: string[];
+  gaugeInventories?: unknown[];
+  color?: string;
+  colorOptions?: string[];
+  colorInventories?: unknown[];
+  variantInventories?: unknown[];
 };
 
 export type HomeProductGroupKey =
@@ -118,6 +124,12 @@ type ProductDoc = {
   material?: "polyester" | "hybrid" | string;
   features?: HomePreviewProductFeatures;
   inventory?: HomePreviewProduct["inventory"];
+  gaugeOptions?: string[];
+  gaugeInventories?: unknown[];
+  color?: string;
+  colorOptions?: string[];
+  colorInventories?: unknown[];
+  variantInventories?: unknown[];
   isDeleted?: boolean;
 };
 
@@ -175,6 +187,12 @@ async function loadProducts() {
     "inventory.lowStock": 1,
     "inventory.manageStock": 1,
     "inventory.allowBackorder": 1,
+    gaugeOptions: 1,
+    gaugeInventories: 1,
+    color: 1,
+    colorOptions: 1,
+    colorInventories: 1,
+    variantInventories: 1,
   };
   const truthyValues = [true, "true", 1];
   const withVisibility = (condition: Filter<ProductDoc>): Filter<ProductDoc> => ({
@@ -261,6 +279,12 @@ async function loadProducts() {
     material: product.material,
     features: product.features,
     inventory: product.inventory,
+    gaugeOptions: product.gaugeOptions,
+    gaugeInventories: product.gaugeInventories,
+    color: product.color,
+    colorOptions: product.colorOptions,
+    colorInventories: product.colorInventories,
+    variantInventories: product.variantInventories,
   });
   const groups: HomePreviewProductGroups = {
     curated: curated.map(toProduct),

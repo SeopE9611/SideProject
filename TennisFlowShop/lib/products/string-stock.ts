@@ -209,3 +209,16 @@ export function hasSelectableStringStock(product: any) {
 
   return true;
 }
+
+/** 상품 카드와 상세에서 공유하는 상품 전체 품절 판정입니다. */
+export function isStringProductSoldOut(product: any) {
+  const inventory = product?.inventory;
+  if (String(inventory?.status ?? "") === "outofstock") return true;
+  if (!hasSelectableStringStock(product)) return true;
+
+  return (
+    inventory?.manageStock === true &&
+    Number(inventory?.stock ?? 0) <= 0 &&
+    inventory?.allowBackorder !== true
+  );
+}

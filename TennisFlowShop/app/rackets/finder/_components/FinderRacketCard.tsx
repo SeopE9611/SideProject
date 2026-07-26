@@ -8,9 +8,8 @@ import { Info, Scale, ShoppingCart } from "lucide-react";
 
 import { useRacketCompareStore, type CompareRacketItem } from "@/app/store/racketCompareStore";
 import { CatalogPrice } from "@/components/commerce";
-import { Badge } from "@/components/ui/badge";
+import { RacketBadge } from "@/components/badges/RacketBadge";
 import { Button } from "@/components/ui/button";
-import { badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
 import { racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 import { racketConditionLabel } from "@/lib/racket-condition";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -85,9 +84,6 @@ function SpecItem({
 export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   const brandText = racketBrandLabel(racket.brand);
   const spec = (racket.spec ?? {}) as RacketSpec;
-  const conditionMeta = racket.condition
-    ? usedBadgeMeta("condition", racket.condition, "image")
-    : null;
   const conditionText = racketConditionLabel(racket.condition);
   const img = racket.images?.[0];
   const rentalEnabled = !!racket.rental?.enabled;
@@ -138,15 +134,13 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 No Image
               </div>
             )}
-            {conditionMeta && conditionText ? (
-              <div
-                className={cn(
-                  "absolute left-2 top-2 rounded-full px-2 py-1 text-ui-label font-semibold",
-                  conditionMeta.className,
-                )}
-              >
-                상태 {conditionText}
-              </div>
+            {racket.condition && conditionText ? (
+              <RacketBadge
+                kind="condition"
+                state={racket.condition}
+                surface="image"
+                className="absolute left-2 top-2"
+              />
             ) : null}
           </div>
 
@@ -165,9 +159,11 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                   ) : null}
                 </h3>
               </div>
-              <Badge variant={badgeToneVariant(rentalEnabled ? "success" : "danger")}>
-                {rentalEnabled ? "대여 가능" : "대여 불가"}
-              </Badge>
+              <RacketBadge
+                kind="availability"
+                state={rentalEnabled ? "purchase_rental_available" : "unavailable"}
+                size="md"
+              />
             </div>
 
             <div className="mb-4">

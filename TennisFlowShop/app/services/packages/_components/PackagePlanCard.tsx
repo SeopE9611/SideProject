@@ -5,7 +5,7 @@ import {
   type PackageCardData,
 } from "@/app/services/packages/_lib/packageCard";
 import { PublicSurface } from "@/components/public";
-import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Lock } from "lucide-react";
 import Link from "next/link";
@@ -41,9 +41,7 @@ export default function PackagePlanCard({ pkg, ctaHref, blocked = false }: Packa
             {pkg.title}
           </h3>
           {pkg.popular && (
-            <Badge variant="signal" className="shrink-0">
-              추천
-            </Badge>
+            <CommerceBadge kind="recommended" surface="inline" size="md" className="shrink-0" />
           )}
         </div>
 

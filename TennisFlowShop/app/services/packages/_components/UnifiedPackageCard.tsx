@@ -13,7 +13,7 @@ import {
 import { PriceSummary, PublicSurface } from "@/components/public";
 import { Award, CheckCircle, Gift, Package, Star, Target, Trophy } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Button } from "@/components/ui/button";
 
 const iconByVariant = {
@@ -66,14 +66,15 @@ export default function UnifiedPackageCard({
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {pkg.popular && (
-              <Badge variant="brand" className="whitespace-nowrap">
-                추천
-              </Badge>
+              <CommerceBadge kind="recommended" surface="inline" size="md" />
             )}
             {pricingMeta.discountRate > 0 && (
-              <Badge variant="outline" className="whitespace-nowrap">
-                {pricingMeta.discountRate.toFixed(1)}% 할인
-              </Badge>
+              <CommerceBadge
+                kind="sale"
+                surface="inline"
+                size="md"
+                discountRate={pricingMeta.discountRate}
+              />
             )}
           </div>
         </div>

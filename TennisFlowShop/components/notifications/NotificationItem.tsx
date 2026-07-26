@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import { cn } from "@/lib/utils";
 import type { NotificationListItem } from "@/lib/hooks/useNotificationList";
 
@@ -70,9 +71,9 @@ export function NotificationItem({
             {relativeTime(item.createdAt)}
           </span>
           {unread && (
-            <span className="rounded-full bg-brand-highlight-muted px-2 py-0.5 text-ui-label font-semibold text-brand-highlight-ink">
+            <SemanticBadge tone="signal" size="sm" shape="pill">
               읽지 않음
-            </span>
+            </SemanticBadge>
           )}
         </span>
         <span className="block line-clamp-2 break-keep text-ui-body-sm font-semibold leading-6 sm:text-ui-body text-foreground">
