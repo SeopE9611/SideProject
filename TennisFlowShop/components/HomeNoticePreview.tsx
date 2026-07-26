@@ -29,23 +29,24 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
   const hasError = Boolean(error) || (data && !data.ok);
 
   return (
-    <div className="flex h-full flex-col rounded-panel border border-border/80 bg-card shadow-sm overflow-hidden">
+    <div className="flex min-h-[240px] h-full flex-col overflow-hidden rounded-panel border border-border bg-card">
       {/* Card Header */}
       <div className="flex items-center justify-between border-b border-border/70 bg-card px-5 bp-sm:px-6 py-4 bp-sm:py-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-control border border-border/70 bg-brand-highlight-muted text-foreground">
-            <Megaphone className="h-4 w-4" />
+            <Megaphone aria-hidden="true" className="h-4 w-4" />
           </div>
-          <h2 className="text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
+          <h3 className="text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
             공지사항
-          </h2>
+          </h3>
         </div>
         <Link
-          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-ui-label font-medium text-foreground transition-colors hover:bg-muted/40"
+          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-ui-label font-medium text-foreground transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           href="/board/notice"
+          aria-label="공지사항 전체 보기"
         >
-          더보기
-          <ChevronRight className="h-3.5 w-3.5" />
+          전체 보기
+          <ChevronRight aria-hidden="true" className="h-3.5 w-3.5" />
         </Link>
       </div>
 
@@ -78,7 +79,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
             {visibleItems.map((p, idx) => (
               <Link
                 key={p._id ?? `${p.createdAt}-${idx}`}
-                className="group flex items-center justify-between gap-3 rounded-xl px-3 bp-sm:px-4 py-3 bp-sm:py-3.5 transition-colors hover:bg-muted/40"
+                className="group flex items-center justify-between gap-3 rounded-xl px-3 bp-sm:px-4 py-3 bp-sm:py-3.5 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                 href={p._id ? `/board/notice/${p._id}` : "/board/notice"}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -102,7 +103,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
             variant="card"
             title="등록된 공지사항이 없습니다"
             description="새 소식이 등록되면 바로 확인할 수 있어요."
-            icon={<Megaphone className="h-4 w-4" />}
+            icon={<Megaphone aria-hidden="true" className="h-4 w-4" />}
             className="mx-2 my-2"
           />
         )}
