@@ -29,7 +29,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
   const hasError = Boolean(error) || (data && !data.ok);
 
   return (
-    <div className="flex min-h-[240px] h-full flex-col overflow-hidden rounded-panel border border-border bg-card">
+    <div className="flex min-h-[168px] flex-col overflow-hidden rounded-panel border border-border bg-card">
       {/* Card Header */}
       <div className="flex items-center justify-between border-b border-border/70 bg-card px-5 bp-sm:px-6 py-4 bp-sm:py-5">
         <div className="flex items-center gap-2.5">
@@ -53,7 +53,8 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
       {/* Card Body */}
       <div className="flex-1 px-2 bp-sm:px-3 py-2 bp-sm:py-3">
         {isLoading ? (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1" role="status">
+            <span className="sr-only">공지사항을 불러오는 중입니다</span>
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
