@@ -753,8 +753,16 @@ export function getRacketAvailabilityState(input: {
   available: number;
   rentedCount?: number;
   rentalEnabled?: boolean;
+  status?: string | null;
+  isVisible?: boolean;
 }): RacketAvailabilityState {
   if (!input.ready) return "loading";
+  const status = String(input.status ?? "").trim().toLowerCase();
+  if (status === "sold") return "sold";
+  if (status === "rented") return "all_rented";
+  if (status === "inactive" || status === "비노출" || input.isVisible === false) {
+    return "unavailable";
+  }
   if (input.quantity <= 0) return "sold";
   if (input.available <= 0) return (input.rentedCount ?? 0) > 0 ? "all_rented" : "unavailable";
   if (input.available === 1 && input.quantity > 1) return "low_stock";

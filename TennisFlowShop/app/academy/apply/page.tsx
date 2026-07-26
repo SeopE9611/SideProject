@@ -412,6 +412,7 @@ export default async function AcademyApplyPage({
                         emphasis={selectedClass.status === "closed" ? "outline" : "soft"}
                         size="md"
                         shape="pill"
+                        className="gap-1.5"
                       >
                         {selectedClass.status === "closed" ? (
                           <Clock className="h-3 w-3" aria-hidden />

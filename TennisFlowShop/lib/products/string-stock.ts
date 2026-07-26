@@ -214,7 +214,14 @@ export function hasSelectableStringStock(product: any) {
 export function isStringProductSoldOut(product: any) {
   const inventory = product?.inventory;
   if (String(inventory?.status ?? "") === "outofstock") return true;
-  if (!hasSelectableStringStock(product)) return true;
+
+  // 옵션별 백오더는 상세 옵션 선택·장바구니에서 지원하지 않는다. 따라서 실제 옵션 재고가
+  // 존재하는 상품은 기존과 동일하게 선택 가능한 조합이 하나라도 있어야 구매 가능하다.
+  const hasManagedOptions =
+    normalizeVariantRows(product).length > 0 ||
+    normalizeGaugeRows(product).length > 0 ||
+    normalizeColorRows(product).length > 0;
+  if (hasManagedOptions) return !hasSelectableStringStock(product);
 
   return (
     inventory?.manageStock === true &&

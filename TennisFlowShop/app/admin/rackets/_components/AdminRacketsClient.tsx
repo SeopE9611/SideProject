@@ -36,6 +36,7 @@ import {
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getRacketAvailabilityState } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -692,7 +693,14 @@ export default function AdminRacketsClient() {
                         <TableCell className={adminDataTable.cellCenter}>
                           <RacketBadge
                             kind="availability"
-                            state={item.rental?.enabled ? "purchase_rental_available" : "purchase_available"}
+                            state={getRacketAvailabilityState({
+                              ready: true,
+                              quantity: item.quantity ?? 1,
+                              available: item.quantity ?? 1,
+                              rentalEnabled: item.rental?.enabled,
+                              status: item.status,
+                              isVisible: item.isVisible,
+                            })}
                             size="sm"
                           />
                         </TableCell>
