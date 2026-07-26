@@ -63,37 +63,52 @@ function RacketStockCells({ item }: { item: Item }) {
       revalidateOnReconnect: false,
     },
   );
-  const qty = Math.max(1, item.quantity ?? 1);
-  const avail = Math.max(0, Number(data?.available ?? 0));
+  const qty = Math.max(0, Number(item.quantity ?? 1));
   const ready = data !== undefined;
-  const rentedCount = Math.max(0, qty - avail);
-  const soldOut = avail <= 0;
+  const avail = ready
+    ? Math.min(qty, Math.max(0, Number(data?.available ?? 0)))
+    : 0;
+  const rentedCount = ready ? Math.max(0, qty - avail) : 0;
+  const availability = getRacketAvailabilityState({
+    ready,
+    quantity: qty,
+    available: avail,
+    rentedCount,
+    rentalEnabled: item.rental?.enabled,
+    status: item.status,
+    isVisible: item.isVisible,
+  });
+  const stockDisplay = (() => {
+    switch (availability) {
+      case "loading":
+        return { label: "확인 중", tone: "neutral" as const };
+      case "sold":
+        return { label: "재고 없음", tone: "neutral" as const };
+      case "rented":
+      case "all_rented":
+        return { label: "대여 중", tone: "warning" as const };
+      case "unavailable":
+        return { label: "이용 불가", tone: "neutral" as const };
+      case "low_stock":
+        return { label: `${avail}/${qty}`, tone: "warning" as const };
+      case "purchase_rental_available":
+        return { label: qty > 1 ? `${avail}/${qty}` : "대여 가능", tone: "success" as const };
+      case "purchase_available":
+        return { label: qty > 1 ? `${avail}/${qty}` : "재고 있음", tone: "success" as const };
+    }
+  })();
   return (
     <>
       <TableCell className={adminDataTable.cellCenter}>
         <RacketBadge
           kind="availability"
-          state={getRacketAvailabilityState({
-            ready,
-            quantity: qty,
-            available: avail,
-            rentedCount,
-            rentalEnabled: item.rental?.enabled,
-            status: item.status,
-            isVisible: item.isVisible,
-          })}
+          state={availability}
           size="sm"
         />
       </TableCell>
       <TableCell className={adminDataTable.cellCenter}>
-        <SemanticBadge tone={soldOut ? "warning" : "success"} size="xs" className="font-normal">
-          {!ready
-            ? "확인 중"
-            : qty > 1
-              ? `${avail}/${qty}`
-              : soldOut
-                ? "대여 중"
-                : "대여 가능"}
+        <SemanticBadge tone={stockDisplay.tone} size="xs" className="font-normal">
+          {stockDisplay.label}
         </SemanticBadge>
       </TableCell>
     </>
@@ -124,12 +139,37 @@ type Item = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  return <RacketBadge kind="availability" state={getRacketAvailabilityState({
-    ready: true,
-    quantity: 1,
-    available: 1,
-    status,
-  })} size="sm" className="shrink-0" />;
+  if (status === "available") {
+    return (
+      <SemanticBadge tone="success" size="sm" className="shrink-0">
+        판매 가능
+      </SemanticBadge>
+    );
+  }
+  if (status === "rented") {
+    return (
+      <SemanticBadge tone="warning" size="sm" className="shrink-0">
+        대여 중
+      </SemanticBadge>
+    );
+  }
+  if (status === "sold") {
+    return (
+      <SemanticBadge tone="neutral" size="sm" className="shrink-0">
+        판매 완료
+      </SemanticBadge>
+    );
+  }
+  return (
+    <SemanticBadge
+      tone="neutral"
+      emphasis="outline"
+      size="sm"
+      className="shrink-0"
+    >
+      비노출 상태
+    </SemanticBadge>
+  );
 }
 
 function ConditionBadge({ condition }: { condition: string }) {

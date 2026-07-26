@@ -668,13 +668,13 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <CreditCard className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">결제 상태</span>
             </div>
-            <Badge
-              variant={
-                getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState)).variant
+            <SemanticBadge
+              tone={
+                getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState)).tone
               }
             >
               {getAdminPackagePaymentLabel(data.paymentState)}
-            </Badge>
+            </SemanticBadge>
           </div>
         </div>
       </div>
@@ -811,14 +811,13 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <div className="p-3 rounded-lg bg-card space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">결제 상태</span>
-                <Badge
-                  variant={
-                    getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState))
-                      .variant
+                <SemanticBadge
+                  tone={
+                    getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState)).tone
                   }
                 >
                   {getAdminPackagePaymentLabel(data.paymentState)}
-                </Badge>
+                </SemanticBadge>
               </div>
               {isNicePayment && (
                 <Button
