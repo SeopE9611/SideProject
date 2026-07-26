@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import SiteContainer from "@/components/layout/SiteContainer";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
@@ -29,16 +29,22 @@ type HomePageRedesignProps = {
   initialHomeData?: HomePreviewData | null;
 };
 
-type ProductFilter = "curated" | "new" | "comfort";
+type ProductFilter =
+  | "curated"
+  | "new"
+  | "comfort"
+  | "spin"
+  | "control"
+  | "durability"
+  | "beginner";
 type ConciergeKey = "comfort" | "spin" | "power";
 type BrandKey = "all" | (typeof RACKET_BRANDS)[number]["value"];
 
 const HERO_SLIDES = [
   {
     eyebrow: "STRINGING STUDIO",
-    title: ["스트링 선택부터", "장착까지 한 번에."],
-    description:
-      "플레이 스타일에 맞는 스트링을 찾고, 방문 또는 택배로 전문 장착까지 이어보세요.",
+    title: ["스트링 선택부터", "장착까지 한 번에"],
+    description: "원하는 타구감을 고르고 방문이나 택배로 편하게 장착을 맡겨보세요",
     primary: { label: "추천 스트링 보기", href: "/products" },
     secondary: { label: "교체서비스 신청", href: "/services#service-start" },
     image: "/images/home/home-hero-stringing-workbench.webp",
@@ -46,9 +52,8 @@ const HERO_SLIDES = [
   },
   {
     eyebrow: "CURATED FOR YOUR GAME",
-    title: ["오늘의 플레이를 바꿀", "한 줄의 선택."],
-    description:
-      "편안한 타구감부터 강한 스핀까지, 도깨비테니스가 먼저 골라본 스트링을 만나보세요.",
+    title: ["내 플레이에 맞는", "스트링을 찾아보세요"],
+    description: "편안함, 스핀, 컨트롤 등 원하는 기준에 맞춰 스트링을 추천해드려요",
     primary: { label: "플레이별 추천 보기", href: "/products/recommend" },
     secondary: { label: "전체 상품 보기", href: "/products" },
     image: "/images/home/home-string-product-showcase.webp",
@@ -56,9 +61,8 @@ const HERO_SLIDES = [
   },
   {
     eyebrow: "DOKKAEBI ACADEMY",
-    title: ["배우고, 치고,", "더 오래 즐기세요."],
-    description:
-      "기본기부터 실전 감각까지. 현재 모집 중인 레슨과 클래스를 확인해보세요.",
+    title: ["배우는 즐거움부터", "꾸준한 라켓 관리까지"],
+    description: "현재 모집 중인 수업을 확인하고 라켓 관리까지 한곳에서 이용해보세요",
     primary: { label: "모집 클래스 보기", href: "/academy" },
     secondary: { label: "아카데미 신청", href: "/academy/apply" },
     image: "/brand/academy-hero-tennis-court.webp",
@@ -70,6 +74,10 @@ const PRODUCT_FILTERS: Array<{ key: ProductFilter; label: string }> = [
   { key: "curated", label: "도깨비 추천" },
   { key: "new", label: "신상품" },
   { key: "comfort", label: "편안한 타구감" },
+  { key: "spin", label: "스핀" },
+  { key: "control", label: "컨트롤" },
+  { key: "durability", label: "내구성" },
+  { key: "beginner", label: "처음 시작" },
 ];
 
 const CONCIERGE_CHOICES: Array<{
@@ -83,7 +91,7 @@ const CONCIERGE_CHOICES: Array<{
   {
     key: "comfort",
     label: "팔이 편한 세팅",
-    title: ["충격은 줄이고,", "타구감은 부드럽게."],
+    title: ["팔 부담은 줄이고", "타구감은 더 부드럽게"],
     description:
       "엘보 부담이 있거나 편안한 타구감을 원하는 분께 멀티필라멘트와 낮은 텐션 조합을 추천합니다.",
     recommendation: "편안함 80점 이상 스트링",
@@ -92,7 +100,7 @@ const CONCIERGE_CHOICES: Array<{
   {
     key: "spin",
     label: "스핀 중심 세팅",
-    title: ["회전은 선명하게,", "컨트롤은 단단하게."],
+    title: ["회전은 선명하게", "컨트롤은 안정적으로"],
     description:
       "베이스라인에서 강한 회전을 만드는 플레이어에게 스핀 성능이 높은 폴리 스트링을 제안합니다.",
     recommendation: "스핀 80점 이상 스트링",
@@ -101,7 +109,7 @@ const CONCIERGE_CHOICES: Array<{
   {
     key: "power",
     label: "반발력 중심 세팅",
-    title: ["힘을 덜 들여도,", "공은 더 깊숙하게."],
+    title: ["힘을 덜 들여도", "공은 더 깊게"],
     description:
       "짧은 스윙에서도 볼 스피드와 비거리를 얻고 싶은 분께 반발력이 높은 조합을 권합니다.",
     recommendation: "반발력 80점 이상 스트링",
@@ -194,7 +202,9 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
   const [racketsByBrand, setRacketsByBrand] = useState<Record<string, HomePreviewRacket[]>>(
     initialHomeData?.rackets ? { all: initialHomeData.rackets.items } : {},
   );
-  const [racketsLoading, setRacketsLoading] = useState(false);
+  const [loadingBrand, setLoadingBrand] = useState<BrandKey | null>(null);
+  const requestedBrands = useRef(new Set<BrandKey>());
+  const latestRacketRequest = useRef(0);
 
   const signupPromo = useMemo(
     () => ({
@@ -241,11 +251,11 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
     };
   }, [products.length]);
 
-  const selectBrand = async (brand: BrandKey) => {
-    setActiveBrand(brand);
-    if (racketsByBrand[brand]) return;
-
-    setRacketsLoading(true);
+  const loadRackets = async (brand: BrandKey) => {
+    if (requestedBrands.current.has(brand)) return;
+    requestedBrands.current.add(brand);
+    const requestId = ++latestRacketRequest.current;
+    setLoadingBrand(brand);
     try {
       const query =
         brand === "all"
@@ -263,19 +273,36 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
     } catch {
       // 빈 상태에서 다른 브랜드를 선택할 수 있도록 현재 목록을 유지합니다.
     } finally {
-      setRacketsLoading(false);
+      if (latestRacketRequest.current === requestId) setLoadingBrand(null);
     }
+  };
+
+  useEffect(() => {
+    // 공개 HTML 미리보기는 유지하고, 쿠키가 반영되는 API로 최초 전체 목록을 재검증합니다.
+    void loadRackets("all");
+    // 최초 마운트에서 한 번만 재검증합니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selectBrand = (brand: BrandKey) => {
+    setActiveBrand(brand);
+    void loadRackets(brand);
   };
 
   const visibleProducts = useMemo(() => {
     const withIndex = products.map((product, index) => ({ product, index }));
+    const performanceScore = (product: HomePreviewProduct) => {
+      if (activeProductFilter === "beginner") {
+        const comfort = Number(product.features?.comfort ?? 0);
+        const control = Number(product.features?.control ?? 0);
+        return comfort > 0 && control > 0 ? comfort * 0.6 + control * 0.4 : 0;
+      }
+      if (activeProductFilter !== "curated" && activeProductFilter !== "new") {
+        return Number(product.features?.[activeProductFilter] ?? 0);
+      }
+      return 0;
+    };
     const score = (product: HomePreviewProduct) => {
-      if (activeProductFilter === "new") {
-        return isTruthy(product.inventory?.isNew) || isTruthy(product.isNew) ? 2 : 0;
-      }
-      if (activeProductFilter === "comfort") {
-        return Number(product.features?.comfort ?? 0);
-      }
       return (
         (isTruthy(product.inventory?.isFeatured) ? 200 : 0) +
         (isTruthy(product.inventory?.isSale) ? 50 : 0) +
@@ -283,8 +310,22 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
       );
     };
 
-    return withIndex
-      .sort((a, b) => score(b.product) - score(a.product) || a.index - b.index)
+    const relevant = withIndex.filter(({ product }) => {
+      if (activeProductFilter === "curated") return true;
+      if (activeProductFilter === "new") {
+        return isTruthy(product.inventory?.isNew) || isTruthy(product.isNew);
+      }
+      return performanceScore(product) > 0;
+    });
+
+    return relevant
+      .sort((a, b) => {
+        const aScore =
+          activeProductFilter === "curated" ? score(a.product) : performanceScore(a.product);
+        const bScore =
+          activeProductFilter === "curated" ? score(b.product) : performanceScore(b.product);
+        return bScore - aScore || a.index - b.index;
+      })
       .map(({ product }) => product)
       .slice(0, 4);
   }, [activeProductFilter, products]);
@@ -387,7 +428,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           <SectionHeader
             eyebrow="THIS WEEK'S CURATION"
             title="지금 추천하는 스트링"
-            description="실제 판매 중인 상품 가운데 먼저 살펴볼 스트링을 골랐습니다."
+            description="지금 판매 중인 스트링 중 도깨비테니스가 추천하는 상품을 모았습니다"
             href="/products"
             linkLabel="전체 스트링 보기"
           />
@@ -414,9 +455,13 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
             </div>
           ) : (
             <EmptyState
-              title="판매 중인 스트링을 준비하고 있습니다."
+              title={
+                activeProductFilter === "new"
+                  ? "현재 등록된 신상품이 없습니다"
+                  : "조건에 맞는 스트링을 준비하고 있습니다"
+              }
               href="/products"
-              linkLabel="전체 상품 확인하기"
+              linkLabel="전체 스트링 보기"
             />
           )}
           <p className={styles.swipeHint}>옆으로 밀어 다른 상품도 확인하세요.</p>
@@ -428,7 +473,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           <div className={styles.conciergeGrid}>
             <div className={styles.conciergeIntro}>
               <p className={styles.sectionEyebrow}>STRING CONCIERGE</p>
-              <h2>내 플레이에 맞는<br />스트링을 1분 만에.</h2>
+              <h2>나에게 맞는 스트링<br />1분이면 찾을 수 있어요</h2>
               <p>
                 어려운 소재명 대신 원하는 플레이 감각을 골라보세요. 상품 탐색부터
                 교체서비스 신청까지 한 흐름으로 연결합니다.
@@ -485,7 +530,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           <SectionHeader
             eyebrow="CERTIFIED PRE-OWNED"
             title="검수된 중고 라켓"
-            description="프레임 상태와 스펙을 직접 확인한 라켓만 선별했습니다."
+            description="상태와 스펙을 직접 확인한 라켓만 보여드려요"
             href="/rackets"
             linkLabel="중고 라켓 전체 보기"
           />
@@ -518,7 +563,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
                 <RacketCard key={racket.id} racket={racket} />
               ))}
             </div>
-          ) : racketsLoading ? (
+          ) : loadingBrand === activeBrand ? (
             <div className={styles.loadingRail} aria-label="중고 라켓을 불러오는 중">
               {[0, 1, 2, 3].map((item) => <span key={item} />)}
             </div>
@@ -538,7 +583,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           <header className={styles.experienceHeader}>
             <div>
               <p className={styles.sectionEyebrow}>PLAY BETTER, LONGER</p>
-              <h2>판매에서 끝나지 않는<br />테니스 생활.</h2>
+              <h2>테니스를 시작하는 순간부터<br />라켓 관리까지</h2>
             </div>
             <p>
               배우는 시간부터 라켓을 다시 준비하는 순간까지,
@@ -553,7 +598,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
               alt="도깨비테니스 아카데미 레슨"
               eyebrow="ACADEMY"
               title={["현재 모집 중인", "레슨과 클래스"]}
-              description="기초부터 실전까지, 내 수준에 맞는 수업을 찾아보세요."
+              description="기초부터 실전까지 내 수준에 맞는 수업을 찾아보세요"
               action="클래스 보기"
               wide
             />
@@ -563,7 +608,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
               alt="관리를 기다리는 테니스 라켓"
               eyebrow="RACKET CARE"
               title={["교체 이력과 다음 관리", "시기를 한눈에"]}
-              description="스트링 교체 기록과 라켓 상태를 꾸준히 관리하세요."
+              description="스트링 교체 기록과 라켓 상태를 꾸준히 관리해보세요"
               action="내 라켓 관리"
             />
           </div>
@@ -574,16 +619,16 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
         <SiteContainer variant="wide" className={styles.wrap}>
           <SectionHeader
             eyebrow="STRINGING PACKAGES"
-            title="자주 맡길수록 간편하게"
-            description="교체 횟수와 플레이 주기에 맞춰 필요한 만큼 선택하세요."
+            title="자주 교체한다면 패키지로 더 간편하게"
+            description="교체 주기와 필요한 횟수에 맞춰 패키지를 선택해보세요"
             href="/services/packages"
             linkLabel="패키지 전체 보기"
           />
 
           {packages.length > 0 ? (
             <div className={styles.packageGrid}>
-              {packages.slice(0, 3).map((pkg, index) => (
-                <PackageCard key={pkg.id} pkg={pkg} featured={pkg.isPopular || index === 1} />
+              {packages.map((pkg) => (
+                <PackageCard key={pkg.id} pkg={pkg} featured={pkg.isPopular} />
               ))}
             </div>
           ) : (
@@ -601,7 +646,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           <div className={styles.trustGrid}>
             <div className={styles.trustIntro}>
               <p className={styles.sectionEyebrow}>WHY DOKKAEBI TENNIS</p>
-              <h2>선택부터 관리까지<br />한곳에서 이어집니다.</h2>
+              <h2>스트링 선택부터<br />라켓 관리까지 한곳에서</h2>
               <Link href="/reviews">
                 실제 이용 후기 보기
                 <ArrowRight aria-hidden="true" />
@@ -632,7 +677,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
                 {notices[0].title}
               </Link>
             ) : (
-              <Link href="/board/notice">새로운 공지사항을 확인하세요.</Link>
+              <Link href="/board/notice">새로운 공지사항을 확인하세요</Link>
             )}
             <Link href="/board/notice">전체 보기 <ArrowRight aria-hidden="true" /></Link>
           </div>
@@ -804,7 +849,7 @@ function PackageCard({
 
   return (
     <article className={featured ? styles.packageCardFeatured : styles.packageCard}>
-      <p>{featured ? "MOST POPULAR" : "STRINGING PACKAGE"}</p>
+      <p>{featured ? "추천 패키지" : "교체 패키지"}</p>
       <h3>{pkg.name}</h3>
       <strong>{pkg.sessions}회</strong>
       <small>{pkg.description || `유효기간 ${pkg.validityDays}일`}</small>
