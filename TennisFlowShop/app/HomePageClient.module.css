@@ -315,7 +315,7 @@
   padding: 10px 12px;
   color: hsl(var(--surface-inverse-foreground));
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.35;
   text-align: center;
   word-break: keep-all;
@@ -502,7 +502,7 @@
   padding: 10px 18px;
   color: hsl(var(--foreground));
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
   word-break: keep-all;
   transition:

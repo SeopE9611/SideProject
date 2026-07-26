@@ -972,7 +972,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <h3>어떻게 시작할까요?</h3>
                 <p>현재 상황에 가장 가까운 방법을 선택하세요.</p>
               </div>
-              <div className={styles.applicationPathTabs} role="tablist">
+              <div
+                className={styles.applicationPathTabs}
+                role="tablist"
+                aria-label="교체서비스 신청 방법"
+              >
                 {(Object.keys(APPLICATION_PATHS) as ApplicationPathKey[]).map((key) => {
                   const path = APPLICATION_PATHS[key];
                   const active = activeApplicationPath === key;
@@ -1317,19 +1321,13 @@ function CheckLine({ children, inverse = false }: { children: string; inverse?: 
     <div
       className={cn(
         "flex items-center gap-2 text-ui-body-sm font-medium",
-        inverse ? "text-brand-highlight-foreground" : "text-foreground",
+        inverse ? "text-surface-inverse-foreground" : "text-foreground",
       )}
     >
-      <span
-        className={cn(
-          "grid h-5 w-5 shrink-0 place-items-center rounded-full",
-          inverse
-            ? "bg-surface-inverse text-surface-inverse-foreground"
-            : "bg-brand-highlight text-brand-highlight-foreground",
-        )}
-      >
+      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-highlight text-brand-highlight-foreground">
         <Check aria-hidden="true" className="h-3 w-3" />
       </span>
+
       {children}
     </div>
   );
