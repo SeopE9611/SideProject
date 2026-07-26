@@ -389,12 +389,21 @@
   transform: scale(1.025);
 }
 
-.productImage > span,
+.productBadges,
 .racketImage > span {
   position: absolute;
   z-index: 1;
   top: 14px;
   left: 14px;
+}
+
+.productBadges {
+  display: flex;
+  gap: 6px;
+}
+
+.productBadges > span,
+.racketImage > span {
   border-radius: 999px;
   background: var(--home-highlight);
   padding: 6px 9px 5px;

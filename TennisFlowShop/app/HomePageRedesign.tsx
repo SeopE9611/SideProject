@@ -39,6 +39,7 @@ type ProductFilter =
   | "beginner";
 type ConciergeKey = "comfort" | "spin" | "power";
 type BrandKey = "all" | (typeof RACKET_BRANDS)[number]["value"];
+type RacketRequestStatus = "loading" | "success" | "error";
 
 const HERO_SLIDES = [
   {
@@ -172,11 +173,12 @@ const getProductPrice = (product: HomePreviewProduct) => {
 };
 
 const getProductBadge = (product: HomePreviewProduct) => {
-  if (product.inventory?.status === "outofstock") return "품절";
-  if (isTruthy(product.inventory?.isNew) || isTruthy(product.isNew)) return "NEW";
-  if (isTruthy(product.inventory?.isFeatured)) return "추천";
-  if (isTruthy(product.inventory?.isSale)) return "SALE";
-  return null;
+  const badges: string[] = [];
+  if (product.inventory?.status === "outofstock") badges.push("품절");
+  if (isTruthy(product.inventory?.isNew) || isTruthy(product.isNew)) badges.push("NEW");
+  if (isTruthy(product.inventory?.isFeatured)) badges.push("추천");
+  if (isTruthy(product.inventory?.isSale)) badges.push("SALE");
+  return badges.slice(0, 2);
 };
 
 const formatNoticeDate = (value: string) => {
@@ -202,9 +204,11 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
   const [racketsByBrand, setRacketsByBrand] = useState<Record<string, HomePreviewRacket[]>>(
     initialHomeData?.rackets ? { all: initialHomeData.rackets.items } : {},
   );
-  const [loadingBrand, setLoadingBrand] = useState<BrandKey | null>(null);
-  const requestedBrands = useRef(new Set<BrandKey>());
-  const latestRacketRequest = useRef(0);
+  const [racketRequestStatus, setRacketRequestStatus] = useState<
+    Partial<Record<BrandKey, RacketRequestStatus>>
+  >({});
+  const racketRequestStatusRef = useRef<Partial<Record<BrandKey, RacketRequestStatus>>>({});
+  const racketRequestControllers = useRef(new Map<BrandKey, AbortController>());
 
   const signupPromo = useMemo(
     () => ({
@@ -252,10 +256,13 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
   }, [products.length]);
 
   const loadRackets = async (brand: BrandKey) => {
-    if (requestedBrands.current.has(brand)) return;
-    requestedBrands.current.add(brand);
-    const requestId = ++latestRacketRequest.current;
-    setLoadingBrand(brand);
+    const currentStatus = racketRequestStatusRef.current[brand];
+    if (currentStatus === "loading" || currentStatus === "success") return;
+
+    const controller = new AbortController();
+    racketRequestControllers.current.set(brand, controller);
+    racketRequestStatusRef.current[brand] = "loading";
+    setRacketRequestStatus((current) => ({ ...current, [brand]: "loading" }));
     try {
       const query =
         brand === "all"
@@ -263,17 +270,25 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
           : `?brand=${encodeURIComponent(brand)}&sort=createdAt_desc&limit=8&withTotal=1`;
       const response = await fetch(`/api/rackets${query}`, {
         credentials: "include",
+        signal: controller.signal,
       });
-      if (!response.ok) return;
+      if (!response.ok) throw new Error(`Failed to load rackets: ${response.status}`);
       const payload = await response.json();
       const items = Array.isArray(payload) ? payload : (payload.items ?? []);
-      if (Array.isArray(items)) {
+      if (!controller.signal.aborted && Array.isArray(items)) {
         setRacketsByBrand((current) => ({ ...current, [brand]: items }));
+        racketRequestStatusRef.current[brand] = "success";
+        setRacketRequestStatus((current) => ({ ...current, [brand]: "success" }));
       }
     } catch {
-      // 빈 상태에서 다른 브랜드를 선택할 수 있도록 현재 목록을 유지합니다.
+      if (!controller.signal.aborted) {
+        racketRequestStatusRef.current[brand] = "error";
+        setRacketRequestStatus((current) => ({ ...current, [brand]: "error" }));
+      }
     } finally {
-      if (latestRacketRequest.current === requestId) setLoadingBrand(null);
+      if (racketRequestControllers.current.get(brand) === controller) {
+        racketRequestControllers.current.delete(brand);
+      }
     }
   };
 
@@ -282,6 +297,14 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
     void loadRackets("all");
     // 최초 마운트에서 한 번만 재검증합니다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const controllers = racketRequestControllers.current;
+    return () => {
+      controllers.forEach((controller) => controller.abort());
+      controllers.clear();
+    };
   }, []);
 
   const selectBrand = (brand: BrandKey) => {
@@ -563,7 +586,7 @@ export default function HomePageRedesign({ initialHomeData }: HomePageRedesignPr
                 <RacketCard key={racket.id} racket={racket} />
               ))}
             </div>
-          ) : loadingBrand === activeBrand ? (
+          ) : racketRequestStatus[activeBrand] === "loading" ? (
             <div className={styles.loadingRail} aria-label="중고 라켓을 불러오는 중">
               {[0, 1, 2, 3].map((item) => <span key={item} />)}
             </div>
@@ -730,7 +753,7 @@ function SectionHeader({
 }
 
 function ProductCard({ product }: { product: HomePreviewProduct }) {
-  const badge = getProductBadge(product);
+  const badges = getProductBadge(product);
   const price = getProductPrice(product);
   const isDiscounted = price < product.price;
 
@@ -745,7 +768,11 @@ function ProductCard({ product }: { product: HomePreviewProduct }) {
             className={styles.containImage}
             sizes="(max-width: 767px) 82vw, (max-width: 1199px) 25vw, 300px"
           />
-          {badge && <span>{badge}</span>}
+          {badges.length > 0 && (
+            <div className={styles.productBadges}>
+              {badges.map((badge) => <span key={badge}>{badge}</span>)}
+            </div>
+          )}
         </div>
         <div className={styles.productMeta}>
           <p>{stringBrandLabel(product.brand)}</p>
