@@ -28,7 +28,7 @@ export function CommerceBadge({
       tone={spec.tone}
       emphasis={spec.emphasis}
       size={size ?? spec.size}
-      shape="pill"
+      shape={spec.shape}
       className={className}
     >
       {spec.label}

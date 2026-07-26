@@ -4,33 +4,32 @@ import {
   racketConditionBadgeSpec,
   racketInspectionBadgeSpec,
   type BadgeSize,
+  type BadgeSurface,
   type RacketAvailabilityState,
 } from "@/lib/badge-style";
 
+type RacketBadgeBaseProps = { surface?: BadgeSurface; size?: BadgeSize; className?: string };
+
 type RacketBadgeProps =
-  | { kind: "condition"; state: string; size?: BadgeSize; className?: string }
-  | {
-      kind: "availability";
-      state: RacketAvailabilityState;
-      size?: BadgeSize;
-      className?: string;
-    }
-  | { kind: "inspection"; state?: never; size?: BadgeSize; className?: string };
+  | (RacketBadgeBaseProps & { kind: "condition"; state: string })
+  | (RacketBadgeBaseProps & { kind: "availability"; state: RacketAvailabilityState })
+  | (RacketBadgeBaseProps & { kind: "inspection"; state?: never });
 
 export function RacketBadge(props: RacketBadgeProps) {
+  const surface = props.surface ?? "inline";
   const spec =
     props.kind === "condition"
-      ? racketConditionBadgeSpec(props.state)
+      ? racketConditionBadgeSpec(props.state, surface)
       : props.kind === "availability"
-        ? racketAvailabilityBadgeSpec(props.state)
-        : racketInspectionBadgeSpec();
+        ? racketAvailabilityBadgeSpec(props.state, surface)
+        : racketInspectionBadgeSpec(surface);
 
   return (
     <SemanticBadge
       tone={spec.tone}
       emphasis={spec.emphasis}
       size={props.size ?? spec.size}
-      shape="rounded"
+      shape={spec.shape}
       className={props.className}
     >
       {spec.label}

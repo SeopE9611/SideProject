@@ -187,7 +187,7 @@ const COMMERCE_BADGE_META: Record<
   new: { label: "NEW", tone: "info", priority: 70 },
   recommended: { label: "추천", tone: "signal", priority: 80 },
   sale: { label: "SALE", tone: "danger", priority: 90 },
-  popular: { label: "인기", tone: "warning", priority: 60 },
+  popular: { label: "인기", tone: "brand", priority: 60 },
   genuine: { label: "정품", tone: "info", priority: 50 },
   sold_out: { label: "품절", tone: "neutral", priority: 100 },
 };
@@ -198,23 +198,33 @@ export function commerceBadgeSpec(
   discountRate?: number,
 ): BadgeDisplaySpec {
   const meta = COMMERCE_BADGE_META[kind];
-  const hasDiscountRate =
-    kind === "sale" && typeof discountRate === "number" && Number.isFinite(discountRate);
+  const normalizedDiscountRate = normalizeCommerceDiscountRate(discountRate);
   const emphasis: BadgeEmphasis =
-    kind === "sold_out" || surface === "image"
-      ? "solid"
-      : kind === "genuine"
-        ? "outline"
+    kind === "genuine"
+      ? "outline"
+      : kind === "sold_out" || surface === "image"
+        ? "solid"
         : "soft";
 
   return badgeDisplaySpec({
-    label: hasDiscountRate ? `${discountRate}% 할인` : meta.label,
+    label:
+      kind === "sale" && normalizedDiscountRate !== null
+        ? `${normalizedDiscountRate}% 할인`
+        : meta.label,
     tone: meta.tone,
     emphasis,
     size: "md",
     shape: "pill",
     priority: meta.priority,
   });
+}
+
+export function normalizeCommerceDiscountRate(discountRate?: number): number | null {
+  if (typeof discountRate !== "number" || !Number.isFinite(discountRate) || discountRate <= 0)
+    return null;
+  const roundedRate = Math.round(discountRate);
+  if (roundedRate <= 0) return null;
+  return Math.min(roundedRate, 100);
 }
 
 export function commerceBadgeSpecs(
@@ -707,9 +717,11 @@ export type UsedBadgeKind = "rental" | "condition";
 
 export type RacketConditionState = "A" | "B" | "C" | "D";
 export type RacketAvailabilityState =
-  | "available"
+  | "purchase_available"
+  | "purchase_rental_available"
   | "low_stock"
   | "rented"
+  | "all_rented"
   | "sold"
   | "unavailable"
   | "loading";
@@ -728,45 +740,57 @@ const RACKET_AVAILABILITY_META: Record<
   RacketAvailabilityState,
   { label: string; tone: BadgeSemanticTone; emphasis: BadgeEmphasis }
 > = {
-  available: { label: "구매·대여 가능", tone: "success", emphasis: "soft" },
+  purchase_available: { label: "구매 가능", tone: "success", emphasis: "soft" },
+  purchase_rental_available: {
+    label: "구매·대여 가능",
+    tone: "success",
+    emphasis: "soft",
+  },
   low_stock: { label: "재고 부족", tone: "warning", emphasis: "soft" },
   rented: { label: "대여 중", tone: "warning", emphasis: "soft" },
+  all_rented: { label: "전량 대여 중", tone: "warning", emphasis: "soft" },
   sold: { label: "판매 완료", tone: "neutral", emphasis: "solid" },
   unavailable: { label: "현재 이용 불가", tone: "neutral", emphasis: "outline" },
   loading: { label: "상태 확인 중", tone: "neutral", emphasis: "outline" },
 };
 
-export function racketConditionBadgeSpec(state?: string | null): BadgeDisplaySpec {
+export function racketConditionBadgeSpec(
+  state?: string | null,
+  surface: BadgeSurface = "inline",
+): BadgeDisplaySpec {
   const rawState = String(state ?? "").trim();
   const normalized = rawState.toUpperCase();
   const known = RACKET_CONDITION_META[normalized as RacketConditionState];
   return badgeDisplaySpec({
     label: known?.label ?? (rawState || "상태 확인"),
     tone: known?.tone ?? "neutral",
-    emphasis: "soft",
+    emphasis: surface === "image" ? "solid" : "soft",
     size: "md",
     shape: "rounded",
     priority: 0,
   });
 }
 
-export function racketAvailabilityBadgeSpec(state: RacketAvailabilityState): BadgeDisplaySpec {
+export function racketAvailabilityBadgeSpec(
+  state: RacketAvailabilityState,
+  surface: BadgeSurface = "inline",
+): BadgeDisplaySpec {
   const meta = RACKET_AVAILABILITY_META[state];
   return badgeDisplaySpec({
     label: meta.label,
     tone: meta.tone,
-    emphasis: meta.emphasis,
+    emphasis: surface === "image" ? "solid" : meta.emphasis,
     size: "md",
     shape: "rounded",
     priority: 0,
   });
 }
 
-export function racketInspectionBadgeSpec(): BadgeDisplaySpec {
+export function racketInspectionBadgeSpec(surface: BadgeSurface = "inline"): BadgeDisplaySpec {
   return badgeDisplaySpec({
     label: "검수 완료",
     tone: "info",
-    emphasis: "outline",
+    emphasis: surface === "image" ? "solid" : "outline",
     size: "md",
     shape: "rounded",
     priority: 0,
