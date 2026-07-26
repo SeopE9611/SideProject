@@ -832,43 +832,158 @@
   word-break: keep-all;
 }
 
-.packages {
-  display: grid;
-  gap: 12px;
+.commerceSection {
+  padding-block: 84px;
+  background: hsl(var(--background));
+  scroll-margin-top: 80px;
 }
 
-.packageToolbar {
+.commerceHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 48px;
+  align-items: end;
+  margin-bottom: 30px;
+}
+
+.commerceEyebrow {
+  margin: 0 0 14px;
+  color: hsl(var(--brand-highlight-ink));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+}
+
+.commerceTitle {
+  max-width: 760px;
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-family: var(--home-brand-font-family);
+  font-size: clamp(40px, 4vw, 48px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.commerceDescription {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 16px;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.commerceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.commercePanel {
   display: flex;
-  align-items: center;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid hsl(var(--border));
+  border-radius: 28px;
+  background: hsl(var(--card));
+}
+
+.commercePanelHeader {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 20px;
-  background: color-mix(in srgb, hsl(var(--brand-highlight-muted)) 42%, hsl(var(--card)));
-  padding: 16px 18px;
+  padding: 24px;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
-.packageToolbar p {
-  min-width: 0;
-  line-height: 1.6;
+.commercePanelKicker {
+  margin: 0;
+  color: hsl(var(--brand-highlight-ink));
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
 }
 
-.packageToolbarAction {
+.commercePanelTitle {
+  margin: 10px 0 0;
+  color: hsl(var(--foreground));
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  word-break: keep-all;
+}
+
+.commercePanelDescription {
+  max-width: 440px;
+  margin: 10px 0 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.commercePanelCount {
   flex-shrink: 0;
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.packageTable {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 30px;
-  background: hsl(var(--card));
+.commercePanelHeaderAction {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.commercePanelHeaderAction:focus-visible {
+  outline: none;
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--ring)) 30%, transparent);
+}
+
+.packageModuleBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.packageModule,
+.racketModule {
+  scroll-margin-top: 80px;
+}
+
+.racketModuleFilter {
+  padding-inline: 24px;
+}
+
+.racketModuleBody {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 0 24px 20px;
 }
 
 .packageRow {
   display: grid;
-  grid-template-columns: minmax(90px, 0.7fr) minmax(0, 1fr) minmax(150px, 1fr) auto;
-  gap: 14px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 16px;
+  row-gap: 8px;
+  align-items: start;
   padding: 18px 20px;
   border-bottom: 1px solid hsl(var(--border));
 }
@@ -885,6 +1000,22 @@
 .packageMeta,
 .packagePrice {
   min-width: 0;
+}
+
+.packageSessions {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.packagePrice {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
+}
+
+.packageMeta {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .packagePriceSub {
@@ -907,53 +1038,10 @@
 }
 
 .packageAction {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
   justify-self: end;
-}
-
-.racketShowcase {
-  display: block;
-  margin-top: 14px;
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 30px;
-  background: hsl(var(--card));
-}
-
-.racketInventoryPanel {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  padding: 20px 22px 18px;
-}
-
-.racketInventoryHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.racketInventoryKicker {
-  color: hsl(var(--muted-foreground));
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.racketInventoryTitle {
-  margin-top: 4px;
-  color: hsl(var(--foreground));
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.racketInventoryCount {
-  flex-shrink: 0;
-  color: hsl(var(--muted-foreground));
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
 }
 
 .racketBrandRailWrap {
@@ -1021,10 +1109,11 @@
 
 .racketInventoryRow {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr) minmax(140px, auto) 22px;
-  gap: 14px;
-  align-items: center;
-  min-height: 88px;
+  grid-template-columns: 76px minmax(0, 1fr) 18px;
+  column-gap: 12px;
+  row-gap: 4px;
+  min-height: 96px;
+  padding-block: 10px;
   border-bottom: 1px solid hsl(var(--border));
   color: hsl(var(--foreground));
   text-decoration: none;
@@ -1038,7 +1127,10 @@
 
 .racketInventoryThumb {
   position: relative;
-  width: 92px;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 76px;
   height: 76px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, hsl(var(--border)) 82%, transparent);
@@ -1051,17 +1143,21 @@
 }
 
 .racketInventoryInfo {
+  grid-column: 2;
+  grid-row: 1;
   min-width: 0;
-  padding-block: 8px;
+  padding-block: 2px 0;
 }
 
 .racketInventoryDeal {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  align-items: flex-end;
-  padding-block: 8px;
-  text-align: right;
+  grid-column: 2;
+  grid-row: 2;
+  align-items: flex-start;
+  padding-block: 0 2px;
+  text-align: left;
 }
 
 .racketInventoryBadges {
@@ -1094,7 +1190,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
 }
 
@@ -1127,6 +1223,9 @@
 }
 
 .racketInventoryArrow {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
   width: 18px;
   height: 18px;
   color: hsl(var(--muted-foreground));
@@ -1196,32 +1295,74 @@
 }
 
 @media (max-width: 1199px) {
-  .racketInventoryRow {
-    grid-template-columns: 88px minmax(0, 1fr) minmax(126px, auto) 20px;
-    gap: 12px;
+  .commerceHeader,
+  .commerceGrid {
+    grid-template-columns: 1fr;
   }
 
-  .racketInventoryThumb {
-    width: 88px;
-    height: 74px;
+  .commerceHeader {
+    gap: 20px;
   }
 }
 
 @media (max-width: 767px) {
-  .racketShowcase {
+  .commerceSection {
+    padding-block: 52px;
+  }
+
+  .commerceHeader {
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .commerceTitle {
+    font-size: 32px;
+  }
+
+  .commerceDescription {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .commerceDescription br {
+    display: none;
+  }
+
+  .commerceGrid {
+    gap: 13px;
+  }
+
+  .commercePanel {
     border-radius: 24px;
   }
 
-  .racketInventoryPanel {
-    padding: 16px;
+  .commercePanelHeader {
+    display: block;
+    padding: 20px;
   }
 
-  .racketInventoryHeader {
-    align-items: flex-start;
+  .commercePanelTitle {
+    font-size: 25px;
   }
 
-  .racketInventoryTitle {
-    font-size: 19px;
+  .commercePanelDescription {
+    font-size: 13px;
+  }
+
+  .commercePanelHeaderAction {
+    margin-top: 16px;
+  }
+
+  .commercePanelCount {
+    margin-top: 10px;
+  }
+
+  .racketModuleFilter {
+    padding-inline: 16px;
+  }
+
+  .racketModuleBody {
+    padding: 0 16px 16px;
   }
 
   .racketBrandRailWrap {
@@ -1233,17 +1374,12 @@
   }
 
   .racketInventoryRow {
-    grid-template-columns: 84px minmax(0, 1fr) 18px;
+    grid-template-columns: 72px minmax(0, 1fr) 18px;
     column-gap: 10px;
-    row-gap: 4px;
-    min-height: 84px;
   }
 
   .racketInventoryThumb {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-    align-self: center;
-    width: 84px;
+    width: 72px;
     height: 72px;
   }
 
@@ -1260,28 +1396,7 @@
     font-size: 15px;
   }
 
-  .racketInventoryInfo {
-    grid-column: 2;
-    grid-row: 1;
-    padding-block: 6px 0;
-  }
-
-  .racketInventoryDeal {
-    grid-column: 2;
-    grid-row: 2;
-    align-items: flex-start;
-    padding-block: 0 6px;
-    text-align: left;
-  }
-
-  .racketInventoryArrow {
-    grid-column: 3;
-    grid-row: 1 / span 2;
-    align-self: center;
-  }
-
   .racketInventoryPriceLine {
-    justify-content: flex-start;
     gap: 6px;
   }
 
@@ -1320,6 +1435,12 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .commercePanelHeaderAction:hover {
+    color: hsl(var(--brand-highlight-ink));
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
   .racketInventoryRow:hover {
     background: hsl(var(--muted) / 0.35);
   }
@@ -1744,35 +1865,36 @@
     gap: 12px;
   }
 
-  .packageToolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 16px;
-  }
-
-  .packageToolbarAction {
-    width: 100%;
-    justify-content: center;
-  }
-
   .packageRow {
     grid-template-columns: minmax(0, 1fr) auto;
-    padding: 16px;
+    padding: 16px 18px;
   }
 
-  .packageDescription {
-    display: none;
+  .packageSessions {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .packagePrice {
-    grid-column: 1 / 2;
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+  }
+
+  .packageMeta {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .packageAction {
-    grid-column: 2 / 3;
-    grid-row: 1 / 3;
-    align-self: center;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .packageDescription {
+    display: block;
   }
 
   .utilityGrid {
