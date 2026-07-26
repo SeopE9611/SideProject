@@ -803,6 +803,7 @@
 
 .packageBadge {
   display: inline-flex;
+  margin: 0;
 }
 
 .packageCard h3,
@@ -839,8 +840,7 @@
   color: var(--home-muted);
 }
 
-.packageCard > div,
-.packageCardFeatured > div {
+.packagePrice {
   display: grid;
   gap: 4px;
   margin-top: 25px;
@@ -851,14 +851,9 @@
   font-size: 20px;
 }
 
-.packageCard div span,
-.packageCardFeatured div span {
+.packagePrice span {
   color: var(--home-muted);
   font-size: 14px;
-}
-
-.packageCardFeatured div span {
-  color: var(--home-muted);
 }
 
 .packageCard > a,
