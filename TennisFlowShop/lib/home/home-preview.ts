@@ -321,7 +321,7 @@ export async function loadHomeRacketsFresh(options?: { brand?: string }) {
     ? {
         $and: [
           visibilityFilter,
-          { brand: { $regex: options.brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } },
+          { brand: { $regex: `^${options.brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
         ],
       }
     : visibilityFilter;

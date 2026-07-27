@@ -51,6 +51,34 @@ type HomePreviewRecoveryResponse = {
   status: Partial<HomePreviewStatus>;
 };
 
+const HOME_PREVIEW_RETRY_DELAY_MS = 650;
+const RETRYABLE_HOME_PREVIEW_STATUSES = new Set([500, 502, 503, 504]);
+const isAbortError = (error: unknown) => error instanceof Error && error.name === "AbortError";
+
+const isInitialProductsEmpty = (products?: HomePreviewData["products"]) =>
+  !products ||
+  products.total === 0 ||
+  Object.values(products.groups).every((items) => items.length === 0);
+
+function waitForRetry(ms: number, signal: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new DOMException("The operation was aborted", "AbortError"));
+      return;
+    }
+
+    const handleAbort = () => {
+      window.clearTimeout(timer);
+      reject(new DOMException("The operation was aborted", "AbortError"));
+    };
+    const timer = window.setTimeout(() => {
+      signal.removeEventListener("abort", handleAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", handleAbort, { once: true });
+  });
+}
+
 const HERO_SLIDES = [
   {
     eyebrow: "STRINGING STUDIO",
@@ -209,15 +237,19 @@ export default function HomePageRedesign({
     useState<ProductFilter>("curated");
   const [activeConcierge, setActiveConcierge] = useState<ConciergeKey>("comfort");
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
+  const initialProductsEmpty = isInitialProductsEmpty(initialHomeData?.products);
+  const initialPackagesEmpty = !initialHomeData?.packages?.length;
+  const initialNoticesEmpty = !initialHomeData?.notices?.length;
+  const initialRacketsEmpty = !initialHomeData?.rackets?.items.length;
   const [productGroups, setProductGroups] = useState(initialHomeData?.products?.groups);
   const [packages, setPackages] = useState(initialHomeData?.packages ?? []);
   const [notices, setNotices] = useState(initialHomeData?.notices ?? []);
   const [sectionRequestStatus, setSectionRequestStatus] = useState<
     Record<RecoverableSection, SectionRequestStatus>
   >({
-    products: initialHomeStatus?.products === "error" ? "error" : "success",
-    packages: initialHomeStatus?.packages === "error" ? "error" : "success",
-    notices: initialHomeStatus?.notices === "error" ? "error" : "success",
+    products: initialHomeStatus?.products === "error" || initialProductsEmpty ? "loading" : "success",
+    packages: initialHomeStatus?.packages === "error" || initialPackagesEmpty ? "loading" : "success",
+    notices: initialHomeStatus?.notices === "error" || initialNoticesEmpty ? "loading" : "success",
   });
   const [racketsByBrand, setRacketsByBrand] = useState<Record<string, HomePreviewRacket[]>>(
     initialHomeData?.rackets ? { all: initialHomeData.rackets.items } : {},
@@ -225,19 +257,22 @@ export default function HomePageRedesign({
   const [racketRequestStatus, setRacketRequestStatus] = useState<
     Partial<Record<BrandKey, RacketRequestStatus>>
   >(
-    initialHomeStatus?.rackets === "error"
-      ? { all: "error" }
-      : initialHomeData?.rackets?.items.length
+    initialHomeStatus?.rackets === "error" || initialRacketsEmpty
+      ? { all: "loading" }
+      : !initialRacketsEmpty
         ? { all: "success" }
         : {},
   );
   const racketRequestStatusRef = useRef<Partial<Record<BrandKey, RacketRequestStatus>>>(
-    initialHomeStatus?.rackets === "error"
-      ? { all: "error" }
-      : initialHomeData?.rackets?.items.length
-        ? { all: "success" }
-        : {},
+    initialHomeStatus?.rackets !== "error" && !initialRacketsEmpty
+      ? { all: "success" }
+      : {},
   );
+  const sectionHasUsableData = useRef<Record<RecoverableSection, boolean>>({
+    products: !initialProductsEmpty,
+    packages: !initialPackagesEmpty,
+    notices: !initialNoticesEmpty,
+  });
   const racketRequestControllers = useRef(new Map<BrandKey, AbortController>());
   const recoveryController = useRef<AbortController | null>(null);
   const recoveryRequestId = useRef(0);
@@ -255,39 +290,94 @@ export default function HomePageRedesign({
       return next;
     });
 
+    let pending = [...sections];
     try {
-      const response = await fetch(`/api/home-preview?sections=${sections.join(",")}`, {
-        cache: "no-store",
-        signal: controller.signal,
-      });
-      const payload: unknown = await response.json();
-      if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
-        throw new Error("Invalid home preview response");
-      }
-      const result = payload as HomePreviewRecoveryResponse;
-      if (controller.signal.aborted || requestId !== recoveryRequestId.current) return;
+      for (let attempt = 1; attempt <= 2 && pending.length > 0; attempt += 1) {
+        try {
+          const response = await fetch(`/api/home-preview?sections=${pending.join(",")}`, {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          if (!response.ok && !RETRYABLE_HOME_PREVIEW_STATUSES.has(response.status)) {
+            throw new Error(`Non-retryable home preview response: ${response.status}`);
+          }
+          if (RETRYABLE_HOME_PREVIEW_STATUSES.has(response.status)) {
+            if (attempt < 2) await waitForRetry(HOME_PREVIEW_RETRY_DELAY_MS, controller.signal);
+            continue;
+          }
+          let payload: unknown;
+          try {
+            payload = await response.json();
+          } catch {
+            throw new Error("Invalid home preview response");
+          }
+          if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
+            throw new Error("Invalid home preview response");
+          }
+          const result = payload as HomePreviewRecoveryResponse;
+          if (controller.signal.aborted || requestId !== recoveryRequestId.current) return;
 
-      if (result.status.products === "success" && result.data.products) {
-        setProductGroups(result.data.products.groups);
+          const hasInvalidSuccessData = pending.some((section) => {
+            if (result.status[section] !== "success") return false;
+            if (section === "products") return !result.data.products;
+            if (section === "packages") return !Array.isArray(result.data.packages);
+            return !Array.isArray(result.data.notices);
+          });
+          if (hasInvalidSuccessData) throw new Error("Invalid home preview response");
+
+          const failed: RecoverableSection[] = [];
+          pending.forEach((section) => {
+            if (result.status[section] !== "success") {
+              failed.push(section);
+              return;
+            }
+            if (section === "products" && result.data.products) {
+              setProductGroups(result.data.products.groups);
+              sectionHasUsableData.current.products = !isInitialProductsEmpty(result.data.products);
+            }
+            if (section === "packages" && result.data.packages) {
+              setPackages(result.data.packages);
+              sectionHasUsableData.current.packages = result.data.packages.length > 0;
+            }
+            if (section === "notices" && result.data.notices) {
+              setNotices(result.data.notices);
+              sectionHasUsableData.current.notices = result.data.notices.length > 0;
+            }
+          });
+          setSectionRequestStatus((current) => {
+            const next = { ...current };
+            pending.forEach((section) => {
+              if (result.status[section] === "success") next[section] = "success";
+            });
+            return next;
+          });
+          pending = failed;
+          if (pending.length > 0 && attempt < 2) {
+            await waitForRetry(HOME_PREVIEW_RETRY_DELAY_MS, controller.signal);
+          }
+        } catch (error) {
+          if (isAbortError(error)) throw error;
+          if (error instanceof Error && error.message.startsWith("Non-retryable")) throw error;
+          if (error instanceof Error && error.message === "Invalid home preview response") throw error;
+          if (attempt < 2) await waitForRetry(HOME_PREVIEW_RETRY_DELAY_MS, controller.signal);
+        }
       }
-      if (result.status.packages === "success" && result.data.packages) {
-        setPackages(result.data.packages);
-      }
-      if (result.status.notices === "success" && result.data.notices) {
-        setNotices(result.data.notices);
-      }
-      setSectionRequestStatus((current) => {
-        const next = { ...current };
-        sections.forEach((section) => {
-          next[section] = result.status[section] === "success" ? "success" : "error";
+      if (pending.length > 0) {
+        setSectionRequestStatus((current) => {
+          const next = { ...current };
+          pending.forEach((section) => {
+            next[section] = sectionHasUsableData.current[section] ? "success" : "error";
+          });
+          return next;
         });
-        return next;
-      });
+      }
     } catch {
       if (!controller.signal.aborted && requestId === recoveryRequestId.current) {
         setSectionRequestStatus((current) => {
           const next = { ...current };
-          sections.forEach((section) => { next[section] = "error"; });
+          pending.forEach((section) => {
+            next[section] = sectionHasUsableData.current[section] ? "success" : "error";
+          });
           return next;
         });
       }
@@ -327,20 +417,41 @@ export default function HomePageRedesign({
     setRacketRequestStatus((current) => ({ ...current, [brand]: "loading" }));
     try {
       const query = brand === "all" ? "" : `&brand=${encodeURIComponent(brand)}`;
-      const response = await fetch(`/api/home-preview?sections=rackets${query}`, {
-        cache: "no-store",
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error(`Failed to load rackets: ${response.status}`);
-      const payload: unknown = await response.json();
-      if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
-        throw new Error("Invalid home preview response");
+      let items: HomePreviewRacket[] | undefined;
+      for (let attempt = 1; attempt <= 2 && !items; attempt += 1) {
+        try {
+          const response = await fetch(`/api/home-preview?sections=rackets${query}`, {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          if (!response.ok && !RETRYABLE_HOME_PREVIEW_STATUSES.has(response.status)) {
+            throw new Error(`Non-retryable racket response: ${response.status}`);
+          }
+          if (!RETRYABLE_HOME_PREVIEW_STATUSES.has(response.status)) {
+            let payload: unknown;
+            try {
+              payload = await response.json();
+            } catch {
+              throw new Error("Invalid home preview response");
+            }
+            if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
+              throw new Error("Invalid home preview response");
+            }
+            const result = payload as HomePreviewRecoveryResponse;
+            if (result.status.rackets === "success" && Array.isArray(result.data.rackets?.items)) {
+              items = result.data.rackets.items;
+            }
+          }
+        } catch (error) {
+          if (isAbortError(error)) throw error;
+          if (error instanceof Error && error.message.startsWith("Non-retryable")) throw error;
+          if (error instanceof Error && error.message === "Invalid home preview response") throw error;
+        }
+        if (!items && attempt < 2) {
+          await waitForRetry(HOME_PREVIEW_RETRY_DELAY_MS, controller.signal);
+        }
       }
-      const result = payload as HomePreviewRecoveryResponse;
-      const items = result.data.rackets?.items;
-      if (result.status.rackets !== "success" || !Array.isArray(items)) {
-        throw new Error("Failed to load racket preview");
-      }
+      if (!items) throw new Error("Failed to load racket preview");
       if (!controller.signal.aborted) {
         setRacketsByBrand((current) =>
           items.length === 0 && (current[brand]?.length ?? 0) > 0
@@ -364,7 +475,7 @@ export default function HomePageRedesign({
 
   useEffect(() => {
     // 공개 서버 미리보기가 실패했거나 비어 있을 때만 fresh 공개 조회로 한 번 복구합니다.
-    if (initialHomeStatus?.rackets === "error" || !initialHomeData?.rackets?.items.length) {
+    if (initialHomeStatus?.rackets === "error" || initialRacketsEmpty) {
       void loadRackets("all");
     }
     // 최초 마운트에서 필요한 경우에만 한 번 검증합니다.
@@ -375,7 +486,11 @@ export default function HomePageRedesign({
     if (automaticRecoveryStarted.current) return;
     automaticRecoveryStarted.current = true;
     const failedSections = (["products", "packages", "notices"] as const).filter(
-      (section) => initialHomeStatus?.[section] === "error",
+      (section) =>
+        initialHomeStatus?.[section] === "error" ||
+        (section === "products" && initialProductsEmpty) ||
+        (section === "packages" && initialPackagesEmpty) ||
+        (section === "notices" && initialNoticesEmpty),
     );
     void recoverSections(failedSections);
   }, [initialHomeStatus, recoverSections]);
@@ -783,7 +898,12 @@ export default function HomePageRedesign({
             ) : sectionRequestStatus.notices === "error" ? (
               <span className={styles.noticeStatus} aria-live="polite">
                 공지사항을 불러오지 못했습니다
-                <button type="button" onClick={() => void recoverSections(["notices"])}>다시 시도</button>
+                <button
+                  type="button"
+                  onClick={() => void recoverSections(["notices"])}
+                >
+                  다시 시도
+                </button>
               </span>
             ) : notices[0] ? (
               <Link href={`/board/notice/${notices[0]._id}`}>

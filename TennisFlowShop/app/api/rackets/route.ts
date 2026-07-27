@@ -193,7 +193,7 @@ export async function GET(req: Request) {
     const response = NextResponse.json(items);
     response.headers.set(
       "Cache-Control",
-      viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
+      "private, no-store, max-age=0",
     );
     perf.log({ resultCount: items.length });
     return response;
@@ -203,7 +203,7 @@ export async function GET(req: Request) {
   const response = NextResponse.json({ items, total });
   response.headers.set(
     "Cache-Control",
-    viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
+    "private, no-store, max-age=0",
   );
   perf.log({ resultCount: items.length, total });
   return response;
