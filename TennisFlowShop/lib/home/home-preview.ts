@@ -177,7 +177,7 @@ const toIsoString = (value: unknown) => {
   return new Date().toISOString();
 };
 
-async function loadProducts() {
+export async function loadHomeProductsFresh() {
   const db = await getDb();
   const filter: Filter<ProductDoc> = productVisibilityFilterFor();
   const collection = db.collection<ProductDoc>("products");
@@ -314,9 +314,17 @@ async function loadProducts() {
   };
 }
 
-async function loadRackets() {
+export async function loadHomeRacketsFresh(options?: { brand?: string }) {
   const db = await getDb();
-  const filter: Filter<RacketDoc> = { ...racketVisibilityFilterFor() };
+  const visibilityFilter: Filter<RacketDoc> = { ...racketVisibilityFilterFor() };
+  const filter: Filter<RacketDoc> = options?.brand
+    ? {
+        $and: [
+          visibilityFilter,
+          { brand: { $regex: `^${options.brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
+        ],
+      }
+    : visibilityFilter;
   const sort: Sort = { createdAt: -1, _id: -1 };
   const collection = db.collection<RacketDoc>("used_rackets");
   const projection = {
@@ -350,7 +358,7 @@ async function loadRackets() {
   };
 }
 
-async function loadPackages() {
+export async function loadHomePackagesFresh() {
   const { packageConfigs } = await loadPackageSettings();
 
   return packageConfigs
@@ -370,7 +378,7 @@ async function loadPackages() {
     }));
 }
 
-async function loadNotices() {
+export async function loadHomeNoticesFresh() {
   const { items } = await getBoardList({
     type: "notice",
     page: 1,
@@ -433,22 +441,22 @@ async function loadMarketPosts() {
   }));
 }
 
-export const getCachedHomeProducts = unstable_cache(loadProducts, ["home-preview-products-v1"], {
+export const getCachedHomeProducts = unstable_cache(loadHomeProductsFresh, ["home-preview-products-v2"], {
   revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
   tags: [HOME_PRODUCTS_CACHE_TAG],
 });
 
-export const getCachedHomeRackets = unstable_cache(loadRackets, ["home-preview-rackets-v1"], {
+export const getCachedHomeRackets = unstable_cache(loadHomeRacketsFresh, ["home-preview-rackets-v2"], {
   revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
   tags: [HOME_RACKETS_CACHE_TAG],
 });
 
-export const getCachedHomePackages = unstable_cache(loadPackages, ["home-preview-packages-v1"], {
+export const getCachedHomePackages = unstable_cache(loadHomePackagesFresh, ["home-preview-packages-v2"], {
   revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
   tags: [HOME_PACKAGES_CACHE_TAG],
 });
 
-export const getCachedHomeNotices = unstable_cache(loadNotices, ["home-preview-notices-v1"], {
+export const getCachedHomeNotices = unstable_cache(loadHomeNoticesFresh, ["home-preview-notices-v2"], {
   revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
   tags: [HOME_NOTICES_CACHE_TAG],
 });
@@ -460,6 +468,13 @@ const sectionLoaders = {
   notices: getCachedHomeNotices,
 } satisfies Record<HomePreviewSection, () => Promise<unknown>>;
 
+const freshSectionLoaders = {
+  products: loadHomeProductsFresh,
+  rackets: loadHomeRacketsFresh,
+  packages: loadHomePackagesFresh,
+  notices: loadHomeNoticesFresh,
+} satisfies Record<HomePreviewSection, () => Promise<unknown>>;
+
 function logSectionError(section: HomePreviewSection, source: "initial" | "revalidate-api", error: unknown) {
   const errorName = error instanceof Error ? error.name : "UnknownError";
   const message = error instanceof Error ? error.message : "Unknown section load failure";
@@ -469,8 +484,16 @@ function logSectionError(section: HomePreviewSection, source: "initial" | "reval
 export async function loadHomePreviewSections(
   sections: readonly HomePreviewSection[],
   source: "initial" | "revalidate-api",
+  options?: { fresh?: boolean; racketBrand?: string },
 ): Promise<{ data: HomePreviewData; status: Partial<HomePreviewStatus> }> {
-  const settled = await Promise.allSettled(sections.map((section) => sectionLoaders[section]()));
+  const loaders = options?.fresh ? freshSectionLoaders : sectionLoaders;
+  const settled = await Promise.allSettled(
+    sections.map((section) =>
+      section === "rackets" && options?.fresh
+        ? loadHomeRacketsFresh({ brand: options.racketBrand })
+        : loaders[section](),
+    ),
+  );
   const data: HomePreviewData = {};
   const status: Partial<HomePreviewStatus> = {};
 

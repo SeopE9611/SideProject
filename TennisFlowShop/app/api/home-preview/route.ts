@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { RACKET_BRANDS, type RacketBrand } from "@/lib/constants";
 import {
   loadHomePreviewSections,
   type HomePreviewSection,
@@ -36,7 +37,26 @@ export async function GET(req: NextRequest) {
   }
 
   const sections = requested.filter(isHomePreviewSection);
-  const result = await loadHomePreviewSections(sections, "revalidate-api");
+  const rawRacketBrand = req.nextUrl.searchParams.get("brand")?.trim().toLowerCase();
+  if (rawRacketBrand && !sections.includes("rackets")) {
+    return NextResponse.json(
+      { error: "라켓 브랜드는 라켓 섹션 요청에서만 사용할 수 있습니다." },
+      { status: 400, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+  const racketBrand: RacketBrand | undefined = rawRacketBrand && rawRacketBrand !== "all"
+    ? RACKET_BRANDS.find((brand) => brand.value === rawRacketBrand)?.value
+    : undefined;
+  if (rawRacketBrand && rawRacketBrand !== "all" && !racketBrand) {
+    return NextResponse.json(
+      { error: "지원하지 않는 라켓 브랜드입니다." },
+      { status: 400, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+  const result = await loadHomePreviewSections(sections, "revalidate-api", {
+    fresh: true,
+    racketBrand,
+  });
   const allFailed = sections.every((section) => result.status[section] === "error");
 
   return NextResponse.json(result, {
