@@ -36,7 +36,11 @@ export async function GET(req: NextRequest) {
   }
 
   const sections = requested.filter(isHomePreviewSection);
-  const result = await loadHomePreviewSections(sections, "revalidate-api");
+  const racketBrand = req.nextUrl.searchParams.get("brand")?.trim() || undefined;
+  const result = await loadHomePreviewSections(sections, "revalidate-api", {
+    fresh: true,
+    racketBrand,
+  });
   const allFailed = sections.every((section) => result.status[section] === "error");
 
   return NextResponse.json(result, {

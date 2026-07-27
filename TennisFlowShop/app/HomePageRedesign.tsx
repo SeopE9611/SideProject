@@ -224,9 +224,19 @@ export default function HomePageRedesign({
   );
   const [racketRequestStatus, setRacketRequestStatus] = useState<
     Partial<Record<BrandKey, RacketRequestStatus>>
-  >(initialHomeStatus?.rackets === "error" ? { all: "error" } : {});
+  >(
+    initialHomeStatus?.rackets === "error"
+      ? { all: "error" }
+      : initialHomeData?.rackets?.items.length
+        ? { all: "success" }
+        : {},
+  );
   const racketRequestStatusRef = useRef<Partial<Record<BrandKey, RacketRequestStatus>>>(
-    initialHomeStatus?.rackets === "error" ? { all: "error" } : {},
+    initialHomeStatus?.rackets === "error"
+      ? { all: "error" }
+      : initialHomeData?.rackets?.items.length
+        ? { all: "success" }
+        : {},
   );
   const racketRequestControllers = useRef(new Map<BrandKey, AbortController>());
   const recoveryController = useRef<AbortController | null>(null);
@@ -316,21 +326,27 @@ export default function HomePageRedesign({
     racketRequestStatusRef.current[brand] = "loading";
     setRacketRequestStatus((current) => ({ ...current, [brand]: "loading" }));
     try {
-      const query =
-        brand === "all"
-          ? "?sort=createdAt_desc&limit=8&withTotal=1"
-          : `?brand=${encodeURIComponent(brand)}&sort=createdAt_desc&limit=8&withTotal=1`;
-      const response = await fetch(`/api/rackets${query}`, {
+      const query = brand === "all" ? "" : `&brand=${encodeURIComponent(brand)}`;
+      const response = await fetch(`/api/home-preview?sections=rackets${query}`, {
         cache: "no-store",
-        credentials: "include",
         signal: controller.signal,
       });
       if (!response.ok) throw new Error(`Failed to load rackets: ${response.status}`);
-      const payload = await response.json();
-      const items = Array.isArray(payload) ? payload : payload.items;
-      if (!Array.isArray(items)) throw new Error("Invalid racket response");
+      const payload: unknown = await response.json();
+      if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
+        throw new Error("Invalid home preview response");
+      }
+      const result = payload as HomePreviewRecoveryResponse;
+      const items = result.data.rackets?.items;
+      if (result.status.rackets !== "success" || !Array.isArray(items)) {
+        throw new Error("Failed to load racket preview");
+      }
       if (!controller.signal.aborted) {
-        setRacketsByBrand((current) => ({ ...current, [brand]: items }));
+        setRacketsByBrand((current) =>
+          items.length === 0 && (current[brand]?.length ?? 0) > 0
+            ? current
+            : { ...current, [brand]: items },
+        );
         racketRequestStatusRef.current[brand] = "success";
         setRacketRequestStatus((current) => ({ ...current, [brand]: "success" }));
       }
@@ -347,9 +363,11 @@ export default function HomePageRedesign({
   };
 
   useEffect(() => {
-    // 공개 HTML 미리보기는 유지하고, 쿠키가 반영되는 API로 최초 전체 목록을 재검증합니다.
-    void loadRackets("all");
-    // 최초 마운트에서 한 번만 재검증합니다.
+    // 공개 서버 미리보기가 실패했거나 비어 있을 때만 fresh 공개 조회로 한 번 복구합니다.
+    if (initialHomeStatus?.rackets === "error" || !initialHomeData?.rackets?.items.length) {
+      void loadRackets("all");
+    }
+    // 최초 마운트에서 필요한 경우에만 한 번 검증합니다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
