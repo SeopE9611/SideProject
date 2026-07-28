@@ -962,7 +962,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       onClick={handleWishlist}
       size="lg"
       className={cn(
-        "h-auto min-h-12 w-full text-ui-body-sm sm:text-ui-body",
+        "h-auto min-h-12 w-full text-ui-body-sm bp-sm:text-ui-body",
         isWishlisted
           ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15"
           : "bg-background",
@@ -972,7 +972,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : wishlistButtonLabel}
     >
       <Heart
-        className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`}
+        className={`mr-2 h-4 w-4 bp-sm:h-5 bp-sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`}
       />
       {wishlistButtonLabel}
     </Button>
@@ -1028,7 +1028,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             merchandisingBadges={merchandisingBadges}
           />
 
-          <div className="space-y-4 sm:space-y-5">
+          <div className="space-y-4 bp-sm:space-y-5">
             <CommercePurchasePanel
               eyebrow={<span className="break-words">{productBrandLabel}</span>}
               title={
@@ -1069,7 +1069,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 ) : undefined
               }
               options={
-                <div className="space-y-4 sm:space-y-5">
+                <div className="space-y-4 bp-sm:space-y-5">
                   {visibleColorRows.length > 0 && (
                     <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                       <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
@@ -1110,8 +1110,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               disabled={soldOut}
                               onClick={() => setSelectedColor(row.value)}
                               className={cn(
-                                "relative flex h-16 w-16 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border bg-background text-ui-label text-foreground transition",
-                                isSelected ? "border-foreground" : "border-border/60",
+                                "relative flex h-16 w-16 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border bg-background text-ui-label text-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                isSelected
+                                  ? "border-brand-highlight-ink ring-2 ring-brand-highlight-muted"
+                                  : "border-border/60 hover:border-foreground/40",
                                 soldOut && "cursor-not-allowed opacity-45",
                               )}
                             >
@@ -1159,7 +1161,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
+                        className="h-11 w-11 rounded-lg bp-md:h-10 bp-md:w-10"
                         aria-label="수량 감소"
                         disabled={!canDec}
                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -1167,14 +1169,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Minus className="h-4 w-4" />
                       </Button>
 
-                      <span className="tabular-nums w-10 sm:w-12 select-none text-center font-ui-medium text-ui-card-title-lg sm:text-ui-section-title">
+                      <span className="w-10 select-none text-center text-ui-card-title-lg tabular-nums font-ui-medium bp-sm:w-12 bp-sm:text-ui-section-title">
                         {quantity}
                       </span>
 
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
+                        className="h-11 w-11 rounded-lg bp-md:h-10 bp-md:w-10"
                         aria-label="수량 증가"
                         disabled={!canInc}
                         onClick={() => {
@@ -1199,12 +1201,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     product.inventory.stock > 0 && (
                       <div
                         className={cn(
-                          "flex items-start gap-2.5 p-3 sm:p-3.5",
+                          "flex items-start gap-2.5 p-3 bp-sm:p-3.5",
                           detailSurfaceSubtleInnerClass,
                         )}
                       >
                         <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
+                        <span className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
                           현재 남은 수량이{" "}
                           <span className="font-ui-medium text-foreground">
                             {product.inventory.stock}개
@@ -1275,7 +1277,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         variant="secondary"
                         size="tall"
                         wrap="nowrap"
-                        className="min-h-12 w-full sm:min-h-14"
+                        className="min-h-12 w-full bp-sm:min-h-14"
                         aria-label={soldOutHelper}
                       >
                         <X className="mr-2 h-5 w-5 shrink-0" aria-hidden="true" />
@@ -1291,7 +1293,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Button
                           variant="highlight_soft"
                           size="tall"
-                          className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14"
+                          className="min-h-12 w-full gap-2 whitespace-nowrap bp-sm:min-h-14"
                           wrap="nowrap"
                           aria-label="교체서비스 포함 주문하기"
                           disabled={
@@ -1309,7 +1311,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Button
                           variant="highlight_soft"
                           size="tall"
-                          className="h-12 w-full whitespace-nowrap sm:h-14"
+                          className="h-12 w-full whitespace-nowrap bp-sm:h-14"
                           onClick={handleBuyNow}
                           disabled={
                             loading ||
@@ -1326,7 +1328,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Button
                           variant="outline"
                           size="lg"
-                          className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
+                          className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm bp-sm:text-ui-body"
                           onClick={handleAddToCart}
                           disabled={
                             loading ||
@@ -1335,7 +1337,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             variantPurchaseBlocked
                           }
                         >
-                          <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                          <ShoppingCart className="mr-2 h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                           {cartCtaLabel}
                         </Button>
                       )
@@ -1345,7 +1347,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Button
                           variant="secondary"
                           size="tall"
-                          className="h-12 w-full whitespace-nowrap sm:h-14"
+                          className="h-12 w-full whitespace-nowrap bp-sm:h-14"
                           onClick={handleBuyNow}
                           disabled={
                             loading ||
@@ -1365,7 +1367,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Button
                           variant="outline"
                           size="lg"
-                          className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm sm:text-ui-body"
+                          className="h-auto min-h-12 w-full whitespace-nowrap text-ui-body-sm bp-sm:text-ui-body"
                           onClick={handleAddToCart}
                           disabled={
                             loading ||
@@ -1374,7 +1376,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             variantPurchaseBlocked
                           }
                         >
-                          <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                          <ShoppingCart className="mr-2 h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                           {cartCtaLabel}
                         </Button>
                       ) : undefined

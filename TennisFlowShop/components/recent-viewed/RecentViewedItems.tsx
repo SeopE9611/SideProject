@@ -46,11 +46,11 @@ export default function RecentViewedItems({
   if (!mounted || filteredItems.length === 0) return null;
 
   return (
-    <section className="mt-8 sm:mt-12" aria-label={title}>
-      <Card className="rounded-3xl border border-border/60 bg-card shadow-sm">
-        <CardHeader className="flex flex-row items-start justify-between gap-3">
-          <div>
-            <CardTitle className="text-ui-card-title-lg sm:text-ui-section-title">
+    <section className="mt-8 bp-md:mt-10" aria-label={title}>
+      <Card className="-mx-3 rounded-none border-x-0 border-y border-border bg-card shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border-x bp-md:shadow-sm">
+        <CardHeader className="flex min-w-0 flex-row items-start justify-between gap-3 p-4 bp-sm:p-5 bp-md:p-6">
+          <div className="min-w-0">
+            <CardTitle className="break-keep text-ui-card-title-lg font-ui-bold bp-sm:text-ui-section-title">
               {title}
             </CardTitle>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
@@ -61,6 +61,7 @@ export default function RecentViewedItems({
             type="button"
             variant="ghost"
             size="sm"
+            className="h-11 min-h-11 shrink-0 bp-md:h-9 bp-md:min-h-9"
             onClick={() => {
               clearRecentViewedItems();
               setItems([]);
@@ -70,7 +71,7 @@ export default function RecentViewedItems({
             전체 지우기
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 bp-sm:p-5 bp-sm:pt-0 bp-md:p-6 bp-md:pt-0">
           <HorizontalProducts
             title={title}
             items={filteredItems.map((item): HItem => ({

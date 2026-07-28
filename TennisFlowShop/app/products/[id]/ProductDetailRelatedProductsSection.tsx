@@ -19,14 +19,14 @@ export default function ProductDetailRelatedProductsSection({
   children,
 }: ProductDetailRelatedProductsSectionProps) {
   return (
-    <div ref={relatedSectionRef} className="mt-8 space-y-6 sm:mt-12 sm:space-y-8">
-      <Card className="rounded-2xl border border-border bg-card shadow-sm sm:rounded-3xl">
-        <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-4">
-          <CardTitle className="break-keep text-ui-card-title-lg font-semibold leading-snug sm:text-ui-section-title">
+    <div ref={relatedSectionRef} className="mt-8 bp-md:mt-10">
+      <Card className="-mx-3 rounded-none border-x-0 border-y border-border bg-card shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border-x bp-md:shadow-sm">
+        <CardHeader className="p-4 pb-3 bp-sm:p-5 bp-sm:pb-4 bp-md:p-6 bp-md:pb-5">
+          <CardTitle className="break-keep text-ui-card-title-lg font-ui-bold leading-snug bp-sm:text-ui-section-title">
             관련 상품
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+        <CardContent className="p-4 pt-0 bp-sm:p-5 bp-sm:pt-0 bp-md:p-6 bp-md:pt-0">
           <HorizontalProducts
             title="관련 상품"
             items={relatedProducts}

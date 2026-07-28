@@ -92,7 +92,7 @@ export default function ProductFeatureRadarChart({ scores }: Props) {
             className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 px-3 py-2"
           >
             <span className="text-muted-foreground">{item.label}</span>
-            <span className="font-semibold text-foreground">{scores[item.key]}</span>
+            <span className="font-ui-medium text-foreground">{scores[item.key]}</span>
           </div>
         ))}
       </div>
