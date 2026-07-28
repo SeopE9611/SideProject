@@ -3,11 +3,16 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ActiveFilterBar, CatalogCardSkeleton, type ActiveFilterItem } from "@/components/commerce";
-import { EmptyState, SummaryCard } from "@/components/public";
+import {
+  ActiveFilterBar,
+  CatalogCardSkeleton,
+  CatalogResultsPanel,
+  CatalogToolbar,
+  type ActiveFilterItem,
+} from "@/components/commerce";
+import { EmptyState } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
-import { Search, Filter, Grid3X3, List } from "lucide-react";
+import { Check, Search, Filter, Grid3X3, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -70,6 +75,18 @@ type RacketsApiResponse = { items: RacketItem[]; total: number };
 const RACKETS_PAGE_SIZE = 12;
 
 const brands = RACKET_BRANDS.map(({ value, label }) => ({ value, label }));
+const RACKET_QUICK_FILTERS = [
+  { label: "추천", value: "featured" },
+  { label: "신상품", value: "new" },
+  { label: "할인상품", value: "sale" },
+] as const;
+const quickToggleButtonClass = (isActive: boolean) =>
+  cn(
+    "h-11 w-full whitespace-nowrap rounded-control border px-2 text-ui-body-sm transition-colors bp-md:h-9 bp-md:w-auto bp-md:px-3",
+    isActive
+      ? "border-brand-highlight-ink/30 bg-brand-highlight-muted text-brand-highlight-ink hover:bg-brand-highlight-muted/80"
+      : "border-border bg-background text-muted-foreground hover:bg-muted/30",
+  );
 
 const parsePriceParam = (value: string | null): number | null => {
   if (!value) return null;
@@ -641,124 +658,86 @@ export default function FilterableRacketList({
       <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
-          <div className="mb-6 space-y-3 bp-md:mb-8">
-            <SummaryCard className="overflow-hidden" contentClassName="p-4 bp-sm:p-5 bp-lg:p-6">
-              <div className="grid min-w-0 gap-3 bp-md:grid-cols-[minmax(0,1fr)_auto] bp-md:items-end bp-md:gap-6">
-                <div className="min-w-0 space-y-1.5">
-                  <h2 className="text-ui-card-title-lg font-semibold text-foreground">라켓 목록</h2>
-                  <p className="max-w-2xl text-ui-body-sm leading-6 text-muted-foreground">
-                    브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요.
-                  </p>
-                </div>
-
-                <div className="min-w-0 bp-md:text-right">
-                  <div
-                    className="flex min-h-6 flex-wrap items-baseline gap-x-1 gap-y-0.5 text-ui-body font-semibold tabular-nums text-foreground bp-md:justify-end"
-                    aria-live="polite"
-                  >
-                    <span>{racketCountPrefix}</span>
-                    {isInitialLikeLoading ? (
-                      <Skeleton className="inline-block h-5 w-12 align-middle" />
-                    ) : (
-                      <span className="font-semibold text-primary">{total.toLocaleString()}</span>
-                    )}
-                    <span>{racketCountSuffix}</span>
-                    {isInitialLikeLoading ? (
-                      <Skeleton className="inline-block h-4 w-20 align-middle" />
-                    ) : (
-                      <span className="text-ui-body-sm font-normal text-muted-foreground">
-                        (표시중 {visibleProducts.length.toLocaleString()}개)
-                      </span>
-                    )}
-                  </div>
-                  {isBackgroundRefreshing ? (
-                    <span className="mt-2 inline-flex w-fit rounded-full border border-border bg-muted/30 px-2.5 py-1 text-ui-label font-medium text-muted-foreground bp-md:ml-auto">
-                      조회 중...
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-            </SummaryCard>
-
-            <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
-              {isFilterSheetViewport ? (
-                <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (showFilters) cancelFiltersSheet();
-                      else openFiltersSheet();
-                    }}
-                    className="h-10 shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted"
-                    aria-expanded={showFilters}
-                    aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-                  >
-                    <Filter className="mr-2 h-4 w-4" />
-                    필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-                  </Button>
-
-                  <div className="min-w-0">
-                    <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 w-full min-w-0 rounded-control border border-border bg-card text-ui-body-sm focus:border-border dark:focus:border-border">
-                        <SelectValue placeholder="정렬" />
-                      </SelectTrigger>
-                      <SelectContent className="dark:border-border dark:bg-card">
-                        <SelectItem value="latest">최신순</SelectItem>
-                        <SelectItem value="sales-desc">구매 많은순</SelectItem>
-                        <SelectItem value="reviews-desc">후기 많은순</SelectItem>
-                        <SelectItem value="price-low">가격 낮은순</SelectItem>
-                        <SelectItem value="price-high">가격 높은순</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (showFilters) cancelFiltersSheet();
-                      else openFiltersSheet();
-                    }}
-                    className="h-9 shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted"
-                    aria-expanded={showFilters}
-                    aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-                  >
-                    <Filter className="mr-2 h-4 w-4" />
-                    필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-                  </Button>
-                  <div />
-                  <div className="flex items-center justify-end gap-2">
-                    <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
+          <div className="mb-6 bp-md:mb-8">
+            <CatalogResultsPanel
+              title="라켓 목록"
+              description="브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요."
+              total={total}
+              visibleCount={visibleProducts.length}
+              countPrefix={racketCountPrefix}
+              countSuffix={racketCountSuffix}
+              isCountLoading={isInitialLikeLoading}
+              isRefreshing={isBackgroundRefreshing}
+              toolbar={
+                <CatalogToolbar
+                  filterButton={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (showFilters) cancelFiltersSheet();
+                        else openFiltersSheet();
+                      }}
+                      className="h-11 shrink-0 whitespace-nowrap rounded-control border-border px-3 hover:bg-muted bp-md:h-9"
+                      aria-expanded={showFilters}
+                      aria-label={showFilters ? "필터 닫기" : "필터 열기"}
+                    >
+                      <Filter className="mr-2 h-4 w-4" />
+                      필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                    </Button>
+                  }
+                  quickFilters={
+                    <>
+                      {RACKET_QUICK_FILTERS.map((option) => {
+                        const isActive = exposureFilter.includes(option.value);
+                        return (
+                          <Button
+                            key={option.value}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setExposureFilter((current) =>
+                                isActive
+                                  ? current.filter((value) => value !== option.value)
+                                  : [...current, option.value],
+                              )
+                            }
+                            className={quickToggleButtonClass(isActive)}
+                            aria-pressed={isActive}
+                          >
+                            {isActive && <Check className="mr-1.5 h-3.5 w-3.5" />}
+                            {option.label}
+                          </Button>
+                        );
+                      })}
                       <Button
                         type="button"
-                        variant={effectiveViewMode === "grid" ? "default" : "ghost"}
+                        variant="outline"
                         size="sm"
-                        onClick={() => setViewMode("grid")}
-                        className="h-8 w-9 p-0"
-                        aria-label="그리드 보기"
-                        aria-pressed={effectiveViewMode === "grid"}
+                        onClick={() => setRentOnly((current) => !current)}
+                        className={quickToggleButtonClass(rentOnly)}
+                        aria-pressed={rentOnly}
                       >
+                        {rentOnly && <Check className="mr-1.5 h-3.5 w-3.5" />}
+                        대여 가능
+                      </Button>
+                    </>
+                  }
+                  viewToggle={
+                    <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
+                      <Button type="button" variant={effectiveViewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={effectiveViewMode === "grid"}>
                         <Grid3X3 className="h-4 w-4" />
                       </Button>
-                      <Button
-                        type="button"
-                        variant={effectiveViewMode === "list" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setViewMode("list")}
-                        className="h-8 w-9 p-0"
-                        aria-label="리스트 보기"
-                        aria-pressed={effectiveViewMode === "list"}
-                      >
+                      <Button type="button" variant={effectiveViewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={effectiveViewMode === "list"}>
                         <List className="h-4 w-4" />
                       </Button>
                     </div>
+                  }
+                  sortControl={
                     <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-9 w-[150px] rounded-control border border-border bg-card text-ui-body-sm focus:border-border bp-lg:w-[180px] dark:focus:border-border">
+                      <SelectTrigger className="h-11 w-full min-w-0 rounded-control border border-border bg-card text-ui-body-sm focus:border-border bp-md:h-9 bp-md:w-[150px] bp-lg:w-[180px] dark:focus:border-border">
                         <SelectValue placeholder="정렬" />
                       </SelectTrigger>
                       <SelectContent className="dark:border-border dark:bg-card">
@@ -769,16 +748,15 @@ export default function FilterableRacketList({
                         <SelectItem value="price-high">가격 높은순</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {activeFiltersCount > 0 ? (
-              <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
-                <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} />
-              </div>
-            ) : null}
+                  }
+                />
+              }
+              activeFilters={
+                activeFilterItems.length > 0 ? (
+                  <ActiveFilterBar items={activeFilterItems} onResetAll={handleResetAll} />
+                ) : undefined
+              }
+            />
           </div>
 
           {/* 콘텐츠 */}

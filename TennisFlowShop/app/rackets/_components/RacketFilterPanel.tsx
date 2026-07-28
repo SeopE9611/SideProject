@@ -117,7 +117,7 @@ export default function RacketFilterPanel({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="라켓 모델 검색..."
-                  className="h-10 w-full rounded-lg border border-input bg-background pl-10 pr-10 transition-colors"
+                  className="h-11 w-full rounded-control border border-input bg-background pl-10 pr-11 transition-colors bp-md:h-10"
                 />
                 {searchQuery && (
                   <button
@@ -129,13 +129,13 @@ export default function RacketFilterPanel({
                       const el = document.getElementById("search") as HTMLInputElement | null;
                       el?.focus();
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    className="absolute right-0 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-control bp-md:min-h-10 bp-md:min-w-10"
                   >
                     <X className="w-4 h-4 text-muted-foreground" />
                   </button>
                 )}
               </div>
-              <Button type="submit" size="sm" variant="default" className="h-10 px-4">
+              <Button type="submit" size="sm" variant="default" className="h-11 min-h-11 whitespace-nowrap rounded-control px-4 bp-md:h-10 bp-md:min-h-0">
                 검색
               </Button>
             </form>
@@ -149,7 +149,7 @@ export default function RacketFilterPanel({
                 onValueChange={(value) => setSelectedBrand(value === "all" ? null : value)}
                 value={selectedBrand ?? "all"}
               >
-                <SelectTrigger className="h-10 rounded-lg border border-input bg-background">
+                <SelectTrigger className="h-11 rounded-control border border-input bg-background bp-md:h-10">
                   <SelectValue placeholder="브랜드 선택" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-card dark:border-border">
@@ -174,7 +174,7 @@ export default function RacketFilterPanel({
                 value={selectedCondition ?? "all"}
                 onValueChange={(v) => setSelectedCondition(v === "all" ? null : v)}
               >
-                <SelectTrigger className="h-10 rounded-lg border border-input bg-background">
+                <SelectTrigger className="h-11 rounded-control border border-input bg-background bp-md:h-10">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-card dark:border-border">
@@ -194,7 +194,7 @@ export default function RacketFilterPanel({
                   type="button"
                   onClick={() => setRentOnly(false)}
                   className={cn(
-                    "rounded-md border px-3 py-2 text-ui-body-sm font-medium transition-colors",
+                    "min-h-11 whitespace-nowrap rounded-control border px-3 py-2 text-ui-body-sm font-medium transition-colors bp-md:min-h-10",
                     !rentOnly
                       ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                       : "border-border bg-card text-muted-foreground hover:bg-muted",
@@ -206,7 +206,7 @@ export default function RacketFilterPanel({
                   type="button"
                   onClick={() => setRentOnly(true)}
                   className={cn(
-                    "rounded-md border px-3 py-2 text-ui-body-sm font-medium transition-colors",
+                    "min-h-11 whitespace-nowrap rounded-control border px-3 py-2 text-ui-body-sm font-medium transition-colors bp-md:min-h-10",
                     rentOnly
                       ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                       : "border-border bg-card text-muted-foreground hover:bg-muted",
@@ -226,7 +226,7 @@ export default function RacketFilterPanel({
                   variant={exposureFilter.length === 0 ? "default" : "outline"}
                   size="sm"
                   onClick={() => onExposureChange([])}
-                  className="h-9 whitespace-nowrap px-2 text-ui-label bp-sm:text-ui-body-sm"
+                  className="min-h-11 whitespace-nowrap rounded-control px-2 text-ui-label bp-md:min-h-9 bp-md:text-ui-body-sm"
                 >
                   전체
                 </Button>
@@ -245,7 +245,7 @@ export default function RacketFilterPanel({
                             : [...exposureFilter, option.value],
                         )
                       }
-                      className="h-9 whitespace-nowrap px-2 text-ui-label bp-sm:text-ui-body-sm"
+                      className="min-h-11 whitespace-nowrap rounded-control px-2 text-ui-label bp-md:min-h-9 bp-md:text-ui-body-sm"
                       aria-pressed={isActive}
                     >
                       {option.label}
@@ -279,7 +279,7 @@ export default function RacketFilterPanel({
                         onChangePriceMax(preset.range[1]);
                       }}
                       className={cn(
-                        "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-ui-caption transition-colors bp-sm:text-ui-label",
+                        "min-h-11 min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-control border px-2 py-1.5 text-ui-caption transition-colors bp-md:min-h-9 bp-md:text-ui-label",
                         isActive
                           ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                           : "border-border bg-card text-muted-foreground hover:bg-muted",
