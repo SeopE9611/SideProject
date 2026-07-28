@@ -5,16 +5,18 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-ui-body-sm font-ui-medium ring-offset-background transition-[background-color,color,border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-ui-body-sm font-ui-medium ring-offset-background transition-[background-color,color,border-color,box-shadow,opacity,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
           "bg-primary text-primary-foreground shadow-sm shadow-black/10 hover:bg-primary/90 active:translate-y-px active:shadow-sm",
         secondary:
-          "border border-border bg-card text-foreground shadow-sm hover:bg-secondary active:translate-y-px",
+          "border border-transparent bg-secondary text-secondary-foreground shadow-none hover:bg-secondary/80 active:translate-y-px",
         outline:
-          "border border-border bg-card text-foreground shadow-sm hover:bg-secondary active:translate-y-px",
+          "border border-border bg-transparent text-foreground shadow-none hover:bg-secondary/60 active:translate-y-px",
+        favorite:
+          "border border-border bg-card text-muted-foreground shadow-sm hover:border-destructive/45 hover:bg-destructive/10 hover:text-destructive aria-pressed:border-destructive aria-pressed:bg-destructive aria-pressed:text-destructive-foreground",
         ghost: "text-foreground hover:bg-secondary active:bg-secondary",
         elevated:
           "border border-border bg-card text-foreground shadow-md shadow-black/5 hover:bg-secondary active:translate-y-px",
@@ -32,6 +34,7 @@ const buttonVariants = cva(
         sm: "h-9 rounded-lg px-3",
         lg: "h-11 rounded-xl px-8",
         tall: "h-12 rounded-xl px-6 text-ui-body",
+        iconSm: "h-9 w-9 rounded-lg",
         icon: "h-10 w-10 rounded-lg",
       },
       wrap: {
@@ -48,6 +51,11 @@ const buttonVariants = cva(
       { wrap: "normal", size: "tall", class: "min-h-12" },
       {
         wrap: "normal",
+        size: "iconSm",
+        class: "h-9 min-h-9 whitespace-nowrap leading-normal",
+      },
+      {
+        wrap: "normal",
         size: "icon",
         class: "h-10 min-h-10 whitespace-nowrap leading-normal",
       },
@@ -55,6 +63,11 @@ const buttonVariants = cva(
       { wrap: "responsive", size: "sm", class: "min-h-9 sm:h-9" },
       { wrap: "responsive", size: "lg", class: "min-h-11 sm:h-11" },
       { wrap: "responsive", size: "tall", class: "min-h-12 sm:h-12" },
+      {
+        wrap: "responsive",
+        size: "iconSm",
+        class: "h-9 min-h-9 whitespace-nowrap leading-normal",
+      },
       {
         wrap: "responsive",
         size: "icon",
