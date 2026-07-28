@@ -78,6 +78,13 @@
 - 후기 작성 CTA와 관리 메뉴는 모바일에서 최소 44px 터치 영역을 제공한다.
 - 후기 rating은 warning 의미색을 사용하며, 데이터가 없는 날짜를 가짜 값으로 표시하지 않는다.
 - 후기 빈 상태에서는 상단과 동일한 작성 CTA를 반복하지 않는다.
+- 상세 후기 수정 Dialog는 작은 화면에서 viewport 높이를 넘지 않으며, 내용이 길면 내부 스크롤을 제공한다.
+- 후기 수정의 평점·취소·저장·사진 이동 control은 모바일에서 최소 44px 터치 영역을 제공한다.
+- 평점 선택은 `radiogroup`·`radio` 의미와 키보드 방향키 조작을 제공한다.
+- 업로드 완료 사진은 `PhotosReorderGrid`에서 한 번만 표시하고 `PhotosUploader`에는 upload queue만 표시한다.
+- 모바일 사진 정렬은 drag만 요구하지 않고 명시적인 좌우 이동 control을 제공한다.
+- 사진 Viewer는 상품·라켓에서 동일한 후기 용어와 header·image·navigation 위계를 사용한다.
+- Viewer thumbnail은 선택 상태, `aria-pressed`, `focus-visible`을 제공한다.
 - 모바일 문의 목록은 구분선 기반 평면 목록으로 표시하고, 768px 이상에서 개별 문의 Card를 복원한다.
 - 문의 작성 CTA는 모바일에서 최소 44px 터치 영역을 제공한다.
 - 문의 카드 전체 Link는 hover와 focus-visible 상태를 모두 제공한다.

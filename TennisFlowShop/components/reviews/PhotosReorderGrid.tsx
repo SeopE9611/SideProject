@@ -52,7 +52,7 @@ export default function PhotosReorderGrid({
   };
 
   const colsClass = responsiveColumns
-    ? "grid-cols-3 bp-sm:grid-cols-5"
+    ? "grid-cols-2 bp-sm:grid-cols-4 bp-md:grid-cols-5"
     : columns === 4
       ? "grid-cols-4"
       : "grid-cols-5";
@@ -115,9 +115,13 @@ export default function PhotosReorderGrid({
                 e.stopPropagation();
                 removeAt(idx);
               }}
-              className="absolute top-1 right-1 inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:opacity-0 bp-md:group-hover:opacity-100"
+              className={cn(
+                "absolute top-1 right-1 inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:opacity-0 bp-md:group-hover:opacity-100 bp-md:group-focus-within:opacity-100",
+                responsiveColumns &&
+                  "h-11 min-h-11 w-11 min-w-11 bp-md:h-9 bp-md:min-h-9 bp-md:w-9 bp-md:min-w-9",
+              )}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           )}
           {mobileControls && !disabled && (
@@ -132,9 +136,9 @@ export default function PhotosReorderGrid({
                   e.stopPropagation();
                   moveItem(idx, idx - 1);
                 }}
-                className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex h-11 min-h-11 w-11 min-w-11 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <ArrowLeft className="h-3.5 w-3.5" />
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -146,9 +150,9 @@ export default function PhotosReorderGrid({
                   e.stopPropagation();
                   moveItem(idx, idx + 1);
                 }}
-                className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex h-11 min-h-11 w-11 min-w-11 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           )}
