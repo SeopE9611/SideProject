@@ -2252,7 +2252,7 @@ export default function StringingApplicationDetailClient({
                   applicationId={data.id}
                   status={data.status}
                   userConfirmedAt={data.userConfirmedAt ?? null}
-                  className="h-10 w-full whitespace-normal break-keep bp-sm:w-auto"
+                  className="min-h-11 w-full whitespace-normal break-keep bp-sm:w-auto"
                 />
               </div>
             )}
@@ -3131,7 +3131,7 @@ export default function StringingApplicationDetailClient({
                             : `이번 이용에 패키지 ${packageUsedCount}회가 차감되었습니다.`}
                         </p>
                       </div>
-                      <Button asChild variant="outline" size="sm" className="w-full bp-sm:w-auto">
+                      <Button asChild variant="outline" size="sm" className="min-h-11 w-full bp-sm:w-auto">
                         <Link href="/mypage?tab=passes">패키지 관리로 이동</Link>
                       </Button>
                     </CardContent>

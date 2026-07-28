@@ -1,7 +1,8 @@
 export const mypageDetailLayout = {
   heroSection: "rounded-2xl border border-border/70 bg-card p-4 shadow-soft bp-sm:p-5",
   heroShell: "mt-5 flex w-full flex-col gap-4 border-t border-border/60 pt-4",
-  heroGrid: "grid gap-4",
+  heroGrid:
+    "grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(300px,340px)] bp-lg:items-stretch",
   summaryGrid:
     "grid grid-cols-1 gap-3 border-t border-border/60 pt-4 bp-sm:grid-cols-2 bp-lg:grid-cols-[repeat(auto-fit,minmax(160px,1fr))]",
   contentContainer:

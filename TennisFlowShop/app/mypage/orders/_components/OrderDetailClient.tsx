@@ -1573,6 +1573,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  className="min-h-11 w-full bp-sm:w-auto"
                                   onClick={() =>
                                     window.open(
                                       trackingData.linkUrl,
@@ -1680,7 +1681,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     size="sm"
                     variant="outline"
                     onClick={() => setEditingCustomer(true)}
-                    className="border-border hover:bg-brand-highlight-muted/70"
+                    className="min-h-11 w-full border-border hover:bg-brand-highlight-muted/70 bp-sm:w-auto"
                   >
                     {showDeliveryOnlyFields ? "배송지/연락처 수정" : "수령자 정보 수정"}
                   </Button>

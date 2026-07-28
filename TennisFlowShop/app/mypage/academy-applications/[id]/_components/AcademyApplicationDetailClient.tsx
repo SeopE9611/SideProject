@@ -226,7 +226,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="mt-1 h-auto px-0 py-0.5 text-ui-label font-medium text-brand-highlight-ink hover:bg-transparent hover:text-brand-highlight-ink"
+                    className="mt-1 min-h-11 w-fit px-0 text-ui-label font-medium text-brand-highlight-ink hover:bg-transparent hover:text-brand-highlight-ink"
                     onClick={() => setIsDescriptionExpanded((current) => !current)}
                   >
                     {isDescriptionExpanded ? "설명 접기" : "설명 더보기"}
@@ -803,6 +803,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   variant="highlight"
                   onClick={handleSaveEdit}
                   disabled={isSavingEdit || editForm.preferredDays.length === 0}
+                  className="min-h-11 w-full bp-sm:w-auto"
                 >
                   {isSavingEdit ? "저장 중..." : "저장"}
                 </Button>
@@ -811,6 +812,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   variant="outline"
                   onClick={() => setIsEditing(false)}
                   disabled={isSavingEdit}
+                  className="min-h-11 w-full bp-sm:w-auto"
                 >
                   취소
                 </Button>

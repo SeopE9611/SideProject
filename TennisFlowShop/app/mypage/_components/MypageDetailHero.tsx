@@ -79,32 +79,34 @@ export default function MypageDetailHero({
         )}
       >
         <div className={cn(mypageDetailLayout.heroGrid, !hasNextAction && "bp-lg:grid-cols-1")}>
-          <div className="flex min-w-0 items-start gap-3">
-            <div
-              className={cn(
-                "shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10",
-                isFeature &&
-                  "bg-brand-highlight-muted text-brand-highlight-ink ring-brand-highlight-ink/20",
-              )}
-            >
-              {icon}
-            </div>
-
-            <div className="min-w-0 space-y-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                {status}
-                <div className="break-keep text-ui-body-sm font-medium text-foreground">
-                  {statusTitle}
-                </div>
+          <div className="min-w-0">
+            <div className="flex min-w-0 items-start gap-3">
+              <div
+                className={cn(
+                  "shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10",
+                  isFeature &&
+                    "bg-brand-highlight-muted text-brand-highlight-ink ring-brand-highlight-ink/20",
+                )}
+              >
+                {icon}
               </div>
 
-              {identifier ? (
-                <p className="break-all text-ui-body-sm text-muted-foreground">{identifier}</p>
-              ) : null}
-            </div>
-          </div>
+              <div className="min-w-0 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  {status}
+                  <div className="break-keep text-ui-body-sm font-medium text-foreground">
+                    {statusTitle}
+                  </div>
+                </div>
 
-          {summary ? <div className={mypageDetailLayout.summaryGrid}>{summary}</div> : null}
+                {identifier ? (
+                  <p className="break-all text-ui-body-sm text-muted-foreground">{identifier}</p>
+                ) : null}
+              </div>
+            </div>
+
+            {summary ? <div className={mypageDetailLayout.summaryGrid}>{summary}</div> : null}
+          </div>
 
           {hasNextAction ? (
             <div

@@ -23,49 +23,41 @@ export default function AcademyApplicationDetailSkeleton() {
           "border-brand-highlight-ink/25 bg-brand-highlight-muted/40 shadow-none",
         )}
       >
-        <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-28 rounded-full" />
-            <Skeleton className="h-7 w-44" />
-            <Skeleton className="h-5 w-64 max-w-full" />
-          </div>
-          <div className="flex flex-col gap-2 bp-sm:flex-row">
-            <Skeleton className="h-9 w-full bp-sm:w-32" />
-            <Skeleton className="h-9 w-full bp-sm:w-28" />
-          </div>
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-28 rounded-full" />
+          <Skeleton className="h-7 w-44" />
+          <Skeleton className="h-5 w-64 max-w-full" />
         </div>
 
         <div
-          className={cn(
-            mypageDetailLayout.heroShell,
-            "border border-brand-highlight-ink/20 bg-background/75 ring-brand-highlight-ink/15",
-          )}
+          className={mypageDetailLayout.heroShell}
         >
           <div className={mypageDetailLayout.heroGrid}>
-            <div className="flex items-start gap-3">
-              <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
-              <div className="min-w-0 flex-1 space-y-2">
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-5 w-56 max-w-full" />
-                <Skeleton className="h-4 w-36" />
+            <div className="min-w-0">
+              <div className="flex items-start gap-3">
+                <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-5 w-56 max-w-full" />
+                  <Skeleton className="h-4 w-36" />
+                </div>
+              </div>
+              <div className={mypageDetailLayout.summaryGrid}>
+                <SummarySkeleton />
+                <SummarySkeleton />
+                <SummarySkeleton />
               </div>
             </div>
-            <div
-              className={cn(
-                mypageDetailLayout.actionPanel,
-                "border-brand-highlight-ink/25 bg-brand-highlight-muted/55",
-              )}
-            >
+            <div className={mypageDetailLayout.actionPanel}>
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-5 w-48 max-w-full" />
               <Skeleton className="h-4 w-60 max-w-full" />
             </div>
           </div>
-          <div className={mypageDetailLayout.summaryGrid}>
-            <SummarySkeleton />
-            <SummarySkeleton />
-            <SummarySkeleton />
-          </div>
+        </div>
+        <div className="mt-4 flex w-full flex-col gap-2 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
+          <Skeleton className="h-11 w-full bp-sm:w-32" />
+          <Skeleton className="h-11 w-full bp-sm:w-28" />
         </div>
       </section>
 
