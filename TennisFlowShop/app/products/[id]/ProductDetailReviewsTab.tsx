@@ -32,7 +32,7 @@ export default function ProductDetailReviewsTab({
   onOpenReviewPhoto,
 }: ProductDetailReviewsTabProps) {
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 bp-sm:space-y-6">
       <ProductDetailReviewsHeader
         canWriteFromProductReviewTab={canWriteFromProductReviewTab}
         productReviewHref={productReviewHref}
@@ -40,9 +40,9 @@ export default function ProductDetailReviewsTab({
         productReviewHelper={productReviewHelper}
       />
 
-      <div className="space-y-4 sm:space-y-6">
-        {mergedReviews.length > 0 ? (
-          mergedReviews.map((review: any, index: number) => {
+      {mergedReviews.length > 0 ? (
+        <div className="-mx-4 divide-y divide-border/60 border-y border-border/60 bp-sm:-mx-6 bp-md:mx-0 bp-md:space-y-4 bp-md:divide-y-0 bp-md:border-y-0">
+          {mergedReviews.map((review: any, index: number) => {
             const isMasked =
               review.masked ??
               (review.status === "hidden" && !review.ownedByMe && !review.adminView);
@@ -60,16 +60,11 @@ export default function ProductDetailReviewsTab({
                 onOpenPhoto={(photoIndex) => onOpenReviewPhoto(review.photos, photoIndex)}
               />
             );
-          })
-        ) : (
-          <ProductDetailReviewsEmptyState
-            canWriteFromProductReviewTab={canWriteFromProductReviewTab}
-            productReviewHref={productReviewHref}
-            productReviewCtaLabel={productReviewCtaLabel}
-            productReviewHelper={productReviewHelper}
-          />
-        )}
-      </div>
+          })}
+        </div>
+      ) : (
+        <ProductDetailReviewsEmptyState productReviewHelper={productReviewHelper} />
+      )}
     </div>
   );
 }

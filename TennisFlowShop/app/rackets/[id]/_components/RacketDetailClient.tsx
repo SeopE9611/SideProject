@@ -913,35 +913,37 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="reviews" className="p-4 sm:p-6 md:p-8">
-                <div className="space-y-4 sm:space-y-6">
-                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/30 text-primary sm:h-12 sm:w-12">
-                        <Star className="h-4 w-4 sm:h-6 sm:w-6" />
+              <TabsContent value="reviews" className="p-4 bp-sm:p-6 bp-md:p-8">
+                <div className="space-y-4 bp-sm:space-y-6">
+                  <div className="flex min-w-0 flex-col gap-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/30 text-primary bp-sm:h-12 bp-sm:w-12">
+                        <Star className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
                       </div>
-                      <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
+                      <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
                         고객 후기
                       </h3>
                     </div>
 
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="h-9 shrink-0 border border-border bg-secondary text-ui-label text-foreground shadow-sm hover:bg-secondary/80 sm:h-10 sm:text-ui-body-sm"
-                    >
-                      <Link href="/mypage?tab=orders">
-                        <Pencil className="mr-1.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
-                        이용내역에서 후기 작성
-                      </Link>
-                    </Button>
+                    <div className="flex w-full min-w-0 flex-col items-start gap-1 bp-md:w-auto bp-md:items-end">
+                      <Button
+                        asChild
+                        variant="secondary"
+                        className="h-11 min-h-11 w-full text-ui-body-sm bp-md:h-10 bp-md:min-h-10 bp-md:w-auto"
+                      >
+                        <Link href="/mypage?tab=orders">
+                          <Pencil className="mr-1.5 h-3 w-3 bp-sm:mr-2 bp-sm:h-4 bp-sm:w-4" />
+                          이용내역에서 후기 작성
+                        </Link>
+                      </Button>
+                      <p className="max-w-sm break-keep text-ui-label text-muted-foreground bp-md:text-right">
+                        구매확정 또는 대여확정된 이용내역에서 후기를 작성할 수 있어요.
+                      </p>
+                    </div>
                   </div>
-                  <p className="break-keep text-ui-body-sm text-muted-foreground">
-                    구매확정 또는 대여확정된 이용내역에서 후기를 작성할 수 있어요.
-                  </p>
 
                   {mergedReviews.length > 0 ? (
-                    <div className="space-y-4 sm:space-y-6">
+                    <div className="-mx-4 divide-y divide-border/60 border-y border-border/60 bp-sm:-mx-6 bp-md:mx-0 bp-md:space-y-4 bp-md:divide-y-0 bp-md:border-y-0">
                       {mergedReviews.map((review: any, index: number) => {
                         const canIdentifyHiddenReview =
                           review?.ownedByMe === true || review?.adminView === true;
@@ -949,351 +951,362 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         return (
                           <Card
                             key={String(review?._id ?? index)}
-                            className="rounded-xl border border-border bg-card shadow-none sm:rounded-2xl"
+                            className="rounded-none border-0 bg-card shadow-none bp-md:rounded-2xl bp-md:border bp-md:border-border"
                           >
-                          <CardContent className="space-y-3 p-4 sm:p-6">
-                            <div className="flex min-w-0 flex-wrap items-start justify-between gap-3 sm:gap-4">
-                              <div className="flex min-w-0 items-start gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary text-ui-body-sm font-semibold text-foreground">
-                                  {(review?.user ?? "익명").slice(0, 1)}
-                                </div>
-
-                                <div className="min-w-0">
-                                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                    <div className="min-w-0 break-words font-semibold text-foreground sm:truncate">
-                                      {review?.status === "hidden"
-                                        ? canIdentifyHiddenReview
-                                          ? (review?.user ?? (review?.ownedByMe ? "내 후기" : "사용자"))
-                                          : "비공개 후기"
-                                        : (review?.user ?? "익명")}
-                                    </div>
-
-                                    <ReviewContextBadge
-                                      reviewContext={review?.reviewContext}
-                                      contextLabel={review?.contextLabel}
-                                    />
-
-                                    {review?.status === "hidden" && canIdentifyHiddenReview && (
-                                      <ReviewVisibilityBadge />
-                                    )}
+                            <CardContent className="relative space-y-3 p-4 bp-sm:p-5 bp-md:p-6">
+                              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3 bp-sm:gap-4">
+                                <div className="flex min-w-0 items-start gap-3">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary text-ui-body-sm font-ui-bold text-foreground">
+                                    {(review?.user ?? "익명").slice(0, 1)}
                                   </div>
 
-                                  {review?.date ? (
-                                    <div className="text-ui-label text-muted-foreground mt-0.5">
-                                      {review.date}
-                                    </div>
-                                  ) : null}
+                                  <div className="min-w-0">
+                                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                      <div className="min-w-0 break-words text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">
+                                        {review?.status === "hidden"
+                                          ? canIdentifyHiddenReview
+                                            ? (review?.user ?? (review?.ownedByMe ? "내 후기" : "사용자"))
+                                            : "비공개 후기"
+                                          : (review?.user ?? "익명")}
+                                      </div>
 
-                                  <div className="mt-1 flex flex-wrap items-center gap-0.5">
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                      <Star
-                                        key={i}
-                                        className={`h-4 w-4 ${i < Number(review?.rating ?? 0) ? "text-primary fill-primary" : "text-muted-foreground/40"}`}
+                                      <ReviewContextBadge
+                                        reviewContext={review?.reviewContext}
+                                        contextLabel={review?.contextLabel}
                                       />
-                                    ))}
+
+                                      {review?.status === "hidden" && canIdentifyHiddenReview && (
+                                        <ReviewVisibilityBadge />
+                                      )}
+                                    </div>
+
+                                    {review?.date ? (
+                                      <div className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
+                                        {review.date}
+                                      </div>
+                                    ) : null}
+
+                                    <div className="mt-1 flex flex-wrap items-center gap-0.5" role="img" aria-label={`${review?.rating ?? 0}점`}>
+                                      {Array.from({ length: 5 }).map((_, i) => (
+                                        <Star
+                                          key={i}
+                                          aria-hidden="true"
+                                          className={`h-3 w-3 bp-sm:h-4 bp-sm:w-4 ${i < Number(review?.rating ?? 0) ? "text-warning fill-current" : "fill-transparent text-muted-foreground stroke-current"}`}
+                                        />
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
 
-                              {/* 우측 상단 3점 메뉴 */}
-                              <div className="shrink-0">
-                                {(isAdmin || isMine(review)) && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-md hover:bg-muted/50 hover:text-foreground"
-                                      >
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
+                                {/* 우측 상단 3점 메뉴 */}
+                                <div className="shrink-0">
+                                  {(isAdmin || isMine(review)) && (
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-11 w-11 rounded-lg bp-md:h-9 bp-md:w-9"
+                                          aria-label="후기 관리 메뉴"
+                                        >
+                                          <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
 
-                                    <DropdownMenuContent align="end" className="w-44">
-                                      {/* 비공개/공개 토글: 내 후기 or 관리자 */}
-                                      <DropdownMenuItem
-                                        onClick={async () => {
-                                          if (!review?._id) return;
+                                      <DropdownMenuContent align="end" className="w-44">
+                                        {/* 비공개/공개 토글: 내 후기 or 관리자 */}
+                                        <DropdownMenuItem
+                                          onClick={async () => {
+                                            if (!review?._id) return;
 
-                                          const reviewOwnedByMe = isMine(review);
+                                            const reviewOwnedByMe = isMine(review);
 
-                                          const { isAdminModeration, nextStatus } =
-                                            getReviewManagedVisibilityStatus(
-                                              {
-                                                ...review,
-                                                ownedByMe: reviewOwnedByMe,
-                                              },
-                                              isAdmin,
-                                            );
-
-                                          // 낙관적 변경 전 현재 SWR 데이터 보관
-                                          const myReviewSnapshot = myReview;
-
-                                          const adminReviewsSnapshot = adminReviews;
-
-                                          setBusyReviewId(String(review._id));
-
-                                          // 낙관적 업데이트
-                                          if (reviewOwnedByMe) {
-                                            await mutateMyReview?.((prev: any) => {
-                                              if (
-                                                !prev?._id ||
-                                                String(prev._id) !== String(review._id)
-                                              )
-                                                return prev;
-                                              return {
-                                                ...prev,
-                                                status: nextStatus,
-                                              };
-                                            }, false);
-                                          } else if (isAdminModeration) {
-                                            await mutateAdminReviews?.(
-                                              (prev: any[] | undefined) => {
-                                                if (!Array.isArray(prev)) return prev;
-                                                return prev.map((r) =>
-                                                  String(r._id) === String(review._id)
-                                                    ? {
-                                                        ...r,
-                                                        moderationStatus: nextStatus,
-                                                        effectiveStatus:
-                                                          review?.authorStatus === "visible" &&
-                                                          nextStatus === "visible"
-                                                            ? "visible"
-                                                            : "hidden",
-                                                      }
-                                                    : r,
-                                                );
-                                              },
-                                              false,
-                                            );
-                                          }
-
-                                          try {
-                                            let res: Response | null = null;
-                                            if (isAdminModeration) {
-                                              await adminMutator(
-                                                `/api/admin/reviews/${review._id}`,
+                                            const { isAdminModeration, nextStatus } =
+                                              getReviewManagedVisibilityStatus(
                                                 {
-                                                  method: "PATCH",
-                                                  body: JSON.stringify({
-                                                    moderationStatus: nextStatus,
-                                                  }),
+                                                  ...review,
+                                                  ownedByMe: reviewOwnedByMe,
                                                 },
+                                                isAdmin,
                                               );
-                                            } else {
-                                              res = await fetch(`/api/reviews/${review._id}`, {
-                                                method: "PATCH",
-                                                credentials: "include",
-                                                headers: {
-                                                  "Content-Type": "application/json",
-                                                },
-                                                body: JSON.stringify({
+
+                                            // 낙관적 변경 전 현재 SWR 데이터 보관
+                                            const myReviewSnapshot = myReview;
+
+                                            const adminReviewsSnapshot = adminReviews;
+
+                                            setBusyReviewId(String(review._id));
+
+                                            // 낙관적 업데이트
+                                            if (reviewOwnedByMe) {
+                                              await mutateMyReview?.((prev: any) => {
+                                                if (
+                                                  !prev?._id ||
+                                                  String(prev._id) !== String(review._id)
+                                                )
+                                                  return prev;
+                                                return {
+                                                  ...prev,
                                                   status: nextStatus,
-                                                }),
-                                              });
-                                            }
-                                            if (res && !res.ok) throw new Error("상태 변경 실패");
-
-                                            try {
-                                              if (reviewOwnedByMe) {
-                                                await mutateMyReview?.();
-                                              } else if (isAdminModeration) {
-                                                await mutateAdminReviews?.();
-                                              }
-                                            } catch (revalidateError) {
-                                              console.error(
-                                                "[reviews] failed to revalidate after successful mutation",
-                                                revalidateError,
+                                                };
+                                              }, false);
+                                            } else if (isAdminModeration) {
+                                              await mutateAdminReviews?.(
+                                                (prev: any[] | undefined) => {
+                                                  if (!Array.isArray(prev)) return prev;
+                                                  return prev.map((r) =>
+                                                    String(r._id) === String(review._id)
+                                                      ? {
+                                                          ...r,
+                                                          moderationStatus: nextStatus,
+                                                          effectiveStatus:
+                                                            review?.authorStatus === "visible" &&
+                                                            nextStatus === "visible"
+                                                              ? "visible"
+                                                              : "hidden",
+                                                        }
+                                                      : r,
+                                                  );
+                                                },
+                                                false,
                                               );
                                             }
 
-                                            // 탭 유지 + 서버 리프레시
-                                            const params = new URLSearchParams(
-                                              searchParams.toString(),
-                                            );
-                                            params.set("tab", "reviews");
-                                            router.replace(`?${params.toString()}`, {
-                                              scroll: false,
-                                            });
-                                            router.refresh();
-
-                                            showSuccessToast(
-                                              nextStatus === "hidden"
-                                                ? "비공개로 전환했어요."
-                                                : "공개로 전환했어요.",
-                                            );
-                                          } catch (err: any) {
-                                            // PATCH 실패 시 서버 재조회에 의존하지 않고
-                                            // 낙관적 변경 전 snapshot을 즉시 복원합니다.
                                             try {
-                                              if (reviewOwnedByMe) {
-                                                await mutateMyReview?.(myReviewSnapshot, false);
-                                              } else if (isAdminModeration) {
-                                                await mutateAdminReviews?.(
-                                                  adminReviewsSnapshot,
-                                                  false,
-                                                );
-                                              }
-                                            } catch (rollbackError) {
-                                              console.error(
-                                                "[reviews] failed to restore racket review snapshot",
-                                                rollbackError,
-                                              );
-                                            }
-
-                                            showErrorToast(
-                                              err?.message || "상태 변경에 실패했습니다.",
-                                            );
-
-                                            // 요청 응답만 유실됐을 가능성에 대비한 보조 재검증
-                                            try {
-                                              if (reviewOwnedByMe) {
-                                                await mutateMyReview?.();
-                                              } else if (isAdminModeration) {
-                                                await mutateAdminReviews?.();
-                                              }
-                                            } catch (revalidateError) {
-                                              console.error(
-                                                "[reviews] failed to revalidate racket review after failed mutation",
-                                                revalidateError,
-                                              );
-                                            }
-                                          } finally {
-                                            setBusyReviewId(null);
-                                          }
-                                        }}
-                                      >
-                                        {getReviewManagedVisibilityStatus(
-                                          { ...review, ownedByMe: isMine(review) },
-                                          isAdmin,
-                                        ).managedStatus === "hidden" ? (
-                                          <>
-                                            <Eye className="mr-2 h-4 w-4" />
-                                            공개로 전환
-                                          </>
-                                        ) : (
-                                          <>
-                                            <EyeOff className="mr-2 h-4 w-4" />
-                                            비공개로 전환
-                                          </>
-                                        )}
-                                      </DropdownMenuItem>
-
-                                      {/* 수정: 내 후기 or 관리자 */}
-                                      <DropdownMenuItem onClick={() => openEdit(review)}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        수정하기
-                                      </DropdownMenuItem>
-
-                                      {/* 삭제: 관리자만 */}
-                                      {isAdmin && (
-                                        <>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem
-                                            className="text-destructive focus:text-destructive"
-                                            onClick={async () => {
-                                              if (!review?._id) return;
-                                              if (!confirm("정말 삭제할까요?")) return;
-
-                                              setBusyReviewId(String(review._id));
-                                              try {
+                                              let res: Response | null = null;
+                                              if (isAdminModeration) {
                                                 await adminMutator(
                                                   `/api/admin/reviews/${review._id}`,
                                                   {
-                                                    method: "DELETE",
+                                                    method: "PATCH",
+                                                    body: JSON.stringify({
+                                                      moderationStatus: nextStatus,
+                                                    }),
                                                   },
                                                 );
+                                              } else {
+                                                res = await fetch(`/api/reviews/${review._id}`, {
+                                                  method: "PATCH",
+                                                  credentials: "include",
+                                                  headers: {
+                                                    "Content-Type": "application/json",
+                                                  },
+                                                  body: JSON.stringify({
+                                                    status: nextStatus,
+                                                  }),
+                                                });
+                                              }
+                                              if (res && !res.ok) throw new Error("상태 변경 실패");
 
-                                                try {
+                                              try {
+                                                if (reviewOwnedByMe) {
+                                                  await mutateMyReview?.();
+                                                } else if (isAdminModeration) {
                                                   await mutateAdminReviews?.();
-                                                } catch (revalidateError) {
-                                                  console.error(
-                                                    "[reviews] failed to revalidate after successful mutation",
-                                                    revalidateError,
+                                                }
+                                              } catch (revalidateError) {
+                                                console.error(
+                                                  "[reviews] failed to revalidate after successful mutation",
+                                                  revalidateError,
+                                                );
+                                              }
+
+                                              // 탭 유지 + 서버 리프레시
+                                              const params = new URLSearchParams(
+                                                searchParams.toString(),
+                                              );
+                                              params.set("tab", "reviews");
+                                              router.replace(`?${params.toString()}`, {
+                                                scroll: false,
+                                              });
+                                              router.refresh();
+
+                                              showSuccessToast(
+                                                nextStatus === "hidden"
+                                                  ? "비공개로 전환했어요."
+                                                  : "공개로 전환했어요.",
+                                              );
+                                            } catch (err: any) {
+                                              // PATCH 실패 시 서버 재조회에 의존하지 않고
+                                              // 낙관적 변경 전 snapshot을 즉시 복원합니다.
+                                              try {
+                                                if (reviewOwnedByMe) {
+                                                  await mutateMyReview?.(myReviewSnapshot, false);
+                                                } else if (isAdminModeration) {
+                                                  await mutateAdminReviews?.(
+                                                    adminReviewsSnapshot,
+                                                    false,
                                                   );
                                                 }
-                                                // 탭 유지
-                                                const params = new URLSearchParams(
-                                                  searchParams.toString(),
+                                              } catch (rollbackError) {
+                                                console.error(
+                                                  "[reviews] failed to restore racket review snapshot",
+                                                  rollbackError,
                                                 );
-                                                params.set("tab", "reviews");
-                                                router.replace(`?${params.toString()}`, {
-                                                  scroll: false,
-                                                });
-                                                router.refresh();
-
-                                                showSuccessToast("후기를 삭제했어요.");
-                                              } catch (err: any) {
-                                                showErrorToast(
-                                                  err?.message || "후기 삭제에 실패했습니다.",
-                                                );
-                                              } finally {
-                                                setBusyReviewId(null);
                                               }
-                                            }}
-                                          >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            삭제하기
-                                          </DropdownMenuItem>
-                                        </>
-                                      )}
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
-                              </div>
-                            </div>
 
-                            {review?.masked ? (
-                              <MaskedBlock />
-                            ) : (
-                              <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-foreground">
-                                {review?.content || ""}
-                              </p>
-                            )}
+                                              showErrorToast(
+                                                err?.message || "상태 변경에 실패했습니다.",
+                                              );
 
-                            {/* 이미지 썸네일 → 뷰어 */}
-                            {Array.isArray(review?.photos) && review.photos.length > 0 ? (
-                              <div className="flex gap-2 overflow-x-auto pb-1 sm:gap-3">
-                                {review.photos.slice(0, 4).map((src: string, i: number) => (
-                                  <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => openViewer(review.photos, i)}
-                                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:rounded-xl"
-                                    title="확대 보기"
-                                  >
-                                    <Image
-                                      src={src}
-                                      alt={`후기 이미지 ${i + 1}`}
-                                      fill
-                                      className="object-cover"
-                                    />
-                                    {/* 4장 넘어가면 +N 표시 */}
-                                    {i === 3 && review.photos.length > 4 ? (
-                                      <div className="absolute inset-0 flex items-center justify-center bg-foreground/45 text-ui-body-sm font-semibold text-background">
-                                        +{review.photos.length - 4}
-                                      </div>
-                                    ) : null}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : null}
+                                              // 요청 응답만 유실됐을 가능성에 대비한 보조 재검증
+                                              try {
+                                                if (reviewOwnedByMe) {
+                                                  await mutateMyReview?.();
+                                                } else if (isAdminModeration) {
+                                                  await mutateAdminReviews?.();
+                                                }
+                                              } catch (revalidateError) {
+                                                console.error(
+                                                  "[reviews] failed to revalidate racket review after failed mutation",
+                                                  revalidateError,
+                                                );
+                                              }
+                                            } finally {
+                                              setBusyReviewId(null);
+                                            }
+                                          }}
+                                        >
+                                          {getReviewManagedVisibilityStatus(
+                                            { ...review, ownedByMe: isMine(review) },
+                                            isAdmin,
+                                          ).managedStatus === "hidden" ? (
+                                            <>
+                                              <Eye className="mr-2 h-4 w-4" />
+                                              공개로 전환
+                                            </>
+                                          ) : (
+                                            <>
+                                              <EyeOff className="mr-2 h-4 w-4" />
+                                              비공개로 전환
+                                            </>
+                                          )}
+                                        </DropdownMenuItem>
 
-                            {/* 작업 중 오버레이 */}
-                            {busyReviewId && String(busyReviewId) === String(review?._id) ? (
-                              <div className="flex items-center gap-2 pt-2 text-ui-label text-muted-foreground">
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                처리 중...
+                                        {/* 수정: 내 후기 or 관리자 */}
+                                        <DropdownMenuItem onClick={() => openEdit(review)}>
+                                          <Pencil className="mr-2 h-4 w-4" />
+                                          수정하기
+                                        </DropdownMenuItem>
+
+                                        {/* 삭제: 관리자만 */}
+                                        {isAdmin && (
+                                          <>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem
+                                              className="text-destructive focus:text-destructive"
+                                              onClick={async () => {
+                                                if (!review?._id) return;
+                                                if (!confirm("정말 삭제할까요?")) return;
+
+                                                setBusyReviewId(String(review._id));
+                                                try {
+                                                  await adminMutator(
+                                                    `/api/admin/reviews/${review._id}`,
+                                                    {
+                                                      method: "DELETE",
+                                                    },
+                                                  );
+
+                                                  try {
+                                                    await mutateAdminReviews?.();
+                                                  } catch (revalidateError) {
+                                                    console.error(
+                                                      "[reviews] failed to revalidate after successful mutation",
+                                                      revalidateError,
+                                                    );
+                                                  }
+                                                  // 탭 유지
+                                                  const params = new URLSearchParams(
+                                                    searchParams.toString(),
+                                                  );
+                                                  params.set("tab", "reviews");
+                                                  router.replace(`?${params.toString()}`, {
+                                                    scroll: false,
+                                                  });
+                                                  router.refresh();
+
+                                                  showSuccessToast("후기를 삭제했어요.");
+                                                } catch (err: any) {
+                                                  showErrorToast(
+                                                    err?.message || "후기 삭제에 실패했습니다.",
+                                                  );
+                                                } finally {
+                                                  setBusyReviewId(null);
+                                                }
+                                              }}
+                                            >
+                                              <Trash2 className="mr-2 h-4 w-4" />
+                                              삭제하기
+                                            </DropdownMenuItem>
+                                          </>
+                                        )}
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  )}
+                                </div>
                               </div>
-                            ) : null}
-                          </CardContent>
+
+                              {review?.masked ? (
+                                <MaskedBlock />
+                              ) : (
+                                <p className="whitespace-pre-line break-keep break-words text-ui-body-sm leading-relaxed text-foreground bp-sm:text-ui-body">
+                                  {review?.content || ""}
+                                </p>
+                              )}
+
+                              {/* 이미지 썸네일 → 뷰어 */}
+                              {Array.isArray(review?.photos) && review.photos.length > 0 ? (
+                                <div className="flex gap-2 overflow-x-auto pb-1 bp-sm:gap-3">
+                                  {review.photos.slice(0, 4).map((src: string, i: number) => (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      onClick={() => openViewer(review.photos, i)}
+                                      className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border bg-muted transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                      aria-label={`후기 사진 ${i + 1} 크게 보기`}
+                                    >
+                                      <Image
+                                        src={src}
+                                        alt={`후기 이미지 ${i + 1}`}
+                                        fill
+                                        className="object-cover"
+                                      />
+                                      {/* 4장 넘어가면 +N 표시 */}
+                                      {i === 3 && review.photos.length > 4 ? (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-foreground/45 text-ui-body-sm font-semibold text-background">
+                                          +{review.photos.length - 4}
+                                        </div>
+                                      ) : null}
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : null}
+
+                              {/* 작업 중 오버레이 */}
+                              {busyReviewId && String(busyReviewId) === String(review?._id) ? (
+                                <div className="flex items-center gap-2 pt-2 text-ui-label text-muted-foreground">
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  처리 중...
+                                </div>
+                              ) : null}
+                            </CardContent>
                           </Card>
                         );
                       })}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-border bg-muted/30 p-4 text-ui-body-sm text-muted-foreground sm:rounded-2xl sm:p-6">
-                      아직 등록된 후기가 없습니다.
+                    <div className="-mx-4 border-y border-border/60 px-4 py-8 text-center bp-sm:-mx-6 bp-sm:px-6 bp-md:mx-0 bp-md:rounded-2xl bp-md:border bp-md:bg-muted/30 bp-md:px-6 bp-md:py-12">
+                      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card bp-sm:mb-5 bp-sm:h-14 bp-sm:w-14">
+                        <Star className="h-6 w-6 text-foreground bp-sm:h-7 bp-sm:w-7" />
+                      </div>
+                      <h3 className="mb-2 text-ui-card-title-lg font-ui-bold text-foreground bp-sm:text-ui-section-title">
+                        아직 등록된 후기가 없습니다
+                      </h3>
+                      <p className="break-keep text-ui-body-sm text-muted-foreground bp-sm:text-ui-body">
+                        구매확정 또는 대여확정된 이용내역에서 후기를 작성할 수 있어요.
+                      </p>
                     </div>
                   )}
                 </div>

@@ -2,6 +2,7 @@ import Image from "next/image";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import ReviewContextBadge from "@/components/reviews/ReviewContextBadge";
 import ReviewVisibilityBadge from "@/components/reviews/ReviewVisibilityBadge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -36,23 +37,23 @@ export default function ProductReviewCard({
 }: ProductReviewCardProps) {
   const { managedStatus } = getReviewManagedVisibilityStatus(review, Boolean(review.adminView));
   return (
-    <Card className="rounded-xl border border-border bg-card shadow-none sm:rounded-2xl">
-      <CardContent className="relative p-4 sm:p-6">
+    <Card className="rounded-none border-0 bg-card shadow-none bp-md:rounded-2xl bp-md:border bp-md:border-border">
+      <CardContent className="relative p-4 bp-sm:p-5 bp-md:p-6">
         {isBusy && (
-          <div className="absolute inset-0 bg-card/70 dark:bg-background/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-none bg-card/70 backdrop-blur-sm dark:bg-background/40 bp-md:rounded-2xl">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span className="ml-2 text-ui-body-sm">변경 중...</span>
           </div>
         )}
 
-        <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-3 sm:mb-4">
+        <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-3 bp-sm:mb-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="w-10 h-10 bg-secondary border border-border/60 rounded-full flex items-center justify-center text-foreground font-semibold text-ui-card-title-lg shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary text-ui-card-title-lg font-ui-bold text-foreground">
               {review.user?.charAt(0) || "U"}
             </div>
             <div className="min-w-0">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <span className="break-words font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
+                <span className="min-w-0 break-words text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">
                   {review.status === "hidden"
                     ? review.ownedByMe
                       ? (review.user ?? "내 후기")
@@ -69,11 +70,13 @@ export default function ProductReviewCard({
                   <ReviewVisibilityBadge />
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="mt-1 flex items-center gap-2">
                 <ProductReviewRatingStars rating={review.rating} />
-                <span className="text-ui-label sm:text-ui-body-sm text-muted-foreground">
-                  {review.date || "2099-01-01"}
-                </span>
+                {review.date ? (
+                  <span className="text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
+                    {review.date}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -81,13 +84,15 @@ export default function ProductReviewCard({
           {canManage && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
+                <Button
                   type="button"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted/50 hover:text-foreground transition-colors"
-                  aria-label="내 후기 관리"
+                  variant="ghost"
+                  size="icon"
+                  className="h-11 w-11 rounded-lg bp-md:h-9 bp-md:w-9"
+                  aria-label="후기 관리 메뉴"
                 >
                   <MoreHorizontal className="h-4 w-4" />
-                </button>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 {/* 공개/비공개 토글 */}
@@ -145,12 +150,10 @@ export default function ProductReviewCard({
         {isMasked ? (
           <MaskedBlock />
         ) : (
-          <div className="space-y-3 sm:space-y-4">
-            <div className="rounded-xl border border-border bg-muted/30 p-3 sm:p-4">
-              <p className="break-keep break-words text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
-                {review.content}
-              </p>
-            </div>
+          <div className="space-y-3 bp-sm:space-y-4">
+            <p className="whitespace-pre-line break-keep break-words text-ui-body-sm leading-relaxed text-foreground bp-sm:text-ui-body">
+              {review.content}
+            </p>
 
             {Array.isArray(review.photos) && review.photos.length > 0 && (
               <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
@@ -159,7 +162,7 @@ export default function ProductReviewCard({
                     key={i}
                     type="button"
                     onClick={() => onOpenPhoto(i)}
-                    className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border transition-colors hover:border-foreground/40 sm:h-20 sm:w-20"
+                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     aria-label={`후기 사진 ${i + 1} 크게 보기`}
                   >
                     <Image
