@@ -1,5 +1,5 @@
-import { CardGridSkeleton } from "@/components/system/loading";
+import { CommerceCatalogPageSkeleton } from "@/components/commerce";
 
 export default function RacketsLoading() {
-  return <CardGridSkeleton count={12} className="py-8" />;
+  return <CommerceCatalogPageSkeleton actionCount={2} showDetailBlock />;
 }

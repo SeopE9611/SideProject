@@ -6,4 +6,6 @@ export * from "./CatalogPrice";
 export * from "./CatalogRating";
 export * from "./CatalogResultsPanel";
 export * from "./CatalogToolbar";
+export * from "./CommerceCatalogHero";
+export * from "./CommerceCatalogPageSkeleton";
 export * from "./detail";
