@@ -1526,7 +1526,7 @@ export default function StringingApplicationDetailClient({
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 bp-sm:w-auto"
+                className="min-h-11 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 bp-sm:w-auto"
               >
                 <Link href={backUrl}>
                   <span className="bp-sm:hidden">목록</span>
@@ -1539,7 +1539,7 @@ export default function StringingApplicationDetailClient({
                 size="sm"
                 disabled={!isEditableAllowed}
                 className={cn(
-                  "h-9 w-full whitespace-nowrap bp-sm:w-auto",
+                  "min-h-11 w-full whitespace-nowrap bp-sm:w-auto",
                   !isEditMode &&
                     "border-brand-highlight-ink/20 bg-brand-highlight-muted/35 hover:bg-brand-highlight-muted/55",
                 )}
@@ -1558,7 +1558,7 @@ export default function StringingApplicationDetailClient({
                   size="sm"
                   onClick={handleOpenCancelDialog}
                   disabled={isPending}
-                  className="h-9 w-full whitespace-nowrap bp-sm:w-auto"
+                  className="min-h-11 w-full whitespace-nowrap bp-sm:w-auto"
                 >
                   취소 요청
                 </Button>
@@ -1566,11 +1566,11 @@ export default function StringingApplicationDetailClient({
 
               {canUserWithdrawCancelRequest && (
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
                   onClick={handleWithdrawCancelRequest}
                   disabled={isWithdrawingCancel}
-                  className="h-9 w-full whitespace-nowrap border-warning/40 text-warning hover:bg-warning/10 bp-sm:w-auto"
+                  className="min-h-11 w-full whitespace-nowrap bp-sm:w-auto"
                 >
                   {isWithdrawingCancel ? "철회 중..." : "취소 요청 철회"}
                 </Button>
@@ -1585,7 +1585,8 @@ export default function StringingApplicationDetailClient({
                 asChild={Boolean(userNextTodo.ctaHref)}
                 onClick={userNextTodo.onCtaClick}
                 disabled={isConfirmSubmitting}
-                className="w-full shrink-0 whitespace-normal break-keep bg-brand-highlight-ink text-brand-highlight-foreground hover:bg-brand-highlight-ink/90 bp-sm:w-auto"
+                variant="highlight"
+                className="min-h-11 w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto"
               >
                 {userNextTodo.ctaHref ? (
                   <Link href={userNextTodo.ctaHref}>{userNextTodo.ctaLabel}</Link>
@@ -1640,7 +1641,7 @@ export default function StringingApplicationDetailClient({
           className={
             isAdmin
               ? "space-y-6 px-0 bp-sm:px-0 bp-md:px-0 bp-lg:px-0"
-              : mypageDetailLayout.contentContainer
+              : `${mypageDetailLayout.contentContainer} max-w-none px-0 bp-sm:px-0 bp-md:px-0`
           }
         >
           {isLoading ? (

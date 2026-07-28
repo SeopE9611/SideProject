@@ -342,7 +342,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   if (error || !item) {
     return (
       <div className="space-y-4">
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" size="sm" className="min-h-11 w-full bp-sm:w-auto">
           <Link href="/mypage?tab=academy">
             <ArrowLeft className="h-4 w-4" />
             목록으로 돌아가기
@@ -353,7 +353,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           title="신청 내역을 찾을 수 없습니다."
           description="신청 번호가 올바르지 않거나 조회 권한이 없는 신청입니다."
           actions={
-            <Button type="button" onClick={() => mutate()}>
+            <Button type="button" className="min-h-11 w-full bp-sm:w-auto" onClick={() => mutate()}>
               다시 불러오기
             </Button>
           }
@@ -515,7 +515,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           variant="destructive"
           size="sm"
           wrap="responsive"
-          className="h-9 w-full bp-sm:w-auto"
+          className="min-h-11 w-full bp-sm:w-auto"
         >
           신청 취소
         </Button>
@@ -592,7 +592,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         asChild
         variant="outline"
         size="sm"
-        className="h-9 w-full border-brand-highlight-ink/30 hover:bg-brand-highlight-muted hover:text-brand-highlight-ink bp-sm:w-auto"
+        className="min-h-11 w-full border-brand-highlight-ink/30 hover:bg-brand-highlight-muted hover:text-brand-highlight-ink bp-sm:w-auto"
       >
         <Link href="/mypage?tab=academy">
           <ArrowLeft className="h-4 w-4" />
@@ -605,7 +605,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             type="button"
             variant="outline"
             size="sm"
-            className="h-9 w-full bp-sm:w-auto"
+            className="min-h-11 w-full bp-sm:w-auto"
             onClick={() => setIsEditing(false)}
             disabled={isSavingEdit}
           >
@@ -616,7 +616,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             type="button"
             variant="highlight_soft"
             size="sm"
-            className="h-9 w-full bp-sm:w-auto"
+            className="min-h-11 w-full bp-sm:w-auto"
             onClick={openEditForm}
           >
             신청 정보 수정
@@ -651,7 +651,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         nextActionDescription={nextActionCopy.description}
         nextActionSlot={
           nextActionCopy.showInquiry ? (
-            <Button asChild variant="highlight" size="sm" className="h-9 w-full bp-sm:w-auto">
+            <Button asChild variant="highlight" size="sm" className="min-h-11 w-full bp-sm:w-auto">
               <Link href="/board/qna/write?category=academy">문의하기</Link>
             </Button>
           ) : null
@@ -841,7 +841,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                     type="button"
                     variant="destructive"
                     wrap="responsive"
-                    className="w-full bp-sm:w-auto"
+                    className="min-h-11 w-full bp-sm:w-auto"
                     disabled={isDeleting}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -877,10 +877,10 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       </div>
 
       <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:justify-end">
-        <Button asChild variant="secondary" wrap="responsive" className="w-full bp-sm:w-auto">
+        <Button asChild variant="secondary" wrap="responsive" className="min-h-11 w-full bp-sm:w-auto">
           <Link href="/academy">아카데미 홈 보기</Link>
         </Button>
-        <Button asChild variant="default" wrap="responsive" className="w-full bp-sm:w-auto">
+        <Button asChild variant="default" wrap="responsive" className="min-h-11 w-full bp-sm:w-auto">
           <Link href="/board/qna/write?category=academy">
             <PhoneCall className="h-4 w-4" />
             문의하기

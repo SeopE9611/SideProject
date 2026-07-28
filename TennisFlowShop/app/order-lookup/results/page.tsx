@@ -165,7 +165,7 @@ export default function OrderLookupResultsPage() {
             actions={
               <Button
                 onClick={handleGoBack}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+                className="min-h-11 w-full sm:w-auto"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 주문 조회 페이지로 돌아가기
@@ -203,7 +203,7 @@ export default function OrderLookupResultsPage() {
             </Link>
           </div>
 
-          <Card className="border border-border bg-card shadow-sm mb-6 md:mb-8">
+          <Card className="border-0 bg-transparent shadow-none mb-6 md:mb-8">
             <CardHeader className="text-center pb-6 md:pb-8">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
                 <ShoppingBag className="w-6 h-6 text-foreground" />
@@ -256,7 +256,7 @@ export default function OrderLookupResultsPage() {
                     return (
                       <Card
                         key={order.id}
-                        className="overflow-hidden border-2 border-border hover:border-border transition-all duration-200 hover:shadow-lg"
+                        className="overflow-hidden border border-border bg-card shadow-sm"
                       >
                         <div className="p-4 md:p-6">
                           {/* Order Header */}
@@ -303,7 +303,7 @@ export default function OrderLookupResultsPage() {
 
                           {/* Order Details Grid */}
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-                            <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                            <div className="flex items-center gap-3 border-b border-border/60 py-3">
                               <User className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="min-w-0">
                                 <p className="text-ui-label text-muted-foreground mb-1">수령인</p>
@@ -313,7 +313,7 @@ export default function OrderLookupResultsPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                            <div className="flex items-center gap-3 border-b border-border/60 py-3">
                               <Phone className="h-5 w-5 text-success flex-shrink-0" />
                               <div className="min-w-0">
                                 <p className="text-ui-label text-muted-foreground mb-1">연락처</p>
@@ -323,7 +323,7 @@ export default function OrderLookupResultsPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                            <div className="flex items-center gap-3 border-b border-border/60 py-3">
                               <Calendar className="h-5 w-5 text-foreground flex-shrink-0" />
                               <div className="min-w-0">
                                 <p className="text-ui-label text-muted-foreground mb-1">주문일자</p>
@@ -331,7 +331,7 @@ export default function OrderLookupResultsPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 p-3 bg-secondary rounded-lg border border-border">
+                            <div className="flex items-center gap-3 border-b border-border/60 py-3">
                               <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="min-w-0">
                                 <p className="text-ui-label text-muted-foreground mb-1">결제금액</p>
@@ -346,7 +346,7 @@ export default function OrderLookupResultsPage() {
                           <div className="flex flex-col sm:flex-row gap-3 justify-end">
                             <Button
                               variant="outline"
-                              className="flex items-center gap-2 border-border text-foreground hover:bg-secondary hover:border-border bg-background"
+                              className="min-h-11 w-full gap-2 border-border bg-background sm:w-auto"
                               onClick={() => handleViewDetails(order.id)}
                             >
                               <Package className="w-4 h-4" />
@@ -364,7 +364,8 @@ export default function OrderLookupResultsPage() {
                                         : "택배 기반 교체서비스 신청이 가능합니다."}
                                     </p>
                                     <Button
-                                      className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm transition-all duration-200 hover:shadow-md"
+                                      variant="highlight"
+                                      className="min-h-11 w-full sm:w-auto"
                                       onClick={() =>
                                         router.push(`/services/apply?orderId=${order.id}`)
                                       }
@@ -408,12 +409,12 @@ export default function OrderLookupResultsPage() {
                     <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
                       <Button
                         onClick={handleGoBack}
-                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+                        className="min-h-11 w-full sm:w-auto"
                       >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         다시 조회하기
                       </Button>
-                      <Button asChild variant="outline" className="w-full border-border sm:w-auto">
+                      <Button asChild variant="outline" className="min-h-11 w-full border-border sm:w-auto">
                         <Link href="/board/qna/write">고객센터 문의하기</Link>
                       </Button>
                     </div>

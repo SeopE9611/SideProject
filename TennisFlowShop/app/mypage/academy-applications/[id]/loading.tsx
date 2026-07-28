@@ -2,11 +2,9 @@ import MypagePrimaryNavigation from "@/app/mypage/_components/MypagePrimaryNavig
 import AcademyApplicationDetailSkeleton from "@/app/mypage/academy-applications/[id]/_components/AcademyApplicationDetailSkeleton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import StickyAside from "@/components/layout/StickyAside";
-import { DashboardSectionPanel } from "@/components/public";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
-import { GraduationCap } from "lucide-react";
 
 export default function AcademyApplicationDetailLoading() {
   return (
@@ -57,14 +55,7 @@ export default function AcademyApplicationDetailLoading() {
                 </CardContent>
               </Card>
 
-              <DashboardSectionPanel
-                variant="feature"
-                icon={<GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
-                title="클래스 신청"
-                description="신청 상태와 상담·수강 정보를 확인하세요."
-              >
-                <AcademyApplicationDetailSkeleton />
-              </DashboardSectionPanel>
+              <AcademyApplicationDetailSkeleton />
             </Tabs>
           </div>
         </div>

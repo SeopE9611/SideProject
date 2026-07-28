@@ -1,6 +1,5 @@
 "use client";
 
-import SiteContainer from "@/components/layout/SiteContainer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -35,7 +34,7 @@ export default function StringingApplicationDetailSkeleton() {
     <main className="w-full" aria-busy="true" aria-live="polite">
       <span className="sr-only">교체서비스 신청 상세 정보를 불러오는 중입니다.</span>
       <MypageDetailSkeletonHero />
-      <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
+      <div className={mypageDetailLayout.contentContainer}>
         <div className="mx-auto w-full space-y-5">
           <DetailCardSkeleton />
           <DetailCardSkeleton />
@@ -45,7 +44,7 @@ export default function StringingApplicationDetailSkeleton() {
           </div>
           <DetailCardSkeleton />
         </div>
-      </SiteContainer>
+      </div>
     </main>
   );
 }

@@ -5,11 +5,9 @@ import MypagePrimaryNavigation from "@/app/mypage/_components/MypagePrimaryNavig
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import SiteContainer from "@/components/layout/SiteContainer";
 import StickyAside from "@/components/layout/StickyAside";
-import { DashboardSectionPanel } from "@/components/public";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { GraduationCap } from "lucide-react";
 import type { ReactNode } from "react";
 import useSWR from "swr";
 
@@ -80,14 +78,7 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                 </CardContent>
               </Card>
 
-              <DashboardSectionPanel
-                variant="feature"
-                icon={<GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
-                title="클래스 신청"
-                description="신청 상태와 상담·수강 정보를 확인하세요."
-              >
-                {children}
-              </DashboardSectionPanel>
+              <div className="min-w-0">{children}</div>
             </Tabs>
           </div>
         </div>

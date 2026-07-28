@@ -12,7 +12,6 @@ import {
 } from "@/app/mypage/_lib/flow-display";
 import OrderDetailSkeleton from "@/app/mypage/orders/_components/OrderDetailSkeleton";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
-import SiteContainer from "@/components/layout/SiteContainer";
 import AsyncState from "@/components/system/AsyncState";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -499,7 +498,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   if (orderError) {
     return (
       <main className="w-full">
-        <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
+        <div className="py-4 bp-sm:py-6">
           <AsyncState
             kind="error"
             tone="user"
@@ -509,7 +508,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               void mutateOrderDetail();
             }}
           />
-        </SiteContainer>
+        </div>
       </main>
     );
   }
@@ -527,7 +526,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   if (!orderDetail) {
     return (
       <main className="w-full">
-        <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
+        <div className="py-4 bp-sm:py-6">
           <AsyncState
             kind="empty"
             tone="user"
@@ -536,7 +535,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             title="주문 정보를 찾을 수 없어요"
             description="주문 번호를 확인한 뒤 다시 시도해 주세요."
           />
-        </SiteContainer>
+        </div>
       </main>
     );
   }
@@ -962,7 +961,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               asChild={Boolean(nextTodo.ctaHref)}
               onClick={nextTodo.onCtaClick}
               disabled={isConfirmingPurchase}
-              className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
+              className="min-h-11 w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
             >
               {nextTodo.ctaHref ? (
                 <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
@@ -978,7 +977,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               variant="outline"
               size="sm"
               onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 bp-sm:w-auto"
+              className="min-h-11 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 bp-sm:w-auto"
             >
               <span className="bp-sm:hidden">목록</span>
               <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
@@ -990,7 +989,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               onClick={() => setIsEditMode((m) => !m)}
               disabled={!canUserEdit}
               className={cn(
-                "h-9 w-full whitespace-nowrap bp-sm:w-auto",
+                "min-h-11 w-full whitespace-nowrap bp-sm:w-auto",
                 !isEditMode && "border-border bg-background hover:bg-brand-highlight-muted/70",
               )}
             >
@@ -1002,7 +1001,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
-                className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
+                className="min-h-11 w-full whitespace-normal break-keep bp-sm:w-auto"
               >
                 취소 요청
               </Button>
@@ -1011,7 +1010,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         }
       />
 
-      <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
+      <div className={mypageDetailLayout.contentContainer}>
         {/* 취소 요청 상태 안내 배너 */}
         {cancelLabel && (
           <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-warning/35 bg-warning/10 px-3 py-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
@@ -1023,7 +1022,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 variant="destructive"
                 onClick={handleWithdrawCancelRequest}
                 disabled={isWithdrawingCancelRequest}
-                className="h-9 w-full gap-1.5 whitespace-normal break-keep bp-sm:ml-4 bp-sm:w-auto"
+                className="min-h-11 w-full gap-1.5 whitespace-normal break-keep bp-sm:ml-4 bp-sm:w-auto"
               >
                 {isWithdrawingCancelRequest ? "철회 중..." : "취소 요청 철회"}
               </Button>
@@ -1116,7 +1115,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                               asChild
                               size="sm"
                               variant="secondary"
-                              className="w-full bp-sm:w-auto"
+                              className="min-h-11 w-full bp-sm:w-auto"
                             >
                               <Link href={`/products/${item.id}?tab=reviews`}>
                                 작성한 후기 보기
@@ -1336,7 +1335,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                     asChild
                                     size="sm"
                                     variant="outline"
-                                    className="h-8 w-full bg-transparent bp-sm:w-auto"
+                                    className="min-h-11 w-full bg-transparent bp-sm:w-auto"
                                   >
                                     <Link href={appShippingHref}>운송장 수정</Link>
                                   </Button>
@@ -1357,7 +1356,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                   <Button
                                     asChild
                                     size="sm"
-                                    className="w-full shrink-0 bp-sm:w-auto"
+                                    className="min-h-11 w-full shrink-0 bp-sm:w-auto"
                                   >
                                     <Link href={appShippingHref}>라켓 발송 운송장 등록</Link>
                                   </Button>
@@ -1375,7 +1374,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체
                         가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
                       </p>
-                      <Button asChild className="mt-4 w-full bp-sm:w-auto">
+                      <Button asChild className="mt-4 min-h-11 w-full bp-sm:w-auto">
                         <Link href={`/services/apply?orderId=${orderDetail._id}`}>
                           {hasSubmittedStringingApplication
                             ? "교체서비스 추가 신청하기"
@@ -1631,7 +1630,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                             size="sm"
                             variant="outline"
                             onClick={() => setEditingRequest(true)}
-                            className="h-8 w-full hover:bg-warning/10 bp-sm:w-auto"
+                            className="min-h-11 w-full hover:bg-warning/10 bp-sm:w-auto"
                           >
                             요청사항 수정
                           </Button>
@@ -1666,7 +1665,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           asChild
                           size="sm"
                           variant="outline"
-                          className="h-8 w-full bp-sm:w-auto"
+                          className="min-h-11 w-full bp-sm:w-auto"
                         >
                           <Link href={inboundShippingHref ?? "#"}>운송장 수정</Link>
                         </Button>
@@ -1706,7 +1705,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       : "이번 이용으로 패키지를 모두 사용했습니다."}
                   </p>
                 </div>
-                <Button asChild size="sm" variant="outline" className="w-full bp-sm:w-auto">
+                <Button asChild size="sm" variant="outline" className="min-h-11 w-full bp-sm:w-auto">
                   <Link href="/mypage?tab=passes">패키지 관리로 이동</Link>
                 </Button>
               </MypageDetailCard>
@@ -1727,7 +1726,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   </div>
                 </div>
 
-                <Button asChild size="sm" variant="outline" className="w-full bp-sm:w-auto">
+                <Button asChild size="sm" variant="outline" className="min-h-11 w-full bp-sm:w-auto">
                   <Link href="/mypage?tab=reviews">작성한 후기 보기</Link>
                 </Button>
               </div>
@@ -1749,7 +1748,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             }}
           />
         ) : null}
-      </SiteContainer>
+      </div>
     </main>
   );
 }
