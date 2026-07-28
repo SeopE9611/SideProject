@@ -9,9 +9,7 @@ import {
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
-import Link from "next/link";
-import { PublicPageHero, ResultState } from "@/components/public";
-import { Button } from "@/components/ui/button";
+import { CommerceDetailResultState } from "@/components/commerce/detail";
 
 import type { Metadata } from "next";
 
@@ -77,41 +75,17 @@ async function withRetry<T>(
 function ProductDetailResult({ id, status }: { id?: string; status: "not-found" | "load-error" }) {
   const isLoadError = status === "load-error";
   return (
-    <main className="min-h-screen bg-background pb-10">
-      <PublicPageHero
-        variant="feature"
-        eyebrow="상품 상세"
-        title={isLoadError ? "상품 정보를 불러오지 못했습니다" : "상품을 찾을 수 없습니다"}
-        description={
-          isLoadError
-            ? "일시적인 연결 문제일 수 있어요. 잠시 후 다시 시도해 주세요. 문제가 계속되면 관리자에게 문의해 주세요."
-            : "요청하신 상품이 없거나 현재 공개되어 있지 않습니다."
-        }
-      />
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <ResultState
-          status={isLoadError ? "error" : "warning"}
-          title={isLoadError ? "다시 확인해 주세요" : "다른 상품을 둘러보세요"}
-          description={
-            isLoadError
-              ? "상품 정보를 다시 불러올 수 있습니다."
-              : "상품 목록에서 원하는 상품을 찾아보세요."
-          }
-          actions={
-            <>
-              {id && (
-                <Button asChild className="rounded-control">
-                  <Link href={`/products/${id}`}>다시 시도</Link>
-                </Button>
-              )}
-              <Button asChild variant="outline" className="rounded-control">
-                <Link href="/products">상품 목록으로 이동</Link>
-              </Button>
-            </>
-          }
-        />
-      </div>
-    </main>
+    <CommerceDetailResultState
+      eyebrow="상품 상세"
+      title={isLoadError ? "상품 정보를 불러오지 못했습니다" : "상품을 찾을 수 없습니다"}
+      description={isLoadError ? "일시적인 연결 문제일 수 있어요. 잠시 후 다시 시도해 주세요." : "요청하신 상품이 없거나 현재 공개되어 있지 않습니다."}
+      stateTitle={isLoadError ? "다시 확인해 주세요" : "다른 상품을 둘러보세요"}
+      stateDescription={isLoadError ? "상품 정보를 다시 불러올 수 있습니다." : "상품 목록에서 원하는 상품을 찾아보세요."}
+      listHref="/products"
+      listLabel="상품 목록으로 이동"
+      status={isLoadError ? "error" : "warning"}
+      retryHref={isLoadError && id ? `/products/${id}` : undefined}
+    />
   );
 }
 

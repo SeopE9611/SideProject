@@ -1323,6 +1323,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
           onOpenChange={setViewerOpen}
           images={viewerImages}
           index={viewerIndex}
+          onChangeIndex={setViewerIndex}
           onPrev={prevViewer}
           onNext={nextViewer}
         />

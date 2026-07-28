@@ -2,7 +2,6 @@
 
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   clearRecentViewedItems,
   getRecentViewedItems,
@@ -46,13 +45,12 @@ export default function RecentViewedItems({
   if (!mounted || filteredItems.length === 0) return null;
 
   return (
-    <section className="mt-8 bp-md:mt-10" aria-label={title}>
-      <Card className="-mx-3 rounded-none border-x-0 border-y border-border bg-card shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border-x bp-md:shadow-sm">
-        <CardHeader className="flex min-w-0 flex-row items-start justify-between gap-3 p-4 bp-sm:p-5 bp-md:p-6">
+    <section className="mt-8 bp-md:mt-10" aria-labelledby="recent-viewed-title">
+        <header className="mb-4 flex min-w-0 items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle className="break-keep text-ui-card-title-lg font-ui-bold bp-sm:text-ui-section-title">
+            <h2 id="recent-viewed-title" className="break-keep text-ui-card-title-lg font-ui-bold bp-sm:text-ui-section-title">
               {title}
-            </CardTitle>
+            </h2>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
               최근 확인한 스트링과 라켓을 다시 확인해보세요.
             </p>
@@ -70,8 +68,7 @@ export default function RecentViewedItems({
           >
             전체 지우기
           </Button>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 bp-sm:p-5 bp-sm:pt-0 bp-md:p-6 bp-md:pt-0">
+        </header>
           <HorizontalProducts
             title={title}
             items={filteredItems.map((item): HItem => ({
@@ -90,8 +87,6 @@ export default function RecentViewedItems({
             showMoreCard={false}
             cardWidthClass="flex-none basis-[calc((100%-12px)/2)] bp-sm:basis-[calc((100%-16px)/2)] bp-md-only:basis-[calc((100%-40px)/3)] bp-lg:basis-[calc((100%-72px)/4)]"
           />
-        </CardContent>
-      </Card>
     </section>
   );
 }

@@ -1,14 +1,21 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type Props = { optionSectionCount?: number; actionCount?: 1 | 2 | 3; showThumbnails?: boolean };
+type Props = {
+  loadingLabel: string;
+  optionSectionCount?: number;
+  actionCount?: 1 | 2 | 3;
+  showThumbnails?: boolean;
+};
 export function CommerceDetailSkeleton({
+  loadingLabel,
   optionSectionCount = 3,
   actionCount = 2,
   showThumbnails = true,
 }: Props) {
   return (
-    <div className="min-h-full bg-background pb-24 bp-md:pb-10">
+    <div className="min-h-full bg-background pb-24 bp-md:pb-10" aria-busy="true">
+      <span className="sr-only">{loadingLabel}</span>
       <div className="border-b border-border/60 bg-card/70 py-4 bp-sm:py-5">
         <SiteContainer variant="wide">
           <div className="flex items-center justify-between gap-3">
