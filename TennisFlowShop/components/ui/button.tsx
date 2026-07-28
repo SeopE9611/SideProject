@@ -27,6 +27,8 @@ const buttonVariants = cva(
           "border border-brand-highlight-ink/30 bg-brand-highlight-muted text-foreground shadow-none hover:border-brand-highlight-ink/45 hover:bg-brand-highlight-muted/80 active:translate-y-px",
         inverse:
           "border border-surface-inverse-foreground/20 bg-surface-inverse-foreground text-surface-inverse shadow-sm hover:bg-surface-inverse-foreground/90 active:translate-y-px",
+        inverse_outline:
+          "border border-surface-inverse-foreground/25 bg-surface-inverse-foreground/10 text-surface-inverse-foreground shadow-none hover:border-surface-inverse-foreground/40 hover:bg-surface-inverse-foreground/15 active:translate-y-px",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

@@ -4,6 +4,7 @@
 
 - `highlight`: 홈·라켓 케어 등 마케팅/탐색 페이지의 page-level 핵심 CTA. 한 section에 반복 사용하지 않는다.
 - `inverse`: `surface-inverse` Hero 내부 핵심 CTA. 검은 표면 위 아이보리 버튼이다.
+- `inverse_outline`: `surface-inverse` 내부의 보조 이동·보조 CTA. 같은 표면의 핵심 CTA보다 낮은 위계로 사용하며 일반 밝은 표면에서는 사용하지 않는다.
 - `highlight_soft`: 리스트에 반복되는 필수 처리 명령. 운송장 등록, 확정, 수령 확인 등에 사용하며 filled lime을 반복하지 않는다.
 - `secondary`: 후기 작성, 선택 활동, 낮은 우선순위 기능.
 - `outline`: 상세 보기, 보조 이동, 이전/취소가 아닌 일반 secondary navigation.
