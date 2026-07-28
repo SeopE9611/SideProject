@@ -44,7 +44,6 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
   Calendar,
   Eye,
   EyeOff,
@@ -620,7 +619,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
           {/* 상품 정보 */}
           <div className="space-y-4">
             <CommercePurchasePanel
-              eyebrow="Used racket"
+              eyebrow="중고 라켓"
               badges={
                 <>
                   <SemanticBadge tone="neutral" emphasis="outline">
@@ -646,16 +645,16 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               summary={
                 <div className="space-y-4 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/20 bp-md:p-4">
                   <div className="grid gap-2 text-ui-body-sm bp-sm:text-ui-body">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">배송비</span>
-                      <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="shrink-0 text-muted-foreground">배송비</span>
+                      <span className="min-w-0 break-keep break-words text-right tabular-nums font-ui-medium text-foreground">
                         {racketShippingLabel}
                       </span>
                     </div>
                     {racket?.rental?.enabled && (
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">대여</span>
-                        <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="shrink-0 text-muted-foreground">대여</span>
+                        <span className="min-w-0 break-keep break-words text-right tabular-nums font-ui-medium text-foreground">
                           7일 {Number(racket.rental?.fee?.d7 ?? 0).toLocaleString()}원 · 보증금{" "}
                           {Number(racket.rental?.deposit ?? 0).toLocaleString()}원
                         </span>
@@ -670,7 +669,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               actions={
                 <div ref={rentSectionRef} className="space-y-4">
                   <div className="bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/20 bp-md:p-4">
-                    <h2 className="text-ui-body font-semibold text-foreground">
+                    <h2 className="text-ui-body font-ui-bold text-foreground">
                       이 라켓으로 무엇을 할까요?
                     </h2>
                     <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -684,7 +683,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         wrap="nowrap"
                         size="tall"
                         variant="highlight_soft"
-                        className="min-h-12 w-full whitespace-nowrap px-3 sm:min-h-14"
+                        className="min-h-12 w-full whitespace-nowrap px-3 bp-sm:min-h-14"
                         onClick={() => router.push(`/rackets/${racketId}/select-string`)}
                         disabled={soldOut}
                         title={
@@ -708,7 +707,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                             size="tall"
                             variant="secondary"
                             wrap="nowrap"
-                            className="min-h-12 w-full whitespace-nowrap bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
+                            className="min-h-12 w-full whitespace-nowrap bg-muted text-muted-foreground bp-sm:min-h-14 dark:bg-card dark:text-muted-foreground"
                             disabled
                             title="현재 대여 가능 수량이 없습니다."
                           >
@@ -716,7 +715,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                             <span className="whitespace-nowrap">대여 불가</span>
                           </Button>
                         ) : (
-                          <div className="min-w-0 [&_button]:min-h-12 [&_button]:w-full [&_button]:rounded-xl sm:[&_button]:min-h-14">
+                          <div className="min-w-0 [&_button]:min-h-12 [&_button]:w-full [&_button]:rounded-xl bp-sm:[&_button]:min-h-14">
                             <RentDialog
                               id={racketId}
                               rental={racket.rental}
@@ -735,7 +734,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           size="tall"
                           variant="secondary"
                           wrap="nowrap"
-                          className="min-h-12 w-full whitespace-nowrap bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
+                          className="min-h-12 w-full whitespace-nowrap bg-muted text-muted-foreground bp-sm:min-h-14 dark:bg-card dark:text-muted-foreground"
                           disabled
                         >
                           <Calendar className="mr-2 h-4 w-4 shrink-0" />
@@ -753,8 +752,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               }
               utilities={
                 <div className="space-y-3">
-                  <div className="text-ui-body-sm font-semibold text-foreground">비교 도구</div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div className="text-ui-body-sm font-ui-medium text-foreground">비교 도구</div>
+                  <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
                     <Button
                       variant="outline"
                       wrap="nowrap"
@@ -789,16 +788,6 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 </div>
               }
             />
-
-            <div>
-              <Link
-                href="/rackets"
-                className="text-ui-body-sm text-primary hover:underline inline-flex items-center"
-              >
-                <ArrowLeft className="mr-1 h-3 w-3" />
-                목록으로
-              </Link>
-            </div>
           </div>
         </div>
 
