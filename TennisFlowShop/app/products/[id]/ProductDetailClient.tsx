@@ -1468,7 +1468,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 />
               </TabsContent>
 
-              <TabsContent value="reviews" className="p-4 sm:p-6 bp-md:p-8">
+              <TabsContent value="reviews" className="p-4 bp-sm:p-6 bp-md:p-8">
                 <ProductDetailReviewsTab
                   mergedReviews={mergedReviews}
                   busyReviewId={busyReviewId}
