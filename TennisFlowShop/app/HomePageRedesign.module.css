@@ -1127,6 +1127,7 @@
     --home-rail-cue-surface: var(--home-page-surface);
     --home-rail-cue-offset: 0px;
     position: relative;
+    display: flow-root;
   }
 
   .horizontalRailCue::after {
