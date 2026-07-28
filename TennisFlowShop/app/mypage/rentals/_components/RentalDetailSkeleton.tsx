@@ -34,51 +34,43 @@ export default function RentalDetailSkeleton() {
           "border-brand-highlight-ink/25 bg-brand-highlight-muted/40 shadow-none",
         )}
       >
-        <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
-          <div className="min-w-0 space-y-2">
-            <Skeleton className="h-6 w-36 rounded-full" />
-            <Skeleton className="h-8 w-40 rounded-md" />
-            <Skeleton className="h-4 w-full max-w-xl rounded-md" />
-          </div>
-          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
-            <Skeleton className="h-9 w-full rounded-md bp-sm:w-28" />
-            <Skeleton className="h-9 w-full rounded-md bp-sm:w-32" />
-          </div>
+        <div className="min-w-0 space-y-2">
+          <Skeleton className="h-6 w-36 rounded-full" />
+          <Skeleton className="h-8 w-40 rounded-md" />
+          <Skeleton className="h-4 w-full max-w-xl rounded-md" />
         </div>
 
         <div
-          className={cn(
-            mypageDetailLayout.heroShell,
-            "border border-brand-highlight-ink/20 bg-background/75 ring-brand-highlight-ink/15",
-          )}
+          className={mypageDetailLayout.heroShell}
         >
           <div className={mypageDetailLayout.heroGrid}>
-            <div className="flex min-w-0 items-start gap-3">
-              <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
-              <div className="min-w-0 flex-1 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Skeleton className="h-6 w-24 rounded-full" />
-                  <Skeleton className="h-5 w-36 rounded-md" />
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-start gap-3">
+                <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                    <Skeleton className="h-5 w-36 rounded-md" />
+                  </div>
+                  <Skeleton className="h-4 w-52 max-w-full rounded-md" />
                 </div>
-                <Skeleton className="h-4 w-52 max-w-full rounded-md" />
+              </div>
+              <div className={mypageDetailLayout.summaryGrid}>
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
               </div>
             </div>
-            <div
-              className={cn(
-                mypageDetailLayout.actionPanel,
-                "border-brand-highlight-ink/25 bg-brand-highlight-muted/55",
-              )}
-            >
+            <div className={mypageDetailLayout.actionPanel}>
               <Skeleton className="h-4 w-20 rounded-md" />
               <Skeleton className="h-5 w-48 max-w-full rounded-md" />
-              <Skeleton className="h-9 w-full rounded-md bp-sm:w-32" />
+              <Skeleton className="h-11 w-full rounded-md bp-sm:w-32" />
             </div>
           </div>
-          <div className={mypageDetailLayout.summaryGrid}>
-            <Skeleton className="h-16 rounded-xl" />
-            <Skeleton className="h-16 rounded-xl" />
-            <Skeleton className="h-16 rounded-xl" />
-          </div>
+        </div>
+        <div className="mt-4 flex w-full flex-col gap-2 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
+          <Skeleton className="h-11 w-full rounded-md bp-sm:w-28" />
+          <Skeleton className="h-11 w-full rounded-md bp-sm:w-32" />
         </div>
       </section>
 

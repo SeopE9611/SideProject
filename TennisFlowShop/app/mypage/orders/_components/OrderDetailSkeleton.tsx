@@ -11,48 +11,44 @@ export default function OrderDetailSkeleton() {
       <span className="sr-only">{srLoadingLabel}</span>
 
       <section className="rounded-xl border border-brand-highlight-ink/25 bg-brand-highlight-muted/40 p-4 shadow-none bp-sm:p-5">
-        <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
-          <div className="min-w-0 space-y-2">
-            <Skeleton className="h-6 w-28 rounded-full" />
-            <Skeleton className="h-9 w-48 rounded-lg bp-sm:w-64" />
-            <Skeleton className="h-4 w-full max-w-md" />
-          </div>
-          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
-            <Skeleton className="h-9 w-full rounded-md bp-sm:w-36" />
-            <Skeleton className="h-9 w-full rounded-md bp-sm:w-28" />
-            <Skeleton className="h-9 w-full rounded-md bp-sm:w-24" />
-          </div>
+        <div className="min-w-0 space-y-2">
+          <Skeleton className="h-6 w-28 rounded-full" />
+          <Skeleton className="h-9 w-48 rounded-lg bp-sm:w-64" />
+          <Skeleton className="h-4 w-full max-w-md" />
         </div>
 
-        <div className="mt-5 flex w-full flex-col gap-4 rounded-xl border border-brand-highlight-ink/20 bg-background/75 p-4 ring-1 ring-brand-highlight-ink/15 bp-sm:p-5">
+        <div className={mypageDetailLayout.heroShell}>
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(300px,340px)] bp-lg:items-stretch">
-            <div className="flex min-w-0 items-start gap-3">
-              <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
-              <div className="min-w-0 flex-1 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Skeleton className="h-6 w-20 rounded-full" />
-                  <Skeleton className="h-5 w-40" />
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-start gap-3">
+                <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <Skeleton className="h-5 w-40" />
+                  </div>
+                  <Skeleton className="h-4 w-36" />
                 </div>
-                <Skeleton className="h-4 w-36" />
+              </div>
+              <div className={mypageDetailLayout.summaryGrid}>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-16 rounded-xl" />
+                ))}
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 rounded-xl border border-brand-highlight-ink/25 bg-brand-highlight-muted/55 p-3 bp-sm:p-4">
+            <div className={mypageDetailLayout.actionPanel}>
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-5 w-48" />
               <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-9 w-full rounded-md" />
+              <Skeleton className="h-11 w-full rounded-md" />
             </div>
           </div>
-
-          <div className="grid grid-cols-1 gap-3 border-t border-border/60 pt-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="space-y-2">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-5 w-28" />
-              </div>
-            ))}
-          </div>
+        </div>
+        <div className="mt-4 flex w-full flex-col gap-2 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
+          <Skeleton className="h-11 w-full rounded-md bp-sm:w-36" />
+          <Skeleton className="h-11 w-full rounded-md bp-sm:w-28" />
+          <Skeleton className="h-11 w-full rounded-md bp-sm:w-24" />
         </div>
       </section>
 

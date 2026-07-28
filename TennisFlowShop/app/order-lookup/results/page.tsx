@@ -194,13 +194,12 @@ export default function OrderLookupResultsPage() {
         <div className="max-w-6xl mx-auto">
           {/* Back Button */}
           <div className="mb-6 md:mb-8">
-            <Link
-              href="/order-lookup"
-              className="inline-flex items-center text-ui-body-sm text-muted-foreground hover:text-primary transition-colors group"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-              이전 페이지로 돌아가기
-            </Link>
+            <Button asChild variant="ghost" className="min-h-11 w-full bp-sm:w-auto">
+              <Link href="/order-lookup" className="group text-muted-foreground hover:text-primary">
+                <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                이전 페이지로 돌아가기
+              </Link>
+            </Button>
           </div>
 
           <Card className="border-0 bg-transparent shadow-none mb-6 md:mb-8">

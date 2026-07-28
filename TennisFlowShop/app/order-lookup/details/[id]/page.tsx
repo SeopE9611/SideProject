@@ -694,13 +694,16 @@ export default function OrderDetailPage() {
                           ? "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."
                           : "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 택배 수령 주문은 라켓 발송과 완성 라켓 배송으로 장착 서비스가 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."}
                       </p>
-                      <Link
-                        href={`/services/apply?orderId=${order._id}`}
-                        className="inline-flex items-center rounded-lg border border-border bg-secondary px-4 py-2 font-semibold text-foreground transition-colors hover:bg-secondary/80"
+                      <Button
+                        asChild
+                        variant="highlight_soft"
+                        className="min-h-11 w-full bp-sm:w-auto"
                       >
-                        <ShoppingBag className="w-4 h-4 mr-2" />
-                        {isVisitPickup ? "교체서비스 신청하기" : "교체서비스 신청하기"}
-                      </Link>
+                        <Link href={`/services/apply?orderId=${order._id}`}>
+                          <ShoppingBag className="mr-2 h-4 w-4" />
+                          {isVisitPickup ? "교체서비스 신청하기" : "교체서비스 신청하기"}
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -732,7 +735,7 @@ export default function OrderDetailPage() {
                 <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <CardTitle className="text-ui-body">교체서비스 접수 요약</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-3 p-4 text-ui-body-sm bp-sm:p-5 [&>p]:rounded-xl [&>p]:bg-muted/15 [&>p]:p-3">
+                <CardContent className="divide-y divide-border/60 p-4 text-ui-body-sm bp-sm:p-5 [&>p]:py-3 [&>p:first-child]:pt-0 [&>p:last-child]:pb-0">
                   <p className="text-muted-foreground">
                     신청 상태:{" "}
                     <span className="font-medium text-foreground">
@@ -818,7 +821,7 @@ export default function OrderDetailPage() {
                           <p className="break-all font-mono text-ui-body-sm">{order._id}</p>
                         </div>
                       </div>
-                      <div className="rounded-xl bg-muted/15 p-3">
+                      <div className="border-t border-border/60 py-3 md:border-l md:border-t-0 md:pl-6">
                         <p className="text-ui-body-sm text-muted-foreground mb-2">결제수단</p>
                         <p className="mb-3 font-semibold text-foreground">
                           {paymentDisplaySummary.userLabel}
@@ -895,7 +898,7 @@ export default function OrderDetailPage() {
                           <p className="break-words font-semibold">{shippingAddressValue}</p>
                         </div>
                         {canTrack && (
-                          <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
+                          <div className="flex flex-col gap-3 border-t border-border/60 py-3 bp-sm:flex-row bp-sm:items-center">
                             <Truck className="w-5 h-5 text-primary" />
                             <div className="flex-1">
                               <p className="text-ui-body-sm text-muted-foreground mb-1">
@@ -927,8 +930,8 @@ export default function OrderDetailPage() {
                               )}
                             </div>
                             <Button
-                              variant="link"
-                              className="p-0"
+                              variant="outline"
+                              className="min-h-11 w-full bp-sm:w-auto"
                               onClick={handleTrackingClick}
                               disabled={trackingLoading || isUnsupportedCourier}
                             >
@@ -1043,8 +1046,8 @@ export default function OrderDetailPage() {
                       </div>
 
                       {/* Benefits */}
-                      <div className="mt-6 space-y-3">
-                        <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
+                      <div className="mt-6 divide-y divide-border/60 border-t border-border/60">
+                        <div className="flex items-center gap-3 py-3">
                           <Shield className="w-5 h-5 text-primary" />
                           <div>
                             <p className="text-ui-body-sm font-medium text-foreground">
@@ -1056,7 +1059,7 @@ export default function OrderDetailPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3 rounded-xl bg-muted/15 px-3 py-2">
+                        <div className="flex items-center gap-3 py-3">
                           <Truck className="w-5 h-5 text-primary" />
                           <div>
                             <p className="text-ui-body-sm font-medium text-foreground">배송 보장</p>
