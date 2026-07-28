@@ -16,7 +16,7 @@ type Props = {
 };
 
 const surfaceClass =
-  "group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:bg-muted/20 hover:shadow-sm";
+  "group h-full overflow-hidden rounded-xl border border-border bg-card shadow-none transition-[box-shadow,border-color,background-color] duration-200 hover:border-brand-highlight-ink/30 hover:shadow-soft bp-md:rounded-2xl bp-md:shadow-soft";
 
 export function CatalogCardFrame({
   viewMode,
@@ -34,8 +34,8 @@ export function CatalogCardFrame({
     return (
       <Card className={cn(surfaceClass, className)}>
         <div className="grid h-full min-w-0 grid-cols-1 bp-md:grid-cols-[240px_minmax(0,1fr)_230px] bp-lg:grid-cols-[260px_minmax(0,1fr)_240px]">
-          <div className={cn("min-w-0", mediaClassName)}>{media}</div>
-          <div className={cn("flex min-w-0 flex-col p-4 bp-sm:p-5 bp-md:p-6", contentClassName)}>
+          <div className={cn("h-full min-w-0", mediaClassName)}>{media}</div>
+          <div className={cn("flex min-w-0 flex-col p-4 bp-md:p-5 bp-lg:p-6", contentClassName)}>
             <div className="min-w-0 flex-1">{content}</div>
             {footerMeta ? <div className="mt-4">{footerMeta}</div> : null}
           </div>
@@ -56,10 +56,10 @@ export function CatalogCardFrame({
   return (
     <Card className={cn(surfaceClass, "flex flex-col", className)}>
       <div className={cn("min-w-0", mediaClassName)}>{media}</div>
-      <div className={cn("flex flex-1 flex-col p-4 bp-sm:p-5", contentClassName)}>
+      <div className={cn("flex flex-1 flex-col p-3 bp-sm:p-4 bp-lg:p-5", contentClassName)}>
         <div className="min-w-0 flex-1">{content}</div>
         {footerMeta ? <div className="mt-4">{footerMeta}</div> : null}
-        <div className="mt-auto space-y-3 pt-4">
+        <div className="mt-auto space-y-3 pt-3 bp-md:pt-4">
           {price}
           {actions}
         </div>

@@ -75,11 +75,11 @@ function PerformanceSummary({ entries }: { entries: ReturnType<typeof getFeature
   if (entries.length === 0) return null;
 
   return (
-    <section className="rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+    <section className="border-t border-border/60 pt-2.5 bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:px-3 bp-md:py-2.5">
       <p className="mb-1.5 text-ui-micro font-ui-medium tracking-wide text-muted-foreground">
         성능 요약
       </p>
-      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-ui-caption sm:text-ui-label">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-ui-caption bp-sm:text-ui-label">
         {entries.map((feature, index) => (
           <div
             key={feature.key}
@@ -124,7 +124,7 @@ function WishButton({
       title={
         disabled ? "위시리스트 상태 확인 중" : inWish ? "위시리스트에서 제거" : "위시리스트에 추가"
       }
-      className="flex-shrink-0"
+      className="h-11 w-11 flex-shrink-0 bp-md:h-9 bp-md:w-9"
     >
       <Heart
         className={cn(
@@ -136,9 +136,6 @@ function WishButton({
     </Button>
   );
 }
-
-const productImageWrapClass =
-  "relative aspect-[5/4] w-full overflow-hidden bg-muted/30 bp-md:aspect-square";
 
 type Props = {
   product: Product;
@@ -239,7 +236,12 @@ const ProductCard = React.memo(
     };
 
     const media = (
-      <div className={productImageWrapClass}>
+      <div
+        className={cn(
+          "relative w-full overflow-hidden bg-muted/20",
+          viewMode === "list" ? "h-full min-h-[220px]" : "aspect-[4/3]",
+        )}
+      >
         <Link
           href={detailHref}
           aria-label={`${product.name} ${isApplyFlow ? "교체 신청" : "상세 보기"}`}
@@ -254,10 +256,10 @@ const ProductCard = React.memo(
             fill
             sizes={
               viewMode === "list"
-                ? "(max-width: 768px) 100vw, 260px"
-                : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                ? "(max-width: 1199px) 240px, 260px"
+                : "(max-width: 575px) calc(100vw - 24px), (max-width: 1023px) 50vw, (max-width: 1535px) 33vw, 25vw"
             }
-            className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.01]"
+            className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.02] motion-reduce:transform-none"
           />
         </Link>
         {merchandisingBadges.length > 0 && (
@@ -305,10 +307,15 @@ const ProductCard = React.memo(
         </div>
         <Link
           href={detailHref}
-          className="block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="group/title block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <h3
-            className="mb-2 line-clamp-2 break-words text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3"
+            className={cn(
+              "mb-2 line-clamp-2 break-words text-ui-body font-ui-medium leading-snug text-foreground transition-colors group-hover/title:text-primary",
+              viewMode === "list"
+                ? "bp-md:text-ui-card-title-lg bp-lg:line-clamp-3"
+                : "bp-lg:line-clamp-3 bp-lg:text-ui-card-title-lg",
+            )}
             title={product.name}
           >
             {product.name}
@@ -340,7 +347,7 @@ const ProductCard = React.memo(
             aria-disabled="true"
             aria-label="상품 선택 불가: 품절된 상품입니다."
             title="품절된 상품입니다."
-            className="h-10 w-full cursor-not-allowed whitespace-nowrap rounded-control border border-border bg-muted/70 text-ui-body-sm text-muted-foreground opacity-100 disabled:opacity-100"
+            className="h-11 min-h-11 w-full cursor-not-allowed whitespace-nowrap rounded-control border border-border bg-muted/70 text-ui-body-sm text-muted-foreground opacity-100 disabled:opacity-100 bp-md:h-10 bp-md:min-h-10"
           >
             <Eye className="h-4 w-4 shrink-0" />
             품절
@@ -350,7 +357,7 @@ const ProductCard = React.memo(
             asChild
             type="button"
             variant="highlight_soft"
-            className="h-10 whitespace-nowrap rounded-control text-ui-body-sm"
+            className="h-11 min-h-11 whitespace-nowrap rounded-control text-ui-body-sm bp-md:h-10 bp-md:min-h-10"
           >
             <Link href={detailHref}>
               <Eye className="mr-1.5 h-4 w-4 shrink-0" />
@@ -362,7 +369,7 @@ const ProductCard = React.memo(
           <Button
             type="button"
             variant="outline"
-            className="h-10 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm"
+            className="h-11 min-h-11 w-full rounded-control px-3 text-center text-ui-label whitespace-nowrap bp-sm:text-ui-body-sm bp-md:h-10 bp-md:min-h-10"
             onClick={handleStringSingleBuy}
             disabled={isSoldOut}
           >
@@ -390,7 +397,7 @@ const ProductCard = React.memo(
         viewMode="grid"
         media={media}
         content={content}
-        price={<div className="flex justify-end">{priceBlock("right")}</div>}
+        price={priceBlock("left")}
         actions={actions}
       />
     );
