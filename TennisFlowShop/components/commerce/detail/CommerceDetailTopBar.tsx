@@ -21,11 +21,11 @@ export function CommerceDetailTopBar({
   adminAction,
 }: CommerceDetailTopBarProps) {
   return (
-    <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground sm:py-5">
+    <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground bp-sm:py-5">
       <SiteContainer variant="wide">
         <div className="flex min-w-0 items-center justify-between gap-3">
           <nav
-            className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-ui-body-sm sm:gap-2.5 sm:text-ui-body"
+            className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-ui-body-sm bp-sm:gap-2.5 bp-sm:text-ui-body"
             aria-label="상세 경로"
           >
             {breadcrumbs.map((item) =>
@@ -48,11 +48,11 @@ export function CommerceDetailTopBar({
               {currentLabel}
             </span>
           </nav>
-          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 bp-sm:gap-2">
             <Button
               type="button"
               variant="ghost"
-              className="h-9 whitespace-nowrap rounded-xl px-2.5 text-ui-body-sm text-muted-foreground hover:bg-muted/50 hover:text-foreground sm:px-3"
+              className="h-11 min-h-11 whitespace-nowrap rounded-xl px-2.5 text-ui-body-sm text-muted-foreground hover:bg-muted/50 hover:text-foreground bp-sm:px-3 bp-md:h-9 bp-md:min-h-9"
               onClick={onBack}
             >
               <ArrowLeft className="mr-1.5 h-4 w-4" />

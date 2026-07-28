@@ -29,8 +29,13 @@ export function CommercePurchasePanel({
   className,
 }: CommercePurchasePanelProps) {
   return (
-    <Card className={cn("min-w-0 rounded-panel border border-border bg-card shadow-sm", className)}>
-      <CardContent className="min-w-0 space-y-5 p-5 sm:p-6 bp-md:p-7">
+    <Card
+      className={cn(
+        "-mx-3 min-w-0 rounded-none border-x-0 border-y border-border bg-card shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border-x bp-md:shadow-sm",
+        className,
+      )}
+    >
+      <CardContent className="min-w-0 space-y-5 p-4 bp-sm:p-5 bp-md:p-7">
         <section className="min-w-0 space-y-3">
           {eyebrow ? (
             <div className="min-w-0 text-ui-body-sm font-medium text-muted-foreground">

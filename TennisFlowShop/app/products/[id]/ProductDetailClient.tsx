@@ -1011,7 +1011,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               asChild
               variant="outline"
               size="sm"
-              className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3"
+              className="h-11 min-h-11 whitespace-nowrap rounded-xl px-2.5 bp-sm:px-3 bp-md:h-9 bp-md:min-h-9"
             >
               <Link href={`/admin/products/${productId}/edit`}>상품 수정</Link>
             </Button>
@@ -1032,7 +1032,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <CommercePurchasePanel
               eyebrow={<span className="break-words">{productBrandLabel}</span>}
               title={
-                <h1 className="min-w-0 text-balance break-words text-ui-section-title font-ui-bold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
+                <h1 className="min-w-0 text-balance break-words text-ui-section-title font-ui-bold leading-tight tracking-normal text-foreground bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
                   {product.name}
                 </h1>
               }
@@ -1046,7 +1046,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               }
               summary={
                 canCheckoutWithService ? (
-                  <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm sm:text-ui-body">
+                  <div className="grid gap-2 text-ui-body-sm bp-sm:text-ui-body bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/20 bp-md:p-3">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">상품가</span>
                       <span className="whitespace-nowrap tabular-nums font-ui-medium text-foreground">
@@ -1394,7 +1394,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           normalizedFeatureScores={normalizedFeatureScores}
         />
 
-        <Card className="mt-10 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:mt-12 sm:rounded-3xl">
+        <Card className="-mx-3 mt-8 min-w-0 overflow-hidden rounded-none border-x-0 border-y border-border bg-card shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:mt-10 bp-md:rounded-panel bp-md:border-x bp-md:shadow-sm">
           <CardContent className="p-0">
             <CommerceDetailTabs
               value={activeTab}

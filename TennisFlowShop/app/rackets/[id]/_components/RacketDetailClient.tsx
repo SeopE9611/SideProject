@@ -588,7 +588,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               asChild
               variant="outline"
               size="sm"
-              className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3"
+              className="h-11 min-h-11 whitespace-nowrap rounded-xl px-2.5 bp-sm:px-3 bp-md:h-9 bp-md:min-h-9"
             >
               <Link href={`/admin/rackets/${racketId}/edit`}>
                 <Pencil className="mr-1.5 h-4 w-4" />
@@ -599,7 +599,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         }
       />
 
-      <SiteContainer variant="wide" className="py-8 pb-12 md:pb-16">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10">
         <div className="grid grid-cols-1 gap-6 bp-md:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] bp-lg:grid-cols-[minmax(0,1.25fr)_minmax(380px,440px)] bp-lg:gap-8">
           <CommerceMediaGallery
             images={images}
@@ -631,7 +631,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 </>
               }
               title={
-                <h1 className="min-w-0 break-words text-ui-page-title font-semibold leading-tight text-foreground lg:text-ui-page-title-lg">
+                <h1 className="min-w-0 text-balance break-words text-ui-section-title font-ui-bold leading-tight tracking-normal text-foreground bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
                   {racket.model}
                 </h1>
               }
@@ -644,8 +644,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 />
               }
               summary={
-                <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
-                  <div className="grid gap-2 text-ui-body-sm sm:text-ui-body">
+                <div className="space-y-4 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/20 bp-md:p-4">
+                  <div className="grid gap-2 text-ui-body-sm bp-sm:text-ui-body">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">배송비</span>
                       <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
@@ -662,14 +662,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                   </div>
-                  <div className="rounded-xl border border-border bg-card p-3 text-ui-label leading-relaxed text-muted-foreground">
+                  <div className="border-t border-border pt-4 text-ui-label leading-relaxed text-muted-foreground bp-md:rounded-xl bp-md:border bp-md:bg-card bp-md:p-3">
                     * 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.
                   </div>
                 </div>
               }
               actions={
                 <div ref={rentSectionRef} className="space-y-4">
-                  <div className="rounded-xl border border-border bg-muted/20 p-4">
+                  <div className="bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/20 bp-md:p-4">
                     <h2 className="text-ui-body font-semibold text-foreground">
                       이 라켓으로 무엇을 할까요?
                     </h2>
@@ -803,7 +803,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         </div>
 
         {/* 스펙 카드 */}
-        <Card className="mt-10 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:mt-12 sm:rounded-3xl">
+        <Card className="-mx-3 mt-8 min-w-0 overflow-hidden rounded-none border-x-0 border-y border-border bg-card shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:mt-10 bp-md:rounded-panel bp-md:border-x bp-md:shadow-sm">
           <CardContent className="p-0">
             <CommerceDetailTabs
               value={activeTab}

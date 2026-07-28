@@ -42,14 +42,14 @@ export function CommerceMediaGallery({
       )}
     >
       <div className={cn("space-y-3", className)}>
-        <div className="relative aspect-square overflow-hidden rounded-panel border border-border bg-muted/20">
+        <div className="relative -mx-3 aspect-square overflow-hidden rounded-none border-x-0 border-y border-border bg-muted/20 bp-sm:-mx-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border-x">
           {current ? (
             <Image
               src={current}
               alt={alt}
               fill
               sizes="(min-width: 1200px) 58vw, (min-width: 768px) 55vw, 100vw"
-              className={cn(objectFit === "cover" ? "object-cover" : "object-contain p-5 sm:p-8")}
+              className={cn(objectFit === "cover" ? "object-cover" : "object-contain p-5 bp-sm:p-8")}
               priority
             />
           ) : (
@@ -68,7 +68,7 @@ export function CommerceMediaGallery({
                 variant="secondary"
                 size="icon"
                 aria-label="이전 이미지"
-                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-card/90"
+                className="absolute left-3 top-1/2 h-11 w-11 -translate-y-1/2 rounded-full bg-card/90 bp-md:h-10 bp-md:w-10"
                 onClick={() =>
                   setSelected((i) => (i - 1 + galleryImages.length) % galleryImages.length)
                 }
@@ -80,7 +80,7 @@ export function CommerceMediaGallery({
                 variant="secondary"
                 size="icon"
                 aria-label="다음 이미지"
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-card/90"
+                className="absolute right-3 top-1/2 h-11 w-11 -translate-y-1/2 rounded-full bg-card/90 bp-md:h-10 bp-md:w-10"
                 onClick={() => setSelected((i) => (i + 1) % galleryImages.length)}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -100,7 +100,7 @@ export function CommerceMediaGallery({
                   aria-label={`${alt} 이미지 ${index + 1} 보기`}
                   onClick={() => setSelected(index)}
                   className={cn(
-                    "relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border bg-muted/20 transition",
+                    "relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border bg-muted/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     isSelected
                       ? "border-brand-highlight-ink ring-2 ring-brand-highlight-muted"
                       : "border-border hover:border-foreground/40",
