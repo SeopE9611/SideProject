@@ -67,7 +67,7 @@ export default function ReviewEditDialog({
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-[calc(100%-2rem)] bp-md:max-w-2xl [&>button:first-child]:inline-flex [&>button:first-child]:h-11 [&>button:first-child]:w-11 [&>button:first-child]:items-center [&>button:first-child]:justify-center [&>button:first-child]:rounded-lg bp-md:[&>button:first-child]:h-9 bp-md:[&>button:first-child]:w-9">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-[calc(100%-2rem)] bp-md:max-w-2xl [&>button:first-child]:inline-flex [&>button:first-child]:h-11 [&>button:first-child]:w-11 [&>button:first-child]:items-center [&>button:first-child]:justify-center [&>button:first-child]:rounded-lg bp-md:[&>button:first-child]:h-9 bp-md:[&>button:first-child]:w-9">
         <DialogHeader className="pr-12">
           <DialogTitle>후기 수정</DialogTitle>
         </DialogHeader>

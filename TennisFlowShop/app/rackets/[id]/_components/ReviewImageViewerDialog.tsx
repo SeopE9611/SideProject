@@ -10,6 +10,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   images: string[];
   index: number;
+  onChangeIndex: (index: number) => void;
   onPrev: () => void;
   onNext: () => void;
 };
@@ -19,6 +20,7 @@ export default function ReviewImageViewerDialog({
   onOpenChange,
   images,
   index,
+  onChangeIndex,
   onPrev,
   onNext,
 }: Props) {
@@ -29,7 +31,7 @@ export default function ReviewImageViewerDialog({
           <DialogTitle>후기 사진 확대 보기</DialogTitle>
         </DialogHeader>
 
-        {images.length > 0 ? (
+        {images.length > 0 && images[index] ? (
           <div>
             <div className="relative aspect-[4/3] w-full bg-muted/20 bp-md:aspect-video">
               <Image
@@ -68,6 +70,31 @@ export default function ReviewImageViewerDialog({
             <div className="p-4 text-center text-ui-body-sm text-muted-foreground" aria-live="polite">
               {index + 1} / {images.length}
             </div>
+            {images.length > 1 ? (
+              <div
+                className="flex max-w-full gap-2 overflow-x-auto px-4 pb-4"
+                aria-label="후기 사진 썸네일"
+              >
+                {images.map((src, imageIndex) => (
+                  <button
+                    key={`${src}-${imageIndex}`}
+                    type="button"
+                    onClick={() => onChangeIndex(imageIndex)}
+                    aria-pressed={imageIndex === index}
+                    aria-label={`후기 사진 ${imageIndex + 1} 보기`}
+                    className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${imageIndex === index ? "border-primary ring-2 ring-ring" : "border-border"}`}
+                  >
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </DialogContent>

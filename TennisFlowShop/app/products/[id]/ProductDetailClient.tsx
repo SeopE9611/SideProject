@@ -1446,8 +1446,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </div>
                   <div className="-mx-4 border-y border-border/60 px-4 py-4 bp-sm:-mx-6 bp-sm:px-6 bp-sm:py-5 bp-md:mx-0 bp-md:rounded-xl bp-md:border bp-md:bg-muted/30 bp-md:p-6">
                     <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
-                      {product.description ||
-                        "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
+                      {product.description || "상품 설명이 아직 등록되지 않았습니다."}
                     </p>
                   </div>
                 </div>

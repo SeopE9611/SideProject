@@ -173,7 +173,7 @@ export default function ProductReviewCard({
                     />
                     {i === 3 && review.photos.length > 4 && (
                       <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-ui-label font-semibold flex items-center justify-center">
-                        +{review.photos.length - 3}
+                        +{review.photos.length - 4}
                       </div>
                     )}
                   </button>

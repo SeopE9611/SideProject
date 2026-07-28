@@ -1,5 +1,5 @@
 import RacketDetailClient from "@/app/rackets/[id]/_components/RacketDetailClient";
-import SiteContainer from "@/components/layout/SiteContainer";
+import { CommerceDetailResultState } from "@/components/commerce/detail";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getRacketActiveCountPayload, getRacketDetailPayload } from "@/lib/racket-detail.server";
 import { ObjectId } from "mongodb";
@@ -50,15 +50,15 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
 
   if (!doc) {
     return (
-      <div className="min-h-screen bg-muted/30">
-        <SiteContainer variant="wide" className="py-12">
-          <div className="text-center">
-            <h1 className="text-ui-page-title font-semibold text-foreground">
-              존재하지 않는 라켓입니다.
-            </h1>
-          </div>
-        </SiteContainer>
-      </div>
+      <CommerceDetailResultState
+        eyebrow="라켓 상세"
+        title="라켓을 찾을 수 없습니다"
+        description="요청하신 라켓이 없거나 현재 공개되어 있지 않습니다."
+        stateTitle="다른 라켓을 둘러보세요"
+        stateDescription="라켓 목록에서 원하는 라켓을 찾아보세요."
+        listHref="/rackets"
+        listLabel="라켓 목록으로 이동"
+      />
     );
   }
 
