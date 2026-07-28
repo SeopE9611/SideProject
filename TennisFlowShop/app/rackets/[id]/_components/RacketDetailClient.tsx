@@ -811,24 +811,24 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               items={[
                 {
                   value: "description",
-                  label: "상품 설명",
+                  label: "라켓 설명",
                   shortLabel: "설명",
                   ariaLabel: "라켓 설명",
-                  icon: <FileText className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <FileText className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                 },
                 {
                   value: "specifications",
                   label: "상세 스펙",
                   shortLabel: "스펙",
                   ariaLabel: "라켓 상세 스펙",
-                  icon: <Settings className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <Settings className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                 },
                 {
                   value: "reviews",
                   label: "후기",
                   shortLabel: "후기",
                   ariaLabel: "라켓 후기",
-                  icon: <Star className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <Star className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                   count: reviewCount,
                 },
                 {
@@ -836,23 +836,23 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   label: "문의",
                   shortLabel: "문의",
                   ariaLabel: "라켓 문의",
-                  icon: <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                   count: qnaTotal,
                 },
               ]}
             >
-              <TabsContent value="description" className="p-4 sm:p-6 md:p-8">
-                <div className="prose max-w-none">
-                  <div className="mb-5 flex min-w-0 items-center gap-3 sm:mb-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground sm:h-12 sm:w-12">
-                      <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
+              <TabsContent value="description" className="p-4 bp-sm:p-6 bp-md:p-8">
+                <div>
+                  <div className="mb-4 flex min-w-0 items-center gap-3 bp-sm:mb-6">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-12 bp-sm:w-12">
+                      <FileText className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
-                      상품 설명
+                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
+                      라켓 설명
                     </h3>
                   </div>
-                  <div className="rounded-xl border border-border bg-muted/30 p-4 sm:rounded-2xl sm:p-6">
-                    <p className="break-words break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
+                  <div className="-mx-4 border-y border-border/60 px-4 py-4 bp-sm:-mx-6 bp-sm:px-6 bp-sm:py-5 bp-md:mx-0 bp-md:rounded-xl bp-md:border bp-md:bg-muted/30 bp-md:p-6">
+                    <p className="break-words break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은{" "}
                       {racketConditionBadgeSpec(racket.condition).label}이며, 전문가의 검수를 거쳐
                       안전하게 사용하실 수 있습니다.
@@ -862,89 +862,53 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 </div>
               </TabsContent>
 
-              <TabsContent value="specifications" className="p-4 sm:p-6 md:p-8">
-                <div className="space-y-4 sm:space-y-6">
-                  <div className="mb-5 flex min-w-0 items-center gap-3 sm:mb-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground sm:h-12 sm:w-12">
-                      <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
+              <TabsContent value="specifications" className="p-4 bp-sm:p-6 bp-md:p-8">
+                <div className="space-y-4 bp-sm:space-y-6">
+                  <div className="mb-4 flex min-w-0 items-center gap-3 bp-sm:mb-6">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-12 bp-sm:w-12">
+                      <Settings className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
+                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
                       상세 스펙
                     </h3>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                  <div className="-mx-4 divide-y divide-border/60 border-y border-border/60 px-4 bp-sm:-mx-6 bp-sm:px-6 bp-md:mx-0 bp-md:grid bp-md:grid-cols-2 bp-md:gap-4 bp-md:divide-y-0 bp-md:border-y-0 bp-md:px-0">
                     {racket.spec?.weight && (
-                      <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                        <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
-                            무게
-                          </span>
-                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
-                            {racket.spec.weight} g
-                          </span>
-                        </div>
+                      <div className="flex min-w-0 items-start justify-between gap-4 py-3 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/30 bp-md:p-4">
+                        <span className="shrink-0 text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">무게</span>
+                        <span className="min-w-0 break-words text-right text-ui-body-sm font-ui-medium text-muted-foreground bp-sm:text-ui-body">{racket.spec.weight} g</span>
                       </div>
                     )}
                     {racket.spec?.balance && (
-                      <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                        <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
-                            밸런스
-                          </span>
-                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
-                            {racket.spec.balance} mm
-                          </span>
-                        </div>
+                      <div className="flex min-w-0 items-start justify-between gap-4 py-3 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/30 bp-md:p-4">
+                        <span className="shrink-0 text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">밸런스</span>
+                        <span className="min-w-0 break-words text-right text-ui-body-sm font-ui-medium text-muted-foreground bp-sm:text-ui-body">{racket.spec.balance} mm</span>
                       </div>
                     )}
                     {racket.spec?.headSize && (
-                      <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                        <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
-                            헤드사이즈
-                          </span>
-                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
-                            {racket.spec.headSize} in²
-                          </span>
-                        </div>
+                      <div className="flex min-w-0 items-start justify-between gap-4 py-3 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/30 bp-md:p-4">
+                        <span className="shrink-0 text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">헤드사이즈</span>
+                        <span className="min-w-0 break-words text-right text-ui-body-sm font-ui-medium text-muted-foreground bp-sm:text-ui-body">{racket.spec.headSize} in²</span>
                       </div>
                     )}
                     {racket.spec?.pattern && (
-                      <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                        <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
-                            패턴
-                          </span>
-                          {/* raw value(g2/16x19 등)를 그대로 노출하지 않고 공통 라벨로 통일 */}
-                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
-                            {stringPatternLabel(String(racket.spec.pattern))}
-                          </span>
-                        </div>
+                      <div className="flex min-w-0 items-start justify-between gap-4 py-3 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/30 bp-md:p-4">
+                        <span className="shrink-0 text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">패턴</span>
+                        {/* raw value(g2/16x19 등)를 그대로 노출하지 않고 공통 라벨로 통일 */}
+                        <span className="min-w-0 break-words text-right text-ui-body-sm font-ui-medium text-muted-foreground bp-sm:text-ui-body">{stringPatternLabel(String(racket.spec.pattern))}</span>
                       </div>
                     )}
                     {racket.spec?.gripSize && (
-                      <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                        <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
-                            그립
-                          </span>
-                          {/* g2/G2/별칭 입력값이 와도 사용자에게는 읽기 쉬운 라벨로 표시 */}
-                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
-                            {gripSizeLabel(String(racket.spec.gripSize))}
-                          </span>
-                        </div>
+                      <div className="flex min-w-0 items-start justify-between gap-4 py-3 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/30 bp-md:p-4">
+                        <span className="shrink-0 text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">그립</span>
+                        {/* g2/G2/별칭 입력값이 와도 사용자에게는 읽기 쉬운 라벨로 표시 */}
+                        <span className="min-w-0 break-words text-right text-ui-body-sm font-ui-medium text-muted-foreground bp-sm:text-ui-body">{gripSizeLabel(String(racket.spec.gripSize))}</span>
                       </div>
                     )}
-                    <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                      <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                        <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
-                          상태
-                        </span>
-                        <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
-                          상태: {racketConditionBadgeSpec(racket.condition).label}
-                        </span>
-                      </div>
+                    <div className="flex min-w-0 items-start justify-between gap-4 py-3 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/30 bp-md:p-4">
+                      <span className="shrink-0 text-ui-body-sm font-ui-medium text-foreground bp-sm:text-ui-body">상태</span>
+                      <span className="min-w-0 break-words text-right text-ui-body-sm font-ui-medium text-muted-foreground bp-sm:text-ui-body">{racketConditionBadgeSpec(racket.condition).label}</span>
                     </div>
                   </div>
                 </div>
