@@ -1405,21 +1405,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   label: "상품 설명",
                   shortLabel: "설명",
                   ariaLabel: "상품 설명",
-                  icon: <FileText className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <FileText className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                 },
                 {
                   value: "specifications",
                   label: "상세 스펙",
                   shortLabel: "스펙",
                   ariaLabel: "상세 스펙",
-                  icon: <Settings className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <Settings className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                 },
                 {
                   value: "reviews",
                   label: "후기",
                   shortLabel: "후기",
                   ariaLabel: "상품 후기",
-                  icon: <Star className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <Star className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                   count: reviewCount,
                 },
                 {
@@ -1427,23 +1427,23 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   label: "문의",
                   shortLabel: "문의",
                   ariaLabel: "상품 문의",
-                  icon: <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />,
+                  icon: <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />,
                   count: qnaTotal,
                 },
               ]}
             >
-              <TabsContent value="description" className="p-4 sm:p-6 bp-md:p-8">
-                <div className="prose max-w-none">
-                  <div className="flex min-w-0 items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
-                      <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
+              <TabsContent value="description" className="p-4 bp-sm:p-6 bp-md:p-8">
+                <div>
+                  <div className="mb-4 flex min-w-0 items-center gap-3 bp-sm:mb-6">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-12 bp-sm:w-12">
+                      <FileText className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground sm:text-ui-page-title">
+                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
                       상품 설명
                     </h3>
                   </div>
-                  <div className="rounded-xl border border-border bg-muted/30 p-4 sm:rounded-2xl sm:p-6">
-                    <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
+                  <div className="-mx-4 border-y border-border/60 px-4 py-4 bp-sm:-mx-6 bp-sm:px-6 bp-sm:py-5 bp-md:mx-0 bp-md:rounded-xl bp-md:border bp-md:bg-muted/30 bp-md:p-6">
+                    <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
                       {product.description ||
                         "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
                     </p>
@@ -1451,7 +1451,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="specifications" className="p-4 sm:p-6 bp-md:p-8">
+              <TabsContent value="specifications" className="p-4 bp-sm:p-6 bp-md:p-8">
                 <ProductDetailSpecificationsTab
                   displaySpec={displaySpec}
                   selectedColorLabel={selectedColorLabel}
