@@ -10,7 +10,7 @@ export default function OrderDetailSkeleton() {
     <div aria-busy="true" aria-live="polite" className="w-full">
       <span className="sr-only">{srLoadingLabel}</span>
 
-      <section className="rounded-xl border border-brand-highlight-ink/25 bg-brand-highlight-muted/40 p-4 shadow-none bp-sm:p-5">
+      <section className="rounded-2xl border border-brand-highlight-ink/25 bg-brand-highlight-muted/40 p-4 shadow-none bp-sm:p-5">
         <div className="min-w-0 space-y-2">
           <Skeleton className="h-6 w-28 rounded-full" />
           <Skeleton className="h-9 w-48 rounded-lg bp-sm:w-64" />

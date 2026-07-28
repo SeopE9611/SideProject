@@ -1770,8 +1770,8 @@ export default function StringingApplicationDetailClient({
                         variant="outline"
                         size="sm"
                         className={cn(
-                          "h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-lg:mr-1 bp-lg:h-9",
-                          isAdmin ? "bp-lg:w-auto" : "bp-sm:w-auto",
+                          "w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-lg:mr-1",
+                          isAdmin ? "h-8 bp-lg:h-9 bp-lg:w-auto" : "min-h-11 bp-sm:w-auto",
                         )}
                       >
                         <Link href={backUrl}>
@@ -2685,7 +2685,7 @@ export default function StringingApplicationDetailClient({
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-8 w-full bp-sm:w-auto"
+                              className="min-h-11 w-full bp-sm:w-auto"
                               onClick={() => setIsLineDetailsExpanded((prev) => !prev)}
                             >
                               {isLineDetailsExpanded
@@ -2868,7 +2868,7 @@ export default function StringingApplicationDetailClient({
                         size="sm"
                         variant="outline"
                         onClick={() => setIsStringModalOpen(true)}
-                        className="hover:bg-muted border-border"
+                        className="min-h-11 w-full border-border hover:bg-muted bp-sm:w-auto"
                       >
                         스트링 정보 수정
                       </Button>
@@ -2904,7 +2904,10 @@ export default function StringingApplicationDetailClient({
                         }
                       />
                       <DialogClose asChild>
-                        <Button variant="outline" className="mt-4 bg-transparent">
+                        <Button
+                          variant="outline"
+                          className="mt-4 min-h-11 w-full bg-transparent bp-sm:w-auto"
+                        >
                           닫기
                         </Button>
                       </DialogClose>
@@ -2969,7 +2972,7 @@ export default function StringingApplicationDetailClient({
                             asChild
                             size="sm"
                             variant="outline"
-                            className="mt-3 w-full bp-sm:w-auto"
+                            className="mt-3 min-h-11 w-full bp-sm:w-auto"
                           >
                             <Link href={inboundTrackingHref}>
                               {hasTracking ? "운송장 수정" : "운송장 등록"}
@@ -3092,7 +3095,7 @@ export default function StringingApplicationDetailClient({
                           size="sm"
                           variant="outline"
                           onClick={() => setEditingRequirements(true)}
-                          className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border"
+                          className="min-h-11 w-full border-border hover:bg-warning/10 bp-sm:w-auto dark:hover:bg-warning/15"
                         >
                           요청사항 수정
                         </Button>
@@ -3480,7 +3483,7 @@ export default function StringingApplicationDetailClient({
                         size="sm"
                         variant="outline"
                         onClick={() => setEditingPayment(true)}
-                        className="hover:bg-muted border-border"
+                        className="min-h-11 w-full border-border hover:bg-muted bp-sm:w-auto"
                       >
                         결제 정보 수정
                       </Button>
@@ -3572,7 +3575,7 @@ export default function StringingApplicationDetailClient({
                           size="sm"
                           variant="outline"
                           onClick={() => setEditingCustomer(true)}
-                          className="hover:bg-muted border-border"
+                          className="min-h-11 w-full border-border hover:bg-muted bp-sm:w-auto"
                         >
                           고객 정보 수정
                         </Button>
