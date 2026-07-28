@@ -3,17 +3,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CatalogCardSkeleton } from "./CatalogCardSkeleton";
 
 type CommerceCatalogPageSkeletonProps = {
+  loadingLabel: string;
   actionCount?: 1 | 2 | 3;
   showDetailBlock?: boolean;
 };
 
 export function CommerceCatalogPageSkeleton({
+  loadingLabel,
   actionCount = 2,
   showDetailBlock = false,
 }: CommerceCatalogPageSkeletonProps) {
   return (
     <div className="min-h-full bg-background" aria-busy="true">
-      <span className="sr-only">상품 목록과 탐색 도구를 불러오는 중입니다.</span>
+      <span className="sr-only">{loadingLabel}</span>
 
       <div className="pt-4 bp-sm:pt-6 bp-md:pt-8">
         <SiteContainer variant="wide" className="bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]">
