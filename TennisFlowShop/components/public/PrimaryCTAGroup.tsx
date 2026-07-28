@@ -20,15 +20,15 @@ export function PrimaryCTAGroup({
   return (
     <div
       className={cn(
-        "flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center",
-        align === "right" && "sm:justify-end",
-        align === "center" && "sm:justify-center",
+        "flex w-full flex-col gap-2 bp-md:w-auto bp-md:flex-row bp-md:items-center",
+        align === "right" && "bp-md:justify-end",
+        align === "center" && "bp-md:justify-center",
         className,
       )}
     >
-      <div className="[&>*]:w-full sm:[&>*]:w-auto">{primary}</div>
-      {secondary && <div className="[&>*]:w-full sm:[&>*]:w-auto">{secondary}</div>}
-      {tertiary && <div className="[&>*]:w-full sm:[&>*]:w-auto">{tertiary}</div>}
+      <div className="[&>*]:w-full bp-md:[&>*]:w-auto">{primary}</div>
+      {secondary && <div className="[&>*]:w-full bp-md:[&>*]:w-auto">{secondary}</div>}
+      {tertiary && <div className="[&>*]:w-full bp-md:[&>*]:w-auto">{tertiary}</div>}
     </div>
   );
 }
