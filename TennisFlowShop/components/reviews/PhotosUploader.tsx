@@ -274,8 +274,14 @@ export default function PhotosUploader({
         </p>
       </div>
     ) : (
-      <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || uploadBlocked}>
-        <ImagePlus className="h-4 w-4 mr-2" />
+      <Button
+        type="button"
+        variant="outline"
+        className="h-11 min-h-11 bp-md:h-10 bp-md:min-h-10"
+        onClick={onPick}
+        disabled={!hasRoom || uploadBlocked}
+      >
+        <ImagePlus className="h-4 w-4 mr-2" aria-hidden="true" />
         이미지 추가 ({totalCount}/{max})
       </Button>
     );

@@ -3,7 +3,13 @@
 import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
 import PhotosUploader from "@/components/reviews/PhotosUploader";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -11,7 +17,7 @@ import {
   REVIEW_MAX_PHOTOS,
   validateReviewInput,
 } from "@/lib/reviews/review-input-policy";
-import { Loader2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 type EditForm = {
   rating: number | "";
@@ -61,15 +67,30 @@ export default function ReviewEditDialog({
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-[calc(100%-2rem)] bp-md:max-w-2xl [&>button:first-child]:inline-flex [&>button:first-child]:h-11 [&>button:first-child]:w-11 [&>button:first-child]:items-center [&>button:first-child]:justify-center [&>button:first-child]:rounded-lg bp-md:[&>button:first-child]:h-9 bp-md:[&>button:first-child]:w-9">
+        <DialogHeader className="pr-12">
           <DialogTitle>후기 수정</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5">
           <div className="space-y-2">
-            <Label>별점</Label>
-            <div className="flex items-center gap-1">
+            <Label>평점</Label>
+            <div
+              role="radiogroup"
+              aria-label="평점 선택"
+              className="flex flex-wrap items-center gap-1"
+              onKeyDown={(e) => {
+                const current = editForm.rating === "" ? 0 : Number(editForm.rating);
+                if (e.key === "ArrowRight") {
+                  setEditForm((p) => ({ ...p, rating: Math.min(5, current + 1 || 1) }));
+                  e.preventDefault();
+                }
+                if (e.key === "ArrowLeft") {
+                  setEditForm((p) => ({ ...p, rating: Math.max(1, (current || 1) - 1) }));
+                  e.preventDefault();
+                }
+              }}
+            >
               {Array.from({ length: 5 }).map((_, i) => {
                 const score = i + 1;
                 const active =
@@ -78,24 +99,31 @@ export default function ReviewEditDialog({
                   <button
                     key={i}
                     type="button"
-                    className="p-1"
+                    role="radio"
+                    aria-checked={(editForm.rating === "" ? 0 : Number(editForm.rating)) === score}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onMouseEnter={() => setHoverRating(score)}
                     onMouseLeave={() => setHoverRating(null)}
                     onClick={() => setEditForm((p) => ({ ...p, rating: score }))}
-                    aria-label={`별점 ${score}점`}
+                    aria-label={`${score}점`}
                   >
                     <Star
-                      className={`h-5 w-5 ${active ? "text-warning fill-current stroke-current" : "fill-transparent text-muted-foreground stroke-current"}`}
+                      className={`h-6 w-6 ${active ? "text-warning fill-current stroke-current" : "fill-transparent text-muted-foreground stroke-current"}`}
+                      aria-hidden="true"
                     />
                   </button>
                 );
               })}
+              <span className="ml-2 text-ui-body-sm text-muted-foreground">
+                {editForm.rating === "" ? 0 : Number(editForm.rating)}/5
+              </span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>내용</Label>
+            <Label htmlFor="racket-review-edit-content">내용</Label>
             <Textarea
+              id="racket-review-edit-content"
               value={editForm.content}
               onChange={(e) => setEditForm((p) => ({ ...p, content: e.target.value }))}
               rows={6}
@@ -108,11 +136,12 @@ export default function ReviewEditDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>사진</Label>
+            <Label>사진 (선택, 최대 {REVIEW_MAX_PHOTOS}장)</Label>
             <PhotosUploader
               value={editForm.photos}
               onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
               max={REVIEW_MAX_PHOTOS}
+              previewMode="queue"
               onUploadingChange={onUploadingPhotosChange}
               uploadSessionId={uploadSessionId}
               onUploaded={onUploaded}
@@ -123,6 +152,8 @@ export default function ReviewEditDialog({
               value={editForm.photos}
               onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
               disabled={busy || uploadingPhotos}
+              mobileControls
+              responsiveColumns
               onRemove={(url) => {
                 if (!uploadSessionId) return;
                 void onRemove(url, uploadSessionId);
@@ -130,27 +161,26 @@ export default function ReviewEditDialog({
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose} disabled={busy || uploadingPhotos}>
+          <DialogFooter className="gap-2 pt-2 sm:flex-col-reverse bp-md:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 min-h-11 w-full bp-md:h-10 bp-md:min-h-10 bp-md:w-auto"
+              onClick={onClose}
+              disabled={busy || uploadingPhotos}
+            >
               취소
             </Button>
             <Button
+              type="button"
+              className="h-11 min-h-11 w-full bp-md:h-10 bp-md:min-h-10 bp-md:w-auto"
               onClick={onSubmit}
               disabled={busy || uploadingPhotos || !isValid}
               aria-disabled={busy || uploadingPhotos || !isValid}
             >
-              {busy ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  저장 중...
-                </>
-              ) : uploadingPhotos ? (
-                "사진 업로드 중..."
-              ) : (
-                "저장"
-              )}
+              {busy ? "저장 중…" : uploadingPhotos ? "사진 업로드 중…" : "저장"}
             </Button>
-          </div>
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

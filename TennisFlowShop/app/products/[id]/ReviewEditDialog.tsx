@@ -2,6 +2,7 @@
 
 import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
 import PhotosUploader from "@/components/reviews/PhotosUploader";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -59,8 +60,8 @@ export default function ReviewEditDialog({
   const isValid = validateReviewInput(editForm).ok;
   return (
     <Dialog open={open} onOpenChange={(v) => (v || uploadingPhotos ? undefined : onClose())}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-[calc(100%-2rem)] bp-md:max-w-2xl [&>button:first-child]:inline-flex [&>button:first-child]:h-11 [&>button:first-child]:w-11 [&>button:first-child]:items-center [&>button:first-child]:justify-center [&>button:first-child]:rounded-lg bp-md:[&>button:first-child]:h-9 bp-md:[&>button:first-child]:w-9">
+        <DialogHeader className="pr-12">
           <DialogTitle>후기 수정</DialogTitle>
         </DialogHeader>
 
@@ -71,7 +72,7 @@ export default function ReviewEditDialog({
             <div
               role="radiogroup"
               aria-label="평점 선택"
-              className="flex items-center gap-1"
+              className="flex flex-wrap items-center gap-1"
               onKeyDown={(e) => {
                 const curr = typeof editForm.rating === "number" ? editForm.rating : 0;
                 if (e.key === "ArrowRight") {
@@ -96,13 +97,14 @@ export default function ReviewEditDialog({
                     role="radio"
                     aria-checked={current === i}
                     aria-label={`${i}점`}
-                    className="p-1"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onMouseEnter={() => onChangeHoverRating(i)}
                     onMouseLeave={() => onChangeHoverRating(null)}
                     onClick={() => onChangeForm((s) => ({ ...s, rating: i }))}
                   >
                     <Star
                       className={`h-6 w-6 ${filled ? "text-warning fill-current stroke-current" : "fill-transparent text-muted-foreground stroke-current"}`}
+                      aria-hidden="true"
                     />
                   </button>
                 );
@@ -114,9 +116,9 @@ export default function ReviewEditDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="content">내용</Label>
+            <Label htmlFor="product-review-edit-content">내용</Label>
             <Textarea
-              id="content"
+              id="product-review-edit-content"
               rows={6}
               value={editForm.content}
               onChange={(e) => onChangeForm((s) => ({ ...s, content: e.target.value }))}
@@ -143,6 +145,8 @@ export default function ReviewEditDialog({
                 value={editForm.photos}
                 onChange={(arr) => onChangeForm((s) => ({ ...s, photos: arr }))}
                 disabled={busy || uploadingPhotos}
+                mobileControls
+                responsiveColumns
                 onRemove={(url) => {
                   if (!uploadSessionId) return;
                   void onRemove(url, uploadSessionId);
@@ -152,25 +156,26 @@ export default function ReviewEditDialog({
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
-          <button
+        <DialogFooter className="gap-2 pt-2 sm:flex-col-reverse bp-md:flex-row">
+          <Button
             type="button"
-            className="px-4 py-2 rounded-md border text-ui-body-sm"
+            variant="outline"
+            className="h-11 min-h-11 w-full bp-md:h-10 bp-md:min-h-10 bp-md:w-auto"
             onClick={onClose}
             disabled={busy || uploadingPhotos}
             aria-disabled={busy || uploadingPhotos}
           >
             취소
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
+            className="h-11 min-h-11 w-full bp-md:h-10 bp-md:min-h-10 bp-md:w-auto"
             onClick={onSubmit}
             disabled={busy || uploadingPhotos || !isValid}
             aria-disabled={busy || uploadingPhotos || !isValid}
           >
             {busy ? "저장 중…" : uploadingPhotos ? "사진 업로드 중…" : "저장"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
