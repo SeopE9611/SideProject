@@ -49,7 +49,7 @@ export default function MypageDetailHero({
         className,
       )}
     >
-      <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between">
+      <div className="min-w-0">
         <div className="min-w-0 space-y-1">
           <div
             className={cn(
@@ -70,18 +70,12 @@ export default function MypageDetailHero({
           <p className="break-keep text-ui-body-sm text-muted-foreground">{description}</p>
         </div>
 
-        {actions ? (
-          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
-            {actions}
-          </div>
-        ) : null}
       </div>
 
       <div
         className={cn(
           mypageDetailLayout.heroShell,
-          isFeature &&
-            "border border-brand-highlight-ink/20 bg-background/75 ring-brand-highlight-ink/15",
+          isFeature && "border-brand-highlight-ink/20",
         )}
       >
         <div className={cn(mypageDetailLayout.heroGrid, !hasNextAction && "bp-lg:grid-cols-1")}>
@@ -110,11 +104,13 @@ export default function MypageDetailHero({
             </div>
           </div>
 
+          {summary ? <div className={mypageDetailLayout.summaryGrid}>{summary}</div> : null}
+
           {hasNextAction ? (
             <div
               className={cn(
                 mypageDetailLayout.actionPanel,
-                isFeature && "border-brand-highlight-ink/25 bg-brand-highlight-muted/55",
+                isFeature && "bg-brand-highlight-muted/55",
               )}
             >
               <div className="min-w-0 flex-1">
@@ -149,8 +145,13 @@ export default function MypageDetailHero({
           ) : null}
         </div>
 
-        {summary ? <div className={mypageDetailLayout.summaryGrid}>{summary}</div> : null}
       </div>
+
+      {actions ? (
+        <div className="mt-4 flex w-full flex-col gap-2 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
+          {actions}
+        </div>
+      ) : null}
     </section>
   );
 }

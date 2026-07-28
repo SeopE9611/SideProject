@@ -1,6 +1,5 @@
 "use client";
 
-import SiteContainer from "@/components/layout/SiteContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { mypageDetailLayout } from "../../_components/mypage-detail-style";
 
@@ -57,7 +56,7 @@ export default function OrderDetailSkeleton() {
         </div>
       </section>
 
-      <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
+      <div className={mypageDetailLayout.contentContainer}>
         <div className="w-full space-y-5">
           <div className="space-y-5">
             <section className="overflow-hidden rounded-2xl border border-brand-highlight-ink/20 bg-card shadow-none">
@@ -111,7 +110,7 @@ export default function OrderDetailSkeleton() {
             ))}
           </aside>
         </div>
-      </SiteContainer>
+      </div>
     </div>
   );
 }

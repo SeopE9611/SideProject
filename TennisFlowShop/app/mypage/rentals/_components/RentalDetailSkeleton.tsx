@@ -1,6 +1,5 @@
 "use client";
 
-import SiteContainer from "@/components/layout/SiteContainer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -83,7 +82,7 @@ export default function RentalDetailSkeleton() {
         </div>
       </section>
 
-      <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
+      <div className={mypageDetailLayout.contentContainer}>
         <div className={mypageDetailLayout.contentGrid}>
           <div className={mypageDetailLayout.mainColumn}>
             <RentalDetailCardSkeleton compact />
@@ -94,7 +93,7 @@ export default function RentalDetailSkeleton() {
             <RentalDetailCardSkeleton />
           </div>
         </div>
-      </SiteContainer>
+      </div>
     </main>
   );
 }

@@ -8,7 +8,6 @@ import {
   getCustomerRentalStatusLabel,
   getCustomerTransactionPaymentStatusLabel,
 } from "@/app/mypage/_lib/flow-display";
-import SiteContainer from "@/components/layout/SiteContainer";
 import RentalReviewCTA from "@/components/reviews/RentalReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
@@ -689,7 +688,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
-                className="h-9 w-full gap-2 whitespace-normal break-keep bp-sm:w-auto"
+                className="min-h-11 w-full gap-2 whitespace-normal break-keep bp-sm:w-auto"
               >
                 대여 취소
               </Button>
@@ -704,7 +703,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
               variant="outline"
               size="sm"
               asChild
-              className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 hover:text-brand-highlight-ink bp-sm:w-auto"
+              className="min-h-11 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 hover:text-brand-highlight-ink bp-sm:w-auto"
             >
               <Link href={backUrl}>목록으로 돌아가기</Link>
             </Button>
@@ -723,7 +722,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 variant="highlight"
                 size="sm"
                 wrap="responsive"
-                className="w-full bp-sm:w-auto"
+                className="min-h-11 w-full bp-sm:w-auto"
                 disabled={isReceiving}
                 onClick={handleReceiveRental}
               >
@@ -737,7 +736,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 size="sm"
                 wrap="responsive"
                 asChild
-                className="w-full bp-sm:w-auto"
+                className="min-h-11 w-full bp-sm:w-auto"
               >
                 <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
               </Button>
@@ -767,7 +766,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         }
       />
 
-      <SiteContainer variant="wide" className={mypageDetailLayout.contentContainer}>
+      <div className={mypageDetailLayout.contentContainer}>
         {/* 대여 취소 상태 안내 배너 */}
         {cancelBanner && (
           <div
@@ -784,7 +783,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 size="sm"
                 onClick={handleWithdrawCancelRequest}
                 disabled={withdrawing}
-                className="mt-3 h-9 w-full whitespace-normal break-keep sm:ml-4 sm:mt-0 sm:w-auto"
+                className="mt-3 min-h-11 w-full whitespace-normal break-keep sm:ml-4 sm:mt-0 sm:w-auto"
               >
                 {withdrawing ? "철회 중…" : "취소 요청 철회"}
               </Button>
@@ -889,7 +888,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         size="sm"
                         wrap="responsive"
                         asChild
-                        className="w-full bp-sm:w-fit"
+                        className="min-h-11 w-full bp-sm:w-fit"
                       >
                         <Link href={returnShippingHref}>
                           {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
@@ -915,7 +914,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                       status={data.status}
                       userConfirmedAt={(data as any).userConfirmedAt ?? null}
                       returnedAt={data.returnedAt ?? null}
-                      className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
+                      className="min-h-11 w-full whitespace-normal break-keep bp-sm:w-auto"
                     />
                   </div>
                 ) : null}
@@ -970,7 +969,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                             variant="outline"
                             size="sm"
                             asChild
-                            className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
+                            className="min-h-11 w-full whitespace-normal break-keep bp-sm:w-auto"
                           >
                             <Link href={stringingDetailHref}>교체서비스 상세보기</Link>
                           </Button>
@@ -999,7 +998,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                         variant="highlight_soft"
                         asChild
                         wrap="responsive"
-                        className="w-full gap-2 bp-sm:w-auto"
+                        className="min-h-11 w-full gap-2 bp-sm:w-auto"
                       >
                         <Link href={applyHref}>교체서비스 신청하기</Link>
                       </Button>
@@ -1052,7 +1051,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </MypageDetailCard>
           </div>
         </div>
-      </SiteContainer>
+      </div>
 
       {/* 다이얼로그는 클릭 시점에만 마운트해 초기 번들을 경량화 */}
       {cancelDialogOpen && data?.id ? (

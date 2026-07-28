@@ -311,7 +311,7 @@ export default function OrderDetailPage() {
             {Array.from({ length: 3 }).map((_, index) => (
               <Card
                 key={index}
-                className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
+                className="rounded-2xl border-0 bg-card shadow-sm ring-1 ring-border/50"
               >
                 <CardHeader className="space-y-2 rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <Skeleton className="h-6 w-40" />
@@ -341,13 +341,13 @@ export default function OrderDetailPage() {
             description={error}
             actions={
               <>
-                <Button asChild className="w-full sm:w-auto">
+                <Button asChild className="min-h-11 w-full sm:w-auto">
                   <Link href="/order-lookup">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     주문 다시 조회하기
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full sm:w-auto">
+                <Button asChild variant="outline" className="min-h-11 w-full sm:w-auto">
                   <Link href="/board/qna/write">고객센터 문의하기</Link>
                 </Button>
               </>
@@ -367,13 +367,13 @@ export default function OrderDetailPage() {
             description="조회 정보가 만료되었거나 주문 시 입력한 정보와 일치하지 않을 수 있어요. 다시 조회하거나 고객센터로 문의해주세요."
             action={
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
-                <Button asChild className="w-full sm:w-auto">
+                <Button asChild className="min-h-11 w-full sm:w-auto">
                   <Link href="/order-lookup">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     주문 다시 조회하기
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full sm:w-auto">
+                <Button asChild variant="outline" className="min-h-11 w-full sm:w-auto">
                   <Link href="/board/qna/write">고객센터 문의하기</Link>
                 </Button>
               </div>
@@ -579,7 +579,7 @@ export default function OrderDetailPage() {
         description={`주문번호 ${order._id.slice(-8)}의 현재 상태와 다음 해야 할 일을 확인하세요.`}
       >
         <div className="flex flex-col items-center gap-3">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border-0 bg-card shadow-sm ring-1 ring-border/50">
             <Package className="h-7 w-7" />
           </div>
           <Badge
@@ -598,7 +598,7 @@ export default function OrderDetailPage() {
           <div className="mb-6 md:mb-8">
             <Button
               variant="ghost"
-              className="inline-flex items-center text-ui-body-sm text-muted-foreground hover:text-primary transition-colors group"
+              className="min-h-11 w-full items-center text-ui-body-sm bp-sm:w-auto text-muted-foreground hover:text-primary transition-colors group"
               onClick={handleGoBack}
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -618,10 +618,10 @@ export default function OrderDetailPage() {
           )}
 
           <details className="group mb-6 md:mb-8 bp-md:block">
-            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">
+            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-sm ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">
               진행 단계
             </summary>
-            <Card className="mt-3 hidden rounded-xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
+            <Card className="mt-3 hidden rounded-xl border-0 bg-card shadow-sm ring-1 ring-border/50 group-open:block bp-md:block">
               <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                 <CardTitle className="text-ui-body">주문 진행 타임라인</CardTitle>
                 <p className="text-ui-body-sm text-muted-foreground">
@@ -680,7 +680,7 @@ export default function OrderDetailPage() {
 
           {/* String Service Alert */}
           {order.shippingInfo?.withStringService && (
-            <Card className="mb-6 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 md:mb-8">
+            <Card className="mb-6 border-0 bg-card shadow-sm ring-1 ring-border/50 md:mb-8">
               <CardContent className="p-4 md:p-6">
                 {!hasStringingApplication ? (
                   <div className="flex items-start gap-4">
@@ -728,7 +728,7 @@ export default function OrderDetailPage() {
           {order.shippingInfo?.withStringService &&
             hasStringingApplication &&
             latestStringingApplication && (
-              <Card className="mb-6 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 md:mb-8">
+              <Card className="mb-6 border-0 bg-card shadow-sm ring-1 ring-border/50 md:mb-8">
                 <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                   <CardTitle className="text-ui-body">교체서비스 접수 요약</CardTitle>
                 </CardHeader>
@@ -786,14 +786,14 @@ export default function OrderDetailPage() {
             )}
 
           <details className="group bp-md:block" open>
-            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">
+            <summary className="cursor-pointer rounded-xl border-0 bg-card p-4 shadow-sm ring-1 ring-border/50 font-semibold text-foreground bp-md:hidden">
               주문 상품
             </summary>
             <div className="mt-3 grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
               {/* Main Content */}
               <div className="space-y-6 md:space-y-8 lg:col-span-2">
                 {/* 주문 정보 */}
-                <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <Card className="border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
@@ -855,7 +855,7 @@ export default function OrderDetailPage() {
                 </Card>
 
                 {/* 배송 정보 */}
-                <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <Card className="border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
@@ -946,7 +946,7 @@ export default function OrderDetailPage() {
                 </Card>
 
                 {/* 주문 상품 */}
-                <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <Card className="border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
@@ -1003,7 +1003,7 @@ export default function OrderDetailPage() {
 
               {/* Sidebar - 결제 정보 */}
               <div className="lg:col-span-1">
-                <Card className="sticky top-8 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <Card className="sticky top-8 border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
@@ -1073,7 +1073,7 @@ export default function OrderDetailPage() {
                     <Button
                       variant="outline"
                       onClick={handleGoBack}
-                      className="w-full bg-transparent"
+                      className="min-h-11 w-full bg-transparent"
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       주문 목록으로 돌아가기

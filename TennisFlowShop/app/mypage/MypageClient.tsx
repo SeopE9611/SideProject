@@ -377,31 +377,33 @@ export default function MypageClient({ user }: Props) {
 
               {/* 거래 내역 탭 */}
               <TabsContent value="orders" className="mt-0">
-                <DashboardSectionPanel
-                  variant="feature"
-                  icon={<ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
-                  title="거래/이용 내역"
-                  description="상태와 다음 행동을 확인하세요."
-                >
-                  {isOrdersDetailView ? (
+                {isOrdersDetailView ? (
+                  <div className="min-w-0 space-y-4 bp-sm:space-y-5">
                     <OrdersScopeTabs activeScope={activeOrdersScope} className="mb-4 bp-sm:mb-5" />
-                  ) : null}
-                  {isOrdersTab && flowType === "order" && flowId ? (
-                    <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} />
-                  ) : isOrdersTab && flowType === "application" && flowId ? (
-                    <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
-                  ) : isOrdersTab && flowType === "rental" && flowId ? (
-                    <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
-                  ) : isOrdersTab && orderId ? (
-                    <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} />
-                  ) : isOrdersTab && selectedApplicationId ? (
-                    <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
-                  ) : isOrdersTab && selectedRentalId ? (
-                    <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
-                  ) : isOrdersTab ? (
-                    <TransactionFlowList />
-                  ) : null}
-                </DashboardSectionPanel>
+                    {isOrdersTab && flowType === "order" && flowId ? (
+                      <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && flowType === "application" && flowId ? (
+                      <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && flowType === "rental" && flowId ? (
+                      <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && orderId ? (
+                      <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && selectedApplicationId ? (
+                      <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && selectedRentalId ? (
+                      <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
+                    ) : null}
+                  </div>
+                ) : (
+                  <DashboardSectionPanel
+                    variant="feature"
+                    icon={<ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                    title="거래/이용 내역"
+                    description="상태와 다음 행동을 확인하세요."
+                  >
+                    {isOrdersTab ? <TransactionFlowList /> : null}
+                  </DashboardSectionPanel>
+                )}
               </TabsContent>
 
               {/* 클래스 신청 탭 */}
