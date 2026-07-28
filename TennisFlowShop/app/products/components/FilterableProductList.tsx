@@ -861,7 +861,7 @@ export default function FilterableProductList({
                   viewMode={viewMode}
                   count={viewMode === "grid" ? 12 : 4}
                   actionCount={productActionCount}
-                  mediaAspectClassName="aspect-[5/4] bp-md:aspect-square"
+                  showDetailBlock
                 />
               </div>
             </div>
@@ -908,7 +908,7 @@ export default function FilterableProductList({
                 {productsList.map((product, i) => {
                   const isLast = i === productsList.length - 1;
                   return (
-                    <div key={product._id} ref={isLast ? lastProductRef : undefined}>
+                    <div key={product._id} ref={isLast ? lastProductRef : undefined} className="h-full">
                       <ProductCard
                         product={product}
                         viewMode={viewMode}
@@ -948,7 +948,7 @@ export default function FilterableProductList({
                     viewMode={viewMode}
                     count={viewMode === "grid" ? 4 : 1}
                     actionCount={productActionCount}
-                    mediaAspectClassName="aspect-[5/4] bp-md:aspect-square"
+                    showDetailBlock
                   />
                 </div>
               )}

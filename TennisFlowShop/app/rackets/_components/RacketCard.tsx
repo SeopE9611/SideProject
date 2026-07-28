@@ -24,8 +24,6 @@ const RentDialog = dynamic(() => import("@/app/rackets/[id]/_components/RentDial
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
-const racketImageWrapClass = "relative block w-full aspect-[4/3] overflow-hidden bg-muted/20";
-
 type RacketItem = {
   id: string;
   brand: string;
@@ -135,7 +133,13 @@ const RacketCard = React.memo(
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
     const ratingAvg = Number(racket.ratingAvg ?? racket.ratingAverage ?? 0);
     const ratingCount = Number(racket.reviewCount ?? racket.ratingCount ?? 0);
-    const ratingBadge = <CatalogRating average={ratingAvg} count={ratingCount} />;
+    const ratingBadge = (
+      <CatalogRating
+        average={ratingAvg}
+        count={ratingCount}
+        size={viewMode === "list" ? "md" : "sm"}
+      />
+    );
     const buyLabel = isApplyFlow ? "스트링 선택" : "스트링 선택 후 구매";
     const salePrice = getEffectiveRacketPrice(racket);
     const discountRate = getRacketDiscountRate(racket);
@@ -170,11 +174,11 @@ const RacketCard = React.memo(
       />
     );
 
-    const actionButtons = (options?: { compact?: boolean; stackOnNarrow?: boolean }) => {
+    const actionButtons = (options?: { compact?: boolean }) => {
       const compact = options?.compact ?? false;
       const buttonClassName = cn(
-        "inline-flex h-10 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-2.5 text-center font-ui-medium [&_svg]:mr-0 [&_svg]:shrink-0",
-        compact ? "text-ui-caption bp-sm:text-ui-label bp-md:text-ui-body-sm" : "text-ui-body-sm",
+        "inline-flex h-11 min-h-11 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-2.5 text-center font-ui-medium bp-md:h-10 bp-md:min-h-10 [&_svg]:mr-0 [&_svg]:shrink-0",
+        compact ? "text-ui-label bp-sm:text-ui-body-sm" : "text-ui-body-sm",
       );
       const disabledButtonClassName = cn(
         buttonClassName,
@@ -242,7 +246,10 @@ const RacketCard = React.memo(
     const media = (
       <Link
         href={`/rackets/${racket.id}`}
-        className={racketImageWrapClass}
+        className={cn(
+          "relative block w-full overflow-hidden bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          viewMode === "list" ? "h-full min-h-[220px]" : "aspect-[4/3]",
+        )}
         aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
       >
         {marketingBadgeSpecs.length > 0 && marketingBadges}
@@ -252,10 +259,10 @@ const RacketCard = React.memo(
           fill
           sizes={
             viewMode === "list"
-              ? "(max-width: 768px) 100vw, 260px"
-              : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              ? "(max-width: 1199px) 240px, 260px"
+              : "(max-width: 575px) calc(100vw - 24px), (max-width: 1023px) 50vw, (max-width: 1535px) 33vw, 25vw"
           }
-          className="object-contain object-center p-3 transition-opacity duration-200 group-hover:opacity-95"
+          className="object-contain object-center p-3 transition-transform duration-200 group-hover:scale-[1.02] motion-reduce:transform-none"
         />
       </Link>
     );
@@ -263,14 +270,22 @@ const RacketCard = React.memo(
     const content = (
       <div className="min-w-0">
         <div
-          className="mb-1.5 max-w-full truncate text-ui-label font-ui-medium uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm"
+          className="mb-1.5 max-w-full truncate text-ui-label font-ui-medium uppercase tracking-[0.08em] text-muted-foreground"
           title={displayBrandLabel}
         >
           {displayBrandLabel}
         </div>
-        <Link href={`/rackets/${racket.id}`} className="block min-w-0">
+        <Link
+          href={`/rackets/${racket.id}`}
+          className="group/title block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
           <h3
-            className="mb-2 line-clamp-2 break-words text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3"
+            className={cn(
+              "mb-2 line-clamp-2 break-words text-ui-body font-ui-medium leading-snug text-foreground transition-colors group-hover/title:text-primary",
+              viewMode === "list"
+                ? "bp-md:text-ui-card-title-lg bp-lg:line-clamp-3"
+                : "bp-lg:line-clamp-3 bp-lg:text-ui-card-title-lg",
+            )}
             title={racket.model}
           >
             {racket.model}
@@ -293,12 +308,12 @@ const RacketCard = React.memo(
           price={priceBlock("right")}
           actions={
             <>
-              {actionButtons({ compact: true, stackOnNarrow: true })}
+              {actionButtons({ compact: true })}
               <Button
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-10 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-ui-medium bp-sm:text-ui-body-sm"
+                className="h-11 min-h-11 w-full justify-center whitespace-nowrap rounded-control bg-background text-ui-label font-ui-medium bp-sm:text-ui-body-sm bp-md:h-10 bp-md:min-h-10"
               >
                 <Link href={`/rackets/${racket.id}`}>
                   <Eye className="mr-1.5 h-4 w-4 shrink-0" />
@@ -317,8 +332,8 @@ const RacketCard = React.memo(
         viewMode="grid"
         media={media}
         content={content}
-        price={priceBlock()}
-        actions={actionButtons({ compact: true, stackOnNarrow: false })}
+        price={priceBlock("left")}
+        actions={actionButtons({ compact: true })}
       />
     );
   },
