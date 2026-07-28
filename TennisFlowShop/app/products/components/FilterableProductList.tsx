@@ -736,6 +736,7 @@ export default function FilterableProductList({
         <div className="min-w-0">
           <div className="mb-6 bp-md:mb-8">
             <CatalogResultsPanel
+              className="-mx-3 bp-sm:-mx-4 bp-md:mx-0"
               title="스트링 상품"
               description="플레이 성향과 성능, 가격 조건을 조합해 원하는 스트링을 찾아보세요."
               total={total ?? 0}
