@@ -660,6 +660,7 @@ export default function FilterableRacketList({
         <div className="min-w-0">
           <div className="mb-6 bp-md:mb-8">
             <CatalogResultsPanel
+              className="-mx-3 bp-sm:-mx-4 bp-md:mx-0"
               title="라켓 목록"
               description="브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요."
               total={total}
