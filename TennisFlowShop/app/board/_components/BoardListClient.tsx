@@ -2059,7 +2059,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         className="h-11 w-full flex-1 rounded-control border border-border bg-card px-3 text-ui-body-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring bp-md:h-9"
                         placeholder="검색어를 입력하세요"
                       />
-                      <div className="grid shrink-0 grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:flex bp-md:items-center">
+                      <div className={`grid shrink-0 grid-cols-1 gap-2 ${qParam ? "bp-sm:grid-cols-2" : ""} bp-md:flex bp-md:items-center`}>
                         <Button type="submit" size="sm" variant="highlight" className="min-h-11 w-full gap-1 px-3 bp-md:min-h-0 bp-md:w-auto">
                           <Search className="h-3.5 w-3.5" />
                           검색

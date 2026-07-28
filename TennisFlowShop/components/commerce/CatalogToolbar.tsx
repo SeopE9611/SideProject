@@ -20,23 +20,23 @@ export function CatalogToolbar({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between",
+        "flex flex-col gap-3 bp-md:flex-row bp-md:items-center bp-md:justify-between",
         className,
       )}
     >
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(132px,0.8fr)] gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 bp-md:flex bp-md:flex-wrap bp-md:items-center">
         {filterButton}
-        <div className="bp-sm:hidden">{sortControl}</div>
+        <div className="min-w-0 bp-md:hidden">{sortControl}</div>
         {quickFilters ? (
-          <div className="col-span-2 grid grid-cols-2 gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center">
+          <div className="col-span-2 grid grid-cols-2 gap-2 bp-sm:grid-cols-4 bp-md:flex bp-md:flex-wrap bp-md:items-center">
             {quickFilters}
           </div>
         ) : null}
         {soldOutToggle ? (
-          <div className="col-span-2 grid grid-cols-1 bp-sm:block">{soldOutToggle}</div>
+          <div className="col-span-2 grid grid-cols-1 bp-md:block">{soldOutToggle}</div>
         ) : null}
       </div>
-      <div className="hidden min-w-0 items-center justify-end gap-2 bp-sm:flex">
+      <div className="hidden min-w-0 items-center justify-end gap-2 bp-md:flex">
         {viewToggle}
         {sortControl}
       </div>

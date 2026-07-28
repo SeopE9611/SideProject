@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 type CatalogResultsPanelProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   total: number;
@@ -34,16 +34,18 @@ export function CatalogResultsPanel({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-panel border border-border bg-card shadow-soft",
+        "overflow-hidden border-y border-border bg-card bp-md:rounded-panel bp-md:border-x bp-md:shadow-soft",
         className,
       )}
     >
-      <div className="space-y-3 p-4 bp-sm:p-5">
-        <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
+      <div className="space-y-3 p-4 bp-md:p-5">
+        <div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-end bp-md:justify-between">
           <div className="min-w-0 space-y-1">
-            <p className="text-ui-label font-ui-medium uppercase tracking-[0.14em] text-brand-highlight-ink">
-              {eyebrow}
-            </p>
+            {eyebrow ? (
+              <p className="text-ui-label font-ui-medium uppercase tracking-[0.14em] text-brand-highlight-ink">
+                {eyebrow}
+              </p>
+            ) : null}
             <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">{title}</h2>
             {description ? (
               <p className="max-w-2xl text-ui-body-sm text-muted-foreground">{description}</p>
@@ -56,14 +58,14 @@ export function CatalogResultsPanel({
               {isCountLoading ? (
                 <Skeleton className="inline-block h-5 w-12 align-middle" />
               ) : (
-                <span className="font-ui-medium text-primary">{total}</span>
+                <span className="font-ui-medium text-primary">{total.toLocaleString()}</span>
               )}
               {countSuffix}
               {isCountLoading ? (
                 <Skeleton className="ml-2 inline-block h-5 w-10 align-middle" />
               ) : (
                 <span className="ml-1 text-ui-body-sm font-normal text-muted-foreground">
-                  (표시중 {visibleCount}개)
+                  (표시중 {visibleCount.toLocaleString()}개)
                 </span>
               )}
             </div>
@@ -75,9 +77,9 @@ export function CatalogResultsPanel({
           ) : null}
         </div>
       </div>
-      <div className="border-t border-border bg-muted/15 p-3 bp-sm:p-4">{toolbar}</div>
+      <div className="border-t border-border bg-muted/15 p-3 bp-md:p-4">{toolbar}</div>
       {activeFilters ? (
-        <div className="border-t border-border bg-muted/10 p-3 bp-sm:p-4">{activeFilters}</div>
+        <div className="border-t border-border bg-muted/10 p-3 bp-md:p-4">{activeFilters}</div>
       ) : null}
     </section>
   );

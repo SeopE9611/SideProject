@@ -146,15 +146,15 @@ export const FilterPanel = React.memo(function FilterPanel({
           </div>
           <div className="space-y-2">
             <div className="h-3 w-24 rounded bg-muted" />
-            <div className="h-9 bp-sm:h-10 w-full rounded bg-muted" />
+            <div className="h-11 w-full rounded bg-muted bp-md:h-10" />
           </div>
           <div className="space-y-2">
             <div className="h-3 w-20 rounded bg-muted" />
-            <div className="h-9 bp-sm:h-10 w-full rounded bg-muted" />
+            <div className="h-11 w-full rounded bg-muted bp-md:h-10" />
           </div>
           <div className="space-y-2">
             <div className="h-3 w-16 rounded bg-muted" />
-            <div className="h-9 bp-sm:h-10 w-full rounded bg-muted" />
+            <div className="h-11 w-full rounded bg-muted bp-md:h-10" />
           </div>
         </div>
       ) : (
@@ -180,7 +180,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="상품명 검색..."
-                  className="pl-9 bp-sm:pl-10 pr-9 bp-sm:pr-10 h-9 bp-sm:h-10 text-ui-body-sm rounded-xl border-border focus:border-border dark:focus:border-border transition-colors w-full"
+                  className="h-11 w-full rounded-control border-border pl-9 pr-11 text-ui-body-sm transition-colors focus:border-border bp-md:h-10 bp-md:pl-10 dark:focus:border-border"
                 />
                 {searchQuery && (
                   <button
@@ -192,7 +192,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                       const el = document.getElementById("search") as HTMLInputElement | null;
                       el?.focus();
                     }}
-                    className="absolute right-2.5 bp-sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    className="absolute right-0 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-control bp-md:min-h-10 bp-md:min-w-10"
                   >
                     <X className="w-4 h-4 text-muted-foreground" />
                   </button>
@@ -202,7 +202,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 type="submit"
                 size="sm"
                 variant="default"
-                className="h-9 shrink-0 whitespace-nowrap px-3 text-ui-label bp-sm:h-10 bp-sm:px-4 bp-sm:text-ui-body-sm"
+                className="h-11 min-h-11 shrink-0 whitespace-nowrap rounded-control px-3 text-ui-label bp-md:h-10 bp-md:min-h-0 bp-md:px-4 bp-md:text-ui-body-sm"
               >
                 검색
               </Button>
@@ -216,7 +216,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 onValueChange={(value) => setSelectedBrand(value === "all" ? null : value)}
                 value={selectedBrand ?? "all"}
               >
-                <SelectTrigger className="h-9 bp-sm:h-10 text-ui-body-sm rounded-xl border-border focus:border-border dark:focus:border-border">
+                <SelectTrigger className="h-11 rounded-control border-border text-ui-body-sm focus:border-border bp-md:h-10 dark:focus:border-border">
                   <SelectValue placeholder="브랜드 선택" />
                 </SelectTrigger>
                 <SelectContent>
@@ -236,7 +236,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 value={selectedMaterial ?? "all"}
                 onValueChange={(v) => setSelectedMaterial(v === "all" ? null : v)}
               >
-                <SelectTrigger className="h-9 bp-sm:h-10 text-ui-body-sm">
+                <SelectTrigger className="h-11 rounded-control text-ui-body-sm bp-md:h-10">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-card dark:border-border">
@@ -264,7 +264,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                     onValueChange={(val) => setter(val === "all" ? null : Number(val))}
                     value={state !== null ? String(state) : "all"}
                   >
-                    <SelectTrigger className="h-9 bp-sm:h-10 text-ui-body-sm rounded-xl border-border focus:border-border dark:focus:border-border">
+                    <SelectTrigger className="h-11 rounded-control border-border text-ui-body-sm focus:border-border bp-md:h-10 dark:focus:border-border">
                       <SelectValue placeholder="선택" />
                     </SelectTrigger>
                     <SelectContent>
@@ -290,7 +290,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                       type="button"
                       onClick={() => setPriceRange(preset.range)}
                       className={cn(
-                        "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-full border px-2 py-1.5 text-ui-caption transition-colors bp-sm:text-ui-label",
+                        "min-h-11 min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-control border px-2 py-1.5 text-ui-caption transition-colors bp-md:min-h-9 bp-md:text-ui-label",
                         isActive
                           ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                           : "border-border bg-background text-muted-foreground hover:bg-muted",
