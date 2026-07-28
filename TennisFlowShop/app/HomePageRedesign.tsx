@@ -6,7 +6,13 @@ import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
+import {
+  EmptyState as PublicEmptyState,
+  PrimaryCTAGroup,
+  SectionHeader as PublicSectionHeader,
+} from "@/components/public";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
+import { Button } from "@/components/ui/button";
 import { RACKET_BRANDS, racketBrandLabel, stringBrandLabel } from "@/lib/constants";
 import type {
   HomePreviewData,
@@ -550,13 +556,15 @@ export default function HomePageRedesign({
               </h1>
               <p className={styles.heroDescription}>{hero.description}</p>
               <div className={styles.heroActions}>
-                <Link href={hero.primary.href} className={styles.primaryButton}>
-                  {hero.primary.label}
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-                <Link href={hero.secondary.href} className={styles.secondaryButton}>
-                  {hero.secondary.label}
-                </Link>
+                <Button asChild variant="highlight" size="tall" wrap="responsive">
+                  <Link href={hero.primary.href}>
+                    {hero.primary.label}
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
+                <Button asChild variant="inverse_outline" size="tall" wrap="responsive">
+                  <Link href={hero.secondary.href}>{hero.secondary.label}</Link>
+                </Button>
               </div>
             </div>
 
@@ -614,7 +622,7 @@ export default function HomePageRedesign({
 
       <section className={styles.productSection} id="strings">
         <SiteContainer variant="wide" className={styles.wrap}>
-          <SectionHeader
+          <HomeSectionHeader
             eyebrow="THIS WEEK'S CURATION"
             title="지금 추천하는 스트링"
             description="지금 판매 중인 스트링 중 도깨비테니스가 추천하는 상품을 모았습니다"
@@ -641,7 +649,7 @@ export default function HomePageRedesign({
               {[0, 1, 2, 3].map((item) => <span key={item} />)}
             </div>
           ) : sectionRequestStatus.products === "error" ? (
-            <EmptyState
+            <HomePreviewEmptyState
               title="상품 정보를 불러오지 못했습니다"
               href="/products"
               linkLabel="전체 스트링 보기"
@@ -658,7 +666,7 @@ export default function HomePageRedesign({
               ))}
             </div>
           ) : (
-            <EmptyState
+            <HomePreviewEmptyState
               title={
                 activeProductFilter === "new"
                   ? "현재 등록된 신상품이 없습니다"
@@ -719,10 +727,18 @@ export default function HomePageRedesign({
                   <dt>추천 기준</dt>
                   <dd>{concierge.recommendation}</dd>
                 </dl>
-                <Link href={concierge.href} className={styles.primaryButton}>
-                  이 기준 상품 보기
-                  <ArrowRight aria-hidden="true" />
-                </Link>
+                <Button
+                  asChild
+                  variant="highlight"
+                  size="tall"
+                  wrap="responsive"
+                  className={styles.conciergeAction}
+                >
+                  <Link href={concierge.href}>
+                    이 기준 상품 보기
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -731,7 +747,7 @@ export default function HomePageRedesign({
 
       <section className={styles.racketSection} id="rackets">
         <SiteContainer variant="wide" className={styles.wrap}>
-          <SectionHeader
+          <HomeSectionHeader
             eyebrow="CERTIFIED PRE-OWNED"
             title="검수된 중고 라켓"
             description="상태와 스펙을 직접 확인한 라켓만 보여드려요"
@@ -772,14 +788,14 @@ export default function HomePageRedesign({
               {[0, 1, 2, 3].map((item) => <span key={item} />)}
             </div>
           ) : racketRequestStatus[activeBrand] === "error" ? (
-            <EmptyState
+            <HomePreviewEmptyState
               title="중고 라켓 정보를 불러오지 못했습니다"
               href="/rackets"
               linkLabel="전체 재고 확인하기"
               onRetry={() => void loadRackets(activeBrand)}
             />
           ) : (
-            <EmptyState
+            <HomePreviewEmptyState
               title={`${activeBrand === "all" ? "" : `${racketBrandLabel(activeBrand)} `}중고 라켓을 준비하고 있습니다.`}
               href="/rackets"
               linkLabel="전체 재고 확인하기"
@@ -828,7 +844,7 @@ export default function HomePageRedesign({
 
       <section className={styles.packageSection}>
         <SiteContainer variant="wide" className={styles.wrap}>
-          <SectionHeader
+          <HomeSectionHeader
             eyebrow="STRINGING PACKAGES"
             title="자주 교체한다면 패키지로 더 간편하게"
             description="교체 주기와 필요한 횟수에 맞춰 패키지를 선택해보세요"
@@ -841,7 +857,7 @@ export default function HomePageRedesign({
               {[0, 1, 2].map((item) => <span key={item} />)}
             </div>
           ) : sectionRequestStatus.packages === "error" ? (
-            <EmptyState
+            <HomePreviewEmptyState
               title="패키지 정보를 불러오지 못했습니다"
               href="/services/packages"
               linkLabel="패키지 안내 보기"
@@ -854,7 +870,7 @@ export default function HomePageRedesign({
               ))}
             </div>
           ) : (
-            <EmptyState
+            <HomePreviewEmptyState
               title="이용 가능한 교체 패키지를 준비하고 있습니다."
               href="/services/packages"
               linkLabel="패키지 안내 보기"
@@ -898,12 +914,14 @@ export default function HomePageRedesign({
             ) : sectionRequestStatus.notices === "error" ? (
               <span className={styles.noticeStatus} aria-live="polite">
                 공지사항을 불러오지 못했습니다
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="sm"
                   onClick={() => void recoverSections(["notices"])}
                 >
                   다시 시도
-                </button>
+                </Button>
               </span>
             ) : notices[0] ? (
               <Link href={`/board/notice/${notices[0]._id}`}>
@@ -935,7 +953,7 @@ export default function HomePageRedesign({
   );
 }
 
-function SectionHeader({
+function HomeSectionHeader({
   eyebrow,
   title,
   description,
@@ -949,17 +967,20 @@ function SectionHeader({
   linkLabel: string;
 }) {
   return (
-    <header className={styles.sectionHeader}>
-      <div>
-        <p className={styles.sectionEyebrow}>{eyebrow}</p>
-        <h2>{title}</h2>
-        <p>{description}</p>
-      </div>
-      <Link href={href} className={styles.textLink}>
-        {linkLabel}
-        <ArrowRight aria-hidden="true" />
-      </Link>
-    </header>
+    <PublicSectionHeader
+      className={styles.sectionHeader}
+      eyebrow={<span className={styles.sectionEyebrow}>{eyebrow}</span>}
+      title={title}
+      description={description}
+      actions={
+        <Button asChild variant="outline" size="sm" wrap="responsive">
+          <Link href={href}>
+            {linkLabel}
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        </Button>
+      }
+    />
   );
 }
 
@@ -1168,7 +1189,7 @@ function PackageCard({
   );
 }
 
-function EmptyState({
+function HomePreviewEmptyState({
   title,
   href,
   linkLabel,
@@ -1179,13 +1200,40 @@ function EmptyState({
   linkLabel: string;
   onRetry?: () => void;
 }) {
+  const destinationAction = (
+    <Button asChild variant="outline" wrap="responsive">
+      <Link href={href}>
+        {linkLabel}
+        <ArrowRight aria-hidden="true" />
+      </Link>
+    </Button>
+  );
+
   return (
-    <div className={styles.emptyState} aria-live="polite">
-      <p>{title}</p>
-      <div>
-        {onRetry && <button type="button" onClick={onRetry}>다시 시도</button>}
-        <Link href={href}>{linkLabel} <ArrowRight aria-hidden="true" /></Link>
-      </div>
+    <div aria-live="polite">
+      <PublicEmptyState
+        title={title}
+        className={styles.homeEmptyState}
+        action={
+          onRetry ? (
+            <PrimaryCTAGroup
+              primary={
+                <Button
+                  type="button"
+                  variant="highlight_soft"
+                  wrap="responsive"
+                  onClick={onRetry}
+                >
+                  다시 시도
+                </Button>
+              }
+              secondary={destinationAction}
+            />
+          ) : (
+            destinationAction
+          )
+        }
+      />
     </div>
   );
 }
