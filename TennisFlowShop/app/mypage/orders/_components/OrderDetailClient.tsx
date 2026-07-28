@@ -1203,15 +1203,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                             </div>
                           </div>
 
-                          <details className="group mt-4 rounded-xl bg-muted/15 p-3">
-                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg text-ui-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                          <details className="group mt-4 rounded-xl bg-muted/15">
+                            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-ui-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                               <span>라켓·스트링 상세</span>
                               <ChevronDown
                                 className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180"
                                 aria-hidden="true"
                               />
                             </summary>
-                            <div className="mt-3 space-y-2">
+                            <div className="space-y-2 px-3 pb-3 pt-1">
                               {displayLines.map((line, lineIndex) => {
                                 const racketLabel =
                                   line.racketLabel || line.racketType || "라켓명 미입력";
