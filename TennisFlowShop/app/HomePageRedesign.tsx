@@ -555,17 +555,22 @@ export default function HomePageRedesign({
                 <span>{hero.title[1]}</span>
               </h1>
               <p className={styles.heroDescription}>{hero.description}</p>
-              <div className={styles.heroActions}>
-                <Button asChild variant="highlight" size="tall" wrap="responsive">
-                  <Link href={hero.primary.href}>
-                    {hero.primary.label}
-                    <ArrowRight aria-hidden="true" />
-                  </Link>
-                </Button>
-                <Button asChild variant="inverse_outline" size="tall" wrap="responsive">
-                  <Link href={hero.secondary.href}>{hero.secondary.label}</Link>
-                </Button>
-              </div>
+              <PrimaryCTAGroup
+                className={styles.heroActions}
+                primary={
+                  <Button asChild variant="highlight" size="tall" wrap="responsive">
+                    <Link href={hero.primary.href}>
+                      {hero.primary.label}
+                      <ArrowRight aria-hidden="true" />
+                    </Link>
+                  </Button>
+                }
+                secondary={
+                  <Button asChild variant="inverse_outline" size="tall" wrap="responsive">
+                    <Link href={hero.secondary.href}>{hero.secondary.label}</Link>
+                  </Button>
+                }
+              />
             </div>
 
             <div className={styles.heroMedia} key={hero.image}>
@@ -604,17 +609,19 @@ export default function HomePageRedesign({
           </div>
 
           {PROMO_BANNERS.length > 0 && (
-            <div className={styles.promoStrip} aria-label="진행 중인 프로모션">
-              {PROMO_BANNERS.map((promo) =>
-                promo.href ? (
-                  <Link key={promo.key} href={promo.href}>
-                    {promo.label.split("\n")[0]}
-                    <ArrowRight aria-hidden="true" />
-                  </Link>
-                ) : (
-                  <span key={promo.key}>{promo.label.split("\n")[0]}</span>
-                ),
-              )}
+            <div className={`${styles.horizontalRailCue} ${styles.promoRailCue}`}>
+              <div className={styles.promoStrip} aria-label="진행 중인 프로모션">
+                {PROMO_BANNERS.map((promo) =>
+                  promo.href ? (
+                    <Link key={promo.key} href={promo.href}>
+                      {promo.label.split("\n")[0]}
+                      <ArrowRight aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <span key={promo.key}>{promo.label.split("\n")[0]}</span>
+                  ),
+                )}
+              </div>
             </div>
           )}
         </SiteContainer>
@@ -630,18 +637,20 @@ export default function HomePageRedesign({
             linkLabel="전체 스트링 보기"
           />
 
-          <div className={styles.filterTabs} role="tablist" aria-label="스트링 상품 분류">
-            {PRODUCT_FILTERS.map((filter) => (
-              <button
-                key={filter.key}
-                type="button"
-                role="tab"
-                aria-selected={activeProductFilter === filter.key}
-                onClick={() => setActiveProductFilter(filter.key)}
-              >
-                {filter.label}
-              </button>
-            ))}
+          <div className={`${styles.horizontalRailCue} ${styles.filterRailCue}`}>
+            <div className={styles.filterTabs} role="tablist" aria-label="스트링 상품 분류">
+              {PRODUCT_FILTERS.map((filter) => (
+                <button
+                  key={filter.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeProductFilter === filter.key}
+                  onClick={() => setActiveProductFilter(filter.key)}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {sectionRequestStatus.products === "loading" ? (
@@ -676,7 +685,9 @@ export default function HomePageRedesign({
               linkLabel="전체 스트링 보기"
             />
           )}
-          <p className={styles.swipeHint}>옆으로 밀어 다른 상품도 확인하세요.</p>
+          {visibleProducts.length > 1 && (
+            <p className={styles.swipeHint}>옆으로 밀어 다른 상품도 확인하세요.</p>
+          )}
         </SiteContainer>
       </section>
 
@@ -755,26 +766,28 @@ export default function HomePageRedesign({
             linkLabel="중고 라켓 전체 보기"
           />
 
-          <div className={styles.brandTabs} role="tablist" aria-label="중고 라켓 브랜드">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeBrand === "all"}
-              onClick={() => void selectBrand("all")}
-            >
-              전체
-            </button>
-            {RACKET_BRANDS.map((brand) => (
+          <div className={`${styles.horizontalRailCue} ${styles.racketRailCue}`}>
+            <div className={styles.brandTabs} role="tablist" aria-label="중고 라켓 브랜드">
               <button
-                key={brand.value}
                 type="button"
                 role="tab"
-                aria-selected={activeBrand === brand.value}
-                onClick={() => void selectBrand(brand.value)}
+                aria-selected={activeBrand === "all"}
+                onClick={() => void selectBrand("all")}
               >
-                {brand.label}
+                전체
               </button>
-            ))}
+              {RACKET_BRANDS.map((brand) => (
+                <button
+                  key={brand.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeBrand === brand.value}
+                  onClick={() => void selectBrand(brand.value)}
+                >
+                  {brand.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {visibleRackets.length > 0 ? (
@@ -801,7 +814,9 @@ export default function HomePageRedesign({
               linkLabel="전체 재고 확인하기"
             />
           )}
-          <p className={styles.swipeHint}>옆으로 밀어 다른 라켓도 확인하세요.</p>
+          {visibleRackets.length > 1 && (
+            <p className={styles.swipeHint}>옆으로 밀어 다른 라켓도 확인하세요.</p>
+          )}
         </SiteContainer>
       </section>
 
