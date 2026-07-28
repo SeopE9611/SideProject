@@ -1484,7 +1484,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 />
               </TabsContent>
 
-              <TabsContent value="qna" className="p-4 sm:p-6 bp-md:p-8">
+              <TabsContent value="qna" className="p-4 bp-sm:p-6 bp-md:p-8">
                 <ProductDetailQnaTab
                   productId={String(product._id)}
                   productName={product.name}

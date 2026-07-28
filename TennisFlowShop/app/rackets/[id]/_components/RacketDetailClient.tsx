@@ -1311,7 +1311,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   )}
                 </div>
               </TabsContent>
-              <TabsContent value="qna" className="p-4 sm:p-6 md:p-8">
+              <TabsContent value="qna" className="p-4 bp-sm:p-6 bp-md:p-8">
                 <ProductDetailQnaTab
                   productId={racketId}
                   productName={`${brandLabel} ${racket.model}`.trim()}
