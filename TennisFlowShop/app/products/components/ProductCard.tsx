@@ -98,8 +98,6 @@ function PerformanceSummary({ entries }: { entries: ReturnType<typeof getFeature
   );
 }
 
-// shadcn Button의 hover:bg-accent / hover:text-accent-foreground 간섭을 피하기 위해
-// 순수 <button>으로 구현한 위시리스트 토글 버튼
 function WishButton({
   inWish,
   disabled = false,
@@ -111,38 +109,22 @@ function WishButton({
   onToggle: (e: React.MouseEvent) => void;
   size?: "sm" | "md";
 }) {
-  const dim = size === "sm" ? "h-8 w-8 sm:h-9 sm:w-9" : "h-9 w-9 sm:h-10 sm:w-10";
   const iconDim = size === "sm" ? "w-3.5 h-3.5 sm:w-4 sm:h-4" : "w-3.5 h-3.5 sm:w-4 sm:h-4";
 
   return (
-    <button
+    <Button
       type="button"
+      variant="favorite"
+      size={size === "sm" ? "iconSm" : "icon"}
       onClick={onToggle}
       disabled={disabled}
       aria-disabled={disabled}
+      aria-pressed={inWish}
       aria-label={inWish ? "위시리스트에서 제거" : "위시리스트에 추가"}
       title={
         disabled ? "위시리스트 상태 확인 중" : inWish ? "위시리스트에서 제거" : "위시리스트에 추가"
       }
-      className={cn(
-        dim,
-        "flex-shrink-0 rounded-md border shadow-sm",
-        "transition-colors duration-200",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        disabled && "cursor-not-allowed opacity-60",
-        // 비활성 기본
-        !inWish && [
-          "border-border bg-card text-muted-foreground",
-          "hover:border-destructive/45 hover:bg-destructive/12 hover:text-destructive",
-          "dark:border-border dark:bg-card dark:text-muted-foreground",
-          "dark:hover:border-destructive/55 dark:hover:bg-destructive/20 dark:hover:text-destructive",
-        ],
-        // 활성 hover
-        inWish && [
-          "border-destructive bg-destructive text-destructive-foreground",
-          "hover:opacity-90 active:opacity-80",
-        ],
-      )}
+      className="flex-shrink-0"
     >
       <Heart
         className={cn(
@@ -151,7 +133,7 @@ function WishButton({
           inWish ? "fill-current scale-110" : "scale-100",
         )}
       />
-    </button>
+    </Button>
   );
 }
 

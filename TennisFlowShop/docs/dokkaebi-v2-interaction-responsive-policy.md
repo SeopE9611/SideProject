@@ -7,6 +7,7 @@
 - `highlight_soft`: 리스트에 반복되는 필수 처리 명령. 운송장 등록, 확정, 수령 확인 등에 사용하며 filled lime을 반복하지 않는다.
 - `secondary`: 후기 작성, 선택 활동, 낮은 우선순위 기능.
 - `outline`: 상세 보기, 보조 이동, 이전/취소가 아닌 일반 secondary navigation.
+- `favorite`: 찜·즐겨찾기처럼 선택과 해제가 가능한 아이콘 행동. `aria-pressed`를 상태 기준으로 사용하며, 색상을 일부 공유하더라도 실제 위험 행동인 `destructive`와 의미를 혼동하거나 삭제 행동으로 해석되게 만들지 않는다.
 - `destructive`: 삭제, 탈퇴, 취소 확정 등 실제 위험 행동.
 
 ## 버튼 한 줄 정책
