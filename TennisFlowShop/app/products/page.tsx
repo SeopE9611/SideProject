@@ -1,6 +1,6 @@
 import FilterableProductList from "@/app/products/components/FilterableProductList";
+import { CommerceCatalogHero } from "@/components/commerce";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { StepIndicator } from "@/components/public/StepIndicator";
 import { Button } from "@/components/ui/button";
@@ -31,35 +31,36 @@ export default async function ProductsPage({
   const from = pickFirst(sp.from);
 
   return (
-    <div className="min-h-full bg-muted/30">
-      <PublicPageHero
-        align="center"
+    <div className="min-h-full bg-background">
+      <CommerceCatalogHero
+        eyebrow="스트링 셀렉션"
         title="테니스 스트링"
         description="플레이 스타일에 맞는 스트링을 고르고, 교체서비스까지 이어서 신청하세요."
+        actions={
+          <Button
+            asChild
+            variant="highlight_soft"
+            wrap="responsive"
+            className="min-h-11 w-full bp-sm:w-auto"
+          >
+            <Link href="/products/recommend">내게 맞는 스트링 찾기</Link>
+          </Button>
+        }
+        guideTitle="스트링 선택 순서"
+        guideItems={[
+          {
+            label: "플레이 성향 확인",
+            description: "원하는 타구감과 플레이 스타일을 살펴보세요.",
+          },
+          { label: "색상·게이지 선택", description: "취향과 성능에 맞는 옵션을 비교하세요." },
+          { label: "교체서비스 연결", description: "선택한 스트링으로 장착 신청을 이어가세요." },
+        ]}
       />
 
       <SiteContainer
         variant="wide"
         className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
       >
-        <PublicSurface
-          variant="muted"
-          padding="sm"
-          className="mb-4 flex flex-col gap-4 bp-sm:mb-6 md:flex-row md:items-center md:justify-between"
-        >
-          <div className="min-w-0 space-y-1">
-            <p className="text-balance text-ui-body-sm font-semibold text-foreground">
-              어떤 스트링이 맞을지 모르겠나요?
-            </p>
-            <p className="break-words text-ui-body-sm leading-relaxed text-muted-foreground">
-              간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할 수 있어요.
-            </p>
-          </div>
-          <Button asChild wrap="responsive" className="w-full shrink-0 md:w-auto">
-            <Link href="/products/recommend">스트링 추천받기</Link>
-          </Button>
-        </PublicSurface>
-
         {from === "apply" && (
           <PublicSurface className="mb-4 bp-sm:mb-6">
             <div className="flex flex-col gap-5">
@@ -99,10 +100,20 @@ export default async function ProductsPage({
               />
 
               <div className="flex w-full flex-col gap-2 bp-sm:flex-row bp-sm:justify-end">
-                <Button asChild variant="outline" wrap="responsive" className="w-full bp-sm:w-auto">
+                <Button
+                  asChild
+                  variant="outline"
+                  wrap="responsive"
+                  className="min-h-11 w-full bp-sm:w-auto"
+                >
                   <Link href="/services#service-start">신청 방식 다시 선택</Link>
                 </Button>
-                <Button asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                <Button
+                  asChild
+                  variant="secondary"
+                  wrap="responsive"
+                  className="min-h-11 w-full bp-sm:w-auto"
+                >
                   <Link href="/services/pricing">가격표 보기</Link>
                 </Button>
               </div>

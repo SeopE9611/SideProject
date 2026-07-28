@@ -1,5 +1,14 @@
 # Dokkaebi Commerce Discovery Policy (V2.2 Catalog Responsive Final Polish)
 
+## 상품·라켓 목록 Hero와 loading
+
+- 상품·라켓 목록 Hero는 동일한 `CommerceCatalogHero` 표현 문법을 사용하며, 상품 영역에 맞는 중간 강도의 V2를 적용한다.
+- Hero는 모바일에서 소개와 선택 가이드가 한 열의 문서 흐름으로 이어지고, 넓은 화면에서는 두 열로 전환한다.
+- Hero의 대표 CTA는 `highlight_soft` 한 개만 두며 모바일에서는 전체 폭과 최소 44px 터치 영역을 보장한다.
+- 선택 기준은 여러 중첩 카드가 아닌 구분선 기반의 목록 행으로 표시한다.
+- Hero와 catalog 결과 panel은 동일한 wide container 및 반응형 최대 폭을 사용해 좌우 정렬을 맞춘다.
+- 초기 loading은 실제 Hero, 결과 요약, toolbar, 반응형 카드 grid 구조를 skeleton으로 반영한다.
+
 ## 결과·툴바 구성
 
 결과 요약과 toolbar의 구조는 도메인별 정보 밀도에 따라 달라질 수 있으나, catalog 결과 영역은 다음 순서를 기본으로 한다.

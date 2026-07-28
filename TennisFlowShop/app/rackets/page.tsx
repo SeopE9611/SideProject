@@ -1,6 +1,6 @@
 import FilterableRacketList from "@/app/rackets/_components/FilterableRacketList";
+import { CommerceCatalogHero } from "@/components/commerce";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -45,19 +45,31 @@ export default async function RacketsPage({
   })();
 
   return (
-    <div className="min-h-full bg-muted/30">
-      <PublicPageHero
-        align="center"
+    <div className="min-h-full bg-background">
+      <CommerceCatalogHero
+        eyebrow="라켓 셀렉션"
         title="중고 라켓 구매·대여"
         description="검수된 중고 라켓을 구매·대여하고 스트링 교체까지 한 번에 신청하세요."
         actions={
-          <Button asChild size="lg" variant="secondary" wrap="responsive">
+          <Button
+            asChild
+            size="lg"
+            variant="highlight_soft"
+            wrap="responsive"
+            className="min-h-11 w-full bp-sm:w-auto"
+          >
             <Link href={finderHref} aria-label="라켓 검색으로 이동">
-              <Search />
+              <Search aria-hidden="true" />
               스펙으로 라켓 찾기
             </Link>
           </Button>
         }
+        guideTitle="라켓 선택 기준"
+        guideItems={[
+          { label: "브랜드·상태 확인", description: "선호 브랜드와 검수된 컨디션을 비교하세요." },
+          { label: "구매·대여 방식 선택", description: "이용 목적에 맞는 거래 방식을 결정하세요." },
+          { label: "스트링 장착 연결", description: "필요하면 스트링 선택과 장착까지 이어가세요." },
+        ]}
       />
 
       <SiteContainer
@@ -81,7 +93,7 @@ export default async function RacketsPage({
                 size="sm"
                 variant="outline"
                 wrap="responsive"
-                className="w-full bp-sm:w-auto"
+                className="min-h-11 w-full bp-sm:w-auto"
               >
                 <Link
                   href="/services#service-start"

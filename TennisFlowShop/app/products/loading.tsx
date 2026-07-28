@@ -1,7 +1,5 @@
-import { FullPageSpinner } from "@/components/system/loading";
+import { CommerceCatalogPageSkeleton } from "@/components/commerce";
 
 export default function Loading() {
-  return (
-    <FullPageSpinner label="상품 목록을 준비하고 있습니다..." minHeightClassName="min-h-[50svh]" />
-  );
+  return <CommerceCatalogPageSkeleton actionCount={1} showDetailBlock />;
 }
