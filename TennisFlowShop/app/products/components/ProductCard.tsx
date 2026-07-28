@@ -256,8 +256,8 @@ const ProductCard = React.memo(
             fill
             sizes={
               viewMode === "list"
-                ? "(max-width: 1199px) 240px, 260px"
-                : "(max-width: 575px) calc(100vw - 24px), (max-width: 1023px) 50vw, (max-width: 1535px) 33vw, 25vw"
+                ? "(max-width: 575px) calc(100vw - 24px), (max-width: 767px) calc(100vw - 32px), (max-width: 1199px) 240px, 260px"
+                : "(max-width: 575px) calc(100vw - 24px), (max-width: 1199px) 50vw, (max-width: 1499px) 33vw, 25vw"
             }
             className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.02] motion-reduce:transform-none"
           />
