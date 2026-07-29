@@ -17,15 +17,15 @@
 | 발견한 전체 page route | **148** | `app/**/page.tsx` 전수 |
 | 관리자 제외 | **47** | `/admin/**`; 아래 집계 행에 파일군 기록 |
 | concept 제외 | **1** | `/concept/home-benchmark` |
-| redirect-only | **5** | `/orders`, `/packages`, `/packages/[id]`, racket purchase/rent |
+| redirect-only | **8** | `/orders`, `/packages`, `/packages/[id]`, mypage applications/rentals/packages, racket purchase/rent |
 | inactive-operation | **9** | 비회원 조회 3 + Toss 6 |
-| 실제 감사 ACTIVE_PUBLIC | **46** | 비로그인 렌더 가능 화면; private payment 조회·성공 포함 |
-| 실제 감사 ACTIVE_MEMBER | **23** | 인증/소유권이 필요한 화면; racket select-string 포함 |
+| 실제 감사 ACTIVE_PUBLIC | **39** | 비로그인 렌더 가능 화면; private payment 조회·성공 및 academy apply success 포함 |
+| 실제 감사 ACTIVE_MEMBER | **27** | 인증/소유권이 필요한 화면; racket select-string 포함 |
 | ACTIVE_CONDITIONAL | **14** | community flag route |
 | ROLE_LIMITED | **2** | notice/event write |
 | 디자인 제외 public shell | **1** | `/board`; 총계 검증에서는 `ACTIVE_PUBLIC`과 별도인 N/A 분류 |
 | loading/error/not-found 상태 파일 | **99** | admin/concept 포함 발견 수; 활성 사용자 state도 대응 route와 함께 검토 |
-| 최종 미조사 route | **0** | 148 = ADMIN 47 + CONCEPT 1 + REDIRECT_ONLY 5 + INACTIVE 9 + ACTIVE_PUBLIC 46 + ACTIVE_MEMBER 23 + ACTIVE_CONDITIONAL 14 + ROLE_LIMITED 2 + 디자인 제외 1 |
+| 최종 미조사 route | **0** | 148 = ADMIN 47 + CONCEPT 1 + REDIRECT_ONLY 8 + INACTIVE 9 + ACTIVE_PUBLIC 39 + ACTIVE_MEMBER 27 + ACTIVE_CONDITIONAL 14 + ROLE_LIMITED 2 + 디자인 제외 1 |
 
 `loading/error/not-found` 99개는 독립 route가 아니라 부모 route의 상태로 조사했다. 전역 `loading.tsx`, `error.tsx`, `not-found.tsx`, 서비스 성공 error 및 각 route loading을 포함한다.
 
@@ -80,12 +80,12 @@
 | 마이페이지 | `/mypage` | ACTIVE_MEMBER | `app/mypage/page.tsx` | dashboard/tabs/transaction cards | P | destination과 정보 카드 다층 구조 | P1 | F-06, V-08 |
 | 마이페이지 | `/mypage/profile` | ACTIVE_MEMBER | `app/mypage/profile/page.tsx` | profile form | P | save/cancel 위계와 상태 피드백 | P2 | |
 | 주문 상세 | `/mypage/orders/[id]` | ACTIVE_MEMBER | `app/mypage/orders/[id]/page.tsx` | 공용 transaction detail sections | P | 최근 공용 상세 적용 상태의 정보 순서 회귀 확인 | P2 | V-11 |
-| 대여 | `/mypage/rentals` | ACTIVE_MEMBER | `app/mypage/rentals/page.tsx` | rentals list/cards | P | 상태·기간·반납 action footer 밀도 | P1 | F-06 |
+| 대여 | `/mypage/rentals` | REDIRECT_ONLY | `app/mypage/rentals/page.tsx` | `redirect` | N/A | `/mypage?tab=orders&scope=rental`로 이동하는 UI 없는 별칭 route | — | |
 | 대여 | `/mypage/rentals/[id]/return-shipping` | ACTIVE_MEMBER | `app/mypage/rentals/[id]/return-shipping/page.tsx` | return shipping form | P | 위험/보조/제출 action 분리 필요 | P1 | F-06 |
-| 교체 | `/mypage/applications` | ACTIVE_MEMBER | `app/mypage/applications/page.tsx` | application list/cards | P | 거래 카드 문법 차 | P1 | F-06 |
+| 교체 | `/mypage/applications` | REDIRECT_ONLY | `app/mypage/applications/page.tsx` | 인증 확인 후 `redirect` | N/A | 인증 확인 후 마이페이지 신청 내역 탭으로 이동하는 UI 없는 별칭 route | — | 비로그인은 `/login?next=...`, 로그인 사용자는 `/mypage?tab=orders&scope=application` |
 | 교체 상세 | `/mypage/applications/[id]` | ACTIVE_MEMBER | `app/mypage/applications/[id]/page.tsx` | 공용 application detail sections | P | 최근 공용 상세 적용 상태의 배송/다음 행동 회귀 확인 | P2 | V-11 |
 | 아카데미 상세 | `/mypage/academy-applications/[id]` | ACTIVE_MEMBER | `app/mypage/academy-applications/[id]/page.tsx` | academy application detail | P | 일정 긴 줄·상태와 취소 action 경쟁 | P1 | F-06, V-09 |
-| 패키지 | `/mypage/packages` | ACTIVE_MEMBER | `app/mypage/packages/page.tsx` | package ownership/cards | P | 잔여 횟수와 사용 행동 우선순위 | P1 | F-06 |
+| 패키지 | `/mypage/packages` | REDIRECT_ONLY | `app/mypage/packages/page.tsx` | `redirect` | N/A | `/mypage?tab=passes`로 이동하는 UI 없는 별칭 route | — | |
 | 인증 별칭 | `/orders` | REDIRECT_ONLY | `app/orders/page.tsx` | `redirect('/mypage?tab=orders')` | N/A | UI 없음 | — | |
 | 비회원 | `/order-lookup` | INACTIVE_OPERATION | `app/order-lookup/page.tsx` | lookup form | L | 비회원 미운영, 레거시 정적 UI | DEFERRED | |
 | 비회원 | `/order-lookup/results` | INACTIVE_OPERATION | `app/order-lookup/results/page.tsx` | result list | L | 비회원 미운영 | DEFERRED | |
@@ -95,7 +95,7 @@
 | 라켓 결제 | `/rackets/toss/success` | INACTIVE_OPERATION | `app/rackets/toss/success/page.tsx` | Toss confirmation | N/A | Toss 미운영 | DEFERRED | |
 | 아카데미 | `/academy` | ACTIVE_PUBLIC | `app/academy/page.tsx` | class/contact/guide cards | P | 운영 데이터에 따라 소개/차단 분기; 일정 행 밀도 | P1 | V-09 |
 | 아카데미 | `/academy/apply` | ACTIVE_MEMBER | `app/academy/apply/page.tsx` | `AcademyApplyClient` | P | custom raw selector buttons, 날짜 4→7열 | P1 | F-01, V-09 |
-| 아카데미 | `/academy/apply/success` | ACTIVE_MEMBER | `app/academy/apply/success/page.tsx` | result/detail list | P | 다른 success와 surface 불일치 | P1 | F-05 |
+| 아카데미 | `/academy/apply/success` | ACTIVE_PUBLIC | `app/academy/apply/success/page.tsx` | query `applicationId` 기반 result/detail list | P | 로그인·토큰·소유권·DB 조회 gate 없는 공개 결과 화면; 다른 success와 surface 불일치 | P1 | F-05 |
 | 후기 | `/reviews` | ACTIVE_PUBLIC | `app/reviews/page.tsx` | reviews client/filter/card | P | empty/filter empty 및 action 문법 | P1 | F-05 |
 | 후기 | `/reviews/write` | ACTIVE_MEMBER | `app/reviews/write/page.tsx` | review form/photo upload | P | feature Card 중첩·모바일 footer | P1 | F-04 |
 | 게시판 | `/board` | EXCLUDED (DESIGN) | `app/board/page.tsx` | board home | N/A | 요청에 따라 디자인 제외; 메뉴는 flag와 동기화 필요 | — | 운영 이슈 F-10 |
@@ -126,7 +126,7 @@
 | 정책 | `/privacy` | ACTIVE_PUBLIC | `app/privacy/page.tsx` | PublicSurface/legal content | P | 긴 본문 typography/목차 이동 | P2 | |
 | 정책 | `/terms` | ACTIVE_PUBLIC | `app/terms/page.tsx` | legal content | P | privacy/refund와 shell 차 | P2 | F-07 |
 | 정책 | `/refund-policy` | ACTIVE_PUBLIC | `app/refund-policy/page.tsx` | PublicSurface/legal content | P | 정책 간 typography 통일 필요 | P2 | |
-| 전역 | loading/error/not-found | ACTIVE_PUBLIC | `app/loading.tsx`, `app/error.tsx`, `app/not-found.tsx` | Async/Result/NotFound | P | global skeleton이 실제 홈과 불일치 | P1 | F-08 |
+| 전역 | loading/error/not-found | STATE_SURFACE | `app/loading.tsx`, `app/error.tsx`, `app/not-found.tsx` | Async/Result/NotFound | P | global skeleton이 실제 홈과 불일치 | — | F-08 상태 화면 수준 P1 후보이며 route 우선순위·ACTIVE_PUBLIC 집계에서는 제외 |
 | 제외 | `/admin/**` (47 route) | EXCLUDED_ADMIN | `app/admin/**/page.tsx` | 관리자 전용 | N/A | 사용자 디자인 감사 제외 | — | 발견·분류 완료 |
 | 제외 | `/concept/home-benchmark` | EXCLUDED_CONCEPT | `app/concept/home-benchmark/page.tsx` | `HomeBenchmarkClient`/notFound | N/A | concept flag 및 notFound | — | 발견·분류 완료 |
 
@@ -137,10 +137,13 @@
 | `/orders` | `/mypage?tab=orders` | `app/orders/page.tsx`의 `redirect` |
 | `/packages` | `/services/packages` | `app/packages/page.tsx`의 `redirect` |
 | `/packages/[id]` | `/services/packages`(기존 query 보존) | `app/packages/[id]/page.tsx`의 동적 `redirect` |
+| `/mypage/applications` | 비로그인: `/login?next=...`; 로그인: `/mypage?tab=orders&scope=application` | `app/mypage/applications/page.tsx`의 인증 확인 및 `redirect` |
+| `/mypage/rentals` | `/mypage?tab=orders&scope=rental` | `app/mypage/rentals/page.tsx`의 `redirect` |
+| `/mypage/packages` | `/mypage?tab=passes` | `app/mypage/packages/page.tsx`의 `redirect` |
 | `/rackets/[id]/purchase` | `/rackets/[id]/select-string` | `app/rackets/[id]/purchase/page.tsx`의 `redirect` |
 | `/rackets/[id]/rent` | `/rackets/[id]` | `app/rackets/[id]/rent/page.tsx`의 URL-encoded `redirect` |
 
-redirect route 5개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집계하며 P0/P1/P2에는 넣지 않는다. purchase와 destination의 `loading.tsx`는 모두 `CommerceSelectionPageSkeleton flowType="purchase" showQuantityControls`를 사용하므로 loading 불일치가 아니다. rent에는 route-local loading이 없고 상세 destination의 상태 파일을 따른다.
+redirect route 8개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집계하며 P0/P1/P2에는 넣지 않는다. purchase와 destination의 `loading.tsx`는 모두 `CommerceSelectionPageSkeleton flowType="purchase" showQuantityControls`를 사용하므로 loading 불일치가 아니다. rent에는 route-local loading이 없고 상세 destination의 상태 파일을 따른다.
 
 ### inactive/deferred matrix
 
@@ -213,8 +216,8 @@ redirect route 5개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집�
 - **route:** `/products`, `/rackets`
 - **파일/컴포넌트:** `app/products/page.tsx`, `app/rackets/page.tsx`, `CommerceCatalogHero`.
 - **근거:** 두 route 모두 동일 컴포넌트에 `eyebrow`, `title`, `description`, `actions`, `guideTitle`, `guideItems` slot을 전달한다.
-- **판정:** Hero 구조 공용화는 `COMPLETE`다. 스트링과 라켓의 guide 문구 및 Hero 아래 도메인별 신청 안내 차이는 구조 미통일 근거가 아니다.
-- **회귀 확인:** 공용 slot 순서·responsive shell·filter query 보존만 후속 시각 회귀 범위로 둔다. 재구현 항목은 없다.
+- **판정:** Hero 구조 공용화는 `COMPLETE_STATIC`이다. 스트링과 라켓의 guide 문구 및 Hero 아래 도메인별 신청 안내 차이는 구조 미통일 근거가 아니며 새로운 Hero 구현 작업은 없다. 사용자 관점 반응형 결과는 `VISUAL_CONFIRMATION_REQUIRED`다.
+- **회귀 확인:** 공용 slot 순서·responsive shell·filter query 보존과 실제 줄바꿈·action 배치·다음 영역 간격은 V-13 후속 시각 회귀 범위로 둔다. 재구현 항목은 없다.
 
 ### F-03 — commerce 상세 상단과 action panel 불균형
 
@@ -328,14 +331,15 @@ redirect route 5개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집�
 | V-10 | messages/notifications | 긴 한글 제목·unread marker·action이 같은 행에서 truncate/폭 밀림 | 360/390/430px; 2줄 제목, unread/read, empty |
 | V-11 | transaction details | 모바일 full-bleed negative margin과 desktop card 복원 경계 | 360/430/768/1024px; 모든 상태/다음 행동/위험 action |
 | V-12 | loading 전환 | skeleton과 실제 hero/card/aside의 CLS | 360/768/1280px; throttled data로 loading→success/error 녹화 |
+| V-13 | `/products`, `/rackets`, `CommerceCatalogHero` | 서로 다른 title·description 길이의 줄바꿈, action 버튼의 1열 전환, guideTitle·guideItems 높이 차이, Hero 다음 목록·필터와의 여백, 모바일 첫 화면에서 핵심 상품 영역이 지나치게 밀리지 않는지, 페이지 이동 시 구조와 행동 위치의 일관성 | 360/390/430/768/1024/1280px |
 
 모든 항목은 **후보**이며 실제 겹침이라고 단정하지 않는다. viewport screenshot, 키보드 focus 순서, 200% 확대, 긴 fixture를 함께 확인한다.
 
-표의 `VISUAL_CONFIRMATION_REQUIRED`는 **12개 검증 queue 항목**이다. 여러 route를 한 viewport 시나리오로 묶은 항목은 독립 route 우선순위 집계와 별개이며, route matrix의 V-ID로 역산한다.
+표의 `VISUAL_CONFIRMATION_REQUIRED`는 **13개 검증 queue 항목**이다. 여러 route를 한 viewport 시나리오로 묶은 항목은 독립 route 우선순위 집계와 별개이며, route matrix의 V-ID로 역산한다.
 
 ## 7. 완료된 V2 적용 항목
 
-1. **Commerce catalog Hero — COMPLETE:** `/products`, `/rackets`가 동일한 `CommerceCatalogHero`와 6개 slot 계약을 사용한다.
+1. **Commerce catalog Hero — COMPLETE_STATIC:** `/products`, `/rackets`가 동일한 `CommerceCatalogHero`와 6개 slot 계약을 사용해 구조 공용화를 완료했다. 사용자 관점 반응형 결과는 `VISUAL_CONFIRMATION_REQUIRED`다.
 2. **Racket purchase loading — COMPLETE:** purchase alias와 select-string destination의 skeleton component, `flowType`, quantity-control 설정이 모두 같다.
 3. **NicePay failure family — COMPLETE:** checkout/private-payment/package/racket/rental NicePay fail route가 운영 결제 실패 UI를 사용한다.
 4. **최근 거래 상세 공용화 — COMPLETE/P2 회귀 확인:** order/application detail은 과거 화면을 근거로 P0를 유지하지 않고 실제 공용 상세 구조의 viewport 회귀만 확인한다.
@@ -354,11 +358,11 @@ redirect route 5개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집�
 | 등급 | 확정 항목 수 | 적용 기준/영역 |
 |---|---:|---|
 | P0 | **0** | 현재 코드만으로 핵심 작업 차단·CTA 가림·정보 판독 불가가 확정된 route 없음 |
-| P1 | **45** | 활성 checkout/form/detail/success와 명확한 공용 계약 우회 |
+| P1 | **42** | 활성 checkout/form/detail/success와 명확한 공용 계약 우회 |
 | P2 | **40** | 활성/conditional/role-limited의 회귀 확인·보조 UI 차이; COMPLETE 화면 포함 |
 | DEFERRED | **9** | Toss 6 + 비회원 주문 3 |
 
-개수는 route-level 권장 수정 우선순위이며 `P0 0 + P1 45 + P2 40 = 우선순위가 부여된 사용자 route 85`다. 이 85개는 `ACTIVE_PUBLIC 46 + ACTIVE_MEMBER 23 + ACTIVE_CONDITIONAL 14 + ROLE_LIMITED 2`와 정확히 같다. 묶은 community 행은 4+4+4+1+1로 펼쳤다. Global/state 행, `REDIRECT_ONLY 5`, 디자인 제외 `/board` 1, ADMIN 47, CONCEPT 1은 포함하지 않았고 INACTIVE 9는 P등급과 중복하지 않고 DEFERRED에만 넣었다.
+개수는 route-level 권장 수정 우선순위이며 `P0 0 + P1 42 + P2 40 = 우선순위가 부여된 사용자 route 82`다. 이 82개는 `ACTIVE_PUBLIC 39 + ACTIVE_MEMBER 27 + ACTIVE_CONDITIONAL 14 + ROLE_LIMITED 2`와 정확히 같다. 묶은 community 행은 4+4+4+1+1로 펼쳤다. 전역 loading/error/not-found `STATE_SURFACE`, 공용 컴포넌트, dead-code 후보, `REDIRECT_ONLY 8`, 디자인 제외 `/board` 1, ADMIN 47, CONCEPT 1은 포함하지 않았고 INACTIVE 9는 P등급과 중복하지 않고 DEFERRED에만 넣었다.
 
 기존 P0 7개는 모두 재검증했다. `/checkout`, `/services/apply`, `/services/packages/checkout`, `/rentals/[id]/checkout`은 sticky/footer·요약의 실제 가림이 정적 코드만으로 확정되지 않아 **P1 + VISUAL_CONFIRMATION_REQUIRED**로 하향했다. `/mypage/orders/[id]`, `/mypage/applications/[id]`는 최근 공용 상세 적용을 반영해 **P2 회귀 확인**으로 하향했다. `/withdrawal`은 위험 행동 위계·모바일 간격만으로 작업 차단이 아니어서 **P2**로 하향했다. 유지한 P0는 없으며, 따라서 확정 P0용 JSX/Tailwind 차단 근거를 꾸며 쓰지 않는다.
 
@@ -387,21 +391,22 @@ redirect route 5개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집�
 | 분류된 route 수 | **148** |
 | 미분류 route 수 | **0** |
 | 중복 분류 route 수 | **0** |
-| ACTIVE_PUBLIC | **46** |
-| ACTIVE_MEMBER | **23** |
+| ACTIVE_PUBLIC | **39** |
+| ACTIVE_MEMBER | **27** |
 | ACTIVE_CONDITIONAL | **14** |
 | ROLE_LIMITED | **2** |
-| REDIRECT_ONLY | **5** |
+| REDIRECT_ONLY | **8** |
 | INACTIVE | **9** |
 | ADMIN | **47** |
 | CONCEPT | **1** |
 | 디자인 제외 public shell | **1** |
-| P0 / P1 / P2 / DEFERRED | **0 / 45 / 40 / 9** |
-| VISUAL_CONFIRMATION_REQUIRED | **12개 검증 queue 항목** |
+| P0 / P1 / P2 / DEFERRED | **0 / 42 / 40 / 9** |
+| 활성 우선순위 route | **82** |
+| VISUAL_CONFIRMATION_REQUIRED | **13개 검증 queue 항목** |
 | DEAD_CODE_CANDIDATE | **1개 파일 / 0 route** |
 | 상태 파일 | **99** (`loading.tsx` 96 + `error.tsx` 2 + `not-found.tsx` 1) |
 
-route 분류식은 `148 = 46 + 23 + 14 + 2 + 5 + 9 + 47 + 1 + 1`이다. 우선순위 식은 `85 = 45 + 40 = 46 + 23 + 14 + 2`이고 P0는 0이다. Global과 공용 컴포넌트는 route 우선순위에 포함하지 않았으며 상태 파일도 page route로 중복 계산하지 않았다.
+route 분류식은 `148 = 39 + 27 + 14 + 2 + 8 + 9 + 47 + 1 + 1`이다. 우선순위 식은 `82 = 42 + 40 = 39 + 27 + 14 + 2`이고 P0는 0이다. 전역 loading/error/not-found `STATE_SURFACE`와 공용 컴포넌트는 route 우선순위에 포함하지 않았으며 상태 파일도 page route로 중복 계산하지 않았다.
 
 ## 12. 최종 마감 기준
 
