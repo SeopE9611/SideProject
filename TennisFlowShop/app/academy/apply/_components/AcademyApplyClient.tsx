@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -809,7 +809,14 @@ export default function AcademyApplyClient({
                 </Link>
               </Button>
             )}
-            <AlertDialogAction className="w-full sm:w-auto">확인하고 수정하기</AlertDialogAction>
+            <AlertDialogAction
+              className={buttonVariants({
+                variant: "highlight",
+                className: "w-full sm:w-auto",
+              })}
+            >
+              확인하고 수정하기
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
