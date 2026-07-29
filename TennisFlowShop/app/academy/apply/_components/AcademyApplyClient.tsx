@@ -216,6 +216,8 @@ function CustomSelect({
   disabled?: boolean;
   error?: boolean;
 }) {
+  const selectedOption = options.find((option) => option.value === value);
+
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger
@@ -226,7 +228,7 @@ function CustomSelect({
           error ? "border-destructive" : "border-border/60",
         )}
       >
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder}>{selectedOption?.label}</SelectValue>
       </SelectTrigger>
       <SelectContent className="max-h-64 rounded-panel shadow-soft">
         {options.map((option) => (
