@@ -22,7 +22,11 @@ export default function Loading() {
 
       <SiteContainer className="max-w-[1240px] pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 bp-sm:pt-5 bp-lg:pb-12">
         <div className="grid grid-cols-1 gap-5 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-xl:grid-cols-[minmax(0,1fr)_380px] bp-xl:gap-6">
-          <PublicSurface variant="feature" padding="none" className="overflow-hidden">
+          <PublicSurface
+            variant="feature"
+            padding="none"
+            className="-mx-3 overflow-hidden rounded-none border-x-0 shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border-x bp-sm:shadow-soft"
+          >
             <div className="border-b border-border px-4 py-4 bp-sm:px-5">
               <Skeleton className="h-6 w-32 rounded-md" />
             </div>
@@ -31,28 +35,30 @@ export default function Loading() {
                 <Skeleton className="h-5 w-5 rounded-control" />
                 <Skeleton className="h-4 w-20 rounded-md" />
               </div>
-              <Skeleton className="h-8 w-20 rounded-control" />
+              <Skeleton className="h-11 w-20 rounded-control bp-sm:h-8" />
             </div>
 
             <div className="divide-y divide-border">
               {itemRows.map((key) => (
                 <div key={key} className="px-4 py-4 bp-sm:px-5">
-                  <div className="grid min-w-0 grid-cols-[32px_minmax(72px,88px)_minmax(0,1fr)] items-start gap-3 bp-md:grid-cols-[32px_96px_minmax(0,1fr)]">
-                    <Skeleton className="h-5 w-5 rounded-control" />
-                    <Skeleton className="h-[88px] w-[88px] rounded-control bp-md:h-24 bp-md:w-24" />
-                    <div className="min-w-0 space-y-3">
-                      <Skeleton className="h-5 w-4/5 rounded-md" />
-                      <Skeleton className="h-4 w-36 rounded-md" />
-                      <div className="rounded-panel border border-border bg-muted/25 p-3">
-                        <div className="grid gap-3 bp-md:grid-cols-[minmax(0,1fr)_auto]">
-                          <div className="space-y-2">
-                            <Skeleton className="h-4 w-52 max-w-full rounded-md" />
-                            <Skeleton className="h-8 w-36 rounded-full" />
-                          </div>
-                          <div className="space-y-2 bp-md:text-right">
-                            <Skeleton className="h-3 w-12 rounded-md bp-md:ml-auto" />
-                            <Skeleton className="h-6 w-28 rounded-md bp-md:ml-auto" />
-                          </div>
+                  <div className="space-y-3">
+                    <div className="grid min-w-0 grid-cols-[32px_minmax(72px,88px)_minmax(0,1fr)] items-start gap-3 bp-md:grid-cols-[32px_96px_minmax(0,1fr)]">
+                      <Skeleton className="h-5 w-5 rounded-control" />
+                      <Skeleton className="h-[88px] w-[88px] rounded-control bp-md:h-24 bp-md:w-24" />
+                      <div className="min-w-0 space-y-3">
+                        <Skeleton className="h-5 w-4/5 rounded-md" />
+                        <Skeleton className="h-4 w-36 rounded-md" />
+                      </div>
+                    </div>
+                    <div className="border-t border-border pt-3 bp-sm:rounded-panel bp-sm:border bp-sm:bg-muted/25 bp-sm:p-3">
+                      <div className="grid gap-3 bp-md:grid-cols-[minmax(0,1fr)_auto]">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-52 max-w-full rounded-md" />
+                          <Skeleton className="h-11 w-36 rounded-full bp-sm:h-8" />
+                        </div>
+                        <div className="space-y-2 bp-md:text-right">
+                          <Skeleton className="h-3 w-12 rounded-md bp-md:ml-auto" />
+                          <Skeleton className="h-6 w-28 rounded-md bp-md:ml-auto" />
                         </div>
                       </div>
                     </div>
@@ -62,8 +68,8 @@ export default function Loading() {
             </div>
           </PublicSurface>
 
-          <div className="hidden min-w-0 bp-lg:block">
-            <div className="sticky top-[calc(var(--header-h)+16px)] overflow-hidden rounded-panel border border-border bg-card shadow-soft">
+          <div className="min-w-0">
+            <div className="-mx-3 overflow-hidden rounded-none border-y border-border bg-card shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border bp-sm:shadow-soft bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
               <div className="space-y-2 border-b border-border px-5 py-4">
                 <Skeleton className="h-6 w-28 rounded-md" />
                 <Skeleton className="h-4 w-24 rounded-md" />
@@ -75,7 +81,7 @@ export default function Loading() {
                   <Skeleton className="h-4 w-4/5 rounded-md" />
                   <Skeleton className="h-7 w-full rounded-md" />
                 </div>
-                <div className="rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse p-4">
+                <div className="hidden rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse p-4 bp-lg:block">
                   <div className="space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2">
                     <Skeleton className="h-4 w-24 rounded-md bg-surface-inverse-foreground/15" />
                     <Skeleton className="mt-2 h-7 w-36 rounded-md bg-surface-inverse-foreground/15" />
@@ -88,6 +94,18 @@ export default function Loading() {
           </div>
         </div>
       </SiteContainer>
+      <div
+        data-bottom-sticky="1"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-float bp-lg:hidden"
+      >
+        <div className="mx-auto flex max-w-[1240px] items-center gap-2 bp-sm:gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-3 w-32 max-w-full rounded-md" />
+            <Skeleton className="h-6 w-28 max-w-full rounded-md" />
+          </div>
+          <Skeleton className="h-11 w-[42%] max-w-[180px] shrink-0 rounded-control" />
+        </div>
+      </div>
     </div>
   );
 }

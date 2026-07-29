@@ -902,8 +902,15 @@ export default function CartPageClient() {
           <div className="grid grid-cols-1 gap-5 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-xl:grid-cols-[minmax(0,1fr)_380px] bp-xl:gap-6">
             {/* 목록 */}
             <div className="min-w-0 space-y-5">
-              <PublicSurface variant="feature" padding="none" className="overflow-hidden">
-                <CardHeader variant="section" className="rounded-t-2xl px-4 py-4 bp-sm:px-5">
+              <PublicSurface
+                variant="feature"
+                padding="none"
+                className="-mx-3 overflow-hidden rounded-none border-x-0 shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border-x bp-sm:shadow-soft"
+              >
+                <CardHeader
+                  variant="section"
+                  className="rounded-none px-4 py-4 bp-sm:rounded-t-2xl bp-sm:px-5"
+                >
                   <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">
                     장바구니 상품
                   </CardTitle>
@@ -921,7 +928,7 @@ export default function CartPageClient() {
                     <button
                       type="button"
                       onClick={toggleAll}
-                      className="text-ui-body-sm font-semibold text-foreground"
+                      className="inline-flex min-h-11 items-center text-ui-body-sm font-semibold text-foreground bp-sm:min-h-0"
                     >
                       {selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"}
                     </button>
@@ -931,7 +938,7 @@ export default function CartPageClient() {
                     size="sm"
                     onClick={removeSelected}
                     disabled={!hasSelectedItems}
-                    className="h-9 px-2 text-ui-body-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 dark:hover:bg-destructive/10"
+                    className="h-11 px-2 text-ui-body-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 bp-sm:h-9 dark:hover:bg-destructive/10"
                   >
                     선택 삭제
                   </Button>
@@ -1090,7 +1097,7 @@ export default function CartPageClient() {
                                     </span>
                                     <button
                                       type="button"
-                                      className="inline-flex font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+                                      className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-2 hover:text-primary/80 bp-sm:min-h-0"
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -1106,7 +1113,7 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 옵션/수량 박스: 카드 전체 폭으로 분리 */}
-                          <div className="mt-3 min-w-0 rounded-panel border border-border bg-muted/25 p-3">
+                          <div className="mt-3 min-w-0 border-t border-border pt-3 bp-sm:rounded-panel bp-sm:border bp-sm:bg-muted/25 bp-sm:p-3">
                             <div className="grid min-w-0 gap-3 bp-md:grid-cols-[minmax(0,1fr)_auto]">
                               <p className="flex min-w-0 flex-wrap items-center gap-1.5 pr-2 text-ui-label leading-relaxed text-muted-foreground">
                                 <span className="font-medium text-foreground">옵션:</span>
@@ -1142,7 +1149,7 @@ export default function CartPageClient() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="h-8 whitespace-nowrap px-2.5 text-ui-label"
+                                    className="h-11 whitespace-nowrap px-2.5 text-ui-label bp-sm:h-8"
                                     onClick={() => {
                                       if (optionChangeHref) {
                                         window.location.href = optionChangeHref;
@@ -1202,7 +1209,7 @@ export default function CartPageClient() {
                                       removeItem(item.id, item.selectedGauge, item.selectedColor);
                                     }
                                   }}
-                                  className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                  className="h-11 w-11 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive bp-sm:h-8 bp-sm:w-8"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1215,7 +1222,7 @@ export default function CartPageClient() {
                                 {lockStepper ? (
                                   <>
                                     {/* 숫자만 표시(± 없음) */}
-                                    <div className="inline-flex items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
                                       <div className="inline-flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
                                         <span className="w-8 select-none text-center font-medium tabular-nums">
                                           {item.quantity}
@@ -1237,12 +1244,12 @@ export default function CartPageClient() {
                                   </>
                                 ) : (
                                   <>
-                                    <div className="inline-flex items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
                                       <div className="inline-flex items-center rounded-full bg-muted px-1 dark:bg-muted">
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          className="h-8 w-8 disabled:opacity-40"
+                                          className="h-11 w-11 disabled:opacity-40 bp-sm:h-8 bp-sm:w-8"
                                           aria-label={`${item.name} 수량 감소`}
                                           disabled={lockStepper ? true : !canDec}
                                           onClick={() =>
@@ -1271,7 +1278,7 @@ export default function CartPageClient() {
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          className="h-8 w-8 disabled:opacity-40"
+                                          className="h-11 w-11 disabled:opacity-40 bp-sm:h-8 bp-sm:w-8"
                                           aria-label={`${item.name} 수량 증가`}
                                           disabled={lockStepper ? true : !canInc}
                                           title={
@@ -1341,7 +1348,7 @@ export default function CartPageClient() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 text-ui-body-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      className="h-11 text-ui-body-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive bp-sm:h-8"
                       onClick={() => {
                         if (confirm("장바구니의 모든 상품을 비울까요?")) clearCart();
                       }}
@@ -1361,7 +1368,7 @@ export default function CartPageClient() {
             {/* 요약 */}
             <div className="min-w-0">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
-                <Card className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
+                <Card className="-mx-3 overflow-hidden rounded-none border-x-0 bg-card shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border-x bp-sm:shadow-soft">
                   <CardHeader className="space-y-1 px-4 py-4 bp-sm:px-5">
                     <CardTitle className="text-ui-card-title-lg">주문 요약</CardTitle>
                     <p className="text-ui-body-sm text-muted-foreground">선택 상품 기준</p>
@@ -1597,9 +1604,9 @@ export default function CartPageClient() {
           data-bottom-sticky="1"
           className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-float bp-lg:hidden"
         >
-          <div className="mx-auto flex max-w-[1240px] items-center gap-3">
+          <div className="mx-auto flex max-w-[1240px] items-center gap-2 bp-sm:gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-ui-label text-muted-foreground">
+              <p className="truncate text-ui-label text-muted-foreground">
                 선택 {selectedCartItems.length}개 · 주문 예상 금액
               </p>
               <p className="truncate text-ui-card-title-lg font-semibold tabular-nums text-foreground">
@@ -1608,13 +1615,14 @@ export default function CartPageClient() {
             </div>
             <Button
               variant="highlight"
-              className="h-11 min-w-[140px] font-semibold"
+              className="h-11 min-w-0 max-w-[48%] shrink-0 px-4 font-semibold bp-sm:min-w-[140px]"
               disabled={
                 !hasSelectedItems || loading || !isCartPriceReady || isCheckingCheckoutStock
               }
               onClick={handleCheckoutClick}
             >
-              {isCheckingCheckoutStock
+              <span className="truncate break-keep">
+                {isCheckingCheckoutStock
                 ? "재고 확인 중"
                 : loading
                   ? "로그인 확인 중"
@@ -1623,6 +1631,7 @@ export default function CartPageClient() {
                     : !hasSelectedItems
                       ? "상품 선택"
                       : `주문하기 ${selectedCartItems.length}`}
+              </span>
             </Button>
           </div>
         </div>
