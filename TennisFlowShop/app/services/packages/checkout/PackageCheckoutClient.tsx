@@ -477,14 +477,14 @@ export default function PackageCheckoutClient({
         </div>
       </CheckoutPageHeader>
 
-      <div className="container py-8 pb-[calc(96px+env(safe-area-inset-bottom))] md:py-10 lg:pb-10">
+      <div className="container py-8 pb-[calc(96px+env(safe-area-inset-bottom))] md:py-10 bp-lg:pb-10">
         <div
-          className={`mx-auto grid max-w-6xl gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start ${isCheckoutSubmitting ? "pointer-events-none" : ""}`}
+          className={`mx-auto grid max-w-6xl gap-5 md:gap-6 bp-lg:grid-cols-[minmax(0,1fr)_390px] bp-lg:items-start ${isCheckoutSubmitting ? "pointer-events-none" : ""}`}
           aria-busy={isCheckoutSubmitting}
         >
           {/* 선택된 패키지 정보 */}
           <CheckoutSection
-            className="lg:col-start-1"
+            className="bp-lg:col-start-1"
             icon={<Package className="h-5 w-5" />}
             title="선택된 패키지"
             description="패키지명, 이용 횟수, 유효기간과 결제 금액을 확인해 주세요."
@@ -502,7 +502,7 @@ export default function PackageCheckoutClient({
 
           {/* 신청자 정보 */}
           <CheckoutSection
-            className="lg:col-start-1"
+            className="bp-lg:col-start-1"
             icon={<UserIcon className="h-5 w-5" />}
             title="신청자 정보"
             description="결제 안내를 받을 신청자 정보를 입력해 주세요."
@@ -611,7 +611,7 @@ export default function PackageCheckoutClient({
 
           {/* 서비스 이용 안내 */}
           <CheckoutSection
-            className="lg:col-start-1"
+            className="bp-lg:col-start-1"
             icon={<Shield className="h-5 w-5" />}
             title="서비스 이용 안내"
             description="요청사항은 선택 입력이며, 결제 방식별 처리 기준만 확인해 주세요."
@@ -642,7 +642,7 @@ export default function PackageCheckoutClient({
 
           {/* 결제 정보 */}
           <CheckoutSection
-            className="lg:col-start-1"
+            className="bp-lg:col-start-1"
             icon={<CreditCard className="h-5 w-5" />}
             title="결제 정보"
             description="결제 방법을 선택하고 필요한 정보를 입력해주세요."
@@ -809,7 +809,7 @@ export default function PackageCheckoutClient({
 
           {/* 주문자 동의 */}
           <CheckoutSection
-            className="lg:col-start-1"
+            className="bp-lg:col-start-1"
             icon={<Shield className="h-5 w-5" />}
             title="주문자 동의"
             contentClassName="bp-sm:p-5"
@@ -899,7 +899,7 @@ export default function PackageCheckoutClient({
           </CheckoutSection>
 
           {/* 최종 결제 확인 */}
-          <Card className="relative overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
+          <Card className="relative overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft bp-lg:sticky bp-lg:top-24 bp-lg:col-start-2 bp-lg:row-start-1">
             <div className="border-b border-border/80 bg-muted/20 p-4 text-foreground md:p-5">
               <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
                 <Package className="h-5 w-5 text-primary" />

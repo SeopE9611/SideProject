@@ -44,7 +44,7 @@ function HeaderSkeleton() {
 
 function SectionSkeleton({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">
+    <div className="-mx-3 overflow-hidden border-y border-border/80 bg-card shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border bp-sm:shadow-soft">
       <div className="border-b border-border/80 bg-muted/20 px-4 py-4 bp-sm:px-5">
         <div className="flex items-center gap-3">
           <Skeleton className="h-9 w-9 rounded-control" />
@@ -95,7 +95,7 @@ export default function CheckoutLoadingShell({
             </div>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-6xl space-y-5 pb-[calc(96px+env(safe-area-inset-bottom))] bp-sm:space-y-6 lg:pb-0">
+          <div className="mx-auto w-full max-w-6xl space-y-5 pb-[calc(96px+env(safe-area-inset-bottom))] bp-sm:space-y-6 bp-lg:pb-0">
             {keys.map((key) => (
               <SectionSkeleton key={key} compact={key === "agreements"} />
             ))}

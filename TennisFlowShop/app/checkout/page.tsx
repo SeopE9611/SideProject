@@ -1429,7 +1429,7 @@ export default function CheckoutPage() {
           <div className="mx-auto w-full max-w-6xl">
             <div
               className={cn(
-                "space-y-6 pb-[calc(96px+env(safe-area-inset-bottom))] lg:pb-0",
+                "space-y-6 pb-[calc(96px+env(safe-area-inset-bottom))] bp-lg:pb-0",
                 isCheckoutSubmitting && "pointer-events-none",
               )}
               aria-busy={isCheckoutSubmitting}
