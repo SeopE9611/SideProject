@@ -424,7 +424,7 @@ export default function ApplicantInfoSection({
                       type="button"
                       variant="outline"
                       onClick={handleOpenPostcode}
-                      className="h-10 whitespace-nowrap transition-colors duration-200"
+                      className="min-h-11 whitespace-nowrap transition-colors duration-200"
                     >
                       <MapPin className="h-4 w-4 mr-2" />
                       우편번호 검색

@@ -509,7 +509,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="h-8 shrink-0 px-3 text-ui-label whitespace-nowrap"
+                            className="min-h-11 shrink-0 px-3 text-ui-label whitespace-nowrap bp-sm:h-8 bp-sm:min-h-8"
                             onClick={() =>
                               handleStringTypesChange(
                                 Array.from(
@@ -636,7 +636,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 w-full gap-1.5 whitespace-nowrap bp-sm:w-auto"
+                  className="min-h-11 w-full gap-1.5 whitespace-nowrap bp-sm:h-9 bp-sm:min-h-9 bp-sm:w-auto"
                   onClick={addStandaloneWorkLine}
                   disabled={lineCount >= 10}
                 >
@@ -1033,7 +1033,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-9 w-full px-3 text-ui-label whitespace-nowrap"
+                      className="min-h-11 w-full px-3 text-ui-label whitespace-nowrap bp-sm:h-9 bp-sm:min-h-9"
                       onClick={applyFirstLineTensionToAll}
                       disabled={lineCount < 2}
                     >
@@ -1042,7 +1042,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     <Button
                       type="button"
                       size="sm"
-                      className="h-9 w-full px-3 text-ui-label whitespace-nowrap"
+                      className="min-h-11 w-full px-3 text-ui-label whitespace-nowrap bp-sm:h-9 bp-sm:min-h-9"
                       onClick={() => applyBulkToAllLines()}
                       disabled={lineCount < 1}
                     >
@@ -1150,7 +1150,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-8 gap-1 px-2 text-ui-label text-destructive hover:text-destructive"
+                          className="min-h-11 gap-1 px-2 text-ui-label text-destructive hover:text-destructive bp-sm:h-8 bp-sm:min-h-8"
                           onClick={() => {
                             removeStandaloneWorkLine(index);
                             setOpenLineId((current) =>
@@ -1166,7 +1166,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-8 px-2 text-ui-label bp-md:hidden"
+                        className="min-h-11 px-2 text-ui-label bp-sm:h-8 bp-sm:min-h-8 bp-md:hidden"
                         onClick={() => {
                           if (!stableLineKey) return;
                           setOpenLineId(isLineOpen ? null : stableLineKey);
