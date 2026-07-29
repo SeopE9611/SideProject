@@ -81,7 +81,7 @@ export default function LocationsPage() {
               <div className="flex items-start gap-3 border-b border-surface-inverse-foreground/15 pb-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight" aria-hidden />
                 <div className="min-w-0 space-y-1">
-                  <p className="text-ui-body-sm font-semibold text-surface-inverse-foreground">
+                  <p className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground">
                     {mainLocation.name}
                   </p>
                   <p className="break-words text-ui-body-sm leading-relaxed text-surface-inverse-muted">
@@ -94,19 +94,19 @@ export default function LocationsPage() {
               </div>
               <dl className="space-y-2 text-ui-body-sm">
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="font-semibold text-surface-inverse-foreground">평일</dt>
+                  <dt className="font-ui-medium text-surface-inverse-foreground">평일</dt>
                   <dd className="text-right tabular-nums text-surface-inverse-muted">
                     {mainLocation.hours.weekday}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="font-semibold text-surface-inverse-foreground">토요일</dt>
+                  <dt className="font-ui-medium text-surface-inverse-foreground">토요일</dt>
                   <dd className="text-right tabular-nums text-surface-inverse-muted">
                     {mainLocation.hours.weekend}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="font-semibold text-surface-inverse-foreground">휴무</dt>
+                  <dt className="font-ui-medium text-surface-inverse-foreground">휴무</dt>
                   <dd className="text-right text-surface-inverse-muted">
                     {mainLocation.hours.holiday}
                   </dd>
@@ -139,7 +139,7 @@ export default function LocationsPage() {
                           <MapPin className="h-5 w-5" />
                         </span>
                         <div className="min-w-0 space-y-2">
-                          <h3 className="text-ui-card-title-lg font-semibold text-foreground">
+                          <h3 className="text-ui-card-title-lg font-ui-medium text-foreground">
                             {location.name}
                           </h3>
                           <p className="break-words text-ui-body leading-relaxed text-foreground">
@@ -152,7 +152,7 @@ export default function LocationsPage() {
                       </div>
 
                       <div className="space-y-3 border-t border-border pt-5">
-                        <p className="flex items-center gap-2 text-ui-body-sm font-semibold text-foreground">
+                        <p className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-foreground">
                           <Train className="h-4 w-4 text-muted-foreground" aria-hidden />
                           교통 안내
                         </p>
@@ -169,9 +169,6 @@ export default function LocationsPage() {
                   <div className="min-w-0 space-y-6 p-5 bp-sm:p-6 bp-lg:p-8">
                     <div className="space-y-2">
                       {location.isMain ? <Badge variant="secondary">메인 매장</Badge> : null}
-                      <h3 className="text-ui-section-title font-semibold tracking-tight text-foreground">
-                        {location.name}
-                      </h3>
                       <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
                         {location.specialNote}
                       </p>
@@ -180,7 +177,7 @@ export default function LocationsPage() {
                     <address className="not-italic">
                       <dl className="grid gap-3 text-ui-body-sm">
                         <div className="grid gap-1 bp-sm:grid-cols-[5rem_minmax(0,1fr)] bp-sm:gap-4">
-                          <dt className="flex items-center gap-2 font-semibold text-foreground">
+                          <dt className="flex items-center gap-2 font-ui-medium text-foreground">
                             <Phone className="h-4 w-4 text-muted-foreground" aria-hidden />
                             전화
                           </dt>
@@ -194,7 +191,7 @@ export default function LocationsPage() {
                           </dd>
                         </div>
                         <div className="grid gap-1 bp-sm:grid-cols-[5rem_minmax(0,1fr)] bp-sm:gap-4">
-                          <dt className="flex items-center gap-2 font-semibold text-foreground">
+                          <dt className="flex items-center gap-2 font-ui-medium text-foreground">
                             <Mail className="h-4 w-4 text-muted-foreground" aria-hidden />
                             이메일
                           </dt>
@@ -211,7 +208,7 @@ export default function LocationsPage() {
                     </address>
 
                     <div className="space-y-3">
-                      <h4 className="flex items-center gap-2 text-ui-body-sm font-semibold text-foreground">
+                      <h4 className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-foreground">
                         <Clock className="h-4 w-4 text-muted-foreground" aria-hidden />
                         운영시간
                       </h4>
@@ -232,7 +229,7 @@ export default function LocationsPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <h4 className="text-ui-body-sm font-semibold text-foreground">제공 서비스</h4>
+                      <h4 className="text-ui-body-sm font-ui-medium text-foreground">제공 서비스</h4>
                       <div className="flex flex-wrap gap-2">
                         {location.services.map((service) => (
                           <Badge key={service} variant="outline" wrap="normal">
@@ -242,10 +239,7 @@ export default function LocationsPage() {
                       </div>
                     </div>
 
-                    <div className="grid gap-2 border-t border-border bg-muted/30 px-4 py-4 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center bp-sm:justify-between">
-                      <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
-                        {location.specialNote}
-                      </p>
+                    <div className="border-t border-border bg-muted/30 px-4 py-4">
                       <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                         <Button
                           variant="highlight"
@@ -284,7 +278,7 @@ export default function LocationsPage() {
           <SiteContainer>
             <PublicSurface variant="inverse" className="space-y-5">
               <div className="max-w-2xl space-y-2">
-                <h2 className="text-ui-section-title-lg font-semibold text-surface-inverse-foreground">
+                <h2 className="text-ui-section-title-lg font-ui-medium text-surface-inverse-foreground">
                   방문 전 교체서비스 신청 또는 상담을 진행해 주세요.
                 </h2>
                 <p className="text-ui-body-sm leading-relaxed text-surface-inverse-muted bp-sm:text-ui-body">
@@ -293,7 +287,7 @@ export default function LocationsPage() {
               </div>
               <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                 <Button
-                  variant="highlight"
+                  variant="inverse"
                   asChild
                   wrap="responsive"
                   className="w-full bp-sm:w-auto"
@@ -306,7 +300,12 @@ export default function LocationsPage() {
                     />
                   </Link>
                 </Button>
-                <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                <Button
+                  variant="inverse_outline"
+                  asChild
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
+                >
                   <Link href="/services">서비스 안내로 돌아가기</Link>
                 </Button>
               </div>

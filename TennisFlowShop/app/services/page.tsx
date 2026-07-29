@@ -159,7 +159,7 @@ export default async function ServicesPage() {
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
             <div className="max-w-3xl space-y-4">
               <p className="text-ui-label font-medium text-primary">스트링 교체 서비스</p>
-              <h1 className="text-balance font-ui-bold text-ui-page-title  text-foreground bp-sm:text-ui-page-title-lg">
+              <h1 className="text-balance font-ui-bold text-ui-page-title text-foreground bp-sm:text-ui-page-title-lg">
                 스트링 교체, 내 상황에 맞는 흐름부터 선택하세요.
               </h1>
               <p className="text-pretty text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
@@ -264,7 +264,7 @@ export default async function ServicesPage() {
                 <Link
                   key={item.title}
                   href={item.href}
-                  className="group flex min-w-0 items-start gap-3 border-b border-border p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:border-r bp-lg:[&:nth-child(3n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:[&:nth-last-child(-n+3)]:border-b-0"
+                  className="group flex min-w-0 items-start gap-3 border-b border-border p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset bp-sm:border-r bp-sm:[&:nth-child(2n)]:border-r-0 bp-lg:[&:nth-child(2n)]:border-r bp-lg:[&:nth-child(3n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:[&:nth-last-child(-n+3)]:border-b-0"
                 >
                   <span className="mt-0.5 text-muted-foreground group-hover:text-primary">
                     {item.icon}
@@ -336,7 +336,7 @@ export default async function ServicesPage() {
               </div>
             </div>
             <PublicSurface padding="none" className="overflow-hidden">
-              <div className="hidden grid-cols-[1.1fr_0.7fr_1fr_1fr] border-b border-border bg-muted/40 px-4 py-3 text-ui-label font-medium text-muted-foreground bp-sm:grid">
+              <div className="hidden grid-cols-[1.1fr_0.7fr_1fr_1fr] border-b border-border bg-muted/40 px-4 py-3 text-ui-label font-medium text-muted-foreground bp-md:grid">
                 <span>소재</span>
                 <span>상품</span>
                 <span>상품 가격</span>
@@ -345,29 +345,29 @@ export default async function ServicesPage() {
               {primarySummaries.map((cat) => (
                 <div
                   key={cat.key}
-                  className="grid gap-2 border-b border-border px-4 py-3 text-ui-body-sm last:border-b-0 bp-sm:grid-cols-[1.1fr_0.7fr_1fr_1fr]"
+                  className="grid gap-2 border-b border-border px-4 py-3 text-ui-body-sm last:border-b-0 bp-md:grid-cols-[1.1fr_0.7fr_1fr_1fr]"
                 >
                   <div className="font-ui-medium text-foreground">{cat.label}</div>
                   {cat.count === 0 ? (
-                    <div className="text-muted-foreground bp-sm:col-span-3">
+                    <div className="text-muted-foreground bp-md:col-span-3">
                       등록된 상품 데이터 없음
                     </div>
                   ) : (
                     <>
-                      <div className="flex justify-between gap-3 bp-sm:block">
-                        <span className="text-muted-foreground bp-sm:hidden">등록 상품 개수</span>
+                      <div className="flex justify-between gap-3 bp-md:block">
+                        <span className="text-muted-foreground bp-md:hidden">등록 상품 개수</span>
                         <span className="whitespace-nowrap tabular-nums">
                           {cat.count.toLocaleString("ko-KR")}개
                         </span>
                       </div>
-                      <div className="flex justify-between gap-3 bp-sm:block">
-                        <span className="text-muted-foreground bp-sm:hidden">상품 가격 범위</span>
+                      <div className="flex justify-between gap-3 bp-md:block">
+                        <span className="text-muted-foreground bp-md:hidden">상품 가격 범위</span>
                         <span className="whitespace-nowrap tabular-nums">
                           {formatPriceRange(cat.minPrice, cat.maxPrice)}
                         </span>
                       </div>
-                      <div className="flex justify-between gap-3 bp-sm:block">
-                        <span className="text-muted-foreground bp-sm:hidden">장착비 범위</span>
+                      <div className="flex justify-between gap-3 bp-md:block">
+                        <span className="text-muted-foreground bp-md:hidden">장착비 범위</span>
                         <span className="whitespace-nowrap tabular-nums">
                           {formatPriceRange(cat.minMountingFee, cat.maxMountingFee)}
                         </span>
@@ -376,7 +376,7 @@ export default async function ServicesPage() {
                   )}
                 </div>
               ))}
-              <div className="grid gap-2 px-4 py-3 text-ui-body-sm bp-sm:grid-cols-[1.1fr_2.7fr]">
+              <div className="grid gap-2 px-4 py-3 text-ui-body-sm bp-md:grid-cols-[1.1fr_2.7fr]">
                 <div className="font-ui-medium text-foreground">하이브리드 조합</div>
                 <div className="text-muted-foreground">
                   등록된 하이브리드 상품 개수{" "}

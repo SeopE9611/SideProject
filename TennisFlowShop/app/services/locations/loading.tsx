@@ -72,7 +72,6 @@ export default function LocationsLoading() {
                 <div className="space-y-6 p-5 bp-sm:p-6 bp-lg:p-8">
                   <div className="space-y-2">
                     <Skeleton className="h-6 w-20 rounded-full" />
-                    <Skeleton className="h-8 w-40" />
                     <Skeleton className="h-5 w-full max-w-md" />
                   </div>
 
@@ -107,8 +106,7 @@ export default function LocationsLoading() {
                     </div>
                   </div>
 
-                  <div className="grid gap-2 border-t border-border bg-muted/30 px-4 py-4 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center bp-sm:justify-between">
-                    <Skeleton className="h-5 w-full max-w-sm" />
+                  <div className="border-t border-border bg-muted/30 px-4 py-4">
                     <div className="grid gap-2 bp-sm:flex">
                       <Skeleton className="h-11 w-full bp-sm:w-48" />
                       <Skeleton className="h-11 w-full bp-sm:w-32" />
