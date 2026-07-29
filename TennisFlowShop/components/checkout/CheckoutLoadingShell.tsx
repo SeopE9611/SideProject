@@ -25,7 +25,7 @@ function HeaderSkeleton() {
         <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-end bp-md:justify-between">
           <div className="flex min-w-0 items-start gap-3 bp-sm:gap-4">
             <div className="min-w-0">
-              <div className="text-ui-label font-semibold uppercase tracking-[0.18em]">
+              <div className="text-ui-label font-ui-medium uppercase tracking-[0.18em]">
                 <Skeleton className="h-3 w-28" />
               </div>
               <div className="mt-1 font-ui-bold leading-tight tracking-tight">
@@ -56,8 +56,8 @@ function SectionSkeleton({ compact = false }: { compact?: boolean }) {
       </div>
       <div className="space-y-3 p-4 bp-sm:p-6">
         <Skeleton className={cn("w-full rounded-control", compact ? "h-12" : "h-16")} />
-        <Skeleton className="h-10 w-full rounded-control" />
-        {!compact && <Skeleton className="h-10 w-4/5 rounded-control" />}
+        <Skeleton className="h-11 w-full rounded-control" />
+        {!compact && <Skeleton className="h-11 w-4/5 rounded-control" />}
       </div>
     </div>
   );
