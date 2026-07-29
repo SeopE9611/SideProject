@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -51,18 +50,24 @@ export default function RacketCareSuccessFeedback({
   }, [handoff]);
   if (!handoff) return null;
   return (
-    <Card className="rounded-2xl border-primary/30">
-      <CardContent className="space-y-3 p-5">
+    <aside className="border-l-2 border-brand-highlight-ink/30 bg-brand-highlight-muted/40 px-4 py-4">
+      <div className="space-y-3">
         <p className="font-semibold">교체서비스 신청이 완료되었습니다.</p>
         <p className="break-keep text-ui-body-sm text-muted-foreground">
           라켓 케어에서 향후 교체 일정을 계속 관리할 수 있습니다.
         </p>
-        <Button asChild className="min-h-10">
+        <Button
+          asChild
+          variant="highlight_soft"
+          size="lg"
+          wrap="responsive"
+          className="w-full bp-sm:w-auto"
+        >
           <Link href={`/mypage/racket-care?selected=${handoff.careItemId}&submitted=1`}>
             내 라켓 케어로 돌아가기
           </Link>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </aside>
   );
 }
