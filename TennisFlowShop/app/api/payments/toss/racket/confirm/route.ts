@@ -8,6 +8,7 @@ import clientPromise from "@/lib/mongodb";
 import { confirmTossPayment } from "@/lib/payments/toss/server";
 import { tossPaymentSessions } from "@/lib/payments/toss/session";
 import { createOrder } from "@/app/features/orders/api/handlers";
+import { setGuestOrderAccessCookie } from "@/lib/auth/guest-resource-access.server";
 
 export async function POST(req: Request) {
   if (!ENABLE_RACKET_STANDALONE_ORDER) {
@@ -36,6 +37,22 @@ export async function POST(req: Request) {
     const db = client.db();
     const col = tossPaymentSessions(db);
 
+    const successResponse = async (mongoOrderId: string, responsePaymentKey: string) => {
+      const response = NextResponse.json({
+        success: true,
+        mongoOrderId,
+        paymentKey: responsePaymentKey,
+      });
+      if (ObjectId.isValid(mongoOrderId)) {
+        const order = await db.collection("orders").findOne(
+          { _id: new ObjectId(mongoOrderId) },
+          { projection: { userId: 1 } },
+        );
+        if (order && !order.userId) setGuestOrderAccessCookie(response, String(order._id));
+      }
+      return response;
+    };
+
     const session = await col.findOne({ tossOrderId: orderId });
     if (!session) {
       return NextResponse.json(
@@ -60,11 +77,7 @@ export async function POST(req: Request) {
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
-      return NextResponse.json({
-        success: true,
-        mongoOrderId: session.mongoOrderId,
-        paymentKey: session.paymentKey ?? paymentKey,
-      });
+      return successResponse(String(session.mongoOrderId), session.paymentKey ?? paymentKey);
     }
 
     if (session.status === "confirm_succeeded_order_failed") {
@@ -305,7 +318,7 @@ export async function POST(req: Request) {
       },
     );
 
-    return NextResponse.json({ success: true, mongoOrderId, paymentKey });
+    return successResponse(mongoOrderId, paymentKey);
   } catch {
     return NextResponse.json(
       {

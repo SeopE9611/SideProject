@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { hasGuestOrderCookieAccess } from "@/lib/auth/guest-resource-access.server";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
@@ -38,10 +39,11 @@ export default async function SelectStringPage({ params }: PageProps) {
     "legacy"
   ).trim();
   const allowGuestCheckout = guestOrderMode === "on";
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
+  const payload = safeVerifyAccessToken(token);
 
   if (!allowGuestCheckout) {
-    const token = (await cookies()).get("accessToken")?.value;
-    const payload = safeVerifyAccessToken(token);
     if (!payload?.sub) {
       const next = `/racket-orders/${orderId}/select-string`;
       return <LoginGate next={next} variant="checkout" />;
@@ -53,9 +55,25 @@ export default async function SelectStringPage({ params }: PageProps) {
   // projection으로 필요한 필드만 가져와 성능·보안 모두 이점
   const order = await db
     .collection("orders")
-    .findOne({ _id: new ObjectId(orderId) }, { projection: { items: 1 } });
+    .findOne(
+      { _id: new ObjectId(orderId) },
+      { projection: { items: 1, userId: 1, guest: 1 } },
+    );
 
   if (!order) notFound();
+
+  const isOwner = Boolean(
+    payload?.sub && order.userId && String(payload.sub) === String(order.userId),
+  );
+  const isAdmin = payload?.role === "admin";
+  const isGuestOrder = !order.userId || order.guest === true;
+  const hasGuestAccess = Boolean(
+    allowGuestCheckout &&
+      isGuestOrder &&
+      hasGuestOrderCookieAccess(cookieStore, String(order._id)),
+  );
+
+  if (!isOwner && !isAdmin && !hasGuestAccess) notFound();
 
   const hasRacket =
     Array.isArray(order.items) && order.items.some((it: any) => it?.kind === "racket");
