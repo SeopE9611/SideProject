@@ -143,13 +143,20 @@ export default async function PricingPage() {
               <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                 <Button
                   variant="highlight"
+                  size="lg"
                   asChild
                   wrap="responsive"
                   className="w-full bp-sm:w-auto"
                 >
                   <Link href="#cost-methods">비용 방식 확인하기</Link>
                 </Button>
-                <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  asChild
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
+                >
                   <Link href="/services">서비스 허브로 돌아가기</Link>
                 </Button>
               </div>

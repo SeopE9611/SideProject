@@ -169,13 +169,20 @@ export default async function ServicesPage() {
               <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                 <Button
                   variant="highlight"
+                  size="lg"
                   asChild
                   wrap="responsive"
                   className="w-full bp-sm:w-auto"
                 >
                   <Link href="#service-start">신청 방식 선택하기</Link>
                 </Button>
-                <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  asChild
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
+                >
                   <Link href="#pricing">가격 구조 확인하기</Link>
                 </Button>
               </div>
@@ -328,7 +335,12 @@ export default async function ServicesPage() {
                   잔여 횟수 차감
                 </p>
               </div>
-              <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+              <Button
+                variant="outline"
+                asChild
+                wrap="responsive"
+                className="min-h-11 w-full bp-sm:w-auto"
+              >
                 <Link href="/services/pricing">전체 가격 안내 보기</Link>
               </Button>
               <div className="border-t border-border pt-3 text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -438,10 +450,22 @@ export default async function ServicesPage() {
               </p>
             </div>
             <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-              <Button variant="highlight" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+              <Button
+                variant="highlight"
+                size="lg"
+                asChild
+                wrap="responsive"
+                className="w-full bp-sm:w-auto"
+              >
                 <Link href="#service-start">신청 방식 선택하기</Link>
               </Button>
-              <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+              <Button
+                variant="outline"
+                size="lg"
+                asChild
+                wrap="responsive"
+                className="w-full bp-sm:w-auto"
+              >
                 <Link href="/reviews">서비스 후기 보기</Link>
               </Button>
             </div>

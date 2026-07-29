@@ -57,6 +57,7 @@ export default function LocationsPage() {
               <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                 <Button
                   variant="highlight"
+                  size="lg"
                   asChild
                   wrap="responsive"
                   className="w-full bp-sm:w-auto"
@@ -71,7 +72,13 @@ export default function LocationsPage() {
                     <ArrowUpRight className="h-4 w-4" aria-hidden />
                   </Link>
                 </Button>
-                <Button variant="outline" asChild wrap="responsive" className="w-full bp-sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  asChild
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
+                >
                   <Link href={PHONE_LINK}>전화 상담</Link>
                 </Button>
               </div>
@@ -245,7 +252,7 @@ export default function LocationsPage() {
                           variant="highlight"
                           asChild
                           wrap="responsive"
-                          className="w-full bp-sm:w-auto"
+                          className="min-h-11 w-full bp-sm:w-auto"
                         >
                           <Link
                             href={NAVER_MAP_URL}
@@ -261,7 +268,7 @@ export default function LocationsPage() {
                           variant="outline"
                           asChild
                           wrap="responsive"
-                          className="w-full bp-sm:w-auto"
+                          className="min-h-11 w-full bp-sm:w-auto"
                         >
                           <Link href={PHONE_LINK}>전화 상담</Link>
                         </Button>
@@ -288,6 +295,7 @@ export default function LocationsPage() {
               <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                 <Button
                   variant="inverse"
+                  size="lg"
                   asChild
                   wrap="responsive"
                   className="w-full bp-sm:w-auto"
@@ -302,6 +310,7 @@ export default function LocationsPage() {
                 </Button>
                 <Button
                   variant="inverse_outline"
+                  size="lg"
                   asChild
                   wrap="responsive"
                   className="w-full bp-sm:w-auto"
