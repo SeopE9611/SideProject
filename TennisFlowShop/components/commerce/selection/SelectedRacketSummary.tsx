@@ -24,7 +24,7 @@ export function SelectedRacketSummary({
   helper,
 }: SelectedRacketSummaryProps) {
   return (
-    <section className="-mx-3 border-y border-border py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:overflow-hidden bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-0 bp-md:shadow-sm">
+    <section className="-mx-3 border-y border-border px-3 py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:overflow-hidden bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-0 bp-md:shadow-sm">
       <div className="border-b border-border pb-3 bp-md:bg-secondary/30 bp-md:px-5 bp-md:py-4">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">

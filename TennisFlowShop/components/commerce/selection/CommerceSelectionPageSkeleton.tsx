@@ -16,7 +16,7 @@ type SummarySkeletonProps = {
 function SummarySkeleton({ showQuantityControls, showSecondaryAction }: SummarySkeletonProps) {
   return (
     <div
-      className="-mx-3 border-y border-border py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:overflow-hidden bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-0 bp-md:shadow-sm"
+      className="-mx-3 border-y border-border px-3 py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:overflow-hidden bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-0 bp-md:shadow-sm"
       aria-hidden="true"
     >
       <div className="border-b border-border pb-3 bp-md:bg-secondary/30 bp-md:px-5 bp-md:py-4">
@@ -31,7 +31,9 @@ function SummarySkeleton({ showQuantityControls, showSecondaryAction }: SummaryS
           </div>
         </div>
         {showQuantityControls ? <Skeleton className="mt-5 h-24 w-full rounded-xl" /> : null}
-        {showSecondaryAction ? <Skeleton className="mt-4 h-10 w-full rounded-xl" /> : null}
+        {showSecondaryAction ? (
+          <Skeleton className="mt-4 h-11 w-full rounded-xl bp-md:h-10" />
+        ) : null}
         <Skeleton className="mt-4 h-20 w-full rounded-xl" />
       </div>
     </div>

@@ -347,26 +347,26 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
         title="스트링 목록을 불러오지 못했습니다"
         description="잠시 후 다시 시도해주세요. 주문과 라켓 정보는 그대로 유지됩니다."
         actions={<Button variant="secondary" className="min-h-11" onClick={reset}>다시 시도</Button>}
-        className="rounded-2xl border border-border bg-card shadow-sm"
+        className="-mx-3 max-w-none rounded-none border-y border-border bg-transparent px-3 shadow-none bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-auto bp-md:max-w-2xl bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:shadow-sm"
       />
     );
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+      <div className="-mx-3 border-y border-border px-3 py-3 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-2xl bp-md:border bp-md:bg-muted/30">
         <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
           <div>
-            <h2 className="text-ui-body font-semibold text-foreground">장착할 스트링 선택</h2>
+            <h2 className="text-ui-body font-ui-bold text-foreground">장착할 스트링 선택</h2>
             <p className="break-keep text-ui-body-sm text-muted-foreground">
               색상과 게이지(굵기)를 확인한 뒤 원하는 스트링으로 다음 단계에 진행하세요.
             </p>
           </div>
           <p className="text-ui-body-sm text-muted-foreground">
-            총{" "}
-            <span className="font-semibold text-foreground tabular-nums">
+            {hasMore ? "현재 " : "총 "}
+            <span className="font-ui-medium text-foreground tabular-nums">
               {mountableProducts.length}
             </span>
-            개
+            {hasMore ? "개 표시 중" : "개"}
           </p>
         </div>
       </div>
@@ -375,7 +375,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           icon={<Package className="h-10 w-10" />}
           title="선택 가능한 스트링이 없습니다"
           description="현재 장착 서비스로 선택할 수 있는 스트링 상품이 없습니다."
-          className="rounded-2xl bg-card shadow-sm"
+          className="-mx-3 rounded-none border-x-0 bg-transparent px-3 shadow-none bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-2xl bp-md:border-x bp-md:bg-card bp-md:shadow-sm"
         />
       ) : null}
       <div className="grid gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
@@ -448,14 +448,14 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               className="flex h-full min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/20"
             >
               <div className="space-y-1.5">
-                <h3 className="line-clamp-2 break-keep text-ui-body font-semibold leading-tight text-foreground">
+                <h3 className="line-clamp-2 break-keep text-ui-body font-ui-medium leading-tight text-foreground">
                   {p.name}
                 </h3>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-ui-body-sm">
-                  <span className="text-ui-label font-medium text-muted-foreground">
+                  <span className="text-ui-label font-ui-regular text-muted-foreground">
                     스트링 금액
                   </span>
-                  <span className="font-semibold tabular-nums text-foreground">
+                  <span className="font-ui-medium tabular-nums text-foreground">
                     {typeof p.price === "number"
                       ? `${p.price.toLocaleString()}원`
                       : "가격 정보 없음"}
@@ -469,9 +469,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 )}
               </div>
 
-              <div className="mt-4 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+              <div className="mt-4 min-w-0 space-y-2 border-t border-border pt-3 bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-ui-label font-medium">색상</div>
+                  <div className="text-ui-label font-ui-medium">색상</div>
                   {selectedColor ? (
                     <div className="min-w-0 break-words text-right text-ui-label text-muted-foreground">
                       {selectedColorLabel}
@@ -520,6 +520,8 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                       key={`${p._id}-${row.value}`}
                       type="button"
                       disabled={row.disabled}
+                      aria-pressed={selectedColor === row.value}
+                      aria-label={`${row.label} 색상 ${row.disabled ? "품절" : "선택"}`}
                       onClick={() =>
                         setSelectedColorByProductId((prev) => ({
                           ...prev,
@@ -537,7 +539,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                       {row.image ? (
                         <img
                           src={row.image}
-                          alt={row.label}
+                          alt=""
                           className="h-5 w-5 rounded object-cover"
                         />
                       ) : row.colorHex ? (
@@ -553,9 +555,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 </div>
               </div>
               {gaugeRows.length > 0 && (
-                <div className="mt-3 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+                <div className="mt-3 min-w-0 space-y-2 border-t border-border pt-3 bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-ui-label font-medium">게이지(굵기)</div>
+                    <div className="text-ui-label font-ui-medium">게이지(굵기)</div>
                     {selectedGauge ? (
                       <div className="min-w-0 break-words text-right text-ui-label text-muted-foreground">
                         {selectedGaugeLabel}
@@ -595,7 +597,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   </Select>
                 </div>
               )}
-              <div className="mt-3 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
+              <div className="mt-3 min-w-0 border-t border-border pt-3 text-ui-label text-muted-foreground bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:px-3 bp-md:py-2">
                 <div className="flex items-center justify-between gap-3">
                   <span>선택한 옵션</span>
                   <span className="min-w-0 break-words text-right font-ui-medium text-foreground">
