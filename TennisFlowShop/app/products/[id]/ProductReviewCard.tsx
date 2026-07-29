@@ -41,7 +41,7 @@ export default function ProductReviewCard({
       <CardContent className="relative p-4 bp-sm:p-5 bp-md:p-6">
         {isBusy && (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-none bg-card/70 backdrop-blur-sm dark:bg-background/40 bp-md:rounded-2xl">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             <span className="ml-2 text-ui-body-sm">변경 중...</span>
           </div>
         )}
@@ -91,7 +91,7 @@ export default function ProductReviewCard({
                   className="h-11 w-11 rounded-lg bp-md:h-9 bp-md:w-9"
                   aria-label="후기 관리 메뉴"
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
@@ -106,12 +106,12 @@ export default function ProductReviewCard({
                 >
                   {managedStatus === "visible" ? (
                     <>
-                      <EyeOff className="mr-2 h-4 w-4" />
+                      <EyeOff className="mr-2 h-4 w-4" aria-hidden="true" />
                       비공개로 전환
                     </>
                   ) : (
                     <>
-                      <Eye className="mr-2 h-4 w-4" />
+                      <Eye className="mr-2 h-4 w-4" aria-hidden="true" />
                       공개로 전환
                     </>
                   )}
@@ -126,7 +126,7 @@ export default function ProductReviewCard({
                   }}
                   className="cursor-pointer"
                 >
-                  <Pencil className="mr-2 h-4 w-4" />
+                  <Pencil className="mr-2 h-4 w-4" aria-hidden="true" />
                   수정
                 </DropdownMenuItem>
 
@@ -139,7 +139,7 @@ export default function ProductReviewCard({
                   }}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
                   삭제
                 </DropdownMenuItem>
               </DropdownMenuContent>
