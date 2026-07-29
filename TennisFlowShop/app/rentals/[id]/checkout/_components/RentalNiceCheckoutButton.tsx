@@ -181,7 +181,10 @@ export default function RentalNiceCheckoutButton({
       <Button
         id={buttonId}
         onClick={handleClick}
-        className="w-full h-14 font-semibold"
+        variant="highlight"
+        size="tall"
+        wrap="responsive"
+        className="w-full"
         disabled={isDisabled}
       >
         {loading ? (

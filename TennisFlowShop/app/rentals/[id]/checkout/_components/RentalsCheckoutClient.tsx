@@ -741,20 +741,22 @@ export default function RentalsCheckoutClient({
           <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-control border border-border/80 bg-card p-1.5 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2.5 [&::-webkit-scrollbar]:hidden">
             <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
               <Badge
-                variant="secondary"
-                className="rounded-full px-3 py-1.5 text-ui-label font-medium"
+                tone="neutral"
+                emphasis="outline"
+                className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium"
               >
                 1 대여 정보
               </Badge>
               <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
               <Badge
-                variant="secondary"
-                className="rounded-full px-3 py-1.5 text-ui-label font-medium"
+                tone="neutral"
+                emphasis="outline"
+                className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium"
               >
                 2 스트링 선택
               </Badge>
               <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
-              <Badge className="rounded-full px-3 py-1.5 text-ui-label font-medium shadow-sm">
+              <Badge tone="signal" className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium">
                 3 신청 확인
               </Badge>
             </div>
@@ -763,7 +765,7 @@ export default function RentalsCheckoutClient({
       </CheckoutPageHeader>
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-sm:gap-8">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-[minmax(0,1fr)_360px]">
           <div
             className={cn("space-y-5 bp-sm:space-y-6", loading && "pointer-events-none")}
             aria-busy={loading}
@@ -775,7 +777,7 @@ export default function RentalsCheckoutClient({
               title="대여 라켓 확인"
               description="신청할 대여 라켓과 기간, 기본 비용을 확인하세요."
             >
-              <div className="flex min-w-0 flex-col gap-4 border-b border-border/50 py-4 last:border-b-0 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 flex-col gap-4 border-b border-border/50 py-4 last:border-b-0 bp-sm:flex-row bp-sm:items-center">
                 <div className="relative shrink-0">
                   {initial.racket?.image ? (
                     <Image
@@ -793,7 +795,7 @@ export default function RentalsCheckoutClient({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-ui-body-sm text-muted-foreground">대여 라켓</div>
-                  <h3 className="min-w-0 break-words font-semibold text-foreground">
+                  <h3 className="min-w-0 break-words font-ui-medium text-foreground">
                     {rentalRacketName}
                   </h3>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -838,11 +840,18 @@ export default function RentalsCheckoutClient({
                 onValueChange={(value) => setDeliveryMethod(value as any)}
                 className="space-y-3"
               >
-                <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                <div
+                  className={cn(
+                    "flex min-h-11 min-w-0 items-center gap-3 rounded-control border p-3 hover:bg-muted/20 bp-sm:p-3.5",
+                    deliveryMethod === "택배수령"
+                      ? "border-brand-highlight/60 bg-brand-highlight-muted"
+                      : "border-border/70 bg-transparent",
+                  )}
+                >
                   <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
                   <Label
                     htmlFor="rentals-delivery-courier"
-                    className="flex-1 cursor-pointer font-medium"
+                    className="flex-1 cursor-pointer font-ui-medium"
                   >
                     택배 수령 (자택 또는 지정 장소로 배송)
                     <div className="text-ui-label text-foreground/75 mt-1">
@@ -852,11 +861,18 @@ export default function RentalsCheckoutClient({
                   <Truck className="h-5 w-5 text-primary" />
                 </div>
 
-                <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                <div
+                  className={cn(
+                    "flex min-h-11 min-w-0 items-center gap-3 rounded-control border p-3 hover:bg-muted/20 bp-sm:p-3.5",
+                    deliveryMethod === "방문수령"
+                      ? "border-brand-highlight/60 bg-brand-highlight-muted"
+                      : "border-border/70 bg-transparent",
+                  )}
+                >
                   <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
                   <Label
                     htmlFor="rentals-delivery-visit"
-                    className="flex-1 cursor-pointer font-medium"
+                    className="flex-1 cursor-pointer font-ui-medium"
                   >
                     오프라인 매장 방문 (도깨비테니스 샵에서 직접 수령)
                     <div className="text-ui-label text-foreground/75 mt-1">
@@ -871,7 +887,7 @@ export default function RentalsCheckoutClient({
               <div className="border-l-2 border-border bg-muted/20 px-3 py-3">
                 <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                   <div className="min-w-0 space-y-1">
-                    <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
+                    <p className="font-ui-medium text-foreground">스트링 교체 서비스 (선택)</p>
                     <p className="text-ui-body-sm text-foreground">
                       {deliveryMethod === "방문수령"
                         ? "매장에서 대여 라켓에 스트링을 장착한 뒤 방문 수령으로 준비합니다."
@@ -881,7 +897,9 @@ export default function RentalsCheckoutClient({
 
                   <Button
                     type="button"
-                    variant={selectedString ? "outline" : "default"}
+                    variant={selectedString ? "outline" : "highlight_soft"}
+                    size="lg"
+                    wrap="responsive"
                     className="w-full bp-sm:w-auto"
                     onClick={() =>
                       pushIfSafe(
@@ -896,10 +914,10 @@ export default function RentalsCheckoutClient({
                 <div className="mt-3 border-t border-border/60 pt-3">
                   {selectedString ? (
                     <div className="space-y-1">
-                      <div className="text-ui-label font-medium text-muted-foreground">
+                      <div className="text-ui-label font-ui-medium text-muted-foreground">
                         선택한 스트링
                       </div>
-                      <div className="min-w-0 break-words font-semibold text-foreground">
+                      <div className="min-w-0 break-words font-ui-medium text-foreground">
                         {selectedString.name}
                       </div>
                       {selectedGauge ? (
@@ -950,7 +968,8 @@ export default function RentalsCheckoutClient({
                     </div>
                   ) : (
                     <div className="text-ui-body-sm text-foreground/80">
-                      현재는 <b>교체서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러
+                      현재는 <span className="font-ui-medium">교체서비스 미선택</span> 상태입니다.
+                      필요하면 "스트링 선택"을 눌러
                       교체서비스를 함께 진행할 수 있습니다.
                     </div>
                   )}
@@ -976,8 +995,8 @@ export default function RentalsCheckoutClient({
                   : "라켓을 받으실 배송지 정보를 입력해주세요."
               }
             >
-              <div className="space-y-4 md:space-y-6">
-                <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
+              <div className="space-y-4 bp-md:space-y-6">
+                <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="flex items-center gap-2">
                       <UserIcon className="h-4 w-4 text-primary" />
@@ -988,7 +1007,7 @@ export default function RentalsCheckoutClient({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="수령인 이름을 입력하세요"
-                      className="border-border focus-visible:ring-ring transition-colors"
+                      className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1002,10 +1021,10 @@ export default function RentalsCheckoutClient({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="예: user@example.com"
-                      className="border-border focus-visible:ring-ring transition-colors"
+                      className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                     />
                   </div>
-                  <div className="space-y-2 bp-sm:col-span-2">
+                  <div className="space-y-2 bp-md:col-span-2">
                     <Label htmlFor="phone" className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-primary" />
                       연락처
@@ -1015,7 +1034,7 @@ export default function RentalsCheckoutClient({
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="연락처를 입력하세요 ('-' 제외)"
-                      className="border-border focus-visible:ring-ring transition-colors"
+                      className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                     />
                   </div>
                 </div>
@@ -1031,7 +1050,7 @@ export default function RentalsCheckoutClient({
                           variant="outline"
                           size="sm"
                           onClick={openPostcode}
-                          className="bg-background text-foreground border border-border hover:bg-secondary"
+                          className="min-h-11 bg-background text-foreground hover:bg-secondary bp-sm:h-9 bp-sm:min-h-0"
                         >
                           <MapPin className="h-4 w-4 mr-2" />
                           우편번호 검색
@@ -1042,7 +1061,7 @@ export default function RentalsCheckoutClient({
                         readOnly
                         value={postalCode}
                         placeholder="우편번호"
-                        className="bg-muted cursor-not-allowed max-w-[200px] border-2"
+                        className="min-h-11 max-w-[200px] cursor-not-allowed bg-muted bp-sm:h-10 bp-sm:min-h-0"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1052,7 +1071,7 @@ export default function RentalsCheckoutClient({
                         readOnly
                         value={address}
                         placeholder="기본 주소"
-                        className="min-w-0 bg-muted cursor-not-allowed border-2"
+                        className="min-h-11 min-w-0 cursor-not-allowed bg-muted bp-sm:h-10 bp-sm:min-h-0"
                       />
                     </div>
 
@@ -1063,7 +1082,7 @@ export default function RentalsCheckoutClient({
                         value={addressDetail}
                         onChange={(e) => setAddressDetail(e.target.value)}
                         placeholder="동/호수 등"
-                        className="border-border focus-visible:ring-ring transition-colors"
+                        className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                       />
                     </div>
                   </>
@@ -1082,7 +1101,7 @@ export default function RentalsCheckoutClient({
                         ? "방문 수령 시 요청사항을 입력하세요"
                         : "배송 시 요청사항을 입력하세요"
                     }
-                    className="min-h-24 border-border leading-relaxed focus-visible:ring-ring transition-colors"
+                    className="min-h-24 leading-relaxed"
                   />
                 </div>
               </div>
@@ -1094,7 +1113,7 @@ export default function RentalsCheckoutClient({
               title="결제/입금 안내"
               description="대여 신청에 필요한 결제 방법과 입금 정보를 입력해주세요."
             >
-              <div className="space-y-4 md:space-y-6">
+              <div className="space-y-4 bp-md:space-y-6">
                 <div className="space-y-3">
                   <Label>결제 방법</Label>
                   <RadioGroup
@@ -1102,17 +1121,31 @@ export default function RentalsCheckoutClient({
                     onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
                     className="space-y-3"
                   >
-                    <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                    <div
+                      className={cn(
+                        "flex min-h-11 min-w-0 items-center gap-3 rounded-control border p-3 hover:bg-muted/20 bp-sm:p-3.5",
+                        paymentMethod === "bank_transfer"
+                          ? "border-brand-highlight/60 bg-brand-highlight-muted"
+                          : "border-border/70 bg-transparent",
+                      )}
+                    >
                       <RadioGroupItem value="bank_transfer" id="bank-transfer" />
-                      <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
+                      <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-ui-medium">
                         무통장입금
                       </Label>
                       <Building2 className="h-5 w-5 text-foreground" />
                     </div>
                     {nicePaymentsEnabled && (
-                      <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
+                      <div
+                        className={cn(
+                          "flex min-h-11 min-w-0 items-center gap-3 rounded-control border p-3 hover:bg-muted/20 bp-sm:p-3.5",
+                          paymentMethod === "nicepay"
+                            ? "border-brand-highlight/60 bg-brand-highlight-muted"
+                            : "border-border/70 bg-transparent",
+                        )}
+                      >
                         <RadioGroupItem value="nicepay" id="nicepay" />
-                        <Label htmlFor="nicepay" className="flex-1 cursor-pointer font-medium">
+                        <Label htmlFor="nicepay" className="flex-1 cursor-pointer font-ui-medium">
                           카드/간편결제
                         </Label>
                         <CreditCard className="h-5 w-5 text-foreground" />
@@ -1128,7 +1161,7 @@ export default function RentalsCheckoutClient({
                       <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
                         <SelectTrigger
                           id="bank-account"
-                          className="border-border focus-visible:ring-ring"
+                          className="min-h-11 min-w-0 bp-sm:h-10 bp-sm:min-h-0"
                         >
                           <SelectValue placeholder="입금 계좌를 선택하세요" />
                         </SelectTrigger>
@@ -1148,14 +1181,14 @@ export default function RentalsCheckoutClient({
                         value={depositor}
                         onChange={(e) => setDepositor(e.target.value)}
                         placeholder="입금자명을 입력하세요"
-                        className="border-border focus-visible:ring-ring transition-colors"
+                        className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                       />
                     </div>
 
                     <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
                       <div className="flex items-center gap-2 mb-3">
                         <Shield className="h-5 w-5 text-primary" />
-                        <p className="font-semibold text-foreground">무통장입금 안내</p>
+                        <p className="font-ui-medium text-foreground">무통장입금 안내</p>
                       </div>
                       <ul className="space-y-2 text-ui-body-sm text-foreground">
                         <li className="flex items-center gap-2">
@@ -1182,7 +1215,7 @@ export default function RentalsCheckoutClient({
                   </Label>
                   <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-ui-body-sm font-semibold text-foreground">
+                      <span className="text-ui-body-sm font-ui-medium text-foreground">
                         포인트 사용
                       </span>
                       <span className="text-ui-label text-foreground/75">
@@ -1210,7 +1243,7 @@ export default function RentalsCheckoutClient({
                       </div>
                     ) : (
                       <>
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-h-11 items-center gap-2">
                           <Checkbox
                             id="use-all-points"
                             checked={useAllPoints}
@@ -1246,7 +1279,7 @@ export default function RentalsCheckoutClient({
                             setPointsInput(String(v));
                           }}
                           placeholder="0"
-                          className="border-border"
+                          className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                         />
 
                         <div className="text-ui-label text-foreground/75">
@@ -1267,7 +1300,7 @@ export default function RentalsCheckoutClient({
               contentClassName="space-y-4"
             >
               {/* 환급 은행 */}
-              <div className="space-y-2">
+              <div className="space-y-2 [&_button]:min-h-11 [&_input]:min-h-11 bp-sm:[&_button]:h-10 bp-sm:[&_button]:min-h-0 bp-sm:[&_input]:h-10 bp-sm:[&_input]:min-h-0">
                 <Label htmlFor="refund-bank">환급 은행</Label>
                 <RefundBankCombobox
                   value={refundBank}
@@ -1283,7 +1316,7 @@ export default function RentalsCheckoutClient({
                   value={refundAccount}
                   onChange={(e) => setRefundAccount(e.target.value)}
                   placeholder="예: 110-123-456789"
-                  className="border-border focus-visible:ring-ring"
+                  className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                 />
               </div>
               {/* 예금주 */}
@@ -1294,7 +1327,7 @@ export default function RentalsCheckoutClient({
                   value={refundHolder}
                   onChange={(e) => setRefundHolder(e.target.value)}
                   placeholder="예: 홍길동"
-                  className="border-border focus-visible:ring-ring"
+                  className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                 />
               </div>
               {/* 안내 */}
@@ -1314,7 +1347,7 @@ export default function RentalsCheckoutClient({
               <div className="space-y-4">
                 <div
                   className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
+                    "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
                     agreeAll
                       ? "border-primary/80 bg-primary/5"
                       : "border-border/60 hover:border-border hover:bg-muted/20",
@@ -1334,7 +1367,7 @@ export default function RentalsCheckoutClient({
                     />
                     <label
                       htmlFor="agree-all"
-                      className="font-semibold text-ui-card-title-lg text-foreground"
+                      className="font-ui-medium text-ui-card-title-lg text-foreground"
                     >
                       전체 동의
                     </label>
@@ -1368,7 +1401,7 @@ export default function RentalsCheckoutClient({
                     <div
                       key={item.id}
                       className={cn(
-                        "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
+                        "flex min-h-11 min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
                         item.state ? "bg-primary/5" : "hover:bg-muted/20",
                       )}
                     >
@@ -1385,7 +1418,7 @@ export default function RentalsCheckoutClient({
                         />
                         <label
                           htmlFor={item.id}
-                          className="text-ui-body-sm font-medium text-foreground"
+                          className="text-ui-body-sm font-ui-medium text-foreground"
                         >
                           {item.label}
                         </label>
@@ -1393,7 +1426,7 @@ export default function RentalsCheckoutClient({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
+                        className="min-h-11 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:h-9 bp-sm:min-h-0 bp-sm:px-3"
                         asChild
                       >
                         <Link href={item.href} target="_blank" rel="noopener noreferrer">
@@ -1408,12 +1441,12 @@ export default function RentalsCheckoutClient({
           </div>
 
           {/* 대여 신청 요약 */}
-          <aside className="bp-lg:sticky bp-lg:top-24">
+          <aside className="-mx-3 bp-sm:mx-0 bp-lg:sticky bp-lg:top-[calc(var(--header-h,0px)+16px)] bp-lg:self-start">
             <div>
-              <div className="relative overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">
+              <div className="relative overflow-hidden rounded-none border-y border-border/80 border-x-0 bg-card shadow-none bp-sm:rounded-panel bp-sm:border bp-sm:shadow-soft">
                 <div className="border-b border-border/80 bg-muted/20 p-4 text-foreground bp-sm:p-5">
-                  <h2 className="flex items-center gap-3 text-ui-section-title font-semibold">
-                    <div className="rounded-full border border-border bg-card p-2">
+                  <h2 className="flex items-center gap-3 text-ui-section-title font-ui-medium">
+                    <div className="rounded-control bg-brand-highlight-muted p-2 text-brand-highlight-ink">
                       <CreditCard className="h-5 w-5" />
                     </div>
                     대여 신청 요약
@@ -1421,46 +1454,46 @@ export default function RentalsCheckoutClient({
                 </div>
                 <div className="space-y-4 p-4 bp-sm:space-y-6 bp-sm:p-6">
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">대여료</span>
-                      <span className="font-semibold tabular-nums text-foreground">
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="min-w-0 break-words text-muted-foreground">대여료</span>
+                      <span className="shrink-0 font-ui-medium tabular-nums text-foreground">
                         {initial.fee.toLocaleString()}원
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">보증금</span>
-                      <span className="font-semibold tabular-nums text-foreground">
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="min-w-0 break-words text-muted-foreground">보증금</span>
+                      <span className="shrink-0 font-ui-medium tabular-nums text-foreground">
                         {initial.deposit.toLocaleString()}원
                       </span>
                     </div>
                     {requestStringing && selectedString && (
                       <>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">스트링 금액</span>
-                          <span className="font-semibold tabular-nums text-foreground">
+                        <div className="flex min-w-0 items-center justify-between gap-3">
+                          <span className="min-w-0 break-words text-muted-foreground">스트링 금액</span>
+                          <span className="shrink-0 font-ui-medium tabular-nums text-foreground">
                             {selectedString.price.toLocaleString()}원
                           </span>
                         </div>
 
-                        <div className="flex justify-between items-center">
-                          <span className="text-foreground/80">교체서비스 장착비</span>
-                          <span className="font-semibold tabular-nums text-foreground">
+                        <div className="flex min-w-0 items-center justify-between gap-3">
+                          <span className="min-w-0 break-words text-foreground/80">교체서비스 장착비</span>
+                          <span className="shrink-0 font-ui-medium tabular-nums text-foreground">
                             {stringingFee.toLocaleString()}원
                           </span>
                         </div>
                       </>
                     )}
 
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">배송비</span>
-                      <span className="font-semibold tabular-nums text-foreground">0원</span>
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="min-w-0 break-words text-muted-foreground">배송비</span>
+                      <span className="shrink-0 font-ui-medium tabular-nums text-foreground">0원</span>
                     </div>
 
                     {/* 포인트 차감 표시 */}
                     {appliedPoints > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-foreground/80">포인트 사용</span>
-                        <span className="font-semibold text-ui-card-title-lg text-destructive">
+                      <div className="flex min-w-0 items-center justify-between gap-3">
+                        <span className="min-w-0 break-words text-foreground/80">포인트 사용</span>
+                        <span className="shrink-0 font-ui-medium text-ui-card-title-lg tabular-nums text-destructive">
                           - {appliedPoints.toLocaleString()}P
                         </span>
                       </div>
@@ -1468,9 +1501,9 @@ export default function RentalsCheckoutClient({
 
                     <Separator />
                     <div className="rounded-control bg-surface-inverse px-4 py-3 text-surface-inverse-foreground">
-                      <div className="flex items-center justify-between gap-3 text-ui-section-title font-semibold">
-                        <span>예상 결제 금액</span>
-                        <span className="text-brand-highlight tabular-nums">
+                      <div className="flex min-w-0 items-center justify-between gap-3 text-ui-section-title font-ui-medium">
+                        <span className="min-w-0 break-words">예상 결제 금액</span>
+                        <span className="shrink-0 text-brand-highlight tabular-nums">
                           {payableTotal.toLocaleString()}원
                         </span>
                       </div>
@@ -1480,7 +1513,7 @@ export default function RentalsCheckoutClient({
                   <div className="border-l-2 border-border bg-muted/20 px-3 py-3">
                     <div className="flex items-center gap-2 text-foreground mb-2">
                       <Shield className="h-4 w-4" />
-                      <span className="font-semibold">보증금 안내</span>
+                      <span className="font-ui-medium">보증금 안내</span>
                     </div>
                     <p className="text-ui-body-sm text-foreground">
                       반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.
@@ -1490,7 +1523,7 @@ export default function RentalsCheckoutClient({
                   <div className="border-l-2 border-border bg-muted/20 px-3 py-3">
                     <div className="flex items-center gap-2 text-foreground mb-2">
                       <Truck className="h-4 w-4" />
-                      <span className="font-semibold">대여 안내</span>
+                      <span className="font-ui-medium">대여 안내</span>
                     </div>
                     <div className="text-ui-body-sm text-foreground space-y-1">
                       <p>• 대여 기간: {initial.period}일</p>
@@ -1508,10 +1541,10 @@ export default function RentalsCheckoutClient({
                       id={RENTAL_PRIMARY_PAY_BUTTON_ID}
                       onClick={() => onPay(rentalStringingAdapter)}
                       disabled={loading}
-                      className={cn(
-                        "h-14 w-full font-semibold break-keep bg-primary shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:bg-primary/90 hover:shadow-sm",
-                        loading && "opacity-50 cursor-not-allowed",
-                      )}
+                      variant="highlight"
+                      size="tall"
+                      wrap="responsive"
+                      className="w-full"
                     >
                       {loading ? (
                         <span className="inline-flex items-center gap-2">

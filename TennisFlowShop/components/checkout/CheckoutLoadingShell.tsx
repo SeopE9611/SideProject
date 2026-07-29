@@ -81,8 +81,8 @@ export default function CheckoutLoadingShell({
                 <SectionSkeleton key={key} />
               ))}
             </div>
-            <div className="hidden bp-lg:block">
-              <div className="sticky top-[calc(var(--header-h,0px)+24px)] overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">
+            <div className="-mx-3 bp-sm:mx-0 bp-lg:sticky bp-lg:top-[calc(var(--header-h,0px)+16px)] bp-lg:self-start">
+              <div className="overflow-hidden rounded-none border-y border-border/80 border-x-0 bg-card shadow-none bp-sm:rounded-panel bp-sm:border bp-sm:shadow-soft">
                 <div className="border-b border-border/80 bg-muted/20 p-5">
                   <Skeleton className="h-6 w-32" />
                 </div>
