@@ -84,7 +84,7 @@ export default function ApplyStepFooter({
     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-soft bp-sm:px-5 bp-lg:static bp-lg:inset-auto bp-lg:mx-0 bp-lg:mt-8 bp-lg:flex bp-lg:justify-end bp-lg:bg-transparent bp-lg:p-0 bp-lg:pt-5 bp-lg:shadow-none">
       <div className="mx-auto w-full max-w-[720px] bp-lg:mx-0 bp-lg:w-auto bp-lg:max-w-none">
         {compactSummary ? (
-          <p className="mb-2 truncate text-ui-label font-medium text-muted-foreground bp-lg:hidden">
+          <p className="mb-2 line-clamp-2 text-ui-label font-medium leading-snug text-muted-foreground bp-lg:hidden">
             {compactSummary}
           </p>
         ) : null}
@@ -92,7 +92,7 @@ export default function ApplyStepFooter({
           className={
             currentStep === 1
               ? "grid grid-cols-1 gap-2 bp-lg:flex bp-lg:justify-end"
-              : "grid grid-cols-2 gap-2 bp-lg:flex bp-lg:justify-end"
+              : "grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:justify-end"
           }
         >
           {currentStep > 1 ? (

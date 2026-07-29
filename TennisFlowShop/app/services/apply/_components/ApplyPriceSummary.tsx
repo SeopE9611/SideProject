@@ -58,10 +58,10 @@ export function ApplyPriceSummaryMobile(props: PriceSummaryCommonProps) {
 
   return (
     <div className="mt-5 bp-lg:hidden">
-      <div className="rounded-panel border border-border bg-card p-4 shadow-soft">
-        <div className="flex min-w-0 items-center justify-between gap-3">
+      <div className="border-y border-border py-4">
+        <div className="flex min-w-0 flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
           <div className="min-w-0">
-            <p className="truncate text-ui-body-sm font-semibold text-foreground">
+            <p className="text-ui-body-sm font-semibold leading-snug text-foreground">
               라켓 {racketCount || "-"}대 · {collectionLabel(props.collectionMethod)} ·{" "}
               {won(props.total)}
             </p>
@@ -75,7 +75,7 @@ export function ApplyPriceSummaryMobile(props: PriceSummaryCommonProps) {
             size="sm"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
-            className="shrink-0"
+            className="min-h-11 w-full shrink-0 bp-sm:w-auto"
           >
             {open ? "닫기" : "내용 보기"}
           </Button>

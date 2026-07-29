@@ -408,7 +408,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
   return (
     <div className="space-y-6">
       <SectionHeader
-        align="center"
+        align="left"
         title="라켓·스트링 정보"
         description="장착할 라켓과 스트링 정보를 입력해주세요"
         className="mb-8 break-keep [&_div]:leading-relaxed"
@@ -448,7 +448,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
                 ) : (
                   <>
-                    <div className="flex min-w-0 flex-wrap items-center gap-3 sm:flex-nowrap">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3 bp-sm:flex-nowrap">
                       {pdpProduct?.image && (
                         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-card">
                           <img
@@ -619,7 +619,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
           {canEditStandaloneWorkLines && (
             <PublicSurface variant="muted" padding="sm" className="space-y-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-ui-body-sm font-semibold text-foreground">작업 항목</p>
                   <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground break-keep">
@@ -631,12 +631,12 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   총 {lineCount}자루
                 </Badge>
               </div>
-              <div className="flex flex-col gap-2 sm:items-end">
+              <div className="flex flex-col gap-2 bp-sm:items-end">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 w-full gap-1.5 whitespace-nowrap sm:w-auto"
+                  className="h-9 w-full gap-1.5 whitespace-nowrap bp-sm:w-auto"
                   onClick={addStandaloneWorkLine}
                   disabled={lineCount >= 10}
                 >
@@ -659,7 +659,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 예상 장착 비용
               </span>
             }
-            contentClassName="space-y-3 p-4 sm:p-5"
+            className="shadow-none"
+            contentClassName="space-y-3 p-4 bp-sm:p-5"
           >
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/50 p-3 dark:border-border">
@@ -1019,15 +1020,15 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
           >
             {lineCount >= 2 && (
               <PublicSurface variant="muted" padding="sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0 sm:min-w-[220px]">
+                <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                  <div className="min-w-0 bp-sm:min-w-[220px]">
                     <p className="text-ui-body-sm font-semibold text-foreground">일괄 입력</p>
                     <p className="mt-0.5 text-ui-label text-muted-foreground">
                       같은 텐션/요청사항이면 한{"\u00A0"}번에 적용할 수 있어요.
                     </p>
                   </div>
 
-                  <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
+                  <div className="grid w-full gap-2 bp-sm:w-auto bp-sm:grid-cols-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -1050,7 +1051,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
                 </div>
 
-                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                <div className="mt-3 grid gap-3 bp-md:grid-cols-3">
                   <div className="space-y-1.5">
                     <Label className="text-ui-label font-medium text-foreground">
                       공통 메인 텐션(LB)
@@ -1075,7 +1076,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     />
                   </div>
 
-                  <div className="space-y-1.5 md:col-span-3">
+                  <div className="space-y-1.5 bp-md:col-span-3">
                     <Label className="text-ui-label font-medium text-foreground">
                       공통 메모 (선택)
                     </Label>
@@ -1136,7 +1137,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       {!canEditStandaloneWorkLines && (
                         <Badge
                           variant="brand"
-                          className="flex max-w-[120px] items-center gap-1.5 px-2.5 py-1 sm:max-w-[200px]"
+                          className="flex max-w-[120px] items-center gap-1.5 px-2.5 py-1 bp-sm:max-w-[200px]"
                         >
                           <span className="h-1.5 w-1.5 rounded-full bg-current" />
                           <span className="truncate text-ui-label font-medium">
@@ -1187,7 +1188,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     id={panelId}
                     className={`${isLineOpen ? "block" : "hidden"} space-y-4 p-4 bp-md:block`}
                   >
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid gap-3 bp-md:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label className="text-ui-label font-medium text-foreground">
                           라켓 이름/별칭
@@ -1270,7 +1271,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
         )}
 
         {normalizeCollection(formData.collectionMethod) === "visit" && (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 bp-md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="preferredDate" className="text-ui-body-sm font-medium">
                 장착 희망일 <span className="text-destructive">*</span>
@@ -1291,7 +1292,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   <PublicSurface
                     variant="muted"
                     padding="sm"
-                    className="mt-3 rounded-lg px-3 py-2 text-ui-label leading-relaxed text-foreground md:text-ui-label"
+                    className="mt-3 rounded-lg px-3 py-2 text-ui-label leading-relaxed text-foreground bp-md:text-ui-label"
                   >
                     <p className="font-medium">
                       이번 방문 예상 소요 시간:{" "}

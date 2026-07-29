@@ -41,7 +41,7 @@ export default function PaymentInfoSection({
   return (
     <div className="space-y-6">
       <SectionHeader
-        align="center"
+        align="left"
         title="결제 정보"
         description="패키지와 결제수단을 확인해주세요"
         className="mb-8"
@@ -57,7 +57,7 @@ export default function PaymentInfoSection({
               : "bg-muted/40 dark:bg-muted/30"
           }
         >
-          <div className="flex items-start gap-3 sm:gap-4">
+          <div className="flex items-start gap-3 bp-sm:gap-4">
             <div
               className={
                 packageInsufficient
@@ -259,35 +259,26 @@ export default function PaymentInfoSection({
                     <CreditCard className="mr-2 h-5 w-5 shrink-0" />
                     계좌 정보
                   </h3>
-                  <div className="space-y-3">
-                    <PublicSurface
-                      padding="sm"
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
-                    >
-                      <span className="text-ui-body-sm text-muted-foreground">은행</span>
-                      <span className="font-medium text-foreground">
+                  <dl className="divide-y divide-border border-y border-border">
+                    <div className="flex flex-wrap items-center justify-between gap-2 py-3">
+                      <dt className="text-ui-body-sm text-muted-foreground">은행</dt>
+                      <dd className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].label}
-                      </span>
-                    </PublicSurface>
-                    <PublicSurface
-                      padding="sm"
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
-                    >
-                      <span className="text-ui-body-sm text-muted-foreground">계좌번호</span>
-                      <span className="break-all font-mono font-medium tabular-nums text-foreground">
+                      </dd>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 py-3">
+                      <dt className="text-ui-body-sm text-muted-foreground">계좌번호</dt>
+                      <dd className="break-all font-mono font-medium tabular-nums text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].account}
-                      </span>
-                    </PublicSurface>
-                    <PublicSurface
-                      padding="sm"
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
-                    >
-                      <span className="text-ui-body-sm text-muted-foreground">예금주</span>
-                      <span className="font-medium text-foreground">
+                      </dd>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 py-3">
+                      <dt className="text-ui-body-sm text-muted-foreground">예금주</dt>
+                      <dd className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].holder}
-                      </span>
-                    </PublicSurface>
-                  </div>
+                      </dd>
+                    </div>
+                  </dl>
                 </PublicSurface>
               ) : null}
 

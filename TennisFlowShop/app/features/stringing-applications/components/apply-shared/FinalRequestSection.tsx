@@ -37,7 +37,7 @@ export default function FinalRequestSection({
   return (
     <div className="space-y-6">
       <SectionHeader
-        align="center"
+        align="left"
         title="요청사항"
         description="장착 관련 요청사항을 남겨주세요"
         className="mb-8"
@@ -48,7 +48,7 @@ export default function FinalRequestSection({
         <PublicSurface
           variant="muted"
           padding="sm"
-          className="rounded-xl bg-muted/40 dark:bg-muted/30 sm:p-5"
+          className="rounded-xl bg-muted/40 shadow-none dark:bg-muted/30 bp-sm:p-5"
         >
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
@@ -71,7 +71,7 @@ export default function FinalRequestSection({
         <PublicSurface
           variant="muted"
           padding="sm"
-          className="rounded-xl bg-muted/40 dark:bg-muted/30 sm:p-5"
+          className="rounded-xl bg-muted/40 shadow-none dark:bg-muted/30 bp-sm:p-5"
         >
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -90,7 +90,7 @@ export default function FinalRequestSection({
       )}
 
       {/* 패키지 관련 최종 안내 */}
-      <PublicSurface padding="sm" className="sm:p-5">
+      <div className="border-y border-border py-4 bp-sm:px-1">
         <div className="flex flex-wrap items-start gap-3">
           <Badge
             className={`shrink-0 ${
@@ -111,10 +111,10 @@ export default function FinalRequestSection({
                 : "이번 신청은 일반 결제(무통장 입금)로 진행됩니다."}
           </p>
         </div>
-      </PublicSurface>
+      </div>
 
       {/* 추가 요청사항 */}
-      <PublicSurface padding="sm" className="space-y-3 sm:p-5">
+      <div className="space-y-3">
         <Label htmlFor="requirements" className="text-ui-body-sm font-medium">
           추가 요청사항 (선택)
         </Label>
@@ -131,7 +131,7 @@ export default function FinalRequestSection({
             ? "장착 관련 요청이나 전달이 필요한 메모가 있다면 이곳에 남겨주세요."
             : "요청사항이 많거나 중요한 정보(주소 변경, 연락처 변경 등)가 있다면 이곳에 남겨주세요."}
         </p>
-      </PublicSurface>
+      </div>
     </div>
   );
 }

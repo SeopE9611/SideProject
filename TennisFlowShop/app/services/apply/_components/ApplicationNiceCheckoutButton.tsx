@@ -141,7 +141,7 @@ export default function ApplicationNiceCheckoutButton({
         onClick={handleClick}
         disabled={isDisabled}
         variant="highlight"
-        className="min-h-11 w-full sm:w-auto"
+        className="min-h-11 w-full bp-sm:w-auto"
       >
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         카드/간편결제로 신청 완료
