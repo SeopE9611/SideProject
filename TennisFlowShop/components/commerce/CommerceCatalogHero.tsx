@@ -30,12 +30,12 @@ export function CommerceCatalogHero({
         variant="wide"
         className="bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
       >
-        <div className="grid min-w-0 gap-6 rounded-hero border border-border bg-card p-5 shadow-soft bp-sm:p-6 bp-lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] bp-lg:items-stretch bp-lg:gap-8 bp-lg:p-8">
+        <div className="grid min-w-0 gap-5 rounded-hero border border-border bg-card p-4 shadow-soft bp-sm:p-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-stretch lg:gap-8 lg:p-8">
           <div className="flex min-w-0 flex-col justify-center">
             <p className="text-ui-label font-ui-medium uppercase tracking-[0.14em] text-brand-highlight-ink">
               {eyebrow}
             </p>
-            <h1 className="mt-3 break-words text-balance font-brand-display text-[40px] leading-[1.05] tracking-normal text-foreground bp-sm:text-ui-display bp-lg:text-ui-display-lg">
+            <h1 className="mt-3 break-keep text-balance font-brand-display text-[36px] leading-[1.05] tracking-normal text-foreground bp-sm:text-[44px] bp-md:text-[52px] lg:text-[56px] bp-lg:text-[64px]">
               {title}
             </h1>
             <div className="mt-4 max-w-2xl break-words text-pretty text-ui-body font-ui-regular leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
@@ -46,7 +46,7 @@ export function CommerceCatalogHero({
             </div>
           </div>
 
-          <section className="min-w-0 rounded-panel border border-border bg-muted/20 p-4 bp-sm:p-5" aria-labelledby="catalog-guide-title">
+          <section className="min-w-0 border-x-0 border-b-0 border-t border-border bg-transparent px-0 pb-0 pt-5 bp-sm:pt-6 lg:rounded-panel lg:border lg:bg-muted/20 lg:p-5" aria-labelledby="catalog-guide-title">
             <h2 id="catalog-guide-title" className="text-ui-card-title font-ui-medium text-foreground">
               {guideTitle}
             </h2>

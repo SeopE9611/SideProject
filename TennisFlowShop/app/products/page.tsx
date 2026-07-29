@@ -39,6 +39,7 @@ export default async function ProductsPage({
         actions={
           <Button
             asChild
+            size="lg"
             variant="highlight_soft"
             wrap="responsive"
             className="min-h-11 w-full bp-sm:w-auto"
