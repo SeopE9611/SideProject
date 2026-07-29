@@ -3,7 +3,6 @@
 import {
   AlertCircle,
   ArrowRight,
-  ChevronDown,
   Clock,
   Loader2,
   Mail,
@@ -28,6 +27,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast } from "@/lib/toast";
 import type {
@@ -210,63 +216,33 @@ function CustomSelect({
   disabled?: boolean;
   error?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find((opt) => opt.value === value);
-
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger
+        aria-invalid={error || undefined}
         disabled={disabled}
         className={cn(
-          "flex w-full min-w-0 items-center justify-between rounded-control border bg-background px-4 py-3 text-left text-ui-body-sm transition-all",
-          "hover:border-brand-highlight/60 focus:outline-none focus:ring-2 focus:ring-brand-highlight focus:ring-offset-2",
+          "h-auto min-h-11 w-full min-w-0 rounded-control border bg-background px-4 py-2.5 text-left text-ui-body-sm",
           error ? "border-destructive" : "border-border/60",
-          disabled && "cursor-not-allowed opacity-50",
-          isOpen && "border-brand-highlight ring-2 ring-brand-highlight ring-offset-2",
         )}
       >
-        <span className={cn(selectedOption ? "text-foreground" : "text-muted-foreground")}>
-          {selectedOption?.label || placeholder}
-        </span>
-        <ChevronDown
-          className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform",
-            isOpen && "rotate-180",
-          )}
-        />
-      </button>
-
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-auto rounded-panel border border-border bg-popover p-1.5 shadow-soft">
-            {options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "flex w-full flex-col items-start rounded-lg px-3 py-2.5 text-left transition-colors",
-                  "hover:bg-brand-highlight-muted",
-                  option.value === value &&
-                    "bg-brand-highlight-muted text-brand-highlight-foreground",
-                )}
-              >
-                <span className="text-ui-body-sm font-medium text-foreground">{option.label}</span>
-                {option.description && (
-                  <span className="text-ui-label text-muted-foreground">{option.description}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent className="max-h-64 rounded-panel shadow-soft">
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value} textValue={option.label}>
+            <span className="flex min-w-0 flex-col items-start gap-0.5 whitespace-normal text-left">
+              <span className="text-ui-body-sm font-medium text-foreground">{option.label}</span>
+              {option.description && (
+                <span className="whitespace-normal break-words text-ui-label text-muted-foreground">
+                  {option.description}
+                </span>
+              )}
+            </span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -679,31 +655,24 @@ export default function AcademyApplyClient({
               >
                 <div
                   className={cn(
-                    "grid grid-cols-4 gap-2 rounded-xl p-1 min-[390px]:grid-cols-7",
+                    "grid grid-cols-4 gap-2 rounded-xl p-1 bp-sm:grid-cols-7",
                     fieldErrors.preferredDays && "ring-2 ring-destructive ring-offset-2",
                   )}
                 >
                   {dayOptions.map((day) => {
                     const isSelected = form.preferredDays.includes(day);
                     return (
-                      <button
+                      <Button
                         key={day}
                         type="button"
+                        variant={isSelected ? "highlight_soft" : "outline"}
                         onClick={() => toggleDay(day)}
                         disabled={isSubmitting || isSelectedClassClosed}
-                        className={cn(
-                          "flex min-w-0 flex-col items-center justify-center rounded-xl border py-3 text-ui-body-sm font-medium transition-all",
-                          "hover:border-brand-highlight/60 hover:bg-brand-highlight-muted",
-                          "focus:outline-none focus:ring-2 focus:ring-brand-highlight focus:ring-offset-2",
-                          isSelected
-                            ? "border-brand-highlight bg-brand-highlight text-brand-highlight-foreground hover:bg-brand-highlight/90"
-                            : "border-border/60 bg-background text-muted-foreground",
-                          (isSubmitting || isSelectedClassClosed) &&
-                            "cursor-not-allowed opacity-50",
-                        )}
+                        aria-pressed={isSelected}
+                        className="min-h-11 w-full min-w-0 px-1"
                       >
                         <span className="text-ui-label">{day}</span>
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
