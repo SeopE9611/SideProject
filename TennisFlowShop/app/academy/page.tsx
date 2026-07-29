@@ -628,7 +628,7 @@ export default async function AcademyPage() {
                             </Button>
                           </div>
                         ) : (
-                          <Button asChild wrap="responsive" className="w-full">
+                          <Button asChild variant="highlight_soft" wrap="responsive" className="w-full">
                             <Link href={userId ? applyHref : loginHref}>
                               {userId ? "레슨 신청하기" : "로그인 후 신청"}
                             </Link>
@@ -703,7 +703,13 @@ export default async function AcademyPage() {
               후 현장에서 결제를 안내해드립니다.
             </p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button asChild size="lg" wrap="responsive" className="w-full sm:w-auto">
+              <Button
+                asChild
+                variant="secondary"
+                size="lg"
+                wrap="responsive"
+                className="w-full sm:w-auto"
+              >
                 <Link href="/board/qna/write?category=academy">문의글 작성하기</Link>
               </Button>
               <Button

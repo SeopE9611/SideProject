@@ -46,7 +46,13 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
             }
             actions={
               <>
-                <Button asChild size="lg" wrap="responsive" className="h-12 px-6">
+                <Button
+                  asChild
+                  variant="highlight"
+                  size="lg"
+                  wrap="responsive"
+                  className="h-12 px-6"
+                >
                   <Link href="/mypage?tab=academy">
                     마이페이지에서 확인하기
                     <ArrowRight className="size-4" aria-hidden="true" />
