@@ -35,15 +35,25 @@ export default function PackagePlanCard({ pkg, ctaHref, blocked = false }: Packa
         pkg.popular ? "border-brand-highlight-ink/35 bg-brand-highlight-muted/35" : "bg-card"
       }`}
     >
-      <article className="flex flex-1 flex-col p-5 sm:p-6">
-        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-          <h3 className="min-w-0 flex-1 break-keep text-ui-section-title font-semibold leading-tight text-foreground">
-            {pkg.title}
-          </h3>
-          {pkg.popular && (
-            <CommerceBadge kind="recommended" surface="inline" size="md" className="shrink-0" />
-          )}
-        </div>
+      <article className="flex flex-1 flex-col p-5 bp-sm:p-6">
+        <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground">
+          {pkg.title}
+        </h3>
+        {(pkg.popular || pricingMeta.discountRate > 0) && (
+          <div className="mt-3 flex min-w-0 flex-wrap gap-2">
+            {pkg.popular && (
+              <CommerceBadge kind="recommended" surface="inline" size="md" />
+            )}
+            {pricingMeta.discountRate > 0 && (
+              <CommerceBadge
+                kind="sale"
+                surface="inline"
+                discountRate={pricingMeta.discountRate}
+                size="md"
+              />
+            )}
+          </div>
+        )}
 
         {pkg.description && (
           <p className="mt-2 line-clamp-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -54,29 +64,38 @@ export default function PackagePlanCard({ pkg, ctaHref, blocked = false }: Packa
         <div className="mt-5 space-y-4">
           <div>
             <p className="text-ui-label font-medium text-muted-foreground">이용 횟수</p>
-            <p className="mt-1 text-ui-display font-semibold leading-none tracking-tight text-foreground">
+            <p className="mt-1 tabular-nums text-ui-page-title-lg font-semibold leading-tight text-foreground">
               {pkg.sessions.toLocaleString()}회
             </p>
           </div>
 
           <div className="space-y-1.5">
             <p className="text-ui-label font-medium text-muted-foreground">총 패키지 금액</p>
-            <p className="text-ui-section-title-lg font-semibold leading-tight text-foreground">
+            <p className="tabular-nums text-ui-section-title-lg font-semibold leading-tight text-foreground">
               {pkg.price.toLocaleString()}원
             </p>
-            <p className="text-ui-body-sm text-muted-foreground">
+            {pkg.originalPrice != null && pkg.originalPrice > pkg.price && (
+              <p className="tabular-nums text-ui-label text-muted-foreground line-through">
+                정가 {pkg.originalPrice.toLocaleString()}원
+              </p>
+            )}
+            <p className="tabular-nums text-ui-body-sm font-medium text-foreground">
               회당 약 {pricingMeta.perSession.toLocaleString()}원
             </p>
           </div>
 
-          <dl className="grid gap-2 text-ui-body-sm sm:grid-cols-2">
-            <div className="rounded-control border border-border bg-muted/30 p-3">
+          <dl className="divide-y divide-border border-y border-border text-ui-body-sm">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-4 py-3">
               <dt className="text-muted-foreground">혜택</dt>
-              <dd className="mt-1 font-semibold text-foreground">{savingLabel}</dd>
+              <dd className="min-w-0 break-keep text-right font-semibold text-foreground">
+                {savingLabel}
+              </dd>
             </div>
-            <div className="rounded-control border border-border bg-muted/30 p-3">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-4 py-3">
               <dt className="text-muted-foreground">유효기간</dt>
-              <dd className="mt-1 font-semibold text-foreground">{pkg.validityPeriod}</dd>
+              <dd className="min-w-0 break-keep text-right font-semibold text-foreground">
+                {pkg.validityPeriod}
+              </dd>
             </div>
           </dl>
         </div>
@@ -94,12 +113,16 @@ export default function PackagePlanCard({ pkg, ctaHref, blocked = false }: Packa
 
         <div className="mt-auto pt-6">
           {blocked ? (
-            <div className="flex min-h-10 items-center justify-center gap-2 rounded-control border border-border bg-muted/50 px-4 py-2 text-ui-body-sm font-medium text-muted-foreground">
-              <Lock className="h-4 w-4" />
+            <div className="flex min-h-11 items-center justify-center gap-2 rounded-control border border-border bg-muted/50 px-4 py-2 text-ui-body-sm font-medium text-muted-foreground">
+              <Lock className="h-4 w-4 shrink-0" />
               현재 추가 구매 불가
             </div>
           ) : (
-            <Button variant={pkg.popular ? "highlight_soft" : "outline"} className="w-full" asChild>
+            <Button
+              variant={pkg.popular ? "highlight_soft" : "outline"}
+              className="min-h-11 w-full"
+              asChild
+            >
               <Link href={ctaHref}>패키지 구매하기</Link>
             </Button>
           )}

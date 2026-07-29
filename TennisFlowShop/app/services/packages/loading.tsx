@@ -20,7 +20,7 @@ export default function ServicesPackagesLoading() {
     <div className="min-h-screen bg-background" aria-hidden="true">
       <section className="border-b border-border bg-muted/30 py-8 bp-sm:py-10">
         <SiteContainer>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] lg:items-center">
+          <div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] bp-lg:items-center">
             <div className="max-w-3xl space-y-4">
               <Skeleton className="h-6 w-32 rounded-control" />
               <div className="space-y-3">
@@ -36,7 +36,7 @@ export default function ServicesPackagesLoading() {
               </div>
             </div>
 
-            <PublicSurface variant="inverse" padding="md" className="lg:justify-self-end">
+            <PublicSurface variant="inverse" padding="md" className="bp-lg:justify-self-end">
               <Skeleton className="h-4 w-20 bg-surface-inverse-foreground/15" />
               <ol className="mt-4 space-y-3">
                 {packageUseStepSkeletons.map((step, index) => (
@@ -55,15 +55,15 @@ export default function ServicesPackagesLoading() {
         </SiteContainer>
       </section>
 
-      <section className="bg-background py-10 md:py-14">
+      <section className="bg-background py-10 bp-md:py-14">
         <SiteContainer variant="wide">
-          <div className="mb-6 space-y-3 md:mb-8">
+          <div className="mb-6 space-y-3 bp-md:mb-8">
             <Skeleton className="h-6 w-28 rounded-control" />
             <Skeleton className="h-8 w-full max-w-lg" />
             <Skeleton className="h-5 w-full max-w-2xl" />
           </div>
 
-          <div className="mx-auto grid max-w-[1500px] grid-cols-1 items-stretch gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4">
+          <div className="mx-auto grid max-w-[1500px] grid-cols-1 items-stretch gap-4 bp-md:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4">
             {packageCardSkeletons.map((card) => (
               <PublicSurface
                 key={card.id}
@@ -74,10 +74,12 @@ export default function ServicesPackagesLoading() {
                     : "bg-card"
                 }`}
               >
-                <article className="flex flex-1 flex-col p-5 sm:p-6">
-                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-                    <Skeleton className="h-7 min-w-0 flex-1" />
-                    {card.featured && <Skeleton className="h-6 w-12 shrink-0 rounded-control" />}
+                <article className="flex flex-1 flex-col p-5 bp-sm:p-6">
+                  <Skeleton className="h-7 w-3/4" />
+
+                  <div className="mt-3 flex gap-2">
+                    {card.featured && <Skeleton className="h-6 w-12 rounded-control" />}
+                    <Skeleton className="h-6 w-14 rounded-control" />
                   </div>
 
                   <div className="mt-3 space-y-2">
@@ -88,23 +90,21 @@ export default function ServicesPackagesLoading() {
                   <div className="mt-5 space-y-4">
                     <div>
                       <Skeleton className="h-3 w-16" />
-                      <Skeleton className="mt-2 h-10 w-24" />
+                      <Skeleton className="mt-2 h-8 w-24" />
                     </div>
 
                     <div className="space-y-2">
                       <Skeleton className="h-3 w-24" />
                       <Skeleton className="h-8 w-36" />
+                      <Skeleton className="h-3 w-28" />
                       <Skeleton className="h-4 w-28" />
                     </div>
 
-                    <dl className="grid gap-2 sm:grid-cols-2">
+                    <dl className="divide-y divide-border border-y border-border">
                       {compactMetaSkeletons.map((item) => (
-                        <div
-                          key={item}
-                          className="rounded-control border border-border bg-muted/30 p-3"
-                        >
+                        <div key={item} className="flex items-center justify-between gap-4 py-3">
                           <Skeleton className="h-3 w-12" />
-                          <Skeleton className="mt-2 h-4 w-full" />
+                          <Skeleton className="h-4 w-28" />
                         </div>
                       ))}
                     </dl>
@@ -120,7 +120,7 @@ export default function ServicesPackagesLoading() {
                   </ul>
 
                   <div className="mt-auto pt-6">
-                    <Skeleton className="h-10 w-full rounded-control" />
+                    <Skeleton className="h-11 w-full rounded-control" />
                   </div>
                 </article>
               </PublicSurface>
@@ -129,10 +129,10 @@ export default function ServicesPackagesLoading() {
         </SiteContainer>
       </section>
 
-      <section className="bg-background py-10 md:py-14">
+      <section className="bg-background py-10 bp-md:py-14">
         <SiteContainer variant="wide">
           <PublicSurface variant="inverse" padding="lg">
-            <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div className="grid gap-6 bp-lg:grid-cols-[0.8fr_1.2fr] bp-lg:items-start">
               <div className="space-y-3">
                 <Skeleton className="h-6 w-32 rounded-control bg-surface-inverse-foreground/15" />
                 <Skeleton className="h-8 w-full max-w-md bg-surface-inverse-foreground/15" />
@@ -141,11 +141,11 @@ export default function ServicesPackagesLoading() {
                   <Skeleton className="h-4 w-4/5 max-w-md bg-surface-inverse-foreground/15" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="grid min-w-0 grid-cols-2 gap-3 bp-lg:grid-cols-4">
                 {valueItemSkeletons.map((item) => (
                   <div
                     key={item}
-                    className="rounded-control border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 p-4"
+                    className="min-w-0 rounded-control border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 p-4"
                   >
                     <Skeleton className="h-5 w-5 bg-surface-inverse-foreground/15" />
                     <Skeleton className="mt-3 h-4 w-20 bg-surface-inverse-foreground/15" />
@@ -161,9 +161,9 @@ export default function ServicesPackagesLoading() {
         </SiteContainer>
       </section>
 
-      <section className="bg-background py-10 md:py-14">
+      <section className="bg-background py-10 bp-md:py-14">
         <SiteContainer variant="wide">
-          <div className="mb-8 flex flex-col items-center space-y-3 text-center md:mb-10">
+          <div className="mb-8 flex flex-col items-center space-y-3 text-center bp-md:mb-10">
             <Skeleton className="h-6 w-32 rounded-control" />
             <Skeleton className="h-8 w-full max-w-sm" />
             <Skeleton className="h-5 w-full max-w-xl" />
@@ -180,8 +180,8 @@ export default function ServicesPackagesLoading() {
             </div>
           </PublicSurface>
 
-          <div className="mt-8 text-center md:mt-10">
-            <Skeleton className="mx-auto h-11 w-full rounded-control sm:w-52" />
+          <div className="mt-8 text-center bp-md:mt-10">
+            <Skeleton className="mx-auto h-11 w-full rounded-control bp-sm:w-52" />
           </div>
         </SiteContainer>
       </section>
