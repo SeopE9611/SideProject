@@ -52,7 +52,7 @@ export default function RacketCareSuccessFeedback({
   return (
     <aside className="border-l-2 border-brand-highlight-ink/30 bg-brand-highlight-muted/40 px-4 py-4">
       <div className="space-y-3">
-        <p className="font-semibold">교체서비스 신청이 완료되었습니다.</p>
+        <p className="font-ui-medium">교체서비스 신청이 완료되었습니다.</p>
         <p className="break-keep text-ui-body-sm text-muted-foreground">
           라켓 케어에서 향후 교체 일정을 계속 관리할 수 있습니다.
         </p>

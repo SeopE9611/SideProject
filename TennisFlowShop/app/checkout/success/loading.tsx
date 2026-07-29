@@ -31,7 +31,7 @@ export default function Loading() {
             ))}
           </div>
           <div className="grid gap-3 bp-lg:grid-cols-2">
-            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl" />
             <Skeleton className="h-11 w-full rounded-xl" />
           </div>
         </section>
@@ -66,7 +66,7 @@ export default function Loading() {
         </div>
 
         <div className="grid gap-3 pb-8 bp-sm:grid-cols-2">
-          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-11 w-full rounded-xl" />
           <Skeleton className="h-11 w-full rounded-xl" />
         </div>
       </SiteContainer>
