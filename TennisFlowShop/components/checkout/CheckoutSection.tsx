@@ -30,7 +30,7 @@ export default function CheckoutSection({
       id={id}
       aria-labelledby={id ? `${id}-title` : undefined}
       className={cn(
-        "scroll-mt-24 overflow-hidden rounded-panel border border-border/80 bg-card text-card-foreground shadow-soft",
+        "-mx-3 scroll-mt-24 overflow-hidden border-y border-border/80 bg-card text-card-foreground shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border bp-sm:shadow-soft",
         tone === "muted" && "bg-muted/30",
         className,
       )}
