@@ -88,7 +88,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
   return (
     <div className="space-y-4">
       <section className="space-y-3 border-b border-border/60 pb-4">
-        <p className="text-ui-body-sm font-medium text-foreground">기본 설정</p>
+        <p className="text-ui-body-sm font-ui-medium text-foreground">기본 설정</p>
         {isVisit ? (
           <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -103,6 +103,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                 type="date"
                 min={new Date().toISOString().slice(0, 10)}
                 value={formData.preferredDate}
+                className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -115,7 +116,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
               <div className="space-y-1">
                 <Label
                   htmlFor="rental-preferred-time"
-                  className="text-ui-label font-medium text-foreground"
+                  className="text-ui-label font-ui-medium text-foreground"
                 >
                   희망 시간
                 </Label>
@@ -142,7 +143,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                 visitSlotCountUi > 0 &&
                 visitDurationMinutesUi && (
                   <div className="mt-3 border-l-2 border-primary/40 bg-primary/5 px-3 py-2 text-ui-label text-foreground">
-                    <p className="font-medium text-foreground">
+                    <p className="font-ui-medium text-foreground">
                       <Clock3 className="mr-1 inline h-3.5 w-3.5 text-primary" />
                       이번 방문 예상 소요 시간:{" "}
                       {visitTimeRange
@@ -165,12 +166,12 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
       </section>
 
       <section className="space-y-3">
-        <p className="text-ui-body-sm font-medium text-foreground">텐션 및 요청사항</p>
+        <p className="text-ui-body-sm font-ui-medium text-foreground">텐션 및 요청사항</p>
         {lineCount >= 2 && (
           <div className="border-y border-border/60 bg-muted/20 py-3">
             <div className="mb-3 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               <div>
-                <p className="inline-flex items-center gap-1.5 text-ui-label font-semibold text-foreground">
+                <p className="inline-flex items-center gap-1.5 text-ui-label font-ui-medium text-foreground">
                   <Sparkles className="h-3.5 w-3.5 text-primary/80" />
                   빠른 설정
                 </p>
@@ -183,15 +184,18 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-7 shrink-0 border-border px-2 text-ui-label"
+                  wrap="responsive"
+                  className="min-h-11 shrink-0 px-2 text-ui-label bp-sm:h-9 bp-sm:min-h-0"
                   onClick={applyFirstLineTensionToAll}
                 >
                   1번 텐션 → 전체
                 </Button>
                 <Button
                   type="button"
+                  variant="highlight_soft"
                   size="sm"
-                  className="h-7 shrink-0 px-2 text-ui-label"
+                  wrap="responsive"
+                  className="min-h-11 shrink-0 px-2 text-ui-label bp-sm:h-9 bp-sm:min-h-0"
                   onClick={() => applyBulkToAllLines()}
                 >
                   입력값 → 전체
@@ -200,13 +204,13 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
             </div>
             <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-2">
               <Input
-                className="h-9 px-3 text-ui-body-sm"
+                className="min-h-11 px-3 text-ui-body-sm bp-sm:h-9 bp-sm:min-h-0"
                 value={bulkTensionMain}
                 onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
                 placeholder="공통 메인 텐션"
               />
               <Input
-                className="h-9 px-3 text-ui-body-sm"
+                className="min-h-11 px-3 text-ui-body-sm bp-sm:h-9 bp-sm:min-h-0"
                 value={bulkTensionCross}
                 onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
                 placeholder="공통 크로스 텐션"
@@ -234,15 +238,15 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
               }
             >
               <div className="space-y-1">
-                <p className="text-ui-label font-medium text-foreground">장착 대상 라켓</p>
-                <p className="text-ui-body-sm font-medium text-foreground">{line.racketType}</p>
+                <p className="text-ui-label font-ui-medium text-foreground">장착 대상 라켓</p>
+                <p className="text-ui-body-sm font-ui-medium text-foreground">{line.racketType}</p>
                 <p className="break-keep text-ui-label text-muted-foreground">
                   대여 상품 기준으로 자동 반영 · 구매 스트링: {line.stringName}
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-2">
                 <Input
-                  className="h-10 px-3"
+                  className="min-h-11 px-3 bp-sm:h-10 bp-sm:min-h-0"
                   value={line.tensionMain ?? ""}
                   onChange={(e) =>
                     handleLineFieldChange(index, "tensionMain", toNumberText(e.target.value))
@@ -250,7 +254,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                   placeholder="메인 텐션"
                 />
                 <Input
-                  className="h-10 px-3"
+                  className="min-h-11 px-3 bp-sm:h-10 bp-sm:min-h-0"
                   value={line.tensionCross ?? ""}
                   onChange={(e) =>
                     handleLineFieldChange(index, "tensionCross", toNumberText(e.target.value))
@@ -270,7 +274,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
       </section>
 
       <section className="space-y-2.5 border-t border-border/60 pt-4">
-        <p className="text-ui-body-sm font-medium text-foreground">추가 요청</p>
+        <p className="text-ui-body-sm font-ui-medium text-foreground">추가 요청</p>
         <Textarea
           id="rental-stringing-requirements"
           value={formData.requirements ?? ""}
