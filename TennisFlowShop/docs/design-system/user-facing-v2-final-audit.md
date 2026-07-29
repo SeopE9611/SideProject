@@ -216,8 +216,8 @@ redirect route 8개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집�
 - **route:** `/products`, `/rackets`
 - **파일/컴포넌트:** `app/products/page.tsx`, `app/rackets/page.tsx`, `CommerceCatalogHero`.
 - **근거:** 두 route 모두 동일 컴포넌트에 `eyebrow`, `title`, `description`, `actions`, `guideTitle`, `guideItems` slot을 전달한다.
-- **판정:** Hero 구조 공용화는 `COMPLETE_STATIC`이다. 스트링과 라켓의 guide 문구 및 Hero 아래 도메인별 신청 안내 차이는 구조 미통일 근거가 아니며 새로운 Hero 구현 작업은 없다. 사용자 관점 반응형 결과는 `VISUAL_CONFIRMATION_REQUIRED`다.
-- **회귀 확인:** 공용 slot 순서·responsive shell·filter query 보존과 실제 줄바꿈·action 배치·다음 영역 간격은 V-13 후속 시각 회귀 범위로 둔다. 재구현 항목은 없다.
+- **판정:** Hero 구조 공용화는 계속 `COMPLETE_STATIC`이다. 과도한 display title은 최대 64px로 제한하고, 두 열 전환은 1024px로 앞당겼으며, 모바일 guide 중첩 surface는 평면화하고 상품·라켓 대표 CTA size는 통일했다. 스트링과 라켓의 guide 문구 및 Hero 아래 도메인별 신청 안내 차이는 구조 미통일 근거가 아니다. 사용자 관점 반응형 결과는 실제 Vercel preview 시각 확인 전까지 `VISUAL_CONFIRMATION_REQUIRED`다.
+- **회귀 확인:** 공용 slot 순서·responsive shell·filter query 보존과 실제 줄바꿈·action 배치·다음 영역 간격은 V-13 후속 시각 회귀 범위로 둔다. 이번 반응형 위계 조정의 시각 확인 전까지 V-13 판정과 queue 수는 유지한다.
 
 ### F-03 — commerce 상세 상단과 action panel 불균형
 
@@ -331,7 +331,7 @@ redirect route 8개는 목적지와 별도로 한 번만 `REDIRECT_ONLY`에 집�
 | V-10 | messages/notifications | 긴 한글 제목·unread marker·action이 같은 행에서 truncate/폭 밀림 | 360/390/430px; 2줄 제목, unread/read, empty |
 | V-11 | transaction details | 모바일 full-bleed negative margin과 desktop card 복원 경계 | 360/430/768/1024px; 모든 상태/다음 행동/위험 action |
 | V-12 | loading 전환 | skeleton과 실제 hero/card/aside의 CLS | 360/768/1280px; throttled data로 loading→success/error 녹화 |
-| V-13 | `/products`, `/rackets`, `CommerceCatalogHero` | 서로 다른 title·description 길이의 줄바꿈, action 버튼의 1열 전환, guideTitle·guideItems 높이 차이, Hero 다음 목록·필터와의 여백, 모바일 첫 화면에서 핵심 상품 영역이 지나치게 밀리지 않는지, 페이지 이동 시 구조와 행동 위치의 일관성 | 360/390/430/768/1024/1280px |
+| V-13 | `/products`, `/rackets`, `CommerceCatalogHero` | 제한된 title 크기와 서로 다른 title·description 길이의 줄바꿈, 1024px 두 열 전환, 모바일 guide surface 평면화, 통일된 대표 CTA size, guideTitle·guideItems 높이 차이, Hero 다음 목록·필터와의 여백 및 첫 화면 상품 영역 노출을 실제 Vercel preview에서 확인 (`VISUAL_CONFIRMATION_REQUIRED`) | 360/390/430/768/1024/1280px |
 
 모든 항목은 **후보**이며 실제 겹침이라고 단정하지 않는다. viewport screenshot, 키보드 focus 순서, 200% 확대, 긴 fixture를 함께 확인한다.
 
