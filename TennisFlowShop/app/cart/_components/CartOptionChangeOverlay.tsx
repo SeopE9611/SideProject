@@ -192,7 +192,7 @@ function CartOptionChangeContent({
             className="h-[72px] w-[72px] rounded-control border border-border object-cover"
           />
           <div className="min-w-0 flex-1">
-            <p className="line-clamp-2 font-medium text-foreground">{item.name}</p>
+            <p className="break-keep break-words font-medium text-foreground">{item.name}</p>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
               판매가{" "}
               <span className="font-semibold text-foreground">{formatKRW(item.price)}원</span>
@@ -239,7 +239,7 @@ function CartOptionChangeContent({
                         type="button"
                         variant={selectedColor === row.value ? "highlight_soft" : "outline"}
                         size="sm"
-                        className="h-9 rounded-control disabled:cursor-not-allowed disabled:opacity-50"
+                        className="min-h-11 rounded-control disabled:cursor-not-allowed disabled:opacity-50 bp-sm:min-h-9"
                         disabled={isColorDisabled}
                         onClick={() => {
                           setSelectedColor(row.value);
@@ -281,7 +281,7 @@ function CartOptionChangeContent({
                         type="button"
                         variant={selectedGauge === row.value ? "highlight_soft" : "outline"}
                         size="sm"
-                        className="h-9 rounded-control disabled:cursor-not-allowed disabled:opacity-50"
+                        className="min-h-11 rounded-control disabled:cursor-not-allowed disabled:opacity-50 bp-sm:min-h-9"
                         disabled={disabled}
                         onClick={() => setSelectedGauge(row.value)}
                       >
@@ -307,10 +307,15 @@ function CartOptionChangeContent({
         )}
       </div>
       <div className="sticky bottom-0 flex gap-2 border-t border-border bg-card p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-        <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
+        <Button type="button" variant="outline" className="min-h-11 flex-1" onClick={onCancel}>
           취소
         </Button>
-        <Button type="button" className="flex-1" disabled={isApplyDisabled} onClick={handleApply}>
+        <Button
+          type="button"
+          className="min-h-11 flex-1"
+          disabled={isApplyDisabled}
+          onClick={handleApply}
+        >
           변경 적용
         </Button>
       </div>
