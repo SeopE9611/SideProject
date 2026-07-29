@@ -16,8 +16,8 @@ export default function ServicesLoading() {
                 <Skeleton className="h-5 w-4/5 max-w-xl rounded-control" />
               </div>
               <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-                <Skeleton className="h-10 w-full rounded-control bp-sm:w-40" />
-                <Skeleton className="h-10 w-full rounded-control bp-sm:w-40" />
+                <Skeleton className="h-11 w-full rounded-control bp-sm:w-40" />
+                <Skeleton className="h-11 w-full rounded-control bp-sm:w-40" />
               </div>
             </div>
 
@@ -115,7 +115,7 @@ export default function ServicesLoading() {
                 <Skeleton className="h-5 w-full max-w-md rounded-control" />
                 <Skeleton className="h-5 w-full max-w-md rounded-control" />
               </div>
-              <Skeleton className="h-10 w-full rounded-control bp-sm:w-44" />
+              <Skeleton className="h-11 w-full rounded-control bp-sm:w-44" />
               <div className="border-t border-border pt-3">
                 <Skeleton className="h-5 w-full max-w-lg rounded-control" />
               </div>
@@ -180,8 +180,8 @@ export default function ServicesLoading() {
               <Skeleton className="h-5 w-full max-w-xl rounded-control" />
             </div>
             <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-              <Skeleton className="h-10 w-full rounded-control bp-sm:w-40" />
-              <Skeleton className="h-10 w-full rounded-control bp-sm:w-36" />
+              <Skeleton className="h-11 w-full rounded-control bp-sm:w-40" />
+              <Skeleton className="h-11 w-full rounded-control bp-sm:w-36" />
             </div>
           </PublicSurface>
         </SiteContainer>
