@@ -17,7 +17,6 @@ import {
   ENABLE_RACKET_STANDALONE_ORDER,
   RACKET_STANDALONE_ORDER_DISABLED_RESPONSE,
 } from "@/lib/orders/racket-standalone-policy";
-import { setGuestOrderAccessCookie } from "@/lib/auth/guest-resource-access.server";
 
 export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
@@ -115,21 +114,6 @@ async function handleNiceRacketReturn(req: Request) {
     await ensureTossPaymentSessionIndexes(db);
     const col = tossPaymentSessions(db);
 
-    const redirectToRacketOrder = async (mongoOrderId: string) => {
-      const response = redirect303(
-        req,
-        `/racket-orders/${encodeURIComponent(mongoOrderId)}/select-string`,
-      );
-      if (ObjectId.isValid(mongoOrderId)) {
-        const order = await db.collection("orders").findOne(
-          { _id: new ObjectId(mongoOrderId) },
-          { projection: { userId: 1 } },
-        );
-        if (order && !order.userId) setGuestOrderAccessCookie(response, String(order._id));
-      }
-      return response;
-    };
-
     let session = await col.findOne({ niceOrderId: orderId });
     if (!session) {
       return redirect303(req, toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."));
@@ -147,7 +131,10 @@ async function handleNiceRacketReturn(req: Request) {
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
-      return redirectToRacketOrder(String(session.mongoOrderId));
+      return redirect303(
+        req,
+        `/racket-orders/${encodeURIComponent(String(session.mongoOrderId))}/select-string`,
+      );
     }
 
     if (session.status === "failed") {
@@ -201,7 +188,10 @@ async function handleNiceRacketReturn(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirectToRacketOrder(String(latest.mongoOrderId));
+        return redirect303(
+          req,
+          `/racket-orders/${encodeURIComponent(String(latest.mongoOrderId))}/select-string`,
+        );
       }
 
       if (
@@ -279,7 +269,10 @@ async function handleNiceRacketReturn(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirectToRacketOrder(String(latest.mongoOrderId));
+        return redirect303(
+          req,
+          `/racket-orders/${encodeURIComponent(String(latest.mongoOrderId))}/select-string`,
+        );
       }
 
       if (
@@ -655,7 +648,10 @@ async function handleNiceRacketReturn(req: Request) {
       },
     );
 
-    return redirectToRacketOrder(mongoOrderId);
+    return redirect303(
+      req,
+      `/racket-orders/${encodeURIComponent(mongoOrderId)}/select-string`,
+    );
   } catch (error: any) {
     return redirect303(
       req,

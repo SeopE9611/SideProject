@@ -4,7 +4,6 @@ import {
   hasDedicatedGuestRentalAccess,
   hasGuestOrderAccess,
   hasGuestRentalAccess,
-  signOrderAccessToken,
   signRentalAccessToken,
   verifyOrderAccessToken,
   verifyRentalAccessToken,
@@ -15,20 +14,6 @@ export const GUEST_ORDER_ACCESS_COOKIE_NAME = "orderAccessToken";
 export const GUEST_RENTAL_ACCESS_COOKIE_NAME = "rentalAccessToken";
 
 type CookieStore = { get(name: string): { value: string } | undefined };
-
-export function setGuestOrderAccessCookie(response: NextResponse, orderId: string) {
-  response.cookies.set(
-    GUEST_ORDER_ACCESS_COOKIE_NAME,
-    signOrderAccessToken({ orderId }),
-    {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    },
-  );
-}
 
 export function setGuestRentalAccessCookie(response: NextResponse, rentalId: string) {
   response.cookies.set(
