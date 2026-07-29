@@ -16,13 +16,13 @@ type SummarySkeletonProps = {
 function SummarySkeleton({ showQuantityControls, showSecondaryAction }: SummarySkeletonProps) {
   return (
     <div
-      className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+      className="-mx-3 border-y border-border py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:overflow-hidden bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-0 bp-md:shadow-sm"
       aria-hidden="true"
     >
-      <div className="border-b border-border bg-secondary/30 px-5 py-4">
+      <div className="border-b border-border pb-3 bp-md:bg-secondary/30 bp-md:px-5 bp-md:py-4">
         <Skeleton className="h-5 w-28" />
       </div>
-      <div className="p-4 bp-md:p-5">
+      <div className="pt-4 bp-md:p-5">
         <div className="flex gap-3">
           <Skeleton className="h-16 w-16 rounded-xl bp-md:h-20 bp-md:w-20" />
           <div className="flex-1 space-y-2">
@@ -52,7 +52,7 @@ export function CommerceSelectionPageSkeleton({
       </p>
       <SiteContainer variant="wide" className="space-y-6 py-5 bp-md:py-8">
         <section
-          className="rounded-panel border border-border bg-card p-4 shadow-sm bp-md:p-5"
+          className="-mx-3 border-b border-border px-3 pb-5 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border bp-md:bg-card bp-md:p-5 bp-md:shadow-sm"
           aria-hidden="true"
         >
           <Skeleton className="h-5 w-24" />
@@ -72,7 +72,7 @@ export function CommerceSelectionPageSkeleton({
                 showSecondaryAction={isRental}
               />
             </div>
-            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="-mx-3 h-32 w-[calc(100%+1.5rem)] rounded-none bp-sm:-mx-4 bp-sm:w-[calc(100%+2rem)] bp-md:mx-0 bp-md:w-full bp-md:rounded-2xl" />
             <StringSelectionCardSkeleton viewMode="grid" />
           </main>
           <div className="hidden bp-lg:block">

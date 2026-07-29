@@ -6,6 +6,7 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import SiteContainer from "@/components/layout/SiteContainer";
 
 import type { Metadata } from "next";
 
@@ -69,13 +70,13 @@ export default async function SelectStringPage({ params }: PageProps) {
 
   // 통과: 기존 화면 렌더
   return (
-    <div className="container mx-auto space-y-5 px-4 py-6 md:px-6 md:py-8">
+    <SiteContainer variant="wide" className="space-y-5 py-6 bp-md:py-8">
       <div className="space-y-4">
         <div className="max-w-3xl space-y-2">
           <Badge variant="secondary" className="rounded-full">
             라켓 주문 스트링 선택
           </Badge>
-          <h1 className="break-keep text-ui-page-title font-semibold tracking-tight md:text-ui-page-title-lg">
+          <h1 className="break-keep text-ui-page-title font-ui-bold bp-md:text-ui-page-title-lg">
             주문 라켓에 장착할 스트링을 선택하세요
           </h1>
           <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -83,42 +84,42 @@ export default async function SelectStringPage({ params }: PageProps) {
           </p>
         </div>
 
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-5">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <section className="-mx-3 border-y border-border px-3 py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-5 bp-md:shadow-sm">
+          <div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
             <div className="min-w-0 space-y-1">
               <p className="text-ui-label font-medium text-muted-foreground">주문 라켓</p>
-              <h2 className="break-keep text-ui-body font-semibold text-foreground md:text-ui-card-title-lg">
+              <h2 className="break-words text-ui-body font-ui-bold text-foreground bp-md:text-ui-card-title-lg">
                 {racketName}
               </h2>
               <p className="break-all font-mono text-ui-label text-muted-foreground">
                 주문 ID: {orderId}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-ui-body-sm md:min-w-56">
+            <div className="grid grid-cols-2 gap-x-4 divide-x divide-border border-y border-border py-3 text-ui-body-sm bp-md:min-w-56 bp-md:gap-2 bp-md:divide-x-0 bp-md:border-0 bp-md:py-0">
               {racketQuantity != null && (
-                <div className="rounded-xl border border-border bg-muted/20 px-3 py-2">
+                <div className="min-w-0 px-2 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/20 bp-md:px-3 bp-md:py-2">
                   <p className="text-ui-label text-muted-foreground">수량</p>
-                  <p className="mt-1 font-semibold tabular-nums">
+                  <p className="mt-1 break-words font-ui-medium tabular-nums">
                     {racketQuantity.toLocaleString()}개
                   </p>
                 </div>
               )}
               {racketPrice != null && (
-                <div className="rounded-xl border border-border bg-muted/20 px-3 py-2">
+                <div className="min-w-0 px-2 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/20 bp-md:px-3 bp-md:py-2">
                   <p className="text-ui-label text-muted-foreground">라켓 금액</p>
-                  <p className="mt-1 font-semibold tabular-nums">
+                  <p className="mt-1 break-words font-ui-medium tabular-nums">
                     {racketPrice.toLocaleString()}원
                   </p>
                 </div>
               )}
             </div>
           </div>
-          <div className="mt-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground">
+          <div className="mt-4 border-t border-border pt-3 text-ui-label leading-relaxed text-muted-foreground bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:px-3 bp-md:py-2">
             선택한 스트링은 위 주문 라켓과 연결되어 교체서비스 신청에 사용됩니다.
           </div>
         </section>
       </div>
       <SelectStringClient orderId={orderId} />
-    </div>
+    </SiteContainer>
   );
 }

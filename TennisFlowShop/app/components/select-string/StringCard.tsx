@@ -209,7 +209,7 @@ export function StringCard({
       >
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
-          <h3 className="line-clamp-2 min-w-0 break-words text-ui-body-sm font-semibold leading-tight text-foreground bp-md:text-ui-body">
+          <h3 className="line-clamp-2 min-w-0 break-words text-ui-body-sm font-ui-medium leading-tight text-foreground bp-md:text-ui-body">
             {product.name}
             {isSelected ? <span className="sr-only">현재 선택된 스트링</span> : null}
           </h3>
@@ -236,7 +236,7 @@ export function StringCard({
                 </span>
               )}
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 pr-4">
+            <div className="flex flex-wrap gap-2">
               {colorRows.map((row) => {
                 const label = getColorLabel(row);
                 const soldOut = hasVariantInventories
@@ -272,7 +272,7 @@ export function StringCard({
                       }
                     }}
                     className={cn(
-                      "relative h-10 w-10 shrink-0 overflow-hidden rounded-md border-2 transition-all bp-md:h-11 bp-md:w-11",
+                      "relative h-11 w-11 shrink-0 overflow-hidden rounded-md border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-md:h-10 bp-md:w-10",
                       isColorSelected
                         ? "border-primary ring-2 ring-primary/30"
                         : "border-border hover:border-primary/50",
@@ -314,7 +314,7 @@ export function StringCard({
           <div className="mb-3 space-y-2">
             <span className="text-ui-label font-medium text-foreground">게이지(굵기)</span>
             <Select value={selectedGauge} onValueChange={onGaugeChange}>
-              <SelectTrigger className="h-11 rounded-control text-ui-label">
+              <SelectTrigger className="h-11 rounded-control text-ui-label bp-md:h-10">
                 <SelectValue placeholder="게이지(굵기) 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -362,7 +362,7 @@ export function StringCard({
         <Button
           variant="highlight_soft"
           wrap="nowrap"
-          className="h-10 w-full justify-center gap-2 rounded-xl"
+          className="h-11 w-full justify-center gap-2 rounded-xl bp-md:h-10"
           disabled={isDisabled}
           onClick={onSelect}
         >
@@ -373,7 +373,7 @@ export function StringCard({
           asChild
           variant="outline"
           wrap="nowrap"
-          className="h-10 w-full justify-center gap-2 rounded-xl"
+          className="h-11 w-full justify-center gap-2 rounded-xl bp-md:h-10"
         >
           <Link
             href={`/products/${product._id}`}
@@ -382,7 +382,7 @@ export function StringCard({
             onClick={(event) => event.stopPropagation()}
           >
             <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap">상세 보기</span>
+            <span className="whitespace-nowrap">상세 보기 <span className="sr-only">(새 창에서 열림)</span></span>
           </Link>
         </Button>
       </div>

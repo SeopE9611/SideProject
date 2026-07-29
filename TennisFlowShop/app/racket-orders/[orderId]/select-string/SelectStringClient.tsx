@@ -170,7 +170,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   const [selectedColorByProductId, setSelectedColorByProductId] = useState<Record<string, string>>(
     {},
   );
-  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore, error } =
+  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore, error, reset } =
     useInfiniteProducts({ limit: 6, purpose: "stringing" });
   const mountableProducts = products.filter(
     (product) =>
@@ -327,7 +327,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
 
   if (isLoadingInitial)
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, idx) => (
           <div
             key={idx}
@@ -335,7 +335,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           >
             <Skeleton className="h-5 w-2/3" />
             <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl bp-md:h-10" />
           </div>
         ))}
       </div>
@@ -345,7 +345,8 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
       <ResultState
         status="error"
         title="스트링 목록을 불러오지 못했습니다"
-        description={`잠시 후 다시 시도해주세요. ${error}`}
+        description="잠시 후 다시 시도해주세요. 주문과 라켓 정보는 그대로 유지됩니다."
+        actions={<Button variant="secondary" className="min-h-11" onClick={reset}>다시 시도</Button>}
         className="rounded-2xl border border-border bg-card shadow-sm"
       />
     );
@@ -353,7 +354,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
           <div>
             <h2 className="text-ui-body font-semibold text-foreground">장착할 스트링 선택</h2>
             <p className="break-keep text-ui-body-sm text-muted-foreground">
@@ -377,7 +378,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           className="rounded-2xl bg-card shadow-sm"
         />
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
         {mountableProducts.map((p: SelectableStringProduct) => {
           const variants = normalizeVariantRows(p);
           const hasVariantInventories = variants.length > 0;
@@ -472,7 +473,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-ui-label font-medium">색상</div>
                   {selectedColor ? (
-                    <div className="truncate text-ui-label text-muted-foreground">
+                    <div className="min-w-0 break-words text-right text-ui-label text-muted-foreground">
                       {selectedColorLabel}
                     </div>
                   ) : null}
@@ -526,7 +527,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                         }))
                       }
                       className={cn(
-                        "flex min-h-9 max-w-full items-center gap-2 rounded-xl border px-2.5 py-1.5 text-ui-label transition-colors",
+                        "flex min-h-11 max-w-full items-center gap-2 rounded-xl border px-3 py-2 text-ui-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-md:min-h-10",
                         selectedColor === row.value
                           ? "border-primary/40 bg-primary/5 text-foreground"
                           : "border-border bg-card hover:border-primary/50",
@@ -556,7 +557,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-ui-label font-medium">게이지(굵기)</div>
                     {selectedGauge ? (
-                      <div className="truncate text-ui-label text-muted-foreground">
+                      <div className="min-w-0 break-words text-right text-ui-label text-muted-foreground">
                         {selectedGaugeLabel}
                       </div>
                     ) : null}
@@ -570,7 +571,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                       }))
                     }
                   >
-                    <SelectTrigger className="h-10 w-full rounded-xl text-ui-label">
+                    <SelectTrigger className="h-11 w-full rounded-xl text-ui-label bp-md:h-10">
                       <SelectValue placeholder="게이지(굵기)를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -597,7 +598,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               <div className="mt-3 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
                 <div className="flex items-center justify-between gap-3">
                   <span>선택한 옵션</span>
-                  <span className="min-w-0 truncate text-right text-foreground">
+                  <span className="min-w-0 break-words text-right font-ui-medium text-foreground">
                     {[selectedColorLabel, selectedGaugeLabel].filter(Boolean).join(" · ") ||
                       "옵션 선택 필요"}
                   </span>
@@ -605,11 +606,12 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               </div>
               <Button
                 type="button"
-                className="mt-4 h-10 w-full overflow-hidden whitespace-nowrap rounded-xl"
+                variant="highlight_soft"
+                className="mt-4 h-11 w-full whitespace-nowrap rounded-xl bp-md:h-10"
                 disabled={disableSelectButton}
                 onClick={() => handleSelectString(p, selectedGauge, selectedColor)}
               >
-                <span className="min-w-0 truncate">
+                <span className="min-w-0">
                   {addingProductId === p._id ? "이동 중…" : "선택 후 신청"}
                 </span>
               </Button>
@@ -623,7 +625,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           variant="outline"
           onClick={loadMore}
           disabled={isFetchingMore || !!addingProductId}
-          className="h-10 w-full rounded-xl"
+          className="h-11 w-full rounded-xl bp-md:h-10"
         >
           {isFetchingMore ? (
             "로딩 중..."

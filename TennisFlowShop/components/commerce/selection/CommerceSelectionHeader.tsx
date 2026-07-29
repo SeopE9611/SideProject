@@ -26,11 +26,11 @@ export function CommerceSelectionHeader({
   steps,
 }: CommerceSelectionHeaderProps) {
   return (
-    <section className="rounded-panel border border-border bg-card p-4 shadow-sm bp-md:p-5">
+    <section className="-mx-3 border-b border-border px-3 pb-5 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border bp-md:bg-card bp-md:p-5 bp-md:shadow-sm">
       {backHref && (
         <Link
           href={backHref}
-          className="inline-flex min-h-10 max-w-full items-center gap-2 whitespace-nowrap rounded-control px-2 text-ui-body-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex min-h-11 max-w-full items-center gap-2 whitespace-nowrap rounded-control px-2 text-ui-body-sm font-ui-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:min-h-10"
         >
           <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="min-w-0 overflow-hidden text-ellipsis">{backLabel}</span>
@@ -47,7 +47,7 @@ export function CommerceSelectionHeader({
                 key={step.id}
                 aria-current={current ? "step" : undefined}
                 className={cn(
-                  "min-w-0 rounded-xl border px-2.5 py-2 text-center text-ui-label font-semibold",
+                  "min-w-0 rounded-xl border px-2.5 py-2 text-center text-ui-label font-ui-medium",
                   complete && "border-primary/30 bg-primary/10 text-foreground",
                   current &&
                     "border-brand-highlight-ink/40 bg-brand-highlight-muted text-foreground",
@@ -70,7 +70,7 @@ export function CommerceSelectionHeader({
       </nav>
 
       <div className="mt-4">
-        <h1 className="break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-md:text-ui-page-title-lg">
+        <h1 className="break-keep text-ui-page-title font-ui-bold text-foreground bp-md:text-ui-page-title-lg">
           {title}
         </h1>
         <p className="mt-2 max-w-3xl break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">

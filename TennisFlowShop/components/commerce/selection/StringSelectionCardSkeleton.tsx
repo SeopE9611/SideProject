@@ -44,9 +44,9 @@ export function StringSelectionCardSkeleton({
             <Skeleton className="h-4 w-2/3" />
             <Skeleton className="h-6 w-28" />
             <div className="flex gap-2">
-              <Skeleton className="h-10 w-10 rounded-md" />
-              <Skeleton className="h-10 w-10 rounded-md" />
-              <Skeleton className="h-10 w-10 rounded-md" />
+              <Skeleton className="h-11 w-11 rounded-md bp-md:h-10 bp-md:w-10" />
+              <Skeleton className="h-11 w-11 rounded-md bp-md:h-10 bp-md:w-10" />
+              <Skeleton className="h-11 w-11 rounded-md bp-md:h-10 bp-md:w-10" />
             </div>
             <Skeleton className="h-11 w-full rounded-control" />
             <Skeleton className="h-4 w-32" />
@@ -57,8 +57,8 @@ export function StringSelectionCardSkeleton({
               viewMode === "list" && "bp-md:border-l bp-md:border-t-0 bp-md:bg-muted/10",
             )}
           >
-            <Skeleton className="h-10 w-full rounded-xl" />
-            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl bp-md:h-10" />
+            <Skeleton className="h-11 w-full rounded-xl bp-md:h-10" />
           </div>
         </div>
       ))}
