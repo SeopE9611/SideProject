@@ -30,11 +30,13 @@ export default function ContinueShoppingButton({
     <Button
       onClick={handleClick}
       variant="outline"
-      className="w-full h-12 border-2 border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-border dark:hover:border-border transition-all duration-300 group bg-transparent"
+      size="lg"
+      wrap="responsive"
+      className="group w-full"
     >
-      <ShoppingBag className="h-4 w-4 mr-2 group-hover:text-primary dark:group-hover:text-primary transition-colors" />
+      <ShoppingBag className="h-4 w-4" />
       쇼핑 계속하기
-      <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
     </Button>
   );
 }

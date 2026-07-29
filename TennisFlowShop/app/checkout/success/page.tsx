@@ -12,7 +12,6 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -657,7 +656,7 @@ export default async function CheckoutSuccessPage({
         <ClearCartOnMount />
         <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
         <div className="min-h-full bg-background text-foreground">
-          <SiteContainer variant="wide" className="py-8 md:py-12">
+          <SiteContainer variant="wide" className="py-6 bp-sm:py-8">
             <ResultState
               status="success"
               icon={<CheckCircle className="h-6 w-6" />}
@@ -685,25 +684,18 @@ export default async function CheckoutSuccessPage({
                         ? "결제가 완료되어 주문이 접수되었습니다. 아래에서 교체서비스 신청서를 작성해주세요."
                         : "결제가 완료되었습니다. 주문 번호와 다음 단계를 확인해주세요."
               }
-              className="py-8 sm:py-10"
+              className="py-4 bp-sm:py-6"
             />
-
-            <div className="mx-auto mt-6 max-w-4xl">
-              <RacketCareSuccessFeedback
-                enabled={withStringService}
-                expectedProductIds={orderProductIds}
-              />
-            </div>
           </SiteContainer>
 
-          <SiteContainer variant="wide" className="py-8">
+          <SiteContainer variant="wide" className="pb-8">
             <div className="max-w-4xl mx-auto space-y-6">
               {/* 주문 정보 카드 */}
               <Card
                 data-cy="checkout-success-order-card"
-                className="overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft"
+                className="overflow-hidden border-y border-border/80 bg-card bp-sm:rounded-panel bp-sm:border"
               >
-                <div className="border-b border-border/80 bg-muted/20 p-4 bp-sm:p-5 md:p-6">
+                <div className="border-b border-border/80 bg-muted/20 p-4 bp-sm:p-5">
                   <CardTitle className="flex flex-wrap items-center gap-3 break-keep text-ui-section-title leading-relaxed bp-sm:text-ui-section-title-lg">
                     <Package className="h-6 w-6 text-primary" />
                     주문 정보
@@ -721,14 +713,14 @@ export default async function CheckoutSuccessPage({
                         : "주문 정보와 배송 상태를 확인하세요."}
                   </CardDescription>
                 </div>
-                <CardContent className="p-4 bp-sm:p-5 md:p-6">
+                <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
                   {/* 문서 정보 */}
                   <div className="mb-6">
                     <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
                       <Shield className="h-5 w-5 text-primary" />
                       {withStringService ? "주문·교체서비스 정보" : "주문 번호"}
                     </h3>
-                    <div className="space-y-3 rounded-xl bg-muted/15 p-4">
+                    <div className="space-y-3 border-y border-border/60 py-4">
                       <div>
                         <span className="text-ui-body-sm text-muted-foreground">주문 번호:</span>{" "}
                         <span
@@ -759,8 +751,10 @@ export default async function CheckoutSuccessPage({
                       )}
                       {withStringService && hasSubmittedApplication && stringingApplicationHref ? (
                         <Button
-                          variant="outline"
-                          className="w-full sm:w-auto bg-transparent"
+                          variant="highlight_soft"
+                          size="lg"
+                          wrap="responsive"
+                          className="w-full bp-sm:w-auto"
                           asChild
                         >
                           <Link href={stringingApplicationHref} className="flex items-center gap-2">
@@ -772,32 +766,39 @@ export default async function CheckoutSuccessPage({
                     </div>
                   </div>
 
-                  <div className="mb-6 rounded-panel border border-border/70 bg-muted/20 p-4 bp-sm:p-5">
+                  <div className="mb-6 bg-muted/20 p-4 bp-sm:p-5">
                     <h3 className="text-ui-card-title font-semibold text-foreground">
                       현재 상태와 다음 단계
                     </h3>
-                    <div className="mt-3 grid gap-0 overflow-hidden rounded-control border border-border/70 text-ui-body-sm leading-relaxed md:grid-cols-3 md:divide-x md:divide-border/70">
-                      <div className="p-3 md:p-4">
+                    <div className="mt-3 grid gap-0 text-ui-body-sm leading-relaxed bp-lg:grid-cols-3 bp-lg:divide-x bp-lg:divide-border/70">
+                      <div className="border-b border-border/70 px-0 py-3 last:border-b-0 bp-lg:border-b-0 bp-lg:px-4">
                         <p className="font-semibold text-foreground">현재 상태</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.status}</p>
                       </div>
-                      <div className="p-3 md:p-4">
+                      <div className="border-b border-border/70 px-0 py-3 last:border-b-0 bp-lg:border-b-0 bp-lg:px-4">
                         <p className="font-semibold text-foreground">지금 할 일</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.todo}</p>
                       </div>
-                      <div className="p-3 md:p-4">
+                      <div className="border-b border-border/70 px-0 py-3 last:border-b-0 bp-lg:border-b-0 bp-lg:px-4">
                         <p className="font-semibold text-foreground">다음 단계</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.next}</p>
                       </div>
                     </div>
-                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                      <Button asChild className="min-h-11 flex-1" wrap="responsive">
+                    <div className="mt-4 flex flex-col gap-3 bp-sm:flex-row">
+                      <Button
+                        asChild
+                        variant="highlight"
+                        size="lg"
+                        className="flex-1"
+                        wrap="responsive"
+                      >
                         <Link href={progressGuide.primaryHref}>{progressGuide.primaryLabel}</Link>
                       </Button>
                       <Button
                         asChild
                         variant="outline"
-                        className="min-h-11 flex-1"
+                        size="lg"
+                        className="flex-1"
                         wrap="responsive"
                       >
                         <Link href="/support">고객센터 문의하기</Link>
@@ -805,10 +806,75 @@ export default async function CheckoutSuccessPage({
                     </div>
                   </div>
 
+                  <RacketCareSuccessFeedback
+                    enabled={withStringService}
+                    expectedProductIds={orderProductIds}
+                  />
+
                   <Separator className="my-6" />
 
-                  <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-                    <div className="grid gap-4 rounded-panel border border-border/70 bg-muted/10 p-4 md:grid-cols-2 md:gap-5">
+                  {/* 주문 상품 */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-ui-card-title-lg mb-4 flex items-center gap-2">
+                      <Package className="h-5 w-5 text-primary" /> 주문 상품
+                    </h3>
+                    <div className="divide-y divide-border/70">
+                      {populatedItems.map((item: PopulatedItem, index: number) => {
+                        const itemPrice = formatPrice(item.price);
+                        const itemQuantity = formatQuantity(item.quantity);
+                        const totalItemPrice = formatPrice(item.price * itemQuantity);
+
+                        return (
+                          <div
+                            key={index}
+                            className="flex flex-col gap-3 py-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="break-keep break-words font-semibold leading-relaxed text-foreground">
+                                {item.name}
+                              </p>
+                              <p className="text-ui-body-sm text-muted-foreground">
+                                수량: {itemQuantity}개
+                              </p>
+                              {item.selectedGauge && (
+                                <p className="text-ui-label text-muted-foreground">
+                                  선택 옵션: 게이지(굵기) {formatGaugeLabel(item.selectedGauge)}
+                                </p>
+                              )}
+                              {(item.selectedColorLabel || item.selectedColor) && (
+                                <p className="flex min-w-0 flex-wrap items-center gap-2 text-ui-label leading-relaxed text-muted-foreground">
+                                  <span>선택 옵션: 색상</span>
+                                  {item.selectedColorHex && (
+                                    <span
+                                      className="h-3 w-3 rounded-full border border-border"
+                                      style={{
+                                        backgroundColor: item.selectedColorHex,
+                                      }}
+                                      aria-hidden="true"
+                                    />
+                                  )}
+                                  <span className="min-w-0 break-keep break-words">
+                                    {item.selectedColorLabel || item.selectedColor}
+                                  </span>
+                                </p>
+                              )}
+                            </div>
+                            <div className="shrink-0 text-left bp-sm:text-right">
+                              <p className="text-ui-price font-semibold text-foreground tabular-nums">
+                                {totalItemPrice}원
+                              </p>
+                              <p className="text-ui-body-sm text-muted-foreground">
+                                단가: {itemPrice}원
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="mb-6 grid grid-cols-1 gap-5 bp-lg:grid-cols-2 bp-lg:gap-6">
+                    <div className="grid gap-4 border-b border-border/70 pb-5 bp-lg:grid-cols-2 bp-lg:gap-5">
                       <div className="flex items-start gap-3">
                         <Clock className="h-5 w-5 text-primary" />
                         <div>
@@ -860,7 +926,7 @@ export default async function CheckoutSuccessPage({
                       </div>
                     </div>
 
-                    <div className="rounded-panel border border-border/70 bg-muted/10 p-4">
+                    <div className="border-b border-border/70 pb-5">
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <h3 className="font-semibold text-foreground">
@@ -970,68 +1036,6 @@ export default async function CheckoutSuccessPage({
 
                   <Separator className="my-6" />
 
-                  {/* 주문 상품 */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-ui-card-title-lg mb-4 flex items-center gap-2">
-                      <Package className="h-5 w-5 text-primary" /> 주문 상품
-                    </h3>
-                    <div className="grid gap-3">
-                      {populatedItems.map((item: PopulatedItem, index: number) => {
-                        const itemPrice = formatPrice(item.price);
-                        const itemQuantity = formatQuantity(item.quantity);
-                        const totalItemPrice = formatPrice(item.price * itemQuantity);
-
-                        return (
-                          <div
-                            key={index}
-                            className="flex flex-col gap-3 py-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="break-keep break-words font-semibold leading-relaxed text-foreground">
-                                {item.name}
-                              </p>
-                              <p className="text-ui-body-sm text-muted-foreground">
-                                수량: {itemQuantity}개
-                              </p>
-                              {item.selectedGauge && (
-                                <p className="text-ui-label text-muted-foreground">
-                                  선택 옵션: 게이지(굵기) {formatGaugeLabel(item.selectedGauge)}
-                                </p>
-                              )}
-                              {(item.selectedColorLabel || item.selectedColor) && (
-                                <p className="flex min-w-0 flex-wrap items-center gap-2 text-ui-label leading-relaxed text-muted-foreground">
-                                  <span>선택 옵션: 색상</span>
-                                  {item.selectedColorHex && (
-                                    <span
-                                      className="h-3 w-3 rounded-full border border-border"
-                                      style={{
-                                        backgroundColor: item.selectedColorHex,
-                                      }}
-                                      aria-hidden="true"
-                                    />
-                                  )}
-                                  <span className="min-w-0 break-keep break-words">
-                                    {item.selectedColorLabel || item.selectedColor}
-                                  </span>
-                                </p>
-                              )}
-                            </div>
-                            <div className="shrink-0 text-left bp-sm:text-right">
-                              <p className="text-ui-price font-semibold text-foreground tabular-nums">
-                                {totalItemPrice}원
-                              </p>
-                              <p className="text-ui-body-sm text-muted-foreground">
-                                단가: {itemPrice}원
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <Separator className="my-6" />
-
                   {/* 교체 서비스 정보 */}
                   {withStringService && (
                     <>
@@ -1041,7 +1045,7 @@ export default async function CheckoutSuccessPage({
                           교체서비스 정보
                         </h3>
                         {hasSubmittedApplication && stringingSummary ? (
-                          <div className="grid gap-2 rounded-xl bg-muted/10 p-4 text-ui-body-sm text-foreground md:grid-cols-2">
+                          <div className="grid gap-3 bg-muted/20 p-4 text-ui-body-sm text-foreground bp-lg:grid-cols-2">
                             <p>
                               <span className="text-muted-foreground">접수 방식:</span>{" "}
                               <span className="font-semibold">
@@ -1079,7 +1083,7 @@ export default async function CheckoutSuccessPage({
                               </p>
                             )}
                             <Separator className="hidden" />
-                            <div className="space-y-1.5 rounded-xl bg-card/60 p-3 md:col-span-2">
+                            <div className="space-y-1.5 border-t border-border/60 pt-3 bp-lg:col-span-2">
                               <p className="font-semibold text-foreground">패키지 적용 정보</p>
                               {stringingSummary.packageInfo.applied ? (
                                 <>
@@ -1146,14 +1150,20 @@ export default async function CheckoutSuccessPage({
                             </div>
                           </div>
                         ) : (
-                          <div className="space-y-3 rounded-panel border border-border/70 bg-muted/10 p-4">
+                          <div className="space-y-3 bg-muted/20 p-4">
                             <p className="text-ui-body-sm text-muted-foreground">
                               {isVisitPickup
                                 ? "방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요."
                                 : "택배 수령을 선택하셨으므로 라켓 발송 후 작업 완료 시 완성 라켓 배송으로 진행됩니다."}
                             </p>
                             {shouldShowApplyCta ? (
-                              <Button className="font-semibold" asChild>
+                              <Button
+                                variant="highlight_soft"
+                                size="lg"
+                                wrap="responsive"
+                                className="w-full font-semibold bp-sm:w-auto"
+                                asChild
+                              >
                                 <Link href={appHref} className="flex items-center gap-2">
                                   장착 서비스 신청서 작성하기
                                   <ArrowRight className="h-4 w-4" />
@@ -1175,14 +1185,14 @@ export default async function CheckoutSuccessPage({
                       {getOrderDeliveryInfoTitle(order.shippingInfo)}
                     </h3>
                     <div className="grid gap-3">
-                      <div className="grid grid-cols-1 gap-0 md:grid-cols-2 md:divide-x md:divide-border/70">
-                        <div className="py-3 md:pr-4">
+                      <div className="grid grid-cols-1 gap-0 bp-lg:grid-cols-2 bp-lg:divide-x bp-lg:divide-border/70">
+                        <div className="py-3 bp-lg:pr-4">
                           <span className="text-ui-body-sm text-muted-foreground">수령인:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo?.name || "정보 없음"}
                           </span>
                         </div>
-                        <div className="py-3 md:pl-4">
+                        <div className="py-3 bp-lg:pl-4">
                           <span className="text-ui-body-sm text-muted-foreground">연락처:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {formatKoreanPhone(order.shippingInfo?.phone) || "정보 없음"}
@@ -1273,9 +1283,15 @@ export default async function CheckoutSuccessPage({
                   </div>
                 </CardContent>
 
-                <CardFooter className="border-t border-border/80 bg-background p-4 bp-sm:p-5 md:p-6">
-                  <div className="flex w-full flex-col gap-3 sm:flex-row">
-                    <Button className="min-h-12 flex-1" asChild wrap="responsive">
+                <CardFooter className="border-t border-border/80 bg-background p-4 bp-sm:p-5 bp-lg:p-6">
+                  <div className="flex w-full flex-col gap-3 bp-sm:flex-row">
+                    <Button
+                      variant="highlight_soft"
+                      size="lg"
+                      className="flex-1"
+                      asChild
+                      wrap="responsive"
+                    >
                       <Link
                         href={
                           isLoggedIn ? "/mypage?tab=orders" : `/order-lookup/details/${order._id}`
@@ -1298,15 +1314,15 @@ export default async function CheckoutSuccessPage({
               </Card>
 
               {/* 안내사항 */}
-              <Card className="rounded-panel border border-border/80 bg-card shadow-soft">
-                <CardHeader className="border-b border-border/80 bg-muted/20">
+              <section className="border-t border-border/80">
+                <div className="bg-muted/20 px-4 py-4 bp-sm:px-5">
                   <CardTitle className="flex items-center gap-3">
                     <Shield className="h-5 w-5 text-primary" />
                     주문 안내사항
                   </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 bp-sm:p-5 md:p-6">
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+                </div>
+                <div className="p-4 bp-sm:p-5 bp-lg:p-6">
+                  <div className="grid grid-cols-1 gap-3 bp-lg:grid-cols-2 bp-lg:gap-4">
                     <div className="space-y-3">
                       <div className="flex items-start gap-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                         <CreditCard className="mt-0.5 h-5 w-5 text-primary" />
@@ -1369,8 +1385,8 @@ export default async function CheckoutSuccessPage({
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </section>
             </div>
           </SiteContainer>
         </div>
@@ -1401,7 +1417,7 @@ export default async function CheckoutSuccessPage({
         <BackButtonGuard />
         <ClearCartOnMount />
         <div className="min-h-full bg-background text-foreground">
-          <SiteContainer variant="wide" className="flex min-h-[60vh] items-center py-8 md:py-12">
+          <SiteContainer variant="wide" className="flex min-h-[60vh] items-center py-8 bp-md:py-12">
             <ResultState
               status="warning"
               icon={<CheckCircle className="h-6 w-6" />}
@@ -1409,15 +1425,21 @@ export default async function CheckoutSuccessPage({
               description="주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다. 잠시 후 다시 시도하거나 마이페이지에서 확인해주세요."
               actions={
                 <>
-                  <Button asChild className="w-full sm:w-auto" wrap="responsive">
+                  <Button
+                    asChild
+                    variant="highlight"
+                    size="lg"
+                    className="w-full bp-sm:w-auto"
+                    wrap="responsive"
+                  >
                     <Link href={`/checkout/success?orderId=${encodeURIComponent(orderId)}`}>
                       다시 시도
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="w-full sm:w-auto" wrap="responsive">
+                  <Button asChild variant="outline" size="lg" className="w-full bp-sm:w-auto" wrap="responsive">
                     <Link href="/mypage?tab=orders">마이페이지의 주문 내역 이동</Link>
                   </Button>
-                  <Button asChild variant="ghost" className="w-full sm:w-auto" wrap="responsive">
+                  <Button asChild variant="outline" size="lg" className="w-full bp-sm:w-auto" wrap="responsive">
                     <Link href="/">홈으로</Link>
                   </Button>
                 </>
