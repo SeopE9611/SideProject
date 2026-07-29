@@ -907,7 +907,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   <div className="flex min-w-0 flex-col gap-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/30 text-primary bp-sm:h-12 bp-sm:w-12">
-                        <Star className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
+                        <Star
+                          className="h-4 w-4 bp-sm:h-6 bp-sm:w-6"
+                          aria-hidden="true"
+                        />
                       </div>
                       <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
                         고객 후기
@@ -921,7 +924,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         className="h-11 min-h-11 w-full text-ui-body-sm bp-md:h-10 bp-md:min-h-10 bp-md:w-auto"
                       >
                         <Link href="/mypage?tab=orders">
-                          <Pencil className="mr-1.5 h-3 w-3 bp-sm:mr-2 bp-sm:h-4 bp-sm:w-4" />
+                          <Pencil
+                            className="mr-1.5 h-3 w-3 bp-sm:mr-2 bp-sm:h-4 bp-sm:w-4"
+                            aria-hidden="true"
+                          />
                           이용내역에서 후기 작성
                         </Link>
                       </Button>
@@ -999,7 +1005,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                           className="h-11 w-11 rounded-lg bp-md:h-9 bp-md:w-9"
                                           aria-label="후기 관리 메뉴"
                                         >
-                                          <MoreHorizontal className="h-4 w-4" />
+                                          <MoreHorizontal
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                          />
                                         </Button>
                                       </DropdownMenuTrigger>
 
@@ -1162,12 +1171,18 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                             isAdmin,
                                           ).managedStatus === "hidden" ? (
                                             <>
-                                              <Eye className="mr-2 h-4 w-4" />
+                                              <Eye
+                                                className="mr-2 h-4 w-4"
+                                                aria-hidden="true"
+                                              />
                                               공개로 전환
                                             </>
                                           ) : (
                                             <>
-                                              <EyeOff className="mr-2 h-4 w-4" />
+                                              <EyeOff
+                                                className="mr-2 h-4 w-4"
+                                                aria-hidden="true"
+                                              />
                                               비공개로 전환
                                             </>
                                           )}
@@ -1175,7 +1190,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                                         {/* 수정: 내 후기 or 관리자 */}
                                         <DropdownMenuItem onClick={() => openEdit(review)}>
-                                          <Pencil className="mr-2 h-4 w-4" />
+                                          <Pencil
+                                            className="mr-2 h-4 w-4"
+                                            aria-hidden="true"
+                                          />
                                           수정하기
                                         </DropdownMenuItem>
 
@@ -1226,7 +1244,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                                 }
                                               }}
                                             >
-                                              <Trash2 className="mr-2 h-4 w-4" />
+                                              <Trash2
+                                                className="mr-2 h-4 w-4"
+                                                aria-hidden="true"
+                                              />
                                               삭제하기
                                             </DropdownMenuItem>
                                           </>
@@ -1276,7 +1297,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                               {/* 작업 중 오버레이 */}
                               {busyReviewId && String(busyReviewId) === String(review?._id) ? (
                                 <div className="flex items-center gap-2 pt-2 text-ui-label text-muted-foreground">
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  <Loader2
+                                    className="h-3.5 w-3.5 animate-spin"
+                                    aria-hidden="true"
+                                  />
                                   처리 중...
                                 </div>
                               ) : null}
@@ -1288,7 +1312,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   ) : (
                     <div className="-mx-4 border-y border-border/60 px-4 py-8 text-center bp-sm:-mx-6 bp-sm:px-6 bp-md:mx-0 bp-md:rounded-2xl bp-md:border bp-md:bg-muted/30 bp-md:px-6 bp-md:py-12">
                       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card bp-sm:mb-5 bp-sm:h-14 bp-sm:w-14">
-                        <Star className="h-6 w-6 text-foreground bp-sm:h-7 bp-sm:w-7" />
+                        <Star
+                          className="h-6 w-6 text-foreground bp-sm:h-7 bp-sm:w-7"
+                          aria-hidden="true"
+                        />
                       </div>
                       <h3 className="mb-2 text-ui-card-title-lg font-ui-bold text-foreground bp-sm:text-ui-section-title">
                         아직 등록된 후기가 없습니다

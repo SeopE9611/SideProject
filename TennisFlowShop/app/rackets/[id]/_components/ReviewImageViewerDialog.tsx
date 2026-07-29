@@ -24,6 +24,8 @@ export default function ReviewImageViewerDialog({
   onPrev,
   onNext,
 }: Props) {
+  const currentImage = images[index];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto p-0 sm:max-w-[calc(100%-2rem)] bp-md:max-w-4xl [&>button:first-child]:inline-flex [&>button:first-child]:h-11 [&>button:first-child]:w-11 [&>button:first-child]:items-center [&>button:first-child]:justify-center [&>button:first-child]:rounded-lg [&>button:first-child]:bg-card/90 [&>button:first-child]:hover:bg-muted bp-md:[&>button:first-child]:h-9 bp-md:[&>button:first-child]:w-9">
@@ -31,11 +33,11 @@ export default function ReviewImageViewerDialog({
           <DialogTitle>후기 사진 확대 보기</DialogTitle>
         </DialogHeader>
 
-        {images.length > 0 && images[index] ? (
+        {images.length > 0 && currentImage ? (
           <div>
             <div className="relative aspect-[4/3] w-full bg-muted/20 bp-md:aspect-video">
               <Image
-                src={images[index]}
+                src={currentImage}
                 alt={`후기 사진 확대 ${index + 1}`}
                 fill
                 className="object-contain"
@@ -70,33 +72,36 @@ export default function ReviewImageViewerDialog({
             <div className="p-4 text-center text-ui-body-sm text-muted-foreground" aria-live="polite">
               {index + 1} / {images.length}
             </div>
-            {images.length > 1 ? (
-              <div
-                className="flex max-w-full gap-2 overflow-x-auto px-4 pb-4"
-                aria-label="후기 사진 썸네일"
-              >
-                {images.map((src, imageIndex) => (
-                  <button
-                    key={`${src}-${imageIndex}`}
-                    type="button"
-                    onClick={() => onChangeIndex(imageIndex)}
-                    aria-pressed={imageIndex === index}
-                    aria-label={`후기 사진 ${imageIndex + 1} 보기`}
-                    className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${imageIndex === index ? "border-primary ring-2 ring-ring" : "border-border"}`}
-                  >
-                    <Image
-                      src={src}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      sizes="64px"
-                    />
-                  </button>
-                ))}
+            {images.length > 1 && (
+              <div className="flex overflow-x-auto border-t border-border/60 bg-card p-3">
+                <div className="mx-auto flex min-w-max gap-2">
+                  {images.map((src, imageIndex) => (
+                    <button
+                      key={`${src}-${imageIndex}`}
+                      type="button"
+                      onClick={() => onChangeIndex(imageIndex)}
+                      aria-pressed={imageIndex === index}
+                      aria-label={`후기 사진 ${imageIndex + 1} 보기`}
+                      className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${imageIndex === index ? "border-primary ring-2 ring-ring" : "border-border"}`}
+                    >
+                      <Image
+                        src={src}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
-            ) : null}
+            )}
           </div>
-        ) : null}
+        ) : (
+          <p role="status" className="p-6 text-center text-ui-body-sm text-muted-foreground">
+            표시할 후기 사진이 없습니다.
+          </p>
+        )}
       </DialogContent>
     </Dialog>
   );

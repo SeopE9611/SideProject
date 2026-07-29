@@ -14,7 +14,7 @@ export function useProductDetailRelatedProducts({
   material,
   fetcher,
 }: UseProductDetailRelatedProductsParams) {
-  const relatedSectionRef = useRef<HTMLDivElement | null>(null);
+  const relatedSectionRef = useRef<HTMLElement | null>(null);
   const [shouldLoadRelated, setShouldLoadRelated] = useState(false);
 
   useEffect(() => {
