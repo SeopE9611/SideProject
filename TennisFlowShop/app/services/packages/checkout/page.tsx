@@ -106,10 +106,10 @@ export default async function Page({
             description="아래 현재 상태와 다음 행동을 확인해 주세요."
             actions={
               <>
-                <Button asChild className="rounded-control">
+                <Button asChild variant="highlight" size="lg" wrap="responsive">
                   <Link href="/mypage?tab=passes">내 패키지권 확인</Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-control">
+                <Button asChild variant="outline" size="lg" wrap="responsive">
                   <Link href="/services/packages">패키지 목록으로 이동</Link>
                 </Button>
               </>
@@ -118,12 +118,12 @@ export default async function Page({
             <PublicSurface
               variant="muted"
               padding="sm"
-              className="grid gap-3 text-ui-body-sm sm:grid-cols-2"
+              className="grid gap-3 text-ui-body-sm bp-sm:grid-cols-2"
             >
               <div className="flex items-start gap-2">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
                 <div>
-                  <p className="font-semibold text-foreground">현재 상태</p>
+                  <p className="font-ui-medium text-foreground">현재 상태</p>
                   <p className="mt-1 text-muted-foreground">
                     {isPendingOrder ? "입금 확인 대기" : "사용 가능한 패키지권 보유"}
                   </p>
@@ -135,7 +135,7 @@ export default async function Page({
                   aria-hidden="true"
                 />
                 <div>
-                  <p className="font-semibold text-foreground">다음 행동</p>
+                  <p className="font-ui-medium text-foreground">다음 행동</p>
                   <p className="mt-1 text-muted-foreground">
                     {isPendingOrder
                       ? "기존 주문의 입금 상태 확인"
