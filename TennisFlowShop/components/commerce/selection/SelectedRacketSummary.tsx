@@ -24,17 +24,17 @@ export function SelectedRacketSummary({
   helper,
 }: SelectedRacketSummaryProps) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-      <div className="border-b border-border bg-secondary/30 px-5 py-4">
+    <section className="-mx-3 border-y border-border py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:overflow-hidden bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-0 bp-md:shadow-sm">
+      <div className="border-b border-border pb-3 bp-md:bg-secondary/30 bp-md:px-5 bp-md:py-4">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
             <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
           </span>
-          <h2 className="text-ui-body-sm font-semibold text-foreground">{label}</h2>
+          <h2 className="text-ui-body-sm font-ui-bold text-foreground">{label}</h2>
         </div>
       </div>
 
-      <div className="p-4 bp-md:p-5">
+      <div className="pt-4 bp-md:p-5">
         <div className="flex gap-3 bp-md:gap-4">
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted/30 bp-md:h-20 bp-md:w-20">
             {image ? (
@@ -46,7 +46,7 @@ export function SelectedRacketSummary({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="line-clamp-2 min-w-0 break-words text-ui-body-sm font-semibold leading-tight text-foreground">
+            <h3 className="min-w-0 break-words text-ui-body-sm font-ui-medium leading-tight text-foreground">
               {name}
             </h3>
             {price && <div className="mt-2">{price}</div>}
@@ -57,7 +57,7 @@ export function SelectedRacketSummary({
         {quantityControls && <div className="mt-5">{quantityControls}</div>}
         {secondaryAction && <div className="mt-4">{secondaryAction}</div>}
         {helper && (
-          <div className="mt-4 rounded-xl border border-border bg-muted/20 p-3 text-ui-label leading-relaxed text-muted-foreground">
+          <div className="mt-4 border-t border-border pt-3 text-ui-label leading-relaxed text-muted-foreground bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:p-3">
             {helper}
           </div>
         )}

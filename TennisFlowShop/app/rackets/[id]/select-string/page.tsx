@@ -58,11 +58,11 @@ function RacketSelectionBlockedResult({ id, reasonLabel }: { id?: string; reason
           actions={
             <>
               {!isNotFound && id && (
-                <Button asChild className="rounded-control">
+                <Button asChild variant="secondary" className="min-h-11 w-full rounded-control bp-sm:w-auto">
                   <Link href={`/rackets/${id}`}>라켓 상세로 돌아가기</Link>
                 </Button>
               )}
-              <Button asChild variant="outline" className="rounded-control">
+              <Button asChild variant="outline" className="min-h-11 w-full rounded-control bp-sm:w-auto">
                 <Link href="/rackets">라켓 목록으로 이동</Link>
               </Button>
             </>

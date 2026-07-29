@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import SiteContainer from "@/components/layout/SiteContainer";
 
 export type LoginGateVariant = "packages" | "checkout" | "orderLookup" | "default";
 
@@ -125,18 +126,18 @@ export default function LoginGate({
 
   return (
     <div className={`${v.minHeight} bg-background`}>
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto">
-          <Card className="relative overflow-hidden border border-border bg-card shadow-sm">
-            <CardContent className="p-6 md:p-8">
-              <div className="w-14 h-14 rounded-2xl border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary grid place-content-center shadow-lg mb-6">
+      <SiteContainer className="py-10 bp-md:py-16">
+        <div className="mx-auto max-w-2xl">
+          <Card className="relative -mx-3 overflow-hidden rounded-none border-x-0 bg-background shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:rounded-panel bp-md:border-x bp-md:bg-card bp-md:shadow-sm">
+            <CardContent className="p-4 bp-md:p-8">
+              <div className="mb-6 grid h-14 w-14 place-content-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-sm dark:bg-primary/20">
                 <LogIn className="h-7 w-7" />
               </div>
 
-              <h1 className="mb-2 break-keep text-ui-page-title font-ui-bold tracking-normal text-foreground md:text-ui-page-title-lg">
+              <h1 className="mb-2 break-keep text-ui-page-title font-ui-bold text-foreground bp-md:text-ui-page-title-lg">
                 로그인이 필요합니다.
               </h1>
-              <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground md:text-ui-body">
+              <p className="break-keep text-ui-body-sm font-ui-regular leading-relaxed text-muted-foreground bp-md:text-ui-body">
                 {v.description}
               </p>
 
@@ -145,19 +146,19 @@ export default function LoginGate({
               </div>
             </CardContent>
 
-            <CardFooter className="px-6 pb-6 md:px-8 md:pb-8">
-              <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Button asChild variant="default" className="w-full whitespace-nowrap sm:w-auto">
+            <CardFooter className="px-4 pb-4 bp-md:px-8 bp-md:pb-8">
+              <div className="flex w-full flex-col gap-3 bp-sm:flex-row bp-sm:flex-wrap">
+                <Button asChild variant={variant === "checkout" ? "highlight_soft" : "default"} className="min-h-11 w-full whitespace-nowrap bp-sm:w-auto">
                   <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full whitespace-nowrap sm:w-auto">
+                <Button asChild variant="outline" className="min-h-11 w-full whitespace-nowrap bp-sm:w-auto">
                   <Link href={v.secondary.href}>{v.secondary.label}</Link>
                 </Button>
               </div>
             </CardFooter>
           </Card>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

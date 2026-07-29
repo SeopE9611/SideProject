@@ -21,6 +21,8 @@ type StringSelectionToolbarProps = {
   viewMode: "grid" | "list";
   onViewModeChange: (value: "grid" | "list") => void;
   total: number;
+  totalAvailable: number | null;
+  hasMore: boolean;
   isLoading: boolean;
   helper: string;
 };
@@ -34,11 +36,13 @@ export function StringSelectionToolbar({
   viewMode,
   onViewModeChange,
   total,
+  totalAvailable,
+  hasMore,
   isLoading,
   helper,
 }: StringSelectionToolbarProps) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-md:p-4">
+    <section className="-mx-3 border-y border-border px-3 py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:shadow-sm">
       <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
         <div className="relative flex-1">
           <label htmlFor="string-search" className="sr-only">
@@ -53,7 +57,7 @@ export function StringSelectionToolbar({
             value={searchValue}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="스트링명 또는 브랜드 검색"
-            className="h-10 pl-10 pr-12 bp-sm:h-11"
+            className="h-11 pl-10 pr-12 bp-md:h-10"
           />
           {searchValue && (
             <Button
@@ -62,7 +66,7 @@ export function StringSelectionToolbar({
               size="icon"
               onClick={onSearchClear}
               aria-label="스트링 검색어 지우기"
-              className="absolute right-1 top-1/2 h-10 w-10 -translate-y-1/2"
+              className="absolute right-0 top-1/2 h-11 w-11 -translate-y-1/2 bp-md:h-10 bp-md:w-10"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </Button>
@@ -75,7 +79,7 @@ export function StringSelectionToolbar({
             onValueChange={(value) => onStockFilterChange(value as "all" | "available")}
           >
             <SelectTrigger
-              className="h-10 w-full rounded-control bp-sm:h-11 bp-sm:w-[180px]"
+              className="h-11 w-full rounded-control bp-sm:w-[180px] bp-md:h-10"
               aria-label="스트링 재고 필터"
             >
               <Filter className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -113,12 +117,13 @@ export function StringSelectionToolbar({
         </div>
       </div>
 
-      <div className="mt-3 border-t border-border pt-3 text-ui-body-sm text-muted-foreground">
+      <div className="mt-3 border-t border-border pt-3 text-ui-body-sm text-muted-foreground" aria-live="polite">
         {isLoading ? (
           <Skeleton className="h-4 w-28" />
         ) : (
           <p>
-            총 <span className="font-semibold text-foreground">{total}</span>개의 스트링
+            <span className="font-ui-medium tabular-nums text-foreground">{total}</span>개 표시 중
+            {!hasMore && totalAvailable != null ? <span> · 전체 결과</span> : null}
           </p>
         )}
         <p className="mt-1 break-keep text-ui-label">{helper}</p>

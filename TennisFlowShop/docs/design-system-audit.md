@@ -184,3 +184,17 @@
 
 - 이번 완료 범위는 일반 상품·라켓 상세 렌더링이며, 라켓 `purchase`, `rent`, `select-string` 하위 플로우와 다른 주문·대여 상세 화면은 후속 단계에서 별도로 조사한다.
 - API, DB 조회, 인증·권한, 결제, 주문·대여 생성, 재고·가격 계산, 장바구니·위시리스트·비교 및 후기·문의 mutation 로직은 이번 단계에서 변경하지 않았다.
+
+## 13. 라켓 거래 스트링 선택 흐름 V2 정리
+
+### 완료
+
+- 실제 신규 구매 목적지 `/rackets/[id]/select-string`, 대여 목적지 `/rentals/[id]/select-string?period=...`, 직접 접근 가능한 주문 연계 `/racket-orders/[orderId]/select-string`의 정상·로그인·loading·error·empty·filtered empty·품절·옵션 부족·더 보기·구매 불가 표현을 V2 선택 문법으로 정리했다.
+- `/rackets/[id]/purchase`의 `/rackets/[id]/select-string` redirect와 `/rackets/[id]/rent`의 라켓 상세 redirect는 유지했으며, purchase loading만 실제 목적지와 같은 Commerce Selection skeleton으로 맞췄다.
+- 모바일 외부 section을 평탄화하고 768px 이상 카드 표면을 복원했으며, 선택 control과 CTA를 모바일 최소 44px, UI font 및 역할별 Button variant 기준으로 맞췄다.
+- 로그인 차단의 checkout variant만 대표 CTA를 `highlight_soft`로 조정하고 next URL과 다른 variant의 문구·목적지는 보존했다.
+
+### 후속 단계
+
+- 기존의 “라켓 `purchase`, `rent`, `select-string` 하위 플로우와 다른 주문·대여 상세 화면은 후속 단계” 기록은 당시 감사 시점의 범위 기록으로 보존한다. 이번 단계에서 완료한 것은 스트링 선택 및 그 redirect/loading 경계이며, checkout·결제·성공·실패 화면은 계속 후속 범위로 남는다.
+- API·DB query, 인증·권한, 판매·대여 가능 수량, 가격·재고·옵션 정규화, 장바구니·store, 주문·대여·서비스 생성과 query parameter 계약은 변경하지 않았다.

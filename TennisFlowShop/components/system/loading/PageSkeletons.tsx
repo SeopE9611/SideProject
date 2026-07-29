@@ -589,21 +589,22 @@ export function SelectStringPageSkeleton() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SiteContainer variant="wide" className="py-6 bp-md:py-10">
+      <p className="sr-only" role="status">주문 연계 스트링 선택 화면을 불러오는 중입니다.</p>
+      <SiteContainer variant="wide" className="py-6 bp-md:py-8">
         <div className="mb-8 space-y-4">
           <Skeleton className="h-5 w-24 rounded-lg" />
-          <div className="space-y-3 text-center">
-            <Skeleton className="mx-auto h-9 w-40 rounded-xl" />
-            <Skeleton className="mx-auto h-5 w-80 max-w-full rounded-lg" />
+          <div className="space-y-3">
+            <Skeleton className="h-9 w-2/3 rounded-xl" />
+            <Skeleton className="h-5 w-80 max-w-full rounded-lg" />
           </div>
         </div>
 
         <div className="grid gap-6 bp-lg:grid-cols-[1fr_340px] bp-lg:gap-8">
           <div className="space-y-6">
             <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm bp-sm:flex-row bp-sm:items-center">
-              <Skeleton className="h-10 flex-1 rounded-lg" />
+                <Skeleton className="h-11 flex-1 rounded-lg bp-md:h-10" />
               <div className="flex w-full gap-2 bp-sm:w-auto">
-                <Skeleton className="h-10 flex-1 rounded-lg bp-sm:w-[180px]" />
+                <Skeleton className="h-11 flex-1 rounded-lg bp-sm:w-[180px] bp-md:h-10" />
                 <Skeleton className="hidden h-10 w-20 rounded-lg bp-md:block" />
               </div>
             </div>
@@ -626,17 +627,17 @@ export function SelectStringPageSkeleton() {
                       <Skeleton className="h-3 w-14 rounded-lg" />
                       <div className="flex gap-1.5">
                         {Array.from({ length: 4 }).map((__, colorIndex) => (
-                          <Skeleton key={colorIndex} className="h-8 w-8 rounded-md" />
+                          <Skeleton key={colorIndex} className="h-11 w-11 rounded-md bp-md:h-10 bp-md:w-10" />
                         ))}
                       </div>
                     </div>
                     <div className="mb-3 space-y-2">
                       <Skeleton className="h-3 w-14 rounded-lg" />
-                      <Skeleton className="h-9 w-full rounded-lg" />
+                      <Skeleton className="h-11 w-full rounded-lg bp-md:h-10" />
                     </div>
                     <div className="mt-auto space-y-2 pt-2">
-                      <Skeleton className="h-10 w-full rounded-lg" />
-                      <Skeleton className="h-10 w-full rounded-lg" />
+                      <Skeleton className="h-11 w-full rounded-lg bp-md:h-10" />
+                      <Skeleton className="h-11 w-full rounded-lg bp-md:h-10" />
                       <Skeleton className="mx-auto h-3 w-40 max-w-full rounded-lg" />
                     </div>
                   </CardContent>
@@ -645,7 +646,7 @@ export function SelectStringPageSkeleton() {
             </div>
           </div>
 
-          <div className="hidden bp-lg:block bp-lg:sticky bp-lg:top-24 bp-lg:h-fit">
+          <div className="hidden bp-lg:block bp-lg:sticky bp-lg:top-[calc(var(--header-h,64px)+1rem)] bp-lg:h-fit">
             {selectedRacketSummary}
           </div>
         </div>

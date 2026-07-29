@@ -96,7 +96,7 @@ export default function SelectStringLayout({
     {},
   );
 
-  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({
+  const { products, total, isLoadingInitial, isFetchingMore, error, hasMore, loadMore, reset } = useInfiniteProducts({
     limit: 12,
     purpose: "stringing",
   });
@@ -253,7 +253,7 @@ export default function SelectStringLayout({
         : finalCtaSubLabel;
 
   const renderQuantityControls = () => (
-    <div className="rounded-xl border border-border bg-secondary/30 p-4">
+    <div className="border-y border-border py-4 bp-md:rounded-xl bp-md:border bp-md:bg-secondary/30 bp-md:p-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-ui-body-sm font-medium text-foreground">번들 수량</span>
         <span className="text-ui-label text-muted-foreground">최대 {maxQty}개</span>
@@ -267,7 +267,7 @@ export default function SelectStringLayout({
             type="button"
             variant="outline"
             size="icon"
-            className="h-10 w-10 bp-sm:h-11 bp-sm:w-11"
+            className="h-11 w-11 bp-md:h-10 bp-md:w-10"
             aria-label="라켓과 스트링 수량 줄이기"
             onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))}
             disabled={workCount <= 1}
@@ -282,13 +282,13 @@ export default function SelectStringLayout({
             value={workCount}
             aria-label="라켓과 스트링 수량"
             onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))}
-            className="h-10 w-16 text-center text-ui-body-sm bp-sm:h-11"
+            className="h-11 w-16 text-center text-ui-body-sm tabular-nums bp-md:h-10"
           />
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-10 w-10 bp-sm:h-11 bp-sm:w-11"
+            className="h-11 w-11 bp-md:h-10 bp-md:w-10"
             aria-label="라켓과 스트링 수량 늘리기"
             onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))}
             disabled={workCount >= maxQty}
@@ -346,7 +346,7 @@ export default function SelectStringLayout({
             type="button"
             variant="outline"
             wrap="nowrap"
-            className="h-10 w-full rounded-xl"
+            className="h-11 w-full rounded-xl bp-md:h-10"
             onClick={onSkipString}
           >
             스트링 없이 {flowType === "rental" ? "대여" : "구매"}하기
@@ -355,7 +355,7 @@ export default function SelectStringLayout({
       }
       helper={
         <>
-          <p className="font-semibold text-foreground">다음 단계 안내</p>
+          <p className="font-ui-medium text-foreground">다음 단계 안내</p>
           <p className="mt-1 break-keep">
             {flowType === "rental"
               ? "선택한 대여 라켓과 스트링 옵션은 신청 단계에서 한 번 더 확인할 수 있습니다."
@@ -390,13 +390,23 @@ export default function SelectStringLayout({
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               total={filteredProducts.length}
+              totalAvailable={total}
+              hasMore={hasMore}
               isLoading={isLoadingInitial}
               helper={resultHelper}
             />
 
             {isLoadingInitial ? (
               <StringSelectionCardSkeleton viewMode={viewMode} />
+            ) : error && products.length === 0 ? (
+              <EmptyState
+                icon={<ShoppingBag className="h-12 w-12" />}
+                title="스트링 목록을 불러오지 못했습니다"
+                description="잠시 후 다시 시도해주세요. 선택한 라켓 정보는 그대로 유지됩니다."
+                action={<Button variant="secondary" className="min-h-11" onClick={reset}>다시 시도</Button>}
+              />
             ) : filteredProducts.length === 0 ? (
+              <>
               <EmptyState
                 icon={<ShoppingBag className="h-12 w-12" />}
                 title={
@@ -406,13 +416,16 @@ export default function SelectStringLayout({
                 }
                 description={
                   products?.length === 0
-                    ? "스트링 상품의 장착 서비스와 재고 설정을 확인해주세요."
-                    : "검색어 또는 재고 필터를 변경해보세요."
+                    ? "현재 선택할 수 있는 스트링이 없습니다. 잠시 후 다시 확인해주세요."
+                    : hasMore
+                      ? "검색어나 재고 필터를 바꾸거나 다음 상품을 더 불러와보세요."
+                      : "검색어 또는 재고 필터를 변경해보세요."
                 }
                 action={
                   searchQuery || stockFilter !== "all" ? (
                     <Button
                       variant="outline"
+                      className="min-h-11"
                       onClick={() => {
                         setSearchQuery("");
                         setStockFilter("all");
@@ -423,6 +436,8 @@ export default function SelectStringLayout({
                   ) : undefined
                 }
               />
+              {hasMore ? <div className="mt-3 flex justify-center"><Button variant="secondary" className="min-h-11 w-full bp-sm:w-auto" onClick={loadMore} disabled={isFetchingMore}>{isFetchingMore ? "더 불러오는 중…" : "다음 상품 더 보기"}</Button></div> : null}
+              </>
             ) : (
               <>
                 <div
@@ -464,7 +479,8 @@ export default function SelectStringLayout({
                       variant="outline"
                       onClick={loadMore}
                       disabled={isFetchingMore}
-                      className="min-w-[200px]"
+                      className="min-h-11 w-full min-w-[200px] bp-sm:w-auto"
+                      aria-busy={isFetchingMore}
                       aria-label="스트링 더 불러오기"
                     >
                       {isFetchingMore ? (
