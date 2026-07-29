@@ -95,10 +95,10 @@ export default function StringPackagesPageClient({
     packages.length <= 1
       ? "max-w-md grid-cols-1"
       : packages.length === 2
-        ? "max-w-4xl grid-cols-1 bp-sm:grid-cols-2"
+        ? "max-w-4xl grid-cols-1 bp-md:grid-cols-2"
         : packages.length === 3
-          ? "max-w-[1500px] grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3"
-          : "max-w-[1500px] grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4";
+          ? "max-w-[1500px] grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3"
+          : "max-w-[1500px] grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 bp-2xl:grid-cols-4";
 
   // 처음 진입 시 쿼리로 스크롤 트리거
   useEffect(() => {
@@ -128,7 +128,7 @@ export default function StringPackagesPageClient({
     <div className="min-h-screen bg-background">
       <section className="border-b border-border bg-muted/30 py-8 bp-sm:py-10">
         <SiteContainer>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] lg:items-center">
+          <div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] bp-lg:items-center">
             <div className="max-w-3xl space-y-4">
               <Badge variant="signal">스트링 교체 패키지</Badge>
               <div className="space-y-3">
@@ -153,7 +153,7 @@ export default function StringPackagesPageClient({
               </div>
             </div>
 
-            <PublicSurface variant="inverse" padding="md" className="lg:justify-self-end">
+            <PublicSurface variant="inverse" padding="md" className="bp-lg:justify-self-end">
               <p className="text-ui-label font-medium text-surface-inverse-muted">이용 흐름</p>
               <ol className="mt-4 space-y-3">
                 {packageUseSteps.map((step, index) => (
@@ -175,12 +175,12 @@ export default function StringPackagesPageClient({
       <section
         id="packages"
         ref={packagesSectionRef}
-        className="scroll-mt-[calc(var(--header-h)+1rem)] bg-background py-10 md:py-14"
+        className="scroll-mt-[calc(var(--header-h)+1rem)] bg-background py-10 bp-md:py-14"
       >
         <SiteContainer variant="wide">
           <SectionHeader
             align="left"
-            className="mb-6 md:mb-8"
+            className="mb-6 bp-md:mb-8"
             eyebrow={<Badge variant={packagesBadgeVariant("selection")}>패키지 선택</Badge>}
             title="횟수와 총액을 한 번에 비교하세요"
             description="이용 횟수, 회당 금액, 절감액과 유효기간만 빠르게 확인할 수 있도록 정리했습니다."
@@ -188,7 +188,7 @@ export default function StringPackagesPageClient({
           {ownershipBlockedMessage && (
             <PublicSurface
               variant="muted"
-              className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+              className="mb-6 flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between"
             >
               <div>
                 <p className="text-ui-body-sm font-semibold text-foreground">
@@ -198,7 +198,7 @@ export default function StringPackagesPageClient({
                   {ownershipBlockedMessage}
                 </p>
               </div>
-              <Button variant="outline" className="w-full md:w-auto" asChild>
+              <Button variant="highlight_soft" className="min-h-11 w-full bp-sm:w-auto" asChild>
                 <Link href={ownershipCtaHref}>{ownershipCtaLabel}</Link>
               </Button>
             </PublicSurface>
@@ -225,10 +225,10 @@ export default function StringPackagesPageClient({
         </SiteContainer>
       </section>
 
-      <section className="bg-background py-10 md:py-14">
+      <section className="bg-background py-10 bp-md:py-14">
         <SiteContainer variant="wide">
           <PublicSurface variant="inverse" padding="lg">
-            <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div className="grid gap-6 bp-lg:grid-cols-[0.8fr_1.2fr] bp-lg:items-start">
               <div className="space-y-3">
                 <Badge variant="secondary">패키지 이용 가치</Badge>
                 <h2 className="text-ui-section-title-lg font-semibold text-surface-inverse-foreground">
@@ -239,11 +239,11 @@ export default function StringPackagesPageClient({
                   이용 방식입니다.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="grid min-w-0 grid-cols-2 gap-3 bp-lg:grid-cols-4">
                 {packageValueItems.map((item) => (
                   <div
                     key={item.title}
-                    className="rounded-control border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 p-4"
+                    className="min-w-0 rounded-control border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 p-4"
                   >
                     <div className="text-surface-inverse-muted">{item.icon}</div>
                     <h3 className="mt-3 break-keep text-ui-body-sm font-semibold text-surface-inverse-foreground">
@@ -260,11 +260,11 @@ export default function StringPackagesPageClient({
         </SiteContainer>
       </section>
 
-      <section className="bg-background py-10 md:py-14">
+      <section className="bg-background py-10 bp-md:py-14">
         <SiteContainer variant="wide">
           <SectionHeader
             align="center"
-            className="mb-8 md:mb-10"
+            className="mb-8 bp-md:mb-10"
             eyebrow={<Badge variant={packagesBadgeVariant("faq")}>자주 묻는 질문</Badge>}
             title="패키지 이용 안내"
             description="구매 전 자주 확인하는 내용을 간결하게 정리했습니다."
@@ -296,8 +296,8 @@ export default function StringPackagesPageClient({
             </Accordion>
           </PublicSurface>
 
-          <div className="mt-8 text-center md:mt-10">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+          <div className="mt-8 text-center bp-md:mt-10">
+            <Button size="lg" variant="outline" className="min-h-11 w-full bp-sm:w-auto" asChild>
               <Link href="/board/qna">
                 <MessageSquare className="h-5 w-5" />
                 패키지 이용 문의하기
