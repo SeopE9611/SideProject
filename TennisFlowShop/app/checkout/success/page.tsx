@@ -7,13 +7,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { ResultState } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { hasGuestOrderAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { buildCheckoutSuccessLinks } from "@/lib/checkout-success-links";
@@ -689,31 +683,12 @@ export default async function CheckoutSuccessPage({
           </SiteContainer>
 
           <SiteContainer variant="wide" className="pb-8">
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* 주문 정보 카드 */}
-              <Card
+            <div className="mx-auto max-w-4xl space-y-6">
+              <section
                 data-cy="checkout-success-order-card"
-                className="overflow-hidden border-y border-border/80 bg-card bp-sm:rounded-panel bp-sm:border"
+                className="border-y border-border/80 bg-card"
               >
-                <div className="border-b border-border/80 bg-muted/20 p-4 bp-sm:p-5">
-                  <CardTitle className="flex flex-wrap items-center gap-3 break-keep text-ui-section-title leading-relaxed bp-sm:text-ui-section-title-lg">
-                    <Package className="h-6 w-6 text-primary" />
-                    주문 정보
-                    {withStringService && (
-                      <span className="rounded-full border border-border px-2 py-0.5 text-ui-caption font-medium text-muted-foreground">
-                        교체서비스 포함
-                      </span>
-                    )}
-                  </CardTitle>
-                  <CardDescription className="mt-2 text-muted-foreground">
-                    {withStringService
-                      ? "주문 및 교체서비스 진행 정보를 한\u00A0번에 확인하세요."
-                      : isVisitPickup
-                        ? "주문 정보와 수령 안내를 확인하세요."
-                        : "주문 정보와 배송 상태를 확인하세요."}
-                  </CardDescription>
-                </div>
-                <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+                <div className="p-4 bp-sm:p-5 bp-lg:p-6">
                   {/* 문서 정보 */}
                   <div className="mb-6">
                     <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
@@ -749,20 +724,6 @@ export default async function CheckoutSuccessPage({
                             : "현재 주문에 교체서비스가 포함되어 있습니다."}
                         </p>
                       )}
-                      {withStringService && hasSubmittedApplication && stringingApplicationHref ? (
-                        <Button
-                          variant="highlight_soft"
-                          size="lg"
-                          wrap="responsive"
-                          className="w-full bp-sm:w-auto"
-                          asChild
-                        >
-                          <Link href={stringingApplicationHref} className="flex items-center gap-2">
-                            신청 내역 보기
-                            <ArrowRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      ) : null}
                     </div>
                   </div>
 
@@ -784,7 +745,7 @@ export default async function CheckoutSuccessPage({
                         <p className="mt-1 text-muted-foreground">{progressGuide.next}</p>
                       </div>
                     </div>
-                    <div className="mt-4 flex flex-col gap-3 bp-sm:flex-row">
+                    <div className="mt-4 flex flex-col gap-3 bp-lg:flex-row">
                       <Button
                         asChild
                         variant="highlight"
@@ -803,6 +764,22 @@ export default async function CheckoutSuccessPage({
                       >
                         <Link href="/support">고객센터 문의하기</Link>
                       </Button>
+                      {withStringService &&
+                      hasSubmittedApplication &&
+                      stringingApplicationHref ? (
+                        <Button
+                          variant="highlight_soft"
+                          size="lg"
+                          wrap="responsive"
+                          className="flex-1"
+                          asChild
+                        >
+                          <Link href={stringingApplicationHref} className="flex items-center gap-2">
+                            신청 내역 보기
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
 
@@ -1281,9 +1258,9 @@ export default async function CheckoutSuccessPage({
                       </p>
                     </div>
                   </div>
-                </CardContent>
+                </div>
 
-                <CardFooter className="border-t border-border/80 bg-background p-4 bp-sm:p-5 bp-lg:p-6">
+                <div className="border-t border-border/80 bg-background p-4 bp-sm:p-5 bp-lg:p-6">
                   <div className="flex w-full flex-col gap-3 bp-sm:flex-row">
                     <Button
                       variant="highlight_soft"
@@ -1310,8 +1287,8 @@ export default async function CheckoutSuccessPage({
                       />
                     </div>
                   </div>
-                </CardFooter>
-              </Card>
+                </div>
+              </section>
 
               {/* 안내사항 */}
               <section className="border-t border-border/80">
