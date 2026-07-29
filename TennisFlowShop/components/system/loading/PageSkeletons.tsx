@@ -561,94 +561,78 @@ export function UsageCardListSkeleton({
 }
 
 export function SelectStringPageSkeleton() {
-  const selectedRacketSummary = (
-    <Card className="overflow-hidden rounded-2xl border-border bg-card shadow-sm">
-      <div className="border-b border-border bg-secondary/30 px-5 py-4">
-        <Skeleton className="h-5 w-32 rounded-lg" />
-      </div>
-      <CardContent className="space-y-5 p-5">
-        <div className="flex gap-4">
-          <Skeleton className="h-20 w-20 flex-shrink-0 rounded-xl" />
-          <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-4 w-full rounded-lg" />
-            <Skeleton className="h-4 w-2/3 rounded-lg" />
-            <Skeleton className="h-5 w-28 rounded-lg" />
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-secondary/30 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <Skeleton className="h-4 w-20 rounded-lg" />
-            <Skeleton className="h-4 w-12 rounded-lg" />
-          </div>
-          <Skeleton className="h-10 w-full rounded-lg" />
-        </div>
-        <Skeleton className="h-10 w-full rounded-lg" />
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="min-h-screen bg-background">
-      <p className="sr-only" role="status">주문 연계 스트링 선택 화면을 불러오는 중입니다.</p>
-      <SiteContainer variant="wide" className="py-6 bp-md:py-8">
-        <div className="mb-8 space-y-4">
-          <Skeleton className="h-5 w-24 rounded-lg" />
-          <div className="space-y-3">
+      <p className="sr-only" role="status" aria-live="polite">
+        주문 연계 스트링 선택 화면을 불러오는 중입니다.
+      </p>
+      <SiteContainer variant="wide" className="space-y-5 py-6 bp-md:py-8">
+        <div className="space-y-4" aria-hidden="true">
+          <div className="max-w-3xl space-y-2">
+            <Skeleton className="h-5 w-32 rounded-full" />
             <Skeleton className="h-9 w-2/3 rounded-xl" />
             <Skeleton className="h-5 w-80 max-w-full rounded-lg" />
           </div>
-        </div>
-
-        <div className="grid gap-6 bp-lg:grid-cols-[1fr_340px] bp-lg:gap-8">
-          <div className="space-y-6">
-            <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm bp-sm:flex-row bp-sm:items-center">
-                <Skeleton className="h-11 flex-1 rounded-lg bp-md:h-10" />
-              <div className="flex w-full gap-2 bp-sm:w-auto">
-                <Skeleton className="h-11 flex-1 rounded-lg bp-sm:w-[180px] bp-md:h-10" />
-                <Skeleton className="hidden h-10 w-20 rounded-lg bp-md:block" />
+          <section className="-mx-3 border-y border-border px-3 py-4 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-2xl bp-md:border bp-md:bg-card bp-md:p-5 bp-md:shadow-sm">
+            <div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-20 rounded-lg" />
+                <Skeleton className="h-6 w-2/3 rounded-lg" />
+                <Skeleton className="h-4 w-full max-w-sm rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 border-y border-border py-3 bp-md:min-w-56 bp-md:gap-2 bp-md:border-0 bp-md:py-0">
+                <Skeleton className="mx-2 h-12 rounded-lg bp-md:mx-0" />
+                <Skeleton className="mx-2 h-12 rounded-lg bp-md:mx-0" />
               </div>
             </div>
+            <Skeleton className="mt-4 h-12 w-full rounded-lg" />
+          </section>
+        </div>
 
-            <div className="bp-lg:hidden">{selectedRacketSummary}</div>
-
-            <Skeleton className="h-5 w-36 rounded-lg" />
-
-            <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <Card key={index} className="overflow-hidden rounded-2xl border-border bg-card">
-                  <Skeleton className="aspect-square w-full" />
-                  <CardContent className="flex flex-col p-4">
-                    <div className="mb-3 space-y-2">
-                      <Skeleton className="h-4 w-4/5 rounded-lg" />
-                      <Skeleton className="h-3 w-2/3 rounded-lg" />
-                      <Skeleton className="h-6 w-24 rounded-lg" />
-                    </div>
-                    <div className="mb-3 space-y-2">
-                      <Skeleton className="h-3 w-14 rounded-lg" />
-                      <div className="flex gap-1.5">
-                        {Array.from({ length: 4 }).map((__, colorIndex) => (
-                          <Skeleton key={colorIndex} className="h-11 w-11 rounded-md bp-md:h-10 bp-md:w-10" />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mb-3 space-y-2">
-                      <Skeleton className="h-3 w-14 rounded-lg" />
-                      <Skeleton className="h-11 w-full rounded-lg bp-md:h-10" />
-                    </div>
-                    <div className="mt-auto space-y-2 pt-2">
-                      <Skeleton className="h-11 w-full rounded-lg bp-md:h-10" />
-                      <Skeleton className="h-11 w-full rounded-lg bp-md:h-10" />
-                      <Skeleton className="mx-auto h-3 w-40 max-w-full rounded-lg" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+        <div className="space-y-4" aria-hidden="true">
+          <section className="-mx-3 border-y border-border px-3 py-3 bp-sm:-mx-4 bp-sm:px-4 bp-md:mx-0 bp-md:rounded-2xl bp-md:border bp-md:bg-muted/30 bp-md:px-4">
+            <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-36 rounded-lg" />
+                <Skeleton className="h-4 w-72 max-w-full rounded-lg" />
+              </div>
+              <Skeleton className="h-4 w-20 rounded-lg" />
             </div>
-          </div>
+          </section>
 
-          <div className="hidden bp-lg:block bp-lg:sticky bp-lg:top-[calc(var(--header-h,64px)+1rem)] bp-lg:h-fit">
-            {selectedRacketSummary}
+          <div className="grid gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index} className="rounded-2xl border-border bg-card">
+                <CardContent className="flex h-full flex-col p-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-4/5 rounded-lg" />
+                    <Skeleton className="h-4 w-32 rounded-lg" />
+                    <Skeleton className="h-4 w-24 rounded-lg" />
+                  </div>
+                  <div className="mt-4 space-y-2 border-t border-border pt-3 bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:p-3">
+                    <Skeleton className="h-4 w-14 rounded-lg" />
+                    <div className="flex gap-2">
+                      {Array.from({ length: 3 }).map((__, colorIndex) => (
+                        <Skeleton
+                          key={colorIndex}
+                          className="h-11 w-11 rounded-xl bp-md:h-10 bp-md:w-10"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-2 border-t border-border pt-3 bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:p-3">
+                    <Skeleton className="h-4 w-24 rounded-lg" />
+                    <Skeleton className="h-11 w-full rounded-xl bp-md:h-10" />
+                  </div>
+                  <div className="mt-3 border-t border-border pt-3 bp-md:rounded-xl bp-md:border bp-md:bg-muted/20 bp-md:px-3 bp-md:py-2">
+                    <Skeleton className="h-5 w-full rounded-lg" />
+                  </div>
+                  <Skeleton className="mt-4 h-11 w-full rounded-xl bp-md:h-10" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
+          <Skeleton className="h-11 w-full rounded-xl bp-md:h-10" />
         </div>
       </SiteContainer>
     </div>
