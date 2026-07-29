@@ -199,7 +199,10 @@ export default function PackageNiceCheckoutButton({
       <Button
         id={buttonId}
         onClick={handleClick}
-        className="w-full h-14 text-ui-card-title-lg"
+        variant="highlight"
+        size="tall"
+        wrap="responsive"
+        className="w-full"
         disabled={isDisabled}
       >
         {loading ? (
