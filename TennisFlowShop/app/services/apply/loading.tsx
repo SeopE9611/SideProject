@@ -27,7 +27,7 @@ export default function StringServiceApplyLoading() {
           ))}
         </div>
 
-        <div className="grid items-start gap-5 bp-lg:grid-cols-[minmax(0,820px)_340px] bp-lg:justify-center">
+        <div className="grid items-start gap-5 bp-lg:grid-cols-[minmax(0,1fr)_320px] bp-xl:grid-cols-[minmax(0,820px)_340px] bp-xl:justify-center">
           <div className="-mx-3 border-y border-border bg-card p-4 shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border bp-sm:p-5 bp-sm:shadow-soft bp-lg:p-6">
             <Skeleton className="h-6 w-48" />
             <Skeleton className="mt-2 h-4 w-full max-w-md" />

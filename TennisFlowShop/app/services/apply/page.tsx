@@ -1738,7 +1738,7 @@ export default function StringServiceApplyPage() {
           </div>
 
           {/* 본문: 데스크톱은 입력 영역과 Sticky 요약을 실제 grid로 분리 */}
-          <div className="grid items-start gap-5 bp-lg:grid-cols-[minmax(0,820px)_340px] bp-lg:justify-center">
+          <div className="grid items-start gap-5 bp-lg:grid-cols-[minmax(0,1fr)_320px] bp-xl:grid-cols-[minmax(0,820px)_340px] bp-xl:justify-center">
             {/* 메인 폼 */}
             <div className="min-w-0">
               {paymentError ? (
