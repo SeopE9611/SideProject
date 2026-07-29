@@ -83,7 +83,7 @@ export default function ServicesLoading() {
               {Array.from({ length: 6 }).map((_, index) => (
                 <div
                   key={index}
-                  className="flex min-w-0 items-start gap-3 border-b border-border p-4 bp-sm:border-r bp-lg:[&:nth-child(3n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:[&:nth-last-child(-n+3)]:border-b-0"
+                  className="flex min-w-0 items-start gap-3 border-b border-border p-4 bp-sm:border-r bp-sm:[&:nth-child(2n)]:border-r-0 bp-lg:[&:nth-child(2n)]:border-r bp-lg:[&:nth-child(3n)]:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0 bp-lg:[&:nth-last-child(-n+3)]:border-b-0"
                 >
                   <Skeleton className="mt-0.5 h-5 w-5 shrink-0 rounded-control" />
                   <div className="min-w-0 flex-1 space-y-2">
@@ -121,7 +121,7 @@ export default function ServicesLoading() {
               </div>
             </div>
             <PublicSurface padding="none" className="overflow-hidden">
-              <div className="hidden grid-cols-[1.1fr_0.7fr_1fr_1fr] border-b border-border bg-muted/40 px-4 py-3 bp-sm:grid">
+              <div className="hidden grid-cols-[1.1fr_0.7fr_1fr_1fr] border-b border-border bg-muted/40 px-4 py-3 bp-md:grid">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <Skeleton key={index} className="h-4 w-full max-w-20 rounded-control" />
                 ))}
@@ -129,7 +129,7 @@ export default function ServicesLoading() {
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="grid gap-2 border-b border-border px-4 py-3 last:border-b-0 bp-sm:grid-cols-[1.1fr_0.7fr_1fr_1fr]"
+                  className="grid gap-2 border-b border-border px-4 py-3 last:border-b-0 bp-md:grid-cols-[1.1fr_0.7fr_1fr_1fr]"
                 >
                   <Skeleton className="h-5 w-full max-w-28 rounded-control" />
                   <Skeleton className="h-5 w-full max-w-16 rounded-control" />
@@ -137,7 +137,7 @@ export default function ServicesLoading() {
                   <Skeleton className="h-5 w-full max-w-24 rounded-control" />
                 </div>
               ))}
-              <div className="grid gap-2 px-4 py-3 bp-sm:grid-cols-[1.1fr_2.7fr]">
+              <div className="grid gap-2 px-4 py-3 bp-md:grid-cols-[1.1fr_2.7fr]">
                 <Skeleton className="h-5 w-full max-w-32 rounded-control" />
                 <Skeleton className="h-5 w-full max-w-sm rounded-control" />
               </div>

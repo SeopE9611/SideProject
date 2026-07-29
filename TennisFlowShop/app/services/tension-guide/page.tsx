@@ -389,7 +389,7 @@ export default function TensionGuidePage() {
     align: "left" | "center" = "left",
     reserveIconSpace = false,
   ) =>
-    `relative rounded-xl border p-3 ${reserveIconSpace ? "pr-7" : ""} ${
+    `relative min-h-11 rounded-xl border p-3 ${reserveIconSpace ? "pr-7" : ""} ${
       align === "center" ? "text-center" : "text-left"
     } transition-[background-color,color,border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
       selected
@@ -405,7 +405,7 @@ export default function TensionGuidePage() {
           <span>{pro}</span>
         ) : (
           <span>
-            <strong className="font-semibold text-foreground">{pro.title}</strong> —{" "}
+            <strong className="font-ui-medium text-foreground">{pro.title}</strong> —{" "}
             {pro.description}
           </span>
         )}
@@ -443,7 +443,7 @@ export default function TensionGuidePage() {
             </div>
           </div>
           <PublicSurface variant="feature" className="space-y-4">
-            <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-ui-label font-ui-medium uppercase tracking-[0.14em] text-muted-foreground">
               이용 흐름
             </p>
             {[
@@ -455,7 +455,7 @@ export default function TensionGuidePage() {
                 key={step}
                 className="flex items-center gap-3 border-t border-border pt-4 first:border-t-0 first:pt-0"
               >
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-highlight-muted text-ui-label font-semibold text-brand-highlight-ink">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-highlight-muted text-ui-label font-ui-medium text-brand-highlight-ink">
                   {index + 1}
                 </span>
                 <span className="text-ui-body-sm font-medium text-foreground">{step}</span>
@@ -500,7 +500,7 @@ export default function TensionGuidePage() {
               <div className="grid bp-lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]">
                 <div className="space-y-7 p-4 bp-sm:p-6 bp-lg:p-8">
                   <div className="space-y-3">
-                    <h3 className="flex items-center gap-2 text-ui-card-title font-semibold text-foreground">
+                    <h3 className="flex items-center gap-2 text-ui-card-title font-ui-medium text-foreground">
                       <Settings2 className="h-4 w-4 text-muted-foreground" aria-hidden />
                       플레이 조건 입력
                     </h3>
@@ -510,7 +510,7 @@ export default function TensionGuidePage() {
                   </div>
                   <div className="space-y-5">
                     <div className="space-y-2">
-                      <p className="text-ui-body-sm font-semibold text-foreground">성별</p>
+                      <p className="text-ui-body-sm font-ui-medium text-foreground">성별</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           { id: "female", label: "여자", desc: "여성 추천 범위" },
@@ -523,7 +523,7 @@ export default function TensionGuidePage() {
                             onClick={() => setGender(option.id as Gender)}
                             className={choiceClass(gender === option.id)}
                           >
-                            <span className="flex items-center justify-between gap-2 text-ui-body-sm font-semibold">
+                            <span className="flex items-center justify-between gap-2 text-ui-body-sm font-ui-medium">
                               {option.label}
                               {gender === option.id && (
                                 <CheckCircle2
@@ -540,7 +540,7 @@ export default function TensionGuidePage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-ui-body-sm font-semibold text-foreground">스윙 스피드</p>
+                      <p className="text-ui-body-sm font-ui-medium text-foreground">스윙 스피드</p>
                       <div className="grid grid-cols-3 gap-2">
                         {swingSpeedOptions.map((option) => (
                           <button
@@ -550,7 +550,7 @@ export default function TensionGuidePage() {
                             onClick={() => setSwingSpeed(option.id as SwingSpeed)}
                             className={choiceClass(swingSpeed === option.id, "center", true)}
                           >
-                            <span className="block text-ui-label font-semibold bp-sm:text-ui-body-sm">
+                            <span className="block text-ui-label font-ui-medium bp-sm:text-ui-body-sm">
                               {option.label}
                             </span>
                             <span className="mt-1 hidden text-ui-label text-muted-foreground bp-sm:block">
@@ -567,7 +567,7 @@ export default function TensionGuidePage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-ui-body-sm font-semibold text-foreground">스트링 타입</p>
+                      <p className="text-ui-body-sm font-ui-medium text-foreground">스트링 타입</p>
                       <div className="grid grid-cols-2 gap-2">
                         {stringTypes.map((st) => (
                           <button
@@ -577,7 +577,7 @@ export default function TensionGuidePage() {
                             onClick={() => setStringType(st.id)}
                             className={choiceClass(stringType === st.id, "left", true)}
                           >
-                            <span className="flex items-center gap-2 text-ui-body-sm font-semibold">
+                            <span className="flex items-center gap-2 text-ui-body-sm font-ui-medium">
                               <st.icon className="h-4 w-4 text-muted-foreground" aria-hidden />
                               {st.name}
                             </span>
@@ -596,7 +596,7 @@ export default function TensionGuidePage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-ui-body-sm font-semibold text-foreground">플레이 스타일</p>
+                      <p className="text-ui-body-sm font-ui-medium text-foreground">플레이 스타일</p>
                       <div className="grid grid-cols-3 gap-2">
                         {playStyleOptions.map((option) => (
                           <button
@@ -606,7 +606,7 @@ export default function TensionGuidePage() {
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
                             className={choiceClass(playStyle === option.id, "center", true)}
                           >
-                            <span className="block text-ui-label font-semibold bp-sm:text-ui-body-sm">
+                            <span className="block text-ui-label font-ui-medium bp-sm:text-ui-body-sm">
                               {option.label}
                             </span>
                             <span className="mt-1 hidden text-ui-label text-muted-foreground bp-sm:block">
@@ -634,10 +634,10 @@ export default function TensionGuidePage() {
                         추천 텐션
                       </p>
                       <div className="mt-3 flex items-end gap-2">
-                        <span className="text-ui-page-title-lg font-semibold tabular-nums text-brand-highlight">
+                        <span className="text-ui-page-title-lg font-ui-medium tabular-nums text-brand-highlight">
                           {calculatedTension}
                         </span>
-                        <span className="pb-2 text-ui-card-title font-semibold text-brand-highlight">
+                        <span className="pb-2 text-ui-card-title font-ui-medium text-brand-highlight">
                           LB
                         </span>
                       </div>
@@ -673,7 +673,7 @@ export default function TensionGuidePage() {
                         <p className="text-ui-label text-surface-inverse-muted">
                           선택 성별 추천 범위
                         </p>
-                        <p className="mt-1 text-ui-body font-semibold tabular-nums">
+                        <p className="mt-1 text-ui-body font-ui-medium tabular-nums">
                           {gender === "female" ? "여자" : "남자"} {selectedRange.min}~
                           {selectedRange.max}LB
                         </p>
@@ -682,14 +682,14 @@ export default function TensionGuidePage() {
                         <p className="text-ui-label text-surface-inverse-muted">
                           반대 성별 참고 범위
                         </p>
-                        <p className="mt-1 text-ui-body font-semibold tabular-nums">
+                        <p className="mt-1 text-ui-body font-ui-medium tabular-nums">
                           {oppositeGender === "female" ? "여자" : "남자"} {oppositeRange.min}~
                           {oppositeRange.max}LB
                         </p>
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-ui-body-sm font-semibold text-surface-inverse-foreground">
+                      <h3 className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground">
                         계산 근거
                       </h3>
                       <ul className="mt-2 divide-y divide-surface-inverse-foreground/15">
@@ -701,7 +701,7 @@ export default function TensionGuidePage() {
                             <span
                               className={
                                 row.emphasis
-                                  ? "font-semibold text-surface-inverse-foreground"
+                                  ? "font-ui-medium text-surface-inverse-foreground"
                                   : "text-surface-inverse-muted"
                               }
                             >
@@ -710,7 +710,7 @@ export default function TensionGuidePage() {
                             <span
                               className={
                                 row.emphasis
-                                  ? "font-semibold tabular-nums text-brand-highlight"
+                                  ? "font-ui-medium tabular-nums text-brand-highlight"
                                   : "font-medium tabular-nums text-surface-inverse-foreground"
                               }
                             >
@@ -741,10 +741,10 @@ export default function TensionGuidePage() {
                       aria-hidden
                     />
                     <div>
-                      <p className="text-ui-body-sm font-semibold text-foreground">
+                      <p className="text-ui-body-sm font-ui-medium text-foreground">
                         {factor.factor}
                       </p>
-                      <p className="mt-1 text-ui-card-title font-semibold tabular-nums text-foreground">
+                      <p className="mt-1 text-ui-card-title font-ui-medium tabular-nums text-foreground">
                         {factor.adjustment}
                       </p>
                       <p className="mt-1 text-ui-body-sm text-muted-foreground">{factor.reason}</p>
@@ -779,7 +779,7 @@ export default function TensionGuidePage() {
                             <IconComponent className="h-5 w-5" aria-hidden />
                           </span>
                           <div>
-                            <h3 className="text-ui-card-title font-semibold text-foreground">
+                            <h3 className="text-ui-card-title font-ui-medium text-foreground">
                               {player.type}
                             </h3>
                             <p className="mt-1 text-ui-body-sm text-muted-foreground">
@@ -883,7 +883,7 @@ export default function TensionGuidePage() {
                   className={choiceClass(stringType === st.id, "center", true)}
                 >
                   <st.icon className="mx-auto mb-2 h-4 w-4 text-muted-foreground" aria-hidden />
-                  <span className="text-ui-label font-semibold bp-sm:text-ui-body-sm">
+                  <span className="text-ui-label font-ui-medium bp-sm:text-ui-body-sm">
                     {st.name}
                   </span>
                   {stringType === st.id && (
@@ -898,7 +898,7 @@ export default function TensionGuidePage() {
             <PublicSurface className="space-y-6">
               <div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
                 <div>
-                  <h3 className="text-ui-section-title font-semibold text-foreground">
+                  <h3 className="text-ui-section-title font-ui-medium text-foreground">
                     {selectedString.name}
                   </h3>
                   <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -921,18 +921,18 @@ export default function TensionGuidePage() {
               )}
               <div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.7fr)]">
                 <div>
-                  <h4 className="text-ui-body-sm font-semibold text-foreground">장점</h4>
+                  <h4 className="text-ui-body-sm font-ui-medium text-foreground">장점</h4>
                   <ul className="mt-3 space-y-2">{renderPros(selectedString.pros)}</ul>
                 </div>
                 <div className="space-y-4 border-t border-border pt-5 bp-lg:border-l bp-lg:border-t-0 bp-lg:pl-6 bp-lg:pt-0">
                   <div>
-                    <p className="text-ui-body-sm font-semibold text-foreground">텐션 조정 팁</p>
+                    <p className="text-ui-body-sm font-ui-medium text-foreground">텐션 조정 팁</p>
                     <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
                       {selectedString.adjustment}
                     </p>
                   </div>
                   <div>
-                    <p className="text-ui-body-sm font-semibold text-foreground">추천 대상</p>
+                    <p className="text-ui-body-sm font-ui-medium text-foreground">추천 대상</p>
                     <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
                       {selectedString.bestFor}
                     </p>
@@ -983,7 +983,7 @@ export default function TensionGuidePage() {
                         {tip.icon}
                       </span>
                       <div>
-                        <h3 className="text-ui-card-title font-semibold text-foreground">
+                        <h3 className="text-ui-card-title font-ui-medium text-foreground">
                           {tip.title}
                         </h3>
                         <p className="text-ui-body-sm text-muted-foreground">{tip.desc}</p>
@@ -1043,7 +1043,7 @@ export default function TensionGuidePage() {
                   >
                     <div className="flex items-center gap-2">
                       <tip.icon className="h-4 w-4 text-muted-foreground" aria-hidden />
-                      <h3 className="text-ui-body-sm font-semibold text-foreground">{tip.title}</h3>
+                      <h3 className="text-ui-body-sm font-ui-medium text-foreground">{tip.title}</h3>
                     </div>
                     <p className="mt-3 text-ui-body-sm text-muted-foreground">{tip.body}</p>
                     <ul className="mt-3 space-y-2">
@@ -1120,7 +1120,7 @@ export default function TensionGuidePage() {
 
         <PublicSurface className="flex flex-col gap-5 bg-muted/30 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
           <div className="space-y-2">
-            <h2 className="text-ui-section-title font-semibold text-foreground">
+            <h2 className="text-ui-section-title font-ui-medium text-foreground">
               추천 장력을 실제 세팅으로 이어가세요
             </h2>
             <p className="text-ui-body-sm text-muted-foreground">

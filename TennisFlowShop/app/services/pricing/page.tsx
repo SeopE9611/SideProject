@@ -162,7 +162,7 @@ export default async function PricingPage() {
                     key={step}
                     className="flex items-center gap-3 border-b border-border pb-3 last:border-b-0 last:pb-0"
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-highlight text-ui-label font-semibold text-brand-highlight-foreground">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-highlight text-ui-label font-ui-medium text-brand-highlight-foreground">
                       {index + 1}
                     </span>
                     <span className="text-ui-body-sm font-medium text-foreground">{step}</span>
@@ -200,7 +200,7 @@ export default async function PricingPage() {
                         <Icon className="h-5 w-5 text-foreground" />
                       </div>
                       <div className="min-w-0 space-y-1">
-                        <h3 className="text-ui-card-title font-semibold leading-snug text-foreground">
+                        <h3 className="text-ui-card-title font-ui-medium leading-snug text-foreground">
                           {method.name}
                         </h3>
                         <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -213,8 +213,8 @@ export default async function PricingPage() {
                       <p
                         className={
                           method.valueType === "price"
-                            ? "mt-1 text-ui-section-title font-semibold tabular-nums text-foreground"
-                            : "mt-1 text-ui-card-title-lg font-semibold text-primary"
+                            ? "mt-1 text-ui-section-title font-ui-medium tabular-nums text-foreground"
+                            : "mt-1 text-ui-card-title-lg font-ui-medium text-primary"
                         }
                       >
                         {method.value}
@@ -271,7 +271,7 @@ export default async function PricingPage() {
                   <article key={category.key} className="p-5 bp-md:p-6">
                     <div className="grid gap-4 bp-md:grid-cols-[1.4fr_0.8fr_1fr_1fr] bp-md:items-start">
                       <div className="space-y-2">
-                        <h3 className="flex items-center gap-2 text-ui-card-title-lg font-semibold leading-snug text-foreground">
+                        <h3 className="flex items-center gap-2 text-ui-card-title-lg font-ui-medium leading-snug text-foreground">
                           <Shield className="h-5 w-5" aria-hidden />
                           {category.label}
                         </h3>
@@ -288,7 +288,7 @@ export default async function PricingPage() {
                         <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">
                           등록 상품
                         </span>
-                        <span className="text-ui-body-sm font-semibold tabular-nums text-foreground">
+                        <span className="text-ui-body-sm font-ui-medium tabular-nums text-foreground">
                           {category.count.toLocaleString("ko-KR")}개
                         </span>
                       </div>
@@ -296,7 +296,7 @@ export default async function PricingPage() {
                         <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">
                           상품 가격
                         </span>
-                        <span className="text-ui-body-sm font-semibold tabular-nums leading-relaxed text-foreground">
+                        <span className="text-ui-body-sm font-ui-medium tabular-nums leading-relaxed text-foreground">
                           {productPriceRange}
                         </span>
                       </div>
@@ -304,7 +304,7 @@ export default async function PricingPage() {
                         <span className="text-ui-label font-medium text-muted-foreground bp-md:hidden">
                           장착비
                         </span>
-                        <span className="text-ui-body-sm font-semibold tabular-nums leading-relaxed text-foreground">
+                        <span className="text-ui-body-sm font-ui-medium tabular-nums leading-relaxed text-foreground">
                           {mountingFeeRange}
                         </span>
                       </div>
@@ -336,19 +336,19 @@ export default async function PricingPage() {
           {hasOtherSummary && otherSummary ? (
             <PublicSurface className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-ui-card-title-lg font-semibold text-foreground">기타 소재</h2>
+                <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">기타 소재</h2>
                 <Badge variant="secondary">보조 분류</Badge>
               </div>
               <div className="grid gap-3 bp-sm:grid-cols-3">
                 <div>
                   <p className="text-ui-label text-muted-foreground">등록 상품 수</p>
-                  <p className="mt-1 font-semibold tabular-nums text-foreground">
+                  <p className="mt-1 font-ui-medium tabular-nums text-foreground">
                     {otherSummary.count.toLocaleString("ko-KR")}개
                   </p>
                 </div>
                 <div>
                   <p className="text-ui-label text-muted-foreground">상품가 범위</p>
-                  <p className="mt-1 font-semibold tabular-nums text-foreground">
+                  <p className="mt-1 font-ui-medium tabular-nums text-foreground">
                     {formatRange(
                       otherSummary.minPrice,
                       otherSummary.maxPrice,
@@ -358,7 +358,7 @@ export default async function PricingPage() {
                 </div>
                 <div>
                   <p className="text-ui-label text-muted-foreground">장착비 범위</p>
-                  <p className="mt-1 font-semibold tabular-nums text-foreground">
+                  <p className="mt-1 font-ui-medium tabular-nums text-foreground">
                     {formatMountingFeeRange(
                       otherSummary.minMountingFee,
                       otherSummary.maxMountingFee,
@@ -390,7 +390,7 @@ export default async function PricingPage() {
 
           <PublicSurface className="space-y-4">
             <div className="space-y-2">
-              <h2 className="text-ui-card-title-lg font-semibold text-foreground">
+              <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">
                 하이브리드 조합
               </h2>
               <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -407,7 +407,7 @@ export default async function PricingPage() {
                 <div className="grid gap-3 bp-sm:grid-cols-2">
                   <div>
                     <p className="text-ui-label text-muted-foreground">등록 상품 수</p>
-                    <p className="mt-1 font-semibold tabular-nums text-foreground">
+                    <p className="mt-1 font-ui-medium tabular-nums text-foreground">
                       {hybridGuide.count.toLocaleString("ko-KR")}개
                     </p>
                   </div>
@@ -437,14 +437,14 @@ export default async function PricingPage() {
 
         <section className="grid gap-4 bp-lg:grid-cols-2">
           <PublicSurface className="space-y-4">
-            <h2 className="text-ui-card-title-lg font-semibold text-foreground">
+            <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">
               무료 지원 및 추가 안내
             </h2>
             <div className="grid gap-3 bp-sm:grid-cols-2">
               {additionalServices.map((service) => (
                 <div key={service.name} className="border-t border-border pt-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{service.name}</h3>
+                    <h3 className="font-ui-medium text-foreground">{service.name}</h3>
                     <Badge variant="secondary">{service.policy}</Badge>
                   </div>
                   <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -456,7 +456,7 @@ export default async function PricingPage() {
           </PublicSurface>
 
           <PublicSurface className="space-y-4">
-            <h2 className="text-ui-card-title-lg font-semibold text-foreground">예약 안내</h2>
+            <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">예약 안내</h2>
             <ul className="space-y-2 text-ui-body-sm leading-relaxed text-muted-foreground">
               <li>• 일반 소요 시간은 30~60분입니다.</li>
               <li>• 작업 시간은 예약 상황에 따라 달라질 수 있습니다.</li>
@@ -467,7 +467,7 @@ export default async function PricingPage() {
         </section>
 
         <PublicSurface variant="inverse" className="space-y-4">
-          <h2 className="text-ui-card-title-lg font-semibold text-surface-inverse-foreground">
+          <h2 className="text-ui-card-title-lg font-ui-medium text-surface-inverse-foreground">
             결제 전 확인하세요
           </h2>
           <div className="grid gap-3 bp-md:grid-cols-3">
@@ -480,7 +480,7 @@ export default async function PricingPage() {
                 key={text}
                 className="flex gap-3 text-ui-body-sm leading-relaxed text-surface-inverse-muted"
               >
-                <span className="font-semibold text-brand-highlight" aria-hidden>
+                <span className="font-ui-medium text-brand-highlight" aria-hidden>
                   {index + 1}
                 </span>
                 <span>{text}</span>
