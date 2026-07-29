@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeader } from "@/components/public/SectionHeader";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { ReceiptText } from "lucide-react";
 
 type Props = {
@@ -31,26 +31,26 @@ export default function Step3PaymentInfoRentalReadonly({
   return (
     <div className="space-y-6">
       <SectionHeader
-        align="center"
+        align="left"
         title="결제 정보"
         description="대여 결제 내역을 확인해주세요"
         className="mb-8"
       />
 
-      <Card className="rounded-2xl border border-border">
-        <CardHeader className="space-y-2 p-4 sm:p-6">
-          <CardTitle className="flex items-center gap-2 text-ui-body-lg">
+      <PublicSurface variant="muted" padding="sm" className="shadow-none bp-sm:p-6">
+        <div className="space-y-2 border-b border-border pb-4">
+          <h3 className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
             <ReceiptText className="h-4 w-4 shrink-0" />
             대여 결제 요약
-          </CardTitle>
-          <CardDescription className="text-ui-body-sm">
+          </h3>
+          <p className="text-ui-body-sm text-muted-foreground">
             대여 결제에 <span className="font-medium">스트링 상품</span>과{" "}
             <span className="font-medium">교체 서비스 비용</span>까지 포함되어 있어 추가 결제정보
             입력이 필요하지 않습니다.
             {/* {rentalId ? <span className="ml-1 text-ui-label text-muted-foreground">(rentalId: {rentalId})</span> : null} */}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 p-4 pt-0 text-ui-body-sm sm:p-6 sm:pt-0">
+          </p>
+        </div>
+        <div className="space-y-3 pt-4 text-ui-body-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-muted-foreground">보증금</span>
             <span className="font-medium tabular-nums">{won(deposit)}</span>
@@ -71,8 +71,8 @@ export default function Step3PaymentInfoRentalReadonly({
             <span className="font-semibold">합계</span>
             <span className="font-semibold tabular-nums">{won(total)}</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </PublicSurface>
     </div>
   );
 }

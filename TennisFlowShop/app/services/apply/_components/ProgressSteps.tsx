@@ -21,13 +21,16 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
 
   return (
     <div className="w-full">
-      <div className="rounded-panel border border-border bg-card p-4 shadow-soft bp-md:hidden">
+      <div
+        className="-mx-3 border-y border-border bg-card px-3 py-4 bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border bp-sm:p-4 bp-sm:shadow-soft bp-md:hidden"
+        aria-current="step"
+      >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-ui-label font-semibold text-brand-highlight-foreground">
               {currentStep} / {steps.length}
             </p>
-            <p className="mt-1 truncate text-ui-body font-semibold text-foreground">
+            <p className="mt-1 text-ui-body font-semibold leading-snug text-foreground">
               {current?.title}
             </p>
           </div>

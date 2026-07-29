@@ -23,6 +23,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import LoginGate from "@/components/system/LoginGate";
+import { Button } from "@/components/ui/button";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
@@ -1737,7 +1738,7 @@ export default function StringServiceApplyPage() {
           </div>
 
           {/* 본문: 데스크톱은 입력 영역과 Sticky 요약을 실제 grid로 분리 */}
-          <div className="grid items-start gap-5 bp-lg:grid-cols-[minmax(0,1fr)_320px] bp-xl:grid-cols-[minmax(0,820px)_340px] bp-xl:justify-center">
+          <div className="grid items-start gap-5 bp-lg:grid-cols-[minmax(0,820px)_340px] bp-lg:justify-center">
             {/* 메인 폼 */}
             <div className="min-w-0">
               {paymentError ? (
@@ -1756,7 +1757,10 @@ export default function StringServiceApplyPage() {
                   ) : null}
                 </PublicSurface>
               ) : null}
-              <PublicSurface className="rounded-panel bp-lg:bg-card/90" padding="none">
+              <PublicSurface
+                className="-mx-3 rounded-none border-x-0 shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border bp-sm:shadow-soft bp-lg:bg-card/90"
+                padding="none"
+              >
                 <div className="p-4 bp-sm:p-5 bp-lg:p-6">
                   {shouldShowEntryBanner ? (
                     <SummaryCard
@@ -1766,13 +1770,14 @@ export default function StringServiceApplyPage() {
                       footer={
                         isOrderSlotBlocked ? (
                           <div className="flex flex-wrap gap-2">
-                            <button
+                            <Button
                               type="button"
                               onClick={() => safePush("/mypage?tab=orders")}
-                              className="px-3 py-2 text-ui-label font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors"
+                              variant="highlight_soft"
+                              className="min-h-11"
                             >
                               주문 상세에서 확인
-                            </button>
+                            </Button>
                             <span className="px-3 py-2 text-ui-label text-muted-foreground">
                               신청 내역은 주문 상세에서 확인할 수 있습니다.
                             </span>

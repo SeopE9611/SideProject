@@ -173,7 +173,7 @@ export default function ApplicantInfoSection({
           </p>
         </div>
         {/* 기본 정보: 2열 */}
-        <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
+        <div className="grid gap-x-6 gap-y-3 bp-md:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="name" className="text-ui-body-sm font-medium">
               신청인 이름 <span className="text-destructive">*</span>
@@ -209,7 +209,7 @@ export default function ApplicantInfoSection({
             {errorText("email") ? <p className={errCls}>{errorText("email")}</p> : null}
           </div>
 
-          <div className="md:col-span-2 space-y-1">
+          <div className="bp-md:col-span-2 space-y-1">
             <Label htmlFor="phone" className="text-ui-body-sm font-medium">
               연락처 <span className="text-destructive">*</span>
             </Label>
@@ -314,7 +314,7 @@ export default function ApplicantInfoSection({
               return next;
             })
           }
-          className="grid gap-3 md:grid-cols-2"
+          className="grid gap-3 bp-md:grid-cols-2"
         >
           {/* 자가 발송 */}
           <div>
@@ -409,14 +409,14 @@ export default function ApplicantInfoSection({
                 <Label htmlFor="shippingPostcode" className="text-ui-body-sm font-medium">
                   우편번호 <span className="text-destructive">*</span>
                 </Label>
-                <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center">
                   <Input
                     id="shippingPostcode"
                     name="shippingPostcode"
                     value={formData.shippingPostcode}
                     onBlur={() => markTouched("shippingPostcode")}
                     readOnly={postcodeAddressReadOnly}
-                    className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                    className={`w-full bp-md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
                     placeholder=""
                   />
                   {canOpenPostcodeSearch && (
