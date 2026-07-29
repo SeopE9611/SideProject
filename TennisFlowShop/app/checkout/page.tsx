@@ -22,7 +22,6 @@ import { PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/pu
 import LoginGate from "@/components/system/LoginGate";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,19 +77,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const CHECKOUT_PRIMARY_PAY_BUTTON_ID = "checkout-primary-pay-button";
 
 const CheckoutStringingSectionFallback = () => (
-  <div className="space-y-4 rounded-xl border border-border/50 bg-card p-4 bp-sm:p-5">
+  <div className="space-y-4 border-y border-border/60 py-4 bp-sm:py-5">
     <Skeleton className="h-6 w-40" />
     <Skeleton className="h-4 w-72 max-w-full" />
-    <Skeleton className="h-10 w-full" />
-    <Skeleton className="h-10 w-full" />
+    <Skeleton className="h-11 w-full" />
+    <Skeleton className="h-11 w-full" />
   </div>
 );
 
 const CheckoutStringingAddonFallback = () => (
-  <div className="rounded-xl border border-border/50 bg-card p-4 bp-sm:p-5">
+  <div className="border-y border-border/60 py-4 bp-sm:py-5">
     <Skeleton className="h-6 w-36" />
     <Skeleton className="mt-3 h-4 w-64 max-w-full" />
-    <Skeleton className="mt-4 h-10 w-full" />
+    <Skeleton className="mt-4 h-11 w-full" />
   </div>
 );
 
@@ -313,7 +312,7 @@ function FinalPaymentConfirmCard({
       value: !isShippingFeeReady ? (
         <Skeleton className="h-9 w-32 rounded" />
       ) : (
-        <span className="text-ui-price-lg font-semibold tabular-nums text-primary bp-sm:text-ui-page-title">
+        <span className="text-ui-price-lg font-ui-medium tabular-nums text-primary bp-sm:text-ui-page-title">
           {payableTotalPrice.toLocaleString()}
           <span className="ml-0.5 text-ui-body-sm font-medium">원</span>
         </span>
@@ -1388,7 +1387,7 @@ export default function CheckoutPage() {
             <nav aria-label="장착 서비스 진행 단계">
               <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-control border border-border/80 bg-card p-1.5 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2 [&::-webkit-scrollbar]:hidden">
                 <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-ui-caption font-semibold text-background bp-sm:h-8 bp-sm:w-8">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-ui-caption font-ui-medium text-background bp-sm:h-8 bp-sm:w-8">
                     <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
                   </span>
                   <span className="whitespace-nowrap text-ui-label font-medium text-foreground bp-sm:text-ui-body-sm">
@@ -1400,10 +1399,10 @@ export default function CheckoutPage() {
                 <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
 
                 <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-semibold text-brand-highlight-foreground shadow-sm bp-sm:h-8 bp-sm:w-8">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-ui-medium text-brand-highlight-foreground shadow-sm bp-sm:h-8 bp-sm:w-8">
                     2
                   </span>
-                  <span className="whitespace-nowrap text-ui-label font-semibold text-foreground bp-sm:text-ui-body-sm">
+                  <span className="whitespace-nowrap text-ui-label font-ui-medium text-foreground bp-sm:text-ui-body-sm">
                     <span className="bp-sm:hidden">정보 입력</span>
                     <span className="hidden bp-sm:inline">결제·장착 정보</span>
                   </span>
@@ -1412,7 +1411,7 @@ export default function CheckoutPage() {
                 <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
 
                 <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-ui-caption font-semibold text-muted-foreground bp-sm:h-8 bp-sm:w-8">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-ui-caption font-ui-medium text-muted-foreground bp-sm:h-8 bp-sm:w-8">
                     3
                   </span>
                   <span className="whitespace-nowrap text-ui-label font-medium text-muted-foreground bp-sm:text-ui-body-sm">
@@ -1436,7 +1435,7 @@ export default function CheckoutPage() {
             >
               <nav
                 aria-label="주문서 작성 순서"
-                className="rounded-2xl border border-border bg-card p-2.5 shadow-sm bp-sm:p-4"
+                className="border-y border-border/80 bg-muted/20 px-1 py-3 bp-sm:px-2"
               >
                 <p className="text-ui-body-sm font-medium text-foreground">주문서 작성 순서</p>
                 <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2 [&::-webkit-scrollbar]:hidden">
@@ -1466,8 +1465,10 @@ export default function CheckoutPage() {
               <section
                 aria-label="현재 주문 성격 및 작성 안내"
                 className={cn(
-                  "rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5",
-                  withStringService ? "ring-1 ring-primary/20" : "bg-muted/30",
+                  "border-l-2 px-4 py-3 bp-sm:px-5",
+                  withStringService
+                    ? "border-primary/40 bg-primary/5 ring-1 ring-inset ring-primary/20"
+                    : "border-border bg-muted/30",
                 )}
               >
                 <div className="flex items-start gap-3">
@@ -1490,7 +1491,7 @@ export default function CheckoutPage() {
                       className={cn(
                         "break-keep text-foreground",
                         withStringService
-                          ? "text-ui-body font-semibold"
+                          ? "text-ui-body font-ui-medium"
                           : "text-ui-body-sm font-ui-medium",
                       )}
                     >
@@ -1543,7 +1544,14 @@ export default function CheckoutPage() {
                     </p>
                     {bundleRacketId && (
                       <div className="mt-3">
-                        <Button type="button" variant="outline" size="sm" className="h-8" asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          wrap="responsive"
+                          className="min-h-11 bp-sm:h-9 bp-sm:min-h-0"
+                          asChild
+                        >
                           <Link
                             href={`/rackets/${bundleRacketId}/select-string`}
                             data-no-unsaved-guard
@@ -1578,7 +1586,7 @@ export default function CheckoutPage() {
                               className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover"
                             />
                           </div>
-                          <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground shadow-sm ring-2 ring-card">
+                          <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-ui-medium text-primary-foreground shadow-sm ring-2 ring-card">
                             {item.quantity}
                           </div>
                         </div>
@@ -1631,7 +1639,7 @@ export default function CheckoutPage() {
                               ? "할인가"
                               : "판매가"}
                           </span>
-                          <div className="whitespace-nowrap text-ui-price font-semibold tabular-nums text-foreground bp-sm:text-ui-price-lg">
+                          <div className="whitespace-nowrap text-ui-price font-ui-medium tabular-nums text-foreground bp-sm:text-ui-price-lg">
                             {item.price.toLocaleString()}
                             <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
                               원
@@ -1667,7 +1675,7 @@ export default function CheckoutPage() {
                   <span className="break-keep text-ui-body-sm text-foreground/80">
                     상품 판매가 합계
                   </span>
-                  <span className="whitespace-nowrap text-ui-price-lg font-semibold tabular-nums text-foreground">
+                  <span className="whitespace-nowrap text-ui-price-lg font-ui-medium tabular-nums text-foreground">
                     {subtotal.toLocaleString()}
                     <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
                       원
@@ -1802,7 +1810,7 @@ export default function CheckoutPage() {
                 }
               >
                 <div className="w-full space-y-4 bp-sm:space-y-5">
-                  <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3.5 bp-md:grid-cols-2">
                     <div className="space-y-2">
                       <Label
                         htmlFor="recipient-name"
@@ -1860,7 +1868,7 @@ export default function CheckoutPage() {
                         )}
                       </div>
                     </div>
-                    <div className="space-y-2 md:col-span-2">
+                    <div className="space-y-2 bp-md:col-span-2">
                       <Label
                         htmlFor="recipient-phone"
                         className="flex items-center gap-2 text-ui-label font-medium"
@@ -1909,7 +1917,7 @@ export default function CheckoutPage() {
                             value={postalCode}
                             placeholder="우편번호"
                             className={cn(
-                              "h-11 min-w-0 flex-1 cursor-not-allowed border-2 bg-muted bp-sm:max-w-[180px]",
+                              "h-11 min-w-0 flex-1 cursor-not-allowed bg-muted bp-sm:max-w-[180px]",
                               showPostalCodeError && "border-destructive/30",
                             )}
                           />
@@ -1945,7 +1953,7 @@ export default function CheckoutPage() {
                           value={address}
                           placeholder="기본 주소"
                           className={cn(
-                            "h-11 cursor-not-allowed border-2 bg-muted",
+                            "h-11 cursor-not-allowed bg-muted",
                             showPostalCodeError && "border-destructive/30",
                           )}
                         />
@@ -1960,7 +1968,7 @@ export default function CheckoutPage() {
                           onBlur={() => touchField("addressDetail")}
                           placeholder="상세 주소를 입력하세요"
                           className={cn(
-                            "h-11 border-2 transition-colors focus:border-border",
+                            "h-11",
                             showAddressDetailError &&
                               "border-destructive/30 focus:border-destructive/30",
                           )}
@@ -1987,7 +1995,7 @@ export default function CheckoutPage() {
                           value={deliveryRequest}
                           onChange={(e) => setDeliveryRequest(e.target.value)}
                           placeholder="배송 요청사항만 입력하세요"
-                          className="min-h-[76px] border-2 transition-colors focus:border-border"
+                          className="min-h-[76px]"
                         />
                       </div>
 
@@ -2041,7 +2049,7 @@ export default function CheckoutPage() {
                     <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-2.5 bp-sm:px-4">
                       <div className="flex justify-between items-center text-ui-body-sm">
                         <span className="text-muted-foreground">사용 가능 포인트</span>
-                        <span className="font-semibold">
+                        <span className="font-ui-medium">
                           {user
                             ? pointsFetchError
                               ? "-"
@@ -2230,7 +2238,7 @@ export default function CheckoutPage() {
                       <div className="space-y-3">
                         <Label htmlFor="bank-account">입금 계좌 선택</Label>
                         <Select value={selectedBank} onValueChange={setSelectedBank}>
-                          <SelectTrigger className="border-2 focus:border-border">
+                          <SelectTrigger>
                             <SelectValue placeholder="입금 계좌를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent className="w-[var(--radix-select-trigger-width)]">
@@ -2254,7 +2262,6 @@ export default function CheckoutPage() {
                           onBlur={() => touchField("depositor")}
                           placeholder="입금자명을 입력하세요"
                           className={cn(
-                            "border-2 focus:border-border transition-colors",
                             showDepositorError &&
                               "border-destructive/30 focus:border-destructive/30",
                           )}
@@ -2271,7 +2278,7 @@ export default function CheckoutPage() {
                       <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
                         <div className="flex items-center gap-2 mb-3">
                           <Shield className="h-5 w-5 text-primary" />
-                          <p className="font-semibold text-foreground">무통장입금 안내</p>
+                          <p className="font-ui-medium text-foreground">무통장입금 안내</p>
                         </div>
                         <ul className="space-y-2 text-ui-body-sm text-foreground">
                           <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
@@ -2324,7 +2331,7 @@ export default function CheckoutPage() {
                       }}
                       className="h-5 w-5"
                     />
-                    <span className="min-w-0 break-words text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
+                    <span className="min-w-0 break-words text-ui-card-title font-ui-medium text-foreground bp-sm:text-ui-card-title-lg">
                       전체 동의
                     </span>
                   </label>
@@ -2381,7 +2388,7 @@ export default function CheckoutPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
+                          className="min-h-11 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:h-9 bp-sm:min-h-0 bp-sm:px-3"
                           asChild
                         >
                           <Link href={item.href} target="_blank" rel="noopener noreferrer">
@@ -2437,18 +2444,18 @@ export default function CheckoutPage() {
                 }}
               />
 
-              <Card
+              <section
                 id="checkout-payment-action"
-                className="relative border border-border bg-card shadow-sm overflow-hidden"
+                className="relative overflow-hidden border-t border-border px-4 py-5 bp-sm:px-6 bp-sm:py-6"
               >
-                <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
+                <div className="flex shrink-0 flex-col gap-4">
                   {(fieldErrors.items ||
                     fieldErrors.bundle ||
                     (isMountingFeeReady && fieldErrors.composition) ||
                     hasStringingLineErrors ||
                     stringingApplicationError) && (
                     <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-ui-body-sm text-destructive dark:bg-destructive/20">
-                      <p className="font-semibold mb-1">확인 필요</p>
+                      <p className="font-ui-medium mb-1">확인 필요</p>
                       {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                       {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
                       {hasStringingLineErrors && (
@@ -2582,12 +2589,7 @@ export default function CheckoutPage() {
                       </div>
                     ) : null}
                   </div>
-                  {/* <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
-                      <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
-                        장바구니로 돌아가기
-                      </Link>
-                    </Button> */}
-                </CardContent>
+                </div>
                 {isCheckoutSubmitting && (
                   <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
                     <div className="absolute inset-0 grid place-items-center">
@@ -2598,7 +2600,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 )}
-              </Card>
+              </section>
             </div>
           </div>
         </SiteContainer>

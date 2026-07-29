@@ -515,8 +515,9 @@ export default function CheckoutButton({
       <Button
         id={buttonId}
         onClick={handleSubmit}
-        className="min-h-14 w-full text-ui-body font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300 bp-sm:text-ui-card-title-lg"
-        size="lg"
+        variant="highlight"
+        size="tall"
+        className="w-full"
         wrap="responsive"
         disabled={disabled || isSubmitting}
       >

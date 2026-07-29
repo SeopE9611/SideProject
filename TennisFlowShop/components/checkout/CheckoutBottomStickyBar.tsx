@@ -35,7 +35,7 @@ export default function CheckoutBottomStickyBar({
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4">
         <div className="min-w-0 flex-1">
           <p className="text-ui-label text-muted-foreground">{amountLabel}</p>
-          <p className="whitespace-nowrap text-ui-price-lg font-semibold tabular-nums text-foreground">
+          <p className="truncate text-ui-price-lg font-ui-medium tabular-nums text-foreground">
             {safeAmount.toLocaleString()}원
           </p>
           {helperText && (
@@ -47,7 +47,9 @@ export default function CheckoutBottomStickyBar({
         <Button
           type="button"
           variant="highlight"
-          className="h-11 min-w-[128px] max-w-[52vw] shrink-0 px-4 font-semibold sm:h-12"
+          size="tall"
+          wrap="responsive"
+          className="min-w-0 w-full max-w-[52vw] shrink-[0.6] px-3 bp-sm:w-auto bp-sm:min-w-[128px] bp-sm:px-4"
           disabled={disabled || loading}
           aria-label={ariaLabel ?? label}
           onClick={onClick}

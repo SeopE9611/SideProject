@@ -49,7 +49,7 @@ export default function CheckoutSection({
             <div className="min-w-0">
               <h2
                 id={id ? `${id}-title` : undefined}
-                className="break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground"
+                className="break-keep text-ui-card-title-lg font-ui-medium leading-snug text-foreground"
               >
                 {title}
               </h2>

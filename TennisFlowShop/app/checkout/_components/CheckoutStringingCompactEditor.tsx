@@ -165,7 +165,7 @@ export default function CheckoutStringingCompactEditor({
                   <Input
                     id="checkout-preferred-date"
                     type="date"
-                    className="h-10"
+                    className="min-h-11 bp-sm:h-10 bp-sm:min-h-0"
                     min={new Date().toISOString().slice(0, 10)}
                     value={formData.preferredDate}
                     onChange={(e) =>
@@ -244,7 +244,7 @@ export default function CheckoutStringingCompactEditor({
               <div className="border-y border-border/60 bg-muted/20 py-3">
                 <div className="mb-3 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                   <div>
-                    <p className="inline-flex items-center gap-1.5 text-ui-label font-semibold text-foreground">
+                    <p className="inline-flex items-center gap-1.5 text-ui-label font-ui-medium text-foreground">
                       <Sparkles className="h-3.5 w-3.5 text-primary/80" />
                       공통 입력
                     </p>
@@ -257,15 +257,18 @@ export default function CheckoutStringingCompactEditor({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 shrink-0 border-border px-2 text-ui-label"
+                      wrap="responsive"
+                      className="min-h-11 shrink-0 border-border px-2 text-ui-label bp-sm:h-9 bp-sm:min-h-0"
                       onClick={applyFirstLineTensionToAll}
                     >
                       첫 라켓 텐션 → 전체
                     </Button>
                     <Button
                       type="button"
+                      variant="highlight_soft"
                       size="sm"
-                      className="h-7 shrink-0 px-2 text-ui-label"
+                      wrap="responsive"
+                      className="min-h-11 shrink-0 px-2 text-ui-label bp-sm:h-9 bp-sm:min-h-0"
                       onClick={() => applyBulkToAllLines()}
                     >
                       입력값 → 전체
@@ -274,13 +277,13 @@ export default function CheckoutStringingCompactEditor({
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-2">
                   <Input
-                    className="h-9 px-3 text-ui-body-sm"
+                    className="min-h-11 px-3 text-ui-body-sm bp-sm:h-9 bp-sm:min-h-0"
                     value={bulkTensionMain}
                     onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
                     placeholder="공통 메인 텐션"
                   />
                   <Input
-                    className="h-9 px-3 text-ui-body-sm"
+                    className="min-h-11 px-3 text-ui-body-sm bp-sm:h-9 bp-sm:min-h-0"
                     value={bulkTensionCross}
                     onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
                     placeholder="공통 크로스 텐션"
@@ -395,7 +398,7 @@ export default function CheckoutStringingCompactEditor({
                         <Input
                           id={`checkout-racket-name-${line.id}`}
                           className={cn(
-                            "h-10 px-3",
+                            "min-h-11 px-3 bp-sm:h-10 bp-sm:min-h-0",
                             visibleLineErrors.racketType &&
                               "border-destructive/30 focus-visible:ring-destructive/20",
                           )}
@@ -424,7 +427,7 @@ export default function CheckoutStringingCompactEditor({
                           <Input
                             id={`checkout-tension-main-${line.id}`}
                             className={cn(
-                              "h-10 px-3",
+                              "min-h-11 px-3 bp-sm:h-10 bp-sm:min-h-0",
                               visibleLineErrors.tensionMain &&
                                 "border-destructive/30 focus-visible:ring-destructive/20",
                             )}
@@ -456,7 +459,7 @@ export default function CheckoutStringingCompactEditor({
                           <Input
                             id={`checkout-tension-cross-${line.id}`}
                             className={cn(
-                              "h-10 px-3",
+                              "min-h-11 px-3 bp-sm:h-10 bp-sm:min-h-0",
                               visibleLineErrors.tensionCross &&
                                 "border-destructive/30 focus-visible:ring-destructive/20",
                             )}
