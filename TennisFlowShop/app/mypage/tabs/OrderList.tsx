@@ -686,7 +686,7 @@ export default function OrderList() {
                     size="sm"
                     variant="outline"
                     asChild
-                    className={`${showMobileSecondCTA ? "col-span-5" : "col-span-10"} w-full whitespace-normal break-keep border-border hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent`}
+                    className={`${showMobileSecondCTA ? "col-span-5" : "col-span-10"} min-h-11 w-full whitespace-normal break-keep border-border hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent`}
                   >
                     <Link href={primaryDetailHref} className="inline-flex items-center gap-1">
                       {primaryDetailLabel}
@@ -697,7 +697,7 @@ export default function OrderList() {
                     <Button
                       size="sm"
                       variant="highlight_soft"
-                      className="col-span-5 w-full whitespace-normal break-keep"
+                      className="col-span-5 min-h-11 w-full whitespace-normal break-keep"
                       asChild
                     >
                       <Link
@@ -717,7 +717,7 @@ export default function OrderList() {
                       <Button
                         size="icon"
                         variant="outline"
-                        className="col-span-2 h-9 w-full border-border bg-transparent"
+                        className="col-span-2 min-h-11 min-w-11 w-full border-border bg-transparent"
                       >
                         <MoreVertical className="h-4 w-4" />
                         <span className="sr-only">더보기</span>

@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -254,9 +253,12 @@ export default function RentalsSuccessClient({ data }: Props) {
             </Card>
           )}
 
-          <Card className="overflow-hidden rounded-panel border border-border/80 bg-card shadow-soft">
-            <div className="border-b border-border/80 bg-muted/20 p-4 bp-sm:p-5">
-              <CardTitle className="flex items-center gap-3 text-ui-section-title">
+          <section className="space-y-6" aria-labelledby="rental-summary-title">
+            <div className="p-1 bp-sm:p-2">
+              <h2
+                id="rental-summary-title"
+                className="flex items-center gap-3 text-ui-section-title font-ui-medium"
+              >
                 <Package className="h-5 w-5 text-foreground" />
                 대여 정보
                 {withService && (
@@ -264,7 +266,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     교체서비스 포함
                   </SemanticBadge>
                 )}
-              </CardTitle>
+              </h2>
               <CardDescription className="mt-2 text-ui-body-sm">
                 {withService
                   ? "접수된 대여 및 교체서비스 정보를 함께 확인하세요."
@@ -273,8 +275,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                     : "접수된 대여 정보와 결제/배송 진행 상황을 확인하세요."}
               </CardDescription>
             </div>
-            <CardContent className="p-4 bp-sm:p-5 bp-md:p-6">
-              <dl className="divide-y divide-border/70 rounded-control border border-border/70 bg-muted/20 text-ui-body-sm">
+            <div className="space-y-6">
+              <dl className="divide-y divide-border/70 rounded-panel border border-border/80 bg-muted/20 text-ui-body-sm">
                 <div className="flex flex-col gap-1 px-3 py-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4">
                   <dt className="text-muted-foreground">대여 접수번호</dt>
                   <dd className="break-all font-mono font-ui-medium text-foreground">
@@ -307,7 +309,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 )}
               </dl>
 
-              <div className="mt-5 rounded-panel border border-border/70 bg-muted/20 px-3 py-3 text-ui-body-sm text-muted-foreground bp-sm:px-4">
+              <div className="text-ui-body-sm text-muted-foreground">
                 <h3 className="font-ui-medium text-foreground">현재 상태와 다음 단계</h3>
                 <div className="mt-3 grid gap-0 divide-y divide-border/70 leading-relaxed bp-md:grid-cols-3 bp-md:divide-x bp-md:divide-y-0">
                   <div className="py-3 bp-md:px-4 bp-md:py-0 bp-md:first:pl-0">
@@ -344,7 +346,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-ui-medium">
                   <Package className="h-5 w-5 text-foreground" /> 대여 라켓
                 </h3>
-                <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                <div className="py-2">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="min-w-0 break-words font-ui-medium text-foreground">
@@ -375,7 +377,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <h3 className="text-ui-card-title-lg font-ui-medium text-foreground">
                       교체서비스 정보
                     </h3>
-                    <dl className="divide-y divide-border/70 rounded-control border border-border/70 bg-muted/20 text-ui-body-sm">
+                    <dl className="divide-y divide-border/70 text-ui-body-sm">
                       <div className="flex flex-col gap-1 px-3 py-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4">
                         <dt className="text-muted-foreground">접수 방식</dt>
                         <dd className="break-words font-ui-medium text-foreground">
@@ -457,7 +459,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     </span>
                   </div>
                 </div>
-                <p className="rounded-control border border-border/70 bg-muted/20 px-3 py-2 text-ui-body-sm text-muted-foreground">
+                <p className="border-l-2 border-warning/50 bg-warning/10 px-3 py-2 text-ui-body-sm text-muted-foreground">
                   * 반납 완료 후 보증금 환불 (연체/파손 시 차감)
                 </p>
               </div>
@@ -470,17 +472,23 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="space-y-2 rounded-control border border-border/70 bg-muted/20 px-3 py-3 text-ui-body-sm bp-sm:px-4">
                     <p className="text-muted-foreground">결제가 완료되었습니다.</p>
                     <div>
-                      결제수단: <b>{paymentMethodLabel}</b>
+                      결제수단:{" "}
+                      <span className="font-ui-medium text-foreground">{paymentMethodLabel}</span>
                     </div>
                     {data.paymentInfo?.approvedAt && (
                       <div>
                         승인시각:{" "}
-                        <b>{new Date(data.paymentInfo.approvedAt).toLocaleString("ko-KR")}</b>
+                        <span className="font-ui-medium text-foreground">
+                          {new Date(data.paymentInfo.approvedAt).toLocaleString("ko-KR")}
+                        </span>
                       </div>
                     )}
                     {data.paymentInfo?.cardCompany && (
                       <div>
-                        카드사: <b>{data.paymentInfo.cardCompany}</b>
+                        카드사:{" "}
+                        <span className="font-ui-medium text-foreground">
+                          {data.paymentInfo.cardCompany}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -492,18 +500,19 @@ export default function RentalsSuccessClient({ data }: Props) {
                     {bankInfo && (
                       <div className="mt-4 space-y-1">
                         <div>
-                          은행: <b>{bankInfo.label}</b>
+                          은행:{" "}
+                          <span className="font-ui-medium text-foreground">{bankInfo.label}</span>
                         </div>
                         <div>
                           계좌:{" "}
-                          <b className="break-all font-mono tabular-nums">{bankInfo.account}</b>
+                          <span className="break-all font-mono font-ui-medium tabular-nums text-foreground">{bankInfo.account}</span>
                         </div>
                         <div>
-                          예금주: <b>{bankInfo.holder}</b>
+                          예금주: <span className="font-ui-medium text-foreground">{bankInfo.holder}</span>
                         </div>
                         {depositor && (
                           <div>
-                            입금자명: <b>{depositor}</b>
+                            입금자명: <span className="font-ui-medium text-foreground">{depositor}</span>
                           </div>
                         )}
                       </div>
@@ -519,7 +528,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <MapPin className="h-5 w-5 text-foreground" />
                   수령 정보
                 </h3>
-                <dl className="divide-y divide-border/70 rounded-control border border-border/70 bg-muted/20 text-ui-body-sm">
+                <dl className="divide-y divide-border/70 text-ui-body-sm">
                   {isPickup ? (
                     <>
                       <div className="flex flex-col gap-1 px-3 py-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4">
@@ -598,25 +607,28 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="mt-4 space-y-1">
                     {refundBankLabel && (
                       <div>
-                        은행: <b>{refundBankLabel}</b>
+                        은행: <span className="font-ui-medium text-foreground">{refundBankLabel}</span>
                       </div>
                     )}
                     {refundAccount && (
                       <div>
-                        계좌: <b className="break-all font-mono tabular-nums">{refundAccount}</b>
+                        계좌:{" "}
+                        <span className="break-all font-mono font-ui-medium tabular-nums text-foreground">
+                          {refundAccount}
+                        </span>
                       </div>
                     )}
                     {refundHolder && (
                       <div>
-                        예금주: <b>{refundHolder}</b>
+                        예금주: <span className="font-ui-medium text-foreground">{refundHolder}</span>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-            </CardContent>
+            </div>
 
-            <CardFooter className="border-t border-border/80 bg-muted/20 p-4 bp-sm:p-5 bp-md:p-6">
+            <div className="border-t border-border/80 pt-6">
               <div className="flex w-full flex-col gap-4 bp-sm:flex-row">
                 <Button variant="highlight" size="lg" className="flex-1" wrap="responsive" asChild>
                   <Link href="/mypage?tab=orders&scope=rental" className="flex items-center gap-2">
@@ -640,8 +652,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </Link>
                 </Button>
               </div>
-            </CardFooter>
-          </Card>
+            </div>
+          </section>
 
           <Card className="rounded-panel border border-border/80 bg-card shadow-soft">
             <CardHeader className="border-b border-border/80 bg-muted/20 p-4 bp-sm:p-5">
@@ -653,7 +665,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             <CardContent className="p-4 bp-sm:p-5 bp-md:p-6">
               <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-md:gap-4">
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div className="flex items-start gap-3 py-3">
                     <Truck className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-ui-medium text-foreground">
@@ -666,7 +678,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div className="flex items-start gap-3 py-3">
                     <Clock className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-ui-medium text-foreground">대여 기간</h4>
@@ -677,7 +689,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div className="flex items-start gap-3 py-3">
                     <Shield className="mt-0.5 h-5 w-5 text-foreground" />
                     <div>
                       <h4 className="mb-1 font-ui-medium text-foreground">보증금 환불</h4>
@@ -686,7 +698,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div className="flex items-start gap-3 py-3">
                     <Phone className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-ui-medium text-foreground">고객 지원</h4>
