@@ -17,8 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyInfo } from "@/lib/auth.client";
@@ -64,6 +63,11 @@ type ProductForCartValidation = {
   variantInventories?: ProductVariantInventoryRow[];
 };
 
+type PendingDelete = {
+  kind: "selected" | "single" | "bundle" | "all";
+  items: CartItem[];
+};
+
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
   const { items: cartItems, addItem, removeItem, updateQuantity, clearCart } = useCartStore();
@@ -81,6 +85,7 @@ export default function CartPageClient() {
   const [cleanupRemoveLineKeys, setCleanupRemoveLineKeys] = useState<string[]>([]);
   const [isCheckingCheckoutStock, setIsCheckingCheckoutStock] = useState(false);
   const [optionChangeItem, setOptionChangeItem] = useState<CartItem | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
 
   // [장착 대상 스트링 정리 다이얼로그] 남길/삭제될 대상 텍스트 생성
   const keepStringItem = cleanupKeepLineKey
@@ -652,17 +657,30 @@ export default function CartPageClient() {
     }
 
     const finalItems = cartItems.filter((it) => lineKeysToRemove.has(getCartLineKey(it)));
-    const bundleHint =
-      bundleLockedIds.length === 2 && finalItems.some((it) => bundleLockedIds.includes(it.id))
-        ? "\n(번들 구성품은 함께 삭제됩니다.)"
-        : "";
+    setPendingDelete({ kind: "selected", items: finalItems });
+  };
 
-    if (!confirm(`선택한 ${finalItems.length}개 상품을 장바구니에서 삭제할까요?${bundleHint}`))
-      return;
-
-    finalItems.forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
-    setSelectedLineKeys([]);
-    showSuccessToast?.("선택한 상품을 삭제했어요.");
+  const confirmPendingDelete = () => {
+    if (!pendingDelete) return;
+    if (pendingDelete.kind === "all") {
+      clearCart();
+      setSelectedLineKeys([]);
+      showSuccessToast("장바구니를 비웠어요.");
+    } else {
+      const removedKeys = pendingDelete.items.map(getCartLineKey);
+      pendingDelete.items.forEach((it) =>
+        removeItem(it.id, it.selectedGauge, it.selectedColor),
+      );
+      setSelectedLineKeys((prev) => prev.filter((key) => !removedKeys.includes(key)));
+      showSuccessToast(
+        pendingDelete.kind === "bundle"
+          ? "번들 상품을 함께 삭제했어요."
+          : pendingDelete.kind === "selected"
+            ? "선택한 상품을 삭제했어요."
+            : "상품을 삭제했어요.",
+      );
+    }
+    setPendingDelete(null);
   };
 
   // "장착 대상 스트링"이 2종 이상 섞였을 때,
@@ -678,7 +696,7 @@ export default function CartPageClient() {
       .map((it) => getCartLineKey(it));
     if (lineKeysToRemove.length === 0) return;
 
-    // confirm() 대신 AlertDialog로 확인 UX 통일
+    // AlertDialog로 확인 UX 통일
     setCleanupKeepLineKey(keepLineKey);
     setCleanupRemoveLineKeys(lineKeysToRemove);
     setCleanupDialogOpen(true);
@@ -818,6 +836,37 @@ export default function CartPageClient() {
 
   return (
     <div className="min-h-full bg-background">
+      <AlertDialog open={Boolean(pendingDelete)} onOpenChange={(open) => !open && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingDelete?.kind === "all"
+                ? "장바구니를 비울까요?"
+                : pendingDelete?.kind === "bundle"
+                  ? "번들 상품을 삭제할까요?"
+                  : pendingDelete?.kind === "selected"
+                    ? `선택한 ${pendingDelete.items.length}개 항목을 삭제할까요?`
+                    : "상품을 삭제할까요?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete?.kind === "bundle"
+                ? "라켓과 장착 스트링은 함께 담긴 구성이므로 두 항목이 함께 삭제됩니다."
+                : pendingDelete?.kind === "all"
+                  ? "장바구니의 모든 항목이 삭제되며 이 작업은 되돌릴 수 없습니다."
+                  : "선택한 항목이 장바구니에서 삭제되며 이 작업은 되돌릴 수 없습니다."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="min-h-11 bp-sm:min-h-10">취소</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive", className: "min-h-11 bp-sm:min-h-10" })}
+              onClick={confirmPendingDelete}
+            >
+              삭제하기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* 교체서비스 스트링 정리 확인 다이얼로그 */}
       <AlertDialog
         open={cleanupDialogOpen}
@@ -831,36 +880,41 @@ export default function CartPageClient() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-ui-card-title-lg font-semibold">
+            <AlertDialogTitle className="text-ui-card-title-lg font-ui-medium">
               교체서비스 스트링 정리
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-ui-body-sm text-muted-foreground">
                 <p>
-                  교체서비스에 사용할 스트링은 <span className="font-medium">1종만</span> 선택할 수
+                  교체서비스에 사용할 스트링은 <span className="font-ui-medium">1종만</span> 선택할 수
                   있어요.
                 </p>
                 <p>
                   남길 스트링(선택):{" "}
-                  <span className="font-medium text-foreground">{keepStringLabel}</span>
+                  <span className="font-ui-medium text-foreground">{keepStringLabel}</span>
                 </p>
                 <p>
                   삭제될 스트링(정리 대상):{" "}
-                  <span className="font-medium text-foreground">{removeCount}개</span>
+                  <span className="font-ui-medium text-foreground">{removeCount}개</span>
                   {removePreview ? (
                     <span className="text-muted-foreground"> ({removePreview})</span>
                   ) : null}
                 </p>
                 <p className="text-muted-foreground">
-                  “정리하기”를 누르면 <b>선택한 스트링 1종만 유지</b>되고, 나머지 스트링은
+                  “정리하기”를 누르면 <span className="font-ui-medium">선택한 스트링 1종만 유지</span>되고, 나머지 스트링은
                   장바구니에서 삭제됩니다. (취소 시 변경 없음)
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmCleanupMountableStrings}>정리하기</AlertDialogAction>
+            <AlertDialogCancel className="min-h-11 bp-sm:min-h-10">취소</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "highlight", className: "min-h-11 bp-sm:min-h-10" })}
+              onClick={confirmCleanupMountableStrings}
+            >
+              정리하기
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -869,10 +923,10 @@ export default function CartPageClient() {
         <SiteContainer className="max-w-[1240px] py-5 bp-sm:py-6">
           <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-end bp-md:justify-between">
             <div className="min-w-0">
-              <p className="mb-2 text-ui-label font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="mb-2 text-ui-label font-ui-medium uppercase tracking-[0.16em] text-muted-foreground">
                 CART
               </p>
-              <h1 className="mb-2 text-ui-page-title font-semibold bp-sm:text-ui-page-title-lg">
+              <h1 className="mb-2 text-ui-page-title font-ui-medium bp-sm:text-ui-page-title-lg">
                 장바구니
               </h1>
               <p className="max-w-2xl break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
@@ -881,7 +935,7 @@ export default function CartPageClient() {
               </p>
             </div>
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-ui-label text-muted-foreground shadow-soft">
-              <span>담긴 상품 {cartItems.length}개</span>
+              <span>담긴 항목 {cartItems.length}개</span>
               <span aria-hidden="true" className="text-border">
                 /
               </span>
@@ -907,14 +961,11 @@ export default function CartPageClient() {
                 padding="none"
                 className="-mx-3 overflow-hidden rounded-none border-x-0 shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border-x bp-sm:shadow-soft"
               >
-                <CardHeader
-                  variant="section"
-                  className="rounded-none px-4 py-4 bp-sm:rounded-t-2xl bp-sm:px-5"
-                >
-                  <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">
+                <header className="border-b border-border bg-muted/20 px-4 py-4 bp-sm:px-5">
+                  <h2 className="text-ui-card-title-lg font-ui-medium bp-sm:text-ui-section-title">
                     장바구니 상품
-                  </CardTitle>
-                </CardHeader>
+                  </h2>
+                </header>
 
                 <div className="flex h-12 items-center justify-between border-b border-border px-4 bp-sm:px-5">
                   <div className="inline-flex items-center gap-2">
@@ -928,7 +979,7 @@ export default function CartPageClient() {
                     <button
                       type="button"
                       onClick={toggleAll}
-                      className="inline-flex min-h-11 items-center text-ui-body-sm font-semibold text-foreground bp-sm:min-h-0"
+                      className="inline-flex min-h-11 items-center text-ui-body-sm font-ui-medium text-foreground bp-sm:min-h-0"
                     >
                       {selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"}
                     </button>
@@ -944,7 +995,7 @@ export default function CartPageClient() {
                   </Button>
                 </div>
 
-                <CardContent className="p-0">
+                <div>
                   {cartItems.map((item) => {
                     const lineKey = getCartLineKey(item);
                     // 버튼 비활성 판단
@@ -1042,7 +1093,7 @@ export default function CartPageClient() {
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={itemHref}
-                                className="block min-w-0 line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary"
+                                className="block min-w-0 line-clamp-2 break-keep break-words font-ui-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary"
                               >
                                 {item.name}
                               </Link>
@@ -1050,14 +1101,14 @@ export default function CartPageClient() {
                                 <span className="text-muted-foreground">
                                   {hasDiscount ? "할인가" : "판매가"}
                                 </span>
-                                <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                                <span className="whitespace-nowrap tabular-nums font-ui-medium text-foreground">
                                   {formatKRW(item.price)}원
                                 </span>
                               </div>
                               {shouldShowItemServiceFee && (
                                 <div className="mt-1 text-ui-label text-muted-foreground">
                                   교체서비스{" "}
-                                  <span className="font-medium text-foreground">
+                                  <span className="font-ui-medium text-foreground">
                                     {formatKRW(itemMountingFee)}원
                                   </span>{" "}
                                   / 개
@@ -1086,18 +1137,18 @@ export default function CartPageClient() {
                                   <Badge
                                     variant="warning"
                                     wrap="normal"
-                                    className="mt-1 max-w-full px-2 py-0.5 text-ui-label font-medium"
+                                    className="mt-1 max-w-full px-2 py-0.5 text-ui-label font-ui-medium"
                                   >
                                     교체서비스에 사용할 스트링
                                   </Badge>
-                                  <div className="mt-2 space-y-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-ui-label leading-snug text-foreground dark:text-foreground">
+                                  <div className="mt-2 space-y-2 rounded-control border border-warning/30 bg-warning/10 p-3 text-ui-label leading-snug text-foreground dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                                      교체서비스에 사용할 스트링은 <b>1종만</b> 선택할 수 있어요.
+                                      교체서비스에 사용할 스트링은 <span className="font-ui-medium">1종만</span> 선택할 수 있어요.
                                     </span>
                                     <button
                                       type="button"
-                                      className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-2 hover:text-primary/80 bp-sm:min-h-0"
+                                      className="inline-flex min-h-11 items-center font-ui-medium text-primary underline underline-offset-2 hover:text-primary/80 bp-sm:min-h-0"
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -1116,7 +1167,7 @@ export default function CartPageClient() {
                           <div className="mt-3 min-w-0 border-t border-border pt-3 bp-sm:rounded-panel bp-sm:border bp-sm:bg-muted/25 bp-sm:p-3">
                             <div className="grid min-w-0 gap-3 bp-md:grid-cols-[minmax(0,1fr)_auto]">
                               <p className="flex min-w-0 flex-wrap items-center gap-1.5 pr-2 text-ui-label leading-relaxed text-muted-foreground">
-                                <span className="font-medium text-foreground">옵션:</span>
+                                <span className="font-ui-medium text-foreground">옵션:</span>
                                 {item.selectedGauge ? (
                                   <span className="whitespace-nowrap">
                                     게이지(굵기) {formatGaugeLabel(item.selectedGauge)}
@@ -1177,39 +1228,16 @@ export default function CartPageClient() {
                                       : undefined
                                   }
                                   onClick={() => {
-                                    // 번들(라켓/장착 스트링) 라인에서 삭제를 누르면
-                                    // "불일치"가 생기지 않도록 번들 2개를 같이 삭제한다.
                                     if (lockStepper && bundleLockedIds.length === 2) {
-                                      if (
-                                        confirm(
-                                          "번들(라켓 + 장착 스트링)을 통째로 장바구니에서 삭제할까요?",
-                                        )
-                                      ) {
-                                        cartItems
-                                          .filter((it) => bundleLockedIds.includes(it.id))
-                                          .forEach((it) =>
-                                            removeItem(it.id, it.selectedGauge, it.selectedColor),
-                                          );
-                                        setSelectedLineKeys((prev) =>
-                                          prev.filter((selectedLineKey) => {
-                                            const selectedItem = cartItems.find(
-                                              (it) => getCartLineKey(it) === selectedLineKey,
-                                            );
-                                            return selectedItem
-                                              ? !bundleLockedIds.includes(selectedItem.id)
-                                              : true;
-                                          }),
-                                        );
-                                      }
+                                      setPendingDelete({
+                                        kind: "bundle",
+                                        items: cartItems.filter((it) => bundleLockedIds.includes(it.id)),
+                                      });
                                       return;
                                     }
-
-                                    // 일반 상품은 기존처럼 개별 삭제
-                                    if (confirm(`"${item.name}"을(를) 장바구니에서 삭제할까요?`)) {
-                                      removeItem(item.id, item.selectedGauge, item.selectedColor);
-                                    }
+                                    setPendingDelete({ kind: "single", items: [item] });
                                   }}
-                                  className="h-11 w-11 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive bp-sm:h-8 bp-sm:w-8"
+                                  className="h-11 min-w-11 w-11 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive bp-sm:h-8 bp-sm:w-8"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1224,14 +1252,14 @@ export default function CartPageClient() {
                                     {/* 숫자만 표시(± 없음) */}
                                     <div className="flex flex-wrap items-center gap-2">
                                       <div className="inline-flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
-                                        <span className="w-8 select-none text-center font-medium tabular-nums">
+                                        <span className="w-8 select-none text-center font-ui-medium tabular-nums">
                                           {item.quantity}
                                         </span>
                                       </div>
 
                                       {Number.isFinite(maxStock) && (
                                         <span
-                                          className={`rounded-full px-2 py-0.5 text-ui-micro font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
+                                          className={`rounded-full px-2 py-0.5 text-ui-micro font-ui-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
                                         >
                                           재고 {maxStock}개
                                         </span>
@@ -1270,7 +1298,7 @@ export default function CartPageClient() {
                                         </Button>
 
                                         <span
-                                          className={`w-8 select-none text-center font-medium tabular-nums ${lockStepper ? "opacity-60" : ""}`}
+                                          className={`w-8 select-none text-center font-ui-medium tabular-nums ${lockStepper ? "opacity-60" : ""}`}
                                         >
                                           {item.quantity}
                                         </span>
@@ -1291,7 +1319,7 @@ export default function CartPageClient() {
                                               showErrorToast(
                                                 <>
                                                   <p>
-                                                    <strong>{item.name}</strong>의 최대 주문 수량은{" "}
+                                                    <span className="font-ui-medium">{item.name}</span>의 최대 주문 수량은{" "}
                                                     {maxStock}
                                                     개입니다.
                                                   </p>
@@ -1314,7 +1342,7 @@ export default function CartPageClient() {
 
                                       {Number.isFinite(maxStock) && (
                                         <span
-                                          className={`rounded-full px-2 py-0.5 text-ui-micro font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
+                                          className={`rounded-full px-2 py-0.5 text-ui-micro font-ui-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
                                         >
                                           재고 {maxStock}개
                                         </span>
@@ -1326,7 +1354,7 @@ export default function CartPageClient() {
 
                               <div className="whitespace-nowrap text-left bp-sm:text-right">
                                 <div className="text-ui-label text-muted-foreground">합계</div>
-                                <div className="whitespace-nowrap tabular-nums text-ui-card-title-lg font-semibold text-foreground">
+                                <div className="whitespace-nowrap tabular-nums text-ui-card-title-lg font-ui-medium text-foreground">
                                   {formatKRW(itemLineTotal)}원
                                 </div>
                                 {itemServiceFeeTotal > 0 && (
@@ -1341,23 +1369,21 @@ export default function CartPageClient() {
                       </div>
                     );
                   })}
-                </CardContent>
+                </div>
 
-                <CardFooter className="border-t border-border bg-background px-4 py-3 bp-sm:px-5">
+                <footer className="border-t border-border bg-background px-4 py-3 bp-sm:px-5">
                   <div className="flex w-full items-center justify-end gap-3">
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-11 text-ui-body-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive bp-sm:h-8"
-                      onClick={() => {
-                        if (confirm("장바구니의 모든 상품을 비울까요?")) clearCart();
-                      }}
+                      onClick={() => setPendingDelete({ kind: "all", items: cartItems })}
                     >
                       <Trash2 className="h-4 w-4" />
                       장바구니 비우기
                     </Button>
                   </div>
-                </CardFooter>
+                </footer>
               </PublicSurface>
 
               <div className="hidden bp-lg:block">
@@ -1368,19 +1394,19 @@ export default function CartPageClient() {
             {/* 요약 */}
             <div className="min-w-0">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
-                <Card className="-mx-3 overflow-hidden rounded-none border-x-0 bg-card shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border-x bp-sm:shadow-soft">
-                  <CardHeader className="space-y-1 px-4 py-4 bp-sm:px-5">
-                    <CardTitle className="text-ui-card-title-lg">주문 요약</CardTitle>
+                <aside className="-mx-3 overflow-hidden rounded-none border-y border-x-0 border-border bg-card shadow-none bp-sm:mx-0 bp-sm:rounded-panel bp-sm:border bp-sm:shadow-soft">
+                  <header className="space-y-1 border-b border-border bg-muted/20 px-4 py-4 bp-sm:px-5">
+                    <h2 className="text-ui-card-title-lg font-ui-medium">주문 요약</h2>
                     <p className="text-ui-body-sm text-muted-foreground">선택 상품 기준</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4 px-4 pb-4 bp-sm:px-5">
+                  </header>
+                  <div className="space-y-4 px-4 py-4 bp-sm:px-5">
                     <div className="space-y-3">
                       <PriceSummary rows={priceSummaryRows} />
 
-                      <div className="rounded-lg border border-border/70 bg-muted/15 px-3 py-2">
+                      <div className="border-l-2 border-border bg-muted/20 px-3 py-2">
                         <div className="mb-1 flex items-center gap-1.5 text-ui-label text-primary">
                           <Star className="h-3.5 w-3.5" aria-hidden="true" />
-                          <span className="font-semibold">배송비/교체서비스</span>
+                          <span className="font-ui-medium">배송비/교체서비스</span>
                         </div>
                         <p className="text-ui-label leading-relaxed text-muted-foreground">
                           상품별 배송비와 선택한 스트링의 교체서비스 비용이 주문 요약에 반영됩니다.
@@ -1396,22 +1422,22 @@ export default function CartPageClient() {
                       )}
                     </div>
                     <div className="hidden flex-col items-stretch gap-3 rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse p-4 text-surface-inverse-foreground shadow-soft bp-lg:flex">
-                      <div className="space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2">
+                      <div className="flex items-end justify-between gap-3 border-b border-surface-inverse-foreground/15 pb-3">
                         <p className="text-ui-label text-surface-inverse-muted">결제예정금액</p>
-                        <p className="text-ui-card-title-lg font-semibold tabular-nums text-surface-inverse-foreground">
+                        <p className="text-ui-card-title-lg font-ui-medium tabular-nums text-surface-inverse-foreground">
                           {!isCartPriceReady ? "계산 중" : `${formatKRW(total)}원`}
                         </p>
                       </div>
                       {blockServiceCheckout ? (
                         <>
                           {blockServiceCheckoutByComposition && (
-                            <div className="w-full space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-muted">
-                              <p className="font-semibold">교체서비스 구성을 정리해야 해요</p>
+                            <div className="w-full space-y-1 border-l-2 border-surface-inverse-foreground/30 pl-3 text-ui-label leading-relaxed text-surface-inverse-muted">
+                              <p className="font-ui-medium">교체서비스 구성을 정리해야 해요</p>
                               <p>라켓 1종에는 장착할 스트링 1종이 필요해요.</p>
                               <p>
-                                현재 라켓 <span className="font-semibold">{racketLineCount}종</span>{" "}
+                                현재 라켓 <span className="font-ui-medium">{racketLineCount}종</span>{" "}
                                 / 장착 스트링{" "}
-                                <span className="font-semibold">{mountableStringLineCount}종</span>
+                                <span className="font-ui-medium">{mountableStringLineCount}종</span>
                               </p>
                               {mountableStringLineCount > 1 && (
                                 <p>해야 할 일: 장착할 스트링 1종만 남겨주세요.</p>
@@ -1427,12 +1453,12 @@ export default function CartPageClient() {
                             </div>
                           )}
                           {blockServiceCheckoutByQty && (
-                            <div className="w-full rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-muted">
+                            <div className="w-full border-l-2 border-surface-inverse-foreground/30 pl-3 text-ui-label leading-relaxed text-surface-inverse-muted">
                               라켓 1개에는 장착할 스트링 1개가 필요해요.
                               <br />
-                              현재 라켓 <span className="font-semibold">{totalRacketQty}개</span> /
+                              현재 라켓 <span className="font-ui-medium">{totalRacketQty}개</span> /
                               장착 스트링{" "}
-                              <span className="font-semibold">{totalMountableStringQty}개</span>
+                              <span className="font-ui-medium">{totalMountableStringQty}개</span>
                               입니다.
                               <span className="mt-1 inline-flex items-center gap-1.5">
                                 <ArrowRight className="h-3.5 w-3.5 shrink-0" />
@@ -1446,7 +1472,9 @@ export default function CartPageClient() {
                             <Button
                               asChild
                               variant="highlight"
-                              className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold"
+                              size="tall"
+                              wrap="responsive"
+                              className="w-full"
                             >
                               <Link href={bundleEditHref}>
                                 <ShoppingBag className="h-5 w-5" />
@@ -1457,8 +1485,9 @@ export default function CartPageClient() {
                           ) : (
                             <Button
                               variant="highlight"
-                              className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold"
-                              size="lg"
+                              size="tall"
+                              wrap="responsive"
+                              className="w-full"
                               onClick={() => showErrorToast(serviceBlockToastMessage)}
                             >
                               <ShoppingBag className="h-5 w-5" />
@@ -1472,7 +1501,9 @@ export default function CartPageClient() {
                       ) : loading ? (
                         <Button
                           variant="inverse"
-                          className="h-12 w-full font-semibold opacity-70"
+                          size="tall"
+                          wrap="responsive"
+                          className="w-full"
                           disabled
                         >
                           <Loader2 className="h-5 w-5 animate-spin" />
@@ -1481,7 +1512,9 @@ export default function CartPageClient() {
                       ) : !isCartPriceReady ? (
                         <Button
                           variant="inverse"
-                          className="h-12 w-full font-semibold opacity-70"
+                          size="tall"
+                          wrap="responsive"
+                          className="w-full"
                           disabled
                         >
                           <Loader2 className="h-5 w-5 animate-spin" />
@@ -1490,7 +1523,7 @@ export default function CartPageClient() {
                       ) : (
                         <>
                           {hasMountableStringOnlyFlow && (
-                            <div className="space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-muted break-keep">
+                            <div className="space-y-1 rounded-control border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-muted break-keep">
                               {stringStandalonePausedNoticeLines.map((line) => (
                                 <p key={line}>{line}</p>
                               ))}
@@ -1502,7 +1535,9 @@ export default function CartPageClient() {
                           <div className="grid grid-cols-1 gap-2">
                             <Button
                               variant="highlight"
-                              className="h-12 w-full px-2 font-semibold"
+                              size="tall"
+                              wrap="responsive"
+                              className="w-full"
                               disabled={
                                 !hasSelectedItems || !isCartPriceReady || isCheckingCheckoutStock
                               }
@@ -1517,15 +1552,17 @@ export default function CartPageClient() {
                                 {isCheckingCheckoutStock
                                   ? "재고 확인 중"
                                   : !hasSelectedItems
-                                    ? "상품 선택"
+                                    ? "상품을 선택하세요"
                                     : user
-                                      ? `주문하기 ${selectedCartItems.length}`
+                                      ? `선택 ${selectedCartItems.length}개 주문하기`
                                       : "로그인 주문"}
                               </span>
                             </Button>
                             <Button
                               variant="inverse"
-                              className="h-12 w-full px-2 font-semibold"
+                              size="tall"
+                              wrap="responsive"
+                              className="w-full"
                               asChild
                             >
                               <Link href="/products">쇼핑 계속하기</Link>
@@ -1536,18 +1573,18 @@ export default function CartPageClient() {
                     </div>
                     <div className="space-y-2 border-t border-border pt-4 bp-lg:hidden">
                       {blockServiceCheckoutByComposition && (
-                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground">
+                        <p className="rounded-control border border-border/60 bg-muted/40 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground">
                           교체서비스 신청은 라켓 1종과 장착 스트링 1종 기준으로 진행됩니다. 구성을
                           정리한 뒤 주문해주세요.
                         </p>
                       )}
                       {blockServiceCheckoutByQty && (
-                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground">
+                        <p className="rounded-control border border-border/60 bg-muted/40 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground">
                           라켓 1개에는 장착 스트링 1개가 필요해요. 수량을 맞춘 뒤 주문해주세요.
                         </p>
                       )}
                       {hasMountableStringOnlyFlow && (
-                        <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-ui-label leading-relaxed text-foreground break-keep">
+                        <div className="space-y-1 rounded-control border border-primary/20 bg-primary/5 px-3 py-2 text-ui-label leading-relaxed text-foreground break-keep">
                           {stringStandalonePausedNoticeLines.map((line) => (
                             <p key={line}>{line}</p>
                           ))}
@@ -1557,8 +1594,8 @@ export default function CartPageClient() {
                         최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.
                       </p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </aside>
                 <div className="mt-4 bp-lg:hidden">
                   <WishlistSidebar variant="inline" className="mt-0 shadow-none" />
                 </div>
@@ -1568,19 +1605,21 @@ export default function CartPageClient() {
         ) : (
           <div className="mx-auto max-w-2xl">
             <EmptyState
-              className="rounded-2xl bg-card py-12 shadow-sm"
+              className="rounded-none border-x-0 bg-card py-12 shadow-none bp-sm:rounded-panel bp-sm:border-x"
               icon={
                 <span className="inline-flex h-20 w-20 items-center justify-center rounded-full border border-border bg-muted text-foreground shadow-sm bp-sm:h-24 bp-sm:w-24">
                   <PackageOpen className="h-10 w-10 bp-sm:h-12 bp-sm:w-12" />
                 </span>
               }
-              title="장바구니가 비어있습니다"
+              title="장바구니가 비어 있어요"
               description="담아둔 상품이 없어요. 상품을 둘러보거나 라켓 교체서비스 흐름을 확인해보세요."
               action={
                 <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row">
                   <Button
-                    className="w-full px-6 py-3 font-semibold bp-sm:w-auto md:px-8"
+                    variant="highlight"
                     size="lg"
+                    wrap="responsive"
+                    className="w-full bp-sm:w-auto bp-md:px-8"
                     asChild
                   >
                     <Link href="/products" className="flex items-center justify-center gap-3">
@@ -1609,13 +1648,15 @@ export default function CartPageClient() {
               <p className="truncate text-ui-label text-muted-foreground">
                 선택 {selectedCartItems.length}개 · 주문 예상 금액
               </p>
-              <p className="truncate text-ui-card-title-lg font-semibold tabular-nums text-foreground">
+              <p className="truncate text-ui-card-title-lg font-ui-medium tabular-nums text-foreground">
                 {!isCartPriceReady ? "계산 중" : `${formatKRW(total)}원`}
               </p>
             </div>
             <Button
               variant="highlight"
-              className="h-11 min-w-0 max-w-[48%] shrink-0 px-4 font-semibold bp-sm:min-w-[140px]"
+              size="tall"
+              wrap="responsive"
+              className="min-w-0 w-full max-w-[58vw] shrink-[0.6] px-3 bp-sm:w-auto bp-sm:min-w-[160px]"
               disabled={
                 !hasSelectedItems || loading || !isCartPriceReady || isCheckingCheckoutStock
               }
@@ -1629,8 +1670,8 @@ export default function CartPageClient() {
                   : !isCartPriceReady
                     ? "금액 계산 중"
                     : !hasSelectedItems
-                      ? "상품 선택"
-                      : `주문하기 ${selectedCartItems.length}`}
+                      ? "상품을 선택하세요"
+                      : `선택 ${selectedCartItems.length}개 주문하기`}
               </span>
             </Button>
           </div>

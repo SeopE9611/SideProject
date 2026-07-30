@@ -1,7 +1,16 @@
 "use client";
 import { PublicSurface } from "@/components/public";
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -23,6 +32,18 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   const router = useRouter();
   const add = useCartStore((s) => s.addItem);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+
+  async function handleClear() {
+    try {
+      await clear();
+      showSuccessToast("위시리스트를 비웠어요.");
+    } catch {
+      showErrorToast("위시리스트 비우기에 실패했습니다.");
+    } finally {
+      setClearDialogOpen(false);
+    }
+  }
 
   async function handleRemove(id: string) {
     try {
@@ -46,14 +67,14 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
         padding="none"
         className={clsx("mt-6 overflow-hidden", className)}
       >
-        <CardHeader className="border-b border-border">
-          <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
+        <header className="border-b border-border p-4">
+          <h2 className="flex items-center gap-2 break-keep whitespace-nowrap text-ui-card-title font-ui-medium">
             <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />내 위시리스트
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
+          </h2>
+        </header>
+        <div className="p-4 text-ui-body-sm text-muted-foreground">
           위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
-        </CardContent>
+        </div>
       </PublicSurface>
     );
   }
@@ -65,17 +86,17 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
         padding="none"
         className={clsx("mt-6 overflow-hidden", className)}
       >
-        <CardHeader className="border-b border-border">
-          <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
+        <header className="border-b border-border p-4">
+          <h2 className="flex items-center gap-2 break-keep whitespace-nowrap text-ui-card-title font-ui-medium">
             <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />내 위시리스트
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 p-4" role="status" aria-live="polite">
+          </h2>
+        </header>
+        <div className="space-y-3 p-4" role="status" aria-live="polite">
           <span className="sr-only">위시리스트를 불러오는 중입니다.</span>
           <div className="space-y-3" aria-hidden="true">
             {["wishlist-loading-primary", "wishlist-loading-secondary"].map((key) => (
               <div key={key} className="flex min-w-0 items-center gap-4">
-                <Skeleton className="h-14 w-14 shrink-0 rounded-xl" />
+                <Skeleton className="h-14 w-14 shrink-0 rounded-control" />
                 <div className="min-w-0 flex-1 space-y-2">
                   <Skeleton className="h-4 w-4/5 rounded-md" />
                   <Skeleton className="h-4 w-24 rounded-md" />
@@ -83,7 +104,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
               </div>
             ))}
           </div>
-        </CardContent>
+        </div>
       </PublicSurface>
     );
   }
@@ -126,39 +147,51 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   }
 
   return (
+    <>
+    <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>위시리스트를 비울까요?</AlertDialogTitle>
+          <AlertDialogDescription>
+            저장한 모든 상품이 위시리스트에서 삭제되며 이 작업은 되돌릴 수 없습니다.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="min-h-11 bp-sm:min-h-10">취소</AlertDialogCancel>
+          <AlertDialogAction
+            className={buttonVariants({ variant: "destructive", className: "min-h-11 bp-sm:min-h-10" })}
+            onClick={handleClear}
+          >
+            모두 삭제
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <PublicSurface
       variant="muted"
       padding="none"
       className={clsx("mt-6 overflow-hidden", className)}
     >
-      <CardHeader
-        className={clsx(
-          "rounded-t-lg",
-          variant === "inline" && "bg-muted/50 dark:bg-card/40 border-b border-border",
-        )}
-      >
+      <header className={clsx("p-4", variant === "inline" && "border-b border-border bg-muted/50 dark:bg-card/40")}>
         <div className="flex flex-col items-start gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-          <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
+          <h2 className="flex items-center gap-2 break-keep whitespace-nowrap text-ui-card-title font-ui-medium">
             <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />
             {title}
-          </CardTitle>
+          </h2>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => {
-              clear().catch(() => {
-                showErrorToast("위시리스트 비우기에 실패했습니다.");
-              });
-            }}
-            className="w-full justify-center border-border bg-transparent hover:bg-primary/10 bp-sm:w-auto dark:hover:bg-primary/20"
+            onClick={() => setClearDialogOpen(true)}
+            wrap="responsive"
+            className="min-h-11 w-full justify-center border-border bg-transparent hover:bg-primary/10 bp-sm:min-h-9 bp-sm:w-auto dark:hover:bg-primary/20"
           >
             <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
             위시리스트 비우기
           </Button>
         </div>
-      </CardHeader>
+      </header>
 
-      <CardContent className={variant === "inline" ? "p-0" : ""}>
+      <div className={variant === "inline" ? "p-0" : ""}>
         <div className={clsx(variant === "inline" ? "grid gap-0 bp-xl:grid-cols-2" : "space-y-3")}>
           {list.map((it, index) => (
             <div
@@ -181,13 +214,13 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                 alt={it.name}
                 width={56}
                 height={56}
-                className="h-14 w-14 rounded-xl border object-cover flex-shrink-0 shadow-sm"
+                className="h-14 w-14 rounded-control border object-cover flex-shrink-0 shadow-sm"
               />
               {/* 이름/가격 영역 - 긴 이름은 말줄임 */}
               <div className="flex-1 min-w-0">
                 <Link
                   href={`/products/${it.id}`}
-                  className="block line-clamp-2 break-keep text-ui-body-sm font-medium transition-colors hover:text-primary hover:underline"
+                  className="block line-clamp-2 break-keep text-ui-body-sm font-ui-medium transition-colors hover:text-primary hover:underline"
                 >
                   {it.name}
                 </Link>
@@ -205,12 +238,12 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                     </>
                   ) : it.requiresOption ? (
                     <>
-                      <div className="font-medium text-warning">옵션 미선택</div>
+                      <div className="font-ui-medium text-warning">옵션 미선택</div>
                       <div>상세페이지에서 색상/게이지(굵기)를 선택해주세요.</div>
                     </>
                   ) : null}
                   {it.hasSelectedOption && it.optionAvailable === false && (
-                    <div className="font-medium text-destructive">품절</div>
+                    <div className="font-ui-medium text-destructive">품절</div>
                   )}
                 </div>
               </div>
@@ -220,7 +253,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-9 w-9 border-border bg-transparent p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
+                  className="h-11 min-h-11 w-11 min-w-11 border-border bg-transparent p-0 hover:bg-primary/10 bp-sm:h-9 bp-sm:min-h-9 bp-sm:w-9 bp-sm:min-w-9 dark:hover:bg-primary/20"
                   onClick={() => handleAddToCart(it)}
                   disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
                   aria-label={
@@ -237,7 +270,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-9 w-9 p-0 text-muted-foreground hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive"
+                  className="h-11 min-h-11 w-11 min-w-11 p-0 text-muted-foreground hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive bp-sm:h-9 bp-sm:min-h-9 bp-sm:w-9 bp-sm:min-w-9"
                   onClick={() => handleRemove(it.id)}
                   disabled={removingId === it.id}
                   aria-label="위시리스트에서 삭제"
@@ -249,7 +282,8 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
             </div>
           ))}
         </div>
-      </CardContent>
+      </div>
     </PublicSurface>
+    </>
   );
 }
