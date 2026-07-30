@@ -72,14 +72,14 @@ export default function RentalApplyHandoffClient({
         <CardContent className="space-y-4">
           <div className="rounded-lg bg-muted p-4 flex items-center justify-between gap-3">
             <div className="text-ui-body-sm text-muted-foreground">대여 번호</div>
-            <div className="font-mono text-ui-body-sm font-semibold">{rentalId}</div>
+            <div className="font-mono text-ui-body-sm font-ui-medium">{rentalId}</div>
           </div>
 
           <div className="rounded-lg border border-border bg-secondary p-4 text-foreground">
             <div className="flex items-start gap-2">
               <Clock className="mt-0.5 h-4 w-4" />
               <div className="flex-1">
-                <div className="text-ui-body-sm font-semibold text-foreground">
+                <div className="text-ui-body-sm font-ui-medium text-foreground">
                   스트링 교체 신청서로 이동 중
                 </div>
                 <div className="mt-1 text-ui-label text-foreground">
@@ -96,7 +96,7 @@ export default function RentalApplyHandoffClient({
         </CardContent>
 
         <CardFooter className="flex flex-col gap-2">
-          <Button asChild className="w-full" size="lg">
+          <Button asChild variant="highlight_soft" className="w-full" size="lg" wrap="responsive">
             <Link href={safeHref} className="flex items-center justify-center gap-2">
               신청서 작성하기 <ArrowRight className="h-4 w-4" />
             </Link>
@@ -107,18 +107,19 @@ export default function RentalApplyHandoffClient({
               variant="outline"
               className="w-full"
               size="lg"
+              wrap="responsive"
               onClick={() => setCancelled(true)}
             >
               자동 이동 취소
             </Button>
           ) : (
             <>
-              <Button asChild variant="ghost" className="w-full" size="lg">
+              <Button asChild variant="outline" className="w-full" size="lg" wrap="responsive">
                 <Link href={safeSuccessHref}>대여 접수 완료 페이지로</Link>
               </Button>
 
               {/* 마이페이지(대여 탭)에서 해당 주문/대여 내역으로 이동 */}
-              <Button asChild variant="ghost" className="w-full" size="lg">
+              <Button asChild variant="outline" className="w-full" size="lg" wrap="responsive">
                 <Link href={safeBackHref}>주문/대여 내역으로 이동</Link>
               </Button>
             </>

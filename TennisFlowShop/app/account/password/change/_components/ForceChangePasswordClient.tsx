@@ -252,8 +252,10 @@ export default function ForceChangePasswordClient() {
         <Button
           type="submit"
           disabled={loading}
-          variant="default"
-          className="w-full py-2.5 font-medium shadow-lg transition-all duration-200 hover:shadow-xl"
+          variant="highlight"
+          size="lg"
+          wrap="responsive"
+          className="w-full"
         >
           {loading ? "변경 중…" : "비밀번호 변경"}
         </Button>

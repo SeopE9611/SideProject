@@ -882,7 +882,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         <Button asChild variant="secondary" wrap="responsive" className="min-h-11 w-full bp-sm:w-auto">
           <Link href="/academy">아카데미 홈 보기</Link>
         </Button>
-        <Button asChild variant="default" wrap="responsive" className="min-h-11 w-full bp-sm:w-auto">
+        <Button asChild variant="outline" wrap="responsive" className="min-h-11 w-full bp-sm:w-auto">
           <Link href="/board/qna/write?category=academy">
             <PhoneCall className="h-4 w-4" />
             문의하기

@@ -1,5 +1,4 @@
 import BackButtonGuard from "@/app/checkout/success/_components/BackButtonGuard";
-import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPackageCard";
 import {
   getCustomerTransactionPaymentStatusLabel,
   isCustomerBankTransferPayment,
@@ -456,25 +455,25 @@ export default async function PackageSuccessPage({
       <BackButtonGuard />
       <div className="min-h-full bg-background">
         <div className="border-b border-border bg-background text-foreground">
-          <SiteContainer className="py-8 md:py-12">
+          <SiteContainer className="py-8 bp-md:py-12">
             <ResultState
               status={packageResultPresentation.status}
               title={packageResultPresentation.title}
               description={packageResultPresentation.description}
-              className="px-0 py-0 sm:py-0"
+              className="px-0 py-0 bp-sm:py-0"
             >
               <PublicSurface variant="muted" className="space-y-4">
-                <div className="grid grid-cols-1 text-ui-body-sm md:grid-cols-3 md:divide-x md:divide-border">
-                  <div className="border-b border-border p-4 md:border-b-0">
-                    <p className="font-semibold text-foreground">{paymentStatusLabel}</p>
+                <div className="grid grid-cols-1 text-ui-body-sm bp-md:grid-cols-3 bp-md:divide-x bp-md:divide-border">
+                  <div className="border-b border-border p-4 bp-md:border-b-0">
+                    <p className="font-ui-medium text-foreground">{paymentStatusLabel}</p>
                     <p className="mt-1 text-muted-foreground">{paymentMethodLabel}</p>
                   </div>
-                  <div className="border-b border-border p-4 md:border-b-0">
-                    <p className="font-semibold text-foreground">{activationStatusLabel}</p>
+                  <div className="border-b border-border p-4 bp-md:border-b-0">
+                    <p className="font-ui-medium text-foreground">{activationStatusLabel}</p>
                     <p className="mt-1 text-muted-foreground">{activationDescription}</p>
                   </div>
                   <div className="p-4">
-                    <p className="font-semibold text-foreground">
+                    <p className="font-ui-medium text-foreground">
                       {packageResultPresentation.nextActionTitle}
                     </p>
                     <p className="mt-1 text-muted-foreground">
@@ -482,9 +481,9 @@ export default async function PackageSuccessPage({
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex flex-col gap-3 bp-sm:flex-row">
                   {canStartStringingService ? (
-                    <Button variant="default" className="h-12 flex-1 font-semibold" asChild>
+                    <Button variant="highlight" size="lg" wrap="responsive" className="flex-1" asChild>
                       <Link href="/services#service-start" className="flex items-center gap-2">
                         교체서비스 시작하기
                         <ArrowRight className="h-4 w-4" />
@@ -492,8 +491,10 @@ export default async function PackageSuccessPage({
                     </Button>
                   ) : null}
                   <Button
-                    variant={canStartStringingService ? "outline" : "default"}
-                    className="h-12 flex-1 font-semibold"
+                    variant={canStartStringingService ? "highlight_soft" : "highlight"}
+                    size="lg"
+                    wrap="responsive"
+                    className="flex-1"
                     asChild
                   >
                     <Link href={lookupHref} className="flex items-center gap-2">
@@ -507,14 +508,14 @@ export default async function PackageSuccessPage({
           </SiteContainer>
         </div>
 
-        <SiteContainer className="py-8 md:py-10">
-          <div className="mx-auto max-w-5xl space-y-4 md:space-y-6">
+        <SiteContainer className="py-8 bp-md:py-10">
+          <div className="mx-auto max-w-5xl space-y-4 bp-md:space-y-6">
             {/* 패키지 주문 정보 카드 */}
             <SummaryCard
               variant="feature"
               className="overflow-hidden"
               title={
-                <span className="flex items-center gap-3 text-ui-section-title sm:text-ui-section-title-lg">
+                <span className="flex items-center gap-3 text-ui-section-title bp-sm:text-ui-section-title-lg">
                   <Package className="h-6 w-6 text-primary" />
                   패키지 주문 정보
                 </span>
@@ -522,21 +523,21 @@ export default async function PackageSuccessPage({
               description={
                 <span className="break-all text-ui-body-sm text-muted-foreground">
                   문의 시 확인 번호:{" "}
-                  <span className="font-mono text-ui-body-sm font-semibold text-primary">
+                  <span className="font-mono text-ui-body-sm font-ui-medium text-primary">
                     {packageOrder._id.toString()}
                   </span>
                 </span>
               }
               footer={
-                <div className="flex w-full flex-col gap-3 sm:flex-row md:gap-4">
-                  <Button variant="default" className="h-12 flex-1" asChild>
+                <div className="flex w-full flex-col gap-3 bp-sm:flex-row bp-md:gap-4">
+                  <Button variant="highlight_soft" size="lg" wrap="responsive" className="flex-1" asChild>
                     <Link href={lookupHref} className="flex items-center gap-2">
                       <Package className="h-5 w-5" />
                       패키지권 확인
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant="outline" className="h-12 flex-1 border border-border" asChild>
+                  <Button variant="outline" size="lg" wrap="responsive" className="flex-1" asChild>
                     <Link href="/services/packages" className="flex items-center gap-2">
                       <Gift className="h-5 w-5" />
                       다른 패키지 보기
@@ -545,18 +546,39 @@ export default async function PackageSuccessPage({
                 </div>
               }
             >
-              {/* 패키지 정보 */}
-              <div className="mb-6 md:mb-8">
-                <UnifiedPackageCard pkg={packageCard} showTotalPrice className="shadow-none" />
-              </div>
+              {/* 성공 화면에서는 상품 카드 대신 결제에 필요한 핵심 정보만 요약합니다. */}
+              <dl className="mb-6 divide-y divide-border/70 text-ui-body-sm bp-md:mb-8">
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <dt className="text-muted-foreground">패키지명</dt>
+                  <dd className="text-right font-ui-medium text-foreground">{packageCard.title}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <dt className="text-muted-foreground">이용 횟수</dt>
+                  <dd className="font-ui-medium text-foreground">{packageCard.sessions}회</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <dt className="text-muted-foreground">유효기간</dt>
+                  <dd className="text-right font-ui-medium text-foreground">{packageCard.validityPeriod}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <dt className="text-muted-foreground">활성 상태</dt>
+                  <dd className="text-right font-ui-medium text-foreground">{activationStatusLabel}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <dt className="text-muted-foreground">결제 금액</dt>
+                  <dd className="text-right font-ui-medium tabular-nums text-foreground">
+                    {formatPaymentTotalAmount(paymentTotalAmount)}
+                  </dd>
+                </div>
+              </dl>
 
-              <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+              <div className="mb-6 grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6">
                 <div className="space-y-4">
                   <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-primary" />
                     <div>
                       <p className="text-ui-body-sm text-muted-foreground">주문일자</p>
-                      <p className="font-semibold text-foreground">
+                      <p className="font-ui-medium text-foreground">
                         {new Date(packageOrder.createdAt).toLocaleDateString("ko-KR", {
                           year: "numeric",
                           month: "long",
@@ -570,7 +592,7 @@ export default async function PackageSuccessPage({
                     <CreditCard className="h-5 w-5 text-primary" />
                     <div className="min-w-0">
                       <p className="text-ui-body-sm text-muted-foreground">결제 방법</p>
-                      <p className="break-words font-semibold text-foreground">
+                      <p className="break-words font-ui-medium text-foreground">
                         {paymentMethodLabel}
                       </p>
                     </div>
@@ -579,13 +601,13 @@ export default async function PackageSuccessPage({
                     <CheckCircle className="h-5 w-5 text-primary" />
                     <div>
                       <p className="text-ui-body-sm text-muted-foreground">결제 상태</p>
-                      <p className="font-semibold text-foreground">{paymentStatusLabel}</p>
+                      <p className="font-ui-medium text-foreground">{paymentStatusLabel}</p>
                       <p className="mt-2 text-ui-body-sm text-muted-foreground">활성화 상태</p>
-                      <p className="font-semibold text-foreground">{activationStatusLabel}</p>
+                      <p className="font-ui-medium text-foreground">{activationStatusLabel}</p>
                     </div>
                   </PublicSurface>
                   <PublicSurface variant="inverse" padding="sm" className="rounded-control">
-                    <div className="flex items-end justify-between gap-4 text-ui-card-title-lg font-semibold sm:text-ui-section-title">
+                    <div className="flex items-end justify-between gap-4 text-ui-card-title-lg font-ui-medium bp-sm:text-ui-section-title">
                       <span>총 결제 금액</span>
                       <span className="shrink-0 text-brand-highlight">
                         {formatPaymentTotalAmount(paymentTotalAmount)}
@@ -598,14 +620,14 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCard className="h-5 w-5 text-primary" />
-                      <h3 className="font-semibold text-foreground">입금 계좌 정보</h3>
+                      <h3 className="font-ui-medium text-foreground">입금 계좌 정보</h3>
                     </div>
                     {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
                       <PublicSurface variant="default" padding="sm" className="space-y-2">
-                        <div className="font-semibold text-foreground">
+                        <div className="font-ui-medium text-foreground">
                           {bankLabelMap[paymentInfo.bank].label}
                         </div>
-                        <div className="break-all font-mono text-ui-card-title-lg font-semibold text-foreground">
+                        <div className="break-all font-mono text-ui-card-title-lg font-ui-medium text-foreground">
                           {bankLabelMap[paymentInfo.bank].account}
                         </div>
                         <div className="text-ui-body-sm text-muted-foreground">
@@ -616,7 +638,7 @@ export default async function PackageSuccessPage({
                       <p className="text-muted-foreground">선택된 은행 없음</p>
                     )}
                     <div className="mt-4 rounded-lg border border-border bg-card p-3">
-                      <p className="text-ui-body-sm font-semibold text-foreground">
+                      <p className="text-ui-body-sm font-ui-medium text-foreground">
                         입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString("ko-KR")}{" "}
                         23:59까지
                       </p>
@@ -624,7 +646,7 @@ export default async function PackageSuccessPage({
                   </PublicSurface>
                 ) : isOnlinePayment ? (
                   <PublicSurface variant="muted" padding="sm">
-                    <h3 className="font-semibold text-foreground mb-3">
+                    <h3 className="font-ui-medium text-foreground mb-3">
                       {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
                     </h3>
                     <p className="text-ui-body-sm text-muted-foreground">
@@ -643,28 +665,28 @@ export default async function PackageSuccessPage({
 
               {/* 신청자 정보 */}
               <div className="mb-6">
-                <h3 className="flex items-center gap-2 font-semibold text-ui-card-title-lg mb-4 text-foreground">
+                <h3 className="flex items-center gap-2 font-ui-medium text-ui-card-title-lg mb-4 text-foreground">
                   <MapPin className="h-5 w-5 text-primary" />
                   신청자 정보
                 </h3>
                 <PublicSurface variant="muted" padding="sm" className="space-y-2">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2">
                     <div className="min-w-0">
                       <span className="text-ui-body-sm text-muted-foreground">신청자:</span>
-                      <span className="ml-2 break-words font-semibold text-foreground">
+                      <span className="ml-2 break-words font-ui-medium text-foreground">
                         {serviceInfo?.name || "정보 없음"}
                       </span>
                     </div>
                     <div className="min-w-0">
                       <span className="text-ui-body-sm text-muted-foreground">연락처:</span>
-                      <span className="ml-2 break-words font-semibold text-foreground">
+                      <span className="ml-2 break-words font-ui-medium text-foreground">
                         {formatKoreanPhone(serviceInfo?.phone) || "정보 없음"}
                       </span>
                     </div>
                   </div>
                   <div className="min-w-0">
                     <span className="text-ui-body-sm text-muted-foreground">이메일:</span>
-                    <span className="ml-2 break-words font-semibold text-foreground">
+                    <span className="ml-2 break-words font-ui-medium text-foreground">
                       {serviceInfo?.email || "정보 없음"}
                     </span>
                   </div>
@@ -674,7 +696,7 @@ export default async function PackageSuccessPage({
                       <span className="text-ui-body-sm text-muted-foreground">
                         서비스 요청사항:
                       </span>
-                      <span className="ml-2 break-words font-semibold text-foreground">
+                      <span className="ml-2 break-words font-ui-medium text-foreground">
                         {serviceInfo.serviceRequest}
                       </span>
                     </div>
@@ -682,7 +704,7 @@ export default async function PackageSuccessPage({
                 </PublicSurface>
               </div>
 
-              <div className="px-4 md:px-6">
+              <div className="px-4 bp-md:px-6">
                 <DevMarkPaidButton
                   orderId={packageOrder._id.toString()}
                   show={canShowDevMarkPaidButton}
@@ -700,12 +722,12 @@ export default async function PackageSuccessPage({
                 </span>
               }
             >
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+              <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6">
                 <div className="space-y-4">
                   <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                     <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-foreground mb-1">
+                      <h4 className="font-ui-medium text-foreground mb-1">
                         {isBankTransfer ? "입금 안내" : "결제 안내"}
                       </h4>
                       <p className="text-ui-body-sm text-muted-foreground">
@@ -716,7 +738,7 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                     <Calendar className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-foreground mb-1">사용 안내</h4>
+                      <h4 className="font-ui-medium text-foreground mb-1">사용 안내</h4>
                       <p className="text-ui-body-sm text-muted-foreground">
                         교체서비스 신청이 완료되면 패키지 이용 횟수가 1회 차감됩니다.
                       </p>
@@ -727,7 +749,7 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                     <Star className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-foreground mb-1">유효기간</h4>
+                      <h4 className="font-ui-medium text-foreground mb-1">유효기간</h4>
                       <p className="text-ui-body-sm text-muted-foreground">
                         패키지는 {packageCard.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를
                         이용해주세요.
@@ -737,7 +759,7 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                     <Phone className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-foreground mb-1">고객 지원</h4>
+                      <h4 className="font-ui-medium text-foreground mb-1">고객 지원</h4>
                       <p className="text-ui-body-sm text-muted-foreground">
                         패키지 관련 문의는 고객센터(010-5218-5248)로 연락해주세요.
                       </p>

@@ -624,12 +624,12 @@ export default function OrderList() {
                           size="sm"
                           variant={
                             stringServiceCTAKind === "apply" || stringServiceCTAKind === "add"
-                              ? "default"
+                              ? "highlight_soft"
                               : "outline"
                           }
                           className={
                             stringServiceCTAKind === "apply" || stringServiceCTAKind === "add"
-                              ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-[box-shadow,border-color,background-color,color,opacity] duration-200"
+                              ? ""
                               : "border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent"
                           }
                           asChild
@@ -696,7 +696,8 @@ export default function OrderList() {
                   {stringServiceCTAHref ? (
                     <Button
                       size="sm"
-                      className="col-span-5 w-full whitespace-normal break-keep bg-primary text-primary-foreground hover:bg-primary/90"
+                      variant="highlight_soft"
+                      className="col-span-5 w-full whitespace-normal break-keep"
                       asChild
                     >
                       <Link

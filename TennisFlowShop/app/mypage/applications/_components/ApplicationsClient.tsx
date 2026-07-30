@@ -457,7 +457,7 @@ export default function ApplicationsClient() {
           description="아직 신청하신 서비스가 없습니다. 필요한 서비스를 신청하고 진행 상태를 이곳에서 확인해 보세요."
           action={
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button asChild>
+              <Button asChild variant="highlight" size="lg" wrap="responsive" className="min-h-11">
                 <Link href="/services/apply?mode=single">교체서비스 신청하기</Link>
               </Button>
               <Button asChild variant="outline" className="bg-transparent">

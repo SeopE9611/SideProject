@@ -40,9 +40,9 @@ function SummarySurface({ className }: { className?: string }) {
 export default function StringServiceSuccessLoading() {
   return (
     <div className="min-h-full bg-background text-foreground" aria-hidden="true">
-      <div className="bg-background py-8 md:py-12">
+      <div className="bg-background py-8 bp-md:py-12">
         <SiteContainer>
-          <div className="flex flex-col items-center py-8 text-center sm:py-10">
+          <div className="flex flex-col items-center py-8 text-center bp-sm:py-10">
             <Skeleton className="h-14 w-14 rounded-full" />
             <Skeleton className="mt-5 h-8 w-full max-w-[280px]" />
             <div className="mt-3 flex w-full flex-col items-center gap-2">
@@ -57,7 +57,7 @@ export default function StringServiceSuccessLoading() {
         </SiteContainer>
       </div>
 
-      <SiteContainer className="py-8 md:py-16">
+      <SiteContainer className="py-8 bp-md:py-16">
         <div className="mx-auto max-w-5xl">
           <div className="mb-8">
             <SummaryCard
@@ -65,13 +65,13 @@ export default function StringServiceSuccessLoading() {
               className="overflow-hidden"
               contentClassName="p-0"
               footer={
-                <div className="flex w-full flex-col gap-3 sm:flex-row">
-                  <Skeleton className="h-12 flex-1" />
-                  <Skeleton className="h-12 flex-1" />
+                <div className="flex w-full flex-col gap-3 bp-sm:flex-row">
+                  <Skeleton className="h-11 flex-1" />
+                  <Skeleton className="h-11 flex-1" />
                 </div>
               }
             >
-              <div className="border-b border-border/80 bg-muted/20 p-4 sm:p-5 md:p-6">
+              <div className="border-b border-border/80 bg-muted/20 p-4 bp-sm:p-5 bp-md:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center">
@@ -84,10 +84,10 @@ export default function StringServiceSuccessLoading() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 md:p-6">
-                <div className="mb-6 rounded-control border border-border/70 bg-muted/20 p-4 md:p-5">
+              <div className="p-4 bp-sm:p-5 bp-md:p-6">
+                <div className="mb-6 rounded-control border border-border/70 bg-muted/20 p-4 bp-md:p-5">
                   <Skeleton className="h-5 w-40" />
-                  <div className="mt-3 grid gap-0 divide-y divide-border/70 md:grid-cols-3 md:divide-x md:divide-y-0">
+                  <div className="mt-3 grid gap-0 divide-y divide-border/70 bp-md:grid-cols-3 bp-md:divide-x bp-md:divide-y-0">
                     {progressItems.map((item) => (
                       <div key={item} className="p-3">
                         <Skeleton className="h-4 w-20" />
@@ -96,15 +96,15 @@ export default function StringServiceSuccessLoading() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <div className="mt-4 flex flex-col gap-2 bp-sm:flex-row">
                     <Skeleton className="h-10 flex-1" />
                     <Skeleton className="h-10 flex-1" />
                   </div>
                 </div>
 
-                <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-8 lg:grid-cols-4">
+                <div className="mb-6 grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-md:mb-8 bp-lg:grid-cols-4">
                   <SummarySurface />
-                  <div className="rounded-control border border-border/70 bg-muted/20 p-4 lg:col-span-2">
+                  <div className="rounded-control border border-border/70 bg-muted/20 p-4 bp-lg:col-span-2">
                     <div className="mb-3 flex items-center">
                       <Skeleton className="mr-3 h-6 w-6 shrink-0 rounded-full" />
                       <Skeleton className="h-4 w-20" />
@@ -120,18 +120,18 @@ export default function StringServiceSuccessLoading() {
                   <SummarySurface />
                   <SummarySurface />
                   <SummarySurface />
-                  <SummarySurface className="lg:col-span-2" />
+                  <SummarySurface className="bp-lg:col-span-2" />
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-2">
-                  <div className="space-y-4 md:space-y-6">
+                <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-2">
+                  <div className="space-y-4 bp-md:space-y-6">
                     <div className="flex items-center">
                       <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                       <Skeleton className="h-6 w-28" />
                     </div>
                     <CompactRows count={3} />
                   </div>
-                  <div className="space-y-4 md:space-y-6">
+                  <div className="space-y-4 bp-md:space-y-6">
                     <div className="flex items-center">
                       <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                       <Skeleton className="h-6 w-32" />
@@ -140,14 +140,14 @@ export default function StringServiceSuccessLoading() {
                   </div>
                 </div>
 
-                <div className="my-6 h-px bg-border md:my-8" />
+                <div className="my-6 h-px bg-border bp-md:my-8" />
 
-                <div className="space-y-4 md:space-y-6">
+                <div className="space-y-4 bp-md:space-y-6">
                   <div className="flex items-center">
                     <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                     <Skeleton className="h-6 w-32" />
                   </div>
-                  <div className="rounded-control border border-border/70 bg-muted/20 p-4 md:p-5">
+                  <div className="rounded-control border border-border/70 bg-muted/20 p-4 bp-md:p-5">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="mt-3 h-4 w-full" />
                     <Skeleton className="mt-2 h-4 w-4/5" />
@@ -157,7 +157,7 @@ export default function StringServiceSuccessLoading() {
             </SummaryCard>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-2">
             <SummaryCard variant="feature" title={<Skeleton className="h-6 w-32" />}>
               <div className="space-y-3">
                 {guideRows.map((row) => (
