@@ -415,7 +415,13 @@ function ReviewCard({
         title="최신 리뷰"
         actions={
           <>
-            <Button asChild size="sm" wrap="responsive" className="w-full sm:w-auto">
+            <Button
+              asChild
+              variant="secondary"
+              size="sm"
+              wrap="responsive"
+              className="min-h-11 w-full bp-sm:min-h-9 bp-sm:w-auto"
+            >
               <Link href="/reviews/write">
                 <Plus className="h-4 w-4" />
                 후기 작성
@@ -426,7 +432,7 @@ function ReviewCard({
               variant="outline"
               size="sm"
               wrap="responsive"
-              className="w-full sm:w-auto"
+              className="min-h-11 w-full bp-sm:min-h-9 bp-sm:w-auto"
             >
               <Link href="/reviews">
                 전체보기 <ArrowRight className="h-4 w-4" />

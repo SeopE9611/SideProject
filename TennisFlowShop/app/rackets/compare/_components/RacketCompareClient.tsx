@@ -87,7 +87,17 @@ export default function RacketCompareClient() {
             icon={<Scale className="h-8 w-8" />}
             title="비교할 라켓을 선택해주세요"
             description="라켓 찾기에서 2개 이상, 최대 4개까지 비교 목록에 담을 수 있습니다."
-            action={<Button onClick={goBackToFinder}>라켓 찾기로</Button>}
+            action={
+              <Button
+                variant="highlight"
+                size="lg"
+                wrap="responsive"
+                className="w-full bp-sm:w-auto"
+                onClick={goBackToFinder}
+              >
+                라켓 찾기로
+              </Button>
+            }
           />
         ) : items.length === 1 && selected ? (
           <section className="rounded-xl border border-border bg-card p-4 shadow-sm bp-sm:p-6">
@@ -149,7 +159,13 @@ export default function RacketCompareClient() {
                 </div>
               </div>
             </article>
-            <Button onClick={goBackToFinder} className="mt-5 rounded-lg">
+            <Button
+              variant="highlight"
+              size="lg"
+              wrap="responsive"
+              onClick={goBackToFinder}
+              className="mt-5 w-full bp-sm:w-auto"
+            >
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
               라켓 더 고르기
             </Button>

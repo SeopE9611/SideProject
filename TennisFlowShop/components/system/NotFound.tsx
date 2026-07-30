@@ -32,13 +32,13 @@ export default function NotFound() {
           </div>
 
           <div className="grid w-full gap-3 bp-sm:flex bp-sm:justify-center">
-            <Button wrap="responsive" asChild>
+            <Button variant="highlight" size="lg" wrap="responsive" asChild>
               <Link href="/">
                 <Home className="h-4 w-4" />
                 홈으로 돌아가기
               </Link>
             </Button>
-            <Button variant="outline" wrap="responsive" asChild>
+            <Button variant="outline" size="lg" wrap="responsive" asChild>
               <Link href="/board/qna/write">
                 문의하기
                 <ArrowRight className="h-4 w-4" />
