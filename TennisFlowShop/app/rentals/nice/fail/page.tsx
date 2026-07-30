@@ -67,6 +67,14 @@ const FAIL_GUIDE_MAP: Record<
     ],
     accent: "warning",
   },
+  PAYMENT_PROCESSING_FAILED: {
+    title: "결제 처리 결과를 확인해야 해요",
+    description: [
+      "대여 결제 처리 결과가 아직 명확하게 확정되지 않았어요.",
+      "반복 결제하지 말고 대여 내역 또는 고객센터에서 먼저 확인해주세요.",
+    ],
+    accent: "warning",
+  },
   UNKNOWN: {
     title: "대여 결제를 완료하지 못했어요",
     description: ["결제 처리 중 문제가 발생했어요.", "대여 페이지로 돌아가 다시 시도해주세요."],
@@ -91,6 +99,7 @@ export default async function RentalNiceFailPage({
   const code = FAIL_GUIDE_MAP[rawCode] ? rawCode : "UNKNOWN";
   const guide = FAIL_GUIDE_MAP[code];
   const rawMessage = (sp.message || "").trim();
+  const requiresPaymentCheck = guide.accent === "warning";
 
   const candidateId = (sp.racketId || sp.id || "").trim();
   const checkoutFallback =
@@ -107,10 +116,17 @@ export default async function RentalNiceFailPage({
       guide={guide}
       code={code}
       message={rawMessage}
-      status={guide.accent === "warning" ? "warning" : "error"}
-      primaryAction={{ label: "대여로 돌아가기", href: fallbackHref }}
-      secondaryAction={{ label: "대여 목록으로 이동", href: "/rentals" }}
-      warningMessage="중복 결제를 막기 위해 반복 결제를 피하고, 대여 내역 또는 관리자 확인 후 진행해주세요."
+      primaryAction={
+        requiresPaymentCheck
+          ? { label: "대여 내역 확인", href: "/mypage?tab=rentals" }
+          : { label: "대여로 돌아가기", href: fallbackHref }
+      }
+      secondaryAction={
+        requiresPaymentCheck
+          ? { label: "고객센터로 이동", href: "/support" }
+          : { label: "대여 목록으로 이동", href: "/rentals" }
+      }
+      warningMessage="결제 승인이 완료됐을 가능성이 있으니 같은 대여를 바로 반복 결제하지 마시고, 먼저 대여 내역 또는 고객센터에서 상태를 확인해주세요."
     />
   );
 }

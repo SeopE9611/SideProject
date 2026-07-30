@@ -71,6 +71,14 @@ const FAIL_GUIDE_MAP: Record<
     ],
     accent: "warning",
   },
+  PAYMENT_PROCESSING_FAILED: {
+    title: "결제 처리 결과를 확인해야 해요",
+    description: [
+      "결제 처리 결과가 아직 명확하게 확정되지 않았어요.",
+      "반복 결제하지 말고 주문 내역 또는 고객센터에서 먼저 확인해주세요.",
+    ],
+    accent: "warning",
+  },
   UNKNOWN: {
     title: "결제를 완료하지 못했어요",
     description: ["결제 처리 중 문제가 발생했어요.", "체크아웃으로 돌아가 다시 시도해주세요."],
@@ -87,15 +95,24 @@ export default async function NiceCheckoutFailPage({
   const code = FAIL_GUIDE_MAP[rawCode] ? rawCode : "UNKNOWN";
   const guide = FAIL_GUIDE_MAP[code];
   const rawMessage = (sp.message || "").trim();
+  const requiresPaymentCheck = guide.accent === "warning";
 
   return (
     <PaymentFailureResult
       guide={guide}
       code={code}
       message={rawMessage}
-      primaryAction={{ label: "체크아웃으로 돌아가기", href: "/checkout" }}
-      secondaryAction={{ label: "장바구니로 이동", href: "/cart" }}
-      warningMessage="중복 결제를 막기 위해 같은 상품으로 반복 결제하지 마시고, 주문 내역 또는 관리자 확인 후 진행해주세요."
+      primaryAction={
+        requiresPaymentCheck
+          ? { label: "주문 내역 확인", href: "/mypage?tab=orders" }
+          : { label: "체크아웃으로 돌아가기", href: "/checkout" }
+      }
+      secondaryAction={
+        requiresPaymentCheck
+          ? { label: "고객센터로 이동", href: "/support" }
+          : { label: "장바구니로 이동", href: "/cart" }
+      }
+      warningMessage="결제 승인이 완료됐을 가능성이 있으니 같은 상품을 바로 반복 결제하지 마시고, 먼저 주문 내역 또는 고객센터에서 상태를 확인해주세요."
     />
   );
 }
