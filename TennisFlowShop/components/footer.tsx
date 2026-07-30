@@ -74,26 +74,26 @@ const Footer = () => {
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                 <Link
                   href="/terms"
-                  className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="inline-flex min-h-11 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   이용약관
                 </Link>
                 <Link
                   href="/privacy"
-                  className="inline-flex min-h-9 items-center py-1.5 font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="inline-flex min-h-11 items-center py-1.5 font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   개인정보처리방침
                 </Link>
                 <Link
                   href="/board/qna"
-                  className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="inline-flex min-h-11 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Q&amp;A 문의
                 </Link>
                 {guestOrderMode === "on" ? (
                   <Link
                     href="/order-lookup"
-                    className="inline-flex min-h-9 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="inline-flex min-h-11 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     주문조회
                   </Link>

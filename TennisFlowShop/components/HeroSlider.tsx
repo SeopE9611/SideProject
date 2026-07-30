@@ -78,7 +78,7 @@ export default function HeroSlider({
       <button
         type="button"
         onClick={scrollPrev}
-        className="absolute left-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-control border border-border/80 bg-card text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:left-5"
+        className="absolute left-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-control border border-border/80 bg-card text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:left-5 bp-md:h-10 bp-md:w-10"
         aria-label="이전 배너"
       >
         <ChevronLeft aria-hidden="true" className="h-5 w-5" />
@@ -86,7 +86,7 @@ export default function HeroSlider({
       <button
         type="button"
         onClick={scrollNext}
-        className="absolute right-4 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-control border border-border/80 bg-card text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:right-5"
+        className="absolute right-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-control border border-border/80 bg-card text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:right-5 bp-md:h-10 bp-md:w-10"
         aria-label="다음 배너"
       >
         <ChevronRight aria-hidden="true" className="h-5 w-5" />
