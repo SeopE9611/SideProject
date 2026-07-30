@@ -97,64 +97,64 @@ export default function StringServiceSuccessLoading() {
                     ))}
                   </div>
                   <div className="mt-4 flex flex-col gap-2 bp-sm:flex-row">
-                    <Skeleton className="h-10 flex-1" />
-                    <Skeleton className="h-10 flex-1" />
+                    <Skeleton className="h-11 flex-1" />
+                    <Skeleton className="h-11 flex-1" />
                   </div>
                 </div>
+              </div>
+            </SummaryCard>
 
-                <div className="mb-6 grid grid-cols-1 divide-y divide-border/70 bp-sm:grid-cols-2 bp-md:mb-8 bp-lg:grid-cols-4">
-                  <SummarySurface />
-                  <div className="border-b border-border/70 py-4 bp-lg:col-span-2">
-                    <div className="mb-3 flex items-center">
-                      <Skeleton className="mr-3 h-6 w-6 shrink-0 rounded-full" />
-                      <Skeleton className="h-4 w-20" />
-                    </div>
-                    <div className="rounded-control bg-surface-inverse px-3 py-2 text-surface-inverse-foreground">
-                      <Skeleton className="h-7 w-36 bg-brand-highlight" />
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-2/3" />
-                    </div>
+            <div className="mt-8 space-y-8">
+              <div className="grid grid-cols-1 divide-y divide-border/70 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+                <SummarySurface />
+                <div className="border-b border-border/70 py-4 bp-lg:col-span-2">
+                  <div className="mb-3 flex items-center">
+                    <Skeleton className="mr-3 h-6 w-6 shrink-0 rounded-full" />
+                    <Skeleton className="h-4 w-20" />
                   </div>
-                  <SummarySurface />
-                  <SummarySurface />
-                  <SummarySurface />
-                  <SummarySurface className="bp-lg:col-span-2" />
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-2">
-                  <div className="space-y-4 bp-md:space-y-6">
-                    <div className="flex items-center">
-                      <Skeleton className="mr-3 h-6 w-6 rounded-full" />
-                      <Skeleton className="h-6 w-28" />
-                    </div>
-                    <CompactRows count={3} />
+                  <div className="rounded-control bg-surface-inverse px-3 py-2 text-surface-inverse-foreground">
+                    <Skeleton className="h-7 w-36 bg-brand-highlight" />
                   </div>
-                  <div className="space-y-4 bp-md:space-y-6">
-                    <div className="flex items-center">
-                      <Skeleton className="mr-3 h-6 w-6 rounded-full" />
-                      <Skeleton className="h-6 w-32" />
-                    </div>
-                    <CompactRows count={2} />
+                  <div className="mt-3 space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
                   </div>
                 </div>
+                <SummarySurface />
+                <SummarySurface />
+                <SummarySurface />
+                <SummarySurface className="bp-lg:col-span-2" />
+              </div>
 
-                <div className="my-6 h-px bg-border bp-md:my-8" />
-
+              <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-2">
+                <div className="space-y-4 bp-md:space-y-6">
+                  <div className="flex items-center">
+                    <Skeleton className="mr-3 h-6 w-6 rounded-full" />
+                    <Skeleton className="h-6 w-28" />
+                  </div>
+                  <CompactRows count={3} />
+                </div>
                 <div className="space-y-4 bp-md:space-y-6">
                   <div className="flex items-center">
                     <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                     <Skeleton className="h-6 w-32" />
                   </div>
-                  <div className="border-b border-border/70 py-4 bp-md:py-5">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="mt-3 h-4 w-full" />
-                    <Skeleton className="mt-2 h-4 w-4/5" />
-                  </div>
+                  <CompactRows count={2} />
                 </div>
               </div>
-            </SummaryCard>
+
+              <div className="space-y-4 bp-md:space-y-6">
+                <div className="flex items-center">
+                  <Skeleton className="mr-3 h-6 w-6 rounded-full" />
+                  <Skeleton className="h-6 w-32" />
+                </div>
+                <div className="border-b border-border/70 py-4 bp-md:py-5">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="mt-3 h-4 w-full" />
+                  <Skeleton className="mt-2 h-4 w-4/5" />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-2">
