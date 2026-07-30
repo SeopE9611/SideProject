@@ -534,7 +534,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 </div>
 
                 <div className="p-4 bp-sm:p-5 bp-md:p-6">
-                  <div className="mb-6 rounded-control border border-border/70 bg-muted/20 p-4 bp-md:p-5">
+                  <div className="mb-6 border-b border-border/70 py-4 bp-md:p-5">
                     <h3 className="text-ui-body-lg font-ui-medium text-foreground">
                       현재 상태와 다음 단계
                     </h3>
@@ -561,11 +561,21 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </Button>
                     </div>
                   </div>
+                </div>
+              </SummaryCard>
 
-                  <div className="mb-6 grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-md:mb-8">
+              <div className="mt-8 space-y-8">
+                  <section aria-labelledby="service-payment-title">
+                    <h2
+                      id="service-payment-title"
+                      className="mb-4 text-ui-section-title font-ui-medium text-foreground"
+                    >
+                      결제·패키지 적용 정보
+                    </h2>
+                  <div className="grid grid-cols-1 divide-y divide-border/70 bp-sm:grid-cols-2 bp-sm:divide-x bp-sm:divide-y-0 bp-lg:grid-cols-4">
                     <div
                       data-cy="service-success-amount-card"
-                      className="rounded-control border border-border/70 bg-muted/20 p-4"
+                      className="border-b border-border/70 py-4"
                     >
                       <div className="flex items-center mb-3">
                         <Calendar className="h-6 w-6 text-primary mr-3" />
@@ -578,7 +588,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                     <div
                       data-cy="service-success-collection-card"
-                      className="rounded-control border border-border/70 bg-muted/20 p-4 bp-lg:col-span-2"
+                      className="border-b border-border/70 py-4 bp-lg:col-span-2"
                     >
                       <div className="flex items-center mb-3">
                         <CreditCard className="h-6 w-6 text-primary mr-3" />
@@ -645,7 +655,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       ) : null}
                     </div>
 
-                    <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                    <div className="border-b border-border/70 py-4">
                       <div className="flex items-center mb-3">
                         <CheckCircle className="h-6 w-6 text-primary mr-3" />
                         <h3 className="font-ui-medium text-foreground">현재 상태</h3>
@@ -655,7 +665,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </p>
                     </div>
 
-                    <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                    <div className="border-b border-border/70 py-4">
                       <div className="flex items-center mb-3">
                         <Package className="h-6 w-6 text-primary mr-3" />
                         <h3 className="font-ui-medium text-foreground">수령 방식</h3>
@@ -665,7 +675,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </p>
                     </div>
 
-                    <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                    <div className="border-b border-border/70 py-4">
                       <div className="flex items-center mb-3">
                         <Racquet className="h-6 w-6 text-primary mr-3" />
                         <h3 className="font-ui-medium text-foreground">총 작업 수</h3>
@@ -675,7 +685,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </p>
                     </div>
 
-                    <div className="rounded-control border border-border/70 bg-muted/20 p-4 bp-lg:col-span-2">
+                    <div className="border-b border-border/70 py-4 bp-lg:col-span-2">
                       <div className="flex items-center mb-3">
                         <Clock className="h-6 w-6 text-primary mr-3" />
                         <h3 className="font-ui-medium text-foreground">희망 일시</h3>
@@ -685,6 +695,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </p>
                     </div>
                   </div>
+                  </section>
                   {rental && (
                     <div className="mb-6 bp-md:mb-8">
                       <h3 className="text-ui-section-title font-ui-medium text-foreground mb-4 flex items-center">
@@ -694,7 +705,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                       <div className="grid gap-3">
                         {/* 상단: 대여 번호 */}
-                        <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="border-b border-border/70 py-4">
                           <p className="text-ui-body-sm text-muted-foreground">대여 번호</p>
                           <p className="break-all font-mono font-ui-medium text-foreground">
                             {String(rental._id)}
@@ -702,7 +713,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         </div>
 
                         {/* 라켓 정보 */}
-                        <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="border-b border-border/70 py-4">
                           <p className="text-ui-body-sm text-muted-foreground mb-1">대여 라켓</p>
                           <p className="font-ui-medium text-foreground">
                             {rental.brand
@@ -758,7 +769,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                       <div className="grid gap-3">
                         {/* 상단: 주문 번호 */}
-                        <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="border-b border-border/70 py-4">
                           <p className="text-ui-body-sm text-muted-foreground">주문 번호</p>
                           <p className="break-all font-mono font-ui-medium text-foreground">
                             {String(order._id)}
@@ -804,7 +815,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         패키지 적용됨
                       </h3>
 
-                      <div className="rounded-control border border-border/70 bg-muted/20 p-4 bp-md:p-5">
+                      <div className="rounded-control border border-info/30 bg-info/10 p-4 bp-md:p-5">
                         <div className="flex items-start gap-4">
                           <div className="grid h-10 w-10 shrink-0 place-content-center rounded-full border border-border/70 bg-muted/20 text-foreground">
                             <Ticket className="h-5 w-5" />
@@ -901,31 +912,31 @@ export default async function StringServiceSuccessPage(props: Props) {
                           무통장 입금 안내
                         </h3>
 
-                        <div className="grid gap-3">
-                          <p className="text-ui-body-sm text-muted-foreground mb-4">
+                        <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                          <p className="mb-4 text-ui-body-sm text-muted-foreground">
                             아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.
                           </p>
 
                           <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-4">
-                            <div className="rounded-control border border-border/70 bg-muted/20 p-3">
+                            <div className="border-b border-border/70 py-3">
                               <p className="text-ui-body-sm text-muted-foreground mb-1">은행</p>
                               <p className="font-ui-medium text-ui-card-title-lg text-foreground">
                                 {bankInfo.label}
                               </p>
                             </div>
-                            <div className="rounded-control border border-border/70 bg-muted/20 p-3">
+                            <div className="border-b border-border/70 py-3">
                               <p className="text-ui-body-sm text-muted-foreground mb-1">계좌번호</p>
                               <p className="font-mono font-ui-medium text-ui-card-title-lg text-foreground break-all tabular-nums">
                                 {bankInfo.account}
                               </p>
                             </div>
-                            <div className="rounded-control border border-border/70 bg-muted/20 p-3">
+                            <div className="border-b border-border/70 py-3">
                               <p className="text-ui-body-sm text-muted-foreground mb-1">예금주</p>
                               <p className="font-ui-medium text-ui-card-title-lg text-foreground">
                                 {bankInfo.holder}
                               </p>
                             </div>
-                            <div className="rounded-control border border-border/70 bg-muted/20 p-3">
+                            <div className="border-b border-border/70 py-3">
                               <p className="text-ui-body-sm text-muted-foreground mb-1">
                                 입금 금액
                               </p>
@@ -936,7 +947,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                           </div>
 
                           {depositor && (
-                            <div className="mt-4 rounded-control border border-border/70 bg-muted/20 p-3">
+                            <div className="mt-4 border-b border-border/70 py-3">
                               <p className="text-ui-body-sm text-muted-foreground mb-1">입금자명</p>
                               <p className="font-ui-medium text-foreground">{String(depositor)}</p>
                             </div>
@@ -964,14 +975,14 @@ export default async function StringServiceSuccessPage(props: Props) {
                         신청자 정보
                       </h3>
                       <div className="grid gap-3">
-                        <div className="flex items-center rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="flex items-center border-b border-border/70 py-4">
                           <User className="h-5 w-5 text-muted-foreground mr-3" />
                           <div>
                             <p className="text-ui-body-sm text-muted-foreground">이름</p>
                             <p className="font-ui-medium text-foreground">{application.name}</p>
                           </div>
                         </div>
-                        <div className="flex items-center rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="flex items-center border-b border-border/70 py-4">
                           <Mail className="h-5 w-5 text-muted-foreground mr-3" />
                           <div>
                             <p className="text-ui-body-sm text-muted-foreground">이메일</p>
@@ -980,7 +991,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="flex items-center border-b border-border/70 py-4">
                           <Phone className="h-5 w-5 text-muted-foreground mr-3" />
                           <div>
                             <p className="text-ui-body-sm text-muted-foreground">연락처</p>
@@ -998,7 +1009,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         {shippingSectionTitle}
                       </h3>
                       <div className="grid gap-3">
-                        <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="border-b border-border/70 py-4">
                           <p className="text-ui-body-sm text-muted-foreground mb-1">
                             {shippingPrimaryLabel}
                           </p>
@@ -1011,7 +1022,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                             </p>
                           )}
                         </div>
-                        <div className="rounded-control border border-border/70 bg-muted/20 p-4">
+                        <div className="border-b border-border/70 py-4">
                           <p className="text-ui-body-sm text-muted-foreground mb-1">
                             {shippingSecondaryLabel}
                           </p>
@@ -1030,7 +1041,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     </h3>
 
                     {stringDetails?.requirements && (
-                      <div className="rounded-control border border-border/70 bg-muted/20 p-4 bp-md:p-5">
+                      <div className="border-b border-border/70 py-4 bp-md:p-5">
                         <div className="flex items-start mb-3">
                           <FileText className="h-5 w-5 text-primary mr-2 mt-0.5" />
                           <p className="text-ui-body-sm font-medium text-muted-foreground">
@@ -1057,7 +1068,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         {racketLines.map((line: any, idx: number) => (
                           <div
                             key={line.id ?? idx}
-                            className="rounded-control border border-border/70 bg-muted/20 p-4"
+                            className="border-b border-border/70 py-4"
                           >
                             <div className="space-y-3">
                               <p className="text-ui-label text-muted-foreground mb-1">
@@ -1095,8 +1106,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </div>
                     </div>
                   )}
-                </div>
-              </SummaryCard>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-6 bp-md:gap-8">
@@ -1141,7 +1151,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 }
               >
                 <div className="space-y-4">
-                  <div className="flex items-center rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div className="flex items-center border-b border-border/70 py-3">
                     <Shield className="h-6 w-6 text-primary mr-3" />
                     <div>
                       <p className="font-ui-medium text-foreground">정품 보장</p>
@@ -1150,7 +1160,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div className="flex items-center border-b border-border/70 py-3">
                     <Clock className="h-6 w-6 text-foreground mr-3" />
                     <div>
                       <p className="font-ui-medium text-foreground">철저한 예약 장착 완료</p>
@@ -1159,7 +1169,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center rounded-control border border-border/70 bg-muted/20 p-3">
+                  <div className="flex items-center border-b border-border/70 py-3">
                     <Award className="h-6 w-6 text-foreground mr-3" />
                     <div>
                       <p className="font-ui-medium text-foreground">전문가 상담</p>

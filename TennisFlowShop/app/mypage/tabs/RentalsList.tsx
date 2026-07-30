@@ -285,7 +285,12 @@ export default function RentalsList() {
                   <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
                   {nextActionLabel}
                 </p>
-                <Button size="sm" variant="outline" asChild className="bg-transparent">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  asChild
+                  className="min-h-11 bg-transparent bp-sm:min-h-9"
+                >
                   <Link
                     href={`/mypage?tab=orders&flowType=rental&flowId=${r.id}&from=orders`}
                     className="inline-flex items-center gap-1"
@@ -305,7 +310,12 @@ export default function RentalsList() {
                 ) : null}
 
                 {r.stringingApplicationId ? (
-                  <Button size="sm" variant="outline" asChild className="bg-transparent">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    asChild
+                    className="min-h-11 bg-transparent bp-sm:min-h-9"
+                  >
                     <Link
                       href={`/mypage?tab=orders&flowType=application&flowId=${r.stringingApplicationId}&from=orders`}
                       className="inline-flex items-center gap-1"
@@ -315,7 +325,12 @@ export default function RentalsList() {
                     </Link>
                   </Button>
                 ) : r.withStringService ? (
-                  <Button size="sm" variant="highlight_soft" className="shadow-sm" asChild>
+                  <Button
+                    size="sm"
+                    variant="highlight_soft"
+                    className="min-h-11 bp-sm:min-h-9"
+                    asChild
+                  >
                     <Link
                       href={`/services/apply?rentalId=${r.id}`}
                       className="inline-flex items-center gap-1"
@@ -331,7 +346,7 @@ export default function RentalsList() {
                     size="sm"
                     variant="outline"
                     onClick={() => handleWithdrawCancelRequest(r.id)}
-                    className="gap-2"
+                    className="min-h-11 gap-2 bp-sm:min-h-9"
                   >
                     <Undo2 className="h-4 w-4" />
                     취소 요청 철회
@@ -342,7 +357,7 @@ export default function RentalsList() {
                   <Button
                     size="sm"
                     variant="destructive"
-                    className="gap-2"
+                    className="min-h-11 gap-2 bp-sm:min-h-9"
                     onClick={() => setCancelRentalDialogId(r.id)}
                   >
                     <XCircle className="h-4 w-4" />

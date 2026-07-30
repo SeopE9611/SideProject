@@ -460,7 +460,13 @@ export default function ApplicationsClient() {
               <Button asChild variant="highlight" size="lg" wrap="responsive" className="min-h-11">
                 <Link href="/services/apply?mode=single">교체서비스 신청하기</Link>
               </Button>
-              <Button asChild variant="outline" className="bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                wrap="responsive"
+                className="min-h-11 bg-transparent"
+              >
                 <Link href="/services">서비스 안내 보기</Link>
               </Button>
             </div>
@@ -779,7 +785,7 @@ export default function ApplicationsClient() {
                   </div>
                 ) : null}
 
-                <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
+                <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center bp-md:pt-4 [&_button]:min-h-11 [&_button]:w-full bp-sm:[&_button]:min-h-9 bp-sm:[&_button]:w-auto">
                   <p className="break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mr-auto">
                     <span className="font-semibold text-foreground">다음 할 일</span> ·{" "}
                     {nextActionLabel}
@@ -843,7 +849,7 @@ export default function ApplicationsClient() {
                       ) : (
                         <Button
                           data-cy="mypage-application-shipping-cta"
-                          variant={hasTracking ? "outline" : "default"}
+                          variant={hasTracking ? "outline" : "highlight_soft"}
                           size="sm"
                           onClick={() =>
                             router.push(

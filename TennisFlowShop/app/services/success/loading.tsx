@@ -12,7 +12,7 @@ function CompactRows({ count = 2 }: { count?: 2 | 3 }) {
       {Array.from({ length: count }, (_, index) => `compact-row-${index + 1}`).map((key) => (
         <div
           key={key}
-          className="flex items-center rounded-control border border-border/70 bg-muted/20 p-4"
+          className="flex items-center border-b border-border/70 py-4"
         >
           <Skeleton className="mr-3 h-5 w-5 shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-2">
@@ -27,7 +27,7 @@ function CompactRows({ count = 2 }: { count?: 2 | 3 }) {
 
 function SummarySurface({ className }: { className?: string }) {
   return (
-    <div className={`rounded-control border border-border/70 bg-muted/20 p-4 ${className ?? ""}`}>
+    <div className={`border-b border-border/70 py-4 ${className ?? ""}`}>
       <div className="mb-3 flex items-center">
         <Skeleton className="mr-3 h-6 w-6 shrink-0 rounded-full" />
         <Skeleton className="h-4 w-20" />
@@ -102,9 +102,9 @@ export default function StringServiceSuccessLoading() {
                   </div>
                 </div>
 
-                <div className="mb-6 grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-md:mb-8 bp-lg:grid-cols-4">
+                <div className="mb-6 grid grid-cols-1 divide-y divide-border/70 bp-sm:grid-cols-2 bp-md:mb-8 bp-lg:grid-cols-4">
                   <SummarySurface />
-                  <div className="rounded-control border border-border/70 bg-muted/20 p-4 bp-lg:col-span-2">
+                  <div className="border-b border-border/70 py-4 bp-lg:col-span-2">
                     <div className="mb-3 flex items-center">
                       <Skeleton className="mr-3 h-6 w-6 shrink-0 rounded-full" />
                       <Skeleton className="h-4 w-20" />
@@ -147,7 +147,7 @@ export default function StringServiceSuccessLoading() {
                     <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                     <Skeleton className="h-6 w-32" />
                   </div>
-                  <div className="rounded-control border border-border/70 bg-muted/20 p-4 bp-md:p-5">
+                  <div className="border-b border-border/70 py-4 bp-md:py-5">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="mt-3 h-4 w-full" />
                     <Skeleton className="mt-2 h-4 w-4/5" />
@@ -174,7 +174,7 @@ export default function StringServiceSuccessLoading() {
                 {featureRows.map((row) => (
                   <div
                     key={row}
-                    className="flex items-center rounded-control border border-border/70 bg-muted/20 p-3"
+                    className="flex items-center py-3"
                   >
                     <Skeleton className="mr-3 h-6 w-6 shrink-0 rounded-full" />
                     <div className="min-w-0 flex-1 space-y-2">
