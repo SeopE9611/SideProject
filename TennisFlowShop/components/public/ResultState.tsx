@@ -38,7 +38,7 @@ export function ResultState({
   return (
     <section
       className={cn(
-        "mx-auto flex max-w-2xl flex-col items-center px-4 py-12 text-center sm:py-16",
+        "mx-auto flex max-w-2xl flex-col items-center px-4 py-12 text-center bp-sm:py-16",
         className,
       )}
     >
@@ -51,17 +51,17 @@ export function ResultState({
       >
         {icon ?? statusLabels[status]}
       </div>
-      <h1 className="text-ui-page-title font-ui-bold tracking-normal text-foreground sm:text-ui-page-title-lg">
+      <h1 className="text-ui-page-title font-ui-bold tracking-normal text-foreground bp-sm:text-ui-page-title-lg">
         {title}
       </h1>
       {description && (
-        <div className="mt-3 max-w-xl text-ui-body-sm text-muted-foreground sm:text-ui-body">
+        <div className="mt-3 max-w-xl text-ui-body-sm text-muted-foreground bp-sm:text-ui-body">
           {description}
         </div>
       )}
       {children && <div className="mt-6 w-full text-left">{children}</div>}
       {actions && (
-        <div className="mt-6 flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
+        <div className="mt-6 flex w-full flex-col justify-center gap-2 bp-sm:w-auto bp-sm:flex-row">
           {actions}
         </div>
       )}

@@ -67,6 +67,14 @@ const FAIL_GUIDE_MAP: Record<
     ],
     accent: "warning",
   },
+  PAYMENT_PROCESSING_FAILED: {
+    title: "결제 처리 결과를 확인해야 해요",
+    description: [
+      "패키지 결제 처리 결과가 아직 명확하게 확정되지 않았어요.",
+      "반복 결제하지 말고 내 패키지권 또는 고객센터에서 먼저 확인해주세요.",
+    ],
+    accent: "warning",
+  },
   UNKNOWN: {
     title: "패키지 결제를 완료하지 못했어요",
     description: [
@@ -86,21 +94,22 @@ export default async function PackageNiceFailPage({
   const code = FAIL_GUIDE_MAP[rawCode] ? rawCode : "UNKNOWN";
   const guide = FAIL_GUIDE_MAP[code];
   const rawMessage = (sp.message || "").trim();
+  const requiresPaymentCheck = guide.accent === "warning";
 
   return (
     <PaymentFailureResult
       guide={guide}
       code={code}
       message={rawMessage}
-      primaryAction={{
-        label: "패키지 목록으로 돌아가기",
-        href: "/services/packages",
-      }}
-      secondaryAction={{
-        label: "패키지 체크아웃으로 이동",
-        href: "/services/packages/checkout",
-      }}
-      warningMessage="중복 결제를 막기 위해 같은 패키지로 반복 결제하지 마시고, 패키지 내역 또는 관리자 확인 후 진행해주세요."
+      primaryAction={
+        requiresPaymentCheck
+          ? { label: "내 패키지권 확인", href: "/mypage?tab=passes" }
+          : { label: "패키지 목록으로 돌아가기", href: "/services/packages" }
+      }
+      secondaryAction={
+        requiresPaymentCheck ? { label: "고객센터로 이동", href: "/support" } : undefined
+      }
+      warningMessage="결제 승인이 완료됐을 가능성이 있으니 같은 패키지를 바로 반복 결제하지 마시고, 먼저 내 패키지권 또는 고객센터에서 상태를 확인해주세요."
     />
   );
 }
