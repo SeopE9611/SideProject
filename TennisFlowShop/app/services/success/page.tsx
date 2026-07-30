@@ -497,7 +497,13 @@ export default async function StringServiceSuccessPage(props: Props) {
                 contentClassName="p-0"
                 footer={
                   <div className="flex w-full flex-col gap-3 bp-sm:flex-row">
-                    <Button variant="highlight" size="lg" className="flex-1" wrap="responsive" asChild>
+                    <Button
+                      variant={needsInboundTracking && !hasTracking ? "highlight_soft" : "highlight"}
+                      size="lg"
+                      className="flex-1"
+                      wrap="responsive"
+                      asChild
+                    >
                       <Link data-cy="service-success-application-link" href={mypageFlowHref}>
                         <FileText className="h-5 w-5 mr-2" />
                         주문/신청 내역 보기
@@ -552,14 +558,16 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <p className="mt-1 text-muted-foreground">{progressGuide.next}</p>
                       </div>
                     </div>
-                    <div className="mt-4 flex flex-col gap-2 bp-sm:flex-row">
-                      <Button asChild variant="highlight" size="lg" className="flex-1" wrap="responsive">
-                        <Link href={progressGuide.primaryHref}>{progressGuide.primaryLabel}</Link>
-                      </Button>
-                      <Button asChild variant="outline" size="lg" className="flex-1" wrap="responsive">
-                        <Link href="/support">고객센터 문의하기</Link>
-                      </Button>
-                    </div>
+                    {needsInboundTracking && !hasTracking && (
+                      <div className="mt-4 flex flex-col gap-2 bp-sm:flex-row">
+                        <Button asChild variant="highlight" size="lg" className="flex-1" wrap="responsive">
+                          <Link href={progressGuide.primaryHref}>{progressGuide.primaryLabel}</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="lg" className="flex-1" wrap="responsive">
+                          <Link href="/support">고객센터 문의하기</Link>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </SummaryCard>
