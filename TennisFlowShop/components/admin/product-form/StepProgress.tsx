@@ -35,7 +35,7 @@ export function StepProgress({
 
   return (
     <nav aria-label="Progress" className="w-full">
-      <ol className="flex items-start justify-between gap-2 overflow-x-auto pb-1 sm:gap-0 sm:overflow-visible">
+      <ol className="flex items-start justify-between gap-0 overflow-visible pb-1">
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(step.id);
           const isCurrent = step.id === currentStep;

@@ -1002,7 +1002,7 @@ export default function AdminRacketForm({
             </div>
           </div>
         </div>
-        <div className="hidden lg:block">
+        <div className="block">
           <aside className={cn("sticky top-20 p-4 backdrop-blur-sm", adminSurface.card)}>
             <div className="mb-3 flex items-center justify-between gap-2">
               <div>

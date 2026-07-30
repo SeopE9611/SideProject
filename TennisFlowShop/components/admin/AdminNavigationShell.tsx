@@ -2,7 +2,6 @@
 
 import useSWR from "swr";
 
-import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -32,14 +31,5 @@ export default function AdminNavigationShell() {
   );
   const badgeCounts = normalizeCounts(data);
 
-  return (
-    <>
-      <div className="hidden xl:block">
-        <AdminSidebar defaultCollapsed={false} badgeCounts={badgeCounts} />
-      </div>
-      <div className="mb-4 xl:hidden">
-        <AdminMobileMenu badgeCounts={badgeCounts} />
-      </div>
-    </>
-  );
+  return <AdminSidebar defaultCollapsed={false} badgeCounts={badgeCounts} />;
 }

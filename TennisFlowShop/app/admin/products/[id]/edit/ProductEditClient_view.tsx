@@ -134,7 +134,7 @@ function EditLoadingSkeleton() {
           <Skeleton className="h-[400px] w-full rounded-xl" />
           <Skeleton className="h-[200px] w-full rounded-xl" />
         </div>
-        <Skeleton className="hidden h-[500px] w-80 rounded-xl lg:block" />
+        <Skeleton className="block h-[500px] w-80 rounded-xl" />
       </div>
     </div>
   );
@@ -2730,7 +2730,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 </div>
 
                 {/* Right: Preview Card (sticky on desktop) */}
-                <div className="hidden lg:block lg:w-80">
+                <div className="block w-80">
                   <ProductPreviewCard
                     basicInfo={{
                       name: basicInfo.name,

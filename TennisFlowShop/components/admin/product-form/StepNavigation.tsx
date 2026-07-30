@@ -40,11 +40,11 @@ export function StepNavigation({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+        "flex flex-row items-center justify-between gap-4",
         className,
       )}
     >
-      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+      <div className="flex w-auto flex-wrap items-center gap-2">
         {/* Back to list button */}
         <Button
           variant="outline"
@@ -59,7 +59,7 @@ export function StepNavigation({
         </Button>
       </div>
 
-      <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+      <div className="flex w-auto flex-wrap items-center justify-end gap-2">
         {/* Previous step */}
         {!isFirstStep && (
           <Button variant="outline" type="button" onClick={onPrevious} className="gap-1">

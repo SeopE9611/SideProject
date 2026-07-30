@@ -1134,7 +1134,7 @@ export default function PackageOrdersClient() {
                   <SortableTH
                     k="remainingSessions"
                     label="남은 횟수"
-                    className="w-[92px] hidden lg:table-cell text-center tabular-nums"
+                    className="w-[92px] text-center tabular-nums"
                     thClasses={thClasses}
                     ariaSort={ariaSort("remainingSessions")}
                     onSort={handleSort}
@@ -1406,7 +1406,7 @@ export default function PackageOrdersClient() {
                             className={cn(
                               tdClasses,
                               col.remain,
-                              "whitespace-nowrap hidden lg:table-cell",
+                              "whitespace-nowrap",
                             )}
                           >
                             <div className="flex flex-col items-center leading-tight">

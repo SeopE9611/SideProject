@@ -23,7 +23,7 @@ export function AdminInfoGrid({ children, className, columns = "three" }: AdminI
     <dl
       className={cn(
         "grid gap-3",
-        columns === "two" ? "sm:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-3",
+        columns === "two" ? "grid-cols-2" : "grid-cols-3",
         className,
       )}
     >

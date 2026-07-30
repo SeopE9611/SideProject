@@ -2106,7 +2106,7 @@ export default function OperationsClient() {
         >
           {isLoading ? (
             <div className="space-y-4 px-4 py-4">
-              <div className="hidden bp-lg:block overflow-x-auto">
+              <div className="overflow-x-auto">
                 <Table className="min-w-[1320px]">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
@@ -2150,7 +2150,7 @@ export default function OperationsClient() {
                   </TableBody>
                 </Table>
               </div>
-              <div className="bp-lg:hidden space-y-3">
+              <div className="hidden">
                 {Array.from({ length: 5 }).map((_, idx) => (
                   <div key={idx} className="rounded-lg border border-border bg-card p-4 space-y-3">
                     <Skeleton className="h-5 w-1/2" />
@@ -2162,7 +2162,7 @@ export default function OperationsClient() {
             </div>
           ) : (
             <>
-              <div className="hidden bp-lg:block overflow-x-auto">
+              <div className="overflow-x-auto">
                 <Table className="min-w-[1180px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
@@ -2580,7 +2580,7 @@ export default function OperationsClient() {
                 </Table>
               </div>
 
-              <div className="space-y-3 bp-lg:hidden">
+              <div className="hidden">
                 {quickViewFilteredGroups.map((g) => {
                   const warn = g.warn;
                   const reasonBullets = collectActionableReasonBullets(g);
