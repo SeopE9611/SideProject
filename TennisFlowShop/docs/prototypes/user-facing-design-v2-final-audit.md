@@ -77,3 +77,9 @@ PR #2326 문서는 위 성공 화면과 라켓 구매 checkout을 통과로 기�
 - Toss 전용 컴포넌트의 implicit/default Button: 이번 운영 결제수단이 아니며 사용자가 명시한 변경 금지 범위라 유지했다.
 
 variant가 생략된 검색 결과 중 아이콘·캐러셀·필터 chip, destructive 동작, 일반 폼 제출은 공용 Button의 기본 primary 의미 또는 compact 제어 크기를 의도적으로 사용한다. 비회원 `order-lookup`, 관리자/API/concept, 실제 사용자 페이지에서 import되지 않는 관리자용 feature 컴포넌트도 이번 활성 사용자 범위에서 제외했다.
+
+## 7. 데스크톱 공개 화면 시각 QA 잔여 보정
+
+후속 데스크톱 공개 화면 시각 QA에서 통과로 기록했던 `/rackets/compare`, `/academy`, 전역 상태 화면과 `/board` 최신 리뷰 영역에 잔여 문제가 확인됐다. `components/system/NotFound.tsx`, `components/system/AccessDenied.tsx`, `app/rackets/compare/_components/RacketCompareClient.tsx`의 대표 복구·다음 행동 CTA를 명시적 `highlight`와 44px 높이로 정리하고, `app/board/page.tsx`의 선택적 후기 작성은 `secondary`로 구분했다. `app/academy/page.tsx`는 공개 클래스 개수에 따라 1개는 중앙 단일 열, 2개는 중앙 2열, 3개 이상은 반응형 2열/3열이 되도록 보정했다.
+
+이번 기록은 데스크톱에서 접근 가능한 공개 상태를 직접 확인한 범위이며, 인증 데이터가 필요한 성공·상세 화면이나 실제 모바일 기기 QA 완료를 뜻하지 않는다. 선택된 필터·탭의 검은 active 상태, 역상 Hero, destructive 동작은 과거 default CTA 잔여와 역할이 달라 변경 대상으로 보지 않았다.

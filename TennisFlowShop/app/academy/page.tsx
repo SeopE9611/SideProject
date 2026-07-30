@@ -516,7 +516,15 @@ export default async function AcademyPage() {
           />
 
           {academyClasses.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div
+              className={`mx-auto grid w-full gap-4 ${
+                academyClasses.length === 1
+                  ? "max-w-2xl grid-cols-1"
+                  : academyClasses.length === 2
+                    ? "max-w-5xl grid-cols-1 bp-md:grid-cols-2"
+                    : "grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3"
+              }`}
+            >
               {academyClasses.map((academyClass) => {
                 const isClosed = academyClass.status === "closed";
                 const existingApplication = activeApplicationByClassId.get(academyClass._id);
@@ -646,7 +654,13 @@ export default async function AcademyPage() {
               title="현재 모집 중인 클래스가 없습니다"
               description="새로운 클래스가 열리면 안내해 드리겠습니다."
               action={
-                <Button asChild variant="outline">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
+                >
                   <Link href="/board/qna/write?category=academy">문의하기</Link>
                 </Button>
               }
