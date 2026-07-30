@@ -82,7 +82,7 @@ export default function Loading() {
                   <Skeleton className="h-7 w-full rounded-md" />
                 </div>
                 <div className="hidden rounded-panel border border-surface-inverse-foreground/15 bg-surface-inverse p-4 bp-lg:block">
-                  <div className="space-y-1 rounded-lg border border-surface-inverse-foreground/15 bg-surface-inverse-foreground/5 px-3 py-2">
+                  <div className="flex items-end justify-between gap-3 border-b border-surface-inverse-foreground/15 pb-3">
                     <Skeleton className="h-4 w-24 rounded-md bg-surface-inverse-foreground/15" />
                     <Skeleton className="mt-2 h-7 w-36 rounded-md bg-surface-inverse-foreground/15" />
                   </div>

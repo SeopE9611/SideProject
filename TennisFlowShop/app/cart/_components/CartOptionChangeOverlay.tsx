@@ -183,7 +183,7 @@ function CartOptionChangeContent({
   return (
     <div className="flex max-h-[inherit] flex-col">
       <div className="space-y-5 px-5 pb-4 pt-5 bp-sm:px-6">
-        <div className="flex gap-3 rounded-panel border border-border bg-muted/20 p-3">
+        <div className="flex gap-3 border-b border-border pb-4">
           <Image
             src={item.image || PLACEHOLDER_IMAGE}
             alt={item.name}
@@ -192,10 +192,10 @@ function CartOptionChangeContent({
             className="h-[72px] w-[72px] rounded-control border border-border object-cover"
           />
           <div className="min-w-0 flex-1">
-            <p className="break-keep break-words font-medium text-foreground">{item.name}</p>
+            <p className="break-keep break-words font-ui-medium text-foreground">{item.name}</p>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
               판매가{" "}
-              <span className="font-semibold text-foreground">{formatKRW(item.price)}원</span>
+              <span className="font-ui-medium text-foreground">{formatKRW(item.price)}원</span>
             </p>
             {mountingFee > 0 && (
               <p className="mt-0.5 text-ui-label text-muted-foreground">
@@ -204,7 +204,7 @@ function CartOptionChangeContent({
             )}
           </div>
         </div>
-        <div className="rounded-panel border border-border bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
+        <div className="border-l-2 border-border bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
           현재 옵션:{" "}
           {item.selectedGauge ? `게이지(굵기) ${formatGaugeLabel(item.selectedGauge)}` : ""}
           {item.selectedGauge && (item.selectedColorLabel || item.selectedColor) ? " · " : ""}
@@ -216,7 +216,7 @@ function CartOptionChangeContent({
           <p className="text-ui-body-sm text-muted-foreground">옵션 정보를 불러오는 중...</p>
         )}
         {error && (
-          <p className="rounded-lg bg-destructive/10 p-3 text-ui-body-sm text-destructive">
+          <p className="rounded-control bg-destructive/10 p-3 text-ui-body-sm text-destructive">
             {error}
           </p>
         )}
@@ -224,7 +224,7 @@ function CartOptionChangeContent({
           <>
             {hasColorOptions && (
               <section className="space-y-2">
-                <h3 className="text-ui-body-sm font-semibold text-foreground">색상 선택</h3>
+                <h3 className="text-ui-body-sm font-ui-medium text-foreground">색상 선택</h3>
                 <div className="flex flex-wrap gap-2">
                   {colorRows.map((row) => {
                     const variantsForColor = getVariantsByColor(product, row.value);
@@ -263,7 +263,7 @@ function CartOptionChangeContent({
             )}
             {hasGaugeOptions && (
               <section className="space-y-2">
-                <h3 className="text-ui-body-sm font-semibold text-foreground">게이지(굵기) 선택</h3>
+                <h3 className="text-ui-body-sm font-ui-medium text-foreground">게이지(굵기) 선택</h3>
                 <div className="flex flex-wrap gap-2">
                   {gaugeRows.map((row) => {
                     const disabled =
@@ -294,9 +294,9 @@ function CartOptionChangeContent({
               </section>
             )}
             <div
-              className={`rounded-xl p-3 text-ui-body-sm ${Number(stock ?? 0) < item.quantity || isSoldOut ? "bg-destructive/10 text-destructive" : "border border-border bg-muted/20 text-muted-foreground"}`}
+              className={`rounded-control p-3 text-ui-body-sm ${Number(stock ?? 0) < item.quantity || isSoldOut ? "bg-destructive/10 text-destructive" : "border border-border bg-muted/20 text-muted-foreground"}`}
             >
-              선택 조합 재고: <span className="font-semibold">{Number(stock ?? 0)}개</span>
+              선택 조합 재고: <span className="font-ui-medium">{Number(stock ?? 0)}개</span>
               {Number(stock ?? 0) < item.quantity && (
                 <span className="block pt-1">
                   현재 장바구니 수량({item.quantity}개)보다 재고가 부족합니다.
@@ -307,11 +307,14 @@ function CartOptionChangeContent({
         )}
       </div>
       <div className="sticky bottom-0 flex gap-2 border-t border-border bg-card p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-        <Button type="button" variant="outline" className="min-h-11 flex-1" onClick={onCancel}>
+        <Button type="button" variant="outline" size="lg" wrap="responsive" className="min-h-11 flex-1" onClick={onCancel}>
           취소
         </Button>
         <Button
           type="button"
+          variant="highlight"
+          size="lg"
+          wrap="responsive"
           className="min-h-11 flex-1"
           disabled={isApplyDisabled}
           onClick={handleApply}
@@ -350,7 +353,7 @@ export default function CartOptionChangeOverlay({
         >
           <div className="mx-auto mt-3 h-1.5 w-10 rounded-full bg-muted-foreground/30" />
           <div className="px-5 pb-1 pt-4">
-            <h2 className="text-ui-card-title-lg font-semibold">옵션 변경</h2>
+            <h2 className="text-ui-card-title-lg font-ui-medium">옵션 변경</h2>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
               변경할 색상과 게이지(굵기)를 선택해주세요.
             </p>
@@ -363,7 +366,7 @@ export default function CartOptionChangeOverlay({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto rounded-panel p-0">
         <DialogHeader className="px-6 pb-1 pt-6">
-          <DialogTitle>옵션 변경</DialogTitle>
+          <DialogTitle className="font-ui-medium">옵션 변경</DialogTitle>
           <DialogDescription>변경할 색상과 게이지(굵기)를 선택해주세요.</DialogDescription>
         </DialogHeader>
         {content}
