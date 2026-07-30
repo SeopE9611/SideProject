@@ -22,7 +22,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
           title="처리 중 오류가 발생했어요"
           description="잠시 후 다시 시도해 주세요."
           actions={
-            <Button type="button" onClick={reset} wrap="responsive">
+            <Button type="button" variant="highlight" size="lg" onClick={reset} wrap="responsive">
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
               다시 시도
             </Button>

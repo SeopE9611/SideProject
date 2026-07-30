@@ -320,10 +320,10 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
         : "카드/간편결제";
 
   return (
-    <div className="bg-background py-6 md:py-10">
+    <div className="bg-background py-6 bp-md:py-10">
       <div className="mx-auto w-full max-w-6xl space-y-6 px-4">
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
+          <div className="flex flex-col gap-5 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
             <div className="min-w-0 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full border border-border bg-muted/40 px-3 py-1 text-ui-label font-medium text-muted-foreground">
@@ -334,7 +334,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
                 </span>
               </div>
               <div className="space-y-2">
-                <h1 className="break-keep text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg">
+                <h1 className="break-keep text-ui-page-title font-ui-medium tracking-tight text-foreground bp-md:text-ui-page-title-lg">
                   라켓 구매 정보를 확인해주세요
                 </h1>
                 <p className="max-w-3xl break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -345,8 +345,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
             </div>
             <Button
               type="button"
+              variant="outline"
               size="sm"
-              className="w-full shrink-0 break-keep sm:w-auto"
+              className="w-full shrink-0 break-keep bp-sm:w-auto"
               disabled={!racketId}
               onClick={() => router.push(`/rackets/${racketId}/select-string`)}
             >
@@ -355,11 +356,11 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-lg:items-start">
           <div className="min-w-0 space-y-6">
-            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30 sm:h-32 sm:w-32 sm:shrink-0">
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
+              <div className="flex flex-col gap-4 bp-sm:flex-row">
+                <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30 bp-sm:h-32 bp-sm:w-32 bp-sm:shrink-0">
                   {primaryImage ? (
                     <img
                       src={primaryImage}
@@ -377,23 +378,23 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
                     <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
                       구매 라켓
                     </p>
-                    <h2 className="min-w-0 break-keep text-ui-section-title font-semibold text-foreground">
+                    <h2 className="min-w-0 break-keep text-ui-section-title font-ui-medium text-foreground">
                       <span className="break-words">{racket.model}</span>
                     </h2>
                     <p className="break-words text-ui-body-sm text-muted-foreground">
                       {racketBrandLabel(racket.brand)}
                     </p>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 bp-sm:grid-cols-2">
                     <div className="rounded-xl border border-border bg-muted/30 p-3">
                       <p className="text-ui-label text-muted-foreground">상품 금액</p>
-                      <p className="mt-1 text-ui-body font-semibold tabular-nums text-foreground">
+                      <p className="mt-1 text-ui-body font-ui-medium tabular-nums text-foreground">
                         {racket.price.toLocaleString()}원
                       </p>
                     </div>
                     <div className="rounded-xl border border-border bg-muted/30 p-3">
                       <p className="text-ui-label text-muted-foreground">판매 상태</p>
-                      <p className="mt-1 break-keep text-ui-body font-semibold text-foreground">
+                      <p className="mt-1 break-keep text-ui-body font-ui-medium text-foreground">
                         {racketStatusLabel(racket.status)}
                       </p>
                     </div>
@@ -402,14 +403,14 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
               </div>
             </section>
 
-            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
               <div className="space-y-1">
-                <h2 className="text-ui-card-title-lg font-semibold text-foreground">수령 방식</h2>
+                <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">수령 방식</h2>
                 <p className="text-ui-body-sm text-muted-foreground">
                   배송비와 입력 항목은 선택한 수령 방식에 맞춰 적용됩니다.
                 </p>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="mt-4 grid gap-3 bp-sm:grid-cols-2">
                 <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-ui-body-sm transition-colors hover:bg-muted/50">
                   <input
                     type="radio"
@@ -443,9 +444,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
               </div>
             </section>
 
-            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
               <div className="space-y-1">
-                <h2 className="text-ui-card-title-lg font-semibold text-foreground">
+                <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">
                   {isVisitPickup ? "수령/연락 정보" : "배송/연락 정보"}
                 </h2>
                 <p className="text-ui-body-sm text-muted-foreground">
@@ -453,7 +454,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
                 </p>
               </div>
 
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="mt-4 grid gap-4 bp-sm:grid-cols-2">
                 <Input
                   className="w-full text-ui-body-sm"
                   placeholder="수령인"
@@ -475,19 +476,19 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
                       onChange={(e) => setPostalCode(e.target.value)}
                     />
                     <Input
-                      className="w-full text-ui-body-sm sm:col-span-2"
+                      className="w-full text-ui-body-sm bp-sm:col-span-2"
                       placeholder="주소"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                     />
                     <Input
-                      className="w-full text-ui-body-sm sm:col-span-2"
+                      className="w-full text-ui-body-sm bp-sm:col-span-2"
                       placeholder="상세주소(선택)"
                       value={addressDetail}
                       onChange={(e) => setAddressDetail(e.target.value)}
                     />
                     <Input
-                      className="w-full text-ui-body-sm sm:col-span-2"
+                      className="w-full text-ui-body-sm bp-sm:col-span-2"
                       placeholder="배송 요청사항(선택)"
                       value={deliveryRequest}
                       onChange={(e) => setDeliveryRequest(e.target.value)}
@@ -497,9 +498,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
               </div>
             </section>
 
-            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
               <div className="space-y-1">
-                <h2 className="text-ui-card-title-lg font-semibold text-foreground">
+                <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">
                   결제수단 및 동의
                 </h2>
                 <p className="text-ui-body-sm text-muted-foreground">
@@ -507,7 +508,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
                 </p>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="mt-4 grid gap-3 bp-sm:grid-cols-2">
                 <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-ui-body-sm transition-colors hover:bg-muted/50">
                   <input
                     type="radio"
@@ -596,18 +597,18 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
             </section>
           </div>
 
-          <aside className="min-w-0 lg:sticky lg:top-6">
-            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+          <aside className="min-w-0 bp-lg:sticky bp-lg:top-6">
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
               <div className="space-y-1">
                 <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
                   Order summary
                 </p>
-                <h2 className="text-ui-card-title-lg font-semibold text-foreground">구매 요약</h2>
+                <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">구매 요약</h2>
               </div>
 
               <div className="mt-5 space-y-4">
                 <div className="rounded-xl border border-border bg-muted/30 p-4">
-                  <p className="break-keep text-ui-body-sm font-semibold text-foreground">
+                  <p className="break-keep text-ui-body-sm font-ui-medium text-foreground">
                     {racket.model}
                   </p>
                   <p className="mt-1 break-words text-ui-label text-muted-foreground">
@@ -630,8 +631,8 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
                   </div>
                   <div className="border-t border-border pt-3">
                     <div className="flex items-end justify-between gap-4">
-                      <span className="font-semibold text-foreground">총 결제 금액</span>
-                      <span className="text-right text-ui-section-title font-semibold tabular-nums text-foreground">
+                      <span className="font-ui-medium text-foreground">총 결제 금액</span>
+                      <span className="text-right text-ui-section-title font-ui-medium tabular-nums text-foreground">
                         {totalPrice.toLocaleString()}원
                       </span>
                     </div>
@@ -655,8 +656,10 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
                 {paymentMethod === "bank_transfer" ? (
                   <Button
-                    className="w-full break-keep text-ui-body-sm"
-                    variant="default"
+                    className="w-full"
+                    variant="highlight"
+                    size="tall"
+                    wrap="responsive"
                     disabled={!canSubmitBank || submitting}
                     onClick={onSubmitBankTransfer}
                   >

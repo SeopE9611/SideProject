@@ -315,7 +315,7 @@ export default function RentalsList() {
                     </Link>
                   </Button>
                 ) : r.withStringService ? (
-                  <Button size="sm" variant="default" className="shadow-sm" asChild>
+                  <Button size="sm" variant="highlight_soft" className="shadow-sm" asChild>
                     <Link
                       href={`/services/apply?rentalId=${r.id}`}
                       className="inline-flex items-center gap-1"

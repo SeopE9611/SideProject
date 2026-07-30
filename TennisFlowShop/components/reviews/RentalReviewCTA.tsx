@@ -59,7 +59,12 @@ export default function RentalReviewCTA({
     : `/reviews/write?rentalId=${rentalId}`;
 
   return (
-    <Button size="sm" variant="default" className={className} asChild>
+    <Button
+      size="sm"
+      variant="secondary"
+      className={`min-h-11 bp-sm:min-h-0 ${className ?? ""}`}
+      asChild
+    >
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
         후기 작성

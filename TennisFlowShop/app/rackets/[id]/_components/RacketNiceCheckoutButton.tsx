@@ -176,7 +176,14 @@ export default function RacketNiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full text-ui-body-sm" disabled={isDisabled}>
+      <Button
+        onClick={handleClick}
+        variant="highlight"
+        size="tall"
+        wrap="responsive"
+        className="w-full"
+        disabled={isDisabled}
+      >
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

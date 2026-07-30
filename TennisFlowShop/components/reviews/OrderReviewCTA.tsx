@@ -86,7 +86,7 @@ export default function OrderReviewCTA({
     });
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-        <Button size={size} asChild variant="default" className="shadow-sm">
+        <Button size={size} asChild variant="secondary" className="min-h-11 bp-sm:min-h-0">
           <Link href={href}>
             <MessageSquarePlus className="mr-1 h-4 w-4" />
             후기 작성
