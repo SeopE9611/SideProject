@@ -2503,7 +2503,7 @@ export default function NewStringPage() {
               </div>
 
               {/* Right: Preview Card (sticky on desktop) */}
-              <div className="hidden lg:block lg:w-80">
+              <div className="block w-80">
                 <ProductPreviewCard
                   basicInfo={{
                     name: basicInfo.name,

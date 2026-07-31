@@ -25,7 +25,7 @@ export default function AdminPageHeader({
   return (
     <div
       className={cn(
-        "mb-5 flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between sm:p-5",
+        "mb-5 flex flex-row items-start justify-between gap-3 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-sm",
         className,
       )}
     >

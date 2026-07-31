@@ -53,6 +53,30 @@ html body[data-scroll-locked] {
   position: static !important; /* Radix가 relative를 주입하는 케이스도 차단 */
 }
 
+html.admin-desktop-console {
+  min-width: 1280px;
+  overflow-x: auto !important;
+}
+
+html.admin-desktop-console body {
+  min-width: 1280px;
+}
+
+.admin-narrow-viewport-notice {
+  display: none;
+}
+
+@media (max-width: 1279px) {
+  .admin-narrow-viewport-notice {
+    display: block;
+    position: sticky;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    z-index: 20;
+  }
+}
+
 /* 라이트 모드용 CSS 변수 정의 (Premium Monotone) */
 :root {
   /* Page base */

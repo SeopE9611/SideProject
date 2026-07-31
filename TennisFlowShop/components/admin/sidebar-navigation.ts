@@ -160,15 +160,3 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     ],
   },
 ];
-
-const QUICK_ACCESS_PATHS = new Set([
-  "/admin/operations",
-  "/admin/orders",
-  "/admin/rentals",
-  "/admin/offline",
-  "/admin/academy/applications",
-]);
-
-export const ADMIN_MOBILE_QUICK_ITEMS: SidebarItem[] = SIDEBAR_SECTIONS.flatMap(
-  (section) => section.items,
-).filter((item) => QUICK_ACCESS_PATHS.has(item.href));

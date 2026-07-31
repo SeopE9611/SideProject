@@ -37,8 +37,8 @@ export function SectionHeader({
   return (
     <div
       className={cn(
-        "flex items-center justify-between rounded-t-2xl border-b border-border/70 bg-background/70 px-4 py-3 sm:px-5",
-        description && "flex-col items-stretch gap-2 sm:flex-row sm:items-start sm:gap-4",
+        "flex items-center justify-between rounded-t-2xl border-b border-border/70 bg-background/70 px-5 py-3",
+        description && "flex-row items-start gap-4",
         className,
       )}
     >
@@ -54,5 +54,5 @@ export function SectionHeader({
 }
 
 export function SectionBody({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("px-4 py-4 sm:px-6", className)}>{children}</div>;
+  return <div className={cn("px-6 py-4", className)}>{children}</div>;
 }

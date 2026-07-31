@@ -773,7 +773,7 @@ export default function SettlementsClient() {
 
           <Card className={cn(adminSurface.tableCard, "overflow-visible max-w-6xl mx-auto")}>
             {/* 데스크탑 */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="overflow-x-auto">
               <div className="min-w-[1320px]">
                 <div className="sticky top-0 z-10 bg-muted border-b border-border">
                   <div
@@ -1267,7 +1267,7 @@ export default function SettlementsClient() {
               </div>
             </div>
             {/* 모바일 */}
-            <div className="md:hidden px-3 py-3 space-y-3">
+            <div className="hidden">
               {!isLoading && data && data.length > 0 && (
                 <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
                   <input
@@ -1821,7 +1821,7 @@ export default function SettlementsClient() {
 
           {live && (
             <Card className={cn(adminSurface.tableCard, "overflow-visible")}>
-              <div className="hidden md:block overflow-x-auto">
+              <div className="overflow-x-auto">
                 <div className="min-w-[640px]">
                   <div className="bg-muted border-b border-border">
                     <div
@@ -1898,7 +1898,7 @@ export default function SettlementsClient() {
                 </div>
               </div>
 
-              <div className="md:hidden p-4">
+              <div className="hidden">
                 <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="text-sm font-semibold text-primary mb-3 text-center">
                     {live.range.from} ~ {live.range.to}

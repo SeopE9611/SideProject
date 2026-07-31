@@ -344,11 +344,11 @@ export default function ReviewsClient() {
                     />
                   </TableHead>
                   <TableHead className="font-semibold text-foreground w-[180px]">작성자</TableHead>
-                  <TableHead className="font-semibold text-foreground hidden md:table-cell">
+                  <TableHead className="font-semibold text-foreground">
                     리뷰 내용
                   </TableHead>
                   <TableHead className="font-semibold text-foreground w-[120px]">평점</TableHead>
-                  <TableHead className="font-semibold text-foreground hidden md:table-cell w-[180px]">
+                  <TableHead className="w-[180px] font-semibold text-foreground">
                     작성일
                   </TableHead>
                   <TableHead className="font-semibold text-foreground w-[140px]">타입</TableHead>
@@ -378,7 +378,7 @@ export default function ReviewsClient() {
                           <div className="text-xs text-muted-foreground">{review.authorEmail}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden md:table-cell">
+                      <TableCell>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -393,7 +393,7 @@ export default function ReviewsClient() {
                         </TooltipProvider>
                       </TableCell>
                       <TableCell>{renderRating(review.rating)}</TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
+                      <TableCell className="text-muted-foreground">
                         {formatDate(review.createdAt)}
                       </TableCell>
                       <TableCell>

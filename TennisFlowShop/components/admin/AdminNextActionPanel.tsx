@@ -42,8 +42,8 @@ export default function AdminNextActionPanel({
 }: AdminNextActionPanelProps) {
   return (
     <Card className={cn("border shadow-none", toneClass[tone], className)}>
-      <CardContent className="p-4 sm:p-5">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <CardContent className="p-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <p className={adminTypography.panelTitle}>다음 작업</p>
@@ -64,7 +64,7 @@ export default function AdminNextActionPanel({
             </div>
           </div>
           {(primaryAction || secondaryActions) && (
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:max-w-[360px] lg:justify-end">
+            <div className="flex max-w-[360px] flex-row flex-wrap justify-end gap-2">
               {primaryAction}
               {secondaryActions}
             </div>
