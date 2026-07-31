@@ -26,8 +26,8 @@ import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AdminTaskCard from "@/components/admin/AdminTaskCard";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import AsyncState from "@/components/system/AsyncState";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -177,36 +177,6 @@ function toOperatorSentence(text?: string | null) {
     )
     .replace(/파생 결제상태/gi, "주문 정보를 기준으로 계산한 결제 상태")
     .trim();
-}
-
-function truncateText(text: string, max = 38) {
-  if (text.length <= max) return text;
-  return `${text.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
-}
-
-function summarizeReasonText(text?: string | null) {
-  const normalized = toOperatorSentence(text).replace(/\s+/g, " ").trim();
-  if (!normalized) return "연결 문서 확인 필요";
-
-  if (
-    normalized.includes("결제") ||
-    normalized.includes("paymentStatus") ||
-    normalized.includes("결제 상태")
-  ) {
-    return "결제 정보 확인 필요";
-  }
-  if (normalized.includes("주문 정보") || normalized.includes("파생")) {
-    return "주문 정보 기준으로 표시 중";
-  }
-  if (normalized.includes("연결") || normalized.includes("문서") || normalized.includes("누락")) {
-    return "연결 문서 확인 필요";
-  }
-
-  const oneLine = normalized
-    .split(/[.!?]\s+/)[0]
-    ?.split(" · ")[0]
-    ?.trim();
-  return truncateText(oneLine || normalized, 34);
 }
 
 function flowLabelText(item: OpItem) {
@@ -726,59 +696,11 @@ function isActionableSignal(signal: AdminOperationsGroup["signals"][number]) {
   return signal.level !== "info";
 }
 
-function collectActionableReasonBullets(g: {
-  anchor: OpItem;
-  items: OpItem[];
-  signals?: AdminOperationsGroup["signals"];
-  linkedFlowStatusIssue?: AdminOperationsGroup["linkedFlowStatusIssue"];
-}) {
-  const reasons = new Set<string>();
-  const addReason = (reason?: string | null) => {
-    const value = toOperatorSentence(reason ?? "");
-    if (value) reasons.add(value);
-  };
-
-  for (const signal of g.signals ?? []) {
-    if (!isActionableSignal(signal)) continue;
-    addReason(signal.description || signal.nextAction || signal.title);
-  }
-
-  for (const it of g.items ?? []) {
-    const hasActionableReview = it.reviewLevel === "action" || it.needsReview === true;
-    if (hasActionableReview) {
-      for (const reason of it.reviewReasons ?? []) addReason(reason);
-    }
-    for (const reason of it.warnReasons ?? []) addReason(reason);
-    for (const reason of it.pendingReasons ?? []) addReason(reason);
-    if (it.cancel?.status === "requested") {
-      addReason(it.cancel.reason || "취소 요청 처리가 필요합니다.");
-    }
-  }
-
-  if (g.linkedFlowStatusIssue) addReason(g.linkedFlowStatusIssue.message);
-
-  return Array.from(reasons);
-}
-
 function visibleSignalSummary(signals: AdminOperationsGroup["signals"], max = 3) {
   const actionableSignals = (signals ?? []).filter(isActionableSignal);
   const visible = actionableSignals.slice(0, max);
   const hiddenCount = Math.max(0, actionableSignals.length - visible.length);
   return { visible, hiddenCount };
-}
-
-function stringSummaryText(item?: OpItem) {
-  if (!item?.stringingSummary?.requested) return null;
-  const summary = item.stringingSummary;
-  const bits = [
-    summary.name ?? "스트링 선택됨",
-    summary.price ? `요금 ${won(summary.price)}` : null,
-    summary.mountingFee ? `교체비 ${won(summary.mountingFee)}` : null,
-    summary.applicationStatus ? `신청 ${summary.applicationStatus}` : "신청 상태 확인",
-  ]
-    .filter(Boolean)
-    .join(" / ");
-  return bits || "스트링 선택됨";
 }
 
 const thClasses = cn(adminDataTable.head, "border-b border-border/30");
@@ -828,7 +750,6 @@ export default function OperationsClient() {
   >("all");
   const [warnSort, setWarnSort] = useState<"default" | "warn_first" | "safe_first">("default");
   const [page, setPage] = useState(1);
-  const [openReasons, setOpenReasons] = useState<Record<string, boolean>>({});
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const [displayDensity, setDisplayDensity] = useState<"default" | "compact">("default");
@@ -905,11 +826,6 @@ export default function OperationsClient() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // 필터/페이지가 바뀌면 확인 이유 펼침 상태를 초기화
-  useEffect(() => {
-    setOpenReasons({});
-  }, [q, kind, flow, integrated, page, onlyWarn, warnFilter, warnSort]);
 
   // 2) 상태 → URL 동기화
   /**
@@ -1296,13 +1212,6 @@ export default function OperationsClient() {
     if (warnFilter === "pending") return "pending";
     return null;
   }, [warnFilter]);
-
-  function toggleReason(key: string) {
-    setOpenReasons((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  }
 
   const dailySummaryValue = (value?: number) =>
     typeof value === "number" ? `${value.toLocaleString("ko-KR")}건` : "-";
@@ -2150,15 +2059,6 @@ export default function OperationsClient() {
                   </TableBody>
                 </Table>
               </div>
-              <div className="hidden">
-                {Array.from({ length: 5 }).map((_, idx) => (
-                  <div key={idx} className="rounded-lg border border-border bg-card p-4 space-y-3">
-                    <Skeleton className="h-5 w-1/2" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-4/5" />
-                  </div>
-                ))}
-              </div>
             </div>
           ) : (
             <>
@@ -2578,339 +2478,6 @@ export default function OperationsClient() {
                     )}
                   </TableBody>
                 </Table>
-              </div>
-
-              <div className="hidden">
-                {quickViewFilteredGroups.map((g) => {
-                  const warn = g.warn;
-                  const reasonBullets = collectActionableReasonBullets(g);
-                  const groupGuide = inferNextActionForOperationGroup(g.items);
-                  const reasonSummary = summarizeReasonText(
-                    reasonBullets[0] ?? g.primarySignal?.description,
-                  );
-                  const customerName = g.anchor.customer?.name?.trim() || "";
-                  const customerEmail = g.anchor.customer?.email?.trim() || "";
-                  const customerPrimary = customerName || customerEmail || "-";
-                  const scenarioLabel = flowLabelText(g.anchor);
-                  const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
-                  const elapsedHours = getElapsedHours(g.createdAt ?? g.anchor.createdAt);
-                  const elapsedText = formatElapsedText(elapsedHours);
-                  const slaLevel = resolveOperationsSlaLevel({
-                    groupQueueBucket: g.groupQueueBucket,
-                    createdAt: g.createdAt ?? g.anchor.createdAt,
-                    hasCancel: g.items.some((it) => it.cancel?.status === "requested"),
-                    hasPayment: hasPaymentCheckNeeded(g),
-                    hasShipping: hasShippingMissing(g),
-                    hasRental: hasRentalDue(g),
-                  });
-                  const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
-                  const headline = statusHeadlineOf(g.anchor);
-                  const primaryActionTarget = resolvePrimaryActionTarget({
-                    anchor: g.anchor,
-                    items: g.items,
-                  });
-                  const groupCancelRequested = g.items.some(
-                    (it) => it.cancel?.status === "requested",
-                  );
-                  const priorityMeta = getOperationPriorityMeta({
-                    warn,
-                    reviewLevel: g.reviewLevel,
-                    groupCancelRequested,
-                  });
-                  const nextActionText = groupNextActionText({
-                    guide: groupGuide,
-                    anchor: g.anchor,
-                    cancelRequested: groupCancelRequested,
-                    reviewLevel: g.reviewLevel,
-                  });
-                  const hasReasonCard = reasonBullets.length > 0;
-                  const shouldShowReasonBullets = reasonBullets.length > 0;
-                  const reasonBulletCount = reasonBullets.length;
-                  const isReasonOpen = !!openReasons[g.key];
-
-                  const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
-
-                  const anchorPaymentBadgeStatus = getOperationPaymentBadgeStatus(g.anchor);
-
-                  const anchorPaymentBadgeSpec =
-                    g.anchor.kind === "order" &&
-                    g.anchor.paymentDisplayLabel &&
-                    anchorPaymentBadgeStatus
-                      ? getPaymentStatusBadgeSpec(anchorPaymentBadgeStatus)
-                      : null;
-
-                  return (
-                    <Card key={`m:${g.key}`} className="border-border shadow-sm">
-                      <CardContent className="space-y-3 p-4">
-                        <div className="space-y-0.5">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <Badge
-                              className={cn(
-                                badgeBase,
-                                badgeSizeSm,
-                                badgeToneClass(priorityMeta.tone),
-                              )}
-                            >
-                              {priorityMeta.label}
-                            </Badge>
-                            <span className="text-xs leading-relaxed text-foreground/80">
-                              {priorityMeta.description}
-                            </span>
-                            <span className="text-xs leading-relaxed text-muted-foreground/90">
-                              {g.items.length > 1 ? `${g.items.length}건 그룹` : "단일 건"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-xs leading-snug text-foreground/75">
-                            <span>
-                              {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
-                            </span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 w-6 p-0 text-muted-foreground"
-                              onClick={() => copyToClipboard(g.anchor.id)}
-                              aria-label={ROW_ACTION_LABELS.copyId}
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                          <p className="text-xs leading-snug text-foreground/75">
-                            접수 {createdAtLabel}
-                          </p>
-                          {slaMeta ? (
-                            <Badge
-                              title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
-                              variant="outline"
-                              className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
-                            >
-                              {slaMeta.label}
-                            </Badge>
-                          ) : null}
-                        </div>
-
-                        <div className="flex items-baseline justify-between gap-2">
-                          <div>
-                            <p className="text-xs leading-snug text-foreground/75">
-                              {scenarioLabel}
-                            </p>
-                            <span className="text-[13px] font-medium text-foreground/85">
-                              {customerPrimary}
-                            </span>
-                            {customerName && customerEmail && (
-                              <p className="text-xs leading-snug text-foreground/75">
-                                {customerEmail}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-left md:text-right">
-                            <p className="text-xs leading-snug text-foreground/75">
-                              {g.items.length > 1 ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
-                            </p>
-                            <span className="text-base font-extrabold tracking-normal text-foreground">
-                              {won(g.anchor.amount)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <p className="text-sm font-semibold text-foreground line-clamp-1">
-                          {headline}
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-1">
-                          <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                            {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
-                          </Badge>
-
-                          {anchorPaymentBadgeSpec && g.anchor.paymentDisplayLabel ? (
-                            <Badge
-                              variant={anchorPaymentBadgeSpec.variant}
-                              className={cn(badgeBase, badgeSizeSm)}
-                            >
-                              {g.anchor.paymentDisplayLabel}
-                            </Badge>
-                          ) : null}
-
-                          {g.anchor.needsStringingApplication ? (
-                            <Badge
-                              className={cn(
-                                badgeBase,
-                                badgeSizeSm,
-                                "border border-warning/30 bg-warning/10 text-warning",
-                              )}
-                            >
-                              교체 신청서 미접수
-                            </Badge>
-                          ) : null}
-                        </div>
-
-                        <div className="rounded-xl border border-primary/15 bg-primary/[0.02] px-3 py-2">
-                          <p className={cn("mb-0.5", adminTypography.caption)}>다음 작업</p>
-                          <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
-                            {nextActionText}
-                          </p>
-                        </div>
-                        {(() => {
-                          const { visible, hiddenCount } = visibleSignalSummary(g.signals, 2);
-                          return visible.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {visible.map((signal) => (
-                                <Badge
-                                  key={`m:${g.key}:signal:${signal.code}:${signal.sourceId}`}
-                                  variant="outline"
-                                  className={cn(
-                                    badgeBase,
-                                    badgeSizeSm,
-                                    "border-warning/40 bg-warning/5 text-warning",
-                                  )}
-                                  title={toOperatorSentence(signal.description)}
-                                >
-                                  {toOperatorSentence(signal.title)}
-                                </Badge>
-                              ))}
-                              {hiddenCount > 0 && (
-                                <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                                  외 {hiddenCount}개
-                                </Badge>
-                              )}
-                            </div>
-                          ) : null;
-                        })()}
-                        {g.linkedFlowStatusIssue && (
-                          <div className="rounded-md border border-warning/40 bg-warning/5 px-2 py-1.5 text-xs text-foreground/80">
-                            <Badge
-                              variant="outline"
-                              className="mb-1 border-warning/50 text-warning"
-                            >
-                              {g.linkedFlowStatusIssue.title}
-                            </Badge>
-                            <p>{g.linkedFlowStatusIssue.message}</p>
-                          </div>
-                        )}
-                        {hasReasonCard && (
-                          <div className="space-y-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-1 text-xs font-medium text-foreground/75 hover:text-foreground"
-                              onClick={() => toggleReason(g.key)}
-                            >
-                              {isReasonOpen
-                                ? "확인 이유 숨기기"
-                                : reasonBulletCount > 0
-                                  ? `확인 이유 ${reasonBulletCount}개 보기`
-                                  : "확인 이유 보기"}
-                            </Button>
-                            <div
-                              className={cn(
-                                "grid transition-all duration-200 ease-out",
-                                isReasonOpen
-                                  ? "grid-rows-[1fr] opacity-100"
-                                  : "grid-rows-[0fr] opacity-0",
-                              )}
-                            >
-                              <div className="overflow-hidden rounded-sm border border-border/40 bg-muted/[0.08] px-1.5 py-0.5">
-                                <p className="text-xs leading-snug text-foreground/75 line-clamp-2">
-                                  {reasonSummary}
-                                </p>
-                                {shouldShowReasonBullets && (
-                                  <ul className="mt-0.5 space-y-px">
-                                    {reasonBullets.slice(0, 2).map((reason) => (
-                                      <li
-                                        key={`m-reason:${g.key}:${reason}`}
-                                        className="list-inside list-disc text-xs leading-snug text-foreground/75 line-clamp-1"
-                                      >
-                                        {reason}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                                {reasonBullets.length > 2 && (
-                                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                                    외 {reasonBullets.length - 2}건
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                          {g.anchor.canSyncNicePayment && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 min-w-[92px] px-2.5 text-xs font-semibold text-muted-foreground"
-                              title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
-                              disabled={syncingNiceOrderId === g.anchor.id}
-                              onClick={() => {
-                                void handleNicePaymentSync(g.anchor.id);
-                              }}
-                            >
-                              <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                              {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
-                            </Button>
-                          )}
-                          <Button
-                            asChild
-                            size="sm"
-                            variant="default"
-                            className="h-8 min-w-[96px] px-2.5 text-xs font-semibold shadow-sm"
-                          >
-                            <Link href={primaryActionTarget.href}>{primaryActionTarget.label}</Link>
-                          </Button>
-                        </div>
-
-                        {amountMeaningText(g.anchor) ? (
-                          <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-1">
-                            {amountMeaningText(g.anchor)}
-                          </p>
-                        ) : null}
-                        {g.primarySignal && (
-                          <p className="text-xs leading-relaxed text-muted-foreground/85">
-                            참고:{" "}
-                            {toOperatorSentence(
-                              g.primarySignal.description ?? g.primarySignal.title,
-                            )}
-                          </p>
-                        )}
-                        {g.anchor.flow === 7 && (
-                          <p className="text-xs text-muted-foreground">
-                            스트링 요약:{" "}
-                            {stringSummaryText(g.items.find((it) => it.kind === "rental")) ??
-                              "정보 없음"}
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-
-                {shouldShowEmptyState && (
-                  <div className="rounded-md border border-dashed border-border px-3 py-10 text-center text-sm text-muted-foreground">
-                    <p>
-                      {activeQuickView !== "all"
-                        ? "선택한 빠른 보기에 해당하는 운영 업무가 없습니다."
-                        : "표시할 항목이 없습니다."}
-                    </p>
-                    {activeQuickView !== "all" && (
-                      <>
-                        <p className="mt-1 text-xs text-muted-foreground/80">
-                          다른 빠른 보기를 선택하거나 전체 보기로 돌아가세요.
-                        </p>
-                        <Button
-                          className="mt-3"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => applyQuickView("all")}
-                        >
-                          전체 보기
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                )}
               </div>
             </>
           )}
