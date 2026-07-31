@@ -1,12 +1,12 @@
-import AdminNavigationShell from "@/components/admin/AdminNavigationShell";
 import AdminDesktopViewportPolicy from "@/components/admin/AdminDesktopViewportPolicy";
+import AdminNavigationShell from "@/components/admin/AdminNavigationShell";
 import AccessDenied from "@/components/system/AccessDenied";
-import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { isAdminRole } from "@/lib/admin/roles";
+import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { logInfo } from "@/lib/logger";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
-import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
@@ -80,8 +80,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div className="flex min-h-screen min-w-[1280px] flex-col bg-muted/30">
       <AdminDesktopViewportPolicy />
-      <div className="admin-narrow-viewport-notice border-b border-warning/30 bg-warning/10 px-6 py-2 text-sm text-warning-foreground" role="status">
-        관리자 콘솔은 데스크톱 전용입니다. 정확한 업무 처리를 위해 1280px 이상의 PC 환경을 사용해 주세요.
+      <div
+        className="admin-narrow-viewport-notice border-b border-border/70 bg-muted/80 px-6 py-2 text-sm text-foreground"
+        role="status"
+      >
+        관리자 콘솔은 데스크톱 전용입니다. 정확한 업무 처리를 위해 1280px 이상의 PC 환경을 사용해
+        주세요.
       </div>
       <div className="border-b border-border/70 bg-card/80 px-6 py-2 backdrop-blur supports-[backdrop-filter]:bg-card/70">
         <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-3">
