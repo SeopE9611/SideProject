@@ -14,6 +14,7 @@ import RacketCareMobileNav from "@/app/mypage/racket-care/_components/RacketCare
 import RacketCareRegistrationDialog from "@/app/mypage/racket-care/_components/RacketCareRegistrationDialog";
 import RacketCareStatusCard from "@/app/mypage/racket-care/_components/RacketCareStatusCard";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
+import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -25,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -291,16 +292,14 @@ export default function RacketCareClient() {
     );
   if (error)
     return (
-      <Card variant="feature">
-        <CardContent className="space-y-3 p-5">
-          <p className="font-semibold text-destructive">라켓 케어 정보를 불러오지 못했습니다.</p>
-          <p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
-          <Button variant="highlight" className="min-h-11 bp-sm:min-h-0" onClick={() => mutate()}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            다시 시도
-          </Button>
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="error"
+        variant="card"
+        tone="user"
+        resourceName="라켓 케어"
+        onAction={() => mutate()}
+        className="[&_button]:w-full [&_button]:whitespace-normal bp-sm:[&_button]:w-auto"
+      />
     );
   return (
     <div
@@ -327,6 +326,7 @@ export default function RacketCareClient() {
             <Button
               variant="highlight"
               wrap="responsive"
+              className="min-h-11 w-full bp-sm:w-auto"
               onClick={() => startCreate()}
               disabled={remainingSlots <= 0}
             >
@@ -420,6 +420,7 @@ export default function RacketCareClient() {
                   <Button
                     variant="highlight"
                     wrap="responsive"
+                    className="min-h-11 w-full bp-sm:w-auto"
                     onClick={() =>
                       importCandidates.length > 0
                         ? startCreate({ mode: "import", skipMethodStep: true })
@@ -431,6 +432,7 @@ export default function RacketCareClient() {
                   <Button
                     variant="outline"
                     wrap="responsive"
+                    className="min-h-11 w-full bp-sm:w-auto"
                     onClick={() => startCreate({ mode: "manual", skipMethodStep: true })}
                   >
                     직접 입력하기
@@ -472,11 +474,19 @@ export default function RacketCareClient() {
             삭제해도 주문·교체 신청 이력은 변경되지 않습니다.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeletingId(null)} disabled={saving}>
+            <Button
+              variant="outline"
+              wrap="responsive"
+              className="min-h-11 w-full bp-sm:w-auto"
+              onClick={() => setDeletingId(null)}
+              disabled={saving}
+            >
               취소
             </Button>
             <Button
               variant="destructive"
+              wrap="responsive"
+              className="min-h-11 w-full bp-sm:w-auto"
               onClick={() => deletingId && remove(deletingId)}
               disabled={saving}
             >

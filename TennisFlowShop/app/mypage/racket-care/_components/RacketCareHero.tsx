@@ -75,11 +75,21 @@ export default function RacketCareHero({
           </p>
           <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
             {selected ? (
-              <Button asChild variant="highlight" wrap="responsive">
+              <Button
+                asChild
+                variant="highlight"
+                wrap="responsive"
+                className="min-h-11 w-full bp-sm:w-auto"
+              >
                 <Link href={recommendHref(selected)}>맞춤 스트링 추천받기</Link>
               </Button>
             ) : (
-              <Button variant="highlight" wrap="responsive" onClick={() => onCreate()}>
+              <Button
+                variant="highlight"
+                wrap="responsive"
+                className="min-h-11 w-full bp-sm:w-auto"
+                onClick={() => onCreate()}
+              >
                 <Plus className="h-4 w-4" />내 라켓 등록하기
               </Button>
             )}
@@ -87,12 +97,18 @@ export default function RacketCareHero({
               <Button
                 variant="outline"
                 wrap="responsive"
+                className="min-h-11 w-full bp-sm:w-auto"
                 onClick={() => scrollToSection("racket-care-workspace")}
               >
                 내 라켓 관리
               </Button>
             ) : (
-              <Button asChild variant="outline" wrap="responsive">
+              <Button
+                asChild
+                variant="outline"
+                wrap="responsive"
+                className="min-h-11 w-full bp-sm:w-auto"
+              >
                 <Link href="/racket-care#racket-care-flow">라켓 케어 알아보기</Link>
               </Button>
             )}
