@@ -206,11 +206,11 @@ export default function SupportFaqSearch() {
                 type="button"
                 onClick={() => setSelectedCategory(category)}
                 className={cn(
-                  "min-h-11 rounded-full px-4 py-2 text-ui-body-sm bp-sm:min-h-10 font-medium break-keep transition-all",
+                  "min-h-11 rounded-full border px-4 py-2 text-ui-body-sm bp-sm:min-h-10 font-medium break-keep transition-all",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isActive
-                    ? "bg-foreground text-background"
-                    : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "border-brand-highlight/45 bg-brand-highlight-muted text-brand-highlight-foreground dark:text-brand-highlight"
+                    : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
                 aria-pressed={isActive}
               >

@@ -957,11 +957,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           <button
                             type="button"
                             onClick={() => handleCategoryChange(cat.value)}
+                            aria-pressed={active}
                             className={[
-                              "shrink-0 rounded-lg px-3 py-1.5 text-ui-label font-medium break-keep whitespace-nowrap",
+                              "shrink-0 rounded-lg border border-transparent px-3 py-1.5 text-ui-label font-medium break-keep whitespace-nowrap",
                               "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                               active
-                                ? "bg-foreground text-background shadow-sm"
+                                ? "border-brand-highlight/45 bg-brand-highlight-muted text-brand-highlight-foreground shadow-sm dark:text-brand-highlight"
                                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
                             ].join(" ")}
                           >
