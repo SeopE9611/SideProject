@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 export const MYPAGE_NAV_ITEMS = [
-  { value: "orders", label: "거래/이용 내역", shortLabel: "거래/이용", icon: ClipboardList },
+  { value: "orders", label: "거래/이용 내역", shortLabel: "내역", icon: ClipboardList },
   { value: "academy", label: "클래스 신청", shortLabel: "클래스", icon: GraduationCap },
   { value: "wishlist", label: "찜한 상품", shortLabel: "찜", icon: Heart },
   { value: "reviews", label: "리뷰 관리", shortLabel: "리뷰", icon: MessageSquare },

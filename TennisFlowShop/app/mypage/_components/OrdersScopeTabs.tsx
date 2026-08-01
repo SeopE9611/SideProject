@@ -66,14 +66,14 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
               aria-label={item.label}
               title={item.label}
               className={cn(
-                "group relative flex min-h-11 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-1.5 py-2.5 text-ui-label font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-4 bp-sm:text-ui-body-sm",
+                "group relative flex min-h-11 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control border px-1.5 py-2.5 text-ui-label font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-4 bp-sm:text-ui-body-sm",
                 isActive
-                  ? "bg-surface-inverse text-surface-inverse-foreground"
-                  : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                  ? "border-brand-highlight-ink/40 bg-brand-highlight-muted text-foreground"
+                  : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground",
               )}
             >
               {isActive ? (
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-highlight" aria-hidden="true" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-highlight-ink" aria-hidden="true" />
               ) : null}
               <span className="bp-sm:hidden">{item.shortLabel}</span>
               <span className="hidden bp-sm:inline">{item.label}</span>
