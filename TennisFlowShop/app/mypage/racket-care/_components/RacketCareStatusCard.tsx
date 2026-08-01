@@ -184,17 +184,23 @@ export default function RacketCareStatusCard({
             />
           </div>
           <div className="grid gap-2 bp-sm:grid-cols-[1fr_auto]">
-            <Button asChild variant="highlight" wrap="responsive">
+            <Button asChild variant="highlight" wrap="responsive" className="min-h-11 w-full">
               <Link href={href}>맞춤 스트링 추천받기</Link>
             </Button>
-            <Button variant="outline" wrap="responsive" onClick={onEdit}>
+            <Button
+              variant="outline"
+              wrap="responsive"
+              className="min-h-11 w-full bp-sm:w-auto"
+              onClick={onEdit}
+            >
               정보 수정
             </Button>
           </div>
           <div className="border-t border-border pt-3">
             <Button
               variant="ghost"
-              className="text-destructive hover:text-destructive"
+              wrap="responsive"
+              className="min-h-11 w-full text-destructive hover:text-destructive bp-sm:w-auto"
               onClick={onDelete}
             >
               <Trash2 className="mr-2 h-4 w-4" />
