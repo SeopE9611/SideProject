@@ -583,6 +583,8 @@ export default function ReviewCard({
                   value={editForm.photos}
                   onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))}
                   disabled={busy || uploadingEditPhotos}
+                  mobileControls
+                  responsiveColumns
                   onRemove={(url) => {
                     const sessionId = editPhotoSession.uploadSessionId;
                     if (sessionId) void editPhotoSession.removeUploadedUrl(url, sessionId);

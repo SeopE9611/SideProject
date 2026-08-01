@@ -13,7 +13,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNotificationList } from "@/lib/hooks/useNotificationList";
 import { showErrorToast } from "@/lib/toast";
 
-export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onClose: () => void }) {
+export function NotificationPanel({
+  enabled,
+  onClose,
+  reserveCloseButtonSpace = false,
+}: {
+  enabled: boolean;
+  onClose: () => void;
+  reserveCloseButtonSpace?: boolean;
+}) {
   const router = useRouter();
   const { items, unreadCount, status, mutate, markAsRead, markAllAsRead } = useNotificationList({
     enabled,
@@ -42,7 +50,9 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
 
   return (
     <div className="flex h-full max-h-[min(520px,80vh)] w-full flex-col">
-      <div className="flex items-start justify-between gap-3 px-4 py-3">
+      <div
+        className={`flex items-start justify-between gap-3 px-4 py-3 ${reserveCloseButtonSpace ? "pr-16" : ""}`}
+      >
         <div>
           <h2 className="text-ui-body font-semibold">알림</h2>
           <p className="text-ui-label text-muted-foreground">

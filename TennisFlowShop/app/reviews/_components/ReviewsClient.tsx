@@ -292,7 +292,7 @@ export default function ReviewsClient() {
                 className="rounded-t-panel pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
                 data-kakao-widget-hide="1"
               >
-                <SheetHeader className="pr-8 text-left">
+                <SheetHeader className="pr-14 text-left bp-md:pr-8">
                   <SheetTitle>후기 필터</SheetTitle>
                   <SheetDescription>
                     정렬, 별점, 사진 포함 조건을 선택해 후기를 좁혀보세요.
