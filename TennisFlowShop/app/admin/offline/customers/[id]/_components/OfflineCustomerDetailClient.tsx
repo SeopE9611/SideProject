@@ -1208,7 +1208,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <section className={`${adminSurface.card} p-5 sm:p-6`}>
+      <section className={`${adminSurface.card} p-6`}>
         <AdminSectionHeader
           title="오프라인 고객 상세"
           description="고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다."
@@ -1254,7 +1254,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
       {/* Customer Quick Info Banner */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex gap-4 flex-row items-center justify-between">
           <div className="flex min-w-0 items-center gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
               <User className="h-7 w-7" />
@@ -1316,9 +1316,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid gap-6 grid-cols-12">
         {/* Left Column - Customer Info & Link */}
-        <div className="space-y-6 lg:col-span-5">
+        <div className="space-y-6 col-span-5">
           {/* Customer Basic Info */}
           <SectionCard id="offline-customer-basic">
             <SectionHeader
@@ -1327,7 +1327,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="휴대폰 번호와 연락처 정보"
             />
             <div className="space-y-4 p-6">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-2">
                 <InfoItem
                   icon={User}
                   label="고객명"
@@ -1637,7 +1637,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         </div>
 
         {/* Right Column - Points, Packages, Stats */}
-        <div className="space-y-6 lg:col-span-7">
+        <div className="space-y-6 col-span-7">
           {/* Statistics */}
           <SectionCard id="offline-customer-stats">
             <SectionHeader
@@ -1646,7 +1646,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="오프라인 고객 기준 누적 데이터"
             />
             <div className="p-6">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="grid gap-3 grid-cols-6">
                 <StatCard
                   label="방문 횟수"
                   value={`${item.stats?.visitCount ?? 0}회`}
@@ -1746,7 +1746,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               ) : passes.length === 0 ? (
                 <p className={adminTypography.metaMuted}>보유 패키지/서비스권이 없습니다.</p>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-3 grid-cols-3">
                   {passes.map((pass) => {
                     const usable = isUsablePass(pass);
                     return (
@@ -1820,7 +1820,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     </FormField>
                   )}
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-4 grid-cols-3">
                     <FormField label="패키지명" htmlFor="offline-package-name">
                       <Input
                         id="offline-package-name"
@@ -2202,7 +2202,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     {/* Expanded Content */}
                     {isExpanded && (
                       <div className="border-t border-border/40 p-4">
-                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                        <div className="grid gap-4 grid-cols-3">
                           {/* Basic Info */}
                           <div className="space-y-3">
                             <h4 className={adminTypography.panelTitle}>기본 정보</h4>
@@ -2317,7 +2317,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             {!canProcessPoints ? (
                               <p className={adminTypography.caption}>{pointUnavailableMessage}</p>
                             ) : (
-                              <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
+                              <div className="grid gap-2 grid-cols-2">
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
                                   <p className={`font-medium ${adminTypography.caption}`}>
                                     적립 포인트

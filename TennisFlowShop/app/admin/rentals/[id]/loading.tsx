@@ -9,7 +9,7 @@ export default function Loading() {
         actionButtonCount={2}
         sectionDensity="dense"
         asideVariant="history"
-        className="py-6 lg:py-8"
+        className="py-8"
       />
     </div>
   );

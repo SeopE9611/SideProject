@@ -203,8 +203,8 @@ export default function SettlementsClient() {
 
     return (
       <Card className={adminSurface.card}>
-        <CardContent className="p-4 sm:p-6 space-y-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <CardContent className="p-6 space-y-5">
+          <div className="flex gap-3 flex-row items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-foreground">오프라인 매출 참고</h3>
@@ -220,7 +220,7 @@ export default function SettlementsClient() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {renderOfflineAmountCard(
               "오프라인 총 결제완료 매출",
               offline.total.paidAmount,
@@ -259,12 +259,12 @@ export default function SettlementsClient() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+          <div className="grid grid-cols-[1fr_320px] gap-4">
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <h4 className="text-sm font-bold text-foreground mb-3">
                 결제수단별 오프라인 결제완료 매출
               </h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {methodLabels.map(([key, label]) => (
                   <div key={key} className="rounded-lg bg-card border border-border p-3">
                     <p className="text-xs text-muted-foreground">{label}</p>
@@ -564,7 +564,7 @@ export default function SettlementsClient() {
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <div className="grid grid-cols-4 gap-6 mb-8">
         {/* 전체 정산 월 (기존 카드 유지) */}
         <Card className={cn(adminSurface.kpiCard, "overflow-hidden")}>
           <CardContent className="p-6">
@@ -624,10 +624,10 @@ export default function SettlementsClient() {
       </div>
 
       <div className="border-b rounded-t-2xl overflow-x-auto bg-card">
-        <div className="px-4 sm:px-6 flex gap-1 min-w-max">
+        <div className="px-6 flex gap-1 min-w-max">
           <button
             onClick={() => setTab("snapshot")}
-            className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === "snapshot" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
+            className={`px-6 py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === "snapshot" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
           >
             스냅샷 관리
             {tab === "snapshot" && (
@@ -645,7 +645,7 @@ export default function SettlementsClient() {
               }
             }}
             disabled={doing.live}
-            className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === "live" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
+            className={`px-6 py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === "live" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
           >
             실시간 조회
             {tab === "live" && (
@@ -659,7 +659,7 @@ export default function SettlementsClient() {
       {tab === "snapshot" && (
         <div className="space-y-6">
           <Card className={adminSurface.card}>
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex flex-col gap-4">
                 <div className="w-full">
                   <label className="block text-sm font-semibold mb-2 text-foreground">
@@ -678,7 +678,7 @@ export default function SettlementsClient() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 gap-2">
                   <button
                     onClick={async () => {
                       // 사전 검증
@@ -757,7 +757,7 @@ export default function SettlementsClient() {
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        <span className="hidden sm:inline">선택 삭제</span> (
+                        <span className="inline">선택 삭제</span> (
                         {selectedSnapshots.size})
                       </>
                     )}
@@ -1267,9 +1267,9 @@ export default function SettlementsClient() {
       {tab === "live" && (
         <div className="space-y-6">
           <Card className={adminSurface.card}>
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-foreground">
                       시작일
@@ -1299,9 +1299,9 @@ export default function SettlementsClient() {
                   )}{" "}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 gap-2">
                   <button
-                    className="px-3 sm:px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
+                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
                     onClick={() => {
                       const fromStr = firstDayOfMonth_KST();
                       const toStr = fmtYMD_KST();
@@ -1313,7 +1313,7 @@ export default function SettlementsClient() {
                     이번 달
                   </button>
                   <button
-                    className="px-3 sm:px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
+                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
                     onClick={() => {
                       const r = prevMonthRange_KST();
                       setFrom(r.from);
@@ -1324,7 +1324,7 @@ export default function SettlementsClient() {
                     지난 달
                   </button>
                   <button
-                    className="px-3 sm:px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
+                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
                     onClick={() => {
                       const end = new Date();
                       const start = new Date(end.getTime() - 6 * 24 * 60 * 60 * 1000);
@@ -1338,7 +1338,7 @@ export default function SettlementsClient() {
 
                   <button
                     onClick={fetchLive}
-                    className="px-3 sm:px-4 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
+                    className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-1"
                     disabled={doing.live || invalidRange}
                   >
                     {doing.live ? (
@@ -1393,7 +1393,7 @@ export default function SettlementsClient() {
                       URL.revokeObjectURL(url);
                     }}
                     disabled={!live || invalidRange}
-                    className="px-3 sm:px-4 py-2.5 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow col-span-2 sm:col-span-1"
+                    className="px-4 py-2.5 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow col-span-1"
                   >
                     <FileDown className="w-4 h-4" />
                     CSV

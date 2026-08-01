@@ -152,8 +152,8 @@ export default function ReviewDetailClient({ reviewId }: Props) {
   };
 
   return (
-    <div className="container py-6 lg:py-8">
-      <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
+    <div className="container py-8">
+      <div className="mx-auto w-full max-w-[1500px] space-y-8">
         {/* 제목 */}
         <div>
           <div className="flex items-center space-x-3 mb-4">
@@ -161,7 +161,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
               <MessageSquare className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold tracking-normal text-foreground md:text-5xl">
+              <h1 className="font-bold tracking-normal text-foreground text-5xl">
                 리뷰 상세 보기
               </h1>
               <p className="mt-2 text-lg text-muted-foreground">
@@ -203,7 +203,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
             </div>
 
             {/* 기본 정보 */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 grid-cols-2">
               <div className="space-y-4 p-6 bg-background rounded-xl">
                 <div className="flex items-center space-x-3">
                   <div className="bg-primary/10 rounded-lg p-2 text-primary dark:bg-primary/20">

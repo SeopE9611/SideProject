@@ -436,7 +436,7 @@ export default function AdminRentalDetailClient() {
   if (!id) return <div className="p-4">유효하지 않은 ID</div>;
   if (error) {
     return (
-      <AdminPageShell className="lg:py-8">
+      <AdminPageShell className="py-8">
         <AsyncState
           kind="error"
           tone="admin"
@@ -452,7 +452,7 @@ export default function AdminRentalDetailClient() {
   if (!data) {
     if (isLoading) {
       return (
-        <AdminPageShell className="space-y-6 lg:py-8">
+        <AdminPageShell className="space-y-6 py-8">
           <div className="flex items-center justify-between gap-3">
             <Skeleton className="h-9 w-48" />
             <div className="flex gap-2">
@@ -460,12 +460,12 @@ export default function AdminRentalDetailClient() {
               <Skeleton className="h-9 w-24" />
             </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <Skeleton key={index} className="h-24 rounded-xl" />
             ))}
           </div>
-          <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
+          <div className="grid gap-6 grid-cols-[1.3fr_1fr]">
             <Skeleton className="h-[420px] rounded-xl" />
             <Skeleton className="h-[420px] rounded-xl" />
           </div>
@@ -475,7 +475,7 @@ export default function AdminRentalDetailClient() {
 
     if (!isLoading) {
       return (
-        <AdminPageShell className="lg:py-8">
+        <AdminPageShell className="py-8">
           <AsyncState
             kind="empty"
             tone="admin"
@@ -708,15 +708,15 @@ export default function AdminRentalDetailClient() {
     String(linkedApplication?.paymentSource ?? "") === `rental:${id}`;
 
   return (
-    <AdminPageShell variant="wide" className="lg:py-8">
+    <AdminPageShell variant="wide" className="py-8">
       {isLoading ? (
         <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-foreground/80">
           최신 상태를 확인하고 있습니다...
         </div>
       ) : null}
-      <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
-        <div className={cn("mb-6 p-5 lg:mb-8 lg:p-6", adminSurface.cardMuted)}>
-          <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto w-full max-w-[1500px] space-y-8">
+        <div className={cn("mb-8 p-6", adminSurface.cardMuted)}>
+          <div className="flex mb-6 gap-4 flex-row items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="bg-card rounded-full p-3 shadow-md">
                 <Settings className="h-8 w-8 text-primary" />
@@ -755,7 +755,7 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
             </div>
-            <div className="sm:ml-auto flex flex-wrap items-center justify-end gap-2.5">
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-2.5">
               <Button
                 variant="outline"
                 size="sm"
@@ -795,7 +795,7 @@ export default function AdminRentalDetailClient() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <AdminStatusCard
               density="compact"
               title="대여 상태"
@@ -1003,7 +1003,7 @@ export default function AdminRentalDetailClient() {
           }
           footer={
             hasLatestProcessingSummary ? (
-              <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
+              <div className="grid gap-1.5 leading-relaxed grid-cols-2">
                 {latestProcessingAction ? (
                   <p>
                     <span className="font-medium text-foreground">마지막 처리:</span>{" "}
@@ -1023,7 +1023,7 @@ export default function AdminRentalDetailClient() {
                   </p>
                 ) : null}
                 {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
-                  <p className="sm:col-span-2">
+                  <p className="col-span-2">
                     <span className="font-medium text-foreground">상태 변화:</span>{" "}
                     {formatRentalHistoryStatus(latestProcessingHistory?.from)} →{" "}
                     {formatRentalHistoryStatus(latestProcessingHistory?.to)}
@@ -1048,7 +1048,7 @@ export default function AdminRentalDetailClient() {
             >
               {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
               {cancelInfo.status === "requested" && (
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="mt-3 flex gap-2 flex-row items-center">
                   <Button
                     size="sm"
                     className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -1200,7 +1200,7 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3 pt-4">
-              <div className="grid gap-x-5 gap-y-2 text-ui-body-sm sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-x-5 gap-y-2 text-ui-body-sm grid-cols-3">
                 <p className="text-muted-foreground">
                   교체 작업 ID:{" "}
                   <span className="font-medium text-foreground">
@@ -1230,7 +1230,7 @@ export default function AdminRentalDetailClient() {
                     {data?.stringingTensionSummary ?? "정보 없음"}
                   </span>
                 </p>
-                <p className="text-muted-foreground sm:col-span-2">
+                <p className="text-muted-foreground col-span-2">
                   요청사항:{" "}
                   <span className="font-medium text-foreground">
                     {[linkedApplication.requirements, ...linkedApplicationNotes]
@@ -1238,7 +1238,7 @@ export default function AdminRentalDetailClient() {
                       .join(" / ") || "요청사항 없음"}
                   </span>
                 </p>
-                <p className="text-muted-foreground sm:col-span-2 xl:col-span-3">
+                <p className="text-muted-foreground col-span-3">
                   결제 문맥:{" "}
                   <span className="font-medium text-foreground">
                     {linkedApplicationPaymentIncluded
@@ -1286,7 +1286,7 @@ export default function AdminRentalDetailClient() {
               <div
                 className={cn(
                   adminSurface.fieldPanel,
-                  "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
+                  "flex gap-3 flex-row items-end justify-between",
                 )}
               >
                 <div className="space-y-2">
@@ -1303,7 +1303,7 @@ export default function AdminRentalDetailClient() {
                     대여 결제에 포함된 하위 교체 작업만 다음 운영 단계로 변경합니다.
                   </p>
                 </div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <div className="flex gap-2 flex-row flex-wrap">
                   <Button asChild size="sm" variant="outline">
                     <Link
                       href={`/admin/applications/stringing/${encodeURIComponent(String(linkedApplication.id))}`}
@@ -1479,7 +1479,7 @@ export default function AdminRentalDetailClient() {
             <CardTitle className={adminTypography.sectionTitle}>고객 정보</CardTitle>
             <CardDescription>연락과 본인 확인에 필요한 정보를 먼저 확인합니다.</CardDescription>
           </CardHeader>
-          <CardContent className="p-5 sm:p-6">
+          <CardContent className="p-6">
             <AdminInfoGrid>
               <AdminInfoItem label="이름" value={data.user?.name || "-"} />
               <AdminInfoItem label="이메일" value={data.user?.email || "-"} />
@@ -1487,7 +1487,7 @@ export default function AdminRentalDetailClient() {
             </AdminInfoGrid>
           </CardContent>
         </Card>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 grid-cols-2">
           <Card className="border border-border/60 shadow-none bg-card overflow-hidden">
             <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
               <CardTitle className="flex items-center space-x-2">
@@ -1764,7 +1764,7 @@ export default function AdminRentalDetailClient() {
                 배송 정보 미등록 · 운송장이 생기면 배송 업데이트에서 등록하세요.
               </p>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 grid-cols-2">
                 {/* 인도 */}
                 <div className="rounded-lg border border-border/60 bg-background/80 p-4">
                   <p className="text-sm font-medium text-muted-foreground mb-2">인도</p>
@@ -1862,7 +1862,7 @@ export default function AdminRentalDetailClient() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5">
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2 grid-cols-2">
               <div className="flex items-start space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                 <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                 <div>

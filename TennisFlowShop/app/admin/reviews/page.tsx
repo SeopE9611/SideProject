@@ -38,7 +38,7 @@ export default function ReviewsPage() {
         icon={Star}
       />
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-3 grid-cols-3">
         {reviewGuideItems.map((item) => (
           <div key={item.title} className={cn(adminSurface.cardMuted, "p-4 break-keep")}>
             <p className={adminTypography.bodyStrong}>{item.title}</p>

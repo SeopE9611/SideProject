@@ -219,7 +219,7 @@ export default function ReviewsClient() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 grid-cols-4">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -281,7 +281,7 @@ export default function ReviewsClient() {
 
       <Card className={adminSurface.tableCard}>
         <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-          <p className="text-foreground text-2xl md:text-4xl font-semibold">
+          <p className="text-foreground text-4xl font-semibold">
             이 기능은 개발 중 입니다. (리뷰 관리)
           </p>
           <p className="text-lg text-muted-foreground">
@@ -297,7 +297,7 @@ export default function ReviewsClient() {
               </CardDescription>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="relative w-full md:w-64">
+              <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
@@ -321,7 +321,7 @@ export default function ReviewsClient() {
                 variant="destructive"
                 size="sm"
                 onClick={handleBulkDelete}
-                className="h-8 sm:ml-auto"
+                className="h-8 ml-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 선택 삭제

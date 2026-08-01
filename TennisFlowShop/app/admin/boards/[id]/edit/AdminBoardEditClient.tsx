@@ -128,7 +128,7 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
           <CardTitle className={adminTypography.sectionTitle}>게시글 정보</CardTitle>
           <p className={adminTypography.metaMuted}>필수 항목을 확인한 뒤 저장하세요.</p>
         </CardHeader>
-        <CardContent className="p-5 sm:p-6">
+        <CardContent className="p-6">
           {isLoading ? (
             <div className="space-y-5">
               <div className="space-y-2">

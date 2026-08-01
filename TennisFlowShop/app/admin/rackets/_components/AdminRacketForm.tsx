@@ -427,7 +427,7 @@ export default function AdminRacketForm({
           />
         </div>
       </div>
-      <section className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-2 grid-cols-4">
         {RACKET_FORM_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
           <div key={title} className={cn(adminSurface.cardMuted, "p-3")}>
             <div className="flex items-center gap-2">
@@ -440,9 +440,9 @@ export default function AdminRacketForm({
           </div>
         ))}
       </section>
-      <div className="grid gap-2 lg:grid-cols-[1.2fr_1fr]">
+      <div className="grid gap-2 grid-cols-[1.2fr_1fr]">
         <div className={cn(adminSurface.cardMuted, "p-3")}>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-2 flex-row items-center justify-between">
             <div>
               <p className={adminTypography.bodyStrong}>현재 단계: {currentStep.label}</p>
               <p className={cn("mt-1", adminTypography.caption)}>
@@ -466,7 +466,7 @@ export default function AdminRacketForm({
           </div>
         </div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-4 grid-cols-[minmax(0,1fr)_300px]">
         <div ref={stepContentRef}>
           {currentStep.id === "basic" && (
             <FormSection
@@ -885,7 +885,7 @@ export default function AdminRacketForm({
                 description="추천, 신상품, 할인 배지를 설정합니다."
                 icon={<DollarSign className="h-4 w-4" />}
               >
-                <div className="grid gap-3 md:grid-cols-3">
+                <div className="grid gap-3 grid-cols-3">
                   <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4">
                     <Label>추천 상품</Label>
                     <Switch
@@ -967,7 +967,7 @@ export default function AdminRacketForm({
             </FormSection>
           )}
           <div className={cn("mt-4 p-4", adminSurface.card)}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-2 flex-row items-center justify-between">
               <div>
                 <p className={adminTypography.panelTitle}>저장 전 체크리스트</p>
                 <p className={cn("mt-1", adminTypography.metaMuted)}>
@@ -979,7 +979,7 @@ export default function AdminRacketForm({
               </Badge>
             </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="mt-4 grid gap-2 grid-cols-2">
               {formReadinessChecks.map((item) => (
                 <div
                   key={item.label}

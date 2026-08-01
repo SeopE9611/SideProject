@@ -246,7 +246,7 @@ export default function AcademyApplicationsClient() {
 
       <Card className={cn(adminSurface.card, "border-dashed")}>
         <CardContent className="space-y-4 pt-5">
-          <div className="grid gap-2.5 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2.5 text-sm grid-cols-4">
             <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
               <p className="font-medium text-foreground">1) 신청 접수 확인</p>
               <p className="mt-1 leading-relaxed text-muted-foreground">
@@ -282,7 +282,7 @@ export default function AcademyApplicationsClient() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-3 grid-cols-6">
         <SummaryCard label="전체" value={counts.all} active={status === "all"} />
         {ACADEMY_APPLICATION_STATUSES.map((item) => (
           <SummaryCard
@@ -299,7 +299,7 @@ export default function AcademyApplicationsClient() {
           <CardTitle className="text-base">신청 목록</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex gap-3 flex-row items-center justify-between">
             <Select
               value={status}
               onValueChange={(value) => {
@@ -307,7 +307,7 @@ export default function AcademyApplicationsClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full lg:w-[180px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="상태 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -321,7 +321,7 @@ export default function AcademyApplicationsClient() {
             </Select>
 
             <form
-              className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md"
+              className="flex w-full gap-2 flex-row max-w-md"
               onSubmit={submitSearch}
             >
               <Input
@@ -329,7 +329,7 @@ export default function AcademyApplicationsClient() {
                 onChange={(event) => setKeywordInput(event.target.value)}
                 placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
               />
-              <Button type="submit" variant="outline" className="w-full sm:w-auto">
+              <Button type="submit" variant="outline" className="w-auto">
                 <Search className="mr-2 h-4 w-4" />
                 검색
               </Button>
@@ -484,7 +484,7 @@ export default function AcademyApplicationsClient() {
             </Table>
           </div>
 
-          <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-2 text-sm text-muted-foreground flex-row items-center justify-between">
             <span>
               {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1} 페이지 · 총{" "}
               {data?.pagination.total ?? 0}건

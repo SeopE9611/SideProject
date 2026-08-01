@@ -495,7 +495,7 @@ export default function UserDetailClient({ id }: { id: string }) {
             "before:content-[''] before:absolute before:inset-0 before:bg-border/10 before:opacity-30",
           ].join(" ")}
         />
-        <div className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
+        <div className="sticky top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
           <div className="mx-auto w-full max-w-[1500px] flex items-center justify-between gap-2">
             <Skeleton className="h-9 w-28" />
             <div className="flex items-center gap-2">
@@ -505,13 +505,13 @@ export default function UserDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </div>
-        <div className="mx-auto w-full max-w-[1500px] p-4 md:p-6 space-y-6">
-          <div className="grid gap-4 md:grid-cols-3">
+        <div className="mx-auto w-full max-w-[1500px] p-6 space-y-6">
+          <div className="grid gap-4 grid-cols-3">
             <Skeleton className="h-28 rounded-xl" />
             <Skeleton className="h-28 rounded-xl" />
             <Skeleton className="h-28 rounded-xl" />
           </div>
-          <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+          <div className="grid gap-6 grid-cols-[1.4fr_1fr]">
             <Skeleton className="h-[460px] rounded-xl" />
             <Skeleton className="h-[460px] rounded-xl" />
           </div>
@@ -611,7 +611,7 @@ export default function UserDetailClient({ id }: { id: string }) {
       />
       <TooltipProvider>
         {/* 상단 스티키 액션바 */}
-        <div className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
+        <div className="sticky top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
           <div className="mx-auto w-full max-w-[1500px] flex items-center justify-between gap-2">
             {/* 좌측: 뒤로 */}
             <div className="flex items-center gap-2">
@@ -832,7 +832,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
+                  <h1 className="font-semibold tracking-normal text-foreground text-3xl">
                     {user.name ?? "(이름없음)"}
                   </h1>
                   {(() => {
@@ -883,7 +883,7 @@ export default function UserDetailClient({ id }: { id: string }) {
         />
 
         {/* 좌: 요약/보안/액티비티 KPI/최근 항목 탭  |  우: 프로필 수정 */}
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="grid gap-6 grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           {/* 좌측 스택 */}
           <div className="space-y-6">
             {/* 계정 요약 */}
@@ -1161,7 +1161,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 aside={<RefreshCw className="h-4 w-4 text-muted-foreground" />}
               />
               <SectionBody>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <FormRow label="이름" htmlFor="name">
                     <Input
                       id="name"
@@ -1383,7 +1383,7 @@ function SessionRow({
           {(() => {
             const deviceSpec = getSessionDeviceBadgeSpec(s.isMobile ? "mobile" : "desktop");
             return (
-              <Badge variant={deviceSpec.variant} className="hidden sm:inline-block">
+              <Badge variant={deviceSpec.variant} className="inline-block">
                 {s.isMobile ? "모바일" : "데스크탑"}
               </Badge>
             );
@@ -1418,7 +1418,7 @@ function FormRow({
   colSpan?: boolean;
 }) {
   return (
-    <div className={cn("space-y-2", colSpan && "sm:col-span-2")}>
+    <div className={cn("space-y-2", colSpan && "col-span-2")}>
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
     </div>

@@ -253,7 +253,7 @@ export default function StringingSettingsPage() {
     return (
       <AdminPageShell variant="wide" className="space-y-6">
         <div className="h-10 w-72 animate-pulse rounded-lg bg-muted" />
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-2">
           <div className={cn(adminSurface.card, "h-96 animate-pulse")} />
           <div className={cn(adminSurface.card, "h-96 animate-pulse")} />
         </div>
@@ -338,7 +338,7 @@ export default function StringingSettingsPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-2">
           <Card className={cn("overflow-hidden", adminSurface.card)}>
             <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
@@ -372,7 +372,7 @@ export default function StringingSettingsPage() {
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="start" className="text-sm font-medium text-foreground">
                     영업 시작
@@ -560,8 +560,8 @@ export default function StringingSettingsPage() {
 
           <CardContent className="space-y-6 p-6">
             <div className={adminSurface.fieldPanelMuted}>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-                <div className="lg:col-span-2 space-y-2">
+              <div className="grid gap-4 grid-cols-6">
+                <div className="col-span-2 space-y-2">
                   <Label className="text-xs font-medium text-foreground">날짜</Label>
                   <Input
                     type="date"

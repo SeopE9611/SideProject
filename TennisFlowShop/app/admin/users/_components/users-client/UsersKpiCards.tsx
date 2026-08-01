@@ -32,7 +32,7 @@ const KPI_ITEMS: Array<{
 
 export function UsersKpiCards({ status, values, activeKey, onSelect }: UsersKpiCardsProps) {
   return (
-    <div className="mb-6 grid gap-4 md:grid-cols-3 lg:grid-cols-5" aria-live="polite">
+    <div className="mb-6 grid gap-4 grid-cols-5" aria-live="polite">
       {KPI_ITEMS.map((item) => (
         <button
           key={item.key}

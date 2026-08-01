@@ -8,7 +8,7 @@ export default function ReviewDetailLoading() {
       actionButtonCount={1}
       sectionDensity="dense"
       asideVariant="none"
-      className="py-6 lg:py-8"
+      className="py-8"
     />
   );
 }

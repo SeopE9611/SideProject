@@ -141,7 +141,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
         icon={Truck}
         contentClassName="p-0"
       >
-        <div className="space-y-4 p-5 sm:p-6">
+        <div className="space-y-4 p-6">
           <div className="space-y-2">
             <Label className={adminTypography.bodyStrong}>택배사</Label>
             <Select
@@ -175,7 +175,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
         </div>
-        <div className="border-t border-border/60 p-5 pt-4 sm:p-6 sm:pt-4">
+        <div className="border-t border-border/60 p-6 pt-4">
           <Button onClick={onSave} disabled={busy}>
             {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} 저장
           </Button>

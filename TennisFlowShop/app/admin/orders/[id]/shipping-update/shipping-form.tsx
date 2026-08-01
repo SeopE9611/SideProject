@@ -256,7 +256,7 @@ export default function ShippingForm({
       contentClassName="p-0"
     >
       <form onSubmit={handleSubmit}>
-        <div className="space-y-4 p-5 sm:p-6">
+        <div className="space-y-4 p-6">
           <div className="space-y-2">
             <Label htmlFor="shipping-method" className={adminTypography.bodyStrong}>
               {isVisitPickupOrder ? "수령 방법" : "배송 방법"}
@@ -324,7 +324,7 @@ export default function ShippingForm({
           )}
         </div>
 
-        <div className="border-t border-border/60 p-5 pt-4 sm:p-6 sm:pt-4">
+        <div className="border-t border-border/60 p-6 pt-4">
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>

@@ -326,11 +326,11 @@ export default function NewClassClient() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:space-x-4 sm:space-y-0">
+            <CardFooter className="flex flex-row justify-between space-x-4 space-y-0">
               <Button
                 type="button"
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-auto"
                 onClick={() => {
                   if (!confirmLeaveIfDirty()) return;
                   window.history.back();
@@ -340,7 +340,7 @@ export default function NewClassClient() {
               </Button>
               <Button
                 type="submit"
-                className="w-full sm:w-auto"
+                className="w-auto"
                 disabled={isSubmitting || !isFormValid()}
               >
                 {isSubmitting ? "등록 중..." : "클래스 등록"}

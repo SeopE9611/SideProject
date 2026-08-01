@@ -100,7 +100,7 @@ export default function AdminDashboardClientView() {
     return (
       <AdminPageShell variant="wide" className="space-y-5">
         <Skeleton className="h-28 rounded-2xl" />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton key={index} className="h-28 rounded-2xl" />
           ))}
@@ -158,7 +158,7 @@ export default function AdminDashboardClientView() {
       />
 
       <section
-        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        className="grid gap-4 grid-cols-4"
         aria-label="오늘 처리 필요 요약"
       >
         <SummaryCard
@@ -187,7 +187,7 @@ export default function AdminDashboardClientView() {
         />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3" aria-label="운영 큐 요약">
+      <section className="grid gap-4 grid-cols-3" aria-label="운영 큐 요약">
         <Card className={adminSurface.card}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -226,7 +226,7 @@ export default function AdminDashboardClientView() {
             </CardTitle>
             <CardDescription>최근 7일 핵심 지표입니다.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          <CardContent className="grid gap-2 text-sm grid-cols-2">
             <SummaryCard
               title="상품 주문"
               value={`${formatAdminNumber(data.kpi.orders.delta7d)}건`}
@@ -288,7 +288,7 @@ export default function AdminDashboardClientView() {
           <ShoppingCart className="h-4 w-4" />
           <h2 className={adminTypography.sectionTitle}>주요 관리 페이지 바로가기</h2>
         </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 grid-cols-4">
           <LinkCard
             href="/admin/operations"
             title="운영 업무"
@@ -316,7 +316,7 @@ export default function AdminDashboardClientView() {
         <summary className="cursor-pointer text-sm font-semibold text-foreground">
           보조 지표 보기
         </summary>
-        <div className="mt-3 grid gap-3 text-sm md:grid-cols-3">
+        <div className="mt-3 grid gap-3 text-sm grid-cols-3">
           <p className="flex items-center gap-2">
             <Boxes className="h-4 w-4" /> 전체 회원 {formatAdminNumber(data.kpi.users.total)}명
           </p>

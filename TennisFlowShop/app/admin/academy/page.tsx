@@ -53,7 +53,7 @@ export default function AcademyHubPage() {
 
         <section
           aria-label="아카데미 업무 가이드"
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-3 grid-cols-4"
         >
           {guideItems.map(({ title, description, icon: Icon }) => (
             <div key={title} className={cn(adminSurface.cardMuted, "p-4")}>
@@ -66,7 +66,7 @@ export default function AcademyHubPage() {
           ))}
         </section>
 
-        <section aria-label="아카데미 핵심 이동" className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <section aria-label="아카데미 핵심 이동" className="grid gap-4 grid-cols-2">
           <AdminPageSection
             title="클래스 관리"
             description="클래스 개설, 노출 상태, 모집 인원과 운영 정보를 관리합니다."
