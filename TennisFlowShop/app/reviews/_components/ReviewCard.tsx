@@ -539,7 +539,7 @@ export default function ReviewCard({
                       role="radio"
                       aria-checked={current === i}
                       aria-label={`${i}점`}
-                      className="p-1"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       onMouseEnter={() => setHoverRating(i)}
                       onMouseLeave={() => setHoverRating(null)}
                       onClick={() => setEditForm((s) => ({ ...s, rating: i }))}
@@ -594,18 +594,20 @@ export default function ReviewCard({
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
-            <button
+          <DialogFooter className="grid grid-cols-1 gap-2 bp-sm:flex bp-sm:flex-row">
+            <Button
               type="button"
-              className="px-4 py-2 rounded-md border text-ui-body-sm"
+              variant="outline"
+              className="min-h-11 w-full bp-sm:w-auto"
               onClick={closeEdit}
               disabled={busy || uploadingEditPhotos}
             >
               취소
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
+              variant="highlight"
+              className="min-h-11 w-full bp-sm:w-auto"
               onClick={submitEdit}
               disabled={
                 busy ||
@@ -615,7 +617,7 @@ export default function ReviewCard({
               }
             >
               {uploadingEditPhotos ? "사진 업로드 중…" : "저장"}
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
