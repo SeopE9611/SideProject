@@ -31,13 +31,14 @@ export default function GlobalError({
             description="잠시 후 다시 시도해주세요. 문제가 계속되면 관리자에게 알려주세요."
             actions={
               <>
-                <Button type="button" onClick={reset} wrap="responsive">
+                <Button type="button" variant="highlight" size="lg" onClick={reset} wrap="responsive">
                   <RefreshCw className="h-4 w-4" aria-hidden="true" />
                   다시 시도
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
+                  size="lg"
                   onClick={() => (window.location.href = "/")}
                   wrap="responsive"
                 >

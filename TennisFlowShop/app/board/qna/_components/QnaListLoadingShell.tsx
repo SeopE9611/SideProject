@@ -38,13 +38,13 @@ export default function QnaListLoadingShell() {
         description="도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다."
         actions={
           <>
-            <Button asChild variant="highlight" className="w-full bp-sm:w-auto">
+            <Button asChild variant="highlight" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href="/board/qna/write">
                 <Plus className="mr-2 h-4 w-4 shrink-0" />
                 문의하기
               </Link>
             </Button>
-            <Button asChild variant="outline" className="w-full bp-sm:w-auto">
+            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href="/support">고객센터 홈</Link>
             </Button>
           </>
@@ -74,7 +74,7 @@ export default function QnaListLoadingShell() {
                 </h2>
                 <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-foreground" />
               </div>
-              <Skeleton className="h-9 w-full sm:w-28 md:h-10" />
+              <Skeleton className="h-11 w-full bp-md:h-10 bp-md:w-28" />
             </div>
           </div>
 

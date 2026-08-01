@@ -74,9 +74,9 @@ export function QnaDetailContentSkeleton() {
 
       <PublicSurface variant="muted" padding="md" className="space-y-4">
         <Skeleton className="h-5 w-full max-w-2xl" />
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <Skeleton className="h-10 w-full sm:w-36" />
-          <Skeleton className="h-10 w-full sm:w-32" />
+        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:justify-center">
+          <Skeleton className="h-11 w-full bp-sm:w-36" />
+          <Skeleton className="h-11 w-full bp-sm:w-32" />
         </div>
       </PublicSurface>
     </div>
@@ -93,8 +93,8 @@ export default function QnaDetailLoadingShell() {
         description="Q&A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다."
         actions={
           <>
-            <Skeleton className="h-9 w-full sm:w-28" />
-            <Skeleton className="h-9 w-full sm:w-24" />
+            <Skeleton className="h-11 w-full bp-sm:w-28" />
+            <Skeleton className="h-11 w-full bp-sm:w-24" />
           </>
         }
       />

@@ -311,7 +311,7 @@ export default async function AcademyApplyPage({
         variant="feature"
         className="bg-brand-highlight-muted/30"
         actions={
-          <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
+          <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full gap-2 bp-sm:w-auto">
             <Link href="/academy">
               <ArrowLeft className="h-4 w-4" />
               아카데미로 돌아가기
@@ -364,10 +364,10 @@ export default async function AcademyApplyPage({
               }
               actions={
                 <>
-                  <Button asChild variant="highlight">
+                  <Button asChild variant="highlight" size="lg" wrap="responsive">
                     <Link href="/academy#academy-classes">모집 클래스 선택하기</Link>
                   </Button>
-                  <Button asChild variant="outline">
+                  <Button asChild variant="outline" size="lg" wrap="responsive">
                     <Link href="/board/qna/write?category=academy">문의하기</Link>
                   </Button>
                 </>
@@ -380,12 +380,12 @@ export default async function AcademyApplyPage({
               description="기존 신청 내역에서 진행 상태를 확인해 주세요. 같은 클래스는 진행 중인 신청이 있을 때 중복 신청할 수 없습니다."
               actions={
                 <>
-                  <Button asChild variant="highlight_soft">
+                  <Button asChild variant="highlight_soft" size="lg" wrap="responsive">
                     <Link href={`/mypage/academy-applications/${duplicateApplication.id}`}>
                       신청 내역 보기
                     </Link>
                   </Button>
-                  <Button asChild variant="outline">
+                  <Button asChild variant="outline" size="lg" wrap="responsive">
                     <a href="/academy">아카데미로 돌아가기</a>
                   </Button>
                 </>

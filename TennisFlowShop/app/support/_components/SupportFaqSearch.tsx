@@ -233,7 +233,7 @@ export default function SupportFaqSearch() {
             <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
               다른 표현으로 다시 검색하거나 고객센터로 문의해 주세요.
             </p>
-            <Button asChild className="mt-4 w-full sm:w-auto" size="sm" wrap="responsive">
+            <Button asChild variant="highlight" className="mt-4 w-full bp-sm:w-auto" size="lg" wrap="responsive">
               <Link href="/board/qna/write">문의하기</Link>
             </Button>
           </PublicSurface>

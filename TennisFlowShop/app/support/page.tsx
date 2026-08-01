@@ -409,12 +409,12 @@ function QnaList({
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-wrap gap-2 sm:justify-end">
-            <Button variant="outline" asChild className="whitespace-nowrap">
+          <DialogFooter className="flex-wrap gap-2 bp-sm:justify-end">
+            <Button variant="outline" asChild className="min-h-11 whitespace-nowrap">
               <Link href="/board/qna">목록으로</Link>
             </Button>
             {!viewerId && secretBlock.item?._id && (
-              <Button asChild className="whitespace-nowrap">
+              <Button asChild variant="highlight" className="min-h-11 whitespace-nowrap">
                 <Link
                   href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}?${supportQuery}`)}`}
                 >
@@ -508,7 +508,12 @@ function QnaList({
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild size="sm" className="w-full shrink-0 whitespace-nowrap bp-sm:w-auto">
+          <Button
+            asChild
+            variant="highlight_soft"
+            size="sm"
+            className="min-h-11 w-full shrink-0 whitespace-nowrap bp-md:min-h-10 bp-md:w-auto"
+          >
             <Link href="/board/qna/write">문의하기</Link>
           </Button>
         </div>

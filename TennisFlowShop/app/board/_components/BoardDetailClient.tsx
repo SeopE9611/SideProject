@@ -1446,22 +1446,20 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               </p>
             </div>
 
-            <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
+            <div className="flex w-full flex-wrap gap-2 bp-sm:w-auto bp-sm:flex-nowrap">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                className="w-full gap-1 bg-transparent sm:w-auto"
+                size="lg"
+                wrap="responsive"
+                className="w-full gap-1 bg-transparent bp-sm:w-auto"
                 onClick={() => {
                   if (!confirmLeaveIfDirty()) return;
                   router.push(listHref);
                 }}
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span>이전으로</span>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
-                <Link href={listHref}>목록으로</Link>
+                <span>목록으로</span>
               </Button>
             </div>
           </div>
@@ -1487,11 +1485,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 status={detailError.status}
                 fallbackMessage="글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
               />
-              <div className="flex flex-col justify-end gap-2 sm:flex-row">
-                <Button asChild variant="outline" size="sm">
+              <div className="flex flex-col justify-end gap-2 bp-sm:flex-row">
+                <Button asChild variant="outline" size="lg" wrap="responsive">
                   <Link href={listHref}>목록으로</Link>
                 </Button>
-                <Button asChild size="sm">
+                <Button asChild variant="highlight" size="lg" wrap="responsive">
                   <Link href={`${config.routePrefix}/write`}>새 글 작성하기</Link>
                 </Button>
               </div>

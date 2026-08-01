@@ -32,11 +32,11 @@ export default function Error({
           description="페이지를 불러오는 중 오류가 발생했습니다. 아래 버튼으로 다시 시도해보세요."
           actions={
             <>
-              <Button type="button" onClick={reset} wrap="responsive">
+              <Button type="button" variant="highlight" size="lg" onClick={reset} wrap="responsive">
                 <RefreshCw className="h-4 w-4" aria-hidden="true" />
                 다시 시도
               </Button>
-              <Button asChild variant="outline" wrap="responsive">
+              <Button asChild variant="outline" size="lg" wrap="responsive">
                 <Link href="/">
                   <Home className="h-4 w-4" aria-hidden="true" />
                   홈으로 이동

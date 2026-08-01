@@ -399,13 +399,13 @@ export default function QnaPageClient({
         description="도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다."
         actions={
           <>
-            <Button asChild variant="highlight" className="w-full bp-sm:w-auto">
+            <Button asChild variant="highlight" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href="/board/qna/write">
                 <Plus className="mr-2 h-4 w-4 shrink-0" />
                 문의하기
               </Link>
             </Button>
-            <Button asChild variant="outline" className="w-full bp-sm:w-auto">
+            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href="/support">고객센터 홈</Link>
             </Button>
           </>
@@ -457,17 +457,19 @@ export default function QnaPageClient({
                 )}
               </div>
 
-              <Button
-                asChild
-                variant="highlight_soft"
-                size="sm"
-                className="h-9 w-full shrink-0 whitespace-nowrap sm:w-auto md:h-10"
-              >
-                <Link href="/board/qna/write">
-                  <Plus className="mr-2 h-4 w-4 shrink-0" />
-                  문의하기
-                </Link>
-              </Button>
+              {!shouldShowActualEmptyState && (
+                <Button
+                  asChild
+                  variant="highlight_soft"
+                  size="sm"
+                  className="min-h-11 w-full shrink-0 whitespace-nowrap bp-md:min-h-10 bp-md:w-auto"
+                >
+                  <Link href="/board/qna/write">
+                    <Plus className="mr-2 h-4 w-4 shrink-0" />
+                    문의하기
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
 
@@ -683,15 +685,15 @@ export default function QnaPageClient({
                   )}
                 </DialogDescription>
               </DialogHeader>
-              <DialogFooter className="flex-wrap gap-2 sm:justify-end">
-                <Button variant="outline" asChild>
+              <DialogFooter className="flex-col gap-2 bp-sm:flex-row bp-sm:justify-end">
+                <Button variant="outline" size="lg" asChild>
                   <Link href={listHref}>목록으로 돌아가기</Link>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" size="lg" asChild>
                   <Link href="/support">고객센터 홈</Link>
                 </Button>
                 {!viewerId && secretBlock.item?._id && (
-                  <Button asChild>
+                  <Button asChild variant="highlight" size="lg">
                     <Link
                       href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
                     >
@@ -837,6 +839,7 @@ export default function QnaPageClient({
                     type="button"
                     variant="outline"
                     size="sm"
+                    className="min-h-11"
                     onClick={() => {
                       setInputKeyword("");
                       setKeyword("");
@@ -855,7 +858,7 @@ export default function QnaPageClient({
                   >
                     검색 해제
                   </Button>
-                  <Button variant="outline" size="sm" asChild>
+                  <Button variant="outline" size="sm" className="min-h-11" asChild>
                     <Link href="/board/qna">전체 문의 보기</Link>
                   </Button>
                 </div>
@@ -869,14 +872,14 @@ export default function QnaPageClient({
                   title="등록된 문의가 없습니다."
                   description="궁금한 점이 있다면 첫 문의를 남겨 주세요."
                 />
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                  <Button asChild size="sm">
+                <div className="mt-3 flex flex-col items-center justify-center gap-2 bp-sm:flex-row">
+                  <Button asChild variant="highlight" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
                     <Link href="/board/qna/write">
                       <Plus className="mr-1 h-3.5 w-3.5" />
                       문의하기
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
                     <Link href="/support">고객센터 홈</Link>
                   </Button>
                 </div>

@@ -84,7 +84,7 @@ export default function RacketCompareMobileSections({
                   <RacketSpecQuickViewDialog
                     racket={item}
                     trigger={
-                      <Button type="button" variant="outline" size="sm" className="w-full">
+                      <Button type="button" variant="outline" className="min-h-11 w-full">
                         <Eye className="h-4 w-4" aria-hidden="true" />
                         Quick View
                       </Button>
@@ -93,7 +93,7 @@ export default function RacketCompareMobileSections({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
+                    className="min-h-11 w-full"
                     onClick={() => onRemove(item.id)}
                     aria-label={`${brand} ${item.model} 비교 목록에서 제거`}
                   >

@@ -620,7 +620,7 @@ export default async function AcademyPage() {
 
                       <div className="mt-auto flex flex-col gap-2 pt-2">
                         {existingApplication ? (
-                          <Button asChild variant="outline" wrap="responsive" className="w-full">
+                          <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full">
                             <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
                               <CheckCircle2 className="mr-2 h-4 w-4" aria-hidden />
                               신청 완료
@@ -628,15 +628,15 @@ export default async function AcademyPage() {
                           </Button>
                         ) : isClosed ? (
                           <div className="flex flex-col gap-2 bp-sm:flex-row">
-                            <Button disabled variant="secondary" className="flex-1">
+                            <Button disabled variant="secondary" size="lg" wrap="responsive" className="flex-1">
                               모집 마감
                             </Button>
-                            <Button asChild variant="outline" wrap="responsive" className="flex-1">
+                            <Button asChild variant="outline" size="lg" wrap="responsive" className="flex-1">
                               <Link href="/board/qna/write?category=academy">문의하기</Link>
                             </Button>
                           </div>
                         ) : (
-                          <Button asChild variant="highlight_soft" wrap="responsive" className="w-full">
+                          <Button asChild variant="highlight_soft" size="lg" wrap="responsive" className="w-full">
                             <Link href={userId ? applyHref : loginHref}>
                               {userId ? "레슨 신청하기" : "로그인 후 신청"}
                             </Link>
@@ -716,13 +716,13 @@ export default async function AcademyPage() {
               도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정
               후 현장에서 결제를 안내해드립니다.
             </p>
-            <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
+            <div className="flex flex-col justify-center gap-3 pt-2 bp-sm:flex-row">
               <Button
                 asChild
                 variant="secondary"
                 size="lg"
                 wrap="responsive"
-                className="w-full sm:w-auto"
+                className="w-full bp-sm:w-auto"
               >
                 <Link href="/board/qna/write?category=academy">문의글 작성하기</Link>
               </Button>
@@ -731,7 +731,7 @@ export default async function AcademyPage() {
                 variant="outline"
                 size="lg"
                 wrap="responsive"
-                className="w-full sm:w-auto"
+                className="w-full bp-sm:w-auto"
                 disabled={!hasVisibleClasses}
               >
                 {hasVisibleClasses ? (
