@@ -53,10 +53,3 @@ export const PACKAGE_VARIANT_DOT_CLASS: Record<PackageVariant, string> = {
   muted: "bg-primary/70",
   success: "bg-primary/90",
 };
-
-export const PACKAGE_VARIANT_BUTTON_CLASS: Record<PackageVariant, string> = {
-  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-  accent: "bg-primary text-primary-foreground hover:bg-primary/90",
-  muted: "bg-primary text-primary-foreground hover:bg-primary/90",
-  success: "bg-primary text-primary-foreground hover:bg-primary/90",
-};

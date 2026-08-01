@@ -15,6 +15,7 @@ interface Props {
   entityId: string; // application ID
   onSuccess: () => void;
   onCancel: () => void;
+  tone?: "admin" | "user";
 }
 
 export default function RequirementsEditForm({
@@ -23,6 +24,7 @@ export default function RequirementsEditForm({
   entityId,
   onSuccess,
   onCancel,
+  tone = "admin",
 }: Props) {
   const [value, setValue] = useState(initial);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,9 +71,9 @@ export default function RequirementsEditForm({
         placeholder="요청사항을 입력해주세요"
         rows={4}
       />
-      <div className="flex justify-end gap-2">
-        <Button type="submit">저장</Button>
-        <Button variant="outline" onClick={handleCancel}>
+      <div className={tone === "user" ? "flex flex-col gap-2 bp-sm:flex-row bp-sm:justify-end" : "flex justify-end gap-2"}>
+        <Button type="submit" variant={tone === "user" ? "highlight" : "default"} className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined}>저장</Button>
+        <Button variant="outline" className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} onClick={handleCancel}>
           취소
         </Button>
       </div>

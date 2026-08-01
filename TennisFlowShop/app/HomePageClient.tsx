@@ -282,7 +282,6 @@ const getImageSrc = (images?: string[]) => {
 };
 
 const homeCtaHighlight = buttonVariants({ variant: "highlight", size: "tall" });
-const homeCtaDefault = buttonVariants({ variant: "default", size: "tall" });
 const homeCtaOutline = buttonVariants({ variant: "outline", size: "tall" });
 const homeCtaOutlineCompact = buttonVariants({ variant: "outline", size: "default" });
 
@@ -730,7 +729,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     <ArrowRight aria-hidden="true" className="h-4 w-4" />
                   </Link>
 
-                  <Link className={homeCtaDefault} href="/services#service-start">
+                  <Link className={homeCtaHighlight} href="/services#service-start">
                     교체서비스 신청
                   </Link>
                 </div>
@@ -1032,7 +1031,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   );
                 })}
               </ol>
-              <Link className={cn(homeCtaDefault, styles.serviceProcessLink)} href="/services">
+              <Link className={cn(homeCtaOutline, styles.serviceProcessLink)} href="/services">
                 교체서비스 전체 안내 보기
               </Link>
             </div>

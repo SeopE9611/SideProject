@@ -27,6 +27,7 @@ interface Props {
   onDone: () => void;
   mutateData: () => void;
   mutateHistory: () => void;
+  tone?: "admin" | "user";
 }
 
 export default function StringInfoEditForm({
@@ -36,6 +37,7 @@ export default function StringInfoEditForm({
   onDone,
   mutateData,
   mutateHistory,
+  tone = "admin",
   fields = ["desiredDateTime", "stringType", "racketType"],
 }: Props) {
   // 날짜(YYYY-MM-DD)와 시간(hh:mm) 분리 관리
@@ -281,9 +283,9 @@ export default function StringInfoEditForm({
       )}
 
       {/* 저장/취소 버튼 */}
-      <div className="flex justify-end gap-2">
-        <Button type="submit">저장</Button>
-        <Button variant="outline" type="button" onClick={handleCancel}>
+      <div className={tone === "user" ? "flex flex-col gap-2 bp-sm:flex-row bp-sm:justify-end" : "flex justify-end gap-2"}>
+        <Button type="submit" variant={tone === "user" ? "highlight" : "default"} className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined}>저장</Button>
+        <Button variant="outline" className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} type="button" onClick={handleCancel}>
           취소
         </Button>
       </div>

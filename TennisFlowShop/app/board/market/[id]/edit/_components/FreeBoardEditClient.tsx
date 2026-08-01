@@ -1265,7 +1265,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className={cn("w-full gap-2 bp-sm:w-auto")}
+                    className={cn("min-h-11 w-full gap-2 bp-sm:w-auto")}
                     disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                     onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}
                   >
@@ -1274,8 +1274,9 @@ export default function FreeBoardEditClient({ id }: Props) {
                   </Button>
                   <Button
                     type="submit"
+                    variant="highlight"
                     size="sm"
-                    className={cn("w-full gap-2 bp-sm:w-auto")}
+                    className={cn("min-h-11 w-full gap-2 bp-sm:w-auto")}
                     disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   >
                     {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -1363,7 +1364,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                   <div className={cn("space-y-2", isCompactSticky && "space-y-1.5")}>
                     <Button
                       type="submit"
-                      className={cn("w-full gap-2", isCompactSticky && "h-10")}
+                      variant="highlight"
+                      className={cn("min-h-11 w-full gap-2", isCompactSticky && "lg:h-10 lg:min-h-10")}
                       disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                     >
                       {isSubmitting ? (
@@ -1382,7 +1384,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                     <Button
                       type="button"
                       variant="outline"
-                      className={cn("w-full", isCompactSticky && "h-10")}
+                      className={cn("min-h-11 w-full", isCompactSticky && "lg:h-10 lg:min-h-10")}
                       disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                       onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}
                     >

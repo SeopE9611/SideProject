@@ -169,6 +169,7 @@ export default function ReviewEditDialog({
           </Button>
           <Button
             type="button"
+            variant="highlight"
             className="h-11 min-h-11 w-full bp-md:h-10 bp-md:min-h-10 bp-md:w-auto"
             onClick={onSubmit}
             disabled={busy || uploadingPhotos || !isValid}

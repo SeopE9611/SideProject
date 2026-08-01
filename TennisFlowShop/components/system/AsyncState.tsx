@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Inbox, RefreshCcw } from "lucide-react";
 import type { ReactNode } from "react";
@@ -15,6 +15,8 @@ type Props = {
   title?: string;
   description?: string;
   actionLabel?: string;
+  actionVariant?: ButtonProps["variant"];
+  actionClassName?: string;
   onAction?: () => void;
   icon?: ReactNode;
   className?: string;
@@ -37,6 +39,8 @@ export default function AsyncState({
   title,
   description,
   actionLabel = "다시 시도",
+  actionVariant = "outline",
+  actionClassName,
   onAction,
   icon,
   className,
@@ -103,8 +107,8 @@ export default function AsyncState({
             type="button"
             onClick={onAction}
             size="sm"
-            variant={tone === "user" ? "highlight" : "outline"}
-            className={cn("mt-1", tone === "user" && "min-h-11 bp-sm:min-h-0")}
+            variant={actionVariant}
+            className={cn("mt-1", actionClassName)}
           >
             <RefreshCcw className="mr-1 h-3.5 w-3.5" />
             {actionLabel}

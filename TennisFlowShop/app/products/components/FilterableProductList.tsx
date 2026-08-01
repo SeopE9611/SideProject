@@ -801,10 +801,10 @@ export default function FilterableProductList({
                     <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
                       <Button
                         type="button"
-                        variant={viewMode === "grid" ? "default" : "ghost"}
+                        variant={viewMode === "grid" ? "highlight_soft" : "ghost"}
                         size="sm"
                         onClick={() => setViewMode("grid")}
-                        className="h-8 w-9 p-0"
+                        className="h-11 w-11 p-0 bp-md:h-8 bp-md:w-9"
                         aria-label="그리드 보기"
                         aria-pressed={viewMode === "grid"}
                       >
@@ -812,10 +812,10 @@ export default function FilterableProductList({
                       </Button>
                       <Button
                         type="button"
-                        variant={viewMode === "list" ? "default" : "ghost"}
+                        variant={viewMode === "list" ? "highlight_soft" : "ghost"}
                         size="sm"
                         onClick={() => setViewMode("list")}
-                        className="h-8 w-9 p-0"
+                        className="h-11 w-11 p-0 bp-md:h-8 bp-md:w-9"
                         aria-label="리스트 보기"
                         aria-pressed={viewMode === "list"}
                       >

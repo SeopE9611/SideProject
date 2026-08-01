@@ -650,7 +650,7 @@ export default function FreeBoardWriteClient() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="w-full sm:w-auto"
+                  className="min-h-11 w-full sm:w-auto"
                   disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   onClick={handleCancel}
                 >
@@ -658,8 +658,9 @@ export default function FreeBoardWriteClient() {
                 </Button>
                 <Button
                   type="submit"
+                  variant="highlight"
                   size="sm"
-                  className={cn("w-full gap-2 sm:w-auto")}
+                  className={cn("min-h-11 w-full gap-2 sm:w-auto")}
                   disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                 >
                   {isSubmitting ? (

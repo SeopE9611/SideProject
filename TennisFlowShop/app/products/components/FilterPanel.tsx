@@ -201,7 +201,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               <Button
                 type="submit"
                 size="sm"
-                variant="default"
+                variant="highlight"
                 className="h-11 min-h-11 shrink-0 whitespace-nowrap rounded-control px-3 text-ui-label bp-md:h-10 bp-md:min-h-0 bp-md:px-4 bp-md:text-ui-body-sm"
               >
                 검색

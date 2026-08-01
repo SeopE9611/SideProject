@@ -75,7 +75,7 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
         title="쪽지 보내기"
         description="받는 사람과 내용을 확인한 뒤 쪽지를 전송하세요."
         action={
-          <Button variant="outline" onClick={() => confirmLeaveIfDirty(() => router.back())}>
+          <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => confirmLeaveIfDirty(() => router.back())}>
             뒤로
           </Button>
         }
@@ -115,14 +115,15 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
           <Button
             data-cy="message-cancel"
             variant="outline"
-            className="w-full sm:w-auto"
+            className="min-h-11 w-full sm:w-auto"
             onClick={() => confirmLeaveIfDirty(() => router.push("/messages"))}
           >
             취소
           </Button>
           <Button
             data-cy="message-submit"
-            className="w-full sm:w-auto"
+            variant="highlight"
+            className="min-h-11 w-full sm:w-auto"
             disabled={!canSubmit || loading}
             onClick={submit}
           >

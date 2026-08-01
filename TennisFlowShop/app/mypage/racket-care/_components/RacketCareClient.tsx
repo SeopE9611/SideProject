@@ -298,7 +298,8 @@ export default function RacketCareClient() {
         tone="user"
         resourceName="라켓 케어"
         onAction={() => mutate()}
-        className="[&_button]:w-full [&_button]:whitespace-normal bp-sm:[&_button]:w-auto"
+        actionVariant="highlight"
+        actionClassName="min-h-11 w-full whitespace-normal bp-sm:w-auto"
       />
     );
   return (

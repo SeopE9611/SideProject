@@ -148,7 +148,7 @@ export default function LoginGate({
 
             <CardFooter className="px-4 pb-4 bp-md:px-8 bp-md:pb-8">
               <div className="flex w-full flex-col gap-3 bp-sm:flex-row bp-sm:flex-wrap">
-                <Button asChild variant={variant === "checkout" ? "highlight_soft" : "default"} className="min-h-11 w-full whitespace-nowrap bp-sm:w-auto">
+                <Button asChild variant={variant === "checkout" ? "highlight_soft" : "highlight"} className="min-h-11 w-full whitespace-nowrap bp-sm:w-auto">
                   <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
                 <Button asChild variant="outline" className="min-h-11 w-full whitespace-nowrap bp-sm:w-auto">
