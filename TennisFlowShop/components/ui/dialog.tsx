@@ -79,9 +79,9 @@ function DialogContent({
         {/* 모달 오픈 시 첫 포커스가 TooltipTrigger(아이콘)로 가면 툴팁이 자동으로 열릴 수 있음
             Close를 먼저 렌더링해 초기 포커스가 Close로 가도록 유도 */}
 
-        <DialogPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground absolute top-4 right-4 z-50 pointer-events-auto rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
+        <DialogPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground absolute top-4 right-4 z-50 inline-flex size-11 pointer-events-auto items-center justify-center rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none bp-md:size-9 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
           <XIcon />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">닫기</span>
         </DialogPrimitive.Close>
         {children}
       </DialogPrimitive.Content>

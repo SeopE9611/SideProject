@@ -360,7 +360,7 @@ export default function PhotosUploader({
                   type="button"
                   onClick={() => removeAt(i)}
                   disabled={disabled}
-                  className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/65 text-surface-inverse-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-1 top-1 inline-flex size-11 items-center justify-center rounded-full bg-overlay/65 text-surface-inverse-foreground opacity-100 transition-opacity disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-md:size-9 bp-md:opacity-0 bp-md:group-hover:opacity-100 bp-md:group-focus-within:opacity-100 bp-md:focus-visible:opacity-100"
                   aria-label="삭제"
                   title="삭제"
                 >
