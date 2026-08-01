@@ -353,6 +353,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     data: trackingData,
     error: trackingError,
     isLoading: isTrackingLoading,
+    mutate: retryTracking,
   } = useSWR<OrderTrackingResponse>(
     canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
     trackingSWRFetcher,
@@ -1543,7 +1544,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                             <Skeleton className="h-4 w-40" />
                             <Skeleton className="h-4 w-32" />
                             <Skeleton className="h-4 w-36" />
-                            <Skeleton className="h-8 w-24" />
+                            <Skeleton className="h-11 w-full bp-sm:h-8 bp-sm:w-24" />
                           </div>
                         )}
                         {!isTrackingLoading && !trackingError && trackingData && (
@@ -1597,9 +1598,20 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           </div>
                         )}
                         {trackingError && (
-                          <p className="text-ui-body-sm text-destructive">
-                            {getTrackingErrorMessage(trackingData, trackingError)}
-                          </p>
+                          <div className="space-y-3">
+                            <p className="break-keep text-ui-body-sm text-destructive">
+                              {getTrackingErrorMessage(trackingData, trackingError)}
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="highlight"
+                              wrap="responsive"
+                              className="min-h-11 w-full bp-sm:w-auto"
+                              onClick={() => retryTracking()}
+                            >
+                              다시 시도
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </details>

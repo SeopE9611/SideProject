@@ -502,17 +502,30 @@ export default function RacketCareRegistrationDialog(props: {
         <DialogFooter className="border-t border-border bg-background pt-3 pb-[env(safe-area-inset-bottom)]">
           <Button
             variant="outline"
+            wrap="responsive"
+            className="min-h-11 w-full bp-sm:w-auto"
             onClick={() => (step > (editing ? 2 : 1) ? setStep(step - 1) : setOpen(false))}
             disabled={saving}
           >
             {step > (editing ? 2 : 1) ? "이전" : "취소"}
           </Button>
           {step < 3 ? (
-            <Button variant="highlight" wrap="responsive" onClick={() => setStep(step + 1)}>
+            <Button
+              variant="highlight"
+              wrap="responsive"
+              className="min-h-11 w-full bp-sm:w-auto"
+              onClick={() => setStep(step + 1)}
+            >
               다음
             </Button>
           ) : (
-            <Button variant="highlight" wrap="responsive" onClick={save} disabled={saving}>
+            <Button
+              variant="highlight"
+              wrap="responsive"
+              className="min-h-11 w-full bp-sm:w-auto"
+              onClick={save}
+              disabled={saving}
+            >
               {saving ? "저장 중..." : "저장"}
             </Button>
           )}
