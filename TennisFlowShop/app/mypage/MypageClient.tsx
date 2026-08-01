@@ -281,79 +281,81 @@ export default function MypageClient({ user }: Props) {
 
   return (
     <div className="min-h-full bg-background">
-      <div className="border-b border-border/60 bg-background">
-        <SiteContainer
-          variant="wide"
-          className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6"
-        >
-          <MypageDashboardHero user={user} todoCount={todoCount} summaryState={summaryState} />
-
-          <section
-            className="grid gap-3 bp-lg:grid-cols-[minmax(280px,0.75fr)_minmax(0,1.25fr)]"
-            aria-label="마이페이지 요약"
+      {!isOrdersDetailView ? (
+        <div className="border-b border-border/60 bg-background">
+          <SiteContainer
+            variant="wide"
+            className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6"
           >
-            <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
-              <CardContent className="p-4 bp-sm:p-5">
-                <button
-                  type="button"
-                  onClick={() => router.push("/mypage/racket-care")}
-                  className="group flex w-full items-center gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <span className="rounded-control bg-brand-highlight-muted p-2.5 text-brand-highlight-ink">
-                    <Wrench className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-ui-section-title font-ui-bold tracking-normal text-foreground">
-                      라켓 케어
-                    </span>
-                    <span className="mt-1 block break-keep text-ui-body-sm font-medium text-foreground">
-                      {summaryState === "loading"
-                        ? "불러오는 중"
-                        : summaryState === "error"
-                          ? "정보를 확인할 수 없음"
-                          : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
-                    </span>
-                    <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">
-                      다음 스트링 교체 시점을 확인해보세요.
-                    </span>
-                  </span>
-                  <span className="text-brand-highlight-ink" aria-hidden="true">
-                    →
-                  </span>
-                </button>
-              </CardContent>
-            </Card>
+            <MypageDashboardHero user={user} todoCount={todoCount} summaryState={summaryState} />
 
-            <Card className="rounded-panel border-border/80 bg-card shadow-soft">
-              <CardContent className="p-4 bp-sm:p-5">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-ui-body-sm font-ui-medium text-foreground">활동 요약</p>
-                  {hasSummaryError ? (
-                    <span className="text-ui-label text-destructive">지표 불러오기 실패</span>
-                  ) : null}
-                </div>
-                <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
-                  {activitySummaryItems.map((item) => (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={() => router.push(item.href, { scroll: false })}
-                      className="min-w-0 rounded-control border border-border/70 bg-muted/15 px-2 py-3 text-center transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <span className="block text-ui-card-title-lg font-bold tabular-nums text-foreground">
-                        {summaryState === "ready" ? (item.value ?? 0) : "-"}
+            <section
+              className="grid gap-3 bp-lg:grid-cols-[minmax(280px,0.75fr)_minmax(0,1.25fr)]"
+              aria-label="마이페이지 요약"
+            >
+              <Card className="overflow-hidden rounded-panel border-border/80 bg-card shadow-soft">
+                <CardContent className="p-4 bp-sm:p-5">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/mypage/racket-care")}
+                    className="group flex w-full items-center gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <span className="rounded-control bg-brand-highlight-muted p-2.5 text-brand-highlight-ink">
+                      <Wrench className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-ui-section-title font-ui-bold tracking-normal text-foreground">
+                        라켓 케어
+                      </span>
+                      <span className="mt-1 block break-keep text-ui-body-sm font-medium text-foreground">
+                        {summaryState === "loading"
+                          ? "불러오는 중"
+                          : summaryState === "error"
+                            ? "정보를 확인할 수 없음"
+                            : `${summary?.racketCare?.count ?? 0}개 등록 · ${summary?.racketCare?.nearestState === "due" ? "교체 권장" : summary?.racketCare?.nearestState === "prepare" ? "교체 준비" : "관리 시작"}`}
                       </span>
                       <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">
-                        {item.label}
+                        다음 스트링 교체 시점을 확인해보세요.
                       </span>
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-        </SiteContainer>
-      </div>
+                    </span>
+                    <span className="text-brand-highlight-ink" aria-hidden="true">
+                      →
+                    </span>
+                  </button>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-panel border-border/80 bg-card shadow-soft">
+                <CardContent className="p-4 bp-sm:p-5">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-ui-body-sm font-ui-medium text-foreground">활동 요약</p>
+                    {hasSummaryError ? (
+                      <span className="text-ui-label text-destructive">지표 불러오기 실패</span>
+                    ) : null}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
+                    {activitySummaryItems.map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => router.push(item.href, { scroll: false })}
+                        className="min-w-0 rounded-control border border-border/70 bg-muted/15 px-2 py-3 text-center transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        <span className="block text-ui-card-title-lg font-bold tabular-nums text-foreground">
+                          {summaryState === "ready" ? (item.value ?? 0) : "-"}
+                        </span>
+                        <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">
+                          {item.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          </SiteContainer>
+        </div>
+      ) : null}
 
       <SiteContainer variant="wide" className="py-4 bp-sm:py-5 bp-lg:py-8">
         <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">

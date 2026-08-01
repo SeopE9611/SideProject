@@ -1,6 +1,7 @@
 import { ArrowRight, CheckCircle2, Clock, FileText, MessageCircle } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface, ResultState, SummaryCard } from "@/components/public";
@@ -25,7 +26,9 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
   const rawApplicationId = Array.isArray(params.applicationId)
     ? params.applicationId[0]
     : params.applicationId;
-  const receiptLabel = getReceiptLabel(rawApplicationId);
+  const applicationId = rawApplicationId?.trim();
+  if (!applicationId) notFound();
+  const receiptLabel = getReceiptLabel(applicationId);
 
   return (
     <main className="min-h-screen bg-background">

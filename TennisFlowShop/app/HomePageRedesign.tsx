@@ -33,7 +33,11 @@ import {
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { isStringProductSoldOut } from "@/lib/products/string-stock";
-import { commerceBadgeSpecs, type RacketAvailabilityState } from "@/lib/badge-style";
+import {
+  commerceBadgeSpecs,
+  getRacketAvailabilityState,
+  racketAvailabilityBadgeSpec,
+} from "@/lib/badge-style";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -214,13 +218,6 @@ const getDiscountRate = (regularPrice: number, salePrice: number) => {
     return undefined;
   if (salePrice <= 0 || salePrice >= regularPrice) return undefined;
   return ((regularPrice - salePrice) / regularPrice) * 100;
-};
-
-const getRacketAvailability = (status?: string): RacketAvailabilityState | null => {
-  if (status === "sold") return "sold";
-  if (status === "rented") return "rented";
-  if (status === "inactive") return "unavailable";
-  return null;
 };
 
 const formatNoticeDate = (value: string) => {
@@ -1068,7 +1065,14 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
   const price = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
   const brand = racketBrandLabel(racket.brand);
-  const availability = getRacketAvailability(racket.status);
+  const availability = getRacketAvailabilityState({
+    ready: true,
+    quantity: 1,
+    available: 1,
+    rentalEnabled: racket.rental?.enabled,
+    status: racket.status,
+  });
+  const availabilityLabel = racketAvailabilityBadgeSpec(availability).label;
   const marketingBadges = commerceBadgeSpecs(
     {
       isSale: racket.marketing?.isSale === true,
@@ -1118,7 +1122,7 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
           <p>{brand}</p>
           <h3>{racket.model}</h3>
           <small>
-            {racket.rental?.enabled ? "구매 · 대여 가능" : "구매 가능"}
+            {availabilityLabel}
             {racket.marketing?.isNew ? " · 신규 등록" : ""}
           </small>
           <div>

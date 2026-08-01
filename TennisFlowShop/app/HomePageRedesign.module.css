@@ -7,6 +7,8 @@
   --home-card: hsl(var(--card));
   --home-highlight: hsl(var(--brand-highlight));
   --home-highlight-text: hsl(var(--brand-highlight-foreground));
+  --home-highlight-muted: hsl(var(--brand-highlight-muted));
+  --home-highlight-ink: hsl(var(--brand-highlight-ink));
   --home-page-surface:
     color-mix(in srgb, hsl(var(--background)) 46%, hsl(var(--secondary)) 54%);
   --home-soft:
@@ -285,9 +287,14 @@
 }
 
 .filterTabs button[aria-selected="true"] {
-  border-color: var(--home-inverse);
-  background: var(--home-inverse);
-  color: var(--home-inverse-text);
+  border-color: color-mix(in srgb, var(--home-highlight-ink) 45%, transparent);
+  background: var(--home-highlight-muted);
+  color: var(--home-highlight-ink);
+}
+
+.filterTabs button[aria-selected="false"]:hover {
+  border-color: color-mix(in srgb, var(--home-highlight-ink) 40%, var(--home-line));
+  background: color-mix(in srgb, var(--home-highlight-muted) 65%, transparent);
 }
 
 .productRail,

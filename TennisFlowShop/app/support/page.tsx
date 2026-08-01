@@ -644,21 +644,21 @@ export default function SupportPage() {
                   <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0">
                     <TabsTrigger
                       value="notice"
-                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none bp-sm:px-6"
+                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:border-brand-highlight data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-none bp-sm:px-6"
                     >
                       <Megaphone className="mr-2 h-4 w-4" />
                       공지사항
                     </TabsTrigger>
                     <TabsTrigger
                       value="event"
-                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none bp-sm:px-6"
+                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:border-brand-highlight data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-none bp-sm:px-6"
                     >
                       <Gift className="mr-2 h-4 w-4" />
                       이벤트
                     </TabsTrigger>
                     <TabsTrigger
                       value="qna"
-                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none bp-sm:px-6"
+                      className="relative min-w-0 shrink-0 rounded-none border-b-2 border-transparent px-4 py-4 text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:border-brand-highlight data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-none bp-sm:px-6"
                     >
                       <MessageSquare className="mr-2 h-4 w-4" />
                       문의

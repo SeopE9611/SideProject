@@ -111,25 +111,25 @@ export default function RefundPolicyPage() {
             <li>
               고객센터:{" "}
               <Link href="/support" className="break-all underline underline-offset-4">
-                /support
+                고객센터
               </Link>
             </li>
             <li>
               Q&A 문의:{" "}
               <Link href="/board/qna/write" className="break-all underline underline-offset-4">
-                /board/qna/write
+                Q&amp;A 문의하기
               </Link>
             </li>
             <li>
               약관:{" "}
               <Link href="/terms" className="break-all underline underline-offset-4">
-                /terms
+                이용약관
               </Link>
             </li>
             <li>
               개인정보처리방침:{" "}
               <Link href="/privacy" className="break-all underline underline-offset-4">
-                /privacy
+                개인정보처리방침
               </Link>
             </li>
           </ul>
