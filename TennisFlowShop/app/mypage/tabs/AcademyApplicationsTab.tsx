@@ -212,7 +212,7 @@ export default function AcademyApplicationsTab() {
             원하는 클래스를 둘러보고 상담 신청을 남겨보세요. 신청 내역은 이곳에서 확인할 수
             있습니다.
           </p>
-          <Button asChild variant="highlight" wrap="responsive">
+          <Button asChild variant="highlight" wrap="responsive" className="min-h-11 bp-sm:min-h-10">
             <Link href="/academy">아카데미 보러가기</Link>
           </Button>
         </CardContent>
@@ -365,7 +365,7 @@ export default function AcademyApplicationsTab() {
                     variant="highlight"
                     size="sm"
                     wrap="responsive"
-                    className="w-full sm:w-auto"
+                    className="min-h-11 w-full sm:min-h-9 sm:w-auto"
                   >
                     <Link href={`/mypage/academy-applications/${application.id}`}>
                       <Eye className="h-4 w-4" aria-hidden="true" />
@@ -377,7 +377,7 @@ export default function AcademyApplicationsTab() {
                     variant="highlight_soft"
                     size="sm"
                     wrap="responsive"
-                    className="w-full sm:w-auto"
+                    className="min-h-11 w-full sm:min-h-9 sm:w-auto"
                     aria-expanded={isExpanded}
                     aria-controls={expandedPanelId}
                     onClick={() => toggleExpanded(application.id)}
@@ -395,7 +395,7 @@ export default function AcademyApplicationsTab() {
                       variant="destructive"
                       size="sm"
                       wrap="responsive"
-                      className="w-full sm:w-auto"
+                      className="min-h-11 w-full sm:min-h-9 sm:w-auto"
                       disabled={deletingId === application.id}
                       onClick={() => void handleDelete(application.id)}
                     >
@@ -416,6 +416,7 @@ export default function AcademyApplicationsTab() {
             type="button"
             variant="highlight_soft"
             wrap="responsive"
+            className="min-h-11 bp-sm:min-h-10"
             onClick={() => setSize(size + 1)}
             disabled={isLoadingMore}
           >

@@ -16,7 +16,12 @@ export function ResponsiveActionGroup({
   className,
 }: ResponsiveActionGroupProps) {
   return (
-    <div className={cn("grid w-full grid-cols-[minmax(0,1fr)_44px] gap-2", className)}>
+    <div
+      className={cn(
+        "grid w-full grid-cols-[minmax(0,1fr)_44px] gap-2 [&_a]:min-h-11 [&_button]:min-h-11 md:[&_a]:min-h-9 md:[&_button]:min-h-9",
+        className,
+      )}
+    >
       {primaryAction ? <div className="col-span-2 min-w-0">{primaryAction}</div> : null}
       <div className={cn("min-w-0", !overflowAction && "col-span-2")}>{detailAction}</div>
       {overflowAction ? (

@@ -35,8 +35,8 @@ export default function WishlistSkeleton() {
                 <Skeleton className="h-4 w-24 rounded-control" />
               </div>
               <div className="mt-auto grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                <Skeleton className="h-9 w-full rounded-control" />
-                <Skeleton className="h-9 w-full rounded-control" />
+                <Skeleton className="h-11 w-full rounded-control sm:h-9" />
+                <Skeleton className="h-11 w-full rounded-control sm:h-9" />
               </div>
             </div>
           </CardContent>

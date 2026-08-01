@@ -514,7 +514,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 setSize(1);
               }}
             >
-              <SelectTrigger className="h-9 w-full sm:w-36">
+              <SelectTrigger className="h-11 w-full bp-sm:h-10 sm:w-36">
                 <SelectValue placeholder="상태" />
               </SelectTrigger>
               <SelectContent>
@@ -531,7 +531,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 setSize(1);
               }}
             >
-              <SelectTrigger className="h-9 w-full sm:w-36">
+              <SelectTrigger className="h-11 w-full bp-sm:h-10 sm:w-36">
                 <SelectValue placeholder="유형" />
               </SelectTrigger>
               <SelectContent>
@@ -545,6 +545,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             <Button
               variant="secondary"
               wrap="responsive"
+              className="min-h-11 bp-sm:min-h-10"
               onClick={() => {
                 setStatusFilter("all");
                 setCategoryFilter("all");
@@ -605,6 +606,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     size="sm"
                     variant="highlight_soft"
                     wrap="responsive"
+                    className="min-h-11 sm:min-h-9"
                     aria-label={`${it.title} 후기를 ${it.status === "visible" ? "비공개로 전환" : "공개로 전환"}`}
                     onClick={async () => {
                       setBusyId(it._id);
@@ -626,6 +628,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     size="sm"
                     variant="secondary"
                     wrap="responsive"
+                    className="min-h-11 sm:min-h-9"
                     onClick={() => openEdit(it)}
                   >
                     <Edit3 className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
@@ -635,6 +638,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     size="sm"
                     variant="destructive"
                     wrap="responsive"
+                    className="min-h-11 sm:min-h-9"
                     aria-label={`${it.title} 후기 삭제`}
                     onClick={async () => {
                       setBusyId(it._id);
@@ -687,7 +691,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     contextLabel={it.contextLabel}
                   />
                   {it.detailHref ? (
-                    <Button asChild size="sm" variant="outline">
+                    <Button asChild size="sm" variant="outline" className="min-h-11 sm:min-h-9">
                       <a href={it.detailHref}>거래 상세보기</a>
                     </Button>
                   ) : null}
@@ -717,7 +721,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       {/* 더 보기 */}
       <div className="flex justify-center pt-2">
         {itemsToRender.length && hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
+          <Button variant="outline" className="min-h-11 bp-sm:min-h-10" onClick={() => setSize(size + 1)} disabled={isValidating}>
             더 보기
           </Button>
         ) : itemsToRender.length ? (
@@ -786,12 +790,13 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={closeEdit} disabled={saving || uploadingEditPhotos}>
+            <Button variant="ghost" className="min-h-11 sm:min-h-10" onClick={closeEdit} disabled={saving || uploadingEditPhotos}>
               취소
             </Button>
             <Button
               variant="highlight"
               wrap="responsive"
+              className="min-h-11 sm:min-h-10"
               onClick={submitEdit}
               disabled={
                 saving ||

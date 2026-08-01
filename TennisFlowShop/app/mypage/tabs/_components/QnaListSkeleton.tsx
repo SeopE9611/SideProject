@@ -30,7 +30,7 @@ export default function QnaListSkeleton({ count = 4 }: { count?: number }) {
                   <Skeleton className="h-3 w-14" />
                   <Skeleton className="mt-2 h-4 w-32 max-w-full" />
                 </div>
-                <Skeleton className="h-9 w-full rounded-lg bp-sm:w-28" />
+                <Skeleton className="h-11 w-full rounded-lg bp-sm:h-9 bp-sm:w-28" />
               </div>
             </div>
           </CardContent>

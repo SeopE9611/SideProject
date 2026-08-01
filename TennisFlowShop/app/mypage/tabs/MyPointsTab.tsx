@@ -261,7 +261,7 @@ export default function MyPointsTab() {
                     </p>
                   </div>
                 </div>
-                <Button onClick={() => mutate()} variant="outline" size="sm" className="gap-2">
+                <Button onClick={() => mutate()} variant="outline" size="sm" className="h-11 min-w-11 gap-2 bp-sm:h-9 bp-sm:min-w-0">
                   <RefreshCw className="h-4 w-4" />
                   <span className="hidden bp-sm:inline">새로고침</span>
                 </Button>
@@ -395,7 +395,7 @@ export default function MyPointsTab() {
                       size="sm"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      className="gap-1.5"
+                      className="min-h-11 gap-1.5 bp-sm:min-h-9"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       <span className="hidden bp-sm:inline">이전</span>
@@ -405,7 +405,7 @@ export default function MyPointsTab() {
                       size="sm"
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      className="gap-1.5"
+                      className="min-h-11 gap-1.5 bp-sm:min-h-9"
                     >
                       <span className="hidden bp-sm:inline">다음</span>
                       <ChevronRight className="h-4 w-4" />

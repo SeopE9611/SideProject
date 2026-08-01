@@ -15,7 +15,7 @@ import { showErrorToast } from "@/lib/toast";
 
 export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onClose: () => void }) {
   const router = useRouter();
-  const { items, unreadCount, status, markAsRead, markAllAsRead } = useNotificationList({
+  const { items, unreadCount, status, mutate, markAsRead, markAllAsRead } = useNotificationList({
     enabled,
     limit: 5,
   });
@@ -49,7 +49,13 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
             읽지 않은 알림 {unreadCount.toLocaleString()}개
           </p>
         </div>
-        <Button variant="ghost" size="sm" disabled={unreadCount <= 0} onClick={handleMarkAllAsRead}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="min-h-11 bp-sm:min-h-9"
+          disabled={unreadCount <= 0}
+          onClick={handleMarkAllAsRead}
+        >
           모두 읽음
         </Button>
       </div>
@@ -64,8 +70,16 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
             </div>
           ))
         ) : status === "error" ? (
-          <div className="px-4 py-10 text-center text-ui-body-sm text-muted-foreground">
-            알림을 불러오지 못했습니다.
+          <div className="flex flex-col items-center px-4 py-10 text-center text-ui-body-sm text-muted-foreground">
+            <p>알림을 불러오지 못했습니다.</p>
+            <Button
+              type="button"
+              variant="highlight"
+              className="mt-4 min-h-11 bp-sm:min-h-10"
+              onClick={() => void mutate()}
+            >
+              다시 시도
+            </Button>
           </div>
         ) : items.length === 0 ? (
           <div className="px-4 py-10 text-center text-ui-body-sm text-muted-foreground">
@@ -88,7 +102,7 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
           <div className="p-3">
             <Button
               variant="outline"
-              className="w-full"
+              className="min-h-11 w-full bp-sm:min-h-10"
               onClick={() => {
                 runBoardUnsavedChangesNavigation(() => { onClose(); router.push("/notifications"); });
               }}
