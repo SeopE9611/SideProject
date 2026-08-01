@@ -174,7 +174,7 @@ export default function LinkedFlowStageCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 rounded-xl border border-border/60 bg-background/70 p-4 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3 rounded-xl border border-border/60 bg-background/70 p-4">
           <div>
             <p className={adminTypography.panelTitle}>현재 연결 단계</p>
             <Badge variant="outline" className="mt-2 w-fit">
@@ -196,7 +196,7 @@ export default function LinkedFlowStageCard({
         </div>
 
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-row items-start justify-between gap-3">
             <div className="space-y-1">
               <p className={cn(adminTypography.panelTitle, "text-primary")}>다음 단계로 처리</p>
               <p className={cn("leading-relaxed", adminTypography.body)}>
@@ -254,7 +254,7 @@ export default function LinkedFlowStageCard({
               </p>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
               <div className="space-y-1">
                 <p className={adminTypography.meta}>보정할 연결 단계</p>
                 <Select

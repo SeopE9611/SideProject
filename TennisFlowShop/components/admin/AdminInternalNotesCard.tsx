@@ -162,7 +162,7 @@ export default function AdminInternalNotesCard({
           </div>
         </div>
         <div className="space-y-2 rounded-md border bg-background/50 p-3">
-          <div className="grid gap-2 md:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2">
             <Input
               value={draftQ}
               onChange={(e) => setDraftQ(e.target.value)}

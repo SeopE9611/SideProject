@@ -44,7 +44,7 @@ export default function AdminCancelRequestCard({
         className,
       )}
     >
-      <div className={cn("grid gap-3", rightSlot ? "md:grid-cols-2" : undefined)}>
+      <div className={cn("grid gap-3", rightSlot ? "grid-cols-2" : undefined)}>
         <div>
           <p className="flex items-center gap-2 font-medium text-foreground">
             취소 요청 상태
