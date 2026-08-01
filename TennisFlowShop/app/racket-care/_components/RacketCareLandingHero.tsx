@@ -31,10 +31,10 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
             흐름으로 관리할 수 있습니다.
           </p>
           <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-            <Button asChild variant="highlight" wrap="responsive">
+            <Button asChild variant="highlight" size="lg" wrap="responsive">
               <Link href={primaryHref}>{primaryLabel}</Link>
             </Button>
-            <Button asChild variant="outline" wrap="responsive">
+            <Button asChild variant="outline" size="lg" wrap="responsive">
               <Link href="#racket-care-flow">사용 흐름 살펴보기</Link>
             </Button>
           </div>

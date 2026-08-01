@@ -199,7 +199,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
                 <Button
                   onClick={() => router.push(returnTo ?? defaultReturnTo)}
                   variant="outline"
-                  className="w-full rounded-control sm:w-auto"
+                  className="min-h-11 w-full rounded-control bp-sm:min-h-0 sm:w-auto"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
                   마이페이지 진행상태로 돌아가기
@@ -228,6 +228,16 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
               icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
               title="이미 종료된 신청서입니다"
               description="작업 중 또는 교체완료 상태에서는 운송장을 수정할 수 없습니다."
+              actions={
+                <Button
+                  onClick={() => router.push(returnTo ?? defaultReturnTo)}
+                  variant="outline"
+                  className="min-h-11 w-full rounded-control bp-sm:min-h-0 sm:w-auto"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+                  마이페이지 진행상태로 돌아가기
+                </Button>
+              }
             />
           </div>
         </div>

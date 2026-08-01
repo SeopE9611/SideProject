@@ -27,7 +27,11 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       {description && (
         <div className="mt-2 max-w-md text-ui-body-sm text-muted-foreground">{description}</div>
       )}
-      {action && <div className="mt-5">{action}</div>}
+      {action && (
+        <div className="mt-5 [&_a]:min-h-11 [&_button]:min-h-11 bp-sm:[&_a]:min-h-0 bp-sm:[&_button]:min-h-0">
+          {action}
+        </div>
+      )}
     </section>
   );
 }

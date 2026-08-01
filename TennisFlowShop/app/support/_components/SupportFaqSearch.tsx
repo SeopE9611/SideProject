@@ -187,7 +187,7 @@ export default function SupportFaqSearch() {
               <button
                 type="button"
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 shrink-0 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="absolute right-0 top-1/2 flex size-11 shrink-0 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 aria-label="검색어 지우기"
               >
                 <X className="h-4 w-4" />
@@ -206,7 +206,7 @@ export default function SupportFaqSearch() {
                 type="button"
                 onClick={() => setSelectedCategory(category)}
                 className={cn(
-                  "rounded-full px-4 py-2 text-ui-body-sm font-medium break-keep transition-all",
+                  "min-h-11 rounded-full px-4 py-2 text-ui-body-sm bp-sm:min-h-10 font-medium break-keep transition-all",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isActive
                     ? "bg-foreground text-background"
@@ -287,7 +287,7 @@ export default function SupportFaqSearch() {
                 asChild
                 size="sm"
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="min-h-11 w-full bp-sm:min-h-0 sm:w-auto"
                 wrap="responsive"
               >
                 <Link href="/board/qna/write">문의하기</Link>

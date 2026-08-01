@@ -353,7 +353,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           title="신청 내역을 찾을 수 없습니다."
           description="신청 번호가 올바르지 않거나 조회 권한이 없는 신청입니다."
           actions={
-            <Button type="button" className="min-h-11 w-full bp-sm:w-auto" onClick={() => mutate()}>
+            <Button type="button" variant="highlight" className="min-h-11 w-full bp-sm:w-auto" onClick={() => mutate()}>
               다시 불러오기
             </Button>
           }

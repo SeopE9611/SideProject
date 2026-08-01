@@ -135,6 +135,8 @@ export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) 
 
           <DialogFooter className="gap-2 sm:gap-2">
             <Button
+              variant="highlight"
+              size="lg"
               className="w-full sm:w-auto"
               onClick={() => {
                 dismiss();
@@ -143,7 +145,7 @@ export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) 
             >
               회원가입하고 받기
             </Button>
-            <Button variant="secondary" className="w-full sm:w-auto" onClick={dismiss}>
+            <Button variant="secondary" size="lg" className="w-full sm:w-auto" onClick={dismiss}>
               나중에 보기
             </Button>
           </DialogFooter>

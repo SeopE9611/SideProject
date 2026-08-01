@@ -958,6 +958,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         nextActionSlot={
           nextTodo ? (
             <Button
+              variant="highlight_soft"
               asChild={Boolean(nextTodo.ctaHref)}
               onClick={nextTodo.onCtaClick}
               disabled={isConfirmingPurchase}
@@ -1356,6 +1357,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                   <Button
                                     asChild
                                     size="sm"
+                                    variant="highlight_soft"
                                     className="min-h-11 w-full shrink-0 bp-sm:w-auto"
                                   >
                                     <Link href={appShippingHref}>라켓 발송 운송장 등록</Link>
@@ -1374,7 +1376,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체
                         가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
                       </p>
-                      <Button asChild className="mt-4 min-h-11 w-full bp-sm:w-auto">
+                      <Button asChild variant="highlight_soft" className="mt-4 min-h-11 w-full bp-sm:w-auto">
                         <Link href={`/services/apply?orderId=${orderDetail._id}`}>
                           {hasSubmittedStringingApplication
                             ? "교체서비스 추가 신청하기"

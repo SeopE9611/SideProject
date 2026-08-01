@@ -803,7 +803,7 @@ export default function AcademyApplyClient({
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
             {conflictDialog?.applicationId && (
-              <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Button asChild variant="outline" className="min-h-11 w-full sm:w-auto">
                 <Link href={`/mypage/academy-applications/${conflictDialog.applicationId}`}>
                   신청 내역 보기
                 </Link>
@@ -812,7 +812,7 @@ export default function AcademyApplyClient({
             <AlertDialogAction
               className={buttonVariants({
                 variant: "highlight",
-                className: "w-full sm:w-auto",
+                className: "min-h-11 w-full sm:w-auto",
               })}
             >
               확인하고 수정하기

@@ -164,7 +164,7 @@ export default function RentDialog({
             <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               취소
             </Button>
-            <Button onClick={onSubmit} disabled={loading}>
+            <Button variant="highlight" onClick={onSubmit} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />

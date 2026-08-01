@@ -22,10 +22,10 @@ export default function RacketCareFinalCta({ primaryHref, primaryLabel }: Props)
           </p>
         </div>
         <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
-          <Button asChild variant="highlight" wrap="responsive">
+          <Button asChild variant="highlight" size="lg" wrap="responsive">
             <Link href={primaryHref}>{primaryLabel}</Link>
           </Button>
-          <Button asChild variant="outline" wrap="responsive">
+          <Button asChild variant="outline" size="lg" wrap="responsive">
             <Link href="/services">교체서비스 알아보기</Link>
           </Button>
         </div>
