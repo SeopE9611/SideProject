@@ -902,7 +902,7 @@ export default function QnaWritePage() {
                             </div>
                             <button
                               type="button"
-                              className="absolute right-1.5 top-1.5 rounded-full bg-card p-1 shadow-sm opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              className="absolute right-1 top-1 inline-flex size-11 items-center justify-center rounded-full bg-card shadow-sm opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-md:right-1.5 bp-md:top-1.5 bp-md:size-9"
                               onClick={() => removeFile(index)}
                               aria-label={`${file.name} 첨부 이미지 삭제`}
                             >

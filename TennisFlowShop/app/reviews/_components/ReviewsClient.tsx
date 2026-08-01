@@ -340,10 +340,20 @@ export default function ReviewsClient() {
                   </label>
                 </div>
                 <SheetFooter className="gap-2 sm:space-x-0">
-                  <Button type="button" variant="outline" onClick={resetDraftFilters}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={resetDraftFilters}
+                    className="min-h-11"
+                  >
                     필터 초기화
                   </Button>
-                  <Button type="button" variant="highlight" onClick={applyMobileFilters}>
+                  <Button
+                    type="button"
+                    variant="highlight"
+                    onClick={applyMobileFilters}
+                    className="min-h-11"
+                  >
                     결과 보기
                   </Button>
                 </SheetFooter>
@@ -357,12 +367,16 @@ export default function ReviewsClient() {
               aria-label="활성 필터"
             >
               {activeChips.map((chip) => (
-                <Badge key={chip.key} variant="secondary" className="gap-1 rounded-full px-3 py-1">
+                <Badge
+                  key={chip.key}
+                  variant="secondary"
+                  className="gap-1 rounded-full py-0 pl-3 pr-1 bp-md:py-1 bp-md:pr-3"
+                >
                   <span>{chip.label}</span>
                   <button
                     type="button"
                     onClick={chip.onRemove}
-                    className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="inline-flex size-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:size-5"
                     aria-label={`${chip.label} 필터 제거`}
                   >
                     <X className="h-3 w-3" />

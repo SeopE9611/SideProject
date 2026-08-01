@@ -272,14 +272,14 @@ export default function KakaoInquiryWidget() {
             >
               <div ref={compactPanelRef} id="compact-inquiry-panel" className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] rounded-panel border-border shadow-float">
-                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
                     <CardTitle className="text-ui-body-sm font-semibold">
                       무엇을 도와드릴까요?
                     </CardTitle>
                     <button
                       type="button"
                       aria-label="닫기"
-                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+                      className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted bp-md:size-9"
                       onClick={() => setPanel(null)}
                     >
                       <X className="h-4 w-4" />
