@@ -124,11 +124,11 @@ export default function MessageComposeDialog({
             <div className="flex h-10 w-10 items-center justify-center rounded-control border border-brand-highlight-ink/20 bg-brand-highlight-muted">
               <Send aria-hidden="true" className="h-5 w-5 text-brand-highlight-ink" />
             </div>
-            <div>
+            <div className="min-w-0 pr-10">
               <DialogTitle className="text-ui-card-title-lg">쪽지 보내기</DialogTitle>
               <DialogDescription className="flex items-center gap-1.5 text-ui-body-sm mt-1">
                 <User aria-hidden="true" className="h-3.5 w-3.5" />
-                <span>
+                <span className="break-words">
                   받는 사람: <span className="font-medium text-foreground">{receiverLabel}</span>
                 </span>
               </DialogDescription>
@@ -149,7 +149,7 @@ export default function MessageComposeDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력하세요"
-              className="h-10 rounded-control"
+              className="h-11 rounded-control bp-md:h-10"
             />
           </div>
 
@@ -173,7 +173,7 @@ export default function MessageComposeDialog({
             variant="outline"
             onClick={() => handleOpenChange(false)}
             disabled={isSending}
-            className="min-w-[80px]"
+            className="min-h-11 min-w-[80px] bp-md:min-h-0"
           >
             취소
           </Button>
@@ -181,7 +181,7 @@ export default function MessageComposeDialog({
             variant="highlight"
             onClick={handleSend}
             disabled={isSending}
-            className="min-w-[100px] gap-2"
+            className="min-h-11 min-w-[100px] gap-2 bp-md:min-h-0"
           >
             {isSending ? (
               <>

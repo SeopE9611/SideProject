@@ -222,6 +222,7 @@ export default function OrderShippingInfoDialog({
     data: trackingData,
     isLoading: isTrackingLoading,
     error: trackingError,
+    mutate: retryTracking,
   } = useSWR<OrderTrackingResponse>(
     canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
     trackingSWRFetcher,
@@ -337,7 +338,7 @@ export default function OrderShippingInfoDialog({
                   type="button"
                   size="sm"
                   variant="ghost"
-                  className="h-8 px-2"
+                  className="h-11 w-11 p-0 bp-md:h-8 bp-md:w-8"
                   onClick={() => copyToClipboard(trackingNumber)}
                 >
                   <Copy className="h-4 w-4" />
@@ -376,7 +377,7 @@ export default function OrderShippingInfoDialog({
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-11 w-24 bp-md:h-8 bp-md:w-20" />
               </div>
             ) : null}
 
@@ -410,6 +411,7 @@ export default function OrderShippingInfoDialog({
                       type="button"
                       size="sm"
                       variant="outline"
+                      className="min-h-11 bp-md:min-h-0"
                       onClick={() =>
                         window.open(trackingData.linkUrl, "_blank", "noopener,noreferrer")
                       }
@@ -426,9 +428,19 @@ export default function OrderShippingInfoDialog({
             ) : null}
 
             {trackingError ? (
-              <p className="text-ui-body-sm text-destructive">
-                {getTrackingErrorMessage(trackingData, trackingError)}
-              </p>
+              <div className="space-y-2 text-ui-body-sm">
+                <p className="text-destructive">
+                  {getTrackingErrorMessage(trackingData, trackingError)}
+                </p>
+                <Button
+                  type="button"
+                  variant="highlight"
+                  className="min-h-11 bp-md:min-h-0"
+                  onClick={() => void retryTracking()}
+                >
+                  다시 시도
+                </Button>
+              </div>
             ) : null}
 
             {invoice?.updatedAt ? (

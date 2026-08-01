@@ -103,7 +103,14 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
   const { items, total, isLoading, mutate, key, hasResolvedData, hasDataError, errorMessage } =
     useMessageList(tab, page, LIMIT, true);
-  const { item: detail, isLoading: detailLoading } = useMessageDetail(selectedId, true);
+  const {
+    item: detail,
+    error: detailRequestError,
+    responseError: detailResponseError,
+    hasDetailError,
+    isLoading: detailLoading,
+    mutate: retryDetail,
+  } = useMessageDetail(selectedId, true);
 
   const totalPages = useMemo(() => {
     if (typeof total !== "number") return 1;
@@ -210,10 +217,10 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             }}
             className="w-full"
           >
-            <TabsList className="mb-4 grid w-full grid-cols-3 rounded-control border border-border bg-brand-highlight-muted/45 p-1 md:mb-6">
+            <TabsList className="mb-4 grid h-11 w-full grid-cols-3 rounded-control border border-border bg-brand-highlight-muted/45 p-1 md:mb-6 md:h-10">
               <TabsTrigger
                 value="inbox"
-                className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
+                className="h-full min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
               >
                 <Mail aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">받은쪽지</span>
@@ -221,7 +228,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
               </TabsTrigger>
               <TabsTrigger
                 value="send"
-                className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
+                className="h-full min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
               >
                 <Send aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">보낸쪽지</span>
@@ -229,7 +236,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
               </TabsTrigger>
               <TabsTrigger
                 value="admin"
-                className="min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
+                className="h-full min-w-0 rounded-control px-2 text-ui-label data-[state=active]:bg-card data-[state=active]:text-brand-highlight-ink data-[state=active]:shadow-soft sm:px-3 sm:text-ui-body-sm"
               >
                 <Megaphone aria-hidden="true" className="h-4 w-4" />
                 <span className="hidden sm:inline">관리자</span>
@@ -249,8 +256,8 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                         </span>
                         개
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-ui-label text-muted-foreground hidden sm:inline">
+                      <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                        <span className="whitespace-nowrap text-ui-label text-muted-foreground">
                           {page} / {totalPages}
                         </span>
                         <div className="flex gap-1">
@@ -262,7 +269,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               setPage((p) => Math.max(1, p - 1));
                               setSelectedId(null);
                             }}
-                            className="h-8 w-8 rounded-control p-0"
+                            className="h-11 w-11 rounded-control p-0 md:h-8 md:w-8"
                             aria-label="이전 쪽지 페이지"
                           >
                             <ChevronLeft aria-hidden="true" className="h-4 w-4" />
@@ -275,7 +282,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               setPage((p) => Math.min(totalPages, p + 1));
                               setSelectedId(null);
                             }}
-                            className="h-8 w-8 rounded-control p-0"
+                            className="h-11 w-11 rounded-control p-0 md:h-8 md:w-8"
                             aria-label="다음 쪽지 페이지"
                           >
                             <ChevronRight aria-hidden="true" className="h-4 w-4" />
@@ -435,7 +442,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                       />
                     )}
 
-                    {selectedId && detailLoading && (
+                    {selectedId && detailLoading && !hasDetailError && (
                       <div className="space-y-4 p-5 md:p-6">
                         <Skeleton className="h-7 w-2/3" />
                         <Skeleton className="h-4 w-1/2" />
@@ -445,15 +452,30 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                       </div>
                     )}
 
-                    {selectedId && !detailLoading && !detail && (
-                      <div className="flex items-center justify-center h-[400px] text-center p-6 md:p-8">
-                        <p className="break-keep text-ui-body-sm text-muted-foreground">
-                          쪽지를 불러오지 못했습니다. 목록에서 다시 선택해 주세요.
-                        </p>
-                      </div>
+                    {selectedId && !detailLoading && hasDetailError && (
+                      <ResultState
+                        status="error"
+                        title="쪽지를 불러오지 못했습니다"
+                        description={
+                          detailResponseError ||
+                          detailRequestError?.message ||
+                          "잠시 후 다시 시도해 주세요."
+                        }
+                        className="h-[400px] justify-center py-8"
+                        actions={
+                          <Button
+                            type="button"
+                            variant="highlight"
+                            className="min-h-11"
+                            onClick={() => void retryDetail()}
+                          >
+                            다시 시도
+                          </Button>
+                        }
+                      />
                     )}
 
-                    {detail && (
+                    {selectedId && !detailLoading && !hasDetailError && detail && (
                       <div className="p-5 md:p-6">
                         <div className="pb-4 border-b border-border/40">
                           <h2 className="mb-3 font-ui-bold text-ui-section-title leading-tight text-foreground">
@@ -497,7 +519,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                   variant="highlight_soft"
                                   size="sm"
                                   onClick={openReply}
-                                  className="w-full gap-2 sm:w-auto"
+                                  className="min-h-11 w-full gap-2 sm:h-9 sm:min-h-0 sm:w-auto"
                                 >
                                   <Reply aria-hidden="true" className="h-4 w-4" />
                                   답장
@@ -508,7 +530,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => setDeleteOpen(true)}
-                                className="w-full gap-2 sm:w-auto"
+                                className="min-h-11 w-full gap-2 sm:h-9 sm:min-h-0 sm:w-auto"
                               >
                                 <Trash2 aria-hidden="true" className="h-4 w-4" />
                                 삭제
@@ -566,9 +588,11 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
+            <AlertDialogCancel className="min-h-11 md:min-h-0" disabled={isDeleting}>
+              취소
+            </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="min-h-11 bg-destructive text-destructive-foreground hover:bg-destructive/90 md:min-h-0"
               onClick={(e) => {
                 e.preventDefault();
                 void deleteSelectedMessage();
