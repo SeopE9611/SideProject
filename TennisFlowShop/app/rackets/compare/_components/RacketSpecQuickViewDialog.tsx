@@ -84,7 +84,7 @@ function HintIcon({ text }: { text: string }) {
         <button
           type="button"
           className={cn(
-            "inline-flex h-5 w-5 items-center justify-center rounded-full",
+            "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bp-md:h-5 bp-md:w-5",
             "text-muted-foreground/70 transition-colors duration-200",
             "hover:bg-secondary hover:text-foreground",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
@@ -129,10 +129,10 @@ function SpecRow({
         !isLast && "border-b border-muted/60",
       )}
     >
-      <div className="flex items-center gap-2 bp-sm:gap-3">
+      <div className="flex min-w-0 items-center gap-2 bp-sm:gap-3">
         <div
           className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8",
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8",
             "bg-muted/60 transition-all duration-200",
             "group-hover:bg-secondary",
           )}
@@ -147,7 +147,7 @@ function SpecRow({
         </div>
         <span
           className={cn(
-            "text-ui-label font-medium bp-sm:text-ui-body-sm",
+            "min-w-0 truncate text-ui-label font-medium bp-sm:text-ui-body-sm",
             "text-muted-foreground transition-colors duration-200",
             "group-hover:text-foreground",
           )}
@@ -158,7 +158,7 @@ function SpecRow({
       </div>
       <div
         className={cn(
-          "text-ui-body-sm font-semibold tabular-nums bp-sm:text-ui-body",
+          "shrink-0 text-right text-ui-body-sm font-semibold tabular-nums bp-sm:text-ui-body",
           "text-foreground transition-colors duration-200",
           specKey === "price" && value !== "-" && "text-primary",
         )}

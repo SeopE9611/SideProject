@@ -198,7 +198,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                       variant="outline"
                       size="sm"
                       wrap="responsive"
-                      className="min-h-10 w-full min-w-0 rounded-lg bg-transparent px-2 text-ui-label bp-sm:text-ui-body-sm"
+                      className="min-h-11 w-full min-w-0 rounded-lg bg-transparent px-2 text-ui-label bp-sm:text-ui-body-sm bp-md:min-h-10"
                     >
                       <Info className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                       상세 스펙
@@ -210,7 +210,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                   size="sm"
                   variant="outline"
                   className={cn(
-                    "min-h-10 w-full min-w-0 rounded-lg px-2 text-ui-label bp-sm:text-ui-body-sm",
+                    "min-h-11 w-full min-w-0 rounded-lg px-2 text-ui-label bp-sm:text-ui-body-sm bp-md:min-h-10",
                     selected && "border-primary/40 bg-secondary text-foreground",
                   )}
                   aria-pressed={selected}
