@@ -7,13 +7,24 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface, ResultState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "레슨 신청 접수 완료 | 도깨비테니스 아카데미",
-};
-
 type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function parseApplicationId(params: Record<string, string | string[] | undefined>) {
+  const rawApplicationId = Array.isArray(params.applicationId)
+    ? params.applicationId[0]
+    : params.applicationId;
+  return rawApplicationId?.trim() || undefined;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const applicationId = parseApplicationId(await searchParams);
+
+  return {
+    title: applicationId ? "아카데미 신청 접수 완료" : "페이지를 찾을 수 없습니다",
+  };
+}
 
 function getReceiptLabel(applicationId?: string) {
   if (!applicationId) return null;
@@ -23,10 +34,7 @@ function getReceiptLabel(applicationId?: string) {
 
 export default async function AcademyApplySuccessPage({ searchParams }: Props) {
   const params = await searchParams;
-  const rawApplicationId = Array.isArray(params.applicationId)
-    ? params.applicationId[0]
-    : params.applicationId;
-  const applicationId = rawApplicationId?.trim();
+  const applicationId = parseApplicationId(params);
   if (!applicationId) notFound();
   const receiptLabel = getReceiptLabel(applicationId);
 
