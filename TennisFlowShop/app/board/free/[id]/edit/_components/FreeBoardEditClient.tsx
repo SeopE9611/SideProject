@@ -734,7 +734,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className={cn("w-full gap-2 bp-sm:w-auto")}
+                    className={cn("min-h-11 w-full gap-2 bp-sm:w-auto")}
                     disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                     onClick={() => confirmLeaveIfDirty(() => router.push(`/board/free/${id}`))}
                   >
@@ -743,8 +743,9 @@ export default function FreeBoardEditClient({ id }: Props) {
                   </Button>
                   <Button
                     type="submit"
+                    variant="highlight"
                     size="sm"
-                    className={cn("w-full gap-2 bp-sm:w-auto")}
+                    className={cn("min-h-11 w-full gap-2 bp-sm:w-auto")}
                     disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   >
                     {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}

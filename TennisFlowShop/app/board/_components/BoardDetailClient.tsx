@@ -279,7 +279,7 @@ function CommentItem({
               <>
                 <button
                   type="button"
-                  className="rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
+                  className="min-h-11 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground bp-md:min-h-0 dark:hover:bg-muted dark:hover:text-foreground"
                   onClick={() =>
                     isReply ? onStartEditReply(comment) : onStartEditComment(comment.id)
                   }
@@ -288,7 +288,7 @@ function CommentItem({
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive"
+                  className="min-h-11 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive bp-md:min-h-0 dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive"
                   onClick={() => onDeleteComment(comment.id)}
                 >
                   삭제
@@ -331,15 +331,16 @@ function CommentItem({
               size="sm"
               onClick={() => (isReply ? onCancelEditReply(comment.id) : onCancelEditComment())}
               disabled={isCommentSubmitting}
-              className="h-9 w-full bg-transparent px-4 text-ui-label sm:w-auto"
+              className="min-h-11 w-full bg-transparent px-4 text-ui-label bp-md:min-h-9 bp-md:w-auto"
             >
               취소
             </Button>
             <Button
               type="button"
+              variant="highlight"
               size="sm"
               disabled={isCommentSubmitting}
-              className="h-9 w-full bg-primary px-4 text-ui-label text-primary-foreground hover:bg-primary/90 sm:w-auto"
+              className="min-h-11 w-full px-4 text-ui-label bp-md:min-h-9 bp-md:w-auto"
               onClick={() =>
                 onSaveEdit(
                   comment.id,
@@ -363,7 +364,7 @@ function CommentItem({
         <div className="mt-3">
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground bp-md:min-h-0 dark:hover:bg-muted dark:hover:text-foreground"
             onClick={() => onStartReply(comment.id)}
           >
             <MessageSquare className="h-3.5 w-3.5" />
@@ -396,15 +397,16 @@ function CommentItem({
               size="sm"
               onClick={() => onReplyCancel(comment.id)}
               disabled={isReplySubmitting}
-              className="h-8 px-4 text-ui-label"
+              className="min-h-11 w-full px-4 text-ui-label bp-md:min-h-8 bp-md:w-auto"
             >
               취소
             </Button>
             <Button
               type="submit"
+              variant="highlight"
               size="sm"
               disabled={isReplySubmitting}
-              className="h-9 w-full bg-primary px-4 text-ui-label text-primary-foreground hover:bg-primary/90 sm:w-auto"
+              className="min-h-11 w-full px-4 text-ui-label bp-md:min-h-9 bp-md:w-auto"
             >
               {isReplySubmitting ? "작성 중..." : "등록"}
             </Button>
@@ -2130,11 +2132,13 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   </div>
 
                   <DialogFooter>
-                    <Button type="button" variant="outline" onClick={closeCommentReport}>
+                    <Button type="button" variant="outline" className="min-h-11 w-full bp-sm:w-auto" onClick={closeCommentReport}>
                       취소
                     </Button>
                     <Button
                       type="button"
+                      variant="destructive"
+                      className="min-h-11 w-full bp-sm:w-auto"
                       onClick={handleSubmitCommentReport}
                       disabled={isCommentReporting}
                     >
@@ -2223,8 +2227,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     <div className="flex justify-end">
                       <Button
                         type="button"
+                        variant="highlight"
                         size="sm"
-                        className="h-9 bg-primary px-5 text-ui-body-sm text-primary-foreground hover:bg-primary/90"
+                        className="min-h-11 w-full px-5 text-ui-body-sm bp-md:min-h-9 bp-md:w-auto"
                         disabled={isCommentSubmitting}
                         onClick={handleSubmitComment}
                       >
@@ -2440,7 +2445,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                             <button
                               type="button"
                               onClick={() => toggleRootReplies(c.id)}
-                              className="ml-10 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
+                              className="ml-10 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted bp-md:min-h-0 dark:text-muted-foreground dark:hover:bg-muted"
                             >
                               {isExpanded ? (
                                 <span>답글 접기</span>
@@ -2470,7 +2475,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         size="sm"
                         disabled={commentPage <= 1}
                         onClick={() => setCommentPage((p) => Math.max(1, p - 1))}
-                        className="h-8 px-4 text-ui-label"
+                        className="min-h-11 px-4 text-ui-label bp-md:min-h-8"
                       >
                         이전
                       </Button>
@@ -2480,7 +2485,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         size="sm"
                         disabled={commentPage >= totalCommentPages}
                         onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))}
-                        className="h-8 px-4 text-ui-label"
+                        className="min-h-11 px-4 text-ui-label bp-md:min-h-8"
                       >
                         다음
                       </Button>

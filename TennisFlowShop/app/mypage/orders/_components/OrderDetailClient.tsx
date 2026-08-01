@@ -1468,6 +1468,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               {editingCustomer ? (
                 <div>
                   <CustomerEditForm
+                    tone="user"
                     initialData={{
                       name: orderDetail.customer.name,
                       email: orderDetail.customer.email,

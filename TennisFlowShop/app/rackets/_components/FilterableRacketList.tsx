@@ -728,10 +728,10 @@ export default function FilterableRacketList({
                   }
                   viewToggle={
                     <div className="flex shrink-0 items-center rounded-control border border-border bg-card p-1">
-                      <Button type="button" variant={effectiveViewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-8 w-9 p-0" aria-label="그리드 보기" aria-pressed={effectiveViewMode === "grid"}>
+                      <Button type="button" variant={effectiveViewMode === "grid" ? "highlight_soft" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="h-11 w-11 p-0 bp-md:h-8 bp-md:w-9" aria-label="그리드 보기" aria-pressed={effectiveViewMode === "grid"}>
                         <Grid3X3 className="h-4 w-4" />
                       </Button>
-                      <Button type="button" variant={effectiveViewMode === "list" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-8 w-9 p-0" aria-label="리스트 보기" aria-pressed={effectiveViewMode === "list"}>
+                      <Button type="button" variant={effectiveViewMode === "list" ? "highlight_soft" : "ghost"} size="sm" onClick={() => setViewMode("list")} className="h-11 w-11 p-0 bp-md:h-8 bp-md:w-9" aria-label="리스트 보기" aria-pressed={effectiveViewMode === "list"}>
                         <List className="h-4 w-4" />
                       </Button>
                     </div>

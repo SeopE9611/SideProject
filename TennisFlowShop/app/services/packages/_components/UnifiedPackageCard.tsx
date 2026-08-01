@@ -5,7 +5,6 @@ import {
   type PackageCardData,
 } from "@/app/services/packages/_lib/packageCard";
 import {
-  PACKAGE_VARIANT_BUTTON_CLASS,
   PACKAGE_VARIANT_DOT_CLASS,
   PACKAGE_VARIANT_ICON_CLASS,
   PACKAGE_VARIANT_TOP_BAR_CLASS,
@@ -195,7 +194,8 @@ export default function UnifiedPackageCard({
         {ctaHref && ctaLabel && (
           <div className="mt-auto space-y-2">
             <Button
-              className={`w-full border border-border shadow-sm transition-[box-shadow,border-color,background-color] hover:shadow-md ${PACKAGE_VARIANT_BUTTON_CLASS[pkg.variant]}`}
+              variant="highlight"
+              className="min-h-11 w-full whitespace-normal border border-border text-center shadow-sm transition-[box-shadow,border-color,background-color] hover:shadow-md"
               asChild
               disabled={ctaDisabled}
             >

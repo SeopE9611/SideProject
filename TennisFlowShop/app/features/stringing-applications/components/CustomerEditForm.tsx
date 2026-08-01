@@ -23,6 +23,7 @@ interface Props {
   entityId: string;
   onSuccess: (updated: CustomerFormValues) => void;
   onCancel: () => void;
+  tone?: "admin" | "user";
 }
 
 export default function CustomerEditForm({
@@ -31,6 +32,7 @@ export default function CustomerEditForm({
   entityId,
   onSuccess,
   onCancel,
+  tone = "admin",
 }: Props) {
   const {
     register,
@@ -119,7 +121,7 @@ export default function CustomerEditForm({
             id="postalCode"
             {...register("postalCode", { required: "필수 입력입니다." })}
           />
-          <Button type="button" size="sm" onClick={handleOpenPostcode}>
+          <Button type="button" size="sm" variant={tone === "user" ? "highlight_soft" : "default"} className={tone === "user" ? "min-h-11" : undefined} onClick={handleOpenPostcode}>
             주소 검색
           </Button>
         </div>
@@ -145,11 +147,11 @@ export default function CustomerEditForm({
         <Input id="addressDetail" {...register("addressDetail")} />
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
+      <div className={tone === "user" ? "flex flex-col gap-2 bp-sm:flex-row bp-sm:justify-end" : "flex justify-end space-x-2"}>
+        <Button variant="outline" className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} type="button" onClick={onCancel} disabled={isSubmitting}>
           취소
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button variant={tone === "user" ? "highlight" : "default"} className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} type="submit" disabled={isSubmitting}>
           저장
         </Button>
       </div>

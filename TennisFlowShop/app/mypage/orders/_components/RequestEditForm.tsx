@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 
 interface Props {
@@ -38,18 +39,18 @@ export default function RequestEditForm({ initialData, orderId, onSuccess, onCan
   return (
     <>
       <CardContent>
-        <textarea
-          className="w-full border rounded p-2"
+        <Textarea
+          className="w-full"
           rows={4}
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
       </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
-        <Button variant="secondary" onClick={onCancel}>
+      <CardFooter className="flex flex-col gap-2 bp-sm:flex-row bp-sm:justify-end">
+        <Button variant="outline" className="min-h-11 w-full bp-sm:w-auto" onClick={onCancel}>
           취소
         </Button>
-        <Button onClick={handleSave} disabled={loading}>
+        <Button variant="highlight" className="min-h-11 w-full bp-sm:w-auto" onClick={handleSave} disabled={loading}>
           {loading ? "저장 중…" : "저장"}
         </Button>
       </CardFooter>

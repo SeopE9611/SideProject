@@ -16,6 +16,7 @@ interface Props {
   entityId: string; // applicationId
   onSuccess: (data: PaymentFormValues) => void;
   onCancel: () => void;
+  tone?: "admin" | "user";
 }
 
 export default function PaymentEditForm({
@@ -24,6 +25,7 @@ export default function PaymentEditForm({
   entityId,
   onSuccess,
   onCancel,
+  tone = "admin",
 }: Props) {
   const {
     register,
@@ -60,11 +62,11 @@ export default function PaymentEditForm({
         )}
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
+      <div className={tone === "user" ? "flex flex-col gap-2 bp-sm:flex-row bp-sm:justify-end" : "flex justify-end space-x-2"}>
+        <Button variant="outline" className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} type="button" onClick={onCancel} disabled={isSubmitting}>
           취소
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button variant={tone === "user" ? "highlight" : "default"} className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} type="submit" disabled={isSubmitting}>
           저장
         </Button>
       </div>

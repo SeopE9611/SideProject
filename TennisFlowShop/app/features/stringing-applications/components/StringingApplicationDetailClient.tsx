@@ -2882,6 +2882,7 @@ export default function StringingApplicationDetailClient({
                         신청 스트링 정보 수정
                       </DialogTitle>
                       <StringInfoEditForm
+                        tone={isAdmin ? "admin" : "user"}
                         id={data.id}
                         initial={{
                           desiredDateTime:
@@ -3068,6 +3069,7 @@ export default function StringingApplicationDetailClient({
                       <CardContent className="hidden p-4 bp-sm:p-5 group-open:block bp-md:block">
                         {editingRequirements ? (
                           <RequirementsEditForm
+                            tone={isAdmin ? "admin" : "user"}
                             initial={data.stringDetails.requirements ?? ""}
                             resourcePath={`${baseUrl}/api/applications/stringing`}
                             entityId={data.id}
@@ -3178,6 +3180,7 @@ export default function StringingApplicationDetailClient({
                   <CardContent className="p-4 bp-sm:p-5">
                     {editingPayment ? (
                       <PaymentEditForm
+                        tone={isAdmin ? "admin" : "user"}
                         initialData={{
                           depositor: data.shippingInfo?.depositor || "",
                         }}
@@ -3508,6 +3511,7 @@ export default function StringingApplicationDetailClient({
                     <CardContent className="p-4 bp-sm:p-5">
                       {editingCustomer ? (
                         <CustomerEditForm
+                          tone={isAdmin ? "admin" : "user"}
                           initialData={{
                             name: data.customer.name ?? "이름 미입력",
                             email: data.customer.email ?? "이메일 미입력",

@@ -135,7 +135,7 @@ export default function RacketFilterPanel({
                   </button>
                 )}
               </div>
-              <Button type="submit" size="sm" variant="default" className="h-11 min-h-11 whitespace-nowrap rounded-control px-4 bp-md:h-10 bp-md:min-h-0">
+              <Button type="submit" size="sm" variant="highlight" className="h-11 min-h-11 whitespace-nowrap rounded-control px-4 bp-md:h-10 bp-md:min-h-0">
                 검색
               </Button>
             </form>
@@ -223,7 +223,8 @@ export default function RacketFilterPanel({
               <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
                 <Button
                   type="button"
-                  variant={exposureFilter.length === 0 ? "default" : "outline"}
+                  variant={exposureFilter.length === 0 ? "highlight_soft" : "outline"}
+                  aria-pressed={exposureFilter.length === 0}
                   size="sm"
                   onClick={() => onExposureChange([])}
                   className="min-h-11 whitespace-nowrap rounded-control px-2 text-ui-label bp-md:min-h-9 bp-md:text-ui-body-sm"
@@ -236,7 +237,8 @@ export default function RacketFilterPanel({
                     <Button
                       key={option.value}
                       type="button"
-                      variant={isActive ? "default" : "outline"}
+                      variant={isActive ? "highlight_soft" : "outline"}
+                      aria-pressed={isActive}
                       size="sm"
                       onClick={() =>
                         onExposureChange(
@@ -246,7 +248,6 @@ export default function RacketFilterPanel({
                         )
                       }
                       className="min-h-11 whitespace-nowrap rounded-control px-2 text-ui-label bp-md:min-h-9 bp-md:text-ui-body-sm"
-                      aria-pressed={isActive}
                     >
                       {option.label}
                     </Button>
