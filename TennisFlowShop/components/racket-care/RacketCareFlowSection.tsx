@@ -58,7 +58,6 @@ export default function RacketCareFlowSection() {
       <div className="grid overflow-hidden rounded-control border border-border bg-card bp-md:grid-cols-4">
         {flowSteps.map((item, index) => {
           const isActive = active === index;
-          const isCompleted = index < active;
           return (
             <button
               key={item.title}
@@ -67,12 +66,9 @@ export default function RacketCareFlowSection() {
               className={`flex min-h-14 items-center justify-between gap-3 border-b border-border p-4 text-left text-ui-body-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring last:border-b-0 bp-md:border-b-0 bp-md:border-r bp-md:last:border-r-0 ${
                 isActive
                   ? "bg-brand-highlight-muted text-foreground ring-1 ring-inset ring-brand-highlight-ink/40"
-                  : isCompleted
-                    ? "bg-muted/40 text-foreground"
-                    : "bg-card text-muted-foreground hover:bg-muted/25 hover:text-foreground"
+                  : "bg-card text-muted-foreground hover:bg-muted/25 hover:text-foreground"
               }`}
               data-active={isActive}
-              data-status={isActive ? "current" : isCompleted ? "completed" : "upcoming"}
               aria-pressed={isActive}
             >
               <span>
@@ -91,7 +87,7 @@ export default function RacketCareFlowSection() {
                 aria-hidden="true"
                 className={isActive ? "text-brand-highlight-ink" : "text-muted-foreground"}
               >
-                {isCompleted ? "✓" : "→"}
+                →
               </span>
             </button>
           );
