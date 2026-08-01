@@ -423,7 +423,7 @@ const Header = () => {
                         <Link
                           href="/mypage?tab=points"
                           onClick={() => setOpen(false)}
-                          className="inline-flex min-w-0 items-center gap-1 text-ui-micro font-ui-medium text-muted-foreground tabular-nums hover:text-foreground"
+                          className="inline-flex min-h-11 min-w-0 items-center gap-1 rounded-control px-1 text-ui-micro font-ui-medium text-muted-foreground tabular-nums hover:text-foreground"
                           aria-label="포인트 보기"
                         >
                           <span className="text-ui-micro font-ui-medium">P</span>
@@ -452,7 +452,7 @@ const Header = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="-mr-1 -mt-1 h-8 w-8 shrink-0 rounded-control text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="-mr-1 -mt-1 h-11 w-11 shrink-0 rounded-control text-muted-foreground hover:bg-muted hover:text-foreground"
                             aria-label="사용자 메뉴 더보기"
                           >
                             <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -465,7 +465,7 @@ const Header = () => {
                           className="z-[60] w-44"
                         >
                           <DropdownMenuItem
-                            className="h-9"
+                            className="min-h-11"
                             onSelect={() => {
                               guardedPush("/mypage", () => setOpen(false));
                             }}
@@ -473,7 +473,7 @@ const Header = () => {
                             마이페이지
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="h-9"
+                            className="min-h-11"
                             onSelect={() => {
                               guardedPush("/board/event", () => setOpen(false));
                             }}
@@ -482,7 +482,7 @@ const Header = () => {
                           </DropdownMenuItem>
                           {isAdmin && (
                             <DropdownMenuItem
-                              className="h-9"
+                              className="min-h-11"
                               onSelect={() => {
                                 setOpen(false);
                                 window.open("/admin/operations", "_blank", "noopener,noreferrer");
@@ -492,7 +492,7 @@ const Header = () => {
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem
-                            className="h-9 text-destructive focus:text-destructive"
+                            className="min-h-11 text-destructive focus:text-destructive"
                             onSelect={async () => {
                               if (!confirmBoardUnsavedChangesNavigation()) return;
                               setOpen(false);
@@ -517,7 +517,7 @@ const Header = () => {
                   <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-ui-label font-ui-medium text-muted-foreground">
                     <button
                       type="button"
-                      className="inline-flex min-h-10 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="쪽지함으로 이동"
                       onClick={() => {
                         guardedPush("/messages", () => setOpen(false));
@@ -533,7 +533,7 @@ const Header = () => {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex min-h-10 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-control bg-muted/40 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="마이페이지로 이동"
                       onClick={() => {
                         guardedPush("/mypage", () => setOpen(false));

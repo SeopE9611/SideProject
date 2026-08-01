@@ -32,8 +32,8 @@ export default function FinderRacketCardSkeleton({ count = 1 }: FinderRacketCard
                   ))}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <Skeleton className="h-10 rounded-lg" />
-                  <Skeleton className="h-10 rounded-lg" />
+                  <Skeleton className="h-11 rounded-lg bp-md:h-10" />
+                  <Skeleton className="h-11 rounded-lg bp-md:h-10" />
                 </div>
                 <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
                   <Skeleton className="h-11 rounded-lg" />

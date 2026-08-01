@@ -70,7 +70,7 @@ export default function RacketFinderToolbar<T extends string>({
           {filterTrigger}
         </div>
         <Select value={sort} onValueChange={(value) => onSortChange(value as T)}>
-          <SelectTrigger className="col-start-2 row-start-1 h-10 min-h-10 w-full min-w-0 rounded-control bg-background/80 focus:ring-primary/50 bp-md:col-auto bp-md:row-auto bp-md:order-3 bp-md:w-[168px] dark:bg-muted/30">
+          <SelectTrigger className="col-start-2 row-start-1 h-11 min-h-11 w-full min-w-0 rounded-control bg-background/80 focus:ring-primary/50 bp-md:col-auto bp-md:row-auto bp-md:order-3 bp-md:h-10 bp-md:min-h-10 bp-md:w-[168px] dark:bg-muted/30">
             <SelectValue placeholder="정렬" />
           </SelectTrigger>
           <SelectContent>
@@ -90,7 +90,7 @@ export default function RacketFinderToolbar<T extends string>({
             size="icon"
             disabled={!canGoPrevious}
             onClick={onPrevious}
-            className="h-10 w-10 rounded-r-none"
+            className="h-11 w-11 rounded-r-none bp-md:h-10 bp-md:w-10"
             aria-label="이전 결과 페이지"
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -100,7 +100,7 @@ export default function RacketFinderToolbar<T extends string>({
             size="icon"
             disabled={!canGoNext}
             onClick={onNext}
-            className="h-10 w-10 rounded-l-none"
+            className="h-11 w-11 rounded-l-none bp-md:h-10 bp-md:w-10"
             aria-label="다음 결과 페이지"
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />

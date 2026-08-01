@@ -806,7 +806,7 @@ export default function RacketFinderClient() {
       type="button"
       variant="outline"
       onClick={() => setFilterSheetOpen(true)}
-      className="h-10 min-h-10 justify-center whitespace-nowrap rounded-control px-3"
+      className="h-11 min-h-11 justify-center whitespace-nowrap rounded-control px-3 bp-md:h-10 bp-md:min-h-10"
     >
       <Filter className="mr-2 h-4 w-4" aria-hidden="true" />
       필터 {draftActiveCount > 0 ? draftActiveCount : ""}

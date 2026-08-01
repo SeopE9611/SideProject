@@ -33,7 +33,7 @@ export function ActiveFilterBar({
                 type="button"
                 aria-label={item.removeLabel}
                 onClick={item.onRemove}
-                className="inline-flex min-h-7 min-w-7 shrink-0 items-center justify-center rounded-full text-brand-highlight-ink transition-colors hover:bg-background/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-brand-highlight-ink transition-colors hover:bg-background/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-md:min-h-7 bp-md:min-w-7"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -46,7 +46,7 @@ export function ActiveFilterBar({
         variant="ghost"
         size="sm"
         onClick={onResetAll}
-        className="h-8 shrink-0 px-2 text-ui-label"
+        className="h-11 min-h-11 shrink-0 px-2 text-ui-label bp-md:h-8 bp-md:min-h-8"
       >
         {resetLabel}
       </Button>

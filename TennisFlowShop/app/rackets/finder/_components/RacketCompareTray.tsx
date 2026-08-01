@@ -38,14 +38,14 @@ function SelectedCompareItem({
           </div>
         )}
       </div>
-      <div className="min-w-0 flex-1 pr-8">
+      <div className="min-w-0 flex-1 pr-11 bp-sm:pr-8">
         <div className="line-clamp-2 text-ui-label font-medium leading-tight">{title}</div>
         <div className="truncate text-ui-caption text-muted-foreground">{brandText}</div>
       </div>
       <button
         type="button"
         onClick={() => onRemove(item.id)}
-        className="absolute right-1.5 top-1.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-destructive/90 text-destructive-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="absolute right-1.5 top-1.5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-destructive/90 text-destructive-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-sm:h-8 bp-sm:w-8"
         aria-label={`${brandText} ${title} 비교 목록에서 제거`}
       >
         <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -120,7 +120,7 @@ export default function RacketCompareTray() {
                     variant="ghost"
                     size="sm"
                     onClick={clear}
-                    className="h-10 min-h-10 px-2 text-muted-foreground hover:text-destructive"
+                    className="h-11 min-h-11 px-2 text-muted-foreground hover:text-destructive bp-sm:h-10 bp-sm:min-h-10"
                   >
                     <Trash2 className="h-3.5 w-3.5 bp-sm:mr-1" aria-hidden="true" />
                     <span className="sr-only bp-sm:not-sr-only">모두 삭제</span>
@@ -130,7 +130,7 @@ export default function RacketCompareTray() {
                     variant="highlight_soft"
                     onClick={goCompare}
                     disabled={!canCompare}
-                    className="h-10 min-h-10 gap-1.5 rounded-lg px-3"
+                    className="h-11 min-h-11 gap-1.5 rounded-lg px-3 bp-sm:h-10 bp-sm:min-h-10"
                   >
                     비교하기
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
