@@ -96,7 +96,7 @@ export default function QnAList() {
             상품, 주문, 서비스 이용 중 궁금한 점을 남기면 답변 상태를 이곳에서 확인할 수 있습니다.
           </p>
 
-          <Button asChild size="sm" variant="highlight" wrap="responsive" className="mt-5">
+          <Button asChild size="sm" variant="highlight" wrap="responsive" className="mt-5 min-h-11 bp-sm:min-h-9">
             <Link href="/board/qna/write">
               문의하기
               <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -165,7 +165,7 @@ export default function QnAList() {
                 variant="highlight_soft"
                 wrap="responsive"
                 asChild
-                className="w-full bp-sm:w-auto"
+                className="min-h-11 w-full bp-sm:min-h-9 bp-sm:w-auto"
               >
                 <Link href={`/board/qna/${qna.id}`}>
                   상세 보기
@@ -184,6 +184,7 @@ export default function QnAList() {
             type="button"
             variant="highlight_soft"
             wrap="responsive"
+            className="min-h-11 bp-sm:min-h-10"
             onClick={() => setSize(size + 1)}
             disabled={isValidating}
             aria-label={isValidating ? "문의 내역을 더 불러오는 중입니다" : "문의 내역 더 보기"}

@@ -37,8 +37,8 @@ export default function AcademyApplicationsListSkeleton({ count = 3 }: { count?:
                 ))}
               </div>
               <div className="flex flex-col gap-2 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:justify-end">
-                <Skeleton className="h-9 w-full rounded-lg bp-sm:w-24" />
-                <Skeleton className="h-9 w-full rounded-lg bp-sm:w-24" />
+                <Skeleton className="h-11 w-full rounded-lg bp-sm:h-9 bp-sm:w-24" />
+                <Skeleton className="h-11 w-full rounded-lg bp-sm:h-9 bp-sm:w-24" />
               </div>
             </div>
           </CardContent>

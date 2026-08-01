@@ -24,9 +24,9 @@ export default function ReviewListSkeleton({ count = 3 }: { count?: number }) {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-2 xs:grid-cols-3 sm:flex sm:justify-end">
-                <Skeleton className="h-9 w-full rounded-lg sm:w-20" />
-                <Skeleton className="h-9 w-full rounded-lg sm:w-16" />
-                <Skeleton className="h-9 w-full rounded-lg sm:w-16" />
+                <Skeleton className="h-11 w-full rounded-lg sm:h-9 sm:w-20" />
+                <Skeleton className="h-11 w-full rounded-lg sm:h-9 sm:w-16" />
+                <Skeleton className="h-11 w-full rounded-lg sm:h-9 sm:w-16" />
               </div>
             </div>
 
@@ -48,7 +48,7 @@ export default function ReviewListSkeleton({ count = 3 }: { count?: number }) {
               <Skeleton className="h-4 w-28" />
               <div className="flex flex-wrap items-center gap-2">
                 <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-9 w-28 rounded-lg" />
+                <Skeleton className="h-11 w-28 rounded-lg sm:h-9" />
               </div>
             </div>
           </CardContent>

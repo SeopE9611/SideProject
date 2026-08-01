@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 const LIMIT = 12;
 
 export default function Wishlist() {
-  const { items, remove, isLoading, hasDataError, hasResolvedData } = useWishlist();
+  const { items, remove, mutateAll, isLoading, hasDataError, hasResolvedData } = useWishlist();
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
 
@@ -79,6 +79,15 @@ export default function Wishlist() {
             위시리스트를 불러오지 못했습니다
           </h3>
           <p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해주세요.</p>
+          <Button
+            type="button"
+            variant="highlight"
+            wrap="responsive"
+            className="mt-5 min-h-11"
+            onClick={() => void mutateAll()}
+          >
+            다시 시도
+          </Button>
         </CardContent>
       </Card>
     );
@@ -97,7 +106,7 @@ export default function Wishlist() {
           <p className="mx-auto mb-6 max-w-md text-ui-body-sm text-muted-foreground">
             마음에 드는 상품을 저장해두고 언제든 다시 확인해보세요.
           </p>
-          <Button asChild variant="highlight" wrap="responsive" className="w-full sm:w-auto">
+          <Button asChild variant="highlight" wrap="responsive" className="min-h-11 w-full sm:min-h-10 sm:w-auto">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -172,7 +181,7 @@ export default function Wishlist() {
                   size="sm"
                   variant="highlight"
                   wrap="responsive"
-                  className="w-full min-w-0 px-3"
+                  className="min-h-11 w-full min-w-0 px-3 sm:min-h-9"
                   onClick={() => handleAddToCart(it)}
                   disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
                 >
@@ -183,7 +192,7 @@ export default function Wishlist() {
                   size="sm"
                   variant="outline"
                   wrap="responsive"
-                  className="w-full min-w-0 border-destructive/40 px-3 text-destructive hover:bg-destructive/10"
+                  className="min-h-11 w-full min-w-0 border-destructive/40 px-3 text-destructive hover:bg-destructive/10 sm:min-h-9"
                   aria-label={`${it.name} 위시리스트에서 삭제`}
                   onClick={() => {
                     remove(it.id).catch(() => {
@@ -207,7 +216,7 @@ export default function Wishlist() {
           <Button
             variant="outline"
             onClick={() => setVisible((v) => v + LIMIT)}
-            className="bg-transparent"
+            className="min-h-11 bg-transparent sm:min-h-10"
           >
             더 보기
           </Button>

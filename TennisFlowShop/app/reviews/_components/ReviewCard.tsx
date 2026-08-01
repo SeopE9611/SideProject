@@ -335,7 +335,7 @@ export default function ReviewCard({
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-control hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-control hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bp-sm:h-9 bp-sm:w-9"
                     aria-label="리뷰 관리"
                   >
                     <MoreHorizontal className="h-4 w-4" />
@@ -470,7 +470,7 @@ export default function ReviewCard({
             variant={voted ? "secondary" : "outline"}
             onClick={onHelpful}
             disabled={pending || !helpfulEligible}
-            className="min-h-9 rounded-control px-4 font-medium data-[voted=true]:bg-brand-highlight-muted data-[voted=true]:text-brand-highlight-foreground dark:data-[voted=true]:text-brand-highlight"
+            className="min-h-11 rounded-control px-4 font-medium data-[voted=true]:bg-brand-highlight-muted data-[voted=true]:text-brand-highlight-foreground dark:data-[voted=true]:text-brand-highlight bp-sm:min-h-9"
             data-voted={voted}
             aria-pressed={voted}
             aria-label={

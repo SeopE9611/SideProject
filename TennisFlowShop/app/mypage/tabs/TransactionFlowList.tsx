@@ -1293,7 +1293,7 @@ export default function TransactionFlowList() {
                         size="sm"
                         variant="outline"
                         wrap="nowrap"
-                        className="min-h-11 w-full min-w-0 whitespace-nowrap bg-transparent md:min-h-9"
+                        className="w-full min-w-0 whitespace-nowrap bg-transparent"
                       >
                         <Link href={resolvedDetailHref} aria-label={`${displayTitle} 상세 보기`}>
                           상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -1822,7 +1822,7 @@ export default function TransactionFlowList() {
                                 align="end"
                                 className="w-56 max-w-[calc(100vw-2rem)] p-1"
                               >
-                                <div className="grid gap-1 [&_a]:h-8 [&_a]:w-full [&_a]:justify-start [&_a]:px-3 [&_a]:text-ui-label [&_a]:font-medium [&_button]:h-8 [&_button]:w-full [&_button]:justify-start [&_button]:px-3 [&_button]:text-ui-label [&_button]:font-medium">
+                                <div className="grid gap-1 [&_a]:h-11 [&_a]:w-full [&_a]:justify-start [&_a]:px-3 [&_a]:text-ui-label [&_a]:font-medium [&_button]:h-11 [&_button]:w-full [&_button]:justify-start [&_button]:px-3 [&_button]:text-ui-label [&_button]:font-medium md:[&_a]:h-8 md:[&_button]:h-8">
                                   {secondaryActions.map((action) => (
                                     <DropdownMenuItem
                                       key={action.key}

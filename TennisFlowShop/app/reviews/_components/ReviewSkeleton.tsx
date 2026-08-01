@@ -25,7 +25,7 @@ export default function ReviewSkeleton() {
             <Skeleton key={index} className="h-20 w-20 shrink-0 rounded-control" />
           ))}
         </div>
-        <Skeleton className="h-9 w-32 rounded-control" />
+        <Skeleton className="h-11 w-32 rounded-control bp-sm:h-9" />
       </CardContent>
     </Card>
   );
