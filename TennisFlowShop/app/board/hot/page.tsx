@@ -1,9 +1,8 @@
-import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
-import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Flame } from "lucide-react";
-import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { CommunityComingSoonPage } from "@/app/board/_components/CommunityComingSoonPage";
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
 
 export const metadata = {
   title: "인기글 모아보기 (준비중)",
@@ -18,57 +17,18 @@ export default function HotBoardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* 헤더 영역 */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="min-w-0">
-            <div className="mb-1 text-ui-body-sm text-muted-foreground">
-              <span className="font-medium text-success">게시판</span>
-              <span className="mx-1">›</span>
-              <span>인기글 모아보기</span>
-            </div>
-            <h1 className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep tracking-normal text-foreground">
-              인기글 모아보기 (준비중)
-            </h1>
-            <p className="mt-1 text-ui-body-sm md:text-ui-body-lg text-muted-foreground">
-              조회수, 댓글 수, 공감 수 등을 기준으로 인기 게시글을 큐레이션하는 페이지입니다. 현재
-              기능을 준비하고 있습니다.
-            </p>
-          </div>
-        </div>
-
-        {/* 준비중 안내 카드 */}
-        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b bg-muted/30">
-            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/10 shadow-lg dark:bg-warning/15">
-                <Flame className="h-5 w-5 text-warning" />
-              </div>
-              <CardTitle className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
-                인기글 모아보기 기능을 준비 중입니다
-              </CardTitle>
-            </div>
-            <span className="ml-auto shrink-0 text-ui-label md:text-ui-body-sm rounded-full border px-3 py-1 text-muted-foreground dark:border-border bg-card">
-              Coming Soon
-            </span>
-          </CardHeader>
-          <CardContent className="p-6 space-y-3 text-ui-body-sm md:text-ui-body-lg text-muted-foreground">
-            <p>추후 다음과 같은 기준으로 인기글을 보여줄 예정입니다:</p>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>조회수 상위 게시글</li>
-              <li>댓글/답글 수가 많은 활발한 게시글</li>
-              <li>공감/좋아요 수가 높은 하이라이트 게시글</li>
-            </ul>
-            <p className="pt-2 text-ui-label md:text-ui-body-sm text-muted-foreground">
-              기능 오픈 전까지는 리뷰 게시판에서 인기 있는 후기들을 먼저 확인해 보실 수 있습니다.
-            </p>
-            <Button asChild size="sm" className="mt-2">
-              <Link href="/reviews">리뷰 게시판 둘러보기</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <CommunityComingSoonPage
+      eyebrow="커뮤니티 · 인기글"
+      title="인기글 모아보기"
+      description="조회수와 댓글, 공감 반응을 기준으로 커뮤니티에서 주목받는 게시글을 빠르게 둘러볼 수 있도록 준비하고 있습니다."
+      noticeTitle="커뮤니티 인기글 기능을 준비 중입니다"
+      features={[
+        "조회수 상위 게시글",
+        "댓글과 답글이 활발한 게시글",
+        "공감과 좋아요가 높은 게시글",
+      ]}
+      alternative="기능이 열리기 전까지 리뷰 게시판에서 다른 사용자들이 남긴 다양한 후기를 먼저 확인하실 수 있습니다."
+      icon={Flame}
+    />
   );
 }
