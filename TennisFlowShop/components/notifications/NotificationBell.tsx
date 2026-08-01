@@ -94,6 +94,7 @@ export function NotificationBell({
           </SheetHeader>
           <NotificationPanel
             enabled={open}
+            reserveCloseButtonSpace
             onClose={() => {
               setOpen(false);
               onNavigate?.();

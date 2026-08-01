@@ -781,6 +781,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               <PhotosReorderGrid
                 value={editPhotos}
                 onChange={setEditPhotos}
+                mobileControls
+                responsiveColumns
                 onRemove={(url) => {
                   const sessionId = editPhotoSession.uploadSessionId;
                   if (sessionId) void editPhotoSession.removeUploadedUrl(url, sessionId);
