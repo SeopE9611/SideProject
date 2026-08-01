@@ -14,5 +14,8 @@ export function useMessageDetail(id: string | null, enabled: boolean) {
   });
 
   const item = data && data.ok ? data.item : null;
-  return { item, data, error, isLoading, mutate };
+  const responseError = data && !data.ok ? data.error : null;
+  const hasDetailError = Boolean(error || responseError);
+
+  return { item, data, error, responseError, hasDetailError, isLoading, mutate };
 }

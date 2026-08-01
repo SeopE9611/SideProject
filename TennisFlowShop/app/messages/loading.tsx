@@ -18,16 +18,16 @@ export default function Loading() {
           contentClassName="p-3 sm:p-4 md:p-6"
         >
           <p className="sr-only">쪽지함을 불러오는 중입니다.</p>
-          <div className="mb-4 grid grid-cols-3 gap-1 rounded-control border border-border bg-brand-highlight-muted/45 p-1 md:mb-6">
+          <div className="mb-4 grid h-11 grid-cols-3 gap-1 rounded-control border border-border bg-brand-highlight-muted/45 p-1 md:mb-6 md:h-10">
             {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="h-9 rounded-control" />
+              <Skeleton key={index} className="h-full rounded-control" />
             ))}
           </div>
           <div className="grid gap-4 md:gap-6 lg:grid-cols-12">
             <section className="overflow-hidden rounded-panel border border-border bg-card shadow-soft lg:col-span-5">
               <div className="flex justify-between border-b border-border bg-muted/30 p-4">
                 <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-8 w-20 rounded-control" />
+                <Skeleton className="h-11 w-36 rounded-control md:h-8 md:w-28" />
               </div>
               <div className="space-y-2 p-3 sm:p-4">
                 {Array.from({ length: 5 }).map((_, index) => (
