@@ -333,7 +333,7 @@ export default function KakaoInquiryWidget() {
               aria-expanded={panel === "guide"}
               aria-controls="compact-inquiry-panel"
               onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
-              className="flex h-11 w-11 items-center justify-center gap-2 rounded-full bg-brand-highlight p-0 text-ui-body-sm font-semibold text-brand-highlight-foreground shadow-float hover:bg-brand-highlight-hover focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bp-sm:h-auto bp-sm:w-auto bp-sm:px-4"
+              className="flex h-11 w-11 items-center justify-center gap-2 rounded-full bg-brand-highlight p-0 text-ui-body-sm font-semibold text-brand-highlight-foreground shadow-float hover:bg-brand-highlight-hover focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bp-sm:w-auto bp-sm:px-4"
             >
               <MessageCircle className="h-4 w-4" />
               <span className="sr-only bp-sm:not-sr-only bp-sm:inline">문의</span>
