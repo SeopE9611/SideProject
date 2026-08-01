@@ -499,12 +499,12 @@ export default function QnaWritePage() {
         description="상품, 주문, 서비스 이용 중 궁금한 점을 남겨주시면 확인 후 답변드릴게요."
         actions={
           <>
-            <Button asChild variant="highlight" size="sm" className="w-full bp-sm:w-auto">
+            <Button asChild variant="secondary" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href="/board/qna" onClick={guardLinkLeave}>
                 Q&amp;A 목록
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="w-full bp-sm:w-auto">
+            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href="/support" onClick={guardLinkLeave}>
                 고객센터 홈
               </Link>

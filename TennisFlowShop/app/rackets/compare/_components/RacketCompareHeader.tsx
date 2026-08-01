@@ -32,7 +32,7 @@ export default function RacketCompareHeader({
           <Button
             variant="outline"
             onClick={onBackToFinder}
-            className="min-w-0 rounded-lg bg-transparent"
+            className="min-h-11 min-w-0 rounded-lg bg-transparent bp-md:min-h-10"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             라켓 찾기로
@@ -41,7 +41,7 @@ export default function RacketCompareHeader({
             variant="ghost"
             onClick={onClear}
             disabled={count === 0}
-            className="min-w-0 rounded-lg text-muted-foreground"
+            className="min-h-11 min-w-0 rounded-lg text-muted-foreground bp-md:min-h-10"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             모두 삭제

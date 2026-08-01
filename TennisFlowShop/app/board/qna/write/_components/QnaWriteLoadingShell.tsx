@@ -23,8 +23,8 @@ export function QnaWriteLoadingShell() {
         description="상품, 주문, 서비스 이용 중 궁금한 점을 남겨주시면 확인 후 답변드릴게요."
         actions={
           <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row">
-            <Skeleton className="h-9 w-full rounded-lg bp-sm:w-24" />
-            <Skeleton className="h-9 w-full rounded-lg bp-sm:w-28" />
+            <Skeleton className="h-11 w-full rounded-lg bp-sm:w-24" />
+            <Skeleton className="h-11 w-full rounded-lg bp-sm:w-28" />
           </div>
         }
       />

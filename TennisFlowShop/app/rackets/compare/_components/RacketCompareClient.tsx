@@ -142,7 +142,7 @@ export default function RacketCompareClient() {
                   <RacketSpecQuickViewDialog
                     racket={selected}
                     trigger={
-                      <Button type="button" variant="outline">
+                      <Button type="button" variant="outline" className="min-h-11 w-full bp-sm:min-h-10">
                         Quick View
                       </Button>
                     }
@@ -150,6 +150,7 @@ export default function RacketCompareClient() {
                   <Button
                     type="button"
                     variant="ghost"
+                    className="min-h-11 w-full bp-sm:min-h-10"
                     onClick={() => remove(selected.id)}
                     aria-label={`${selectedBrand} ${selected.model} 비교 목록에서 제거`}
                   >

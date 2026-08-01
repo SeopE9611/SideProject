@@ -369,6 +369,8 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                   <Button
                     asChild
                     variant="outline"
+                    size="lg"
+                    wrap="responsive"
                     className={cn(
                       "inline-flex items-center justify-center gap-2",
                       "border-muted-foreground/20 bg-transparent",
@@ -386,6 +388,8 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                   <Button
                     asChild
                     variant="highlight_soft"
+                    size="lg"
+                    wrap="responsive"
                     className={cn(
                       "inline-flex items-center justify-center gap-2",
                       "shadow-sm transition-all duration-200",

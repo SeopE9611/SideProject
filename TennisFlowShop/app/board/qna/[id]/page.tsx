@@ -204,12 +204,12 @@ export default function QnaDetailPage() {
         description="Q&A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다."
         actions={
           <>
-            <Button asChild variant="highlight" size="sm" className="w-full sm:w-auto">
+            <Button asChild variant="secondary" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href={listHref} onClick={confirmLeave}>
                 Q&amp;A 목록
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
               <Link href={supportHref} onClick={confirmLeave}>
                 고객센터 홈
               </Link>

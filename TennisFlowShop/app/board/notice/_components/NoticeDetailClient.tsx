@@ -281,9 +281,9 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
             <div className="space-y-3">
               <h2 className="text-ui-card-title-lg font-semibold text-foreground">{errorTitle}</h2>
               <p className="text-ui-body-sm text-muted-foreground">{errorBody}</p>
-              <div className="grid grid-cols-1 gap-2 pt-2 sm:inline-flex sm:grid-cols-none sm:items-center sm:justify-center">
+              <div className="grid grid-cols-1 gap-2 pt-2 bp-sm:inline-flex bp-sm:grid-cols-none bp-sm:items-center bp-sm:justify-center">
                 {(error as FetchError | undefined)?.status === 401 && (
-                  <Button asChild>
+                  <Button asChild variant="highlight" size="lg" wrap="responsive">
                     <Link
                       href={`/login?next=${encodeURIComponent(`${listBasePath}/${id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
                     >
@@ -291,10 +291,10 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     </Link>
                   </Button>
                 )}
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="lg" wrap="responsive">
                   <Link href={listHref}>{sectionLabel} 목록으로</Link>
                 </Button>
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="lg" wrap="responsive">
                   <Link href="/support">고객센터 홈으로</Link>
                 </Button>
               </div>
