@@ -465,12 +465,12 @@ export default function AdminReviewListClient() {
     }
   }
   const GRID =
-    "lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
+    "grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
 
   return (
     <div className="space-y-5">
       {/* KPI */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-4">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -516,7 +516,7 @@ export default function AdminReviewListClient() {
               <p className={adminTypography.caption}>유형별 후기</p>
               <TrendingUp className="h-5 w-5 text-foreground" />
             </div>
-            <div className="grid grid-cols-1 gap-1 text-[12px] text-muted-foreground sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-1 text-[12px] text-muted-foreground">
               <span>상품 후기 {metrics?.byContext?.product ?? 0}</span>
               <span>상품·교체서비스 후기 {metrics?.byContext?.product_stringing ?? 0}</span>
               <span>교체서비스 후기 {metrics?.byContext?.standalone_stringing ?? 0}</span>
@@ -534,7 +534,7 @@ export default function AdminReviewListClient() {
           "sticky top-0 z-10 -mt-2 mb-2 flex flex-wrap items-center justify-between gap-3 supports-[backdrop-filter]:bg-card/95",
         )}
       >
-        <div className="relative w-full sm:w-80">
+        <div className="relative w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
@@ -637,7 +637,7 @@ export default function AdminReviewListClient() {
           {/* 헤더 라벨 */}
           <div
             className={cn(
-              "sticky top-0 z-[1] hidden items-center gap-x-3 border-b border-border bg-muted/40 lg:grid",
+              "sticky top-0 z-[1] grid items-center gap-x-3 border-b border-border bg-muted/40",
               GRID,
             )}
           >
@@ -666,7 +666,7 @@ export default function AdminReviewListClient() {
               {Array.from({ length: 6 }).map((_, index) => (
                 <div
                   key={index}
-                  className={`grid grid-cols-1 lg:grid ${GRID} items-center gap-x-3 gap-y-2 rounded-md border border-border/40 px-3 py-3`}
+                  className={`grid ${GRID} items-center gap-x-3 gap-y-2 rounded-md border border-border/40 px-3 py-3`}
                 >
                   <Skeleton className="h-4 w-4" />
                   <div className="space-y-2">
@@ -703,7 +703,7 @@ export default function AdminReviewListClient() {
                   key={r._id}
                   onClick={() => setDetail(r)}
                   className={[
-                    "grid grid-cols-1 lg:grid",
+                    "grid",
                     GRID,
                     "items-center gap-y-2 gap-x-3 px-3",
                     compact ? "py-2" : "py-3",
@@ -714,7 +714,7 @@ export default function AdminReviewListClient() {
                   ].join(" ")}
                 >
                   {/* 체크박스 */}
-                  <div className={`self-start md:self-center ${dim}`}>
+                  <div className={`self-center ${dim}`}>
                     <Checkbox
                       data-cy="row-checkbox"
                       checked={isSel}
@@ -821,7 +821,7 @@ export default function AdminReviewListClient() {
                     className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="hidden xl:inline text-[12px] text-muted-foreground">
+                    <span className="inline text-[12px] text-muted-foreground">
                       {r.moderationStatus === "visible" ? "관리자 공개" : "관리자 숨김"}
                     </span>
                     {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
@@ -1217,7 +1217,7 @@ export default function AdminReviewListClient() {
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={index}
-              className="grid grid-cols-1 gap-2 rounded-md border border-border/40 p-3 lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px] lg:items-center lg:gap-x-3"
+              className={`grid ${GRID} items-center gap-x-3 gap-y-2 rounded-md border border-border/40 p-3`}
             >
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-28" />
