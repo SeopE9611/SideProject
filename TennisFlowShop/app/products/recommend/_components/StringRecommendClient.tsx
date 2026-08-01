@@ -341,7 +341,7 @@ export default function StringRecommendClient() {
           variant="highlight"
           onClick={handleSubmit}
           disabled={!isComplete || isLoadingProducts || !!productsError}
-          className="min-h-10 w-full break-keep whitespace-normal sm:w-auto sm:min-w-44"
+          className="min-h-11 w-full break-keep whitespace-normal sm:w-auto sm:min-w-44"
         >
           추천 결과 보기
         </Button>
@@ -349,7 +349,7 @@ export default function StringRecommendClient() {
           type="button"
           variant="outline"
           onClick={handleReset}
-          className="min-h-10 w-full break-keep whitespace-normal sm:w-auto sm:min-w-36"
+          className="min-h-11 w-full break-keep whitespace-normal sm:w-auto sm:min-w-36"
         >
           다시 선택하기
         </Button>

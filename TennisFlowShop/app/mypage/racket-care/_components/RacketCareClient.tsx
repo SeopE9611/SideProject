@@ -295,7 +295,7 @@ export default function RacketCareClient() {
         <CardContent className="space-y-3 p-5">
           <p className="font-semibold text-destructive">라켓 케어 정보를 불러오지 못했습니다.</p>
           <p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
-          <Button onClick={() => mutate()}>
+          <Button variant="highlight" className="min-h-11 bp-sm:min-h-0" onClick={() => mutate()}>
             <RefreshCw className="mr-2 h-4 w-4" />
             다시 시도
           </Button>

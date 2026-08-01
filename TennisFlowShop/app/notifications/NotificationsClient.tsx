@@ -90,6 +90,22 @@ export default function NotificationsClient() {
     };
   }, []);
 
+  const retryNotifications = async () => {
+    if (status === "loading") return;
+    setStatus("loading");
+    try {
+      const data = await fetchNotifications();
+      setItems(data.items);
+      setUnreadCount(data.unreadCount);
+      setHasMore(data.hasMore);
+      setNextCursor(data.nextCursor);
+      setStatus("ready");
+    } catch (error) {
+      console.error(error);
+      setStatus("error");
+    }
+  };
+
   const loadMore = async () => {
     if (!hasMore || !nextCursor || isLoadingMore) return;
 
@@ -291,6 +307,16 @@ export default function NotificationsClient() {
               title="알림을 불러오지 못했습니다"
               description="잠시 후 다시 확인해주세요."
               className="py-12"
+              actions={
+                <Button
+                  type="button"
+                  variant="highlight"
+                  className="min-h-11 bp-sm:min-h-0"
+                  onClick={() => void retryNotifications()}
+                >
+                  다시 시도
+                </Button>
+              }
             />
           ) : showEmpty ? (
             <EmptyState

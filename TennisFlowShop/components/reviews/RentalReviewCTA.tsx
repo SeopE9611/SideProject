@@ -37,14 +37,14 @@ export default function RentalReviewCTA({
   if (!allowFetch) return null;
   if (isLoading) {
     return (
-      <Button size="sm" variant="outline" className={className} disabled>
+      <Button size="sm" variant="outline" className={`min-h-11 bp-sm:min-h-0 ${className ?? ""}`} disabled>
         확인중…
       </Button>
     );
   }
   if (data?.reason === "already") {
     return (
-      <Button size="sm" variant="secondary" className={className} disabled>
+      <Button size="sm" variant="secondary" className={`min-h-11 bp-sm:min-h-0 ${className ?? ""}`} disabled>
         <Check className="mr-1 h-4 w-4" />
         이미 대여 후기를 남겼어요
       </Button>

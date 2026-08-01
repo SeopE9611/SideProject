@@ -498,7 +498,7 @@ export default function QnaPageClient({
                     }}
                   >
                     <SelectTrigger
-                      className="h-9 w-full bg-card text-ui-body-sm md:h-10 md:w-[150px]"
+                      className="h-11 w-full bg-card text-ui-body-sm bp-sm:h-10 md:w-[150px]"
                       aria-label="문의 분류"
                     >
                       <SelectValue placeholder="문의 분류" />
@@ -537,7 +537,7 @@ export default function QnaPageClient({
                     }}
                   >
                     <SelectTrigger
-                      className="h-9 w-full bg-card text-ui-body-sm md:h-10 md:w-[140px]"
+                      className="h-11 w-full bg-card text-ui-body-sm bp-sm:h-10 md:w-[140px]"
                       aria-label="답변 상태"
                     >
                       <SelectValue placeholder="답변 상태" />
@@ -565,7 +565,7 @@ export default function QnaPageClient({
                     }
                   >
                     <SelectTrigger
-                      className="h-9 w-full bg-card text-ui-body-sm sm:w-[130px] md:h-10"
+                      className="h-11 w-full bg-card text-ui-body-sm sm:w-[130px] bp-sm:h-10"
                       aria-label="검색 기준"
                     >
                       <SelectValue placeholder="검색 기준" />
@@ -583,7 +583,7 @@ export default function QnaPageClient({
                     <Input
                       type="search"
                       placeholder="검색어를 입력하세요"
-                      className="h-9 w-full min-w-0 bg-card pl-10 text-ui-body-sm md:h-10"
+                      className="h-11 w-full min-w-0 bg-card pl-10 text-ui-body-sm bp-sm:h-10"
                       value={inputKeyword}
                       onChange={(e) => setInputKeyword(e.target.value)}
                       onKeyDown={(e) => {
@@ -625,7 +625,7 @@ export default function QnaPageClient({
                           field: "all",
                         });
                       }}
-                      className="h-9 shrink-0 whitespace-nowrap text-ui-body-sm md:h-10"
+                      className="h-11 shrink-0 whitespace-nowrap text-ui-body-sm bp-sm:h-10"
                       disabled={isBusy}
                     >
                       전체 보기
@@ -649,7 +649,7 @@ export default function QnaPageClient({
                       });
                     }}
                     variant="secondary"
-                    className="h-9 shrink-0 whitespace-nowrap text-ui-body-sm md:h-10"
+                    className="h-11 shrink-0 whitespace-nowrap text-ui-body-sm bp-sm:h-10"
                     disabled={isBusy}
                   >
                     {isBusy && (

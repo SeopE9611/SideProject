@@ -312,6 +312,16 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           title="쪽지 목록을 불러오지 못했습니다"
                           description={errorMessage || "잠시 후 다시 확인해주세요."}
                           className="py-8"
+                          actions={
+                            <Button
+                              type="button"
+                              variant="highlight"
+                              className="min-h-11 bp-sm:min-h-0"
+                              onClick={() => void mutate()}
+                            >
+                              다시 시도
+                            </Button>
+                          }
                         />
                       )}
 

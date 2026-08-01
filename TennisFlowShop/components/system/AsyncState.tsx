@@ -99,7 +99,13 @@ export default function AsyncState({
           {resolvedDescription}
         </p>
         {isError && onAction && (
-          <Button type="button" onClick={onAction} size="sm" variant="outline" className="mt-1">
+          <Button
+            type="button"
+            onClick={onAction}
+            size="sm"
+            variant={tone === "user" ? "highlight" : "outline"}
+            className={cn("mt-1", tone === "user" && "min-h-11 bp-sm:min-h-0")}
+          >
             <RefreshCcw className="mr-1 h-3.5 w-3.5" />
             {actionLabel}
           </Button>

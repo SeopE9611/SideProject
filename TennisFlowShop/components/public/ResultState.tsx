@@ -61,7 +61,7 @@ export function ResultState({
       )}
       {children && <div className="mt-6 w-full text-left">{children}</div>}
       {actions && (
-        <div className="mt-6 flex w-full flex-col justify-center gap-2 bp-sm:w-auto bp-sm:flex-row">
+        <div className="mt-6 flex w-full flex-col justify-center gap-2 [&_a]:min-h-11 [&_button]:min-h-11 bp-sm:w-auto bp-sm:flex-row bp-sm:[&_a]:min-h-0 bp-sm:[&_button]:min-h-0">
           {actions}
         </div>
       )}

@@ -49,7 +49,7 @@ export default function OrderReviewCTA({
 
   if (loading) {
     return (
-      <Button size={size} variant="outline" className={className} disabled>
+      <Button size={size} variant="outline" className={`min-h-11 bp-sm:min-h-0 ${className ?? ""}`} disabled>
         확인중…
       </Button>
     );
@@ -59,7 +59,7 @@ export default function OrderReviewCTA({
   if (reviewAllDone) {
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-        <Button size={size} variant="secondary" disabled>
+        <Button size={size} variant="secondary" className="min-h-11 bp-sm:min-h-0" disabled>
           <Check className="mr-1 h-4 w-4" />
           모든 후기를 남겼어요
         </Button>
@@ -101,7 +101,7 @@ export default function OrderReviewCTA({
   if (unreviewedCount && unreviewedCount > 0) {
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-        <Button size={size} variant="outline" asChild>
+        <Button size={size} variant="outline" className="min-h-11 bp-sm:min-h-0" asChild>
           <Link
             href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders#reviews-cta`}
           >

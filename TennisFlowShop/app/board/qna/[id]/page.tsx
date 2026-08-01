@@ -233,7 +233,7 @@ export default function QnaDetailPage() {
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               {(error as FetchError | undefined)?.status === 401 && (
-                <Button asChild variant="highlight" className="w-full sm:w-auto">
+                <Button asChild variant="highlight" className="min-h-11 w-full bp-sm:min-h-0 sm:w-auto">
                   <Link
                     href={`/login?next=${encodeURIComponent(`/board/qna/${id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
                   >
@@ -241,10 +241,10 @@ export default function QnaDetailPage() {
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" asChild className="w-full sm:w-auto">
+              <Button variant="outline" asChild className="min-h-11 w-full bp-sm:min-h-0 sm:w-auto">
                 <Link href={listHref}>Q&amp;A 목록으로</Link>
               </Button>
-              <Button variant="outline" asChild className="w-full sm:w-auto">
+              <Button variant="outline" asChild className="min-h-11 w-full bp-sm:min-h-0 sm:w-auto">
                 <Link href={supportHref}>고객센터 홈</Link>
               </Button>
             </div>

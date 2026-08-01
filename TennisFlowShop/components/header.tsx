@@ -784,7 +784,7 @@ const Header = () => {
                     로그인하면 주문 조회와 교체서비스 신청 내역을 확인할 수 있어요.
                   </p>
                   <Button
-                    className="h-10 w-full justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-brand-highlight/90"
+                    className="h-11 w-full justify-center rounded-control bg-brand-highlight text-brand-highlight-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-brand-highlight/90"
                     onClick={() => {
                       const redirectTo =
                         typeof window !== "undefined"

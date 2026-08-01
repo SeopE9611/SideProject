@@ -512,7 +512,7 @@ export default async function AcademyApplyPage({
                           이 클래스는 현재 모집이 마감되었습니다. 문의하기를 통해 다음 모집 일정을
                           확인해 주세요.
                         </p>
-                        <Button asChild variant="outline" size="sm">
+                        <Button asChild variant="outline" size="sm" className="min-h-11 bp-sm:min-h-0">
                           <Link href="/board/qna/write?category=academy">문의하기</Link>
                         </Button>
                       </div>

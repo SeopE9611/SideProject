@@ -78,8 +78,8 @@ export default function NoticeDetailLoadingShell({
         description={pageDescription}
         actions={
           <>
-            <Skeleton className="h-10 w-full bp-sm:w-32" />
-            <Skeleton className="h-10 w-full bp-sm:w-28" />
+            <Skeleton className="h-11 w-full bp-sm:h-10 bp-sm:w-32" />
+            <Skeleton className="h-11 w-full bp-sm:h-10 bp-sm:w-28" />
           </>
         }
       />

@@ -68,7 +68,7 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
         <p className="break-keep text-ui-body-sm text-muted-foreground">
           실제 라켓 등록과 관리는 내 라켓 관리 화면에서 이용할 수 있습니다.
         </p>
-        <Button asChild variant="highlight" wrap="responsive">
+        <Button asChild variant="highlight" size="lg" wrap="responsive">
           <Link href={primaryHref}>{primaryLabel}</Link>
         </Button>
       </div>

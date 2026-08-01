@@ -988,7 +988,7 @@ function HomeSectionHeader({
       title={title}
       description={description}
       actions={
-        <Button asChild variant="outline" size="sm" wrap="responsive">
+        <Button asChild variant="outline" size="sm" wrap="responsive" className="min-h-11 bp-sm:min-h-0">
           <Link href={href}>
             {linkLabel}
             <ArrowRight aria-hidden="true" />

@@ -63,7 +63,7 @@ function AdminNoticeWriteButton({ href, label }: { href: string; label: string }
       asChild
       size="sm"
       variant="highlight"
-      className="h-9 w-full shrink-0 whitespace-nowrap rounded-control text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg"
+      className="h-11 w-full shrink-0 whitespace-nowrap rounded-control text-ui-body-sm bp-sm:h-10 sm:w-auto sm:text-ui-body-lg"
     >
       <Link href={href}>
         <Plus className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
@@ -385,7 +385,7 @@ export default function NoticeListClient({
               <div className="w-full sm:w-[170px] sm:shrink-0">
                 <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
                   <SelectTrigger
-                    className="h-9 w-full rounded-control bg-card text-ui-body-sm sm:h-10 sm:text-ui-body-lg"
+                    className="h-11 w-full rounded-control bg-card text-ui-body-sm bp-sm:h-10 sm:text-ui-body-lg"
                     aria-label="검색 조건"
                   >
                     <SelectValue placeholder="검색 조건" />
@@ -416,7 +416,7 @@ export default function NoticeListClient({
                 <Input
                   type="search"
                   placeholder="검색어를 입력하세요"
-                  className="h-9 w-full min-w-0 rounded-control bg-card pl-10 text-ui-body-sm sm:h-10 sm:pl-12 sm:text-ui-body-lg"
+                  className="h-11 w-full min-w-0 rounded-control bg-card pl-10 text-ui-body-sm bp-sm:h-10 sm:pl-12 sm:text-ui-body-lg"
                   value={inputKeyword}
                   onChange={(e) => setInputKeyword(e.target.value)}
                 />
@@ -425,7 +425,7 @@ export default function NoticeListClient({
                 type="submit"
                 size="sm"
                 variant="highlight"
-                className="h-9 w-full shrink-0 whitespace-nowrap rounded-control text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg lg:w-auto"
+                className="h-11 w-full shrink-0 whitespace-nowrap rounded-control text-ui-body-sm bp-sm:h-10 sm:w-auto sm:text-ui-body-lg lg:w-auto"
                 disabled={isBusy}
               >
                 {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -457,7 +457,7 @@ export default function NoticeListClient({
                 title={emptyTitle}
                 description={emptyDescription}
               />
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="min-h-11 bp-sm:min-h-0">
                 <Link href="/support">고객센터 홈으로</Link>
               </Button>
             </div>
@@ -477,6 +477,7 @@ export default function NoticeListClient({
                   type="button"
                   variant="outline"
                   size="sm"
+                  className="min-h-11 bp-sm:min-h-0"
                   onClick={() => {
                     setInputKeyword("");
                     setKeyword("");
@@ -568,7 +569,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
+              className="h-11 w-11 rounded-control bg-card bp-sm:h-10 bp-sm:w-10"
               onClick={() => movePage(1)}
               disabled={page <= 1 || isBusy}
             >
@@ -578,7 +579,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
+              className="h-11 w-11 rounded-control bg-card bp-sm:h-10 bp-sm:w-10"
               onClick={() => movePage(page - 1)}
               disabled={page <= 1 || isBusy}
             >
@@ -590,7 +591,7 @@ export default function NoticeListClient({
                 key={pageNumber}
                 variant={pageNumber === page ? "highlight" : "outline"}
                 size="sm"
-                className="h-10 w-10 rounded-control text-ui-body-sm sm:h-12 sm:w-12 sm:text-ui-body-lg"
+                className="h-11 w-11 rounded-control text-ui-body-sm bp-sm:h-10 bp-sm:w-10"
                 onClick={() => movePage(pageNumber)}
                 disabled={isBusy}
                 aria-current={pageNumber === page ? "page" : undefined}
@@ -601,7 +602,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
+              className="h-11 w-11 rounded-control bg-card bp-sm:h-10 bp-sm:w-10"
               onClick={() => movePage(page + 1)}
               disabled={page >= totalPages || isBusy}
             >
@@ -611,7 +612,7 @@ export default function NoticeListClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-control bg-card sm:h-12 sm:w-12"
+              className="h-11 w-11 rounded-control bg-card bp-sm:h-10 bp-sm:w-10"
               onClick={() => movePage(totalPages)}
               disabled={page >= totalPages || isBusy}
             >
@@ -626,13 +627,13 @@ export default function NoticeListClient({
                 value={pageJump}
                 onChange={(e) => setPageJump(e.target.value)}
                 placeholder="페이지"
-                className="h-10 w-20 rounded-control bg-card px-2 text-ui-label sm:h-12 sm:text-ui-body-sm"
+                className="h-11 w-20 rounded-control bg-card px-2 text-ui-label bp-sm:h-10 bp-sm:text-ui-body-sm"
               />
               <Button
                 type="submit"
                 variant="outline"
                 size="sm"
-                className="h-10 rounded-control bg-card px-2 sm:h-12"
+                className="h-11 rounded-control bg-card px-2 bp-sm:h-10"
                 disabled={isBusy}
               >
                 이동

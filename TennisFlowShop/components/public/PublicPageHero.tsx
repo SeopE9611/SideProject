@@ -48,7 +48,7 @@ export function PublicPageHero({
           {actions && (
             <div
               className={cn(
-                "flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap",
+                "flex w-full flex-col gap-2 [&_a]:min-h-11 [&_button]:min-h-11 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-sm:[&_a]:min-h-0 bp-sm:[&_button]:min-h-0",
                 centered && "bp-sm:justify-center",
               )}
             >
@@ -108,7 +108,7 @@ export function PublicPageHero({
             {actions && (
               <div
                 className={cn(
-                  "flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap",
+                  "flex w-full flex-col gap-2 [&_a]:min-h-11 [&_button]:min-h-11 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-sm:[&_a]:min-h-0 bp-sm:[&_button]:min-h-0",
                   centered && "bp-sm:justify-center",
                 )}
               >

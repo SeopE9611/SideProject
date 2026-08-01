@@ -81,16 +81,16 @@ export default function QnaListLoadingShell() {
           <div className="border-b border-border bg-muted/30 px-4 py-4 sm:px-5 md:px-6">
             <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 md:w-auto">
-                <Skeleton className="h-9 w-full md:h-10 md:w-[150px]" />
-                <Skeleton className="h-9 w-full md:h-10 md:w-[140px]" />
+                <Skeleton className="h-11 w-full bp-sm:h-10 md:w-[150px]" />
+                <Skeleton className="h-11 w-full bp-sm:h-10 md:w-[140px]" />
               </div>
               <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row lg:w-auto">
-                <Skeleton className="h-9 w-full sm:w-[130px] md:h-10" />
+                <Skeleton className="h-11 w-full sm:w-[130px] bp-sm:h-10" />
                 <div className="relative min-w-0 flex-1 lg:w-[240px] lg:flex-none">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Skeleton className="h-9 w-full md:h-10" />
+                  <Skeleton className="h-11 w-full bp-sm:h-10" />
                 </div>
-                <Skeleton className="h-9 w-full sm:w-16 md:h-10" />
+                <Skeleton className="h-11 w-full sm:w-16 bp-sm:h-10" />
               </div>
             </div>
           </div>
