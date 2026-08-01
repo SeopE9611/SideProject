@@ -772,7 +772,7 @@ export default function UsersClient() {
       <FiltersSection>
         {/* 검색/필터 바 */}
         <div className={cn(adminSurface.filterCard, "mb-4")}>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-4 flex-row items-center justify-between">
             <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -906,14 +906,14 @@ export default function UsersClient() {
         {/* 선택 액션바 */}
         {selectedUsers.length > 0 && (
           <div className="mb-3 rounded-md bg-card border border-border p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-row items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-primary">
                   {selectedUsers.length}명의 회원이 선택됨
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-2 sm:ml-auto">
+              <div className="flex flex-wrap gap-2 ml-auto">
                 <Button variant="outline" size="sm" onClick={handleBulkMail}>
                   <Mail className="mr-2 h-3.5 w-3.5" />
                   메일 발송
@@ -1037,14 +1037,14 @@ export default function UsersClient() {
 
       <TableSection>
         <div className={cn(adminSurface.tableCard, "mx-auto")}>
-          <div className="flex items-center justify-between px-4 sm:px-5 pt-4">
+          <div className="flex items-center justify-between px-5 pt-4">
             <h2 className="text-lg font-semibold text-foreground">회원 목록</h2>
             <p className="text-sm text-muted-foreground">
               총 {hasResolvedTotal ? total : "-"}명의 회원
             </p>
           </div>
 
-          <div className="relative overflow-x-auto px-3 pb-3 sm:px-4">
+          <div className="relative overflow-x-auto pb-3 px-4">
             <div className="relative rounded-2xl border border-border shadow-sm min-w-0">
               <Table
                 className="min-w-[1020px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"

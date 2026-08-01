@@ -101,7 +101,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
       return (
         <AdminPageShell variant="wide">
           <div className="space-y-6">
-            <div className={cn(adminSurface.card, "space-y-4 p-6 sm:p-8")}>
+            <div className={cn(adminSurface.card, "space-y-4 p-8")}>
               <Skeleton className="h-9 w-24" />
               <div className="flex items-center justify-between">
                 <Skeleton className="h-12 w-64" />

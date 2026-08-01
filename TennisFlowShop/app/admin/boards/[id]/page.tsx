@@ -185,8 +185,8 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
       />
 
       <div className="flex flex-col space-y-6">
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className={cn("md:col-span-2", adminSurface.card)}>
+        <div className="grid gap-6 grid-cols-3">
+          <Card className={cn("col-span-2", adminSurface.card)}>
             <CardHeader className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
@@ -212,7 +212,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
             <CardHeader className="border-b border-border/60 bg-muted/20">
               <CardTitle className={adminTypography.sectionTitle}>게시물 정보</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 p-4 sm:p-5">
+            <CardContent className="space-y-4 p-5">
               <div className={cn("flex items-center", adminSurface.fieldPanel)}>
                 <User className="mr-3 h-4 w-4 text-primary" />
                 <div className="space-y-1">

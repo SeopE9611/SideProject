@@ -716,7 +716,7 @@ export default function PackageOrdersClient() {
       />
 
       {/* 통계 카드 */}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5 mb-6">
+      <div className="grid gap-4 grid-cols-5 mb-6">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-6">
             <div className="flex min-w-0 items-center justify-between gap-3">
@@ -950,7 +950,7 @@ export default function PackageOrdersClient() {
             </div>
 
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7">
+            <div className="grid w-full gap-2 border-t pt-3 grid-cols-7">
               <Select
                 value={usageFilter}
                 onValueChange={(v) => {
@@ -1095,7 +1095,7 @@ export default function PackageOrdersClient() {
             </p>
           </div>
         </CardHeader>
-        <CardContent className="relative overflow-x-auto px-3 sm:px-4">
+        <CardContent className="relative overflow-x-auto px-4">
           <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
             <Table
               className="min-w-[1400px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
@@ -1436,7 +1436,7 @@ export default function PackageOrdersClient() {
                             ) : (
                               <div className="flex flex-col items-center gap-1">
                                 <div
-                                  className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card"
+                                  className="bg-muted rounded-full h-1.5 w-[72px] dark:bg-card"
                                   role="progressbar"
                                   aria-label="진행률"
                                   aria-valuemin={0}

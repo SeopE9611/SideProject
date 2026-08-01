@@ -1186,7 +1186,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
             }
           />
           {!isInitialClientLoading && (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 grid-cols-4">
               {PRODUCT_EDIT_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
                 <div key={title} className={cn(adminSurface.cardMuted, "p-4")}>
                   <div className="flex items-center gap-2">
@@ -1215,9 +1215,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 />
               </div>
               {/* 현재 수정 상태 요약 */}
-              <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr]">
+              <div className="grid gap-3 grid-cols-[1.2fr_1fr]">
                 <div className={cn(adminSurface.cardMuted, "p-4")}>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-2 flex-row items-center justify-between">
                     <div>
                       <p className={adminTypography.bodyStrong}>현재 단계: {currentStep.label}</p>
                       <p className={cn("mt-1", adminTypography.caption)}>
@@ -1245,7 +1245,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
               </div>
 
               {/* Main Content - 2 Column Layout */}
-              <div className="flex flex-col gap-6 lg:flex-row">
+              <div className="flex gap-6 flex-row">
                 {/* Left: Form Content */}
                 <div className="flex-1 space-y-6">
                   {/* Step 1: Basic Info */}
@@ -1296,7 +1296,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             <Label htmlFor="string-search-keywords">
                               검색 키워드 (쉼표로 구분)
                             </Label>
-                            <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                            <div className="flex gap-2 flex-row items-center">
                               <Input
                                 id="string-search-keywords"
                                 placeholder="예: 챔피언, 챔피언스 초이스, 듀오, ALU"
@@ -1455,7 +1455,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                           description="메인/크로스 스트링 정보를 입력하세요."
                           icon={<Palette className="h-5 w-5" />}
                         >
-                          <div className="grid gap-6 md:grid-cols-2">
+                          <div className="grid gap-6 grid-cols-2">
                             {/* Main String */}
                             <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
                               <h4 className="font-semibold text-foreground">메인 (Mains)</h4>
@@ -1818,7 +1818,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               <Label className={cn("mb-3 block", adminTypography.bodyStrong)}>
                                 색상 직접 추가
                               </Label>
-                              <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                              <div className="flex gap-3 flex-row items-end">
                                 <div className="flex-1">
                                   <Label className={cn("mb-1.5 block", adminTypography.caption)}>
                                     색상명
@@ -1877,9 +1877,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                 return (
                                   <div
                                     key={row.value}
-                                    className="rounded-xl border border-border/60 bg-card p-4 shadow-sm md:p-5"
+                                    className="rounded-xl border border-border/60 bg-card shadow-sm p-5"
                                   >
-                                    <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                    <div className="mb-4 flex gap-3 flex-row items-center justify-between">
                                       <div className="flex items-center gap-3">
                                         <span
                                           className="h-5 w-5 rounded-full border border-border/60 shadow-sm"
@@ -1922,7 +1922,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                     <div
                                       className={cn(
                                         adminSurface.cardMuted,
-                                        "mb-4 flex flex-col gap-4 p-4 sm:flex-row sm:items-center",
+                                        "mb-4 flex gap-4 p-4 flex-row items-center",
                                       )}
                                     >
                                       <div className="shrink-0">
@@ -2008,7 +2008,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                                     {/* Gauge Input */}
                                     <div className="space-y-3">
-                                      <div className="flex flex-col gap-2 md:flex-row">
+                                      <div className="flex gap-2 flex-row">
                                         <div className="flex-1">
                                           <Label
                                             className={cn("mb-1 block", adminTypography.bodyStrong)}
@@ -2061,11 +2061,11 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                             .map((variantRow) => (
                                               <div
                                                 key={`${row.value}-${variantRow.gaugeValue}`}
-                                                className="flex flex-col gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 md:flex-row md:items-center"
+                                                className="flex gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 flex-row items-center"
                                               >
                                                 <Badge
                                                   variant="outline"
-                                                  className="shrink-0 self-start md:self-center"
+                                                  className="shrink-0 self-center"
                                                 >
                                                   {variantRow.gaugeLabel ?? variantRow.gaugeValue}
                                                 </Badge>
@@ -2162,7 +2162,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               <p className={adminTypography.metaMuted}>
                                 실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.
                               </p>
-                              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                              <div className="grid gap-3 grid-cols-3">
                                 {gaugeSummaryRows.map((gaugeRow) => (
                                   <div
                                     key={gaugeRow.value}
@@ -2195,7 +2195,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         description="스트링의 성능을 1-100 사이로 설정하세요."
                         icon={<Activity className="h-5 w-5" />}
                       >
-                        <div className="grid gap-6 lg:grid-cols-2">
+                        <div className="grid gap-6 grid-cols-2">
                           <div className="space-y-6">
                             <PerformanceSlider
                               id="power-rating"
@@ -2228,7 +2228,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               onChange={(v) => setFeatures({ ...features, comfort: v })}
                             />
                           </div>
-                          <div className="lg:pl-4">
+                          <div className="pl-4">
                             <PerformanceSummary features={features} />
                           </div>
                         </div>
@@ -2239,7 +2239,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         description="이 스트링을 추천하는 플레이어 타입과 스타일을 선택하세요."
                         icon={<Users className="h-5 w-5" />}
                       >
-                        <div className="grid gap-6 md:grid-cols-2">
+                        <div className="grid gap-6 grid-cols-2">
                           <div className="space-y-4">
                             <h4 className="font-semibold text-foreground">플레이어 레벨</h4>
                             <div className="space-y-3">
@@ -2432,7 +2432,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             </RadioGroup>
                           </div>
 
-                          <div className="grid gap-4 md:grid-cols-2">
+                          <div className="grid gap-4 grid-cols-2">
                             <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4">
                               <Switch
                                 id="show-gauge-stock"
@@ -2495,7 +2495,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         icon={<Sparkles className="h-5 w-5" />}
                       >
                         <div className="space-y-6">
-                          <div className="grid gap-4 md:grid-cols-3">
+                          <div className="grid gap-4 grid-cols-3">
                             <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4">
                               <Switch
                                 id="string-featured"
@@ -2541,7 +2541,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                 할인 상품
                               </Label>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4 md:col-span-3">
+                            <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4 col-span-3">
                               <Switch
                                 id="string-visible"
                                 checked={isVisible}
@@ -2597,7 +2597,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         icon={<ImageIcon className="h-5 w-5" />}
                       >
                         <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                          <div className="grid gap-4 grid-cols-4">
                             {images.map((image, index) => (
                               <div
                                 key={index}
@@ -2686,7 +2686,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         </div>
                       </FormSection>
                       <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex gap-2 flex-row items-center justify-between">
                           <div>
                             <p className={adminTypography.panelTitle}>수정 저장 전 체크리스트</p>
                             <p className={cn("mt-1", adminTypography.metaMuted)}>
@@ -2698,7 +2698,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                           </Badge>
                         </div>
 
-                        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                        <div className="mt-4 grid gap-2 grid-cols-2">
                           {formReadinessChecks.map((item) => (
                             <div
                               key={item.label}

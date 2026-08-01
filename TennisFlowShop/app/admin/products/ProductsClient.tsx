@@ -403,8 +403,8 @@ export default function ProductsClient() {
       />
 
       <Card className={adminSurface.card}>
-        <CardContent className="p-4 sm:p-5">
-          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardContent className="p-5">
+          <div className="mb-3 flex gap-2 flex-row items-center justify-between">
             <p className="text-sm font-medium leading-relaxed text-foreground">
               오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.
             </p>
@@ -415,7 +415,7 @@ export default function ProductsClient() {
               오늘 처리할 일 보기
             </Link>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2 grid-cols-4">
             {[
               "신규 상품 등록: 상품명·브랜드·규격과 기본 정보를 먼저 확인하세요.",
               "재고/색상 옵션 확인: 판매 중 상품의 품절 여부와 옵션별 재고를 우선 점검하세요.",
@@ -430,7 +430,7 @@ export default function ProductsClient() {
         </CardContent>
       </Card>
 
-      <section className="mb-6 grid shrink-0 gap-3 sm:grid-cols-2 bp-md:mb-8 bp-md:gap-6 lg:grid-cols-4">
+      <section className="grid shrink-0 mb-8 gap-6 grid-cols-4">
         {[
           {
             label: "전체 상품",
@@ -458,11 +458,11 @@ export default function ProductsClient() {
           },
         ].map((c, i) => (
           <Card key={i} className={adminSurface.kpiCard}>
-            <CardContent className="p-4 bp-md:p-6">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                  <p className="text-2xl font-bold text-foreground bp-md:text-3xl">
+                  <p className="font-bold text-foreground text-3xl">
                     {hasResolvedData ? c.value : "-"}
                   </p>
                 </div>
@@ -575,7 +575,7 @@ export default function ProductsClient() {
 
       <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
         <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+          <div className="flex flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-xl font-semibold text-foreground">
                 스트링 상품 찾기
@@ -594,7 +594,7 @@ export default function ProductsClient() {
               asChild
               className={[
                 // 사이즈/레이아웃
-                "h-auto min-h-9 w-full px-4 rounded-lg font-medium inline-flex items-center justify-center gap-2 whitespace-normal text-center leading-snug sm:w-auto",
+                "h-auto min-h-9 px-4 rounded-lg font-medium inline-flex items-center justify-center gap-2 whitespace-normal text-center leading-snug w-auto",
                 // 색상(라이트/다크 모두 자연스러운 플랫)
                 "bg-primary text-primary-foreground hover:bg-primary/90",
                 // 경계/그림자: 지나치지 않게만
@@ -614,17 +614,17 @@ export default function ProductsClient() {
           </div>
         </CardHeader>
 
-        <CardContent className="flex min-h-0 flex-1 flex-col space-y-5 p-4 bp-md:space-y-6 bp-md:p-6">
+        <CardContent className="flex min-h-0 flex-1 flex-col space-y-6 p-6">
           {/* 검색/필터 */}
           <div
             className={cn(
               adminSurface.filterCard,
-              "mb-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0",
+              "mb-4 flex flex-row items-center justify-between space-y-0",
             )}
           >
             <div className="w-full space-y-3">
               {/* 검색 */}
-              <div className="w-full md:max-w-md">
+              <div className="w-full max-w-md">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
@@ -648,7 +648,7 @@ export default function ProductsClient() {
               </div>
 
               {/* 필터 */}
-              <div className="grid w-full gap-2 border-t border-border pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-6">
                 <BrandFilter
                   value={brandFilter}
                   onChange={handleBrandFilterChange}

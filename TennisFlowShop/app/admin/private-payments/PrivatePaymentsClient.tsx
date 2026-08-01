@@ -376,7 +376,7 @@ export default function PrivatePaymentsClient() {
   );
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex gap-3 flex-row items-start justify-between">
         <div className="space-y-1">
           <h1 className={adminTypography.pageTitle}>개인결제 현황</h1>
           <p className={adminTypography.body}>
@@ -386,7 +386,7 @@ export default function PrivatePaymentsClient() {
         <Button onClick={openCreateDialog}>개인결제 생성</Button>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-5">
+      <div className="grid gap-3 grid-cols-5">
         {[
           ["전체", summary.total],
           ["결제대기", summary.pending],
@@ -414,7 +414,7 @@ export default function PrivatePaymentsClient() {
 
       <Card className={adminSurface.tableCard}>
         <CardHeader className="space-y-3 border-b border-border/60 bg-muted/10">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex gap-3 flex-row items-start justify-between">
             <div className="space-y-1">
               <CardTitle className={adminTypography.sectionTitle}>개인결제 목록</CardTitle>
               <p className={adminTypography.caption}>
@@ -428,7 +428,7 @@ export default function PrivatePaymentsClient() {
             )}
           </div>
           <div className={adminSurface.filterCard}>
-            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(260px,1.4fr)_160px_160px_160px_160px_160px]">
+            <div className="grid gap-2 grid-cols-[minmax(260px,1.4fr)_160px_160px_160px_160px_160px]">
               <div className="space-y-1.5">
                 <Label>검색어</Label>
                 <Input
@@ -493,7 +493,7 @@ export default function PrivatePaymentsClient() {
             </div>
           </div>
           {selected.length > 0 && (
-            <div className="flex flex-col gap-2 rounded-xl border border-border/60 bg-background p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-2 rounded-xl border border-border/60 bg-background p-3 shadow-sm flex-row items-center justify-between">
               <p className={adminTypography.caption}>
                 선택됨 <span className="font-semibold text-foreground">{selected.length}</span>개
               </p>

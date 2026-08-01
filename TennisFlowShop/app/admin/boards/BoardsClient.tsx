@@ -370,7 +370,7 @@ export default function BoardsClient() {
           scope="범위: 게시글 + 신고"
           helperText="고정 공지와 게시글 상세 수정은 각 게시글 화면에서 처리합니다."
         />
-        <div className="grid gap-5 md:grid-cols-4">
+        <div className="grid gap-5 grid-cols-4">
           <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
@@ -731,7 +731,7 @@ export default function BoardsClient() {
                       posts.length > 0 &&
                       postsTotal !== null &&
                       postsTotalPages !== null && (
-                        <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
+                        <div className="flex items-center justify-between gap-3 border-t border-border/40 pt-5 flex-row">
                           <div className={adminTypography.metaMuted}>
                             총 <span className="font-semibold text-foreground">{postsTotal}</span>건
                             · 페이지{" "}
@@ -985,7 +985,7 @@ export default function BoardsClient() {
                                 <div
                                   className={cn(
                                     adminSurface.cardMuted,
-                                    "flex flex-col gap-3 border-t border-border/60 p-3 sm:flex-row sm:items-center sm:justify-between",
+                                    "flex gap-3 border-t border-border/60 p-3 flex-row items-center justify-between",
                                   )}
                                 >
                                   <div className="space-y-1">
@@ -995,7 +995,7 @@ export default function BoardsClient() {
                                       영향을 줍니다.
                                     </p>
                                   </div>
-                                  <div className="flex flex-wrap gap-2 sm:justify-end">
+                                  <div className="flex flex-wrap gap-2 justify-end">
                                     <Button
                                       size="sm"
                                       variant="outline"
@@ -1054,7 +1054,7 @@ export default function BoardsClient() {
                       reports.length > 0 &&
                       reportsTotal !== null &&
                       reportsTotalPages !== null && (
-                        <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
+                        <div className="flex items-center justify-between gap-3 border-t border-border/40 pt-5 flex-row">
                           <div className={adminTypography.metaMuted}>
                             총 <span className="font-semibold text-foreground">{reportsTotal}</span>
                             건 · 페이지{" "}

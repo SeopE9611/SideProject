@@ -124,7 +124,7 @@ export default function AdminAuditClient() {
         className={adminSurface.filterCard}
         contentClassName="space-y-3"
       >
-        <div className="grid gap-3 md:grid-cols-[1fr_280px_auto_auto]">
+        <div className="grid gap-3 grid-cols-[1fr_280px_auto_auto]">
           <Input
             placeholder="검색어(message/actor)"
             value={draftQ}

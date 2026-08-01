@@ -783,7 +783,7 @@ export default function OfflineAdminClient() {
       {/* Offline Revenue Summary */}
       <Card className="overflow-hidden border-border/60">
         <CardHeader className="pb-0">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex gap-3 flex-row items-start justify-between">
             <SectionHeader
               icon={Store}
               title="오프라인 매출 요약"
@@ -852,7 +852,7 @@ export default function OfflineAdminClient() {
           )}
           {summary && !summaryError && (
             <>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="grid gap-3 grid-cols-5">
                 <div className="rounded-xl border border-border/60 bg-primary/5 p-4">
                   <p className="text-xs font-medium text-muted-foreground">오프라인 총 매출</p>
                   <p className="mt-2 text-2xl font-bold tabular-nums">
@@ -899,12 +899,12 @@ export default function OfflineAdminClient() {
                   </p>
                 </div>
               </div>
-              <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div className="grid gap-3 grid-cols-[1fr_auto] items-center">
                 <div className="rounded-xl border border-border/60 p-4">
                   <p className="mb-3 text-sm font-semibold text-foreground">
                     결제수단별 결제완료 매출
                   </p>
-                  <div className="grid gap-2 sm:grid-cols-4">
+                  <div className="grid gap-2 grid-cols-4">
                     {(Object.keys(PAYMENT_METHOD_LABELS) as OfflinePaymentMethod[]).map(
                       (method) => (
                         <div key={method} className="rounded-lg bg-muted/30 px-3 py-2">
@@ -951,7 +951,7 @@ export default function OfflineAdminClient() {
       {/* Top Section: Selected Customer Quick View */}
       {selected && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-4 flex-row items-center justify-between">
             <div className="flex min-w-0 items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <User className="h-5 w-5" />
@@ -1002,7 +1002,7 @@ export default function OfflineAdminClient() {
       )}
 
       {/* Offline Workflow Guide */}
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 grid-cols-3">
         {OFFLINE_WORKFLOW_STEPS.map(({ icon: Icon, title, description }) => (
           <div key={title} className="rounded-xl border border-border/60 bg-background/70 p-4">
             <div className="flex items-center gap-2">
@@ -1017,9 +1017,9 @@ export default function OfflineAdminClient() {
       </div>
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <div className="grid gap-6 grid-cols-12">
         {/* Left Column: Customer Search & Registration */}
-        <div className="space-y-6 xl:col-span-4">
+        <div className="space-y-6 col-span-4">
           {/* Customer Search Card */}
           <Card className="overflow-hidden border-border/60">
             <CardHeader className="pb-0">
@@ -1313,7 +1313,7 @@ export default function OfflineAdminClient() {
         </div>
 
         {/* Right Column: Work/Payment Registration */}
-        <div className="xl:col-span-8">
+        <div className="col-span-8">
           <Card className="overflow-hidden border-border/60">
             <CardHeader className="pb-0">
               <SectionHeader
@@ -1334,7 +1334,7 @@ export default function OfflineAdminClient() {
               ) : (
                 <div className="space-y-6">
                   <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex gap-2 flex-row items-center justify-between">
                       <div>
                         <p className="text-sm font-semibold text-foreground">
                           선택 고객 기준으로 기록합니다
@@ -1355,7 +1355,7 @@ export default function OfflineAdminClient() {
                       <Wrench className="h-4 w-4 text-primary" />
                       작업 정보
                     </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-2">
                       <FormField label="작업 유형" htmlFor="kind">
                         <Select
                           id="kind"
@@ -1424,7 +1424,7 @@ export default function OfflineAdminClient() {
                             ) : null}
                           </div>
 
-                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div className="grid gap-4 grid-cols-2">
                             <FormField label="라켓명" htmlFor={`racketName-${line.id}`}>
                               <Input
                                 id={`racketName-${line.id}`}
@@ -1547,7 +1547,7 @@ export default function OfflineAdminClient() {
                       결제 정보
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 grid-cols-4">
                       <FormField label="결제 상태" htmlFor="payStatus">
                         <Select
                           id="payStatus"
@@ -1594,7 +1594,7 @@ export default function OfflineAdminClient() {
                     </div>
 
                     <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
-                      <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="grid gap-3 grid-cols-3">
                         <div>
                           <p className="text-xs font-medium text-muted-foreground">
                             라켓별 금액 합계
@@ -1948,7 +1948,7 @@ export default function OfflineAdminClient() {
                 setRecordsPage(1);
               }}
             >
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid gap-4 grid-cols-4">
                 <FormField label="시작일" htmlFor="record-from">
                   <Input
                     id="record-from"
@@ -2289,7 +2289,7 @@ export default function OfflineAdminClient() {
           )}
 
           {/* Pagination */}
-          <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-3 rounded-xl border border-border/60 bg-background/70 p-4 flex-row items-center justify-between">
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{currentRecordsPage}</span> /{" "}
               {Math.max(recordsTotalPages, 1)} 페이지
@@ -2451,7 +2451,7 @@ export default function OfflineAdminClient() {
                       ) : null}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-2">
                       <FormField label="라켓명" htmlFor={`edit-racketName-${line.id}`}>
                         <Input
                           id={`edit-racketName-${line.id}`}
@@ -2620,7 +2620,7 @@ export default function OfflineAdminClient() {
                 </div>
               </div>
               <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 grid-cols-3">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">라켓별 금액 합계</p>
                     <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">

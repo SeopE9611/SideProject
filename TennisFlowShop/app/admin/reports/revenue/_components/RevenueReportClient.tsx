@@ -266,7 +266,7 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-3">
           <SummaryCard
             title="온라인 매출"
             value={formatKRW(snapshot.report.online.paidAmount)}
@@ -302,7 +302,7 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
             tone="warning"
           />
         </div>
-        <dl className="grid gap-2 rounded-xl border border-border bg-background/60 p-4 text-sm md:grid-cols-2">
+        <dl className="grid gap-2 rounded-xl border border-border bg-background/60 p-4 text-sm grid-cols-2">
           <Row
             label="상태"
             value={
@@ -315,7 +315,7 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
           />
           <Row label="최초 생성" value={formatDateTime(snapshot.createdAt)} />
           <Row label="마지막 저장" value={formatDateTime(snapshot.updatedAt)} />
-          <div className="md:col-span-2">
+          <div className="col-span-2">
             <Row label="메모" value={snapshot.memo?.trim() || "-"} />
           </div>
         </dl>
@@ -341,7 +341,7 @@ function SnapshotDiffCard({
   return (
     <Card className="border-dashed border-border bg-background">
       <CardHeader className="space-y-3">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="flex gap-3 flex-row items-start justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
               <DatabaseZap className="h-4 w-4" /> 실시간 리포트와 스냅샷 차이
@@ -614,7 +614,7 @@ export default function RevenueReportClient() {
               최근 30일
             </Button>
           </div>
-          <div className="grid gap-3 md:grid-cols-[1fr_1fr_180px_auto_auto_auto] md:items-end">
+          <div className="grid gap-3 grid-cols-[1fr_1fr_180px_auto_auto_auto] items-end">
             <div className="space-y-1.5">
               <Label htmlFor="report-from">시작일</Label>
               <Input
@@ -710,7 +710,7 @@ export default function RevenueReportClient() {
                 않습니다.
               </li>
             </ul>
-            <div className="mt-4 flex flex-col gap-3 rounded-lg border border-border bg-background/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-4 flex gap-3 rounded-lg border border-border bg-background/70 p-3 flex-row items-center justify-between">
               <div>
                 <p className="font-medium text-foreground">이전 달 마감 스냅샷 생성</p>
                 <p className="mt-1 text-xs">
@@ -735,7 +735,7 @@ export default function RevenueReportClient() {
           </div>
 
           {monthlySnapshotTarget ? (
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+            <div className="grid gap-4 grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
               <div className="rounded-xl border border-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -881,7 +881,7 @@ export default function RevenueReportClient() {
 
       {report ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 grid-cols-4">
             <SummaryCard
               title="온라인 매출"
               value={formatKRW(report.online.paidAmount)}
@@ -932,7 +932,7 @@ export default function RevenueReportClient() {
 
           <Card className={adminSurface.card}>
             <CardContent className="p-5">
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div className="flex gap-3 flex-row items-start justify-between">
                 <div>
                   <h2 className="text-lg font-bold">실시간 온라인/오프라인 비교</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -945,7 +945,7 @@ export default function RevenueReportClient() {
                   {report.range.groupBy === "day" ? "일별" : "월별"}
                 </Badge>
               </div>
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="mt-5 grid gap-4 grid-cols-2">
                 <div className="rounded-xl border border-border p-4">
                   <h3 className="font-semibold">온라인 매출 세부</h3>
                   <dl className="mt-3 space-y-2 text-sm">
@@ -1005,7 +1005,7 @@ export default function RevenueReportClient() {
                 <WalletCards className="h-4 w-4" /> 결제수단별 오프라인 매출
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <CardContent className="grid gap-3 grid-cols-4">
               {Object.entries(METHOD_LABELS).map(([key, label]) => (
                 <SummaryCard
                   key={key}

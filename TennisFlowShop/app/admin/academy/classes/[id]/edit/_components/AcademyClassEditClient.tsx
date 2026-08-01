@@ -24,7 +24,7 @@ export default function AcademyClassEditClient({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="py-6 px-8">
         <div className={`${adminSurface.cardMuted} p-8 ${adminTypography.metaMuted}`}>
           클래스 정보를 불러오는 중입니다.
         </div>
@@ -34,7 +34,7 @@ export default function AcademyClassEditClient({ id }: { id: string }) {
 
   if (error || !data?.item) {
     return (
-      <div className="space-y-4 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="space-y-4 py-6 px-8">
         <Button asChild variant="outline" size="sm">
           <Link href="/admin/academy/classes">
             <ArrowLeft className="mr-2 h-4 w-4" />

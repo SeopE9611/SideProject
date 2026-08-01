@@ -135,7 +135,7 @@ export default function ClassesPage() {
             <Calendar className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-normal text-foreground md:text-5xl">
+            <h1 className="font-bold tracking-normal text-foreground text-5xl">
               클래스 관리
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">
@@ -145,7 +145,7 @@ export default function ClassesPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-6 grid-cols-4 mb-8">
         <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -222,7 +222,7 @@ export default function ClassesPage() {
           </div>
         </CardHeader>
         <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-          <p className="text-foreground text-2xl md:text-4xl font-semibold">
+          <p className="text-foreground text-4xl font-semibold">
             이 기능은 사용하지 않습니다. (아카데미 클래스 관리)
           </p>
           <p className="text-lg text-muted-foreground">
@@ -230,7 +230,7 @@ export default function ClassesPage() {
           </p>
         </div>
         <CardContent>
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-6 flex gap-4 flex-row items-center justify-between">
             <div className="flex w-full max-w-sm items-center space-x-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

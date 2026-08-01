@@ -112,7 +112,7 @@ function formatCapacity(value: number | null | undefined) {
 
 function InfoRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
-    <div className="grid min-w-0 gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[120px_1fr]">
+    <div className="grid min-w-0 gap-1 border-b border-border/60 py-3 last:border-b-0 grid-cols-[120px_1fr]">
       <div className={adminTypography.metaMuted}>{label}</div>
       <div className={cn("min-w-0 whitespace-pre-wrap break-words", adminTypography.bodyStrong)}>
         {value === null || value === undefined || value === "" ? "-" : value}
@@ -165,7 +165,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="py-6 px-8">
         <div className={`${adminSurface.cardMuted} p-8 ${adminTypography.metaMuted}`}>
           클래스 상세 정보를 불러오는 중입니다.
         </div>
@@ -175,7 +175,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
 
   if (error || !item) {
     return (
-      <div className="space-y-4 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="space-y-4 py-6 px-8">
         <Button asChild variant="outline" size="sm">
           <Link href="/admin/academy/classes">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -192,7 +192,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="space-y-5 py-6 px-8">
       <AdminPageHeader
         title="클래스 상세"
         description="클래스 기본 정보와 클래스별 신청자 현황을 확인합니다."
@@ -217,7 +217,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid gap-3 grid-cols-3 2xl:grid-cols-6">
         <StatCard label="전체 신청" value={stats.total} />
         <StatCard label="접수완료" value={stats.submitted} />
         <StatCard label="검토 중" value={stats.reviewing} />
@@ -231,7 +231,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         description="신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 취소되지 않은 신청 내역이 1건 이상 있으면 영구 삭제는 차단되며, 취소 내역만 남은 클래스는 영구 삭제할 수 있습니다."
         contentClassName="pt-4"
       >
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 grid-cols-2">
           <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
             <div className={adminTypography.metaMuted}>등록 확정</div>
             <div className={cn("mt-2", adminTypography.kpiValueCompact)}>

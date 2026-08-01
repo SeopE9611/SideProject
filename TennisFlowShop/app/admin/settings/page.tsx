@@ -38,7 +38,7 @@ export default function SettingsPage() {
               <Skeleton className="h-4 w-52 bg-primary/20" />
             </div>
           )}
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto">
+          <TabsList className="grid grid-cols-4 gap-2 h-auto">
             <TabsTrigger value="site">
               <Globe className="h-4 w-4 mr-2" />
               사이트

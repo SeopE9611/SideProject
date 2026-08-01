@@ -283,7 +283,7 @@ export default function AcademyClassesClient() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 grid-cols-5">
         <SummaryCard label="전체" value={counts.all} active={status === "all"} />
         {ACADEMY_CLASS_STATUSES.map((item) => (
           <SummaryCard
@@ -299,11 +299,11 @@ export default function AcademyClassesClient() {
         <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
           <CardTitle className={adminTypography.sectionTitle}>클래스 목록</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 p-5 sm:p-6">
+        <CardContent className="space-y-4 p-6">
           <div
             className={cn(
               adminSurface.filterCard,
-              "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between",
+              "flex gap-3 flex-row items-center justify-between",
             )}
           >
             <Select
@@ -313,7 +313,7 @@ export default function AcademyClassesClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full lg:w-[180px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="상태 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -326,7 +326,7 @@ export default function AcademyClassesClient() {
               </SelectContent>
             </Select>
 
-            <form className="flex w-full gap-2 lg:max-w-md" onSubmit={submitSearch}>
+            <form className="flex w-full gap-2 max-w-md" onSubmit={submitSearch}>
               <Input
                 value={keywordInput}
                 onChange={(event) => setKeywordInput(event.target.value)}
@@ -562,7 +562,7 @@ export default function AcademyClassesClient() {
 
           <div
             className={cn(
-              "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
+              "flex gap-2 flex-row items-center justify-between",
               adminTypography.metaMuted,
             )}
           >

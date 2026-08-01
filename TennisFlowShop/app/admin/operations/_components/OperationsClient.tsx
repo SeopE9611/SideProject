@@ -1279,7 +1279,7 @@ export default function OperationsClient() {
           <div
             className={cn(
               adminSurface.fieldPanelMuted,
-              "grid grid-cols-1 gap-1.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4",
+              "grid gap-1.5 grid-cols-4",
             )}
           >
             {PAGE_COPY.actions.map((action) => (
@@ -1302,7 +1302,7 @@ export default function OperationsClient() {
             description="긴급, 확인 필요, 미처리 순서로 우선순위를 바로 확인하세요."
             className="border-0 bg-transparent px-0 py-0"
           />
-          <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+          <div className="grid gap-3 grid-cols-4">
             <AdminSummaryCard
               title={PAGE_COPY.dailyTodoLabels.urgent}
               value={todayTodoCount ? `${todayTodoCount.urgent}건` : "-"}
@@ -1376,14 +1376,14 @@ export default function OperationsClient() {
                 title="대표 업무와 확인 항목"
                 description="운영 업무와 별도 확인 항목을 한눈에 확인합니다."
                 aside={
-                  <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
+                  <p className="break-words text-sm leading-relaxed text-muted-foreground max-w-[360px] text-right">
                     상단 합계와 확인 항목 카드는 집계 기준이 다르며, 검색과 필터는 아래 목록에
                     적용됩니다.
                   </p>
                 }
               />
               <SectionBody>
-                <div className="grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+                <div className="grid gap-2 grid-cols-4">
                   {practicalTaskCards.map((task) => (
                     <AdminTaskCard
                       key={task.title}
@@ -1428,7 +1428,7 @@ export default function OperationsClient() {
             <p className="mt-1 text-xs text-muted-foreground">
               처음 접속했다면 핵심 순서만 먼저 확인하세요.
             </p>
-            <ol className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+            <ol className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground grid-cols-2">
               <li>
                 <span className="font-semibold text-foreground">1.</span> 취소 요청과 결제 확인을
                 먼저 처리합니다.
@@ -1456,7 +1456,7 @@ export default function OperationsClient() {
               </span>
               <span className="text-ui-label font-normal text-muted-foreground">마감 참고치</span>
             </summary>
-            <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-2 flex gap-1 flex-row items-center justify-between">
               <div>
                 <h2 className={adminTypography.panelTitle}>오늘 업무 마감 요약</h2>
                 <p className="text-xs text-muted-foreground">
@@ -1466,7 +1466,7 @@ export default function OperationsClient() {
               <Badge variant="outline">{dailySummary?.date ?? "오늘"}</Badge>
             </div>
 
-            <div className="mt-3 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+            <div className="mt-3 grid gap-2 grid-cols-4">
               <Card className="border-border/50 bg-background/50 shadow-none">
                 <CardHeader className="p-2.5 pb-1">
                   <CardTitle className="text-sm font-semibold">오늘 상태 변경 참고</CardTitle>
@@ -1580,7 +1580,7 @@ export default function OperationsClient() {
 
         <div className="mt-4 rounded-xl border border-border bg-card p-2.5">
           <AdminFilterBar
-            className="mb-3 rounded-xl bg-background/70 p-3 shadow-none sm:p-4"
+            className="mb-3 rounded-xl bg-background/70 shadow-none p-4"
             quickFilters={QUICK_VIEWS.map((view) => (
               <Button
                 key={view.key}
@@ -1681,7 +1681,7 @@ export default function OperationsClient() {
       >
         <Card
           className={cn(
-            "rounded-xl border-border px-4 py-4 bp-lg:px-5 shadow-md transition-all duration-200",
+            "rounded-xl border-border py-4 px-5 shadow-md transition-all duration-200",
             onlyWarn
               ? "bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30"
               : "bg-card",
@@ -1786,7 +1786,7 @@ export default function OperationsClient() {
               </div>
 
               {/* 필터 컴포넌트들 */}
-              <div className="grid w-full grid-cols-1 gap-2 border-t border-border pt-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
+              <div className="grid w-full gap-2 border-t border-border pt-2.5 grid-cols-5">
                 <Select
                   value={kind}
                   onValueChange={(v: any) => {
@@ -1834,7 +1834,7 @@ export default function OperationsClient() {
                 </Select>
                 <p
                   className={cn(
-                    "w-full bp-sm:col-span-2 bp-md:col-span-3 bp-lg:col-span-5",
+                    "w-full col-span-5",
                     adminTypography.metaMuted,
                   )}
                 >
@@ -1900,7 +1900,7 @@ export default function OperationsClient() {
               </div>
 
               {activePresetKey && (
-                <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
+                <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground grid-cols-3">
                   <div>
                     <p className={cn("mb-1", adminTypography.caution)}>현재 결과</p>
                     <p className="text-sm font-medium text-foreground">
@@ -1934,9 +1934,9 @@ export default function OperationsClient() {
       </div>
 
       {/* 업무 목록 카드 */}
-      <Card className={cn(adminSurface.tableCard, "px-3 py-4 bp-sm:px-4 lg:px-5")}>
+      <Card className={cn(adminSurface.tableCard, "py-4 px-5")}>
         <CardHeader id="operations-list" className="scroll-mt-6 pb-2">
-          <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
+          <div className="flex gap-2 flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-base font-medium">업무 목록</CardTitle>
               {activePresetKey && (
@@ -1951,10 +1951,10 @@ export default function OperationsClient() {
                   ? `총 ${totalGroups.toLocaleString("ko-KR")}건 표시됨`
                   : "목록을 불러오는 중…"}
               </p>
-              <span className="hidden bp-lg:inline text-xs text-muted-foreground">
+              <span className="inline text-xs text-muted-foreground">
                 표시 밀도(데스크톱)
               </span>
-              <div className="hidden bp-lg:inline-flex items-center rounded-md border border-border p-0.5">
+              <div className="inline-flex items-center rounded-md border border-border p-0.5">
                 <Button
                   type="button"
                   size="sm"
@@ -1978,7 +1978,7 @@ export default function OperationsClient() {
               </div>
             </div>
           </div>
-          <div className="mt-2 flex flex-col gap-2 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-2 flex gap-2 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 flex-row items-center justify-between">
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">현재 보기</span>
               <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
@@ -1994,7 +1994,7 @@ export default function OperationsClient() {
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="h-7 self-start px-2 text-xs sm:self-auto"
+                className="h-7 px-2 text-xs self-auto"
                 onClick={reset}
               >
                 필터 초기화
@@ -2348,7 +2348,7 @@ export default function OperationsClient() {
                               )}
                             >
                               <div className="flex flex-col items-end gap-1.5">
-                                <div className="text-left md:text-right">
+                                <div className="text-right">
                                   <span className="whitespace-nowrap text-xs text-foreground/75">
                                     {isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                                   </span>

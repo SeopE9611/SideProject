@@ -50,7 +50,7 @@ export default function AdminBoardComments({ postId }: Props) {
         <CardTitle className={adminTypography.sectionTitle}>댓글 관리</CardTitle>
         <p className={adminTypography.caption}>댓글 삭제는 즉시 반영되며 복구할 수 없습니다.</p>
       </CardHeader>
-      <CardContent className="space-y-3 p-5 sm:p-6">
+      <CardContent className="space-y-3 p-6">
         {comments.map((comment) => (
           <div key={comment.id} className={adminSurface.cardMuted}>
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3 p-3 pb-0">

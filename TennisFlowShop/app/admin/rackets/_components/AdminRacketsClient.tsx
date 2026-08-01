@@ -342,7 +342,7 @@ export default function AdminRacketsClient() {
       />
 
       <section
-        className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+        className="mb-6 grid gap-3 grid-cols-4 shrink-0"
         aria-label="라켓 관리 업무 가이드"
       >
         {[
@@ -385,7 +385,7 @@ export default function AdminRacketsClient() {
         </Link>
       </div>
 
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
+      <section className="grid gap-6 grid-cols-4 mb-8 shrink-0">
         {[
           {
             label: "전체 라켓",
@@ -426,7 +426,7 @@ export default function AdminRacketsClient() {
         ))}
       </section>
       <section className="mb-4 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex gap-3 flex-row items-center">
           <p className="shrink-0 text-sm font-semibold text-muted-foreground">빠른 보기</p>
 
           <div className="flex flex-wrap gap-2">
@@ -515,7 +515,7 @@ export default function AdminRacketsClient() {
         </div>
       </section>
       <div className="mb-6 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex gap-3 flex-row items-center justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
 
@@ -541,7 +541,7 @@ export default function AdminRacketsClient() {
       </div>
       <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
         <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+          <div className="flex flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-xl font-semibold text-primary">라켓 찾기</CardTitle>
               <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
@@ -569,7 +569,7 @@ export default function AdminRacketsClient() {
           <div
             className={cn(
               adminSurface.filterCard,
-              "mb-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0",
+              "mb-4 flex flex-row items-center justify-between space-y-0",
             )}
           >
             <div className="w-full space-y-3">
@@ -585,7 +585,7 @@ export default function AdminRacketsClient() {
                   />
                 </div>
               </div>
-              <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-4">
+              <div className="grid w-full gap-2 grid-cols-4">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
                     <SelectValue placeholder="상태 필터" />

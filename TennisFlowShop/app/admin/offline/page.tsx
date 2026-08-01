@@ -54,7 +54,7 @@ export default function OfflinePage() {
             매출 리포트 보기
           </Link>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-2 grid-cols-4">
           {QUICK_GUIDES.map((item) => (
             <div key={item.title} className={adminSurface.fieldPanel}>
               <p className="text-sm font-medium text-foreground">{item.title}</p>

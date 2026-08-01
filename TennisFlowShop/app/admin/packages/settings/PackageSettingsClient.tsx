@@ -447,7 +447,7 @@ export default function PackageSettingsClient() {
     return (
       <AdminPageShell variant="wide" className="space-y-6">
         <div className={cn("mb-8 p-8", adminSurface.cardMuted)}>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-4 flex-row items-center justify-between">
             <div className="flex items-center gap-4">
               <Skeleton className="h-14 w-14 rounded-full" />
               <div className="space-y-2">
@@ -472,7 +472,7 @@ export default function PackageSettingsClient() {
           <div className="space-y-4">
             <Skeleton className="h-8 w-52" />
             <Skeleton className="h-4 w-80" />
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <Card key={index} className={adminSurface.card}>
                   <CardHeader className="space-y-2">
@@ -532,7 +532,7 @@ export default function PackageSettingsClient() {
             </Button>
           }
         />
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid gap-3 grid-cols-4">
           {PACKAGE_SETTINGS_GUIDES.map(({ icon: Icon, title, description }) => (
             <Card key={title} className={adminSurface.fieldPanelMuted}>
               <CardContent className="p-4">
@@ -547,7 +547,7 @@ export default function PackageSettingsClient() {
             </Card>
           ))}
         </section>
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid gap-4 grid-cols-4">
           {[
             {
               label: "전체 패키지",
@@ -592,7 +592,7 @@ export default function PackageSettingsClient() {
           ))}
         </section>
         <div className={adminSurface.filterCard}>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex gap-3 flex-row items-center justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-foreground">현재 설정 상태</p>
 
@@ -645,7 +645,7 @@ export default function PackageSettingsClient() {
               "sticky top-20 z-20 border-primary/20 p-4 backdrop-blur",
             )}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3 flex-row items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">
                   저장되지 않은 변경사항이 있습니다.
@@ -719,7 +719,7 @@ export default function PackageSettingsClient() {
                 </Button>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 grid-cols-2">
                 {sortedPackageConfigs.map((pkg) => (
                   <Card key={pkg.id} className={adminSurface.card}>
                     <CardHeader className="border-b border-border/60 bg-muted/20">
@@ -788,7 +788,7 @@ export default function PackageSettingsClient() {
                               고객에게 표시될 패키지명, 이용 횟수, 판매 가격, 유효기간을 설정합니다.
                             </p>
 
-                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div className="mt-4 grid gap-4 grid-cols-2">
                               <div>
                                 <Label htmlFor={`name-${pkg.id}`}>패키지명</Label>
                                 <Input
@@ -824,7 +824,7 @@ export default function PackageSettingsClient() {
                               소수점 첫째 자리까지 표시됩니다.
                             </p>
 
-                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div className="mt-4 grid gap-4 grid-cols-2">
                               <div>
                                 <Label htmlFor={`price-${pkg.id}`}>판매 가격 (원)</Label>
                                 <FormattedNumberInput
@@ -933,7 +933,7 @@ export default function PackageSettingsClient() {
                               줍니다.
                             </p>
 
-                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                            <div className="mt-4 grid gap-3 grid-cols-2">
                               <div
                                 className={cn(
                                   adminSurface.fieldPanel,
@@ -1088,7 +1088,7 @@ export default function PackageSettingsClient() {
                 ))}
               </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex gap-2 flex-row items-center justify-between">
                 <p className="text-xs text-muted-foreground">
                   저장 후 패키지 판매 페이지와 신규 주문 금액 계산에 반영됩니다.
                 </p>
@@ -1138,7 +1138,7 @@ export default function PackageSettingsClient() {
                     </ul>
                   </div>
                 )}
-                <div className="grid gap-4 xl:grid-cols-3">
+                <div className="grid gap-4 grid-cols-3">
                   <div className="rounded-xl border border-border/60 bg-card p-4">
                     <p className="text-sm font-semibold text-foreground">기간/알림</p>
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -1306,7 +1306,7 @@ export default function PackageSettingsClient() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex gap-2 pt-4 flex-row items-center justify-between">
                   <p className="text-xs text-muted-foreground">
                     저장 후 패키지 시스템 정책과 연장 가능 여부에 반영됩니다.
                   </p>

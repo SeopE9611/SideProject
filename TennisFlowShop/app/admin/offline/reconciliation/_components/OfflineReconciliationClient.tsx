@@ -360,7 +360,7 @@ export default function OfflineReconciliationClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 rounded-2xl border border-warning/40 bg-warning/5 p-4 text-foreground/80 md:flex-row md:items-center">
+      <div className="flex gap-2 rounded-2xl border border-warning/40 bg-warning/5 p-4 text-foreground/80 flex-row items-center">
         <ShieldAlert className="h-5 w-5 shrink-0 text-warning" />
         <div>
           <p className="font-semibold text-foreground">
@@ -449,7 +449,7 @@ export default function OfflineReconciliationClient() {
         description="유형, 상태, 기간으로 보정 대상 목록을 조정합니다."
         icon={Search}
       >
-        <div className="grid gap-3 md:grid-cols-5">
+        <div className="grid gap-3 grid-cols-5">
           <div className="space-y-1.5">
             <Label htmlFor="type">유형</Label>
             <Select
@@ -527,7 +527,7 @@ export default function OfflineReconciliationClient() {
         </div>
       </AdminPageSection>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 grid-cols-5">
         <SummaryCard
           label="전체 미처리"
           value={summary.open}

@@ -621,7 +621,7 @@ export default function AdminRentalsClient() {
           <summary className="cursor-pointer text-sm font-semibold text-foreground">
             대여 업무 가이드
           </summary>
-          <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-2 text-sm text-muted-foreground grid-cols-3">
             <p>
               <strong className="text-foreground">결제대기</strong> · 결제 확인 후 인도 처리
             </p>
@@ -717,7 +717,7 @@ export default function AdminRentalsClient() {
             </Button>
           </div>
 
-          <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid w-full gap-2 grid-cols-6">
             <div className="flex items-center">
               <Select
                 value={status || "all"}
@@ -781,9 +781,9 @@ export default function AdminRentalsClient() {
               </Select>
             </div>
 
-            <div className="hidden lg:block" />
-            <div className="hidden lg:block" />
-            <div className="hidden lg:block" />
+            <div className="block" />
+            <div className="block" />
+            <div className="block" />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
