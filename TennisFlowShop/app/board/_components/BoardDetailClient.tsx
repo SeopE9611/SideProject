@@ -298,7 +298,7 @@ function CommentItem({
             {!isCommentAuthor && (
               <button
                 type="button"
-                className="rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
+                className="min-h-11 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground bp-sm:min-h-0"
                 onClick={() => onOpenCommentReport(comment)}
               >
                 신고
@@ -1613,7 +1613,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                      className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground bp-sm:h-8 bp-sm:w-8"
                     >
                       <MoreVertical className="h-4 w-4" />
                       <span className="sr-only">게시글 메뉴</span>
@@ -2069,10 +2069,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     disabled={isReporting}
                   />
 
-                  <DialogFooter className="gap-2 sm:justify-end">
+                  <DialogFooter className="gap-2 bp-sm:flex-row bp-sm:justify-end">
                     <Button
                       type="button"
                       variant="outline"
+                      className="min-h-11 w-full bp-sm:w-auto"
                       onClick={() => setOpenReport(false)}
                       disabled={isReporting}
                     >
@@ -2081,6 +2082,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     <Button
                       type="button"
                       variant="destructive"
+                      className="min-h-11 w-full bp-sm:w-auto"
                       onClick={handleSubmitReport}
                       disabled={isReporting}
                     >
@@ -2158,7 +2160,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     size="sm"
                     onClick={handleToggleLike}
                     disabled={isLiking}
-                    className="h-10 w-full gap-2 text-ui-body-sm sm:w-auto sm:min-w-[160px]"
+                    className="min-h-11 w-full gap-2 text-ui-body-sm sm:w-auto sm:min-w-[160px]"
                   >
                     <ThumbsUp className="h-4 w-4" />
                     {isLiking
@@ -2174,7 +2176,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-10 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
+                      className="min-h-11 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
                     >
                       <Link href={listHref} onClick={onNavLinkClick}>
                         목록으로
@@ -2184,7 +2186,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       asChild
                       variant="highlight"
                       size="sm"
-                      className="h-10 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
+                      className="min-h-11 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
                     >
                       <Link href={`${config.routePrefix}/write`} onClick={onNavLinkClick}>
                         새 글 작성
@@ -2764,13 +2766,13 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     )}
                   </TabsContent>
 
-                  <div className="flex items-center justify-between pt-4 md:pt-6 mt-4 md:mt-6 border-t border-border">
+                  <div className="flex flex-col gap-2 pt-4 md:pt-6 mt-4 md:mt-6 border-t border-border bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                     <Button
                       variant="outline"
                       size="sm"
                       asChild
                       disabled={!item}
-                      className="h-9 bg-transparent"
+                      className="min-h-11 w-full bg-transparent bp-sm:h-9 bp-sm:min-h-0 bp-sm:w-auto"
                     >
                       <Link
                         href={
@@ -2787,7 +2789,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsAuthorProfileOpen(false)}
-                      className="h-9"
+                      className="min-h-11 w-full bp-sm:h-9 bp-sm:min-h-0 bp-sm:w-auto"
                     >
                       닫기
                     </Button>

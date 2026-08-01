@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function AuthGatePage() {
   const sp = useSearchParams();
@@ -43,34 +46,35 @@ export default function AuthGatePage() {
     <div className="fixed inset-0 z-[9999]">
       <div className="absolute inset-0 bg-overlay/70" />
       <div className="relative h-full flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 space-y-4 shadow-sm">
-          <h1 className="text-ui-section-title font-semibold">🔒 아직 개발 단계입니다</h1>
+        <div className="w-full max-w-md space-y-5 rounded-panel border border-border bg-card p-6 shadow-soft">
+          <h1 className="text-ui-section-title font-ui-medium">🔒 아직 개발 단계입니다</h1>
           <p className="text-ui-body-sm text-muted-foreground">
             접근하려면 개발자 전용 비밀번호를 입력하세요.
           </p>
 
           <div className="space-y-2">
-            <label className="text-ui-label font-medium">비밀번호</label>
-            <input
+            <Label htmlFor="developer-password">비밀번호</Label>
+            <Input
+              id="developer-password"
               type="password"
               value={pw}
               onChange={(e) => setPw(e.target.value)}
               placeholder="개발자 전용 비밀번호"
-              className="w-full rounded-lg border border-border bg-card dark:bg-muted px-3 py-2 outline-none focus:ring-2 ring-ring"
               autoFocus
             />
           </div>
 
           {msg && <p className="text-ui-label text-destructive">{msg}</p>}
 
-          <button
+          <Button
             type="button"
+            variant="highlight"
             disabled={loading || !pw}
             onClick={handleClick}
-            className="w-full rounded-lg py-2.5 font-medium disabled:opacity-60"
+            className="min-h-11 w-full"
           >
             {loading ? "확인 중…" : "입장하기"}
-          </button>
+          </Button>
 
           <p className="text-ui-label text-muted-foreground text-center">
             인증에 성공하면 {redirect} 로 이동합니다.

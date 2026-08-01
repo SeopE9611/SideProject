@@ -39,7 +39,7 @@ export default function AsyncState({
   title,
   description,
   actionLabel = "다시 시도",
-  actionVariant = "outline",
+  actionVariant,
   actionClassName,
   onAction,
   icon,
@@ -107,8 +107,12 @@ export default function AsyncState({
             type="button"
             onClick={onAction}
             size="sm"
-            variant={actionVariant}
-            className={cn("mt-1", actionClassName)}
+            variant={actionVariant ?? (tone === "user" ? "highlight" : "outline")}
+            className={cn(
+              "mt-1",
+              tone === "user" && "min-h-11 bp-sm:min-h-0",
+              actionClassName,
+            )}
           >
             <RefreshCcw className="mr-1 h-3.5 w-3.5" />
             {actionLabel}
