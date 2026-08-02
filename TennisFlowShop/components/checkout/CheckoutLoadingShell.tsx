@@ -22,17 +22,21 @@ function HeaderSkeleton() {
   return (
     <header aria-hidden="true" className="border-b border-border/80 bg-muted/30 text-foreground">
       <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
-        <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-end bp-md:justify-between">
-          <div className="flex min-w-0 items-start gap-3 bp-sm:gap-4">
-            <div className="min-w-0">
-              <div className="text-ui-label font-ui-medium uppercase tracking-[0.18em]">
-                <Skeleton className="h-3 w-28" />
-              </div>
-              <div className="mt-1 font-ui-bold leading-tight tracking-tight">
-                <Skeleton className="h-8 w-44" />
-              </div>
-              <div className="mt-2 max-w-3xl leading-relaxed">
-                <Skeleton className="h-4 w-72 max-w-full" />
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-end bp-md:justify-between">
+            <div className="flex min-w-0 items-start gap-3 bp-sm:gap-4">
+              <div className="min-w-0">
+                <div className="text-ui-label font-ui-medium uppercase tracking-[0.18em]">
+                  <Skeleton className="h-3 w-28" />
+                </div>
+
+                <div className="mt-1 font-ui-bold leading-tight tracking-tight">
+                  <Skeleton className="h-8 w-44" />
+                </div>
+
+                <div className="mt-2 max-w-3xl leading-relaxed">
+                  <Skeleton className="h-4 w-72 max-w-full" />
+                </div>
               </div>
             </div>
           </div>
@@ -75,7 +79,7 @@ export default function CheckoutLoadingShell({
       <HeaderSkeleton />
       <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
         {layout === "aside" ? (
-          <div className="grid gap-6 pb-[calc(96px+env(safe-area-inset-bottom))] bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-lg:pb-0">
+          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-y-5 pb-[calc(96px+env(safe-area-inset-bottom))] bp-sm:gap-y-6 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-lg:items-start bp-lg:gap-x-8 bp-lg:pb-0">
             <div className="space-y-5 bp-sm:space-y-6">
               {keys.map((key) => (
                 <SectionSkeleton key={key} />

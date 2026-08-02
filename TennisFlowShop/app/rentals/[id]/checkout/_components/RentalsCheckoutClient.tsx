@@ -5,12 +5,12 @@ import type useRentalCheckoutStringingServiceAdapter from "@/app/features/string
 import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
 import RentalCheckoutStringingSections from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingSections";
 import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
-import SiteContainer from "@/components/layout/SiteContainer";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
 import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
 import CheckoutSection from "@/components/checkout/CheckoutSection";
+import SiteContainer from "@/components/layout/SiteContainer";
 import RefundBankCombobox from "@/components/refund/RefundBankCombobox";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -756,7 +756,10 @@ export default function RentalsCheckoutClient({
                 2 스트링 선택
               </Badge>
               <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
-              <Badge tone="signal" className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium">
+              <Badge
+                tone="signal"
+                className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium"
+              >
                 3 신청 확인
               </Badge>
             </div>
@@ -765,7 +768,7 @@ export default function RentalsCheckoutClient({
       </CheckoutPageHeader>
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-y-5 bp-sm:gap-y-6 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-lg:items-start bp-lg:gap-x-8">
           <div
             className={cn("space-y-5 bp-sm:space-y-6", loading && "pointer-events-none")}
             aria-busy={loading}
@@ -969,8 +972,7 @@ export default function RentalsCheckoutClient({
                   ) : (
                     <div className="text-ui-body-sm text-foreground/80">
                       현재는 <span className="font-ui-medium">교체서비스 미선택</span> 상태입니다.
-                      필요하면 "스트링 선택"을 눌러
-                      교체서비스를 함께 진행할 수 있습니다.
+                      필요하면 "스트링 선택"을 눌러 교체서비스를 함께 진행할 수 있습니다.
                     </div>
                   )}
                 </div>
@@ -1130,7 +1132,10 @@ export default function RentalsCheckoutClient({
                       )}
                     >
                       <RadioGroupItem value="bank_transfer" id="bank-transfer" />
-                      <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-ui-medium">
+                      <Label
+                        htmlFor="bank-transfer"
+                        className="flex-1 cursor-pointer font-ui-medium"
+                      >
                         무통장입금
                       </Label>
                       <Building2 className="h-5 w-5 text-foreground" />
@@ -1469,14 +1474,18 @@ export default function RentalsCheckoutClient({
                     {requestStringing && selectedString && (
                       <>
                         <div className="flex min-w-0 items-center justify-between gap-3">
-                          <span className="min-w-0 break-words text-muted-foreground">스트링 금액</span>
+                          <span className="min-w-0 break-words text-muted-foreground">
+                            스트링 금액
+                          </span>
                           <span className="shrink-0 font-ui-medium tabular-nums text-foreground">
                             {selectedString.price.toLocaleString()}원
                           </span>
                         </div>
 
                         <div className="flex min-w-0 items-center justify-between gap-3">
-                          <span className="min-w-0 break-words text-foreground/80">교체서비스 장착비</span>
+                          <span className="min-w-0 break-words text-foreground/80">
+                            교체서비스 장착비
+                          </span>
                           <span className="shrink-0 font-ui-medium tabular-nums text-foreground">
                             {stringingFee.toLocaleString()}원
                           </span>
@@ -1486,7 +1495,9 @@ export default function RentalsCheckoutClient({
 
                     <div className="flex min-w-0 items-center justify-between gap-3">
                       <span className="min-w-0 break-words text-muted-foreground">배송비</span>
-                      <span className="shrink-0 font-ui-medium tabular-nums text-foreground">0원</span>
+                      <span className="shrink-0 font-ui-medium tabular-nums text-foreground">
+                        0원
+                      </span>
                     </div>
 
                     {/* 포인트 차감 표시 */}

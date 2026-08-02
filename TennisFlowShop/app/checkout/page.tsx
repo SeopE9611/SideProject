@@ -13,14 +13,15 @@ import { useAuthStore, type User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
+import CheckoutContentLayout from "@/components/checkout/CheckoutContentLayout";
 import CheckoutLoadingShell from "@/components/checkout/CheckoutLoadingShell";
 import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
 import CheckoutSection from "@/components/checkout/CheckoutSection";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -325,6 +326,8 @@ function FinalPaymentConfirmCard({
     <SummaryCard
       title="최종 결제 확인"
       description="결제 예정 금액, 할인, 배송비를 마지막으로 확인하세요"
+      variant="feature"
+      className="rounded-none border-x-0 shadow-none bp-sm:rounded-panel bp-sm:border-x bp-sm:shadow-soft"
       contentClassName="space-y-5"
     >
       <PriceSummary rows={priceSummaryRows} />
@@ -1361,8 +1364,224 @@ export default function CheckoutPage() {
       paymentMethod === "bank-transfer" ? "주문 접수 중..." : "결제 요청 중...";
 
     if (isInitialLoading) {
-      return <CheckoutLoadingShell layout="linear" />;
+      return (
+        <CheckoutLoadingShell
+          layout="aside"
+          sectionKeys={["items", "delivery", "recipient", "service", "payment", "agreements"]}
+        />
+      );
     }
+
+    const checkoutSummary = (
+      <div className="space-y-4">
+        <div id="checkout-final-confirm" className="scroll-mt-24">
+          <FinalPaymentConfirmCard
+            orderItemsCount={orderItems.length}
+            subtotal={subtotal}
+            regularSubtotal={regularSubtotal}
+            shippingFee={shippingFee}
+            serviceFee={finalServiceFee}
+            baseServiceFee={baseServiceFee}
+            packageUsage={checkoutPackageUsage}
+            withStringService={withStringService}
+            appliedPoints={appliedPoints}
+            totalPrice={totalPrice}
+            payableTotalPrice={payableTotalPrice}
+            isShippingFeeReady={isShippingFeeReady}
+            isMountingFeeReady={isMountingFeeReady}
+            paymentMethod={paymentMethod}
+            selectedBank={selectedBank}
+            depositor={depositor}
+          />
+        </div>
+
+        <CheckoutBottomStickyBar
+          amount={payableTotalPrice}
+          amountLabel="결제 예정 금액"
+          label={checkoutActionLabel}
+          loadingLabel={checkoutActionLoadingLabel}
+          disabled={!resolvedCanSubmit || isCheckoutSubmitting}
+          loading={isCheckoutSubmitting}
+          ariaLabel={checkoutActionLabel}
+          onClick={() => {
+            requestStringingValidationMessages();
+
+            const target = document.getElementById(CHECKOUT_PRIMARY_PAY_BUTTON_ID);
+
+            if (target instanceof HTMLButtonElement && !target.disabled) {
+              target.click();
+              return;
+            }
+
+            document.getElementById("checkout-payment-action")?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+        />
+
+        <section
+          id="checkout-payment-action"
+          className="relative overflow-hidden rounded-none border-y border-border/80 border-x-0 bg-card px-4 py-5 shadow-none bp-sm:rounded-panel bp-sm:border bp-sm:px-5 bp-sm:py-5 bp-sm:shadow-soft"
+        >
+          <div className="flex shrink-0 flex-col gap-4">
+            {(fieldErrors.items ||
+              fieldErrors.bundle ||
+              (isMountingFeeReady && fieldErrors.composition) ||
+              hasStringingLineErrors ||
+              stringingApplicationError) && (
+              <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-ui-body-sm text-destructive dark:bg-destructive/20">
+                <p className="mb-1 font-ui-medium">확인 필요</p>
+
+                {fieldErrors.items && <p>• {fieldErrors.items}</p>}
+
+                {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
+
+                {hasStringingLineErrors && <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>}
+
+                {stringingApplicationError && <p>• {stringingApplicationError}</p>}
+
+                {fieldErrors.composition && (
+                  <p>
+                    • {fieldErrors.composition}{" "}
+                    {mode !== "buynow" && (
+                      <Link
+                        href="/cart"
+                        data-no-unsaved-guard
+                        onClick={onLeaveCartClick}
+                        className="underline underline-offset-2"
+                      >
+                        (장바구니에서 정리)
+                      </Link>
+                    )}
+                  </p>
+                )}
+
+                {fieldErrors.composition && mode !== "buynow" && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      href="/cart"
+                      data-no-unsaved-guard
+                      onClick={onLeaveCartClick}
+                      className="inline-flex items-center justify-center rounded-md bg-muted/50 px-3 py-2 text-ui-body-sm font-medium text-foreground hover:bg-muted dark:bg-card/60"
+                    >
+                      장바구니로 가서 정리하기
+                    </Link>
+
+                    <span className="break-keep text-ui-body-sm text-foreground/80">
+                      정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mx-auto w-full max-w-md">
+              {paymentMethod === "bank-transfer" ? (
+                <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                  <CheckoutButton
+                    buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                    label={checkoutActionLabel}
+                    loadingLabel={checkoutActionLoadingLabel}
+                    disabled={!resolvedCanSubmit}
+                    name={name}
+                    phone={phone}
+                    email={email}
+                    postalCode={postalCode}
+                    address={address}
+                    addressDetail={addressDetail}
+                    depositor={depositor}
+                    totalPrice={totalPrice}
+                    shippingFee={shippingFee}
+                    payableAmount={payableTotalPrice}
+                    selectedBank={selectedBank}
+                    deliveryRequest={deliveryRequest}
+                    saveAddress={saveAddress}
+                    deliveryMethod={deliveryMethod}
+                    serviceTargetIds={serviceTargetIds}
+                    withStringService={withStringService}
+                    servicePickupMethod={servicePickupMethod}
+                    items={orderItems}
+                    serviceFee={finalServiceFee}
+                    pointsToUse={appliedPoints}
+                    stringingApplicationInput={stringingApplicationInput}
+                    onSubmittingChange={setIsCheckoutSubmitting}
+                    onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                    onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                  />
+                </div>
+              ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
+                <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                  <NiceCheckoutButton
+                    buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
+                    label={checkoutActionLabel}
+                    loadingLabel={checkoutActionLoadingLabel}
+                    disabled={!resolvedCanSubmit}
+                    onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                    onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                    payableAmount={payableTotalPrice}
+                    payload={{
+                      items: orderItems.map((item) => ({
+                        productId: item.id,
+                        quantity: item.quantity,
+                        kind: item.kind ?? "product",
+                        selectedGauge: item.selectedGauge,
+                        selectedColor: item.selectedColor,
+                        selectedColorLabel: item.selectedColorLabel,
+                        selectedColorHex: item.selectedColorHex,
+                        selectedColorImage: item.selectedColorImage,
+                      })),
+                      shippingInfo: {
+                        name: name.trim(),
+                        phone: phone.replace(/\D/g, ""),
+                        address: address.trim(),
+                        addressDetail: addressDetail.trim(),
+                        postalCode: postalCode.replace(/\D/g, ""),
+                        depositor: "나이스결제",
+                        deliveryRequest: deliveryRequest.trim(),
+                        deliveryMethod,
+                        withStringService,
+                      },
+                      paymentInfo: {
+                        method: "나이스페이",
+                      },
+                      totalPrice,
+                      shippingFee,
+                      serviceFee: finalServiceFee,
+                      pointsToUse: appliedPoints,
+                      guestInfo: !user
+                        ? {
+                            name: name.trim(),
+                            phone: phone.replace(/\D/g, ""),
+                            email: email.trim().toLowerCase(),
+                          }
+                        : undefined,
+                      isStringServiceApplied: withStringService,
+                      servicePickupMethod,
+                      stringingApplicationInput:
+                        withStringService && stringingApplicationInput
+                          ? stringingApplicationInput
+                          : undefined,
+                    }}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {isCheckoutSubmitting && (
+            <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+              <div className="absolute inset-0 grid place-items-center">
+                <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-ui-body-sm">주문을 처리하고 있어요…</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+    );
 
     return (
       <div className="min-h-full bg-background">
@@ -1425,101 +1644,100 @@ export default function CheckoutPage() {
         </CheckoutPageHeader>
 
         <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
-          <div className="mx-auto w-full max-w-6xl">
-            <div
-              className={cn(
-                "space-y-6 pb-[calc(96px+env(safe-area-inset-bottom))] bp-lg:pb-0",
-                isCheckoutSubmitting && "pointer-events-none",
-              )}
-              aria-busy={isCheckoutSubmitting}
+          <div className="mx-auto w-full max-w-7xl space-y-6">
+            <nav
+              aria-label="주문서 작성 순서"
+              className="border-y border-border/80 bg-muted/20 px-1 py-3 bp-sm:px-2"
             >
-              <nav
-                aria-label="주문서 작성 순서"
-                className="border-y border-border/80 bg-muted/20 px-1 py-3 bp-sm:px-2"
-              >
-                <p className="text-ui-body-sm font-medium text-foreground">주문서 작성 순서</p>
-                <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2 [&::-webkit-scrollbar]:hidden">
-                  {[
-                    { href: "#checkout-order-items", label: "주문 상품" },
-                    { href: "#checkout-delivery-method", label: "수령·배송" },
-                    {
-                      href: "#checkout-recipient-info",
-                      label: "배송·연락 정보",
-                    },
-                    { href: "#checkout-payment-info", label: "결제·혜택" },
-                    { href: "#checkout-agreements", label: "약관 동의" },
-                    { href: "#checkout-final-confirm", label: "최종 확인" },
-                  ].map((item) => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      className="shrink-0 rounded-full border border-border bg-secondary/30 px-3 py-1.5 text-ui-label font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-3.5 bp-sm:py-2 bp-sm:text-ui-body-sm"
-                    >
-                      {item.label}
-                    </a>
-                  ))}
-                </div>
-              </nav>
+              <p className="text-ui-body-sm font-medium text-foreground">주문서 작성 순서</p>
+              <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2 [&::-webkit-scrollbar]:hidden">
+                {[
+                  { href: "#checkout-order-items", label: "주문 상품" },
+                  { href: "#checkout-delivery-method", label: "수령·배송" },
+                  {
+                    href: "#checkout-recipient-info",
+                    label: "배송·연락 정보",
+                  },
+                  { href: "#checkout-payment-info", label: "결제·혜택" },
+                  { href: "#checkout-agreements", label: "약관 동의" },
+                  { href: "#checkout-final-confirm", label: "최종 확인" },
+                ].map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className="shrink-0 rounded-full border border-border bg-secondary/30 px-3 py-1.5 text-ui-label font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-3.5 bp-sm:py-2 bp-sm:text-ui-body-sm"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            </nav>
 
-              {/* 현재 주문 성격 및 작성 안내 */}
-              <section
-                aria-label="현재 주문 성격 및 작성 안내"
-                className={cn(
-                  "border-l-2 px-4 py-3 bp-sm:px-5",
-                  withStringService
-                    ? "border-primary/40 bg-primary/5 ring-1 ring-inset ring-primary/20"
-                    : "border-border bg-muted/30",
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  <div
+            {/* 현재 주문 성격 및 작성 안내 */}
+            <section
+              aria-label="현재 주문 성격 및 작성 안내"
+              className={cn(
+                "border-l-2 px-4 py-3 bp-sm:px-5",
+                withStringService
+                  ? "border-primary/40 bg-primary/5 ring-1 ring-inset ring-primary/20"
+                  : "border-border bg-muted/30",
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={cn(
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1",
+                    withStringService
+                      ? "bg-primary/10 text-primary ring-primary/20"
+                      : "bg-muted/60 text-muted-foreground ring-border/60",
+                  )}
+                >
+                  {withStringService ? (
+                    <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  ) : (
+                    <Info className="h-4 w-4" />
+                  )}
+                </div>
+                <div className="min-w-0 space-y-1">
+                  <h2
                     className={cn(
-                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1",
+                      "break-keep text-foreground",
                       withStringService
-                        ? "bg-primary/10 text-primary ring-primary/20"
-                        : "bg-muted/60 text-muted-foreground ring-border/60",
+                        ? "text-ui-body font-ui-medium"
+                        : "text-ui-body-sm font-ui-medium",
                     )}
                   >
-                    {withStringService ? (
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    ) : (
-                      <Info className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div className="min-w-0 space-y-1">
-                    <h2
-                      className={cn(
-                        "break-keep text-foreground",
-                        withStringService
-                          ? "text-ui-body font-ui-medium"
-                          : "text-ui-body-sm font-ui-medium",
+                    {withStringService
+                      ? "상품 주문과 교체서비스 신청을 함께 진행합니다"
+                      : "일반 상품 주문입니다"}
+                  </h2>
+                  {withStringService ? (
+                    <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
+                      <p className="break-keep">
+                        상품·장착 정보와 수령 방식을 확인하세요. 최종 버튼을 누르면 선택한
+                        결제수단에 따라 주문과 교체서비스 신청이 함께 처리됩니다.
+                      </p>
+                      {isStringOnlyServiceFlow && (
+                        <p className="break-keep">{stringStandalonePausedNotice}</p>
                       )}
-                    >
-                      {withStringService
-                        ? "상품 주문과 교체서비스 신청을 함께 진행합니다"
-                        : "일반 상품 주문입니다"}
-                    </h2>
-                    {withStringService ? (
-                      <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
-                        <p className="break-keep">
-                          상품·장착 정보와 수령 방식을 확인하세요. 최종 버튼을 누르면 선택한
-                          결제수단에 따라 주문과 교체서비스 신청이 함께 처리됩니다.
-                        </p>
-                        {isStringOnlyServiceFlow && (
-                          <p className="break-keep">{stringStandalonePausedNotice}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
-                        <p className="break-keep">교체서비스 없이 상품만 주문합니다.</p>
-                        <p className="break-keep text-ui-label text-muted-foreground/90">
-                          결제 전 새로고침이나 페이지 이동은 피해주세요.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
+                      <p className="break-keep">교체서비스 없이 상품만 주문합니다.</p>
+                      <p className="break-keep text-ui-label text-muted-foreground/90">
+                        결제 전 새로고침이나 페이지 이동은 피해주세요.
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </section>
+              </div>
+            </section>
+
+            <CheckoutContentLayout
+              isBusy={isCheckoutSubmitting}
+              className={cn(isCheckoutSubmitting && "pointer-events-none")}
+              summary={checkoutSummary}
+            >
               {/* 주문 상품 */}
               <CheckoutSection
                 id="checkout-order-items"
@@ -2400,208 +2618,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </CheckoutSection>
-
-              <div id="checkout-final-confirm" className="scroll-mt-24">
-                <FinalPaymentConfirmCard
-                  orderItemsCount={orderItems.length}
-                  subtotal={subtotal}
-                  regularSubtotal={regularSubtotal}
-                  shippingFee={shippingFee}
-                  serviceFee={finalServiceFee}
-                  baseServiceFee={baseServiceFee}
-                  packageUsage={checkoutPackageUsage}
-                  withStringService={withStringService}
-                  appliedPoints={appliedPoints}
-                  totalPrice={totalPrice}
-                  payableTotalPrice={payableTotalPrice}
-                  isShippingFeeReady={isShippingFeeReady}
-                  isMountingFeeReady={isMountingFeeReady}
-                  paymentMethod={paymentMethod}
-                  selectedBank={selectedBank}
-                  depositor={depositor}
-                />
-              </div>
-
-              <CheckoutBottomStickyBar
-                amount={payableTotalPrice}
-                amountLabel="결제 예정 금액"
-                label={checkoutActionLabel}
-                loadingLabel={checkoutActionLoadingLabel}
-                disabled={!resolvedCanSubmit || isCheckoutSubmitting}
-                loading={isCheckoutSubmitting}
-                ariaLabel={checkoutActionLabel}
-                onClick={() => {
-                  requestStringingValidationMessages();
-                  const target = document.getElementById(CHECKOUT_PRIMARY_PAY_BUTTON_ID);
-                  if (target instanceof HTMLButtonElement && !target.disabled) {
-                    target.click();
-                    return;
-                  }
-                  document.getElementById("checkout-payment-action")?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }}
-              />
-
-              <section
-                id="checkout-payment-action"
-                className="relative overflow-hidden border-t border-border px-4 py-5 bp-sm:px-6 bp-sm:py-6"
-              >
-                <div className="flex shrink-0 flex-col gap-4">
-                  {(fieldErrors.items ||
-                    fieldErrors.bundle ||
-                    (isMountingFeeReady && fieldErrors.composition) ||
-                    hasStringingLineErrors ||
-                    stringingApplicationError) && (
-                    <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-ui-body-sm text-destructive dark:bg-destructive/20">
-                      <p className="font-ui-medium mb-1">확인 필요</p>
-                      {fieldErrors.items && <p>• {fieldErrors.items}</p>}
-                      {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
-                      {hasStringingLineErrors && (
-                        <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>
-                      )}
-                      {stringingApplicationError && <p>• {stringingApplicationError}</p>}
-                      {fieldErrors.composition && (
-                        <p>
-                          • {fieldErrors.composition}{" "}
-                          {mode !== "buynow" && (
-                            <Link
-                              href="/cart"
-                              data-no-unsaved-guard
-                              onClick={onLeaveCartClick}
-                              className="underline underline-offset-2"
-                            >
-                              (장바구니에서 정리)
-                            </Link>
-                          )}
-                        </p>
-                      )}
-                      {fieldErrors.composition && mode !== "buynow" && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <Link
-                            href="/cart"
-                            data-no-unsaved-guard
-                            onClick={onLeaveCartClick}
-                            className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-ui-body-sm font-medium text-foreground hover:bg-muted"
-                          >
-                            장바구니로 가서 정리하기
-                          </Link>
-                          <span className="break-keep text-ui-body-sm text-foreground/80">
-                            정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="mx-auto w-full max-w-md">
-                    {paymentMethod === "bank-transfer" ? (
-                      <div
-                        onPointerDownCapture={requestStringingValidationMessages}
-                        className="w-full"
-                      >
-                        <CheckoutButton
-                          buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
-                          label={checkoutActionLabel}
-                          loadingLabel={checkoutActionLoadingLabel}
-                          disabled={!resolvedCanSubmit}
-                          name={name}
-                          phone={phone}
-                          email={email}
-                          postalCode={postalCode}
-                          address={address}
-                          addressDetail={addressDetail}
-                          depositor={depositor}
-                          totalPrice={totalPrice}
-                          shippingFee={shippingFee}
-                          payableAmount={payableTotalPrice}
-                          selectedBank={selectedBank}
-                          deliveryRequest={deliveryRequest}
-                          saveAddress={saveAddress}
-                          deliveryMethod={deliveryMethod}
-                          serviceTargetIds={serviceTargetIds}
-                          withStringService={withStringService}
-                          servicePickupMethod={servicePickupMethod}
-                          items={orderItems}
-                          serviceFee={finalServiceFee}
-                          pointsToUse={appliedPoints}
-                          stringingApplicationInput={stringingApplicationInput}
-                          onSubmittingChange={setIsCheckoutSubmitting}
-                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                        />
-                      </div>
-                    ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                      <div
-                        onPointerDownCapture={requestStringingValidationMessages}
-                        className="w-full"
-                      >
-                        <NiceCheckoutButton
-                          buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
-                          label={checkoutActionLabel}
-                          loadingLabel={checkoutActionLoadingLabel}
-                          disabled={!resolvedCanSubmit}
-                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                          payableAmount={payableTotalPrice}
-                          payload={{
-                            items: orderItems.map((item) => ({
-                              productId: item.id,
-                              quantity: item.quantity,
-                              kind: item.kind ?? "product",
-                              selectedGauge: item.selectedGauge,
-                              selectedColor: item.selectedColor,
-                              selectedColorLabel: item.selectedColorLabel,
-                              selectedColorHex: item.selectedColorHex,
-                              selectedColorImage: item.selectedColorImage,
-                            })),
-                            shippingInfo: {
-                              name: name.trim(),
-                              phone: phone.replace(/\D/g, ""),
-                              address: address.trim(),
-                              addressDetail: addressDetail.trim(),
-                              postalCode: postalCode.replace(/\D/g, ""),
-                              depositor: "나이스결제",
-                              deliveryRequest: deliveryRequest.trim(),
-                              deliveryMethod,
-                              withStringService,
-                            },
-                            paymentInfo: { method: "나이스페이" },
-                            totalPrice,
-                            shippingFee,
-                            serviceFee: finalServiceFee,
-                            pointsToUse: appliedPoints,
-                            guestInfo: !user
-                              ? {
-                                  name: name.trim(),
-                                  phone: phone.replace(/\D/g, ""),
-                                  email: email.trim().toLowerCase(),
-                                }
-                              : undefined,
-                            isStringServiceApplied: withStringService,
-                            servicePickupMethod,
-                            stringingApplicationInput:
-                              withStringService && stringingApplicationInput
-                                ? stringingApplicationInput
-                                : undefined,
-                          }}
-                        />
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-                {isCheckoutSubmitting && (
-                  <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
-                    <div className="absolute inset-0 grid place-items-center">
-                      <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-ui-body-sm">주문을 처리하고 있어요…</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </section>
-            </div>
+            </CheckoutContentLayout>
           </div>
         </SiteContainer>
       </div>
