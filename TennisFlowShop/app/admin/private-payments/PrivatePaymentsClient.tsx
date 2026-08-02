@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { adminFetcher } from "@/lib/admin/adminFetcher";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { formatKoreanDateTime } from "@/lib/korean-date";
@@ -547,7 +548,7 @@ export default function PrivatePaymentsClient() {
                   <th className="w-[130px] px-4 py-3 text-right">{header("금액", "amount")}</th>
                   <th className="w-[190px] px-4 py-3">{header("상태", "paymentStatus")}</th>
                   <th className="w-[170px] px-4 py-3">만료/일시</th>
-                  <th className="sticky right-0 z-20 w-14 border-l border-border bg-inherit px-4 py-3 text-right">작업</th>
+                  <th className={adminDataTable.stickyActionHead}>작업</th>
                 </tr>
               </thead>
               <tbody>
@@ -601,7 +602,7 @@ export default function PrivatePaymentsClient() {
                             <div>{item.customerEmail || "-"}</div>
                           </div>
                         </td>
-                        <td className={cn(adminSurface.tableCell, "sticky right-0 z-10 border-l border-border bg-inherit text-right")}>
+                        <td className={cn(adminSurface.tableCell, "text-right")}>
                           <div className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                             {money(item.amount)}
                           </div>
@@ -665,7 +666,7 @@ export default function PrivatePaymentsClient() {
                             )}
                           </div>
                         </td>
-                        <td className={cn(adminSurface.tableCell, "text-right")}>
+                        <td className={adminDataTable.stickyActionCell}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
