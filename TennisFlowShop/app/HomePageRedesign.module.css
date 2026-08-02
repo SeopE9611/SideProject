@@ -9,13 +9,11 @@
   --home-highlight-text: hsl(var(--brand-highlight-foreground));
   --home-highlight-muted: hsl(var(--brand-highlight-muted));
   --home-highlight-ink: hsl(var(--brand-highlight-ink));
-  --home-page-surface:
-    color-mix(in srgb, hsl(var(--background)) 46%, hsl(var(--secondary)) 54%);
-  --home-soft:
-    color-mix(in srgb, hsl(var(--secondary)) 78%, hsl(var(--background)) 22%);
+  --home-page-surface: color-mix(in srgb, hsl(var(--background)) 46%, hsl(var(--secondary)) 54%);
+  --home-soft: color-mix(in srgb, hsl(var(--secondary)) 78%, hsl(var(--background)) 22%);
   --home-font:
-    "GmarketSans", "Spoqa Han Sans Neo", system-ui, -apple-system, "Segoe UI",
-    "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    "GmarketSans", "Spoqa Han Sans Neo", system-ui, -apple-system, "Segoe UI", "Noto Sans KR",
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 
   overflow-x: clip;
   background: var(--home-page-surface);
@@ -77,9 +75,17 @@
 
 .heroCopy h1 {
   margin: 18px 0 0;
-  font-family: var(--home-font);
+  font-family:
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
   font-size: clamp(56px, 4.8vw, 70px);
-  font-weight: 500;
+  font-weight: 700;
   font-synthesis: none;
   line-height: 1.04;
   letter-spacing: -0.045em;
@@ -116,13 +122,12 @@
 .heroShade {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      var(--home-inverse) 0%,
-      color-mix(in srgb, var(--home-inverse) 72%, transparent) 18%,
-      transparent 62%
-    );
+  background: linear-gradient(
+    90deg,
+    var(--home-inverse) 0%,
+    color-mix(in srgb, var(--home-inverse) 72%, transparent) 18%,
+    transparent 62%
+  );
 }
 
 @keyframes heroReveal {
@@ -142,8 +147,7 @@
   min-height: 72px;
   grid-template-columns: 1fr auto;
   align-items: center;
-  border-top: 1px solid
-    color-mix(in srgb, var(--home-inverse-text) 13%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--home-inverse-text) 13%, transparent);
   background: color-mix(in srgb, var(--home-inverse) 88%, transparent);
   backdrop-filter: blur(16px);
 }
@@ -192,8 +196,7 @@
   width: 142px;
   align-items: center;
   justify-content: space-between;
-  border-left: 1px solid
-    color-mix(in srgb, var(--home-inverse-text) 13%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--home-inverse-text) 13%, transparent);
   padding: 0 18px;
   color: var(--home-inverse-text);
   font-size: 14px;
@@ -462,8 +465,7 @@
   align-items: center;
   gap: 15px;
   border: 0;
-  border-top: 1px solid
-    color-mix(in srgb, var(--home-inverse-text) 16%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--home-inverse-text) 16%, transparent);
   background: transparent;
   padding: 0;
   color: hsl(var(--surface-inverse-muted));
@@ -473,8 +475,7 @@
 }
 
 .conciergeTabs button:last-child {
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--home-inverse-text) 16%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--home-inverse-text) 16%, transparent);
 }
 
 .conciergeTabs button span {
@@ -496,8 +497,7 @@
   min-height: 490px;
   grid-template-columns: 1.08fr 0.92fr;
   overflow: hidden;
-  border: 1px solid
-    color-mix(in srgb, var(--home-inverse-text) 17%, transparent);
+  border: 1px solid color-mix(in srgb, var(--home-inverse-text) 17%, transparent);
   border-radius: 24px;
   background: color-mix(in srgb, var(--home-inverse-text) 5%, var(--home-inverse));
 }
@@ -553,10 +553,8 @@
 
 .conciergeCopy dl {
   margin: 24px 0 22px;
-  border-top: 1px solid
-    color-mix(in srgb, var(--home-inverse-text) 15%, transparent);
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--home-inverse-text) 15%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--home-inverse-text) 15%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--home-inverse-text) 15%, transparent);
   padding-block: 15px;
 }
 
@@ -577,8 +575,7 @@
 }
 
 .racketSection {
-  --home-racket-surface:
-    color-mix(in srgb, hsl(var(--background)) 60%, hsl(var(--secondary)) 40%);
+  --home-racket-surface: color-mix(in srgb, hsl(var(--background)) 60%, hsl(var(--secondary)) 40%);
   background: var(--home-racket-surface);
 }
 
@@ -623,13 +620,12 @@
 }
 
 .loadingRail > span {
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--home-line) 55%, transparent),
-      color-mix(in srgb, var(--home-card) 85%, transparent),
-      color-mix(in srgb, var(--home-line) 55%, transparent)
-    );
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--home-line) 55%, transparent),
+    color-mix(in srgb, var(--home-card) 85%, transparent),
+    color-mix(in srgb, var(--home-line) 55%, transparent)
+  );
   background-size: 200% 100%;
   animation: loading 1.5s linear infinite;
 }
@@ -750,7 +746,10 @@
   border-radius: 20px;
   background: var(--home-card);
   padding: 30px;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .packageCardFeatured {
