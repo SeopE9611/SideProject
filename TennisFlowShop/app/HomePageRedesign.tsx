@@ -7,12 +7,17 @@ import { RacketBadge } from "@/components/badges/RacketBadge";
 import { SemanticBadge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import {
-  EmptyState as PublicEmptyState,
   PrimaryCTAGroup,
+  EmptyState as PublicEmptyState,
   SectionHeader as PublicSectionHeader,
 } from "@/components/public";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { Button } from "@/components/ui/button";
+import {
+  commerceBadgeSpecs,
+  getRacketAvailabilityState,
+  racketAvailabilityBadgeSpec,
+} from "@/lib/badge-style";
 import { RACKET_BRANDS, racketBrandLabel, stringBrandLabel } from "@/lib/constants";
 import type {
   HomePreviewData,
@@ -30,14 +35,9 @@ import {
   SIGNUP_BONUS_POINTS,
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
-import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { isStringProductSoldOut } from "@/lib/products/string-stock";
-import {
-  commerceBadgeSpecs,
-  getRacketAvailabilityState,
-  racketAvailabilityBadgeSpec,
-} from "@/lib/badge-style";
+import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -182,10 +182,7 @@ const PROMO_BANNERS = (() => {
         if (!label) return null;
 
         return {
-          key:
-            typeof item.key === "string" && item.key.trim()
-              ? item.key
-              : `home-promo-${index}`,
+          key: typeof item.key === "string" && item.key.trim() ? item.key : `home-promo-${index}`,
           label,
           href: typeof item.href === "string" ? item.href : undefined,
         };
@@ -236,8 +233,7 @@ export default function HomePageRedesign({
   const router = useRouter();
   const [activeHero, setActiveHero] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
-  const [activeProductFilter, setActiveProductFilter] =
-    useState<ProductFilter>("curated");
+  const [activeProductFilter, setActiveProductFilter] = useState<ProductFilter>("curated");
   const [activeConcierge, setActiveConcierge] = useState<ConciergeKey>("comfort");
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const initialProductsEmpty = isInitialProductsEmpty(initialHomeData?.products);
@@ -250,9 +246,11 @@ export default function HomePageRedesign({
   const [sectionRequestStatus, setSectionRequestStatus] = useState<
     Record<RecoverableSection, SectionRequestStatus>
   >({
-    products: initialHomeStatus?.products === "error" || initialProductsEmpty ? "loading" : "success",
-    packages: initialHomeStatus?.packages === "error" || initialPackagesEmpty ? "loading" : "success",
-    notices: initialHomeStatus?.notices === "error" || initialNoticesEmpty ? "loading" : "success",
+    products:
+      initialHomeStatus?.products === "error" || initialProductsEmpty ? "loading" : "success",
+    packages:
+      initialHomeStatus?.packages === "error" || initialPackagesEmpty ? "loading" : "success",
+    notices: initialHomeStatus?.notices === "error" ? "loading" : "success",
   });
   const [racketsByBrand, setRacketsByBrand] = useState<Record<string, HomePreviewRacket[]>>(
     initialHomeData?.rackets ? { all: initialHomeData.rackets.items } : {},
@@ -267,9 +265,7 @@ export default function HomePageRedesign({
         : {},
   );
   const racketRequestStatusRef = useRef<Partial<Record<BrandKey, RacketRequestStatus>>>(
-    initialHomeStatus?.rackets !== "error" && !initialRacketsEmpty
-      ? { all: "success" }
-      : {},
+    initialHomeStatus?.rackets !== "error" && !initialRacketsEmpty ? { all: "success" } : {},
   );
   const sectionHasUsableData = useRef<Record<RecoverableSection, boolean>>({
     products: !initialProductsEmpty,
@@ -289,7 +285,9 @@ export default function HomePageRedesign({
     recoveryController.current = controller;
     setSectionRequestStatus((current) => {
       const next = { ...current };
-      sections.forEach((section) => { next[section] = "loading"; });
+      sections.forEach((section) => {
+        next[section] = "loading";
+      });
       return next;
     });
 
@@ -297,9 +295,11 @@ export default function HomePageRedesign({
     try {
       for (let attempt = 1; attempt <= 2 && pending.length > 0; attempt += 1) {
         try {
+          const requestSignal = AbortSignal.any([controller.signal, AbortSignal.timeout(8_000)]);
+
           const response = await fetch(`/api/home-preview?sections=${pending.join(",")}`, {
             cache: "no-store",
-            signal: controller.signal,
+            signal: requestSignal,
           });
           if (!response.ok && !RETRYABLE_HOME_PREVIEW_STATUSES.has(response.status)) {
             throw new Error(`Non-retryable home preview response: ${response.status}`);
@@ -314,7 +314,12 @@ export default function HomePageRedesign({
           } catch {
             throw new Error("Invalid home preview response");
           }
-          if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
+          if (
+            !payload ||
+            typeof payload !== "object" ||
+            !("data" in payload) ||
+            !("status" in payload)
+          ) {
             throw new Error("Invalid home preview response");
           }
           const result = payload as HomePreviewRecoveryResponse;
@@ -361,7 +366,8 @@ export default function HomePageRedesign({
         } catch (error) {
           if (isAbortError(error)) throw error;
           if (error instanceof Error && error.message.startsWith("Non-retryable")) throw error;
-          if (error instanceof Error && error.message === "Invalid home preview response") throw error;
+          if (error instanceof Error && error.message === "Invalid home preview response")
+            throw error;
           if (attempt < 2) await waitForRetry(HOME_PREVIEW_RETRY_DELAY_MS, controller.signal);
         }
       }
@@ -423,9 +429,11 @@ export default function HomePageRedesign({
       let items: HomePreviewRacket[] | undefined;
       for (let attempt = 1; attempt <= 2 && !items; attempt += 1) {
         try {
+          const requestSignal = AbortSignal.any([controller.signal, AbortSignal.timeout(8_000)]);
+
           const response = await fetch(`/api/home-preview?sections=rackets${query}`, {
             cache: "no-store",
-            signal: controller.signal,
+            signal: requestSignal,
           });
           if (!response.ok && !RETRYABLE_HOME_PREVIEW_STATUSES.has(response.status)) {
             throw new Error(`Non-retryable racket response: ${response.status}`);
@@ -437,7 +445,12 @@ export default function HomePageRedesign({
             } catch {
               throw new Error("Invalid home preview response");
             }
-            if (!payload || typeof payload !== "object" || !("data" in payload) || !("status" in payload)) {
+            if (
+              !payload ||
+              typeof payload !== "object" ||
+              !("data" in payload) ||
+              !("status" in payload)
+            ) {
               throw new Error("Invalid home preview response");
             }
             const result = payload as HomePreviewRecoveryResponse;
@@ -448,7 +461,8 @@ export default function HomePageRedesign({
         } catch (error) {
           if (isAbortError(error)) throw error;
           if (error instanceof Error && error.message.startsWith("Non-retryable")) throw error;
-          if (error instanceof Error && error.message === "Invalid home preview response") throw error;
+          if (error instanceof Error && error.message === "Invalid home preview response")
+            throw error;
         }
         if (!items && attempt < 2) {
           await waitForRetry(HOME_PREVIEW_RETRY_DELAY_MS, controller.signal);
@@ -492,17 +506,20 @@ export default function HomePageRedesign({
       (section) =>
         initialHomeStatus?.[section] === "error" ||
         (section === "products" && initialProductsEmpty) ||
-        (section === "packages" && initialPackagesEmpty) ||
-        (section === "notices" && initialNoticesEmpty),
+        (section === "packages" && initialPackagesEmpty),
     );
     void recoverSections(failedSections);
   }, [initialHomeStatus, recoverSections]);
 
-  useEffect(() => () => {
-    recoveryRequestId.current += 1;
-    recoveryController.current?.abort();
-    recoveryController.current = null;
-  }, []);
+  useEffect(
+    () => () => {
+      automaticRecoveryStarted.current = false;
+      recoveryRequestId.current += 1;
+      recoveryController.current?.abort();
+      recoveryController.current = null;
+    },
+    [],
+  );
 
   useEffect(() => {
     const controllers = racketRequestControllers.current;
@@ -525,8 +542,7 @@ export default function HomePageRedesign({
   const visibleProducts = productGroups?.[activeProductFilter] ?? [];
 
   const concierge =
-    CONCIERGE_CHOICES.find((choice) => choice.key === activeConcierge) ??
-    CONCIERGE_CHOICES[0];
+    CONCIERGE_CHOICES.find((choice) => choice.key === activeConcierge) ?? CONCIERGE_CHOICES[0];
   const visibleRackets = (racketsByBrand[activeBrand] ?? []).slice(0, 4);
   const hero = HERO_SLIDES[activeHero];
 
@@ -598,9 +614,15 @@ export default function HomePageRedesign({
                 ))}
               </div>
               <nav className={styles.heroShortcuts} aria-label="빠른 메뉴">
-                <Link href="/products">스트링 쇼핑 <ArrowRight aria-hidden="true" /></Link>
-                <Link href="/products/recommend">맞춤 추천 <ArrowRight aria-hidden="true" /></Link>
-                <Link href="/services#service-start">교체 신청 <ArrowRight aria-hidden="true" /></Link>
+                <Link href="/products">
+                  스트링 쇼핑 <ArrowRight aria-hidden="true" />
+                </Link>
+                <Link href="/products/recommend">
+                  맞춤 추천 <ArrowRight aria-hidden="true" />
+                </Link>
+                <Link href="/services#service-start">
+                  교체 신청 <ArrowRight aria-hidden="true" />
+                </Link>
               </nav>
             </div>
           </div>
@@ -652,7 +674,9 @@ export default function HomePageRedesign({
 
           {sectionRequestStatus.products === "loading" ? (
             <div className={styles.loadingRail} aria-label="상품 정보를 불러오는 중">
-              {[0, 1, 2, 3].map((item) => <span key={item} />)}
+              {[0, 1, 2, 3].map((item) => (
+                <span key={item} />
+              ))}
             </div>
           ) : sectionRequestStatus.products === "error" ? (
             <HomePreviewEmptyState
@@ -693,10 +717,14 @@ export default function HomePageRedesign({
           <div className={styles.conciergeGrid}>
             <div className={styles.conciergeIntro}>
               <p className={styles.sectionEyebrow}>STRING CONCIERGE</p>
-              <h2>나에게 맞는 스트링<br />1분이면 찾을 수 있어요</h2>
+              <h2>
+                나에게 맞는 스트링
+                <br />
+                1분이면 찾을 수 있어요
+              </h2>
               <p>
-                어려운 소재명 대신 원하는 플레이 감각을 골라보세요. 상품 탐색부터
-                교체서비스 신청까지 한 흐름으로 연결합니다.
+                어려운 소재명 대신 원하는 플레이 감각을 골라보세요. 상품 탐색부터 교체서비스
+                신청까지 한 흐름으로 연결합니다.
               </p>
               <div className={styles.conciergeTabs} role="tablist" aria-label="플레이 성향 선택">
                 {CONCIERGE_CHOICES.map((choice, index) => (
@@ -795,7 +823,9 @@ export default function HomePageRedesign({
             </div>
           ) : racketRequestStatus[activeBrand] === "loading" ? (
             <div className={styles.loadingRail} aria-label="중고 라켓을 불러오는 중">
-              {[0, 1, 2, 3].map((item) => <span key={item} />)}
+              {[0, 1, 2, 3].map((item) => (
+                <span key={item} />
+              ))}
             </div>
           ) : racketRequestStatus[activeBrand] === "error" ? (
             <HomePreviewEmptyState
@@ -822,11 +852,15 @@ export default function HomePageRedesign({
           <header className={styles.experienceHeader}>
             <div>
               <p className={styles.sectionEyebrow}>PLAY BETTER, LONGER</p>
-              <h2>테니스를 시작하는 순간부터<br />라켓 관리까지</h2>
+              <h2>
+                테니스를 시작하는 순간부터
+                <br />
+                라켓 관리까지
+              </h2>
             </div>
             <p>
-              배우는 시간부터 라켓을 다시 준비하는 순간까지,
-              도깨비테니스가 다음 플레이를 함께 만듭니다.
+              배우는 시간부터 라켓을 다시 준비하는 순간까지, 도깨비테니스가 다음 플레이를 함께
+              만듭니다.
             </p>
           </header>
 
@@ -866,7 +900,9 @@ export default function HomePageRedesign({
 
           {sectionRequestStatus.packages === "loading" ? (
             <div className={styles.packageLoading} aria-label="패키지 정보를 불러오는 중">
-              {[0, 1, 2].map((item) => <span key={item} />)}
+              {[0, 1, 2].map((item) => (
+                <span key={item} />
+              ))}
             </div>
           ) : sectionRequestStatus.packages === "error" ? (
             <HomePreviewEmptyState
@@ -896,7 +932,11 @@ export default function HomePageRedesign({
           <div className={styles.trustGrid}>
             <div className={styles.trustIntro}>
               <p className={styles.sectionEyebrow}>WHY DOKKAEBI TENNIS</p>
-              <h2>스트링 선택부터<br />라켓 관리까지 한곳에서</h2>
+              <h2>
+                스트링 선택부터
+                <br />
+                라켓 관리까지 한곳에서
+              </h2>
               <Link href="/reviews">
                 실제 이용 후기 보기
                 <ArrowRight aria-hidden="true" />
@@ -922,7 +962,9 @@ export default function HomePageRedesign({
           <div className={styles.noticeRow}>
             <span>NOTICE</span>
             {sectionRequestStatus.notices === "loading" ? (
-              <span className={styles.noticeStatus} aria-live="polite">공지사항을 불러오는 중입니다</span>
+              <span className={styles.noticeStatus} aria-live="polite">
+                공지사항을 불러오는 중입니다
+              </span>
             ) : sectionRequestStatus.notices === "error" ? (
               <span className={styles.noticeStatus} aria-live="polite">
                 공지사항을 불러오지 못했습니다
@@ -943,7 +985,9 @@ export default function HomePageRedesign({
             ) : (
               <Link href="/board/notice">새로운 공지사항을 확인하세요</Link>
             )}
-            <Link href="/board/notice">전체 보기 <ArrowRight aria-hidden="true" /></Link>
+            <Link href="/board/notice">
+              전체 보기 <ArrowRight aria-hidden="true" />
+            </Link>
           </div>
 
           <nav className={styles.supportCards} aria-label="자주 찾는 이용 안내">
@@ -985,7 +1029,13 @@ function HomeSectionHeader({
       title={title}
       description={description}
       actions={
-        <Button asChild variant="outline" size="sm" wrap="responsive" className="min-h-11 bp-sm:min-h-0">
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          wrap="responsive"
+          className="min-h-11 bp-sm:min-h-0"
+        >
           <Link href={href}>
             {linkLabel}
             <ArrowRight aria-hidden="true" />
@@ -1083,7 +1133,10 @@ function RacketCard({ racket }: { racket: HomePreviewRacket }) {
     "image",
   );
   const badgeCountBeforeMarketing = Number(Boolean(availability)) + 1;
-  const visibleMarketingBadges = marketingBadges.slice(0, Math.max(0, 3 - badgeCountBeforeMarketing));
+  const visibleMarketingBadges = marketingBadges.slice(
+    0,
+    Math.max(0, 3 - badgeCountBeforeMarketing),
+  );
 
   return (
     <article className={styles.racketCard}>
@@ -1165,21 +1218,20 @@ function ExperienceCard({
       <div className={styles.experienceShade} aria-hidden="true" />
       <div className={styles.experienceCopy}>
         <p>{eyebrow}</p>
-        <h3><span>{title[0]}</span><span>{title[1]}</span></h3>
+        <h3>
+          <span>{title[0]}</span>
+          <span>{title[1]}</span>
+        </h3>
         <small>{description}</small>
-        <strong>{action} <ArrowRight aria-hidden="true" /></strong>
+        <strong>
+          {action} <ArrowRight aria-hidden="true" />
+        </strong>
       </div>
     </Link>
   );
 }
 
-function PackageCard({
-  pkg,
-  featured,
-}: {
-  pkg: HomePreviewPackage;
-  featured: boolean;
-}) {
+function PackageCard({ pkg, featured }: { pkg: HomePreviewPackage; featured: boolean }) {
   const perSession = pkg.sessions > 0 ? Math.round(pkg.price / pkg.sessions) : 0;
 
   return (
@@ -1237,12 +1289,7 @@ function HomePreviewEmptyState({
           onRetry ? (
             <PrimaryCTAGroup
               primary={
-                <Button
-                  type="button"
-                  variant="highlight_soft"
-                  wrap="responsive"
-                  onClick={onRetry}
-                >
+                <Button type="button" variant="highlight_soft" wrap="responsive" onClick={onRetry}>
                   다시 시도
                 </Button>
               }
