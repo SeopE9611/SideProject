@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 declare global {
@@ -193,7 +193,10 @@ export default function RentalNiceCheckoutButton({
             결제 요청 중...
           </>
         ) : (
-          "카드/간편결제로 대여 완료"
+          <>
+          <CreditCard className="h-5 w-5 mr-3" />
+          "대여 신청하기"
+          </>
         )}
       </Button>
       {blockedByZeroAmount && (

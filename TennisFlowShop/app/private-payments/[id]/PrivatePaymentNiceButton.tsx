@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 declare global {
@@ -80,7 +80,10 @@ export default function PrivatePaymentNiceButton({
             결제 요청 중...
           </>
         ) : (
-          "카드/간편결제로 결제하기"
+          <>
+            <CreditCard className="h-5 w-5 mr-3" />
+            결제하기
+          </>
         )}
       </Button>
       {!ready && !error && <p className="text-sm text-muted-foreground">결제창을 준비 중입니다.</p>}

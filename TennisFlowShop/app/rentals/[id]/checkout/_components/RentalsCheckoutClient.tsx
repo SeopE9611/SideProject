@@ -1578,7 +1578,10 @@ export default function RentalsCheckoutClient({
                           대여 신청을 처리하고 있어요…
                         </span>
                       ) : (
-                        "대여 신청하기"
+                        <>
+                          <CreditCard className="h-5 w-5 mr-3" />
+                          "대여 신청하기"
+                        </>
                       )}
                     </Button>
                   ) : (

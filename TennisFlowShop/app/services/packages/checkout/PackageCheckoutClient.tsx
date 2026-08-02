@@ -724,14 +724,6 @@ export default function PackageCheckoutClient({
               contentClassName="bp-sm:p-5"
             >
               <div className="mb-5 rounded-panel border border-primary/15 bg-primary/5 p-4">
-                <div className="flex items-end justify-between gap-4">
-                  <span className="text-ui-body-sm font-ui-medium text-muted-foreground">
-                    총 결제 금액
-                  </span>
-                  <span className="text-ui-section-title font-ui-medium text-primary">
-                    {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
-                  </span>
-                </div>
                 <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
                   무통장입금은 입금 확인 후, 카드/간편결제는 결제 완료 후 패키지권이 활성화됩니다.
                 </p>
@@ -792,9 +784,6 @@ export default function PackageCheckoutClient({
                           className="min-w-0 flex-1 cursor-pointer font-ui-medium"
                         >
                           카드/간편결제{" "}
-                          <span className="block text-ui-body-sm font-normal text-muted-foreground">
-                            안전 결제창에서 진행
-                          </span>
                         </Label>
                         <CreditCard className="h-5 w-5 shrink-0 text-primary" />
                       </div>
@@ -818,9 +807,6 @@ export default function PackageCheckoutClient({
                           className="min-w-0 flex-1 cursor-pointer font-ui-medium"
                         >
                           카드/간편결제{" "}
-                          <span className="block text-ui-body-sm font-normal text-muted-foreground">
-                            안전 결제창에서 진행
-                          </span>
                         </Label>
                         <CreditCard className="h-5 w-5 shrink-0 text-primary" />
                       </div>
@@ -1053,8 +1039,8 @@ export default function PackageCheckoutClient({
                       {paymentMethod === "bank_transfer"
                         ? "무통장 입금"
                         : paymentMethod === "tosspayments"
-                          ? "카드/간편결제(TossPayments)"
-                          : "카드/간편결제(NicePay)"}
+                          ? "카드/간편결제"
+                          : "카드/간편결제"}
                     </span>
                   </div>
 

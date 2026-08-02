@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 declare global {
@@ -211,7 +211,10 @@ export default function PackageNiceCheckoutButton({
             결제 요청 중...
           </>
         ) : (
-          "결제하기"
+          <>
+            <CreditCard className="h-5 w-5 mr-3" />
+            결제하기
+          </>
         )}
       </Button>
       {blockedByZeroAmount && (

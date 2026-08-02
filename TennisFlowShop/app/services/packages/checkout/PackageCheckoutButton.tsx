@@ -289,7 +289,7 @@ export default function PackageCheckoutButton({
         ) : (
           <>
             <CreditCard className="h-5 w-5 mr-3" />
-            패키지 주문 완료하기
+            결제하기
           </>
         )}
       </Button>
