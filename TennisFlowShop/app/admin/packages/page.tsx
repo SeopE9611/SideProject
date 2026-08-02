@@ -651,80 +651,80 @@ export default function PackageOrdersClient() {
       {/* 통계 카드 */}
       <div className="grid gap-4 grid-cols-5 mb-6">
         <Card className={adminSurface.kpiCard}>
-          <CardContent className="p-6">
-            <div className="flex min-w-0 items-center justify-between gap-3">
+          <CardContent className="p-0">
+            <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">전체 결과</p>
-                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
+                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">전체 결과</p>
+                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-foreground">
                   {kpiTotal === null ? "-" : kpiTotal}
                 </div>
               </div>
-              <div className="shrink-0 bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
-                <Package className="h-6 w-6" />
+              <div className="shrink-0 bg-primary/10 rounded-xl p-2 text-foreground dark:bg-primary/20">
+                <Package className="h-5 w-5" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className={adminSurface.kpiCard}>
-          <CardContent className="p-6">
-            <div className="flex min-w-0 items-center justify-between gap-3">
+          <CardContent className="p-0">
+            <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">운영 확인 필요</p>
-                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
+                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">운영 확인 필요</p>
+                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-warning">
                   {kpiNeedsAttention === null ? "-" : kpiNeedsAttention}
                 </div>
               </div>
-              <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
-                <Filter className="h-6 w-6 text-warning" />
+              <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-2">
+                <Filter className="h-5 w-5 text-warning" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className={adminSurface.kpiCard}>
-          <CardContent className="p-6">
-            <div className="flex min-w-0 items-center justify-between gap-3">
+          <CardContent className="p-0">
+            <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">사용 가능</p>
-                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-success">
+                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">사용 가능</p>
+                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-success">
                   {kpiAvailable === null ? "-" : kpiAvailable}
                 </div>
               </div>
-              <div className="shrink-0 bg-success/10 dark:bg-success/15 rounded-xl p-3">
-                <Calendar className="h-6 w-6 text-success" />
+              <div className="shrink-0 bg-success/10 dark:bg-success/15 rounded-xl p-2">
+                <Calendar className="h-5 w-5 text-success" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className={adminSurface.kpiCard}>
-          <CardContent className="p-6">
-            <div className="flex min-w-0 items-center justify-between gap-3">
+          <CardContent className="p-0">
+            <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">결제 완료 금액</p>
-                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
+                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">결제 완료 금액</p>
+                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-foreground">
                   {kpiRevenue === null ? "집계 중" : formatCurrency(kpiRevenue)}
                 </div>
               </div>
-              <div className="shrink-0 bg-muted rounded-xl p-3">
-                <CreditCard className="h-6 w-6 text-foreground" />
+              <div className="shrink-0 bg-muted rounded-xl p-2">
+                <CreditCard className="h-5 w-5 text-foreground" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className={adminSurface.kpiCard}>
-          <CardContent className="p-6">
-            <div className="flex min-w-0 items-center justify-between gap-3">
+          <CardContent className="p-0">
+            <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">30일 내 만료</p>
-                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
+                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">30일 내 만료</p>
+                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-warning">
                   {kpiExpSoon === null ? "-" : kpiExpSoon}
                 </div>
               </div>
-              <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
-                <Calendar className="h-6 w-6 text-warning" />
+              <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-2">
+                <Calendar className="h-5 w-5 text-warning" />
               </div>
             </div>
           </CardContent>

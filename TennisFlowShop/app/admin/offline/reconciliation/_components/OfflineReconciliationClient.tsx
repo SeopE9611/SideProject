@@ -608,7 +608,7 @@ export default function OfflineReconciliationClient() {
                   <th className={adminDataTable.head}>내용</th>
                   <th className={adminDataTable.headRight}>금액/패키지명</th>
                   <th className={adminDataTable.head}>에러/사유</th>
-                  <th className={adminDataTable.actionHead}>관리</th>
+                  <th className={adminDataTable.stickyActionHead}>관리</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -671,7 +671,7 @@ export default function OfflineReconciliationClient() {
                           item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
                         )}
                       </td>
-                      <td className={adminDataTable.actionCell}>
+                      <td className={adminDataTable.stickyActionCell}>
                         <ItemActions
                           item={item}
                           note={note}

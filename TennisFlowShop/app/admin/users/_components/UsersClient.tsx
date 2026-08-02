@@ -1086,7 +1086,7 @@ export default function UsersClient() {
                     <TableHead className={cn(adminDataTable.headCenter, "w-[64px] px-0")}>
                       상태
                     </TableHead>
-                    <TableHead className={cn(adminDataTable.actionHead, "w-[44px] px-0")}>
+                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[44px] px-0")}>
                       작업
                     </TableHead>
                   </TableRow>
@@ -1292,7 +1292,7 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 작업 */}
-                          <TableCell className={cn(td, "w-[44px] p-0 text-right")}>
+                          <TableCell className={cn(td, adminDataTable.stickyActionCell, "w-[44px] p-0 text-right")}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button

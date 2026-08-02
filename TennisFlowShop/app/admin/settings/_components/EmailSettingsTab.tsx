@@ -44,11 +44,11 @@ export function EmailSettingsTab({
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-3">
             <div>
-              <Label htmlFor="smtpHost">SMTP Host</Label>
+              <Label htmlFor="smtpHost">SMTP 서버 주소</Label>
               <Input id="smtpHost" {...form.register("smtpHost")} />
             </div>
             <div>
-              <Label htmlFor="smtpPort">SMTP Port</Label>
+              <Label htmlFor="smtpPort">SMTP 포트</Label>
               <Input
                 id="smtpPort"
                 type="number"
@@ -56,7 +56,7 @@ export function EmailSettingsTab({
               />
             </div>
             <div>
-              <Label htmlFor="smtpPassword">SMTP Password</Label>
+              <Label htmlFor="smtpPassword">SMTP 비밀번호</Label>
               <Input
                 id="smtpPassword"
                 type="password"
@@ -78,9 +78,9 @@ export function EmailSettingsTab({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">none</SelectItem>
-                  <SelectItem value="ssl">ssl</SelectItem>
-                  <SelectItem value="tls">tls</SelectItem>
+                  <SelectItem value="none">사용 안 함</SelectItem>
+                  <SelectItem value="ssl">SSL</SelectItem>
+                  <SelectItem value="tls">TLS</SelectItem>
                 </SelectContent>
               </Select>
             </div>

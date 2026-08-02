@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { BookOpen, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -206,12 +206,6 @@ export default function AcademyClassesClient() {
     router.push(`/admin/academy/classes/${id}/edit`);
   }
 
-  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    goToDetail(id);
-  }
-
   async function hideClass(item: AcademyClass) {
     if (!item._id || hidingId) return;
 
@@ -354,13 +348,13 @@ export default function AcademyClassesClient() {
             <Table className="min-w-[1040px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className={adminDataTable.headRight}>등록일</TableHead>
+                  <TableHead className={cn(adminDataTable.headRight, "w-[112px]")}>등록일</TableHead>
                   <TableHead className={cn(adminDataTable.head, "w-[280px]")}>클래스</TableHead>
                   <TableHead className={adminDataTable.headCenter}>수업 정보</TableHead>
                   <TableHead className={cn(adminDataTable.head, "w-[240px]")}>운영 정보</TableHead>
                   <TableHead className={adminDataTable.headRight}>신청 현황</TableHead>
                   <TableHead className={adminDataTable.headCenter}>가격/상태</TableHead>
-                  <TableHead className={adminDataTable.actionHead}>관리</TableHead>
+                  <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -396,17 +390,10 @@ export default function AcademyClassesClient() {
                   const isDeleteDisabled = blockingApplicationTotal > 0 || deletingId === classId;
 
                   return (
-                    <TableRow
-                      key={classId}
-                      role="button"
-                      tabIndex={0}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => goToDetail(classId)}
-                      onKeyDown={(event) => handleRowKeyDown(event, classId)}
-                    >
-                      <TableCell className={adminDataTable.dateCell}>
-                        <div className="font-medium text-foreground">{createdAt.date}</div>
-                        <div className="text-muted-foreground">{createdAt.time}</div>
+                    <TableRow key={classId} className="hover:bg-muted/50">
+                      <TableCell className={cn(adminDataTable.dateCell, "w-[112px]")}>
+                        <div className="whitespace-nowrap font-medium text-foreground">{createdAt.date}</div>
+                        <div className="whitespace-nowrap text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className={adminDataTable.cellTopLeft}>
                         <div
@@ -476,31 +463,24 @@ export default function AcademyClassesClient() {
                         </div>
                       </TableCell>
                       <TableCell
-                        className={adminDataTable.actionCell}
-                        onClick={(event) => event.stopPropagation()}
+                        className={cn(adminDataTable.stickyActionCell, "w-[160px]")}
                       >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              aria-label={`${item.name || "클래스"} 관리 메뉴`}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-max">
-                            <DropdownMenuItem
-                              className="whitespace-nowrap"
-                              onSelect={(event) => {
-                                event.preventDefault();
-                                goToDetail(classId);
-                              }}
-                            >
-                              <Eye className="mr-2 h-4 w-4" />
-                              상세 보기
-                            </DropdownMenuItem>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button type="button" variant="outline" size="sm" onClick={() => goToDetail(classId)}>
+                            상세 보기
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label={`${item.name || "클래스"} 관리 메뉴`}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-max">
                             <DropdownMenuItem
                               className="whitespace-nowrap"
                               onSelect={(event) => {
@@ -550,8 +530,9 @@ export default function AcademyClassesClient() {
                                   ? "삭제 중"
                                   : "삭제"}
                             </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

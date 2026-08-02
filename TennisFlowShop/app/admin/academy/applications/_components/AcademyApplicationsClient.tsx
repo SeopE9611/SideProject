@@ -346,7 +346,7 @@ export default function AcademyApplicationsClient() {
                   <TableHead className={adminDataTable.head}>희망 정보</TableHead>
                   <TableHead className={adminDataTable.head}>선호 일정</TableHead>
                   <TableHead className={adminDataTable.headCenter}>상태</TableHead>
-                  <TableHead className={adminDataTable.actionHead}>관리</TableHead>
+                  <TableHead className={adminDataTable.stickyActionHead}>관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -422,7 +422,7 @@ export default function AcademyApplicationsClient() {
                       <TableCell className={adminDataTable.cellCenter}>
                         <AcademyStatusBadge status={item.status} />
                       </TableCell>
-                      <TableCell className={adminDataTable.actionCell}>
+                      <TableCell className={adminDataTable.stickyActionCell}>
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             type="button"

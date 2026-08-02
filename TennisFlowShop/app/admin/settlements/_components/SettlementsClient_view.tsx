@@ -792,7 +792,7 @@ export default function SettlementsClient() {
                       <p className="mb-1 text-right">온라인 금액</p>
                       <div className="flex justify-end gap-2 text-xs font-medium">
                         {([ ["paid", "결제"], ["refund", "환불"], ["net", "순매출"] ] as const).map(([field, label]) => (
-                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex items-center gap-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
+                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex min-h-8 items-center gap-0.5 whitespace-nowrap rounded px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
                         ))}
                       </div>
                     </div>
@@ -800,7 +800,7 @@ export default function SettlementsClient() {
                       <p className="mb-1 text-right">처리 건수</p>
                       <div className="flex justify-end gap-2 text-xs font-medium">
                         {([ ["orders", "주문"], ["applications", "교체서비스"], ["packages", "패키지"] ] as const).map(([field, label]) => (
-                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex items-center gap-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
+                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex min-h-8 items-center gap-0.5 whitespace-nowrap rounded px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
                         ))}
                       </div>
                     </div>

@@ -2135,7 +2135,7 @@ export default function OfflineAdminClient() {
 
                       <th className={adminDataTable.headCenter}>상태</th>
 
-                      <th className={adminDataTable.actionHead}>관리</th>
+                      <th className={adminDataTable.stickyActionHead}>관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -2223,7 +2223,7 @@ export default function OfflineAdminClient() {
                         <td className={adminDataTable.cellCenter}>
                           <StatusBadge status={r.status} type="record" />
                         </td>
-                        <td className={adminDataTable.actionCell}>
+                        <td className={adminDataTable.stickyActionCell}>
                           <div className="flex shrink-0 items-center justify-end gap-1">
                             {r.offlineCustomerId && (
                               <Button
@@ -2232,7 +2232,7 @@ export default function OfflineAdminClient() {
                                 variant="ghost"
                                 className="h-8 w-8 shrink-0 p-0"
                               >
-                                <Link href={`/admin/offline/customers/${r.offlineCustomerId}`}>
+                                <Link href={`/admin/offline/customers/${r.offlineCustomerId}`} aria-label={`${r.customerName} 고객 상세 보기`}>
                                   <ExternalLink className="h-3.5 w-3.5" />
                                 </Link>
                               </Button>
@@ -2241,6 +2241,7 @@ export default function OfflineAdminClient() {
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 shrink-0 p-0"
+                              aria-label={`${r.customerName} 오프라인 기록 편집`}
                               onClick={() => {
                                 const existingLines =
                                   Array.isArray(r.lines) && r.lines.length > 0 ? r.lines : [{}];

@@ -257,7 +257,7 @@ export default function ProductsClient() {
         onClick={() => handleSort(field)}
         aria-label={`${children} ${active ? (sort!.dir === "asc" ? "오름차순 정렬됨" : "내림차순 정렬됨") : "정렬 안 됨"}`}
         className={cn(
-          "group inline-flex w-full items-center gap-1 select-none whitespace-nowrap",
+          "group inline-flex min-h-8 w-full items-center gap-1 rounded px-1 select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           align === "right"
             ? "justify-end text-right"
             : align === "center"
@@ -874,10 +874,11 @@ export default function ProductsClient() {
                               <DropdownMenuTrigger asChild>
                                 <Button
                                   variant="ghost"
-                                  size="sm"
-                                  className="p-0 hover:bg-muted dark:hover:bg-muted"
+                                  size="icon"
+                                  className="h-9 w-9 p-0 hover:bg-muted dark:hover:bg-muted"
+                                  aria-label={`${s.name} 상품 관리 메뉴`}
                                 >
-                                  <MoreHorizontal />
+                                  <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="border-border">
