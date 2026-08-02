@@ -1,4 +1,6 @@
 import { adminTypography } from "@/components/admin/admin-typography";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { hasAnyRegisteredFulfillmentField, isVisitPickupOrder } from "@/lib/order-shipping";
 import { Store, Truck } from "lucide-react";
 import type { Metadata } from "next";
@@ -44,15 +46,8 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
 
     // (UX) throw로 터뜨리지 말고, 페이지 내에서 오류를 안내합니다.
     return (
-      <div className="min-h-screen bg-muted/30 py-8 px-4">
-        <div className="container mx-auto max-w-2xl">
-          <div className="text-center mb-8">
-            <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-              <Truck className="h-8 w-8 text-primary mx-auto" />
-            </div>
-            <h1 className={adminTypography.pageTitle}>배송 정보 관리</h1>
-            <p className={adminTypography.body}>주문 데이터를 불러올 수 없습니다.</p>
-          </div>
+      <AdminPageShell variant="narrow">
+          <AdminPageHeader title="배송 정보 관리" description="주문 데이터를 불러올 수 없습니다." icon={Truck} />
 
           <div className="rounded-2xl border border-destructive bg-card p-6 shadow-lg dark:border-destructive dark:bg-card">
             <p className={adminTypography.body}>
@@ -74,8 +69,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
               </Link>
             </div>
           </div>
-        </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
@@ -131,20 +125,8 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
       : "배송 방법과 예상 수령일을 등록할 수 있습니다.";
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8 px-4">
-      <div className="container mx-auto max-w-2xl">
-        {/* 헤더 */}
-        <div className="text-center mb-8">
-          <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-            {isVisitPickup ? (
-              <Store className="h-8 w-8 text-primary mx-auto" />
-            ) : (
-              <Truck className="h-8 w-8 text-primary mx-auto" />
-            )}
-          </div>
-          <h1 className={adminTypography.pageTitle}>{pageTitle}</h1>
-          <p className={adminTypography.body}>{pageDesc}</p>
-        </div>
+    <AdminPageShell variant="narrow">
+        <AdminPageHeader title={pageTitle} description={pageDesc} icon={isVisitPickup ? Store : Truck} />
 
         <ShippingFormClient
           orderId={order._id}
@@ -155,7 +137,6 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
           initialTrackingNumber={order.shippingInfo?.invoice?.trackingNumber ?? ""}
           isVisitPickupOrder={isVisitPickup}
         />
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

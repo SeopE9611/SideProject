@@ -46,15 +46,15 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
         >
           {!collapsed && (
             <Link
-              href="/"
-              className="text-sm font-semibold tracking-normal text-foreground hover:text-primary"
+              href="/admin/dashboard"
+              className="rounded-md text-sm font-semibold tracking-normal text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               도깨비테니스
             </Link>
           )}
           <button
             onClick={() => setCollapsed((v) => !v)}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background dark:border-border dark:bg-card dark:text-muted-foreground"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:border-border dark:bg-card dark:text-muted-foreground"
             aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -84,8 +84,9 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                   const link = (
                     <Link
                       href={item.href}
+                      aria-current={active ? "page" : undefined}
                       className={cn(
-                        "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm outline-none transition-colors",
+                        "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         active
                           ? "bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-primary/20"
                           : "text-muted-foreground hover:bg-primary/10 dark:text-muted-foreground dark:hover:bg-primary/20 hover:text-foreground",

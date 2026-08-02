@@ -115,7 +115,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
 
   if (isVisitPickup) {
     return (
-      <div className="mx-auto max-w-xl p-6">
+      <div className="mx-auto max-w-xl">
         <AdminPageSection
           title="방문 수령 대여 안내"
           description="방문 수령 대여는 인도 운송장 등록이 필요하지 않습니다."
@@ -134,7 +134,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-xl p-6">
+    <div className="mx-auto max-w-xl">
       <AdminPageSection
         title={`인도 운송장 ${hasExisting ? "수정" : "등록"}`}
         description="대여 상품 인도에 필요한 택배사와 운송장 번호를 관리합니다."

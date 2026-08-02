@@ -74,8 +74,8 @@ import {
 
 const settlementStatusToneMap: Record<"checking" | "ok" | "stale", BadgeSemanticTone> = {
   checking: "neutral",
-  ok: "brand",
-  stale: "danger",
+  ok: "success",
+  stale: "warning",
 };
 
 const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
@@ -176,7 +176,7 @@ export default function SettlementsClient() {
     const toneClass = {
       default: "text-foreground",
       primary: "text-primary",
-      warning: "text-primary",
+      warning: "text-warning",
       danger: "text-destructive",
     }[tone];
 

@@ -747,7 +747,8 @@ export default function AdminRacketsClient() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
+                                className="h-8 w-8 p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
+                                aria-label={`${item.model || "라켓"} 관리 메뉴`}
                               >
                                 <MoreVertical className="h-4 w-4" />
                               </Button>

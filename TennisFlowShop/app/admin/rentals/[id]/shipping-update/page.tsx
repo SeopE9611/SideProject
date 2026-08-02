@@ -1,4 +1,7 @@
 import ShippingForm from "./shipping-form";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import { Truck } from "lucide-react";
 
 import type { Metadata } from "next";
 
@@ -13,5 +16,10 @@ type RentalShippingUpdatePageProps = {
 export default async function Page({ params }: RentalShippingUpdatePageProps) {
   const { id } = await params;
 
-  return <ShippingForm rentalId={id} />;
+  return (
+    <AdminPageShell variant="narrow">
+      <AdminPageHeader title="대여 배송 정보 관리" description="대여 상품의 수령 방식과 인도 운송장 정보를 관리합니다." icon={Truck} />
+      <ShippingForm rentalId={id} />
+    </AdminPageShell>
+  );
 }

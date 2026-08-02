@@ -1,6 +1,7 @@
 import AdminReviewListClient from "@/app/admin/reviews/_components/AdminReviewListClient";
 import AdminReviewMaintenancePanel from "@/app/admin/reviews/_components/AdminReviewMaintenancePanel";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -29,7 +30,7 @@ const reviewGuideItems = [
 
 export default function ReviewsPage() {
   return (
-    <div className="space-y-5 p-6">
+    <AdminPageShell variant="wide" className="space-y-5">
       <AdminPageHeader
         title="후기 관리"
         description="상품, 교체서비스, 대여 후기를 한 곳에서 확인하고 공개 상태를 관리합니다."
@@ -61,6 +62,6 @@ export default function ReviewsPage() {
           <AdminReviewMaintenancePanel />
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPageShell>
   );
 }

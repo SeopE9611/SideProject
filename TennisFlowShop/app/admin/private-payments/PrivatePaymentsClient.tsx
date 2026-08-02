@@ -36,7 +36,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type Item = {
@@ -364,21 +364,22 @@ export default function PrivatePaymentsClient() {
   const hasNoExpiration = form.expiresAt === "";
   const header = (label: string, key: string) => (
     <button
-      className="inline-flex items-center gap-1 font-semibold"
+      className="inline-flex min-h-8 items-center gap-1 rounded-md font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       type="button"
       onClick={() => toggleSort(key)}
+      aria-label={`${label} 기준 정렬${sort === key ? `, 현재 ${dir === "asc" ? "오름차순" : "내림차순"}` : ""}`}
     >
       {label}
-      <span className="text-[10px] text-muted-foreground">
-        {sort === key ? (dir === "asc" ? "▲" : "▼") : "↕"}
-      </span>
+      {sort === key ? (
+        dir === "asc" ? <ArrowUp className="h-4 w-4" aria-hidden="true" /> : <ArrowDown className="h-4 w-4" aria-hidden="true" />
+      ) : <ArrowUpDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
     </button>
   );
   return (
     <div className="space-y-6">
       <div className="flex gap-3 flex-row items-start justify-between">
         <div className="space-y-1">
-          <h1 className={adminTypography.pageTitle}>개인결제 현황</h1>
+          <h2 className={adminTypography.sectionTitle}>개인결제 현황</h2>
           <p className={adminTypography.body}>
             개인결제 링크 생성부터 결제 상태, 보관, 취소, 오프라인 연결을 한 화면에서 관리합니다.
           </p>
@@ -534,6 +535,7 @@ export default function PrivatePaymentsClient() {
                   <th className="w-10 px-4 py-3">
                     <input
                       type="checkbox"
+                      aria-label="현재 목록의 개인결제 전체 선택"
                       checked={allChecked}
                       onChange={(e) =>
                         setSelected(e.target.checked ? items.map((item) => item.id) : [])
@@ -568,6 +570,7 @@ export default function PrivatePaymentsClient() {
                         <td className={adminSurface.tableCell}>
                           <input
                             type="checkbox"
+                            aria-label={`${item.title || item.customerName || item.id} 개인결제 선택`}
                             checked={selected.includes(item.id)}
                             onChange={(e) =>
                               setSelected(
@@ -585,7 +588,7 @@ export default function PrivatePaymentsClient() {
                               {item.description}
                             </div>
                           )}
-                          <div className="mt-2 max-w-[280px] break-all text-[11px] text-muted-foreground/70">
+                          <div className="mt-2 max-w-[280px] break-all text-xs text-muted-foreground/70">
                             ID {item.id}
                           </div>
                         </td>

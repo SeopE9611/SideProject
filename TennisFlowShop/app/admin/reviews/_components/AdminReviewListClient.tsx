@@ -516,7 +516,7 @@ export default function AdminReviewListClient() {
               <p className={adminTypography.caption}>유형별 후기</p>
               <TrendingUp className="h-5 w-5 text-foreground" />
             </div>
-            <div className="grid grid-cols-2 gap-1 text-[12px] text-muted-foreground">
+            <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
               <span>상품 후기 {metrics?.byContext?.product ?? 0}</span>
               <span>상품·교체서비스 후기 {metrics?.byContext?.product_stringing ?? 0}</span>
               <span>교체서비스 후기 {metrics?.byContext?.standalone_stringing ?? 0}</span>
@@ -606,7 +606,7 @@ export default function AdminReviewListClient() {
             </label>
           </div>
           <Button size="sm" variant="outline" onClick={() => setCompact((v) => !v)}>
-            {compact ? "코지" : "컴팩트"}
+            {compact ? "기본 보기" : "컴팩트 보기"}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -701,13 +701,12 @@ export default function AdminReviewListClient() {
               return (
                 <div
                   key={r._id}
-                  onClick={() => setDetail(r)}
                   className={[
                     "grid",
                     GRID,
                     "items-center gap-y-2 gap-x-3 px-3",
                     compact ? "py-2" : "py-3",
-                    "transition-colors cursor-pointer",
+                    "transition-colors",
                     "even:bg-background hover:bg-primary/10",
                     "dark:even:bg-card dark:hover:bg-primary/20",
                     isSel ? "border-l-4 border-primary bg-primary/10 dark:bg-primary/20" : "",
@@ -735,7 +734,7 @@ export default function AdminReviewListClient() {
                     </div>
                     {r.userEmail && r.userName && (
                       <div
-                        className="max-w-[180px] truncate text-[12px] text-muted-foreground"
+                        className="max-w-[180px] truncate text-xs text-muted-foreground"
                         title={r.userEmail}
                       >
                         {r.userEmail}
@@ -792,8 +791,8 @@ export default function AdminReviewListClient() {
                   <div className={`min-w-0 ${dim} text-center`}>
                     <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
-                      <span className="text-[13px] text-foreground">{r.rating}/5</span>
-                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-card text-foreground border-border">
+                      <span className="text-sm text-foreground">{r.rating}/5</span>
+                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-xs leading-none bg-card text-foreground border-border">
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
                       </span>
@@ -802,8 +801,8 @@ export default function AdminReviewListClient() {
 
                   {/* 작성일 */}
                   <div className={`min-w-0 ${dim} text-right tabular-nums`}>
-                    <div className="text-foreground text-[13px]">{date}</div>
-                    <div className="text-[12px] text-muted-foreground">{time}</div>
+                    <div className="text-foreground text-sm">{date}</div>
+                    <div className="text-xs text-muted-foreground">{time}</div>
                   </div>
 
                   {/* 후기 유형 */}
@@ -821,7 +820,7 @@ export default function AdminReviewListClient() {
                     className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="inline text-[12px] text-muted-foreground">
+                    <span className="inline text-xs text-muted-foreground">
                       {r.moderationStatus === "visible" ? "관리자 공개" : "관리자 숨김"}
                     </span>
                     {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
@@ -834,13 +833,22 @@ export default function AdminReviewListClient() {
                   </div>
 
                   {/* 액션 */}
-                  <div className="justify-self-end pl-1">
+                  <div className="flex justify-self-end gap-1 pl-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => setDetail(r)}
+                    >
+                      상세 보기
+                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 hover:bg-background dark:hover:bg-card"
+                          aria-label={`${r.userName || r._id} 후기 관리 메뉴`}
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>

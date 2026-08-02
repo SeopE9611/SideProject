@@ -1098,7 +1098,7 @@ export default function PackageOrdersClient() {
         <CardContent className="relative overflow-x-auto px-4">
           <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
             <Table
-              className="min-w-[1400px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
+              className="min-w-[1180px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
               aria-busy={isValidating && !shouldShowRows}
             >
               <TableHeader className="sticky top-0 bg-card shadow-sm">
@@ -1233,7 +1233,7 @@ export default function PackageOrdersClient() {
                   <TableHead
                     className={cn(
                       adminDataTable.actionHead,
-                      "sticky top-0 z-10 box-border w-[44px]",
+                      "sticky right-0 top-0 z-20 box-border w-[56px] bg-card",
                     )}
                   >
                     작업
@@ -1341,7 +1341,8 @@ export default function PackageOrdersClient() {
                                     <Button
                                       size="icon"
                                       variant="ghost"
-                                      className="h-4 w-4"
+                                      className="h-8 w-8"
+                                      aria-label={`${pkg.id} 패키지 ID 복사`}
                                       onClick={() => {
                                         navigator.clipboard.writeText(pkg.id);
                                         showSuccessToast("패키지 ID가 클립보드에 복사되었습니다.");
@@ -1573,10 +1574,15 @@ export default function PackageOrdersClient() {
                           </TableCell>
 
                           {/* 작업 드롭다운 */}
-                          <TableCell className={cn(tdClasses, col.actions, "p-0 pr-2")}>
+                          <TableCell className={cn(tdClasses, col.actions, "sticky right-0 z-10 bg-card p-0 pr-2")}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 p-0"
+                                  aria-label={`${pkg.customer?.name || pkg.id} 패키지 관리 메뉴`}
+                                >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>

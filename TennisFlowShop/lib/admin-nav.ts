@@ -7,6 +7,13 @@ export function isAdminNavActive(pathname: string, href: string): boolean {
 
   if (path === href) return true;
 
+  if (
+    href === "/admin/orders" &&
+    /^\/admin\/applications\/stringing(?:\/|$)/.test(path)
+  ) {
+    return true;
+  }
+
   const withSlash = href.endsWith("/") ? href : `${href}/`;
   const under = path.startsWith(withSlash);
 
