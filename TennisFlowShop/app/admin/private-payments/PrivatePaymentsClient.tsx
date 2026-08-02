@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { adminFetcher } from "@/lib/admin/adminFetcher";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { formatKoreanDateTime } from "@/lib/korean-date";
 import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
@@ -36,7 +38,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, CreditCard, MoreHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type Item = {
@@ -376,16 +378,14 @@ export default function PrivatePaymentsClient() {
     </button>
   );
   return (
-    <div className="space-y-6">
-      <div className="flex gap-3 flex-row items-start justify-between">
-        <div className="space-y-1">
-          <h2 className={adminTypography.sectionTitle}>개인결제 현황</h2>
-          <p className={adminTypography.body}>
-            개인결제 링크 생성부터 결제 상태, 보관, 취소, 오프라인 연결을 한 화면에서 관리합니다.
-          </p>
-        </div>
-        <Button onClick={openCreateDialog}>개인결제 생성</Button>
-      </div>
+    <AdminPageShell variant="wide">
+      <AdminPageHeader
+        title="개인결제 관리"
+        description="개인결제 링크 생성부터 결제 상태, 보관, 취소, 오프라인 연결을 한 화면에서 관리합니다."
+        icon={CreditCard}
+        actions={<Button onClick={openCreateDialog}>개인결제 생성</Button>}
+      />
+      <div className="space-y-6">
 
       <div className="grid gap-3 grid-cols-5">
         {[
@@ -1074,6 +1074,7 @@ export default function PrivatePaymentsClient() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </AdminPageShell>
   );
 }

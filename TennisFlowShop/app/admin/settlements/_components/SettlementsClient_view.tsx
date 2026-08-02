@@ -770,14 +770,11 @@ export default function SettlementsClient() {
           <Card className={cn(adminSurface.tableCard, "overflow-visible max-w-6xl mx-auto")}>
             {/* 데스크탑 */}
             <div className="overflow-x-auto">
-              <div className="min-w-[1320px]">
+              <div className="min-w-[1000px]">
                 <div className="sticky top-0 z-10 bg-muted border-b border-border">
                   <div
                     className="grid gap-3 p-5 text-sm font-semibold text-foreground"
-                    style={{
-                      gridTemplateColumns:
-                        "40px 90px 120px 120px 120px 90px 110px 100px 120px 120px 110px 40px",
-                    }}
+                    style={{ gridTemplateColumns: "44px 100px 230px 220px 190px 110px 72px" }}
                   >
                     <div className="flex items-center justify-center">
                       <input
@@ -790,54 +787,26 @@ export default function SettlementsClient() {
                         aria-label="전체 선택"
                       />
                     </div>
-                    <div className="text-center">월</div>
-                    <button
-                      onClick={() => toggleSort("paid")}
-                      className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
-                    >
-                      결제금액
-                      {renderSortIcon("paid")}
-                    </button>
-                    <button
-                      onClick={() => toggleSort("refund")}
-                      className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
-                    >
-                      환불금액
-                      {renderSortIcon("refund")}
-                    </button>
-                    <button
-                      onClick={() => toggleSort("net")}
-                      className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
-                    >
-                      순매출
-                      {renderSortIcon("net")}
-                    </button>
-                    <button
-                      onClick={() => toggleSort("orders")}
-                      className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
-                    >
-                      주문 건수
-                      {renderSortIcon("orders")}
-                    </button>
-                    <button
-                      onClick={() => toggleSort("applications")}
-                      className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
-                    >
-                      스트링 신청 건수
-                      {renderSortIcon("applications")}
-                    </button>
-                    <button
-                      onClick={() => toggleSort("packages")}
-                      className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
-                    >
-                      패키지 건수
-                      {renderSortIcon("packages")}
-                    </button>
-                    <div className="text-right tabular-nums">개인결제</div>
-                    <div className="text-right tabular-nums">개인결제 환불</div>
-
+                    <div className="text-center">정산 월</div>
+                    <div>
+                      <p className="mb-1 text-right">온라인 금액</p>
+                      <div className="flex justify-end gap-2 text-xs font-medium">
+                        {([ ["paid", "결제"], ["refund", "환불"], ["net", "순매출"] ] as const).map(([field, label]) => (
+                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex items-center gap-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-right">처리 건수</p>
+                      <div className="flex justify-end gap-2 text-xs font-medium">
+                        {([ ["orders", "주문"], ["applications", "교체·대여"], ["packages", "패키지"] ] as const).map(([field, label]) => (
+                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex items-center gap-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-right">개인결제<br /><span className="text-xs font-medium">결제 / 환불</span></div>
                     <div className="text-center">상태</div>
-                    <div className="text-center">액션</div>
+                    <div className="sticky right-0 bg-muted text-center">관리</div>
                   </div>
                 </div>
 
@@ -848,20 +817,12 @@ export default function SettlementsClient() {
                         key={i}
                         className="grid gap-3 p-5 animate-pulse"
                         style={{
-                          gridTemplateColumns:
-                            "56px 90px 120px 120px 120px 90px 110px 100px 120px 120px 110px 56px",
+                          gridTemplateColumns: "44px 100px 230px 220px 190px 110px 72px",
                         }}
                       >
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
-                        <div className="h-5 bg-muted rounded" />
+                        {Array.from({ length: 7 }).map((_, column) => (
+                          <div key={column} className="h-5 rounded bg-muted" />
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -882,8 +843,7 @@ export default function SettlementsClient() {
                         <div
                           className="grid gap-3 p-5 text-sm font-semibold text-foreground"
                           style={{
-                            gridTemplateColumns:
-                              "40px 90px 120px 120px 120px 90px 110px 100px 120px 120px 110px 40px",
+                            gridTemplateColumns: "44px 100px 230px 220px 190px 110px 72px",
                           }}
                         >
                           <div className="flex items-center justify-center">
@@ -910,29 +870,19 @@ export default function SettlementsClient() {
                             </button>
                           </div>
 
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
-                            {(row.totals?.paid || 0).toLocaleString()}
+                          <div className="space-y-1 text-right tabular-nums">
+                            <p className="text-sm font-semibold">결제 {(row.totals?.paid || 0).toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">환불 {(row.totals?.refund || 0).toLocaleString()}</p>
+                            <p className="text-sm font-bold text-primary">순매출 {(row.totals?.net || 0).toLocaleString()}</p>
                           </div>
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
-                            {(row.totals?.refund || 0).toLocaleString()}
+                          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-right tabular-nums">
+                            <span className="text-xs text-muted-foreground">주문</span><span className="text-sm">{row.breakdown?.orders || 0}</span>
+                            <span className="text-xs text-muted-foreground">교체·대여</span><span className="text-sm">{row.breakdown?.applications || 0}</span>
+                            <span className="text-xs text-muted-foreground">패키지</span><span className="text-sm">{row.breakdown?.packages || 0}</span>
                           </div>
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-primary">
-                            {(row.totals?.net || 0).toLocaleString()}
-                          </div>
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
-                            {row.breakdown?.orders || 0}
-                          </div>
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
-                            {row.breakdown?.applications || 0}
-                          </div>
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
-                            {row.breakdown?.packages || 0}
-                          </div>
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
-                            {(row.breakdown?.privatePaymentsPaidAmount || 0).toLocaleString()}
-                          </div>
-                          <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
-                            {(row.breakdown?.privatePaymentsRefundAmount || 0).toLocaleString()}
+                          <div className="space-y-1 text-right tabular-nums">
+                            <p className="text-sm font-semibold">결제 {(row.breakdown?.privatePaymentsPaidAmount || 0).toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">환불 {(row.breakdown?.privatePaymentsRefundAmount || 0).toLocaleString()}</p>
                           </div>
 
                           <div className="flex items-center justify-center">
@@ -968,7 +918,7 @@ export default function SettlementsClient() {
                             )}
                           </div>
 
-                          <div className="relative flex items-center justify-center">
+                          <div className="sticky right-0 flex items-center justify-center bg-card">
                             <DropdownMenu modal={false}>
                               <DropdownMenuTrigger asChild>
                                 <button
