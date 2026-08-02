@@ -39,7 +39,6 @@ import { isNicePaymentsEnabled, isTossPaymentsEnabled } from "@/lib/payments/pro
 import { cn } from "@/lib/utils";
 import {
   Building2,
-  Calendar,
   CheckCircle,
   CreditCard,
   Loader2,
@@ -48,7 +47,6 @@ import {
   Package,
   Phone,
   Shield,
-  Star,
   UserIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -461,20 +459,46 @@ export default function PackageCheckoutClient({
         description="결제 전 패키지 횟수, 유효기간, 총 결제 금액을 먼저 확인해 주세요."
         icon={<Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
       >
-        <div className="flex flex-wrap gap-2 text-ui-label text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 rounded-control border border-border bg-card px-2.5 py-1">
-            <Shield className="h-3.5 w-3.5 text-muted-foreground" />
-            보안 결제
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-control border border-border bg-card px-2.5 py-1">
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-            유효기간 적용
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-control border border-border bg-card px-2.5 py-1">
-            <Star className="h-3.5 w-3.5 text-muted-foreground" />
-            스트링 서비스
-          </span>
-        </div>
+        <nav aria-label="패키지 주문 진행 단계">
+          <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-control border border-border/80 bg-card p-1.5 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2 [&::-webkit-scrollbar]:hidden">
+            <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-ui-caption font-ui-medium text-background bp-sm:h-8 bp-sm:w-8">
+                <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
+              </span>
+
+              <span className="whitespace-nowrap text-ui-label font-medium text-foreground bp-sm:text-ui-body-sm">
+                <span className="bp-sm:hidden">패키지</span>
+                <span className="hidden bp-sm:inline">패키지 선택</span>
+              </span>
+            </div>
+
+            <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+
+            <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-ui-medium text-brand-highlight-foreground shadow-sm bp-sm:h-8 bp-sm:w-8">
+                2
+              </span>
+
+              <span className="whitespace-nowrap text-ui-label font-ui-medium text-foreground bp-sm:text-ui-body-sm">
+                <span className="bp-sm:hidden">결제</span>
+                <span className="hidden bp-sm:inline">주문·결제</span>
+              </span>
+            </div>
+
+            <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+
+            <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-ui-caption font-ui-medium text-muted-foreground bp-sm:h-8 bp-sm:w-8">
+                3
+              </span>
+
+              <span className="whitespace-nowrap text-ui-label font-medium text-muted-foreground bp-sm:text-ui-body-sm">
+                <span className="bp-sm:hidden">완료</span>
+                <span className="hidden bp-sm:inline">주문 완료</span>
+              </span>
+            </div>
+          </div>
+        </nav>
       </CheckoutPageHeader>
 
       <SiteContainer
@@ -1073,13 +1097,21 @@ export default function PackageCheckoutClient({
                   )}
                 </div>
 
-                <Separator />
+                <div className="flex items-start justify-between gap-4 border-t border-border pt-4 text-ui-body-lg font-ui-medium text-foreground">
+                  <div className="min-w-0 text-muted-foreground">
+                    <span className="text-foreground">총 결제 금액</span>
+                  </div>
 
-                <div className="flex items-end justify-between gap-4 rounded-control bg-surface-inverse px-4 py-3 text-ui-section-title font-ui-medium text-surface-inverse-foreground">
-                  <span>총 결제 금액</span>
-                  <span className="text-brand-highlight tabular-nums">
-                    {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
-                  </span>
+                  <div className="shrink-0 text-right font-ui-medium text-foreground">
+                    {selectedPackage ? (
+                      <span className="text-ui-price-lg font-ui-medium tabular-nums text-primary bp-sm:text-ui-page-title">
+                        {selectedPackage.price.toLocaleString()}
+                        <span className="ml-0.5 text-ui-body-sm font-medium">원</span>
+                      </span>
+                    ) : (
+                      <span className="font-ui-medium text-foreground">-</span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div

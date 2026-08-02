@@ -738,30 +738,42 @@ export default function RentalsCheckoutClient({
         icon={<CreditCard className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
       >
         <nav aria-label="대여 신청 진행 단계">
-          <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-control border border-border/80 bg-card p-1.5 [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2.5 [&::-webkit-scrollbar]:hidden">
+          <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-control border border-border/80 bg-card p-1.5 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2 [&::-webkit-scrollbar]:hidden">
             <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-              <Badge
-                tone="neutral"
-                emphasis="outline"
-                className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium"
-              >
-                1 대여 정보
-              </Badge>
-              <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
-              <Badge
-                tone="neutral"
-                emphasis="outline"
-                className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium"
-              >
-                2 스트링 선택
-              </Badge>
-              <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
-              <Badge
-                tone="signal"
-                className="rounded-full px-3 py-1.5 text-ui-label font-ui-medium"
-              >
-                3 신청 확인
-              </Badge>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-ui-caption font-ui-medium text-background bp-sm:h-8 bp-sm:w-8">
+                <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
+              </span>
+
+              <span className="whitespace-nowrap text-ui-label font-medium text-foreground bp-sm:text-ui-body-sm">
+                <span className="bp-sm:hidden">대여</span>
+                <span className="hidden bp-sm:inline">대여 정보</span>
+              </span>
+            </div>
+
+            <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+
+            <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-ui-caption font-ui-medium text-background bp-sm:h-8 bp-sm:w-8">
+                <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
+              </span>
+
+              <span className="whitespace-nowrap text-ui-label font-medium text-foreground bp-sm:text-ui-body-sm">
+                <span className="bp-sm:hidden">스트링</span>
+                <span className="hidden bp-sm:inline">스트링 선택</span>
+              </span>
+            </div>
+
+            <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
+
+            <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-highlight text-ui-caption font-ui-medium text-brand-highlight-foreground shadow-sm bp-sm:h-8 bp-sm:w-8">
+                3
+              </span>
+
+              <span className="whitespace-nowrap text-ui-label font-ui-medium text-foreground bp-sm:text-ui-body-sm">
+                <span className="bp-sm:hidden">확인</span>
+                <span className="hidden bp-sm:inline">신청 확인</span>
+              </span>
             </div>
           </div>
         </nav>
@@ -1510,12 +1522,15 @@ export default function RentalsCheckoutClient({
                       </div>
                     )}
 
-                    <Separator />
-                    <div className="rounded-control bg-surface-inverse px-4 py-3 text-surface-inverse-foreground">
-                      <div className="flex min-w-0 items-center justify-between gap-3 text-ui-section-title font-ui-medium">
-                        <span className="min-w-0 break-words">예상 결제 금액</span>
-                        <span className="shrink-0 text-brand-highlight tabular-nums">
-                          {payableTotal.toLocaleString()}원
+                    <div className="flex items-start justify-between gap-4 border-t border-border pt-4 text-ui-body-lg font-ui-medium text-foreground">
+                      <div className="min-w-0 text-muted-foreground">
+                        <span className="text-foreground">예상 결제 금액</span>
+                      </div>
+
+                      <div className="shrink-0 text-right font-ui-medium text-foreground">
+                        <span className="text-ui-price-lg font-ui-medium tabular-nums text-primary bp-sm:text-ui-page-title">
+                          {payableTotal.toLocaleString()}
+                          <span className="ml-0.5 text-ui-body-sm font-medium">원</span>
                         </span>
                       </div>
                     </div>
