@@ -73,14 +73,6 @@ export default function ShippingForm({
     String(initialCourier ?? "").trim() ||
     String(initialTrackingNumber ?? "").trim(),
   );
-  const cardTitle = isVisitPickup
-    ? isRegistered
-      ? "방문 수령 정보 수정"
-      : "방문 수령 정보 등록"
-    : isRegistered
-      ? "배송 정보 수정"
-      : "배송 정보 등록";
-
   /**
    * ---- 이탈(탭 닫기/새로고침/뒤로가기/링크이동) 보호 ----
    * baseline은 "초기 props" 기준으로 잡고,
@@ -226,7 +218,7 @@ export default function ShippingForm({
 
   return (
     <AdminPageSection
-      title={cardTitle}
+      title="배송 정보 입력"
       description="처리 상태에 맞춰 수령 예정일과 운송장 정보를 관리합니다."
       icon={Truck}
       className="mx-auto w-full max-w-md"

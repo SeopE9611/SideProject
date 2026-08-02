@@ -93,13 +93,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       </div>
       <div className="border-b border-border/70 bg-card/80 px-6 py-2 backdrop-blur supports-[backdrop-filter]:bg-card/70">
         <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-3">
-          <Link href="/" className="rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+          <Link href="/admin/dashboard" className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <p className="text-ui-label font-semibold uppercase tracking-widest text-muted-foreground">
               Admin Console
             </p>
-            <h1 className="text-ui-body-sm font-semibold text-foreground hover:text-primary">
+            <div className="text-ui-body-sm font-semibold text-foreground hover:text-primary">
               도깨비테니스 운영 관리
-            </h1>
+            </div>
           </Link>
           <div className="flex items-center gap-3 text-ui-label text-muted-foreground">
             <span>관리자 콘솔</span>
@@ -107,7 +107,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               href="/"
               target="_blank"
               rel="noreferrer"
-              className="font-semibold text-foreground hover:text-primary"
+              className="rounded-md font-semibold text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               쇼핑몰 홈
             </Link>

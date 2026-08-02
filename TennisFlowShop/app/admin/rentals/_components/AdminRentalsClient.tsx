@@ -584,25 +584,25 @@ export default function AdminRentalsClient() {
   function ShippingBadge({ item }: { item: RentalRow }) {
     if (item.servicePickupMethod === "SHOP_VISIT") {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-primary/10 text-primary dark:bg-primary/20">
+        <Badge tone="neutral" size="sm">
           운송장 불필요
-        </span>
+        </Badge>
       );
     }
 
     const s = deriveShippingStatus(item);
     const map = {
-      none: ["운송장 없음", "bg-background text-foreground"],
-      "outbound-set": ["인도 운송장", "bg-muted text-foreground"],
-      "return-set": ["반납 운송장", "bg-muted text-foreground"],
-      "both-set": ["왕복 운송장", "bg-primary/10 text-primary dark:bg-primary/20"],
+      none: ["운송장 없음", "neutral"],
+      "outbound-set": ["인도 운송장", "info"],
+      "return-set": ["반납 운송장", "info"],
+      "both-set": ["왕복 운송장", "success"],
     } as const;
 
-    const [label, cls] = map[s];
+    const [label, tone] = map[s];
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] ${cls}`}>
+      <Badge tone={tone} size="sm">
         {label}
-      </span>
+      </Badge>
     );
   }
 
@@ -923,7 +923,7 @@ export default function AdminRentalsClient() {
             </div>
           </details>
         </CardHeader>
-        <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2">
+        <CardContent className="relative overflow-x-auto pr-2">
           <Table className="min-w-[1040px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0] text-xs">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
@@ -1332,6 +1332,7 @@ export default function AdminRentalsClient() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                                aria-label={`${r.customer?.name || r.id} 대여 관리 메뉴`}
                               >
                                 <MoreHorizontal className="h-3.5 w-3.5" />
                               </Button>

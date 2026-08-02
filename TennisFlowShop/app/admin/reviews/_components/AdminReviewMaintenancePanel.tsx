@@ -125,14 +125,18 @@ export default function AdminReviewMaintenancePanel() {
           <Wrench className="h-5 w-5" />
           후기 유지보수
         </CardTitle>
-        <CardContent>
-          <span className="font-bold text-foreground">
-            개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!!{" "}
-          </span>
-        </CardContent>
       </CardHeader>
 
       <CardContent className="space-y-4">
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-4" role="alert">
+          <p className="font-semibold text-warning">실행 전 영향 범위를 확인하세요.</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-foreground">
+            <li>인덱스·중복 후기·집계·작업 잠금 등 후기 관련 데이터를 변경합니다.</li>
+            <li>전체 후기 데이터와 목록 노출 결과에 영향을 줄 수 있습니다.</li>
+            <li>일부 정비 작업은 실행 후 자동으로 되돌릴 수 없습니다.</li>
+            <li>실행 전에 대상 데이터, 최근 백업, 현재 작업 잠금 상태를 확인하세요.</li>
+          </ul>
+        </div>
         {/* 액션 버튼들 */}
         <div className="flex flex-wrap gap-2">
           <Button
@@ -228,7 +232,7 @@ export default function AdminReviewMaintenancePanel() {
         </div>
 
         {/* 기능 설명 */}
-        <div className="rounded-md bg-card p-3 text-[13px] text-foreground space-y-2">
+        <div className="rounded-md bg-card p-3 text-sm text-foreground space-y-2">
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>

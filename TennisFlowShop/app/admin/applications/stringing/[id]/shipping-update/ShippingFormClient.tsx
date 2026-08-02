@@ -1,6 +1,8 @@
 "use client";
 
 import { adminTypography } from "@/components/admin/admin-typography";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import useSWR from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -91,19 +93,8 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   const isInitialLoading = isLoading && !data;
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8 px-4">
-      <div className="container mx-auto max-w-2xl">
-        <div className="text-center mb-8">
-          <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-            {isVisitPickup ? (
-              <Store className="h-8 w-8 text-primary mx-auto" />
-            ) : (
-              <Truck className="h-8 w-8 text-primary mx-auto" />
-            )}
-          </div>
-          <h1 className={adminTypography.pageTitle}>{pageTitle}</h1>
-          <p className={adminTypography.body}>{pageDesc}</p>
-        </div>
+    <AdminPageShell variant="narrow">
+        <AdminPageHeader title={pageTitle} description={pageDesc} icon={isVisitPickup ? Store : Truck} />
         {isInitialLoading ? (
           <Card className="w-full max-w-md mx-auto border-border/60">
             <CardContent className="space-y-5 p-6">
@@ -149,7 +140,6 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
             isVisitPickup={isVisitPickup}
           />
         )}
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

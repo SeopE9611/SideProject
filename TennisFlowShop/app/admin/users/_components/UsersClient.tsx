@@ -1197,7 +1197,7 @@ export default function UsersClient() {
                                   {u.socialProviders.includes("kakao") && (
                                     <Badge
                                       variant="warning"
-                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
+                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-xs"
                                     >
                                       카카오
                                     </Badge>
@@ -1205,7 +1205,7 @@ export default function UsersClient() {
                                   {u.socialProviders.includes("naver") && (
                                     <Badge
                                       variant="success"
-                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
+                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-xs"
                                     >
                                       네이버
                                     </Badge>
@@ -1274,7 +1274,7 @@ export default function UsersClient() {
                           {/* 활동(가입/로그인) 한 칼럼 */}
                           <TableCell className={cn(td, "w-[150px] whitespace-nowrap text-right")}>
                             <div className="flex flex-col items-end whitespace-nowrap leading-tight tabular-nums">
-                              <span className="text-[12px]">{joined.date}</span>
+                              <span className="text-xs">{joined.date}</span>
                               <span className="text-xs text-foreground/75">
                                 {last.time ? `${last.date} ${last.time}` : "-"}
                               </span>
@@ -1304,7 +1304,12 @@ export default function UsersClient() {
                           <TableCell className={cn(td, "w-[44px] p-0 text-right")}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 p-0"
+                                  aria-label={`${u.name || u.email || "회원"} 관리 메뉴`}
+                                >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>

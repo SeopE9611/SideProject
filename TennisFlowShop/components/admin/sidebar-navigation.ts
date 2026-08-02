@@ -15,6 +15,7 @@ import {
   Package,
   PackageSearch,
   Settings,
+  Star,
   Store,
   Users,
 } from "lucide-react";
@@ -74,19 +75,19 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         key: "orders",
       },
       {
-        title: "라켓 대여 처리",
+        title: "대여 관리",
         href: "/admin/rentals",
         icon: ClipboardList,
         key: "rentals",
       },
       {
-        title: "오프라인 접수",
+        title: "오프라인 관리",
         href: "/admin/offline",
         icon: Store,
         key: "offline",
       },
       {
-        title: "아카데미 상담",
+        title: "아카데미 신청 관리",
         href: "/admin/academy/applications",
         icon: BookOpen,
         key: "academyApplications",
@@ -114,7 +115,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         key: "rackets",
       },
       {
-        title: "패키지권 관리",
+        title: "패키지 관리",
         href: "/admin/packages",
         icon: Package,
         key: "packages",
@@ -136,9 +137,9 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         key: "boards",
       },
       {
-        title: "리뷰 관리",
+        title: "후기 관리",
         href: "/admin/reviews",
-        icon: MessageCircle,
+        icon: Star,
         key: "reviews",
       },
     ],
@@ -149,7 +150,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
       { title: "회원 관리", href: "/admin/users", icon: Users, key: "users" },
       { title: "개인결제 관리", href: "/admin/private-payments", icon: CreditCard },
       {
-        title: "월별 정산 관리",
+        title: "정산 관리",
         href: "/admin/settlements",
         icon: ChartBar,
         key: "settlements",
