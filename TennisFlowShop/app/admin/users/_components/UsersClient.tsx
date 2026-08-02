@@ -34,6 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1183,32 +1184,22 @@ export default function UsersClient() {
                                   {u.email}
                                 </span>
                                 <button
-                                  className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
+                                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                   onClick={() => copy(u.email)}
                                   title="복사"
-                                  aria-label="이메일 복사"
+                                  aria-label={`${u.name || "사용자"} 이메일 복사`}
                                 >
-                                  <Copy className="w-3 h-3" />
+                                  <Copy className="h-4 w-4" />
                                 </button>
                               </div>
                               {/* 소셜 배지: 카카오/네이버 */}
                               {Array.isArray(u.socialProviders) && u.socialProviders.length > 0 && (
                                 <div className="mt-1 flex items-center gap-1">
                                   {u.socialProviders.includes("kakao") && (
-                                    <Badge
-                                      variant="warning"
-                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-xs"
-                                    >
-                                      카카오
-                                    </Badge>
+                                    <IdentityBadge tone="kakao" className="shrink-0 whitespace-nowrap">카카오</IdentityBadge>
                                   )}
                                   {u.socialProviders.includes("naver") && (
-                                    <Badge
-                                      variant="success"
-                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-xs"
-                                    >
-                                      네이버
-                                    </Badge>
+                                    <IdentityBadge tone="naver" className="shrink-0 whitespace-nowrap">네이버</IdentityBadge>
                                   )}
                                 </div>
                               )}
@@ -1236,12 +1227,12 @@ export default function UsersClient() {
                                   {formatKoreanPhone(u.phone) || u.phone}
                                 </a>
                                 <button
-                                  className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
+                                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                   onClick={() => copy(u.phone!)}
                                   title="복사"
-                                  aria-label="전화번호 복사"
+                                  aria-label={`${u.name || "사용자"} 전화번호 복사`}
                                 >
-                                  <Copy className="w-3 h-3" />
+                                  <Copy className="h-4 w-4" />
                                 </button>
                               </div>
                             ) : (
@@ -1259,14 +1250,14 @@ export default function UsersClient() {
                                 {shortAddress(u.address)}
                               </span>
                               <button
-                                className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
+                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 onClick={() =>
                                   copy(fullAddress(u.postalCode, u.address, u.addressDetail))
                                 }
                                 title="전체 주소 복사"
-                                aria-label="주소 복사"
+                                aria-label={`${u.name || "사용자"} 주소 복사`}
                               >
-                                <Copy className="w-3 h-3" />
+                                <Copy className="h-4 w-4" />
                               </button>
                             </div>
                           </TableCell>

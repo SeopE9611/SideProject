@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
 import { BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide-react";
 
@@ -228,12 +228,6 @@ export default function AcademyApplicationsClient() {
     router.push(`/admin/academy/applications/${id}`);
   }
 
-  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    goToDetail(id);
-  }
-
   return (
     <AdminPageShell>
       <AdminPageHeader
@@ -380,14 +374,7 @@ export default function AcademyApplicationsClient() {
                   const createdAt = formatAdminDateTimeParts(item.createdAt);
 
                   return (
-                    <TableRow
-                      key={item._id}
-                      role="button"
-                      tabIndex={0}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => goToDetail(item._id)}
-                      onKeyDown={(event) => handleRowKeyDown(event, item._id)}
-                    >
+                    <TableRow key={item._id} className="hover:bg-muted/50">
                       <TableCell className={adminDataTable.dateCell}>
                         <div className="font-medium text-foreground">{createdAt.date}</div>
                         <div className="text-muted-foreground">{createdAt.time}</div>
@@ -435,12 +422,20 @@ export default function AcademyApplicationsClient() {
                       <TableCell className={adminDataTable.cellCenter}>
                         <AcademyStatusBadge status={item.status} />
                       </TableCell>
-                      <TableCell
-                        className={adminDataTable.actionCell}
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                      <TableCell className={adminDataTable.actionCell}>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => goToDetail(item._id)}
+                            aria-label={`${item.applicantName || "신청자"} 신청 상세 보기`}
+                          >
+                            <Eye className="mr-1 h-4 w-4" />
+                            상세 보기
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                             <Button
                               type="button"
                               variant="ghost"
@@ -474,8 +469,9 @@ export default function AcademyApplicationsClient() {
                                 {deletingId === item._id ? "삭제 중..." : "삭제"}
                               </DropdownMenuItem>
                             ) : null}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

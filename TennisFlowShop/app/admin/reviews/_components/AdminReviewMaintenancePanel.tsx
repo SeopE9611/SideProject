@@ -4,6 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { adminFetcher, adminMutator } from "@/lib/admin/adminFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
@@ -31,6 +32,7 @@ export default function AdminReviewMaintenancePanel() {
   const [loading, setLoading] = useState<Action | null>(null);
   const [lastResult, setLastResult] = useState<any>(null);
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<"dedup" | "all" | "unlock" | null>(null);
 
   const { data: lockStatus = { locked: false }, mutate: mutateLockStatus } = useSWR<LockStatus>(
     "/api/admin/reviews/maintenance",
@@ -152,7 +154,7 @@ export default function AdminReviewMaintenancePanel() {
             )}
             인덱스 보장
           </Button>
-          <Button size="sm" onClick={() => run("dedup")} disabled={disabled} variant="outline">
+          <Button size="sm" onClick={() => setPendingConfirm("dedup")} disabled={disabled} variant="outline">
             {loading === "dedup" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -176,7 +178,7 @@ export default function AdminReviewMaintenancePanel() {
           <p className="basis-full text-ui-label text-muted-foreground">
             상품과 라켓 목록의 후기 수·평점을 상세 페이지의 공개 통합 후기 기준으로 다시 계산합니다.
           </p>
-          <Button size="sm" onClick={() => run("all")} disabled={disabled} variant="default">
+          <Button size="sm" onClick={() => setPendingConfirm("all")} disabled={disabled} variant="default">
             {loading === "all" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -207,7 +209,7 @@ export default function AdminReviewMaintenancePanel() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={forceUnlock}
+                onClick={() => setPendingConfirm("unlock")}
                 className="h-7 px-2 text-xs"
               >
                 <Unlock className="h-3.5 w-3.5 mr-1" />
@@ -263,6 +265,26 @@ export default function AdminReviewMaintenancePanel() {
           </pre>
         )}
       </CardContent>
+      <AdminConfirmDialog
+        open={pendingConfirm !== null}
+        onOpenChange={(open) => !open && setPendingConfirm(null)}
+        severity="danger"
+        title={pendingConfirm === "dedup" ? "중복 후기 정리" : pendingConfirm === "all" ? "전체 유지보수 실행" : "작업 잠금 강제 해제"}
+        description={pendingConfirm === "dedup"
+          ? "작업명: 중복 후기 정리\n범위: 동일 사용자·대상의 중복 후기 전체(최신 1개 제외)\n자동 복구: 소프트 삭제되지만 자동 복구되지 않습니다.\n실행 중 다른 후기 유지보수 작업이 제한될 수 있습니다."
+          : pendingConfirm === "all"
+            ? "작업명: 전체 유지보수 실행\n범위: 후기 인덱스, 중복 후기 및 후기 요약 집계 전체\n자동 복구: 일부 변경은 자동 복구할 수 없습니다.\n실행 중 다른 후기 유지보수 작업이 제한될 수 있습니다."
+            : "작업명: 작업 잠금 강제 해제\n범위: 현재 후기 유지보수 작업 잠금\n자동 복구: 해제한 잠금은 자동 복구되지 않습니다.\n실행 중인 작업이 있다면 다른 유지보수 작업과 겹칠 수 있습니다."
+        }
+        confirmText={pendingConfirm === "dedup" ? "중복 후기 정리 실행" : pendingConfirm === "all" ? "전체 유지보수 실행" : "작업 잠금 강제 해제"}
+        eventKey={`review-maintenance-${pendingConfirm ?? "none"}`}
+        onConfirm={() => {
+          const action = pendingConfirm;
+          setPendingConfirm(null);
+          if (action === "dedup" || action === "all") void run(action);
+          if (action === "unlock") void forceUnlock();
+        }}
+      />
     </Card>
   );
 }

@@ -27,7 +27,7 @@ import {
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,7 +65,6 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   Calendar,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -87,47 +86,7 @@ import useSWR from "swr";
 const PAYMENT_CHECK_PRESET = "payment-check" as const;
 type PackagePresetFilter = typeof PAYMENT_CHECK_PRESET | null;
 
-function SortableTH({
-  k,
-  className = "",
-  label,
-  thClasses,
-  ariaSort,
-  onSort,
-  active,
-  icon,
-}: {
-  k: SortKey;
-  className?: string;
-  label: React.ReactNode;
-  thClasses: string;
-  ariaSort: "none" | "ascending" | "descending";
-  onSort: (key: SortKey) => void;
-  active: boolean;
-  icon: React.ReactNode;
-}) {
-  return (
-    <TableHead className={cn(thClasses, className)} role="columnheader" aria-sort={ariaSort}>
-      <button
-        type="button"
-        onClick={() => onSort(k)}
-        className={cn(
-          "inline-flex w-full items-center gap-1 cursor-pointer select-none",
-          className.includes("text-left")
-            ? "justify-start"
-            : className.includes("text-right")
-              ? "justify-end"
-              : "justify-center",
-          "hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded",
-          active && "text-primary",
-        )}
-      >
-        {label} {icon}
-        <span className="sr-only">정렬</span>
-      </button>
-    </TableHead>
-  );
-}
+
 
 export default function PackageOrdersClient() {
   const router = useRouter();
@@ -485,16 +444,7 @@ export default function PackageOrdersClient() {
     setPage(Math.min(totalPages, Math.max(1, p)));
   };
 
-  const SortIcon = (k: SortKey) => (
-    <ChevronDown
-      className={cn(
-        "inline-block h-3 w-3 shrink-0 align-middle transition-transform",
-        sortBy === k ? "opacity-80" : "opacity-50",
-        sortBy === k && sortDirection === "desc" && "rotate-180",
-      )}
-      aria-hidden="true"
-    />
-  );
+
 
   // 날짜 포맷터
   const formatDate = (v?: string | number | Date | null) => {
@@ -665,44 +615,23 @@ export default function PackageOrdersClient() {
       ? "결제/활성화 확인"
       : "사용자 지정 조건";
 
-  // 정렬 헤더 클릭 핸들러
-  const handleSort = (key: SortKey) => {
-    if (sortBy === key) {
-      patchState({ sortDirection: sortDirection === "asc" ? "desc" : "asc" });
-      return;
-    }
-    patchState({ sortBy: key, sortDirection: "asc" });
-  };
+  const tdClasses = cn(adminDataTable.cellTop, "leading-tight");
 
-  // 공통 스타일 상수
-  const thClasses = cn(adminDataTable.headCenter, "sticky top-0 z-10 box-border");
+  const sortOptions: Array<{ value: SortKey; label: string }> = [
+    { value: "customer", label: "고객" },
+    { value: "package", label: "패키지" },
+    { value: "remainingSessions", label: "남은 횟수" },
+    { value: "progress", label: "진행률" },
+    { value: "purchaseDate", label: "구매일" },
+    { value: "expiryDate", label: "만료일" },
+    { value: "usage", label: "이용권 상태" },
+    { value: "payment", label: "결제 상태" },
+    { value: "activation", label: "활성화 상태" },
+    { value: "attention", label: "운영 확인" },
+    { value: "price", label: "금액" },
+  ];
 
-  const tdClasses = cn(adminDataTable.cellCompact, "text-xs leading-tight");
 
-  // 열별 정렬
-  const col = {
-    id: "text-left",
-    customer: "text-left",
-    type: "text-center",
-    remain: "text-center tabular-nums",
-    progress: "text-center tabular-nums",
-    buy: "text-right tabular-nums",
-    expire: "text-right tabular-nums",
-    usage: "text-center",
-    payment: "text-center",
-    activation: "text-center",
-    attention: "text-center",
-    price: "text-right tabular-nums",
-    actions: "text-right",
-  } as const;
-
-  // ARIA 정렬 상태
-  const ariaSort = (k: SortKey) => {
-    if (sortBy === k) {
-      return sortDirection === "asc" ? "ascending" : "descending";
-    }
-    return "none";
-  };
 
   return (
     <AdminPageShell variant="wide" className="py-6">
@@ -1070,6 +999,21 @@ export default function PackageOrdersClient() {
               </Button>
             </div>
 
+            <div className="flex items-end gap-2 border-t pt-3">
+              <div className="w-56">
+                <label className={adminTypography.meta} htmlFor="package-sort-by">정렬 기준</label>
+                <Select value={sortBy ?? "customer"} onValueChange={(value) => patchState({ sortBy: value as SortKey })}>
+                  <SelectTrigger id="package-sort-by"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="button" variant="outline" onClick={() => patchState({ sortDirection: sortDirection === "asc" ? "desc" : "asc" })} aria-label={`정렬 방향: ${sortDirection === "asc" ? "오름차순" : "내림차순"}`}>
+                {sortDirection === "asc" ? "오름차순" : "내림차순"}
+              </Button>
+            </div>
+
             {presetFilter === PAYMENT_CHECK_PRESET && (
               <div className="flex flex-wrap items-center gap-2 border-t pt-3">
                 <Badge variant="secondary" className="w-fit">
@@ -1098,145 +1042,21 @@ export default function PackageOrdersClient() {
         <CardContent className="relative overflow-x-auto px-4">
           <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
             <Table
-              className="min-w-[1180px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
+              className="min-w-[1000px] table-fixed border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0]"
               aria-busy={isValidating && !shouldShowRows}
             >
               <TableHeader className="sticky top-0 bg-card shadow-sm">
                 <TableRow>
+                  <TableHead className={cn(adminDataTable.head, "w-[250px]")}>패키지/고객</TableHead>
+                  <TableHead className={cn(adminDataTable.headCenter, "w-[150px]")}>이용 현황</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[170px]")}>기간</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[150px]")}>결제/활성화</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[130px]")}>운영 확인</TableHead>
+                  <TableHead className={cn(adminDataTable.headRight, "w-[110px]")}>금액</TableHead>
                   <TableHead
-                    className={cn(adminDataTable.head, "sticky top-0 z-10 box-border w-[120px]")}
+                    className={cn(adminDataTable.actionHead, "sticky right-0 top-0 z-20 w-[72px] bg-card")}
                   >
-                    패키지 ID
-                  </TableHead>
-
-                  <SortableTH
-                    k="customer"
-                    label="고객"
-                    className="text-left"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("customer")}
-                    onSort={handleSort}
-                    active={sortBy === "customer"}
-                    icon={SortIcon("customer")}
-                  />
-
-                  <SortableTH
-                    k="package"
-                    label="패키지"
-                    className="w-[96px]"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("package")}
-                    onSort={handleSort}
-                    active={sortBy === "package"}
-                    icon={SortIcon("package")}
-                  />
-
-                  <SortableTH
-                    k="remainingSessions"
-                    label="남은 횟수"
-                    className="w-[92px] text-center tabular-nums"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("remainingSessions")}
-                    onSort={handleSort}
-                    active={sortBy === "remainingSessions"}
-                    icon={SortIcon("remainingSessions")}
-                  />
-
-                  <SortableTH
-                    k="progress"
-                    label="진행률"
-                    className="w-[96px]"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("progress")}
-                    onSort={handleSort}
-                    active={sortBy === "progress"}
-                    icon={SortIcon("progress")}
-                  />
-
-                  <SortableTH
-                    k="purchaseDate"
-                    label="구매일"
-                    className="w-36 text-right tabular-nums"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("purchaseDate")}
-                    onSort={handleSort}
-                    active={sortBy === "purchaseDate"}
-                    icon={SortIcon("purchaseDate")}
-                  />
-
-                  <SortableTH
-                    k="expiryDate"
-                    label="만료일"
-                    className="w-36 text-right tabular-nums"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("expiryDate")}
-                    onSort={handleSort}
-                    active={sortBy === "expiryDate"}
-                    icon={SortIcon("expiryDate")}
-                  />
-
-                  <SortableTH
-                    k="usage"
-                    label="이용권 상태"
-                    className="w-[72px]"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("usage")}
-                    onSort={handleSort}
-                    active={sortBy === "usage"}
-                    icon={SortIcon("usage")}
-                  />
-
-                  <SortableTH
-                    k="payment"
-                    label="결제 상태"
-                    className="w-[112px]"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("payment")}
-                    onSort={handleSort}
-                    active={sortBy === "payment"}
-                    icon={SortIcon("payment")}
-                  />
-
-                  <SortableTH
-                    k="activation"
-                    label="활성화 상태"
-                    className="w-[112px]"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("activation")}
-                    onSort={handleSort}
-                    active={sortBy === "activation"}
-                    icon={SortIcon("activation")}
-                  />
-
-                  <SortableTH
-                    k="attention"
-                    label="운영 확인"
-                    className="w-[112px]"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("attention")}
-                    onSort={handleSort}
-                    active={sortBy === "attention"}
-                    icon={SortIcon("attention")}
-                  />
-
-                  <SortableTH
-                    k="price"
-                    label="금액"
-                    className="w-[96px] text-right tabular-nums"
-                    thClasses={thClasses}
-                    ariaSort={ariaSort("price")}
-                    onSort={handleSort}
-                    active={sortBy === "price"}
-                    icon={SortIcon("price")}
-                  />
-
-                  <TableHead
-                    className={cn(
-                      adminDataTable.actionHead,
-                      "sticky right-0 top-0 z-20 box-border w-[56px] bg-card",
-                    )}
-                  >
-                    작업
+                    관리
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -1244,14 +1064,14 @@ export default function PackageOrdersClient() {
               <TableBody>
                 {!hasDataError && isValidating && !shouldShowRows && (
                   <TableRow>
-                    <TableCell colSpan={13} className="py-4">
+                    <TableCell colSpan={7} className="py-4">
                       <div className="space-y-2">
                         {Array.from({ length: 6 }).map((_, rowIdx) => (
                           <div
                             key={`admin-packages-loading-row-${rowIdx}`}
-                            className="grid grid-cols-13 gap-2"
+                            className="grid grid-cols-7 gap-2"
                           >
-                            {Array.from({ length: 13 }).map((__, colIdx) => (
+                            {Array.from({ length: 7 }).map((__, colIdx) => (
                               <Skeleton
                                 key={`admin-packages-loading-cell-${rowIdx}-${colIdx}`}
                                 className="h-7 w-full"
@@ -1267,7 +1087,7 @@ export default function PackageOrdersClient() {
                 {/** 빈 상태 */}
                 {shouldShowEmptyState && (
                   <TableRow>
-                    <TableCell colSpan={13} className="py-12">
+                    <TableCell colSpan={7} className="py-12">
                       <div className="flex flex-col items-center gap-3 text-center">
                         <div className="flex flex-col items-center gap-2">
                           <Search className="h-8 w-8 text-muted-foreground/50" />
@@ -1323,277 +1143,119 @@ export default function PackageOrdersClient() {
                           key={pkg.id}
                           className="hover:bg-primary/5 transition-colors even:bg-muted/40 border-b last:border-0"
                         >
-                          {/* 패키지 ID (복사 토스트 포함) */}
-                          <TableCell className={cn(tdClasses, col.id)}>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span
-                                    className="font-mono text-sm cursor-pointer block truncate"
-                                    title={pkg.id}
-                                  >
-                                    {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <div className="flex items-center gap-2">
-                                    <span className="whitespace-nowrap">{pkg.id}</span>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-8 w-8"
-                                      aria-label={`${pkg.id} 패키지 ID 복사`}
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(pkg.id);
-                                        showSuccessToast("패키지 ID가 클립보드에 복사되었습니다.");
-                                      }}
-                                    >
-                                      <Copy className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </TableCell>
-
-                          {/* 고객 (이름/이메일 두 줄) */}
-                          <TableCell className={cn(tdClasses, col.customer)}>
-                            {(() => {
-                              const cName = pkg.customer?.name ?? "이름없음";
-                              const cEmail = pkg.customer?.email ?? "";
-                              const baseName = cName.replace(/$$비회원$$\s*$/, "");
-                              const isGuest = cName.includes("(비회원)");
-                              return (
-                                <div className="flex min-w-0 flex-col items-start overflow-hidden text-left">
-                                  <span
-                                    className="line-clamp-2 max-w-[200px] break-words font-medium"
-                                    title={baseName}
-                                  >
-                                    {baseName}
-                                    {isGuest && (
-                                      <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                                        (비회원)
-                                      </span>
-                                    )}
-                                  </span>
-                                  <span
-                                    className="block max-w-[200px] truncate text-xs text-muted-foreground"
-                                    title={cEmail}
-                                  >
-                                    {cEmail}
-                                  </span>
-                                </div>
-                              );
-                            })()}
-                          </TableCell>
-
-                          {/* 패키지 유형 배지 */}
-                          <TableCell className={cn(tdClasses, col.type, "whitespace-nowrap")}>
-                            <Badge
-                              className={cn(
-                                "border",
-                                packageTypeColors[pkg.packageType as PackageType] ??
-                                  "bg-card text-foreground border-border",
-                                "font-medium",
-                                badgeSizeCls,
-                              )}
-                            >
-                              {pkg.packageType}
-                            </Badge>
-                          </TableCell>
-
-                          {/* 남은 횟수 (lg 이상 노출) */}
-                          <TableCell
-                            className={cn(
-                              tdClasses,
-                              col.remain,
-                              "whitespace-nowrap",
-                            )}
-                          >
-                            <div className="flex flex-col items-center leading-tight">
-                              <span className="font-bold text-lg">
-                                {!pkg.hasIssuedPass || !hasSessionCounts
-                                  ? "-"
-                                  : `${pkg.remainingSessions}회`}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {!pkg.hasIssuedPass
-                                  ? "미발급"
-                                  : !hasSessionCounts
-                                    ? "횟수 정보 확인 필요"
-                                    : `총 ${pkg.usedSessions! + pkg.remainingSessions!}회`}
-                              </span>
+                          <TableCell className={tdClasses}>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  className={cn(
+                                    "border font-medium",
+                                    packageTypeColors[pkg.packageType as PackageType] ??
+                                      "bg-card text-foreground border-border",
+                                    badgeSizeCls,
+                                  )}
+                                >
+                                  {pkg.packageType}
+                                </Badge>
+                                <span className={adminTypography.bodyStrong}>
+                                  {pkg.packageType || "패키지"}
+                                </span>
+                              </div>
+                              <div>
+                                <p className={adminTypography.bodyStrong}>
+                                  {(pkg.customer?.name ?? "이름없음").replace(/$$비회원$$\s*$/, "")}
+                                  {(pkg.customer?.name ?? "").includes("(비회원)") ? <span className={cn(adminTypography.caption, "ml-1")}>(비회원)</span> : null}
+                                </p>
+                                <p className={cn(adminTypography.meta, "truncate")} title={pkg.customer?.email ?? ""}>
+                                  {pkg.customer?.email ?? ""}
+                                </p>
+                              </div>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className={cn(adminTypography.caption, "block cursor-pointer truncate font-mono")}>
+                                      {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <div className="flex items-center gap-2">
+                                      <span>{pkg.id}</span>
+                                      <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={`${pkg.id} 패키지 ID 복사`} onClick={() => { navigator.clipboard.writeText(pkg.id); showSuccessToast("패키지 ID가 클립보드에 복사되었습니다."); }}>
+                                        <Copy className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </TableCell>
 
-                          {/* 진행률 (바 + %) */}
-                          <TableCell className={cn(tdClasses, col.progress, "whitespace-nowrap")}>
+                          <TableCell className={cn(tdClasses, "text-center")}>
+                            <p className="text-sm font-bold tabular-nums">
+                              {!pkg.hasIssuedPass || !hasSessionCounts ? "-" : `${pkg.remainingSessions}회 / ${pkg.usedSessions! + pkg.remainingSessions!}회`}
+                            </p>
                             {!pkg.hasIssuedPass ? (
-                              <span className="text-xs text-muted-foreground">패스 미발급</span>
+                              <p className={adminTypography.caption}>패스 미발급</p>
                             ) : !hasSessionCounts || progressPercentage === null ? (
-                              <span className="text-xs text-muted-foreground">
-                                횟수 정보 확인 필요
-                              </span>
+                              <p className={adminTypography.caption}>횟수 정보 확인 필요</p>
                             ) : (
-                              <div className="flex flex-col items-center gap-1">
-                                <div
-                                  className="bg-muted rounded-full h-1.5 w-[72px] dark:bg-card"
-                                  role="progressbar"
-                                  aria-label="진행률"
-                                  aria-valuemin={0}
-                                  aria-valuemax={100}
-                                  aria-valuenow={progressPercentage}
-                                >
-                                  <div
-                                    className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                                    style={{ width: `${progressPercentage}%` }}
-                                  />
+                              <div className="mt-2 flex flex-col items-center gap-1">
+                                <div className="h-1.5 w-24 rounded-full bg-muted" role="progressbar" aria-label="진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
+                                  <div className="h-1.5 rounded-full bg-primary" style={{ width: `${progressPercentage}%` }} />
                                 </div>
-                                <span className="text-xs font-medium">{progressPercentage}%</span>
+                                <span className={cn(adminTypography.meta, "tabular-nums")}>{progressPercentage}%</span>
                               </div>
                             )}
                           </TableCell>
 
-                          {/* 구매일(날짜/시간 두 줄) */}
-                          {(() => {
-                            const { date, time } = formatDateSplit(pkg.purchaseDate);
-                            return (
-                              <TableCell className={cn(tdClasses, col.buy)}>
-                                <div className="flex flex-col items-end leading-tight">
-                                  <span className="whitespace-nowrap text-sm tabular-nums">
-                                    {date}
-                                  </span>
-                                  <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-                                    {time}
-                                  </span>
-                                </div>
-                              </TableCell>
-                            );
-                          })()}
-
-                          {/* 만료일 및 서버 상태 */}
-                          <TableCell className={cn(tdClasses, col.expire)}>
-                            <div className="flex flex-col items-end leading-tight">
-                              <span>
-                                {!pkg.hasIssuedPass || !pkg.expiryDate
-                                  ? "-"
-                                  : formatDateCompact(pkg.expiryDate)}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {!pkg.hasIssuedPass
-                                  ? "미발급"
-                                  : !pkg.expiryDate
-                                    ? "만료일 확인 필요"
-                                    : pkg.usageState === "expired"
-                                      ? "만료됨"
-                                      : pkg.isExpirySoon && typeof pkg.daysUntilExpiry === "number"
-                                        ? `${pkg.daysUntilExpiry}일 남음`
-                                        : ""}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className={cn(tdClasses, col.usage, "whitespace-nowrap")}>
-                            <Badge
-                              {...getAdminPackageUsageBadgeSpec(pkg.usageState)}
-                              className={cn("shrink-0 whitespace-nowrap font-medium", badgeSizeCls)}
-                              aria-label={`이용권 상태 ${usageLabel}`}
-                            >
-                              {usageLabel}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className={cn(tdClasses, col.payment, "whitespace-nowrap")}>
+                          <TableCell className={tdClasses}>
                             {(() => {
-                              const paymentLabel = getAdminPackagePaymentLabel(pkg.paymentState);
-                              const pay = getPaymentStatusBadgeSpec(paymentLabel);
-                              return (
-                                <Badge
-                                  variant={pay.variant}
-                                  className={cn(
-                                    "shrink-0 whitespace-nowrap font-medium",
-                                    badgeSizeCls,
-                                  )}
-                                  aria-label={`결제 상태 ${paymentLabel}`}
-                                >
-                                  {paymentLabel}
-                                </Badge>
-                              );
+                              const { date, time } = formatDateSplit(pkg.purchaseDate);
+                              return <div className="space-y-1">
+                                <p className={adminTypography.meta}>구매 {date} {time}</p>
+                                <p className={adminTypography.meta}>만료 {!pkg.hasIssuedPass || !pkg.expiryDate ? "-" : formatDateCompact(pkg.expiryDate)}</p>
+                                <p className={adminTypography.caption}>{!pkg.hasIssuedPass ? "미발급" : !pkg.expiryDate ? "만료일 확인 필요" : pkg.usageState === "expired" ? "만료됨" : pkg.isExpirySoon && typeof pkg.daysUntilExpiry === "number" ? `${pkg.daysUntilExpiry}일 남음` : ""}</p>
+                                <Badge {...getAdminPackageUsageBadgeSpec(pkg.usageState)} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={`이용권 상태 ${usageLabel}`}>{usageLabel}</Badge>
+                              </div>;
                             })()}
                           </TableCell>
 
-                          <TableCell className={cn(tdClasses, col.activation, "whitespace-nowrap")}>
-                            <Badge
-                              {...getAdminPackageActivationBadgeSpec(pkg.activationState)}
-                              className={cn("shrink-0 whitespace-nowrap font-medium", badgeSizeCls)}
-                              aria-label={`활성화 상태 ${activationLabel}`}
-                            >
-                              {activationLabel}
-                            </Badge>
+                          <TableCell className={tdClasses}>
+                            <div className="flex flex-col items-start gap-2">
+                              {(() => {
+                                const pay = getPaymentStatusBadgeSpec(paymentLabel);
+                                return <Badge variant={pay.variant} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={`결제 상태 ${paymentLabel}`}>{paymentLabel}</Badge>;
+                              })()}
+                              <Badge {...getAdminPackageActivationBadgeSpec(pkg.activationState)} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={`활성화 상태 ${activationLabel}`}>{activationLabel}</Badge>
+                            </div>
                           </TableCell>
 
-                          <TableCell className={cn(tdClasses, col.attention, "whitespace-nowrap")}>
+                          <TableCell className={tdClasses}>
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Badge
-                                    {...getAdminPackageAttentionBadgeSpec(pkg.requiresAttention)}
-                                    className={cn(
-                                      "shrink-0 whitespace-nowrap font-medium",
-                                      badgeSizeCls,
-                                    )}
-                                    aria-label={
-                                      pkg.requiresAttention
-                                        ? `운영 확인 필요: ${reasonLabels.length > 0 ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}`
-                                        : "운영 확인 완료"
-                                    }
-                                  >
-                                    {attentionLabel}
-                                  </Badge>
+                                  <Badge {...getAdminPackageAttentionBadgeSpec(pkg.requiresAttention)} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={pkg.requiresAttention ? `운영 확인 필요: ${reasonLabels.length ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}` : "운영 확인 완료"}>{attentionLabel}</Badge>
                                 </TooltipTrigger>
-                                {pkg.requiresAttention && (
-                                  <TooltipContent>
-                                    <p className="font-medium">운영 확인 필요</p>
-                                    <ul className="mt-1 list-disc pl-4">
-                                      {(reasonLabels.length > 0
-                                        ? reasonLabels
-                                        : ["운영 확인 사유 미확인"]
-                                      ).map((reason) => (
-                                        <li key={reason}>{reason}</li>
-                                      ))}
-                                    </ul>
-                                  </TooltipContent>
-                                )}
+                                {pkg.requiresAttention && <TooltipContent><p className="font-medium">운영 확인 필요</p><p className={adminTypography.caption}>{reasonLabels.length ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}</p></TooltipContent>}
                               </Tooltip>
                             </TooltipProvider>
                           </TableCell>
 
-                          {/* 금액 */}
-                          <TableCell className={cn(tdClasses, col.price, "whitespace-nowrap")}>
-                            <span className="whitespace-nowrap font-medium tabular-nums">
+                          <TableCell className={cn(tdClasses, "text-right")}>
+                            <span className="whitespace-nowrap text-sm font-semibold tabular-nums">
                               {pkg.price === null ? "-" : formatCurrency(pkg.price)}
                             </span>
                           </TableCell>
 
-                          {/* 작업 드롭다운 */}
-                          <TableCell className={cn(tdClasses, col.actions, "sticky right-0 z-10 bg-card p-0 pr-2")}>
+                          <TableCell className={cn(adminDataTable.actionCell, "sticky right-0 z-10 bg-card")}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 p-0"
-                                  aria-label={`${pkg.customer?.name || pkg.id} 패키지 관리 메뉴`}
-                                >
+                                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`${pkg.customer?.name || pkg.id} 패키지 관리 메뉴`}>
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/admin/packages/${pkg.id}`}>
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    상세 보기
-                                  </Link>
-                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href={`/admin/packages/${pkg.id}`}><Eye className="mr-2 h-4 w-4" />상세 보기</Link></DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>

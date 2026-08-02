@@ -470,7 +470,7 @@ export default function AdminReviewListClient() {
   return (
     <div className="space-y-5">
       {/* KPI */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-5 gap-4">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -510,13 +510,13 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className={adminSurface.kpiCard}>
+        <Card className={cn(adminSurface.kpiCard, "col-span-2 min-h-0")}>
           <CardContent className="space-y-2 p-4">
             <div className="flex items-center justify-between">
               <p className={adminTypography.caption}>유형별 후기</p>
               <TrendingUp className="h-5 w-5 text-foreground" />
             </div>
-            <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground tabular-nums">
               <span>상품 후기 {metrics?.byContext?.product ?? 0}</span>
               <span>상품·교체서비스 후기 {metrics?.byContext?.product_stringing ?? 0}</span>
               <span>교체서비스 후기 {metrics?.byContext?.standalone_stringing ?? 0}</span>
