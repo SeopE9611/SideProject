@@ -1580,7 +1580,7 @@ export default function RentalsCheckoutClient({
                       ) : (
                         <>
                           <CreditCard className="h-5 w-5 mr-3" />
-                          "대여 신청하기"
+                          대여 신청하기
                         </>
                       )}
                     </Button>
