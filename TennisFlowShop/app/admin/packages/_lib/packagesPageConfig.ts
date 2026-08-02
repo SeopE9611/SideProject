@@ -32,6 +32,7 @@ export type SortKey =
   | "payment"
   | "activation"
   | "attention";
+export type PackageSortValue = SortKey | "default";
 export type PackageListItem = AdminPackageListItemDto;
 export type PackageMetrics = AdminPackageMetricsDto;
 export type PackagesResponse = AdminPackageListResponseDto;
