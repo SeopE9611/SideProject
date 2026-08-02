@@ -320,11 +320,11 @@ function StatCard({
     <div
       className={`rounded-lg border p-4 transition-colors hover:bg-muted/50 ${variantStyles[variant]}`}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <p className={`${adminTypography.caption} font-medium uppercase tracking-wider`}>{label}</p>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       </div>
-      <p className={`mt-2 ${adminTypography.kpiValueCompact}`}>{value}</p>
+      <p className={`mt-1 whitespace-nowrap tabular-nums ${adminTypography.kpiValueCompact}`}>{value}</p>
     </div>
   );
 }
@@ -1646,7 +1646,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="오프라인 고객 기준 누적 데이터"
             />
             <div className="p-6">
-              <div className="grid gap-3 grid-cols-6">
+              <div className="grid grid-cols-3 gap-3">
                 <StatCard
                   label="방문 횟수"
                   value={`${item.stats?.visitCount ?? 0}회`}

@@ -74,9 +74,9 @@ export function UserSettingsTab({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">member</SelectItem>
-                  <SelectItem value="coach">coach</SelectItem>
-                  <SelectItem value="manager">manager</SelectItem>
+                  <SelectItem value="member">일반 회원</SelectItem>
+                  <SelectItem value="coach">코치</SelectItem>
+                  <SelectItem value="manager">운영 관리자</SelectItem>
                 </SelectContent>
               </Select>
             </div>

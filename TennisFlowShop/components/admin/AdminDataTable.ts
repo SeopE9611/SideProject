@@ -19,5 +19,9 @@ export const adminDataTable = {
   actionHead:
     "w-[132px] px-4 py-3 text-right align-middle text-xs font-semibold text-foreground whitespace-nowrap",
   actionCell: "w-[132px] px-4 py-3 text-right align-middle",
+  stickyActionHead:
+    "sticky right-0 z-20 w-[132px] border-l border-border bg-inherit px-4 py-3 text-right align-middle text-xs font-semibold text-foreground whitespace-nowrap",
+  stickyActionCell:
+    "sticky right-0 z-10 w-[132px] border-l border-border bg-inherit px-4 py-3 text-right align-middle",
   row: adminSurface.tableRow,
 } as const;
