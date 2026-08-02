@@ -799,7 +799,7 @@ export default function SettlementsClient() {
                     <div>
                       <p className="mb-1 text-right">처리 건수</p>
                       <div className="flex justify-end gap-2 text-xs font-medium">
-                        {([ ["orders", "주문"], ["applications", "교체·대여"], ["packages", "패키지"] ] as const).map(([field, label]) => (
+                        {([ ["orders", "주문"], ["applications", "교체서비스"], ["packages", "패키지"] ] as const).map(([field, label]) => (
                           <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex items-center gap-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
                         ))}
                       </div>
@@ -877,7 +877,8 @@ export default function SettlementsClient() {
                           </div>
                           <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-right tabular-nums">
                             <span className="text-xs text-muted-foreground">주문</span><span className="text-sm">{row.breakdown?.orders || 0}</span>
-                            <span className="text-xs text-muted-foreground">교체·대여</span><span className="text-sm">{row.breakdown?.applications || 0}</span>
+                            <span className="text-xs text-muted-foreground">교체서비스</span><span className="text-sm">{row.breakdown?.applications || 0}</span>
+                            <span className="text-xs text-muted-foreground">대여</span><span className="text-sm">{row.breakdown?.rentals ?? 0}</span>
                             <span className="text-xs text-muted-foreground">패키지</span><span className="text-sm">{row.breakdown?.packages || 0}</span>
                           </div>
                           <div className="space-y-1 text-right tabular-nums">

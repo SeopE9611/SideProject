@@ -23,6 +23,7 @@ import {
   type PackageAttentionFilter,
   type ServiceType,
   type SortKey,
+  type PackageSortValue,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
@@ -560,6 +561,8 @@ export default function PackageOrdersClient() {
       attentionFilter: "all",
       serviceTypeFilter: "all",
       presetFilter: null,
+      sortBy: DEFAULTS.sortBy,
+      sortDirection: DEFAULTS.sortDirection,
       page: 1,
     });
   };
@@ -617,7 +620,8 @@ export default function PackageOrdersClient() {
 
   const tdClasses = cn(adminDataTable.cellTop, "leading-tight");
 
-  const sortOptions: Array<{ value: SortKey; label: string }> = [
+  const sortOptions: Array<{ value: PackageSortValue; label: string }> = [
+    { value: "default", label: "기본 정렬" },
     { value: "customer", label: "고객" },
     { value: "package", label: "패키지" },
     { value: "remainingSessions", label: "남은 횟수" },
@@ -1002,14 +1006,14 @@ export default function PackageOrdersClient() {
             <div className="flex items-end gap-2 border-t pt-3">
               <div className="w-56">
                 <label className={adminTypography.meta} htmlFor="package-sort-by">정렬 기준</label>
-                <Select value={sortBy ?? "customer"} onValueChange={(value) => patchState({ sortBy: value as SortKey })}>
+                <Select value={sortBy ?? "default"} onValueChange={(value) => patchState({ sortBy: value === "default" ? null : value as SortKey })}>
                   <SelectTrigger id="package-sort-by"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {sortOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="button" variant="outline" onClick={() => patchState({ sortDirection: sortDirection === "asc" ? "desc" : "asc" })} aria-label={`정렬 방향: ${sortDirection === "asc" ? "오름차순" : "내림차순"}`}>
+              <Button type="button" variant="outline" disabled={!sortBy} onClick={() => patchState({ sortDirection: sortDirection === "asc" ? "desc" : "asc" })} aria-label={`정렬 방향: ${sortDirection === "asc" ? "오름차순" : "내림차순"}`}>
                 {sortDirection === "asc" ? "오름차순" : "내림차순"}
               </Button>
             </div>
@@ -1136,6 +1140,9 @@ export default function PackageOrdersClient() {
                         getAdminPackageAttentionReasonLabel,
                       );
                       const attentionLabel = pkg.requiresAttention ? "확인 필요" : "확인 완료";
+                      const rawName = pkg.customer?.name ?? "이름없음";
+                      const isGuest = /\(비회원\)\s*$/.test(rawName);
+                      const displayName = rawName.replace(/\s*\(비회원\)\s*$/, "");
 
                       return (
                         // 라이트/다크 줄 배경 토큰 통일
@@ -1156,14 +1163,14 @@ export default function PackageOrdersClient() {
                                 >
                                   {pkg.packageType}
                                 </Badge>
-                                <span className={adminTypography.bodyStrong}>
-                                  {pkg.packageType || "패키지"}
-                                </span>
+                                {pkg.serviceType ? (
+                                  <span className={adminTypography.bodyStrong}>{pkg.serviceType}</span>
+                                ) : null}
                               </div>
                               <div>
                                 <p className={adminTypography.bodyStrong}>
-                                  {(pkg.customer?.name ?? "이름없음").replace(/$$비회원$$\s*$/, "")}
-                                  {(pkg.customer?.name ?? "").includes("(비회원)") ? <span className={cn(adminTypography.caption, "ml-1")}>(비회원)</span> : null}
+                                  {displayName}
+                                  {isGuest ? <span className={cn(adminTypography.caption, "ml-1")}>(비회원)</span> : null}
                                 </p>
                                 <p className={cn(adminTypography.meta, "truncate")} title={pkg.customer?.email ?? ""}>
                                   {pkg.customer?.email ?? ""}
