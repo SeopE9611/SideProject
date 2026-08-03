@@ -1351,17 +1351,16 @@ export default function CheckoutPage() {
       !stringingApplicationMissing &&
       !checkoutStringingAdapter?.packagePreviewLoading;
 
-    const checkoutActionLabel =
-      paymentMethod === "bank-transfer"
-        ? withStringService
-          ? "주문·신청 접수하기"
-          : "주문 접수하기"
-        : withStringService
-          ? "결제하고 신청 접수하기"
-          : "결제하기";
+    const hasPayableAmount = payableTotalPrice > 0;
+
+    const checkoutActionLabel = hasPayableAmount
+      ? "결제하기"
+      : withStringService
+        ? "주문·신청 완료하기"
+        : "주문 완료하기";
 
     const checkoutActionLoadingLabel =
-      paymentMethod === "bank-transfer" ? "주문 접수 중..." : "결제 요청 중...";
+      paymentMethod === "bank-transfer" ? "주문 처리 중..." : "결제 요청 중...";
 
     if (isInitialLoading) {
       return (
@@ -1398,6 +1397,7 @@ export default function CheckoutPage() {
         <CheckoutBottomStickyBar
           amount={payableTotalPrice}
           amountLabel="결제 예정 금액"
+          icon={hasPayableAmount ? <CreditCard aria-hidden="true" /> : <Check aria-hidden="true" />}
           label={checkoutActionLabel}
           loadingLabel={checkoutActionLoadingLabel}
           disabled={!resolvedCanSubmit || isCheckoutSubmitting}

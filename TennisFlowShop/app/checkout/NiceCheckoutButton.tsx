@@ -6,7 +6,7 @@ import {
   STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE,
   validateStringingApplicationInputForOrder,
 } from "@/lib/checkout-stringing-guard";
-import { Loader2 } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 declare global {
@@ -217,11 +217,14 @@ export default function NiceCheckoutButton({
       >
         {loading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
             {loadingLabel}
           </>
         ) : (
-          label
+          <>
+            <CreditCard aria-hidden="true" />
+            <span>{label}</span>
+          </>
         )}
       </Button>
       {!scriptError && !scriptReady && (

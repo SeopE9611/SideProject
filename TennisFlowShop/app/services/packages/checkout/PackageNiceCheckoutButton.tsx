@@ -212,7 +212,7 @@ export default function PackageNiceCheckoutButton({
           </>
         ) : (
           <>
-            <CreditCard className="h-5 w-5 mr-3" />
+            <CreditCard className="h-5 w-5" />
             결제하기
           </>
         )}

@@ -1,11 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
 
 export type CheckoutBottomStickyBarProps = {
   amount: number;
   label: string;
   amountLabel: string;
+  icon?: ReactNode;
   disabled?: boolean;
   loading?: boolean;
   loadingLabel?: string;
@@ -18,6 +20,7 @@ export default function CheckoutBottomStickyBar({
   amount,
   label,
   amountLabel,
+  icon,
   disabled = false,
   loading = false,
   loadingLabel = "처리 중...",
@@ -54,7 +57,14 @@ export default function CheckoutBottomStickyBar({
           aria-label={ariaLabel ?? label}
           onClick={onClick}
         >
-          {loading ? loadingLabel : label}
+          {loading ? (
+            <span>{loadingLabel}</span>
+          ) : (
+            <>
+              {icon}
+              <span>{label}</span>
+            </>
+          )}
         </Button>
       </div>
     </div>

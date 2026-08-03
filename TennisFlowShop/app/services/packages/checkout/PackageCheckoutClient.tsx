@@ -724,7 +724,7 @@ export default function PackageCheckoutClient({
               contentClassName="bp-sm:p-5"
             >
               <div className="mb-5 rounded-panel border border-primary/15 bg-primary/5 p-4">
-                <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
+                <p className="break-keep text-ui-body-sm text-muted-foreground">
                   무통장입금은 입금 확인 후, 카드/간편결제는 결제 완료 후 패키지권이 활성화됩니다.
                 </p>
               </div>
@@ -1187,16 +1187,20 @@ export default function PackageCheckoutClient({
         <CheckoutBottomStickyBar
           amount={Number(selectedPackage?.price ?? 0)}
           amountLabel="총 결제 금액"
-          label={paymentMethod === "bank_transfer" ? "패키지 주문" : "결제하기"}
+          icon={<CreditCard aria-hidden="true" />}
+          label="결제하기"
+          loadingLabel={paymentMethod === "bank_transfer" ? "주문 처리 중..." : "결제 요청 중..."}
           disabled={!canSubmit || isCheckoutSubmitting || !selectedPackage}
           loading={isCheckoutSubmitting}
-          ariaLabel="하단 패키지 결제 버튼"
+          ariaLabel="패키지 결제하기"
           onClick={() => {
             const target = document.getElementById(PACKAGE_PRIMARY_PAY_BUTTON_ID);
+
             if (target instanceof HTMLButtonElement && !target.disabled) {
               target.click();
               return;
             }
+
             document.getElementById(PACKAGE_PAYMENT_ACTION_ID)?.scrollIntoView({
               behavior: "smooth",
               block: "start",

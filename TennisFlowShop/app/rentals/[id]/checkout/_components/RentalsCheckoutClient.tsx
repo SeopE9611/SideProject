@@ -218,7 +218,6 @@ export default function RentalsCheckoutClient({
   const [depositor, setDepositor] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank_transfer");
   const nicePaymentsEnabled = isNicePaymentsEnabled();
-
   /**
    * 스트링 교체 신청 시 결제에 포함될 금액
    * - stringPrice: 선택한 스트링 상품 가격
@@ -257,6 +256,7 @@ export default function RentalsCheckoutClient({
   // 실제 적용될 포인트(게스트면 0으로 강제)
   const appliedPoints = userId && pointsStatus === "ready" ? clampPoints(pointsToUse) : 0;
   const payableTotal = Math.max(0, total - appliedPoints);
+  const hasPayableAmount = payableTotal > 0;
 
   const [refundBank, setRefundBank] = useState("");
   const [refundAccount, setRefundAccount] = useState(""); // 계좌번호
@@ -1577,10 +1577,15 @@ export default function RentalsCheckoutClient({
                           <Loader2 className="h-4 w-4 animate-spin" />
                           대여 신청을 처리하고 있어요…
                         </span>
+                      ) : hasPayableAmount ? (
+                        <>
+                          <CreditCard aria-hidden="true" />
+                          <span>결제하기</span>
+                        </>
                       ) : (
                         <>
-                          <CreditCard className="h-5 w-5 mr-3" />
-                          대여 신청하기
+                          <CheckCircle aria-hidden="true" />
+                          <span>대여 신청 완료하기</span>
                         </>
                       )}
                     </Button>
@@ -1676,16 +1681,28 @@ export default function RentalsCheckoutClient({
         <CheckoutBottomStickyBar
           amount={payableTotal}
           amountLabel="예상 결제 금액"
-          label={paymentMethod === "bank_transfer" ? "대여 신청하기" : "결제하기"}
+          icon={
+            hasPayableAmount ? (
+              <CreditCard aria-hidden="true" />
+            ) : (
+              <CheckCircle aria-hidden="true" />
+            )
+          }
+          label={hasPayableAmount ? "결제하기" : "대여 신청 완료하기"}
+          loadingLabel={
+            paymentMethod === "bank_transfer" ? "대여 신청 처리 중..." : "결제 요청 중..."
+          }
           disabled={loading}
           loading={loading}
-          ariaLabel="하단 대여 결제 버튼"
+          ariaLabel={hasPayableAmount ? "대여 결제하기" : "대여 신청 완료하기"}
           onClick={() => {
             const target = document.getElementById(RENTAL_PRIMARY_PAY_BUTTON_ID);
+
             if (target instanceof HTMLButtonElement && !target.disabled) {
               target.click();
               return;
             }
+
             document.getElementById(RENTAL_PAYMENT_ACTION_ID)?.scrollIntoView({
               behavior: "smooth",
               block: "start",

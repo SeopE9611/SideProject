@@ -189,13 +189,13 @@ export default function RentalNiceCheckoutButton({
       >
         {loading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
             결제 요청 중...
           </>
         ) : (
           <>
-          <CreditCard className="h-5 w-5 mr-3" />
-          대여 신청하기
+            <CreditCard aria-hidden="true" />
+            <span>결제하기</span>
           </>
         )}
       </Button>

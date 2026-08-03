@@ -283,12 +283,12 @@ export default function PackageCheckoutButton({
       >
         {isSubmitting ? (
           <>
-            <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin" />
             패키지 주문 처리중...
           </>
         ) : (
           <>
-            <CreditCard className="h-5 w-5 mr-3" />
+            <CreditCard className="h-5 w-5" />
             결제하기
           </>
         )}

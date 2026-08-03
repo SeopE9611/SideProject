@@ -11,7 +11,7 @@ import {
   validateStringingApplicationInputForOrder,
 } from "@/lib/checkout-stringing-guard";
 import { showErrorToast } from "@/lib/toast";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Check, CreditCard, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -509,7 +509,7 @@ export default function CheckoutButton({
       }
     }
   };
-
+  const hasPayableAmount = payableAmount > 0;
   return (
     <div className="w-full">
       <Button
@@ -523,13 +523,18 @@ export default function CheckoutButton({
       >
         {isSubmitting ? (
           <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin bp-sm:mr-3" />
-            {loadingLabel}
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+            <span>{loadingLabel}</span>
+          </>
+        ) : hasPayableAmount ? (
+          <>
+            <CreditCard aria-hidden="true" />
+            <span>{label}</span>
           </>
         ) : (
           <>
-            <CreditCard className="mr-2 h-5 w-5 bp-sm:mr-3" />
-            {label}
+            <Check aria-hidden="true" />
+            <span>{label}</span>
           </>
         )}
       </Button>
