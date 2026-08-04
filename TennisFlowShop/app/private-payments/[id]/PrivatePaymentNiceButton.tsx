@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { requestNicePayWithRootScrollGuard } from "@/lib/payments/nice/client-scroll-lock";
 import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -45,7 +46,7 @@ export default function PrivatePaymentNiceButton({
       const json = await res.json();
       if (!res.ok || !json.success || !json.nice)
         throw new Error(json.error || "결제 준비에 실패했습니다.");
-      window.AUTHNICE?.requestPay?.({
+      requestNicePayWithRootScrollGuard({
         clientId: json.nice.clientId,
         method: "card",
         orderId: json.nice.orderId,

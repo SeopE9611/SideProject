@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { requestNicePayWithRootScrollGuard } from "@/lib/payments/nice/client-scroll-lock";
 import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -165,7 +166,7 @@ export default function PackageNiceCheckoutButton({
 
       onBeforeSuccessNavigation?.();
       try {
-        window.AUTHNICE.requestPay({
+        requestNicePayWithRootScrollGuard({
           clientId: prepJson.nice.clientId,
           method: "card",
           orderId: prepJson.nice.orderId,

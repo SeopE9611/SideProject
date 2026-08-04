@@ -6,6 +6,7 @@ import {
   STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE,
   validateStringingApplicationInputForOrder,
 } from "@/lib/checkout-stringing-guard";
+import { requestNicePayWithRootScrollGuard } from "@/lib/payments/nice/client-scroll-lock";
 import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -175,7 +176,7 @@ export default function NiceCheckoutButton({
 
       onBeforeSuccessNavigation?.();
 
-      window.AUTHNICE.requestPay({
+      requestNicePayWithRootScrollGuard({
         clientId: prepJson.nice.clientId,
         method: "card",
         orderId: prepJson.nice.orderId,

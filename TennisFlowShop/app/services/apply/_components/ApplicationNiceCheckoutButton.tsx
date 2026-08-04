@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { requestNicePayWithRootScrollGuard } from "@/lib/payments/nice/client-scroll-lock";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -111,7 +112,7 @@ export default function ApplicationNiceCheckoutButton({
         throw new Error("카드/간편결제창이 준비되지 않았습니다.");
       }
 
-      window.AUTHNICE.requestPay({
+      requestNicePayWithRootScrollGuard({
         clientId: prepared.nice.clientId,
         method: "card",
         orderId: prepared.nice.orderId,
