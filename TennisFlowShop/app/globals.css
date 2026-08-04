@@ -40,17 +40,30 @@ html {
   }
 }
 
-/* 스크롤 잠금은 html에서만 수행 (body overflow는 건드리지 않음 → sticky 안정) */
+/*
+ * 루트 스크롤 정책
+ *
+ * - 실제 문서 스크롤은 html이 담당한다.
+ * - body에 overflow:auto 또는 overflow:hidden이 적용되면
+ *   body가 position:sticky의 기준 조상으로 인식될 수 있다.
+ * - 이 프로젝트에서는 body를 스크롤 컨테이너로 사용하지 않는다.
+ * - 외부 결제 SDK나 Radix가 body의 overflow/position을 변경하더라도
+ *   body는 일반 문서 흐름을 유지한다.
+ */
+html body {
+  overflow: visible !important;
+  position: static !important;
+}
+
+/* 스크롤 잠금은 body가 아니라 html에서만 수행한다. */
 html[data-scroll-locked] {
   overflow: hidden;
 }
 
-/* Radix 주입(style tag)보다 specificity를 높여 무조건 이기게 만든다 */
+/* Radix가 추가하는 스크롤바 폭 보정만 제거한다. */
 html body[data-scroll-locked] {
   margin-right: 0 !important;
   padding-right: 0 !important;
-  overflow: visible !important; /* sticky 기준 흔들림 방지 */
-  position: static !important; /* Radix가 relative를 주입하는 케이스도 차단 */
 }
 
 html.admin-desktop-console {
