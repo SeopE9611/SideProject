@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.granite/
+dist/
+*.ait
+/TossMiniApp.zip
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
