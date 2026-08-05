@@ -2,8 +2,10 @@
 node_modules/
 
 # Build outputs
+.granite/
 dist/
 *.ait
+/TossMiniApp.zip
 
 # Environment variables
 .env
