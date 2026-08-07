@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { createApiPerfLogger } from "@/lib/api/perf";
+import { applyAppsInTossCors, createAppsInTossPreflightResponse } from "@/lib/apps-in-toss";
 import { parseBenefitFilters } from "@/lib/benefit-labels";
 import { getHangulInitials } from "@/lib/hangul-utils";
-import { ObjectId } from "mongodb";
-import type { Filter } from "mongodb";
-import { createApiPerfLogger } from "@/lib/api/perf";
+import clientPromise from "@/lib/mongodb";
 import { productVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
+import type { Filter } from "mongodb";
+import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 type ProductDoc = {
   _id: ObjectId;
@@ -70,6 +71,11 @@ const productListProjection = {
 
 export { POST } from "@/app/api/admin/products/route";
 
+// 브라우저/WebView가 실제 요청 전에 서버에 OPTIONS /api/products를 보냄 (이 Origin에서 이 API를 호출해도 되는지)
+export function OPTIONS(req: NextRequest) {
+  return createAppsInTossPreflightResponse(req.headers.get("origin"));
+}
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -84,6 +90,7 @@ function normalizeFeatureFilterParam(value: string | null): number | null {
 
 export async function GET(req: NextRequest) {
   const perf = createApiPerfLogger("GET /api/products");
+  const origin = req.headers.get("origin"); // origin을 try 밖에서 선언해야 정상 응답, 500서버 오류 응답에도 CORS 헤더 넣어야 하기 때문
   try {
     const url = new URL(req.url);
     const params = url.searchParams;
@@ -146,7 +153,7 @@ export async function GET(req: NextRequest) {
         viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
       );
       perf.log({ preview: true, resultCount: products.length });
-      return response;
+      return applyAppsInTossCors(response, origin);
     }
 
     // 필터/페이징 상품 리스트 반환
@@ -371,9 +378,13 @@ export async function GET(req: NextRequest) {
       viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
     );
     perf.log({ page, limit, total, resultCount: items.length });
-    return response;
+    return applyAppsInTossCors(response, origin);
   } catch (err) {
     console.error("[상품 리스트 조회 오류]", err);
-    return NextResponse.json({ message: "서버 오류" }, { status: 500 });
+
+    return applyAppsInTossCors(
+      NextResponse.json({ message: "서버 오류" }, { status: 500 }),
+      origin,
+    );
   }
 }
