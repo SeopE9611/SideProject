@@ -69,3 +69,55 @@ export function normalizeFeatureScoreTo100(value: unknown) {
 
   return Math.min(100, Math.max(1, Math.round(number)));
 }
+
+const STRING_COLOR_LABELS: Record<
+  string,
+  string
+> = {
+  black: "블랙",
+  white: "화이트",
+  red: "레드",
+  blue: "블루",
+  yellow: "옐로우",
+  green: "그린",
+  orange: "오렌지",
+  brown: "브라운",
+  gray: "그레이",
+  natural: "내추럴",
+  pink: "핑크",
+  purple: "퍼플",
+  silver: "실버",
+  gold: "골드",
+  transparent: "투명",
+};
+
+export function getStringColorLabel(
+  value?: string | null,
+) {
+  const key =
+    normalizeLabelKey(value);
+
+  return (
+    STRING_COLOR_LABELS[key] ??
+    value ??
+    ""
+  );
+}
+
+export function formatGaugeLabel(
+  value?: string | null,
+) {
+  const raw = String(
+    value ?? "",
+  ).trim();
+
+  if (!raw) {
+    return "";
+  }
+
+  if (/mm/i.test(raw)) {
+    return raw;
+  }
+
+  return `${raw}mm`;
+}
