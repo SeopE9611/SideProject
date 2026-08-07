@@ -1,9 +1,7 @@
 import { Top } from "@toss/tds-mobile";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
-import type { KakaoPostcodeData } from "../lib/loadKakaoPostcode";
 import type { StringingCollectionMethod, StringingShippingDraft } from "../types/stringing";
-import KakaoPostcodeEmbed from "./KakaoPostcodeEmbed";
 
 type StringingApplicationStepTwoProps = {
   collectionMethod: StringingCollectionMethod;
@@ -37,15 +35,11 @@ function StringingApplicationStepTwo({
   onBack,
   onContinue,
 }: StringingApplicationStepTwoProps) {
-  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
-
   const [touched, setTouched] = useState({
     postalCode: false,
     address: false,
     addressDetail: false,
   });
-
-  const detailAddressRef = useRef<HTMLInputElement>(null);
 
   const isSelfShip = collectionMethod === "self_ship";
 
@@ -60,11 +54,14 @@ function StringingApplicationStepTwo({
       return next;
     }
 
-    if (!shipping.postalCode.trim() || !shipping.address.trim()) {
-      next.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
-      next.address = "우편번호 찾기를 통해 주소를 등록해주세요.";
+    if (!shipping.postalCode.trim()) {
+      next.postalCode = "우편번호를 입력해주세요.";
     } else if (!POSTAL_RE.test(shipping.postalCode.trim())) {
       next.postalCode = "우편번호 형식을 확인해주세요. (5자리)";
+    }
+
+    if (!shipping.address.trim()) {
+      next.address = "주소를 입력해주세요.";
     }
 
     if (!shipping.addressDetail.trim()) {
@@ -75,8 +72,6 @@ function StringingApplicationStepTwo({
   }, [isSelfShip, shipping]);
 
   const handleMethodChange = (method: "self_ship" | "visit") => {
-    setIsPostcodeOpen(false);
-
     onCollectionMethodChange(method);
   };
 
@@ -86,29 +81,6 @@ function StringingApplicationStepTwo({
       [field]: value,
     });
   };
-
-  const handlePostcodeComplete = useCallback(
-    (data: KakaoPostcodeData) => {
-      onShippingChange({
-        ...shipping,
-        postalCode: data.zonecode.trim(),
-        address: data.roadAddress.trim(),
-      });
-
-      setTouched({
-        postalCode: true,
-        address: true,
-        addressDetail: false,
-      });
-
-      setIsPostcodeOpen(false);
-
-      requestAnimationFrame(() => {
-        detailAddressRef.current?.focus();
-      });
-    },
-    [onShippingChange, shipping],
-  );
 
   const handleConfirm = () => {
     if (isSelfShip) {
@@ -216,25 +188,25 @@ function StringingApplicationStepTwo({
               <label className="block">
                 <span className="mb-2 block text-sm font-bold text-[#333d4b]">우편번호 *</span>
 
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                  <input
-                    className={`min-h-12 min-w-0 rounded-xl border bg-[#f7f8fa] px-3.5 text-base text-[#6b7684] outline-none ${
-                      touched.postalCode && errors.postalCode ? "border-[#d92d20]" : "border-[#d1d6db]"
-                    }`}
-                    type="text"
-                    value={shipping.postalCode}
-                    readOnly
-                    tabIndex={-1}
-                  />
-
-                  <button
-                    className="min-h-12 whitespace-nowrap rounded-xl border border-[#d1d6db] bg-white px-4 text-sm font-bold text-[#333d4b] outline-none transition focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#688d00]"
-                    type="button"
-                    onClick={() => setIsPostcodeOpen((current) => !current)}
-                  >
-                    {isPostcodeOpen ? "검색 닫기" : "우편번호 검색"}
-                  </button>
-                </div>
+                <input
+                  className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
+                    touched.postalCode && errors.postalCode
+                      ? "border-[#d92d20]"
+                      : "border-[#d1d6db] focus:border-[#688d00]"
+                  }`}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={5}
+                  value={shipping.postalCode}
+                  placeholder="5자리 우편번호"
+                  onChange={(event) => updateShipping("postalCode", event.target.value.replace(/\D/g, "").slice(0, 5))}
+                  onBlur={() =>
+                    setTouched((current) => ({
+                      ...current,
+                      postalCode: true,
+                    }))
+                  }
+                />
 
                 {touched.postalCode && errors.postalCode && (
                   <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.postalCode}</span>
@@ -245,13 +217,19 @@ function StringingApplicationStepTwo({
                 <span className="mb-2 block text-sm font-bold text-[#333d4b]">주소 *</span>
 
                 <input
-                  className={`min-h-12 w-full rounded-xl border bg-[#f7f8fa] px-3.5 text-base text-[#6b7684] outline-none ${
-                    touched.address && errors.address ? "border-[#d92d20]" : "border-[#d1d6db]"
+                  className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
+                    touched.address && errors.address ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
                   }`}
                   type="text"
                   value={shipping.address}
-                  readOnly
-                  tabIndex={-1}
+                  placeholder="도로명 주소를 입력해주세요"
+                  onChange={(event) => updateShipping("address", event.target.value)}
+                  onBlur={() =>
+                    setTouched((current) => ({
+                      ...current,
+                      address: true,
+                    }))
+                  }
                 />
 
                 {touched.address && errors.address && (
@@ -263,7 +241,6 @@ function StringingApplicationStepTwo({
                 <span className="mb-2 block text-sm font-bold text-[#333d4b]">상세 주소 *</span>
 
                 <input
-                  ref={detailAddressRef}
                   className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
                     touched.addressDetail && errors.addressDetail
                       ? "border-[#d92d20]"
@@ -287,9 +264,7 @@ function StringingApplicationStepTwo({
                 )}
               </label>
 
-              {isPostcodeOpen && (
-                <KakaoPostcodeEmbed onComplete={handlePostcodeComplete} onClose={() => setIsPostcodeOpen(false)} />
-              )}
+ 
             </div>
           </>
         )}
