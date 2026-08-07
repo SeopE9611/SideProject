@@ -1,9 +1,10 @@
 import { Top } from "@toss/tds-mobile";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getStringingProducts } from "./api/products";
 import "./App.css";
 import { ProductCard } from "./components/ProductCard";
+import ProductDetail from "./components/ProductDetail";
 import type { Product } from "./types/product";
 
 type ProductLoadState = "loading" | "success" | "error";
@@ -22,10 +23,16 @@ const plannedFeatures = [
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
 }
+function getProductIdFromLocation() {
+  return new URLSearchParams(window.location.search).get("productId");
+}
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadState, setLoadState] = useState<ProductLoadState>("loading");
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(() => getProductIdFromLocation());
+
+  const listScrollYRef = useRef(0);
 
   const loadProducts = useCallback(async (signal?: AbortSignal) => {
     setLoadState("loading");
@@ -61,6 +68,46 @@ function App() {
     };
   }, [loadProducts]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextProductId = getProductIdFromLocation();
+
+      setSelectedProductId(nextProductId);
+
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: nextProductId ? 0 : listScrollYRef.current,
+          behavior: "auto",
+        });
+      });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  const handleSelectProduct = useCallback((productId: string) => {
+    listScrollYRef.current = window.scrollY;
+
+    const nextUrl = new URL(window.location.href);
+
+    nextUrl.searchParams.set("productId", productId);
+
+    window.history.pushState({ productId }, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+
+    setSelectedProductId(productId);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "auto",
+    });
+  }, []);
+  if (selectedProductId) {
+    return <ProductDetail productId={selectedProductId} />;
+  }
   return (
     <main className="app-shell">
       <section className="intro-section" aria-labelledby="service-title">
@@ -128,7 +175,7 @@ function App() {
         {loadState === "success" && products.length > 0 && (
           <div className="product-grid">
             {products.map((product) => (
-              <ProductCard key={product._id} product={product} />
+              <ProductCard key={product._id} product={product} onSelect={handleSelectProduct} />
             ))}
           </div>
         )}
