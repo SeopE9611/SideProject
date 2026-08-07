@@ -7,23 +7,38 @@ const APPS_IN_TOSS_ALLOWED_ORIGINS = new Set([
   "https://dokkaebitennis.apps.tossmini.com",
 ]);
 
-export function isAppsInTossAllowedOrigin(
-  origin: string | null,
-): origin is string {
+type AppsInTossCorsOptions = {
+  methods?: readonly string[];
+  headers?: readonly string[];
+};
+
+const DEFAULT_METHODS = ["GET", "OPTIONS"] as const;
+
+const DEFAULT_HEADERS = ["Content-Type", "Accept"] as const;
+
+export function isAppsInTossAllowedOrigin(origin: string | null): origin is string {
   return Boolean(origin && APPS_IN_TOSS_ALLOWED_ORIGINS.has(origin));
 }
 
 export function applyAppsInTossCors(
   response: NextResponse,
   origin: string | null,
+  options: AppsInTossCorsOptions = {},
 ): NextResponse {
   if (!isAppsInTossAllowedOrigin(origin)) {
     return response;
   }
 
+  const methods = options.methods ?? DEFAULT_METHODS;
+
+  const headers = options.headers ?? DEFAULT_HEADERS;
+
   response.headers.set("Access-Control-Allow-Origin", origin);
-  response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+
+  response.headers.set("Access-Control-Allow-Methods", methods.join(", "));
+
+  response.headers.set("Access-Control-Allow-Headers", headers.join(", "));
+
   response.headers.set("Vary", "Origin");
 
   return response;
@@ -31,10 +46,11 @@ export function applyAppsInTossCors(
 
 export function createAppsInTossPreflightResponse(
   origin: string | null,
+  options: AppsInTossCorsOptions = {},
 ): NextResponse {
   const response = new NextResponse(null, {
     status: 204,
   });
 
-  return applyAppsInTossCors(response, origin);
+  return applyAppsInTossCors(response, origin, options);
 }

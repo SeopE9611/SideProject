@@ -43,3 +43,22 @@ export type StringingApplicationDraft = {
   shipping: StringingShippingDraft;
   work: StringingWorkDraft;
 };
+
+export type StringingCheckoutQuoteItem = {
+  name: string;
+  price: number;
+  quantity: number;
+  kind: "product" | "racket";
+  mountingFee?: number;
+  shippingFee?: number;
+};
+
+export type StringingCheckoutQuote = {
+  success: true;
+  subtotal: number;
+  shippingFee: number;
+  serviceFee: number;
+  totalPrice: number;
+  payableAmount: number;
+  item: StringingCheckoutQuoteItem | null;
+};

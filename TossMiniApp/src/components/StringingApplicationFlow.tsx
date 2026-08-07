@@ -6,6 +6,7 @@ import type {
   StringingShippingDraft,
   StringingWorkDraft,
 } from "../types/stringing";
+import StringingApplicationStepFour from "./StringingApplicationStepFour";
 import StringingApplicationStepOne from "./StringingApplicationStepOne";
 import StringingApplicationStepThree from "./StringingApplicationStepThree";
 import StringingApplicationStepTwo from "./StringingApplicationStepTwo";
@@ -16,7 +17,7 @@ type StringingApplicationFlowProps = {
   selectedGauge: string;
 };
 
-type ApplyStep = 1 | 2 | 3;
+type ApplyStep = 1 | 2 | 3 | 4;
 
 const EMPTY_APPLICANT: StringingApplicantDraft = {
   name: "",
@@ -42,6 +43,7 @@ const EMPTY_WORK: StringingWorkDraft = {
 function getApplyStepFromLocation(): ApplyStep {
   const step = new URLSearchParams(window.location.search).get("step");
 
+  if (step === "4") return 4;
   if (step === "3") return 3;
   if (step === "2") return 2;
 
@@ -70,7 +72,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
      * 신청자/주소 같은 개인정보를
      * URL이나 영구 저장소에 저장하지 않는다.
      *
-     * Step 2/3에서 페이지 자체가 새로고침되면
+     * Step 2/3/4에서 페이지 자체가 새로고침되면
      * 메모리 draft가 사라지므로 Step 1로
      * 안전하게 복귀시킨다.
      */
@@ -140,6 +142,21 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
     window.history.back();
   }, []);
 
+  if (currentStep === 4) {
+    return (
+      <StringingApplicationStepFour
+        productId={productId}
+        selectedColor={selectedColor}
+        selectedGauge={selectedGauge}
+        applicant={applicant}
+        collectionMethod={collectionMethod}
+        shipping={shipping}
+        work={work}
+        onBack={handleBack}
+      />
+    );
+  }
+
   if (currentStep === 3) {
     return (
       <StringingApplicationStepThree
@@ -147,6 +164,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
         work={work}
         onWorkChange={setWork}
         onBack={handleBack}
+        onContinue={() => pushStep(4)}
       />
     );
   }

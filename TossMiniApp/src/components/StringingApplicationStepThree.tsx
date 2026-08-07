@@ -11,6 +11,7 @@ type StringingApplicationStepThreeProps = {
   work: StringingWorkDraft;
   onWorkChange: (work: StringingWorkDraft) => void;
   onBack: () => void;
+  onContinue: () => void;
 };
 
 type TouchedFields = {
@@ -64,14 +65,13 @@ function StringingApplicationStepThree({
   work,
   onWorkChange,
   onBack,
+  onContinue,
 }: StringingApplicationStepThreeProps) {
   const [slotLoadState, setSlotLoadState] = useState<SlotLoadState>("idle");
 
   const [slotSummary, setSlotSummary] = useState<StringingSlotSummary | null>(null);
 
   const [slotError, setSlotError] = useState("");
-
-  const [isStepComplete, setIsStepComplete] = useState(false);
 
   const [touched, setTouched] = useState<TouchedFields>({
     racketType: false,
@@ -82,10 +82,6 @@ function StringingApplicationStepThree({
   });
 
   const isVisit = collectionMethod === "visit";
-
-  useEffect(() => {
-    setIsStepComplete(false);
-  }, [collectionMethod, work]);
 
   useEffect(() => {
     if (!isVisit || !work.preferredDate) {
@@ -211,7 +207,7 @@ function StringingApplicationStepThree({
       }
     }
 
-    setIsStepComplete(true);
+    onContinue();
   };
 
   return (
@@ -478,19 +474,9 @@ function StringingApplicationStepThree({
             type="button"
             onClick={handleConfirm}
           >
-            라켓·텐션 정보 확인
+            다음: 주문 내용 확인
           </button>
         </div>
-
-        {isStepComplete && (
-          <div className="mt-3 rounded-2xl bg-[#f4f9e8] p-4" role="status">
-            <strong className="block text-sm font-extrabold text-[#344700]">라켓·텐션 정보 입력이 완료됐어요.</strong>
-
-            <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#59636e]">
-              다음 단계에서 결제 정보를 연결합니다.
-            </p>
-          </div>
-        )}
       </section>
     </main>
   );
