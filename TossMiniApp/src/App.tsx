@@ -2,7 +2,6 @@ import { Top } from "@toss/tds-mobile";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getStringingProducts } from "./api/products";
-import "./App.css";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
 import type { Product } from "./types/product";
@@ -23,13 +22,67 @@ const plannedFeatures = [
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
 }
+
 function getProductIdFromLocation() {
   return new URLSearchParams(window.location.search).get("productId");
 }
 
+function SectionHeading({ eyebrow, title, titleId }: { eyebrow: string; title: string; titleId: string }) {
+  return (
+    <header className="mb-4">
+      <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">{eyebrow}</p>
+
+      <h2 id={titleId} className="m-0 text-[21px] leading-[1.35] font-extrabold tracking-[-0.02em] text-[#191f28]">
+        {title}
+      </h2>
+    </header>
+  );
+}
+
+function ProductStateCard({
+  title,
+  description,
+  onRetry,
+}: {
+  title: string;
+  description: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className="rounded-[20px] bg-[#f2f4f6] px-5 py-7 text-center">
+      <strong className="block text-base leading-[1.45] font-bold text-[#333d4b]">{title}</strong>
+
+      <p className="mt-[7px] mb-0 text-sm leading-[1.55] text-[#6b7684]">{description}</p>
+
+      {onRetry && (
+        <button
+          className="mt-[18px] min-h-11 cursor-pointer rounded-xl border-0 bg-[#e9f6c9] px-[18px] text-sm font-bold text-[#344700]"
+          type="button"
+          onClick={onRetry}
+        >
+          다시 시도
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <div className="min-w-0" aria-hidden="true">
+      <div className="aspect-square w-full rounded-[18px] bg-[#f2f4f6]" />
+      <div className="mt-3 h-[13px] w-[46%] rounded-md bg-[#f2f4f6]" />
+      <div className="mt-[9px] h-[13px] w-full rounded-md bg-[#f2f4f6]" />
+      <div className="mt-[9px] h-[13px] w-[65%] rounded-md bg-[#f2f4f6]" />
+    </div>
+  );
+}
+
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
+
   const [loadState, setLoadState] = useState<ProductLoadState>("loading");
+
   const [selectedProductId, setSelectedProductId] = useState<string | null>(() => getProductIdFromLocation());
 
   const listScrollYRef = useRef(0);
@@ -105,20 +158,22 @@ function App() {
       behavior: "auto",
     });
   }, []);
+
   if (selectedProductId) {
     return <ProductDetail productId={selectedProductId} />;
   }
+
   return (
-    <main className="app-shell">
-      <section className="intro-section" aria-labelledby="service-title">
-        <div className="status-row">
-          <span className="status-badge">
-            <span className="status-dot" aria-hidden="true" />
+    <main className="min-h-dvh min-w-0 w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28] min-[481px]:shadow-[0_0_0_1px_rgba(2,32,71,0.05)]">
+      <section className="pt-[calc(16px+env(safe-area-inset-top))]" aria-labelledby="service-title">
+        <div className="px-6 pb-1 max-[359px]:px-5">
+          <span className="inline-flex min-h-[30px] items-center gap-[7px] rounded-full border border-[rgba(154,206,34,0.42)] bg-[rgba(154,206,34,0.14)] px-[11px] py-1.5 text-[13px] leading-none font-bold text-[#415800]">
+            <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-[#7ca800]" aria-hidden="true" />
             앱인토스 베타
           </span>
         </div>
 
-        <h1 id="service-title" className="visually-hidden">
+        <h1 id="service-title" className="sr-only">
           도깨비테니스
         </h1>
 
@@ -129,51 +184,41 @@ function App() {
           }
         />
 
-        <p className="intro-description">
+        <p className="m-0 break-keep px-6 text-[15px] leading-[1.65] text-[#6b7684] max-[359px]:px-5">
           도깨비테니스에서 판매 중인 스트링을 앱인토스에서 확인할 수 있어요. 주문과 교체서비스 기능은 안정성 검증 후
           순차적으로 연결할 예정이에요.
         </p>
       </section>
 
-      <section className="products-section" aria-labelledby="products-title">
-        <header className="section-heading">
-          <p className="section-eyebrow">STRING SHOP</p>
-          <h2 id="products-title">지금 판매 중인 스트링</h2>
-        </header>
+      <section className="px-6 pt-[38px] max-[359px]:px-5" aria-labelledby="products-title">
+        <SectionHeading eyebrow="STRING SHOP" title="지금 판매 중인 스트링" titleId="products-title" />
 
         {loadState === "loading" && (
-          <div className="product-grid" aria-label="상품을 불러오는 중">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div className="product-skeleton" key={index} aria-hidden="true">
-                <div className="skeleton-image" />
-                <div className="skeleton-line skeleton-line-short" />
-                <div className="skeleton-line" />
-                <div className="skeleton-line skeleton-line-price" />
-              </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6" aria-label="상품을 불러오는 중">
+            {Array.from({
+              length: 6,
+            }).map((_, index) => (
+              <ProductSkeleton key={index} />
             ))}
           </div>
         )}
 
         {loadState === "error" && (
-          <div className="product-state-card" role="alert">
-            <strong>상품 정보를 불러오지 못했어요.</strong>
-            <p>네트워크 상태를 확인한 뒤 다시 시도해주세요.</p>
-
-            <button className="retry-button" type="button" onClick={() => void loadProducts()}>
-              다시 시도
-            </button>
+          <div role="alert">
+            <ProductStateCard
+              title="상품 정보를 불러오지 못했어요."
+              description="네트워크 상태를 확인한 뒤 다시 시도해주세요."
+              onRetry={() => void loadProducts()}
+            />
           </div>
         )}
 
         {loadState === "success" && products.length === 0 && (
-          <div className="product-state-card">
-            <strong>현재 표시할 스트링이 없어요.</strong>
-            <p>판매 가능한 상품을 준비하고 있어요.</p>
-          </div>
+          <ProductStateCard title="현재 표시할 스트링이 없어요." description="판매 가능한 상품을 준비하고 있어요." />
         )}
 
         {loadState === "success" && products.length > 0 && (
-          <div className="product-grid">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6">
             {products.map((product) => (
               <ProductCard key={product._id} product={product} onSelect={handleSelectProduct} />
             ))}
@@ -181,31 +226,40 @@ function App() {
         )}
       </section>
 
-      <section className="feature-section" aria-labelledby="planned-features-title">
-        <header className="section-heading">
-          <p className="section-eyebrow">COMING SOON</p>
-          <h2 id="planned-features-title">다음으로 준비 중인 기능</h2>
-        </header>
+      <section className="px-6 pt-[38px] max-[359px]:px-5" aria-labelledby="planned-features-title">
+        <SectionHeading eyebrow="COMING SOON" title="다음으로 준비 중인 기능" titleId="planned-features-title" />
 
-        <ol className="feature-list">
+        <ol className="m-0 flex list-none flex-col gap-3 p-0">
           {plannedFeatures.map((feature, index) => (
-            <li className="feature-card" key={feature.title}>
-              <span className="feature-index" aria-hidden="true">
+            <li
+              className="grid grid-cols-[42px_minmax(0,1fr)] items-start gap-3.5 rounded-[20px] border border-[#e5e8eb] bg-white p-5 max-[359px]:grid-cols-[38px_minmax(0,1fr)] max-[359px]:gap-3 max-[359px]:p-[17px]"
+              key={feature.title}
+            >
+              <span
+                className="inline-flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#eff8d8] text-[13px] leading-none font-extrabold text-[#344700] max-[359px]:h-[38px] max-[359px]:w-[38px]"
+                aria-hidden="true"
+              >
                 {String(index + 1).padStart(2, "0")}
               </span>
 
-              <div className="feature-copy">
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
+              <div className="min-w-0">
+                <h3 className="mt-px mb-1.5 text-[17px] leading-[1.4] font-extrabold tracking-[-0.015em] text-[#191f28]">
+                  {feature.title}
+                </h3>
+
+                <p className="m-0 break-keep text-sm leading-[1.55] text-[#6b7684]">{feature.description}</p>
               </div>
             </li>
           ))}
         </ol>
       </section>
 
-      <aside className="notice-card" aria-label="서비스 준비 안내">
-        <strong>상품 조회 기능을 먼저 연결하고 있어요.</strong>
-        <p>
+      <aside className="mx-6 mt-6 rounded-[20px] bg-[#f2f4f6] p-5 max-[359px]:mx-5" aria-label="서비스 준비 안내">
+        <strong className="mb-[7px] block text-[15px] leading-[1.45] font-extrabold text-[#333d4b]">
+          상품 조회 기능을 먼저 연결하고 있어요.
+        </strong>
+
+        <p className="m-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
           로그인, 장바구니, 주문 및 결제 기능은 아직 연결하지 않았어요. 기존 도깨비테니스 서비스와의 연동을 검증한 뒤
           순차적으로 제공할 예정입니다.
         </p>
