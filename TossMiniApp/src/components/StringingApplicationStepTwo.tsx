@@ -1,0 +1,321 @@
+import { Top } from "@toss/tds-mobile";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+import type { KakaoPostcodeData } from "../lib/loadKakaoPostcode";
+import type { StringingCollectionMethod, StringingShippingDraft } from "../types/stringing";
+import KakaoPostcodeEmbed from "./KakaoPostcodeEmbed";
+
+type StringingApplicationStepTwoProps = {
+  collectionMethod: StringingCollectionMethod;
+  onCollectionMethodChange: (method: StringingCollectionMethod) => void;
+  shipping: StringingShippingDraft;
+  onShippingChange: (shipping: StringingShippingDraft) => void;
+  onBack: () => void;
+  onContinue: () => void;
+};
+
+const POSTAL_RE = /^\d{5}$/;
+
+const VISIBLE_COLLECTION_METHODS = [
+  {
+    value: "self_ship",
+    title: "자가 발송",
+    description: "편의점·우체국 등을 이용해 라켓을 직접 발송해요.",
+  },
+  {
+    value: "visit",
+    title: "매장 방문 접수",
+    description: "예약 가능한 날짜와 시간을 선택해 직접 방문해요.",
+  },
+] as const;
+
+function StringingApplicationStepTwo({
+  collectionMethod,
+  onCollectionMethodChange,
+  shipping,
+  onShippingChange,
+  onBack,
+  onContinue,
+}: StringingApplicationStepTwoProps) {
+  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
+
+  const [touched, setTouched] = useState({
+    postalCode: false,
+    address: false,
+    addressDetail: false,
+  });
+
+  const detailAddressRef = useRef<HTMLInputElement>(null);
+
+  const isSelfShip = collectionMethod === "self_ship";
+
+  const errors = useMemo(() => {
+    const next: {
+      postalCode?: string;
+      address?: string;
+      addressDetail?: string;
+    } = {};
+
+    if (!isSelfShip) {
+      return next;
+    }
+
+    if (!shipping.postalCode.trim() || !shipping.address.trim()) {
+      next.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
+      next.address = "우편번호 찾기를 통해 주소를 등록해주세요.";
+    } else if (!POSTAL_RE.test(shipping.postalCode.trim())) {
+      next.postalCode = "우편번호 형식을 확인해주세요. (5자리)";
+    }
+
+    if (!shipping.addressDetail.trim()) {
+      next.addressDetail = "상세 주소는 필수입니다.";
+    }
+
+    return next;
+  }, [isSelfShip, shipping]);
+
+  const handleMethodChange = (method: "self_ship" | "visit") => {
+    setIsPostcodeOpen(false);
+
+    onCollectionMethodChange(method);
+  };
+
+  const updateShipping = (field: keyof StringingShippingDraft, value: string) => {
+    onShippingChange({
+      ...shipping,
+      [field]: value,
+    });
+  };
+
+  const handlePostcodeComplete = useCallback(
+    (data: KakaoPostcodeData) => {
+      onShippingChange({
+        ...shipping,
+        postalCode: data.zonecode.trim(),
+        address: data.roadAddress.trim(),
+      });
+
+      setTouched({
+        postalCode: true,
+        address: true,
+        addressDetail: false,
+      });
+
+      setIsPostcodeOpen(false);
+
+      requestAnimationFrame(() => {
+        detailAddressRef.current?.focus();
+      });
+    },
+    [onShippingChange, shipping],
+  );
+
+  const handleConfirm = () => {
+    if (isSelfShip) {
+      setTouched({
+        postalCode: true,
+        address: true,
+        addressDetail: true,
+      });
+
+      if (Object.keys(errors).length > 0) {
+        return;
+      }
+    }
+
+    onContinue();
+  };
+
+  return (
+    <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
+      <section className="pt-[calc(16px+env(safe-area-inset-top))]">
+        <Top
+          title={<Top.TitleParagraph size={22}>교체서비스 포함 주문</Top.TitleParagraph>}
+          subtitleBottom={<Top.SubtitleParagraph size={17}>2 / 5 · 전달·수령 정보</Top.SubtitleParagraph>}
+        />
+      </section>
+
+      <section className="px-6 max-[359px]:px-5" aria-labelledby="collection-method-title">
+        <div className="mb-4">
+          <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">STEP 02</p>
+
+          <h1 id="collection-method-title" className="m-0 text-[22px] leading-[1.35] font-extrabold tracking-[-0.02em]">
+            라켓 전달 방법
+          </h1>
+
+          <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
+            스트링 교체를 위해 라켓을 전달할 방법을 선택해주세요.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3" role="radiogroup" aria-label="라켓 전달 방법">
+          {VISIBLE_COLLECTION_METHODS.map((method) => {
+            const isSelected = collectionMethod === method.value;
+
+            return (
+              <button
+                key={method.value}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                onClick={() => handleMethodChange(method.value)}
+                className={`min-h-[104px] w-full rounded-[20px] border p-[18px] text-left outline-none transition focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#688d00] ${
+                  isSelected ? "border-[#688d00] bg-[#f4f9e8] ring-1 ring-[#dcebba]" : "border-[#e5e8eb] bg-white"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <strong className="block text-base font-extrabold text-[#191f28]">{method.title}</strong>
+
+                    <p className="mt-2 mb-0 break-keep text-sm leading-[1.55] text-[#6b7684]">{method.description}</p>
+                  </div>
+
+                  <span
+                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                      isSelected ? "border-[#688d00] bg-[#688d00]" : "border-[#b0b8c1] bg-white"
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {isSelected && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {collectionMethod === "visit" && (
+          <div className="mt-4 rounded-2xl bg-[#f7f8fa] p-4">
+            <strong className="block text-sm font-extrabold text-[#333d4b]">매장 방문 접수 안내</strong>
+
+            <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
+              방문 접수는 주소 입력이 필요하지 않습니다. 방문 날짜와 시간은 다음 단계에서 선택합니다.
+            </p>
+          </div>
+        )}
+
+        {isSelfShip && (
+          <>
+            <div className="mt-4 rounded-2xl bg-[#f7f8fa] p-4">
+              <strong className="block text-sm font-extrabold text-[#333d4b]">자가 발송 안내</strong>
+
+              <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
+                편의점·우체국 등을 이용해 직접 발송할 수 있습니다.
+              </p>
+            </div>
+
+            <div className="mt-4 rounded-[20px] border border-[#e5e8eb] p-[18px]">
+              <div className="mb-4">
+                <strong className="block text-base font-extrabold text-[#191f28]">주소 정보</strong>
+
+                <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
+                  라켓 발송 및 반송에 사용할 주소를 등록해주세요.
+                </p>
+              </div>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-[#333d4b]">우편번호 *</span>
+
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                  <input
+                    className={`min-h-12 min-w-0 rounded-xl border bg-[#f7f8fa] px-3.5 text-base text-[#6b7684] outline-none ${
+                      touched.postalCode && errors.postalCode ? "border-[#d92d20]" : "border-[#d1d6db]"
+                    }`}
+                    type="text"
+                    value={shipping.postalCode}
+                    readOnly
+                    tabIndex={-1}
+                  />
+
+                  <button
+                    className="min-h-12 whitespace-nowrap rounded-xl border border-[#d1d6db] bg-white px-4 text-sm font-bold text-[#333d4b] outline-none transition focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#688d00]"
+                    type="button"
+                    onClick={() => setIsPostcodeOpen((current) => !current)}
+                  >
+                    {isPostcodeOpen ? "검색 닫기" : "우편번호 검색"}
+                  </button>
+                </div>
+
+                {touched.postalCode && errors.postalCode && (
+                  <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.postalCode}</span>
+                )}
+              </label>
+
+              <label className="mt-4 block">
+                <span className="mb-2 block text-sm font-bold text-[#333d4b]">주소 *</span>
+
+                <input
+                  className={`min-h-12 w-full rounded-xl border bg-[#f7f8fa] px-3.5 text-base text-[#6b7684] outline-none ${
+                    touched.address && errors.address ? "border-[#d92d20]" : "border-[#d1d6db]"
+                  }`}
+                  type="text"
+                  value={shipping.address}
+                  readOnly
+                  tabIndex={-1}
+                />
+
+                {touched.address && errors.address && (
+                  <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.address}</span>
+                )}
+              </label>
+
+              <label className="mt-4 block">
+                <span className="mb-2 block text-sm font-bold text-[#333d4b]">상세 주소 *</span>
+
+                <input
+                  ref={detailAddressRef}
+                  className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
+                    touched.addressDetail && errors.addressDetail
+                      ? "border-[#d92d20]"
+                      : "border-[#d1d6db] focus:border-[#688d00]"
+                  }`}
+                  type="text"
+                  value={shipping.addressDetail}
+                  autoComplete="street-address"
+                  placeholder="상세 주소를 입력해주세요"
+                  onChange={(event) => updateShipping("addressDetail", event.target.value)}
+                  onBlur={() =>
+                    setTouched((current) => ({
+                      ...current,
+                      addressDetail: true,
+                    }))
+                  }
+                />
+
+                {touched.addressDetail && errors.addressDetail && (
+                  <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.addressDetail}</span>
+                )}
+              </label>
+
+              {isPostcodeOpen && (
+                <KakaoPostcodeEmbed onComplete={handlePostcodeComplete} onClose={() => setIsPostcodeOpen(false)} />
+              )}
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="mt-6 px-6 max-[359px]:px-5">
+        <div className="grid grid-cols-[0.72fr_1.28fr] gap-2.5">
+          <button
+            className="min-h-[52px] rounded-2xl border border-[#d1d6db] bg-white px-4 text-base font-bold text-[#4e5968] outline-none transition active:scale-[0.99] focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#688d00]"
+            type="button"
+            onClick={onBack}
+          >
+            이전
+          </button>
+
+          <button
+            className="min-h-[52px] rounded-2xl bg-[#191f28] px-4 text-base font-extrabold text-white outline-none transition active:scale-[0.99] focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#688d00]"
+            type="button"
+            onClick={handleConfirm}
+          >
+            다음: 라켓·텐션 정보
+          </button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+export default StringingApplicationStepTwo;

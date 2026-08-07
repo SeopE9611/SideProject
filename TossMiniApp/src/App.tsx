@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getStringingProducts } from "./api/products";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
-import StringingApplicationStepOne from "./components/StringingApplicationStepOne";
+import StringingApplicationFlow from "./components/StringingApplicationFlow";
 import type { Product } from "./types/product";
-import { StringingStartSelection } from "./types/stringing";
+import type { StringingStartSelection } from "./types/stringing";
 
 type ProductLoadState = "loading" | "success" | "error";
 
@@ -33,8 +33,8 @@ function getProductIdFromLocation() {
   return getSearchParamsFromLocation().get("productId");
 }
 
-function getStringingApplyModeFromLocation() {
-  return getSearchParamsFromLocation().get("view") === "stringing-apply";
+function getStringingCheckoutModeFromLocation() {
+  return getSearchParamsFromLocation().get("view") === "stringing-checkout";
 }
 
 function getSelectedColorFromLocation() {
@@ -103,7 +103,7 @@ function App() {
 
   const [selectedProductId, setSelectedProductId] = useState<string | null>(() => getProductIdFromLocation());
 
-  const [isStringingApply, setIsStringingApply] = useState(() => getStringingApplyModeFromLocation());
+  const [isStringingCheckout, setIsStringingCheckout] = useState(() => getStringingCheckoutModeFromLocation());
 
   const [detailSelectedColor, setDetailSelectedColor] = useState(() => getSelectedColorFromLocation());
 
@@ -150,7 +150,7 @@ function App() {
       const nextProductId = getProductIdFromLocation();
 
       setSelectedProductId(nextProductId);
-      setIsStringingApply(getStringingApplyModeFromLocation());
+      setIsStringingCheckout(getStringingCheckoutModeFromLocation());
 
       setDetailSelectedColor(getSelectedColorFromLocation());
 
@@ -185,7 +185,7 @@ function App() {
     window.history.pushState({ productId }, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
 
     setSelectedProductId(productId);
-    setIsStringingApply(false);
+    setIsStringingCheckout(false);
     setDetailSelectedColor("");
     setDetailSelectedGauge("");
 
@@ -224,12 +224,12 @@ function App() {
 
     const applyUrl = new URL(detailUrl.href);
 
-    applyUrl.searchParams.set("view", "stringing-apply");
+    applyUrl.searchParams.set("view", "stringing-checkout");
 
     window.history.pushState(
       {
         productId: selection.productId,
-        view: "stringing-apply",
+        view: "stringing-checkout",
       },
       "",
       `${applyUrl.pathname}${applyUrl.search}${applyUrl.hash}`,
@@ -241,7 +241,7 @@ function App() {
 
     setDetailSelectedGauge(selection.selectedGauge);
 
-    setIsStringingApply(true);
+    setIsStringingCheckout(true);
 
     window.scrollTo({
       top: 0,
@@ -249,9 +249,9 @@ function App() {
     });
   }, []);
 
-  if (selectedProductId && isStringingApply) {
+  if (selectedProductId && isStringingCheckout) {
     return (
-      <StringingApplicationStepOne
+      <StringingApplicationFlow
         productId={selectedProductId}
         selectedColor={detailSelectedColor}
         selectedGauge={detailSelectedGauge}

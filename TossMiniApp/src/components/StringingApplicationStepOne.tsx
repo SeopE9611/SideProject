@@ -12,12 +12,9 @@ type StringingApplicationStepOneProps = {
   productId: string;
   selectedColor: string;
   selectedGauge: string;
-};
-
-const EMPTY_APPLICANT: StringingApplicantDraft = {
-  name: "",
-  email: "",
-  phone: "",
+  applicant: StringingApplicantDraft;
+  onApplicantChange: (applicant: StringingApplicantDraft) => void;
+  onContinue: () => void;
 };
 
 function isAbortError(error: unknown) {
@@ -45,24 +42,29 @@ function isValid010Phone(value: string) {
   return /^010\d{8}$/.test(onlyDigits(value));
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function getProductImage(product: Product) {
   return product.images?.[0] ?? product.image ?? product.imageUrl ?? product.thumbnail ?? null;
 }
 
-function StringingApplicationStepOne({ productId, selectedColor, selectedGauge }: StringingApplicationStepOneProps) {
+function StringingApplicationStepOne({
+  productId,
+  selectedColor,
+  selectedGauge,
+  applicant,
+  onApplicantChange,
+  onContinue,
+}: StringingApplicationStepOneProps) {
   const [product, setProduct] = useState<Product | null>(null);
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
-
-  const [applicant, setApplicant] = useState<StringingApplicantDraft>(EMPTY_APPLICANT);
 
   const [touched, setTouched] = useState<Record<keyof StringingApplicantDraft, boolean>>({
     name: false,
     email: false,
     phone: false,
   });
-
-  const [isStepComplete, setIsStepComplete] = useState(false);
 
   const loadProduct = useCallback(
     async (signal?: AbortSignal) => {
@@ -104,12 +106,20 @@ function StringingApplicationStepOne({ productId, selectedColor, selectedGauge }
   const errors = useMemo(() => {
     const next: Partial<Record<keyof StringingApplicantDraft, string>> = {};
 
-    if (!applicant.name.trim()) {
+    const name = applicant.name.trim();
+
+    if (!name) {
       next.name = "이름을 입력해주세요.";
+    } else if (name.length < 2) {
+      next.name = "이름은 2자 이상 입력해주세요.";
     }
 
-    if (!applicant.email.trim()) {
+    const email = applicant.email.trim();
+
+    if (!email) {
       next.email = "이메일을 입력해주세요.";
+    } else if (!EMAIL_RE.test(email)) {
+      next.email = "이메일 형식을 확인해주세요.";
     }
 
     if (!applicant.phone.trim()) {
@@ -178,12 +188,10 @@ function StringingApplicationStepOne({ productId, selectedColor, selectedGauge }
   };
 
   const updateApplicant = (field: keyof StringingApplicantDraft, value: string) => {
-    setIsStepComplete(false);
-
-    setApplicant((current) => ({
-      ...current,
+    onApplicantChange({
+      ...applicant,
       [field]: value,
-    }));
+    });
   };
 
   const handleValidateStep = () => {
@@ -194,11 +202,10 @@ function StringingApplicationStepOne({ productId, selectedColor, selectedGauge }
     });
 
     if (Object.keys(errors).length > 0) {
-      setIsStepComplete(false);
       return;
     }
 
-    setIsStepComplete(true);
+    onContinue();
   };
 
   if (loadState === "loading") {
@@ -260,7 +267,7 @@ function StringingApplicationStepOne({ productId, selectedColor, selectedGauge }
     <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
       <section className="pt-[calc(16px+env(safe-area-inset-top))]">
         <Top
-          title={<Top.TitleParagraph size={22}>교체서비스 신청</Top.TitleParagraph>}
+          title={<Top.TitleParagraph size={22}>교체서비스 포함 주문</Top.TitleParagraph>}
           subtitleBottom={<Top.SubtitleParagraph size={17}>1 / 5 · 신청자 정보</Top.SubtitleParagraph>}
         />
       </section>
@@ -378,22 +385,12 @@ function StringingApplicationStepOne({ productId, selectedColor, selectedGauge }
 
       <section className="mt-6 px-6 max-[359px]:px-5">
         <button
-          className="min-h-[52px] w-full rounded-2xl bg-[#191f28] px-5 text-base font-extrabold text-white transition active:scale-[0.99]"
+          className="min-h-[52px] w-full rounded-2xl bg-[#191f28] px-5 text-base font-extrabold text-white outline-none transition active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-[#688d00] focus-visible:ring-offset-2"
           type="button"
           onClick={handleValidateStep}
         >
-          신청자 정보 확인
+          다음: 라켓 전달 방법
         </button>
-
-        {isStepComplete && (
-          <div className="mt-3 rounded-2xl bg-[#f4f9e8] p-4" role="status">
-            <strong className="block text-sm font-extrabold text-[#344700]">신청자 정보 입력이 완료됐어요.</strong>
-
-            <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#59636e]">
-              다음 단계에서 라켓 전달 방법을 선택하도록 연결합니다.
-            </p>
-          </div>
-        )}
       </section>
     </main>
   );

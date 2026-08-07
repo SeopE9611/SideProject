@@ -424,7 +424,7 @@ function ProductDetail({
       )}
 
       {mountingFee !== null && (
-        <section className="mt-8 px-6 max-[359px]:px-5" aria-label="교체서비스 신청">
+        <section className="mt-8 px-6 max-[359px]:px-5" aria-label="교체서비스 포함 주문">
           <button
             className={`min-h-[54px] w-full rounded-2xl px-5 text-base font-extrabold transition ${
               canStartStringing
@@ -441,11 +441,11 @@ function ProductDetail({
               })
             }
           >
-            교체서비스 신청하기
+            교체서비스 포함 주문하기
           </button>
 
           <p className="mt-2 mb-0 break-keep text-center text-xs leading-[1.55] text-[#8b95a1]">
-            선택한 색상·게이지를 그대로 신청 단계로 전달합니다.
+            선택한 색상·게이지를 그대로 주문 단계로 전달합니다.
           </p>
         </section>
       )}
@@ -505,7 +505,7 @@ function ProductDetail({
         </strong>
 
         <p className="mt-1.5 mb-0 text-[13px] leading-[1.55] text-[#6b7684]">
-          선택한 옵션으로 교체서비스 신청을 시작할 수 있어요.
+          선택한 옵션으로 교체서비스 포함 주문을 시작할 수 있어요.
         </p>
       </aside>
     </main>
