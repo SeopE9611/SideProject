@@ -31,6 +31,14 @@ export type CartItem = {
   selectedColorImage?: string;
 };
 
+// 최신 재고 동기화 타입
+export type CartStockSnapshot = Pick<
+  CartItem,
+  "id" | "kind" | "selectedGauge" | "selectedColor"
+> & {
+  stock: number;
+};
+
 // 타입 정의
 // 주스탄드로 생성할 스토어의 전체 구조를 정의한 타입
 // 배열 상태 items + 4개의 조작 함수 (추가, 제거, 수량수정, 전체삭제)
@@ -44,6 +52,7 @@ interface CartState {
     selectedGauge?: string,
     selectedColor?: string,
   ) => void; // 장바구니 상품 수량 수정
+  syncStockSnapshots: (snapshots: CartStockSnapshot[]) => void;
   clearCart: () => void; // 장바구니 전체 삭제
 }
 
@@ -154,6 +163,37 @@ export const useCartStore = create<CartState>()(
             })
             .filter((i) => i.quantity > 0), // 0이 된 경우(재고 0 등) 방어적으로 제거
         })),
+
+      syncStockSnapshots: (snapshots) => {
+        const currentItems = get().items;
+        let changed = false;
+
+        const nextItems = currentItems.map((item) => {
+          const snapshot = snapshots.find((candidate) => isSameCartLine(item, candidate));
+
+          if (!snapshot) return item;
+
+          const nextStock =
+            typeof snapshot.stock === "number" && Number.isFinite(snapshot.stock)
+              ? Math.max(0, snapshot.stock)
+              : 0;
+
+          if (item.stock === nextStock) {
+            return item;
+          }
+
+          changed = true;
+
+          return {
+            ...item,
+            stock: nextStock,
+          };
+        });
+
+        if (changed) {
+          set({ items: nextItems });
+        }
+      },
 
       // 장바구니 비우기 버튼을 누르면 호출
       // items 배열을 빈 배열로 초기화

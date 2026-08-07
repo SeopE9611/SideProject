@@ -4,6 +4,7 @@ import CartOptionChangeOverlay from "@/app/cart/_components/CartOptionChangeOver
 import WishlistSidebar from "@/app/cart/_components/WishlistSidebar";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useCartStore, type CartItem } from "@/app/store/cartStore";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { EmptyState, PriceSummary, PublicSurface, type PriceSummaryRow } from "@/components/public";
 import {
@@ -16,7 +17,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +38,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 
 // 통화 포맷 유틸 (일관성)
 const formatKRW = (n: number) => n.toLocaleString("ko-KR");
@@ -51,17 +52,22 @@ const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
 const getCartLineKey = (item: { id: string; selectedGauge?: string; selectedColor?: string }) =>
   `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
 
-type ProductVariantInventoryRow = {
-  colorValue?: string | null;
-  gaugeValue?: string | null;
-  stock?: number | null;
-  isSoldOut?: boolean | null;
+type CartStockSnapshotStatus = "available" | "sold_out" | "option_missing" | "unavailable";
+
+type CartStockSnapshotRow = {
+  id: string;
+  selectedGauge?: string;
+  selectedColor?: string;
+  stock: number;
+  status: CartStockSnapshotStatus;
 };
 
-type ProductForCartValidation = {
-  _id?: string;
-  variantInventories?: ProductVariantInventoryRow[];
+type CartStockSnapshotResponse = {
+  ok: boolean;
+  items: CartStockSnapshotRow[];
 };
+
+type CartStockSnapshotKey = readonly [url: string, body: string] | null;
 
 type PendingDelete = {
   kind: "selected" | "single" | "bundle" | "all";
@@ -70,7 +76,14 @@ type PendingDelete = {
 
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
-  const { items: cartItems, addItem, removeItem, updateQuantity, clearCart } = useCartStore();
+  const {
+    items: cartItems,
+    addItem,
+    removeItem,
+    updateQuantity,
+    syncStockSnapshots,
+    clearCart,
+  } = useCartStore();
 
   // 인증
   const [user, setUser] = useState<User | null>(null);
@@ -173,6 +186,140 @@ export default function CartPageClient() {
   );
 
   const productIdsKey = useMemo(() => [...productIds].sort().join("|"), [productIds]);
+
+  // SWR 로직
+  const cartProductStockRequestItems = useMemo(
+    () =>
+      cartItems
+        .filter((item) => (item.kind ?? "product") === "product")
+        .map((item) => ({
+          id: String(item.id),
+          selectedGauge: item.selectedGauge,
+          selectedColor: item.selectedColor,
+        })),
+    [cartItems],
+  );
+
+  const cartStockRequestBody = useMemo(
+    () =>
+      JSON.stringify({
+        items: cartProductStockRequestItems,
+      }),
+    [cartProductStockRequestItems],
+  );
+
+  const cartStockSnapshotKey: CartStockSnapshotKey =
+    cartProductStockRequestItems.length > 0
+      ? ["/api/cart/stock-snapshot", cartStockRequestBody]
+      : null;
+
+  const {
+    data: cartStockSnapshot,
+    error: cartStockSnapshotError,
+    isLoading: isCartStockLoading,
+    isValidating: isCartStockValidating,
+    mutate: mutateCartStockSnapshot,
+  } = useSWR<CartStockSnapshotResponse, Error, CartStockSnapshotKey>(
+    cartStockSnapshotKey,
+    async ([url, body]) => {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body,
+      });
+
+      if (!response.ok) {
+        throw new Error("cart stock snapshot request failed");
+      }
+
+      const json = (await response.json()) as CartStockSnapshotResponse;
+
+      if (!json?.ok || !Array.isArray(json.items)) {
+        throw new Error("invalid cart stock snapshot response");
+      }
+
+      return json;
+    },
+    {
+      revalidateOnMount: true,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+
+      // polling은 하지 않습니다.
+      refreshInterval: 0,
+
+      // 동일 요청의 과도한 중복 방지
+      dedupingInterval: 1000,
+    },
+  );
+
+  useEffect(() => {
+    if (!cartStockSnapshot?.items) {
+      return;
+    }
+
+    syncStockSnapshots(
+      cartStockSnapshot.items.map((item) => ({
+        id: item.id,
+        kind: "product" as const,
+        selectedGauge: item.selectedGauge,
+        selectedColor: item.selectedColor,
+        stock: item.stock,
+      })),
+    );
+  }, [cartStockSnapshot, syncStockSnapshots]);
+
+  const cartStockSnapshotByLineKey = useMemo(
+    () =>
+      new Map<string, CartStockSnapshotRow>(
+        (cartStockSnapshot?.items ?? []).map((item) => [getCartLineKey(item), item] as const),
+      ),
+    [cartStockSnapshot],
+  );
+
+  const hasProductStockLines = cartProductStockRequestItems.length > 0;
+
+  const isCartStockReady = !hasProductStockLines || Boolean(cartStockSnapshot);
+
+  const isCartStockRefreshPending =
+    hasProductStockLines && (isCartStockLoading || isCartStockValidating);
+
+  const hasCartStockError = hasProductStockLines && Boolean(cartStockSnapshotError);
+
+  const hasSelectedProductStockLines = useMemo(
+    () => selectedCartItems.some((item) => (item.kind ?? "product") === "product"),
+    [selectedCartItems],
+  );
+
+  const isSelectedCartStockReady = !hasSelectedProductStockLines || Boolean(cartStockSnapshot);
+
+  const isSelectedCartStockRefreshPending =
+    hasSelectedProductStockLines && (isCartStockLoading || isCartStockValidating);
+
+  const hasSelectedCartStockError = hasSelectedProductStockLines && Boolean(cartStockSnapshotError);
+
+  const hasSelectedStockIssue = useMemo(() => {
+    if (!cartStockSnapshot) {
+      return false;
+    }
+
+    return selectedCartItems.some((item) => {
+      if ((item.kind ?? "product") !== "product") {
+        return false;
+      }
+
+      const snapshot = cartStockSnapshotByLineKey.get(getCartLineKey(item));
+
+      if (!snapshot || snapshot.status !== "available") {
+        return true;
+      }
+
+      return snapshot.stock < item.quantity;
+    });
+  }, [cartStockSnapshot, cartStockSnapshotByLineKey, selectedCartItems]);
 
   const isShippingFeeReady = useMemo(() => {
     if (shippingFeeIdsToResolve.length === 0) return true;
@@ -668,9 +815,7 @@ export default function CartPageClient() {
       showSuccessToast("장바구니를 비웠어요.");
     } else {
       const removedKeys = pendingDelete.items.map(getCartLineKey);
-      pendingDelete.items.forEach((it) =>
-        removeItem(it.id, it.selectedGauge, it.selectedColor),
-      );
+      pendingDelete.items.forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
       setSelectedLineKeys((prev) => prev.filter((key) => !removedKeys.includes(key)));
       showSuccessToast(
         pendingDelete.kind === "bundle"
@@ -733,66 +878,73 @@ export default function CartPageClient() {
     const cartProductItems = selectedCartItems.filter(
       (item) => (item.kind ?? "product") === "product",
     );
-    if (cartProductItems.length === 0) return true;
+
+    if (cartProductItems.length === 0) {
+      return true;
+    }
 
     setIsCheckingCheckoutStock(true);
+
     try {
-      const results = await Promise.all(
-        cartProductItems.map(async (item) => {
-          const response = await fetch(`/api/products/${item.id}`, {
-            cache: "no-store",
-          });
-          if (!response.ok) return { item, product: null as ProductForCartValidation | null };
-          const json = await response.json();
-          return {
-            item,
-            product: (json?.product ?? null) as ProductForCartValidation | null,
-          };
-        }),
+      /*
+       * SWR 캐시를 단순히 읽지 않고
+       * 서버에 다시 요청합니다.
+       */
+      const latest = await mutateCartStockSnapshot();
+
+      if (!latest?.ok || !Array.isArray(latest.items)) {
+        showErrorToast("최신 재고 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.");
+        return false;
+      }
+
+      /*
+       * 결제 직전 받은 최신값도
+       * 장바구니 상태에 즉시 반영합니다.
+       */
+      syncStockSnapshots(
+        latest.items.map((item) => ({
+          id: item.id,
+          kind: "product" as const,
+          selectedGauge: item.selectedGauge,
+          selectedColor: item.selectedColor,
+          stock: item.stock,
+        })),
       );
 
-      for (const { item, product } of results) {
-        if (!product) {
-          showErrorToast("일부 상품의 최신 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.");
+      const latestByLineKey = new Map<string, CartStockSnapshotRow>(
+        latest.items.map((item) => [getCartLineKey(item), item] as const),
+      );
+
+      for (const item of cartProductItems) {
+        const snapshot = latestByLineKey.get(getCartLineKey(item));
+
+        if (!snapshot || snapshot.status === "unavailable") {
+          showErrorToast(
+            `${item.name} 상품을 현재 구매할 수 없습니다. 상품 상태를 다시 확인해주세요.`,
+          );
+
           return false;
         }
 
-        const variants = Array.isArray(product.variantInventories)
-          ? product.variantInventories
-          : [];
-        if (variants.length > 0) {
-          if (!item.selectedColor || !item.selectedGauge) {
-            showErrorToast(
-              "옵션 정보를 확인할 수 없습니다. 색상과 게이지(굵기)를 다시 선택해주세요.",
-            );
-            return false;
-          }
-          const selectedVariant = variants.find(
-            (variant) =>
-              (variant.colorValue ?? "") === item.selectedColor &&
-              (variant.gaugeValue ?? "") === item.selectedGauge,
+        if (snapshot.status === "option_missing") {
+          showErrorToast(
+            `${item.name}의 선택 옵션이 변경되었습니다. 장바구니에서 옵션을 다시 선택해주세요.`,
           );
-          if (!selectedVariant) {
-            showErrorToast(
-              "선택한 색상과 게이지(굵기) 조합의 재고 정보를 찾지 못했어요. 옵션을 다시 확인해주세요.",
-            );
-            return false;
-          }
-          if (
-            selectedVariant.isSoldOut === true ||
-            Number(selectedVariant.stock ?? 0) < item.quantity
-          ) {
-            showErrorToast(
-              "선택한 색상과 게이지(굵기) 조합의 재고가 부족합니다. 수량을 다시 확인해주세요.",
-            );
-            return false;
-          }
-          continue;
+
+          return false;
         }
 
-        const maxStock = getMaxStock(item.stock);
-        if (Number.isFinite(maxStock) && item.quantity > maxStock) {
-          showErrorToast("일부 상품의 재고가 변경되었습니다. 수량을 다시 확인해주세요.");
+        if (snapshot.status === "sold_out" || snapshot.stock <= 0) {
+          showErrorToast(`${item.name}의 선택 옵션이 품절되었습니다.`);
+
+          return false;
+        }
+
+        if (item.quantity > snapshot.stock) {
+          showErrorToast(
+            `${item.name}의 재고가 ${snapshot.stock}개로 변경되었습니다. 수량을 다시 확인해주세요.`,
+          );
+
           return false;
         }
       }
@@ -800,6 +952,7 @@ export default function CartPageClient() {
       return true;
     } catch {
       showErrorToast("재고 확인 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
+
       return false;
     } finally {
       setIsCheckingCheckoutStock(false);
@@ -811,6 +964,20 @@ export default function CartPageClient() {
       showErrorToast("주문할 상품을 선택해주세요.");
       return;
     }
+    if (!isSelectedCartStockReady || isSelectedCartStockRefreshPending) {
+      showErrorToast("최신 재고를 확인 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    if (hasSelectedCartStockError) {
+      showErrorToast("최신 재고를 확인하지 못했어요. 다시 확인해주세요.");
+      return;
+    }
+
+    if (hasSelectedStockIssue) {
+      showErrorToast("재고가 변경된 상품이 있습니다. 수량 또는 옵션을 다시 확인해주세요.");
+      return;
+    }
     if (!isCartPriceReady) {
       showErrorToast("금액을 계산 중입니다. 잠시 후 다시 시도해주세요.");
       return;
@@ -820,23 +987,25 @@ export default function CartPageClient() {
       return;
     }
 
-    const checkoutLineKeys = selectedCartItems.map((item) => getCartLineKey(item));
-    sessionStorage.setItem(CART_CHECKOUT_SELECTION_KEY, JSON.stringify(checkoutLineKeys));
+    const isValid = await validateLatestStockBeforeCheckout();
 
-    if (!user) {
-      window.location.href = checkoutHref;
+    if (!isValid) {
       return;
     }
 
-    const isValid = await validateLatestStockBeforeCheckout();
-    if (isValid) {
-      window.location.href = checkoutHref;
-    }
+    const checkoutLineKeys = selectedCartItems.map((item) => getCartLineKey(item));
+
+    sessionStorage.setItem(CART_CHECKOUT_SELECTION_KEY, JSON.stringify(checkoutLineKeys));
+
+    window.location.href = checkoutHref;
   };
 
   return (
     <div className="min-h-full bg-background">
-      <AlertDialog open={Boolean(pendingDelete)} onOpenChange={(open) => !open && setPendingDelete(null)}>
+      <AlertDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -859,7 +1028,10 @@ export default function CartPageClient() {
           <AlertDialogFooter>
             <AlertDialogCancel className="min-h-11 bp-sm:min-h-10">취소</AlertDialogCancel>
             <AlertDialogAction
-              className={buttonVariants({ variant: "destructive", className: "min-h-11 bp-sm:min-h-10" })}
+              className={buttonVariants({
+                variant: "destructive",
+                className: "min-h-11 bp-sm:min-h-10",
+              })}
               onClick={confirmPendingDelete}
             >
               삭제하기
@@ -886,8 +1058,8 @@ export default function CartPageClient() {
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-ui-body-sm text-muted-foreground">
                 <p>
-                  교체서비스에 사용할 스트링은 <span className="font-ui-medium">1종만</span> 선택할 수
-                  있어요.
+                  교체서비스에 사용할 스트링은 <span className="font-ui-medium">1종만</span> 선택할
+                  수 있어요.
                 </p>
                 <p>
                   남길 스트링(선택):{" "}
@@ -901,8 +1073,9 @@ export default function CartPageClient() {
                   ) : null}
                 </p>
                 <p className="text-muted-foreground">
-                  “정리하기”를 누르면 <span className="font-ui-medium">선택한 스트링 1종만 유지</span>되고, 나머지 스트링은
-                  장바구니에서 삭제됩니다. (취소 시 변경 없음)
+                  “정리하기”를 누르면{" "}
+                  <span className="font-ui-medium">선택한 스트링 1종만 유지</span>되고, 나머지
+                  스트링은 장바구니에서 삭제됩니다. (취소 시 변경 없음)
                 </p>
               </div>
             </AlertDialogDescription>
@@ -910,7 +1083,10 @@ export default function CartPageClient() {
           <AlertDialogFooter>
             <AlertDialogCancel className="min-h-11 bp-sm:min-h-10">취소</AlertDialogCancel>
             <AlertDialogAction
-              className={buttonVariants({ variant: "highlight", className: "min-h-11 bp-sm:min-h-10" })}
+              className={buttonVariants({
+                variant: "highlight",
+                className: "min-h-11 bp-sm:min-h-10",
+              })}
               onClick={confirmCleanupMountableStrings}
             >
               정리하기
@@ -998,17 +1174,80 @@ export default function CartPageClient() {
                 <div>
                   {cartItems.map((item) => {
                     const lineKey = getCartLineKey(item);
-                    // 버튼 비활성 판단
+
                     const isRacket = (item.kind ?? "product") === "racket";
-                    // 라켓은 /rackets/[id], 일반 상품은 /products/[id]
+
                     const itemHref = isRacket ? `/rackets/${item.id}` : `/products/${item.id}`;
-                    const canDec = item.quantity > 1;
+
                     const maxStock = getMaxStock(item.stock);
-                    const canInc = item.quantity < maxStock;
+
+                    const canDec = item.quantity > 1 && maxStock > 0;
+
+                    const lineStockSnapshot = isRacket
+                      ? undefined
+                      : cartStockSnapshotByLineKey.get(lineKey);
+
+                    const isLineStockLoading =
+                      !isRacket && !lineStockSnapshot && !hasCartStockError;
+
+                    const isLineStockError = !isRacket && hasCartStockError;
+
+                    const isLineUnavailable =
+                      !isRacket &&
+                      Boolean(lineStockSnapshot && lineStockSnapshot.status !== "available");
+
+                    const hasInsufficientStock =
+                      Number.isFinite(maxStock) && item.quantity > maxStock;
+
+                    const canInc =
+                      !isLineStockLoading &&
+                      !isLineStockError &&
+                      !isLineUnavailable &&
+                      item.quantity < maxStock;
+
                     const isLowStock = Number.isFinite(maxStock) && maxStock <= 3;
+
                     const isStockLimitReached =
                       Number.isFinite(maxStock) && item.quantity >= maxStock;
-                    const shouldEmphasizeStock = isLowStock || isStockLimitReached;
+
+                    const shouldEmphasizeStock =
+                      isLowStock ||
+                      isStockLimitReached ||
+                      hasInsufficientStock ||
+                      isLineUnavailable;
+
+                    // 로딩/오류/품절 상태
+                    const stockStatusBadge = isLineStockLoading ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-ui-micro font-ui-medium leading-none text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                        재고 확인 중
+                      </span>
+                    ) : isLineStockError ? (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-ui-micro font-ui-medium leading-none text-destructive">
+                        재고 확인 실패
+                      </span>
+                    ) : isLineUnavailable ? (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-ui-micro font-ui-medium leading-none text-destructive">
+                        {lineStockSnapshot?.status === "option_missing"
+                          ? "옵션 확인 필요"
+                          : lineStockSnapshot?.status === "unavailable"
+                            ? "구매 불가"
+                            : "품절"}
+                      </span>
+                    ) : Number.isFinite(maxStock) ? (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-ui-micro font-ui-medium leading-none ${
+                          shouldEmphasizeStock
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {!isRacket && isCartStockValidating && (
+                          <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                        )}
+                        재고 {maxStock}개{hasInsufficientStock ? " · 수량 조정 필요" : ""}
+                      </span>
+                    ) : null;
                     const hasDiscount =
                       typeof item.regularPrice === "number" &&
                       Number.isFinite(item.regularPrice) &&
@@ -1144,7 +1383,9 @@ export default function CartPageClient() {
                                   <div className="mt-2 space-y-2 rounded-control border border-warning/30 bg-warning/10 p-3 text-ui-label leading-snug text-foreground dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                                      교체서비스에 사용할 스트링은 <span className="font-ui-medium">1종만</span> 선택할 수 있어요.
+                                      교체서비스에 사용할 스트링은{" "}
+                                      <span className="font-ui-medium">1종만</span> 선택할 수
+                                      있어요.
                                     </span>
                                     <button
                                       type="button"
@@ -1231,7 +1472,9 @@ export default function CartPageClient() {
                                     if (lockStepper && bundleLockedIds.length === 2) {
                                       setPendingDelete({
                                         kind: "bundle",
-                                        items: cartItems.filter((it) => bundleLockedIds.includes(it.id)),
+                                        items: cartItems.filter((it) =>
+                                          bundleLockedIds.includes(it.id),
+                                        ),
                                       });
                                       return;
                                     }
@@ -1256,14 +1499,7 @@ export default function CartPageClient() {
                                           {item.quantity}
                                         </span>
                                       </div>
-
-                                      {Number.isFinite(maxStock) && (
-                                        <span
-                                          className={`rounded-full px-2 py-0.5 text-ui-micro font-ui-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
-                                        >
-                                          재고 {maxStock}개
-                                        </span>
-                                      )}
+                                      {stockStatusBadge} {/*재고 n개 표시 */}
                                     </div>
 
                                     <p className="mt-1 max-w-[220px] text-ui-micro leading-snug text-muted-foreground">
@@ -1319,8 +1555,10 @@ export default function CartPageClient() {
                                               showErrorToast(
                                                 <>
                                                   <p>
-                                                    <span className="font-ui-medium">{item.name}</span>의 최대 주문 수량은{" "}
-                                                    {maxStock}
+                                                    <span className="font-ui-medium">
+                                                      {item.name}
+                                                    </span>
+                                                    의 최대 주문 수량은 {maxStock}
                                                     개입니다.
                                                   </p>
                                                   <p>더 이상 수량을 늘릴 수 없습니다.</p>
@@ -1339,14 +1577,7 @@ export default function CartPageClient() {
                                           <Plus className="h-4 w-4" />
                                         </Button>
                                       </div>
-
-                                      {Number.isFinite(maxStock) && (
-                                        <span
-                                          className={`rounded-full px-2 py-0.5 text-ui-micro font-ui-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
-                                        >
-                                          재고 {maxStock}개
-                                        </span>
-                                      )}
+                                      {stockStatusBadge} {/*재고 n개 표시 */}
                                     </div>
                                   </>
                                 )}
@@ -1435,8 +1666,9 @@ export default function CartPageClient() {
                               <p className="font-ui-medium">교체서비스 구성을 정리해야 해요</p>
                               <p>라켓 1종에는 장착할 스트링 1종이 필요해요.</p>
                               <p>
-                                현재 라켓 <span className="font-ui-medium">{racketLineCount}종</span>{" "}
-                                / 장착 스트링{" "}
+                                현재 라켓{" "}
+                                <span className="font-ui-medium">{racketLineCount}종</span> / 장착
+                                스트링{" "}
                                 <span className="font-ui-medium">{mountableStringLineCount}종</span>
                               </p>
                               {mountableStringLineCount > 1 && (
@@ -1530,8 +1762,36 @@ export default function CartPageClient() {
                             </div>
                           )}
                           <p className="text-ui-label text-surface-inverse-muted">
-                            최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.
+                            장바구니 진입 시 최신 재고를 확인하며 주문 직전에 한 번 더 검증합니다.
                           </p>
+
+                          {hasCartStockError && (
+                            <div className="space-y-2 rounded-control border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-label text-surface-inverse-foreground">
+                              <p>최신 재고를 확인하지 못했습니다.</p>
+
+                              <Button
+                                type="button"
+                                variant="inverse"
+                                size="sm"
+                                className="w-full"
+                                disabled={isCartStockValidating}
+                                onClick={() => void mutateCartStockSnapshot()}
+                              >
+                                {isCartStockValidating && (
+                                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                                )}
+                                재고 다시 확인
+                              </Button>
+                            </div>
+                          )}
+
+                          {hasSelectedStockIssue && (
+                            <p className="rounded-control border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-label leading-relaxed text-surface-inverse-foreground">
+                              재고가 변경된 상품이 있습니다. 표시된 상품의 수량 또는 옵션을 다시
+                              확인해주세요.
+                            </p>
+                          )}
+
                           <div className="grid grid-cols-1 gap-2">
                             <Button
                               variant="highlight"
@@ -1539,11 +1799,17 @@ export default function CartPageClient() {
                               wrap="responsive"
                               className="w-full"
                               disabled={
-                                !hasSelectedItems || !isCartPriceReady || isCheckingCheckoutStock
+                                !hasSelectedItems ||
+                                !isCartPriceReady ||
+                                !isSelectedCartStockReady ||
+                                isSelectedCartStockRefreshPending ||
+                                hasSelectedCartStockError ||
+                                hasSelectedStockIssue ||
+                                isCheckingCheckoutStock
                               }
                               onClick={handleCheckoutClick}
                             >
-                              {isCheckingCheckoutStock ? (
+                              {isCheckingCheckoutStock || isSelectedCartStockRefreshPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 <ShoppingBag className="h-4 w-4" />
@@ -1551,11 +1817,17 @@ export default function CartPageClient() {
                               <span className="truncate">
                                 {isCheckingCheckoutStock
                                   ? "재고 확인 중"
-                                  : !hasSelectedItems
-                                    ? "상품을 선택하세요"
-                                    : user
-                                      ? `선택 ${selectedCartItems.length}개 주문하기`
-                                      : "로그인 주문"}
+                                  : isSelectedCartStockRefreshPending || !isSelectedCartStockReady
+                                    ? "최신 재고 확인 중"
+                                    : hasSelectedCartStockError
+                                      ? "재고 다시 확인 필요"
+                                      : hasSelectedStockIssue
+                                        ? "재고/수량 확인 필요"
+                                        : !hasSelectedItems
+                                          ? "상품을 선택하세요"
+                                          : user
+                                            ? `선택 ${selectedCartItems.length}개 주문하기`
+                                            : "로그인 주문"}
                               </span>
                             </Button>
                             <Button
@@ -1591,8 +1863,37 @@ export default function CartPageClient() {
                         </div>
                       )}
                       <p className="text-ui-label text-muted-foreground">
-                        최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.
+                        장바구니 진입 시 최신 재고를 확인하며 주문 직전에 한 번 더 검증합니다.
                       </p>
+
+                      {hasCartStockError && (
+                        <div className="space-y-2 rounded-control border border-destructive/30 bg-destructive/5 px-3 py-2">
+                          <p className="text-ui-label text-destructive">
+                            최신 재고를 확인하지 못했습니다.
+                          </p>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            disabled={isCartStockValidating}
+                            onClick={() => void mutateCartStockSnapshot()}
+                          >
+                            {isCartStockValidating && (
+                              <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                            )}
+                            재고 다시 확인
+                          </Button>
+                        </div>
+                      )}
+
+                      {hasSelectedStockIssue && (
+                        <p className="rounded-control border border-destructive/30 bg-destructive/5 px-3 py-2 text-ui-label leading-relaxed text-destructive">
+                          재고가 변경된 상품이 있습니다. 표시된 상품의 수량 또는 옵션을 다시
+                          확인해주세요.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </aside>
@@ -1658,20 +1959,33 @@ export default function CartPageClient() {
               wrap="responsive"
               className="min-w-0 w-full max-w-[58vw] shrink-[0.6] px-3 bp-sm:w-auto bp-sm:min-w-[160px]"
               disabled={
-                !hasSelectedItems || loading || !isCartPriceReady || isCheckingCheckoutStock
+                !hasSelectedItems ||
+                loading ||
+                !isCartPriceReady ||
+                !isSelectedCartStockReady ||
+                isSelectedCartStockRefreshPending ||
+                hasSelectedCartStockError ||
+                hasSelectedStockIssue ||
+                isCheckingCheckoutStock
               }
               onClick={handleCheckoutClick}
             >
               <span className="truncate break-keep">
                 {isCheckingCheckoutStock
-                ? "재고 확인 중"
-                : loading
-                  ? "로그인 확인 중"
-                  : !isCartPriceReady
-                    ? "금액 계산 중"
-                    : !hasSelectedItems
-                      ? "상품을 선택하세요"
-                      : `선택 ${selectedCartItems.length}개 주문하기`}
+                  ? "재고 확인 중"
+                  : isSelectedCartStockRefreshPending || !isSelectedCartStockReady
+                    ? "최신 재고 확인 중"
+                    : hasSelectedCartStockError
+                      ? "재고 다시 확인 필요"
+                      : hasSelectedStockIssue
+                        ? "재고/수량 확인 필요"
+                        : loading
+                          ? "로그인 확인 중"
+                          : !isCartPriceReady
+                            ? "금액 계산 중"
+                            : !hasSelectedItems
+                              ? "상품을 선택하세요"
+                              : `선택 ${selectedCartItems.length}개 주문하기`}
               </span>
             </Button>
           </div>
