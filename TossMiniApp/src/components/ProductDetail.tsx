@@ -13,11 +13,15 @@ import {
   toFiniteNumber,
 } from "../lib/product-labels";
 import type { Product } from "../types/product";
+import { StringingStartSelection } from "../types/stringing";
 
 type DetailLoadState = "loading" | "success" | "error";
 
 type ProductDetailProps = {
   productId: string;
+  initialSelectedColor?: string;
+  initialSelectedGauge?: string;
+  onStartStringing: (selection: StringingStartSelection) => void;
 };
 
 const FEATURE_ITEMS = [
@@ -36,7 +40,12 @@ function getProductImage(product: Product) {
   return product.images?.[0] ?? product.image ?? product.imageUrl ?? product.thumbnail ?? null;
 }
 
-function ProductDetail({ productId }: ProductDetailProps) {
+function ProductDetail({
+  productId,
+  initialSelectedColor,
+  initialSelectedGauge,
+  onStartStringing,
+}: ProductDetailProps) {
   const [product, setProduct] = useState<Product | null>(null);
 
   const [loadState, setLoadState] = useState<DetailLoadState>("loading");
@@ -96,7 +105,10 @@ function ProductDetail({ productId }: ProductDetailProps) {
     selectedVariantSoldOut,
     variantHasNoSellableGauge,
     effectiveStock,
-  } = useProductDetailOptions(product);
+  } = useProductDetailOptions(product, {
+    selectedColor: initialSelectedColor,
+    selectedGauge: initialSelectedGauge,
+  });
 
   if (loadState === "loading") {
     return (
@@ -153,6 +165,17 @@ function ProductDetail({ productId }: ProductDetailProps) {
   const selectedOptionUnavailable = hasVariantInventories
     ? selectedVariantSoldOut
     : selectedColorUnavailable || selectedGaugeUnavailable;
+
+  const colorSelectionRequired = visibleColorRows.length > 0;
+
+  const gaugeSelectionRequired = gaugeRows.length > 0;
+
+  const canStartStringing =
+    (!colorSelectionRequired || Boolean(selectedColor)) &&
+    (!gaugeSelectionRequired || Boolean(selectedGauge)) &&
+    !selectedOptionUnavailable &&
+    !variantHasNoSellableGauge &&
+    (!hasVariantInventories || effectiveStock > 0);
 
   const regularPrice = toFiniteNumber(product.price);
 
@@ -399,6 +422,34 @@ function ProductDetail({ productId }: ProductDetailProps) {
           </div>
         </section>
       )}
+
+      {mountingFee !== null && (
+        <section className="mt-8 px-6 max-[359px]:px-5" aria-label="교체서비스 신청">
+          <button
+            className={`min-h-[54px] w-full rounded-2xl px-5 text-base font-extrabold transition ${
+              canStartStringing
+                ? "cursor-pointer bg-[#191f28] text-white active:scale-[0.99]"
+                : "cursor-not-allowed bg-[#e5e8eb] text-[#8b95a1]"
+            }`}
+            type="button"
+            disabled={!canStartStringing}
+            onClick={() =>
+              onStartStringing({
+                productId: product._id,
+                selectedColor,
+                selectedGauge,
+              })
+            }
+          >
+            교체서비스 신청하기
+          </button>
+
+          <p className="mt-2 mb-0 break-keep text-center text-xs leading-[1.55] text-[#8b95a1]">
+            선택한 색상·게이지를 그대로 신청 단계로 전달합니다.
+          </p>
+        </section>
+      )}
+
       {featureEntries.length > 0 && (
         <section className="mt-8 px-6 max-[359px]:px-5" aria-labelledby="detail-features-title">
           <div className="mb-[15px]">
@@ -454,7 +505,7 @@ function ProductDetail({ productId }: ProductDetailProps) {
         </strong>
 
         <p className="mt-1.5 mb-0 text-[13px] leading-[1.55] text-[#6b7684]">
-          교체서비스 신청과 주문 기능은 다음 단계에서 연결합니다.
+          선택한 옵션으로 교체서비스 신청을 시작할 수 있어요.
         </p>
       </aside>
     </main>

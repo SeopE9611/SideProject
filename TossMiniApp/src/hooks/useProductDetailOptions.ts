@@ -80,7 +80,12 @@ const EMPTY_PRODUCT: Product = {
   _id: "",
 };
 
-export function useProductDetailOptions(product: Product | null) {
+type ProductDetailInitialSelection = {
+  selectedColor?: string;
+  selectedGauge?: string;
+};
+
+export function useProductDetailOptions(product: Product | null, initialSelection: ProductDetailInitialSelection = {}) {
   const currentProduct = product ?? EMPTY_PRODUCT;
 
   const variantRows = useMemo<NormalizedVariantRow[]>(() => {
@@ -163,7 +168,7 @@ export function useProductDetailOptions(product: Product | null) {
     [getVariantsByColor, hasVariantInventories, visibleColorRows],
   );
 
-  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedColor, setSelectedColor] = useState(() => initialSelection.selectedColor?.trim() ?? "");
 
   useEffect(() => {
     if (!selectedColor && firstAvailableColor?.value) {
@@ -230,7 +235,7 @@ export function useProductDetailOptions(product: Product | null) {
 
   const gaugeOptions = useMemo(() => gaugeRows.map((row) => row.value), [gaugeRows]);
 
-  const [selectedGauge, setSelectedGauge] = useState("");
+  const [selectedGauge, setSelectedGauge] = useState(() => initialSelection.selectedGauge?.trim() ?? "");
 
   useEffect(() => {
     if (gaugeOptions.length === 1) {

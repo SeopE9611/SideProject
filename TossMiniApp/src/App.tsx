@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getStringingProducts } from "./api/products";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
+import StringingApplicationStepOne from "./components/StringingApplicationStepOne";
 import type { Product } from "./types/product";
+import { StringingStartSelection } from "./types/stringing";
 
 type ProductLoadState = "loading" | "success" | "error";
 
@@ -23,8 +25,24 @@ function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
+function getSearchParamsFromLocation() {
+  return new URLSearchParams(window.location.search);
+}
+
 function getProductIdFromLocation() {
-  return new URLSearchParams(window.location.search).get("productId");
+  return getSearchParamsFromLocation().get("productId");
+}
+
+function getStringingApplyModeFromLocation() {
+  return getSearchParamsFromLocation().get("view") === "stringing-apply";
+}
+
+function getSelectedColorFromLocation() {
+  return getSearchParamsFromLocation().get("selectedColor") ?? "";
+}
+
+function getSelectedGaugeFromLocation() {
+  return getSearchParamsFromLocation().get("selectedGauge") ?? "";
 }
 
 function SectionHeading({ eyebrow, title, titleId }: { eyebrow: string; title: string; titleId: string }) {
@@ -85,6 +103,12 @@ function App() {
 
   const [selectedProductId, setSelectedProductId] = useState<string | null>(() => getProductIdFromLocation());
 
+  const [isStringingApply, setIsStringingApply] = useState(() => getStringingApplyModeFromLocation());
+
+  const [detailSelectedColor, setDetailSelectedColor] = useState(() => getSelectedColorFromLocation());
+
+  const [detailSelectedGauge, setDetailSelectedGauge] = useState(() => getSelectedGaugeFromLocation());
+
   const listScrollYRef = useRef(0);
 
   const loadProducts = useCallback(async (signal?: AbortSignal) => {
@@ -126,6 +150,11 @@ function App() {
       const nextProductId = getProductIdFromLocation();
 
       setSelectedProductId(nextProductId);
+      setIsStringingApply(getStringingApplyModeFromLocation());
+
+      setDetailSelectedColor(getSelectedColorFromLocation());
+
+      setDetailSelectedGauge(getSelectedGaugeFromLocation());
 
       requestAnimationFrame(() => {
         window.scrollTo({
@@ -149,9 +178,16 @@ function App() {
 
     nextUrl.searchParams.set("productId", productId);
 
+    nextUrl.searchParams.delete("view");
+    nextUrl.searchParams.delete("selectedColor");
+    nextUrl.searchParams.delete("selectedGauge");
+
     window.history.pushState({ productId }, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
 
     setSelectedProductId(productId);
+    setIsStringingApply(false);
+    setDetailSelectedColor("");
+    setDetailSelectedGauge("");
 
     window.scrollTo({
       top: 0,
@@ -159,8 +195,79 @@ function App() {
     });
   }, []);
 
+  const handleStartStringing = useCallback((selection: StringingStartSelection) => {
+    const detailUrl = new URL(window.location.href);
+
+    detailUrl.searchParams.set("productId", selection.productId);
+
+    detailUrl.searchParams.delete("view");
+
+    if (selection.selectedColor) {
+      detailUrl.searchParams.set("selectedColor", selection.selectedColor);
+    } else {
+      detailUrl.searchParams.delete("selectedColor");
+    }
+
+    if (selection.selectedGauge) {
+      detailUrl.searchParams.set("selectedGauge", selection.selectedGauge);
+    } else {
+      detailUrl.searchParams.delete("selectedGauge");
+    }
+
+    window.history.replaceState(
+      {
+        productId: selection.productId,
+      },
+      "",
+      `${detailUrl.pathname}${detailUrl.search}${detailUrl.hash}`,
+    );
+
+    const applyUrl = new URL(detailUrl.href);
+
+    applyUrl.searchParams.set("view", "stringing-apply");
+
+    window.history.pushState(
+      {
+        productId: selection.productId,
+        view: "stringing-apply",
+      },
+      "",
+      `${applyUrl.pathname}${applyUrl.search}${applyUrl.hash}`,
+    );
+
+    setSelectedProductId(selection.productId);
+
+    setDetailSelectedColor(selection.selectedColor);
+
+    setDetailSelectedGauge(selection.selectedGauge);
+
+    setIsStringingApply(true);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "auto",
+    });
+  }, []);
+
+  if (selectedProductId && isStringingApply) {
+    return (
+      <StringingApplicationStepOne
+        productId={selectedProductId}
+        selectedColor={detailSelectedColor}
+        selectedGauge={detailSelectedGauge}
+      />
+    );
+  }
+
   if (selectedProductId) {
-    return <ProductDetail productId={selectedProductId} />;
+    return (
+      <ProductDetail
+        productId={selectedProductId}
+        initialSelectedColor={detailSelectedColor}
+        initialSelectedGauge={detailSelectedGauge}
+        onStartStringing={handleStartStringing}
+      />
+    );
   }
 
   return (

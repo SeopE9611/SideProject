@@ -7,3 +7,15 @@ export type StringingSlotSummary = {
   blockedTimes: string[];
   availableTimes: string[];
 };
+
+export type StringingStartSelection = {
+  productId: string;
+  selectedColor: string;
+  selectedGauge: string;
+};
+
+export type StringingApplicantDraft = {
+  name: string;
+  email: string;
+  phone: string;
+};
