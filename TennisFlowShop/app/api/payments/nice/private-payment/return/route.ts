@@ -252,7 +252,7 @@ async function handle(req: Request) {
   );
   if (!updated) {
     try {
-      await cancelNicePaymentByTid({
+      const canceled = await cancelNicePaymentByTid({
         tid,
         orderId,
         reason: "승인 후 개인결제 상태 변경 실패로 자동 취소",
@@ -260,21 +260,59 @@ async function handle(req: Request) {
         secretKey,
         apiBaseUrl: apiBase(),
       });
-    } catch {}
-    await col.updateOne(
-      { _id: session._id },
-      {
-        $set: {
-          status: "approve_succeeded_auto_cancel_failed",
-          failureStage: "create_order_after_approve",
-          failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-          failureMessage: "승인 후 개인결제 상태 변경에 실패했습니다.",
-          niceAuthRaw: raw,
-          niceApprovedRaw: approved,
-          updatedAt: new Date(),
+      const cancelCode = pick(canceled, "resultCode", "ResultCode");
+      const cancelMsg = pick(canceled, "resultMsg", "ResultMsg");
+      const canceledOk = cancelCode === "0000";
+      await col.updateOne(
+        { _id: session._id },
+        {
+          $set: {
+            status: canceledOk
+              ? "approve_succeeded_auto_cancel_succeeded"
+              : "approve_succeeded_auto_cancel_failed",
+            failureStage: "create_order_after_approve",
+            failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            failureMessage: "승인 후 개인결제 상태 변경에 실패했습니다.",
+            niceAuthRaw: raw,
+            niceApprovedRaw: approved,
+            updatedAt: new Date(),
+            niceAutoCancel: {
+              attemptedAt: new Date(),
+              resultCode: cancelCode || "UNKNOWN",
+              resultMsg: cancelMsg || undefined,
+              status: canceledOk ? "succeeded" : "failed",
+            },
+          },
         },
-      },
-    );
+      );
+    } catch (cancelError: unknown) {
+      await col.updateOne(
+        { _id: session._id },
+        {
+          $set: {
+            status: "approve_succeeded_auto_cancel_failed",
+            failureStage: "create_order_after_approve",
+            failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            failureMessage: "승인 후 개인결제 상태 변경에 실패했습니다.",
+            niceAuthRaw: raw,
+            niceApprovedRaw: approved,
+            updatedAt: new Date(),
+            niceAutoCancel: {
+              attemptedAt: new Date(),
+              resultCode:
+                cancelError && typeof cancelError === "object" && "code" in cancelError
+                  ? String(cancelError.code)
+                  : "AUTO_CANCEL_REQUEST_ERROR",
+              resultMsg:
+                cancelError instanceof Error
+                  ? cancelError.message
+                  : "자동 취소 중 오류가 발생했습니다.",
+              status: "failed",
+            },
+          },
+        },
+      );
+    }
     return redirect303(
       req,
       failUrl(

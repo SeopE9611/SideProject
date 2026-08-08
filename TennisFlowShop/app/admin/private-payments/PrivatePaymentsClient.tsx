@@ -57,6 +57,9 @@ type Item = {
   createdAt: string;
   paidAt?: string;
   canceledAt?: string;
+  cancellationInfo?: {
+    status?: "processing" | "completed" | "failed";
+  };
   offlineLink?: {
     status: "linked";
     offlineCustomerId: string;
@@ -631,6 +634,9 @@ export default function PrivatePaymentsClient() {
                             {item.offlineLink?.status === "linked" && (
                               <Badge variant="secondary">오프라인 연결됨</Badge>
                             )}
+                            {item.cancellationInfo?.status === "processing" && (
+                              <Badge variant="outline">취소 처리 확인 중</Badge>
+                            )}
                           </div>
                         </td>
                         <td
@@ -738,13 +744,20 @@ export default function PrivatePaymentsClient() {
                               {item.paymentStatus === "결제완료" && (
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
-                                  disabled={cancelingId === item.id}
+                                  disabled={
+                                    cancelingId === item.id ||
+                                    item.cancellationInfo?.status === "processing"
+                                  }
                                   onSelect={(event) => {
                                     event.preventDefault();
                                     openCancelDialog(item);
                                   }}
                                 >
-                                  {cancelingId === item.id ? "취소 처리 중..." : "결제취소"}
+                                  {item.cancellationInfo?.status === "processing"
+                                    ? "취소 처리 확인 중"
+                                    : cancelingId === item.id
+                                      ? "취소 처리 중..."
+                                      : "결제취소"}
                                 </DropdownMenuItem>
                               )}
                               {item.paymentStatus === "결제대기" && (
