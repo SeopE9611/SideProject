@@ -43,7 +43,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import useSWR from "swr";
 
 type SelectedCustomer =
@@ -444,6 +444,7 @@ export default function OfflineAdminClient() {
     memo: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const recordSaveAttemptRef = useRef<{ key: string; serializedPayload: string } | null>(null);
 
   const key = submittedQuery
     ? `/api/admin/offline/lookup?name=${encodeURIComponent(submittedQuery.name)}&phone=${encodeURIComponent(submittedQuery.phone)}&email=${encodeURIComponent(submittedQuery.email)}`
@@ -1671,67 +1672,81 @@ export default function OfflineAdminClient() {
                             setSaveMessageType("error");
                             return;
                           }
+                          const serializedPayload = JSON.stringify({
+                            offlineCustomerId,
+                            userId:
+                              selected.source === "online"
+                                ? selected.userId
+                                : selected.userId || null,
+                            kind: form.kind,
+                            status: form.status,
+                            lines: form.lines
+                              .map((line) => {
+                                const mainStringName = line.mainStringName.trim();
+                                const crossStringName = line.crossStringName.trim();
+
+                                return {
+                                  racketName: line.racketName.trim(),
+
+                                  // 기존 화면/과거 코드 호환용 대표 스트링명입니다.
+                                  stringName:
+                                    mainStringName &&
+                                    crossStringName &&
+                                    mainStringName !== crossStringName
+                                      ? `${mainStringName} / ${crossStringName}`
+                                      : mainStringName || crossStringName,
+
+                                  // 신규 분리 저장 필드입니다.
+                                  mainStringName,
+                                  crossStringName,
+
+                                  tensionMain: line.tensionMain.trim(),
+                                  tensionCross: line.tensionCross.trim(),
+
+                                  // 라켓별 금액입니다. 전체 결제금액은 payment.amount에 따로 저장됩니다.
+                                  amount: Number(line.amount) || 0,
+
+                                  note: line.note.trim(),
+                                };
+                              })
+                              .filter(
+                                (line) =>
+                                  [
+                                    line.racketName,
+                                    line.stringName,
+                                    line.mainStringName,
+                                    line.crossStringName,
+                                    line.tensionMain,
+                                    line.tensionCross,
+                                    line.note,
+                                  ].some((value) => String(value ?? "").trim().length > 0) ||
+                                  Number(line.amount) > 0,
+                              ),
+                            payment: {
+                              status: form.payStatus,
+                              method: form.method,
+                              amount: form.amount,
+                            },
+                            memo: form.memo,
+                          });
+                          if (
+                            !recordSaveAttemptRef.current ||
+                            recordSaveAttemptRef.current.serializedPayload !== serializedPayload
+                          ) {
+                            recordSaveAttemptRef.current = {
+                              key: crypto.randomUUID(),
+                              serializedPayload,
+                            };
+                          }
                           await adminMutator("/api/admin/offline/records", {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              offlineCustomerId,
-                              userId:
-                                selected.source === "online"
-                                  ? selected.userId
-                                  : selected.userId || null,
-                              kind: form.kind,
-                              status: form.status,
-                              lines: form.lines
-                                .map((line) => {
-                                  const mainStringName = line.mainStringName.trim();
-                                  const crossStringName = line.crossStringName.trim();
-
-                                  return {
-                                    racketName: line.racketName.trim(),
-
-                                    // 기존 화면/과거 코드 호환용 대표 스트링명입니다.
-                                    stringName:
-                                      mainStringName &&
-                                      crossStringName &&
-                                      mainStringName !== crossStringName
-                                        ? `${mainStringName} / ${crossStringName}`
-                                        : mainStringName || crossStringName,
-
-                                    // 신규 분리 저장 필드입니다.
-                                    mainStringName,
-                                    crossStringName,
-
-                                    tensionMain: line.tensionMain.trim(),
-                                    tensionCross: line.tensionCross.trim(),
-
-                                    // 라켓별 금액입니다. 전체 결제금액은 payment.amount에 따로 저장됩니다.
-                                    amount: Number(line.amount) || 0,
-
-                                    note: line.note.trim(),
-                                  };
-                                })
-                                .filter(
-                                  (line) =>
-                                    [
-                                      line.racketName,
-                                      line.stringName,
-                                      line.mainStringName,
-                                      line.crossStringName,
-                                      line.tensionMain,
-                                      line.tensionCross,
-                                      line.note,
-                                    ].some((value) => String(value ?? "").trim().length > 0) ||
-                                    Number(line.amount) > 0,
-                                ),
-                              payment: {
-                                status: form.payStatus,
-                                method: form.method,
-                                amount: form.amount,
-                              },
-                              memo: form.memo,
-                            }),
+                            headers: {
+                              "Content-Type": "application/json",
+                              "Idempotency-Key": recordSaveAttemptRef.current.key,
+                            },
+                            body: serializedPayload,
                           });
+                          recordSaveAttemptRef.current = null;
                           setForm({
                             kind: "stringing",
                             status: "received",
