@@ -35,6 +35,7 @@ type NicepayMeta = {
   hasClientId: boolean;
   hasSecretKey: boolean;
 };
+type EmailSource = "database" | "environment" | "unconfigured";
 
 const DEFAULT_NICEPAY_META: NicepayMeta = {
   provider: "NICEPay",
@@ -59,7 +60,11 @@ export function useAdminSettings() {
     email: { type: null, message: "" },
     payment: { type: null, message: "" },
   });
-  const [emailMeta, setEmailMeta] = useState({ hasSmtpPassword: false });
+  const [emailMeta, setEmailMeta] = useState<{
+    hasSmtpPassword: boolean;
+    source: EmailSource;
+  }>({ hasSmtpPassword: false, source: "unconfigured" });
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
   const [paymentMeta, setPaymentMeta] = useState({
     hasPaypalSecret: false,
     hasStripeSecretKey: false,
@@ -182,6 +187,10 @@ export function useAdminSettings() {
             emailForm.reset(json.data ?? defaultEmailSettings);
             setEmailMeta({
               hasSmtpPassword: Boolean(json?.meta?.hasSmtpPassword),
+              source:
+                json?.meta?.source === "database" || json?.meta?.source === "environment"
+                  ? json.meta.source
+                  : "unconfigured",
             });
           }),
           loadTab("payment", "/api/admin/settings/payment", (json) => {
@@ -262,7 +271,13 @@ export function useAdminSettings() {
     try {
       const json = await saveTab("email", "/api/admin/settings/email", data);
       emailForm.reset(json.data ?? data);
-      setEmailMeta({ hasSmtpPassword: Boolean(json?.meta?.hasSmtpPassword) });
+      setEmailMeta({
+        hasSmtpPassword: Boolean(json?.meta?.hasSmtpPassword),
+        source:
+          json?.meta?.source === "database" || json?.meta?.source === "environment"
+            ? json.meta.source
+            : "unconfigured",
+      });
       showSuccessToast("이메일 설정이 저장되었습니다.");
     } catch (error: unknown) {
       showErrorToast(error instanceof Error ? error.message : "이메일 설정 저장에 실패했습니다.");
@@ -284,10 +299,24 @@ export function useAdminSettings() {
     }
   };
 
-  const sendTestEmail = () => {
-    if (!emailMeta.hasSmtpPassword && !emailForm.watch("smtpPassword"))
-      return showErrorToast("SMTP 비밀번호를 먼저 등록해주세요.");
-    showSuccessToast("테스트 이메일이 발송되었습니다.");
+  const sendTestEmail = async () => {
+    if (emailForm.formState.isDirty) {
+      showErrorToast("변경한 이메일 설정을 먼저 저장해주세요.");
+      return;
+    }
+    if (isSendingTestEmail) return;
+
+    setIsSendingTestEmail(true);
+    try {
+      await adminMutator("/api/admin/settings/email/test", { method: "POST" });
+      showSuccessToast("테스트 이메일이 발송되었습니다.");
+    } catch (error: unknown) {
+      showErrorToast(
+        error instanceof Error ? error.message : "테스트 이메일 전송에 실패했습니다.",
+      );
+    } finally {
+      setIsSendingTestEmail(false);
+    }
   };
 
   const requestTabChange = (nextTab: string) => {
@@ -325,6 +354,7 @@ export function useAdminSettings() {
     emailForm,
     paymentForm,
     emailMeta,
+    isSendingTestEmail,
     paymentMeta,
     onSubmitSiteSettings,
     onSubmitUserSettings,

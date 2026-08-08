@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { getDb } from "@/lib/mongodb";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { getSmtpSource } from "@/lib/email/smtpConfig";
 import {
   EmailSettings,
   SETTINGS_COLLECTION,
@@ -21,11 +22,16 @@ export async function GET(req: Request) {
   const merged = { ...defaultEmailSettings, ...(doc?.value ?? {}) };
   const parsed = emailSettingsSchema.safeParse(merged);
   const data = parsed.success ? parsed.data : defaultEmailSettings;
+  const source = await getSmtpSource(db);
 
   return NextResponse.json(
     {
       data: { ...data, smtpPassword: "" },
-      meta: { hasSmtpPassword: Boolean(data.smtpPassword) },
+      meta: {
+        hasSmtpPassword: Boolean(data.smtpPassword),
+        source,
+        configured: source !== "unconfigured",
+      },
     },
     { status: 200, headers: { "Cache-Control": "no-store" } },
   );
@@ -60,6 +66,13 @@ export async function PATCH(req: Request) {
       : (prevValue.smtpPassword ?? ""),
   };
 
+  if (!toSave.smtpPassword?.trim()) {
+    return NextResponse.json(
+      { message: "최초 SMTP 설정에는 비밀번호가 필요합니다." },
+      { status: 400 },
+    );
+  }
+
   await db.collection<any>(SETTINGS_COLLECTION).updateOne(
     { _id: DOC_ID },
     {
@@ -84,10 +97,12 @@ export async function PATCH(req: Request) {
     req,
   );
 
+  const source = await getSmtpSource(db);
+
   return NextResponse.json(
     {
       data: { ...toSave, smtpPassword: "" },
-      meta: { hasSmtpPassword: Boolean(toSave.smtpPassword) },
+      meta: { hasSmtpPassword: Boolean(toSave.smtpPassword), source, configured: true },
     },
     { status: 200, headers: { "Cache-Control": "no-store" } },
   );

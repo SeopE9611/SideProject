@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { getEffectiveSmtpConfig } from "@/lib/email/smtpConfig";
 
 type SendEmailArgs = {
   to: string | string[];
@@ -9,21 +10,8 @@ type SendEmailArgs = {
 };
 
 export async function sendEmail({ to, subject, html, ics, bcc }: SendEmailArgs) {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMPP_PORT || process.env.SMTP_PORT || 587); // 오타 대비 유지
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from =
-    process.env.SMTP_FROM || process.env.MAIL_FROM || "도깨비테니스 <noreply@dokkaebitennis.com>";
-  const replyTo =
-    process.env.SMTP_REPLY_TO ||
-    process.env.SUPPORT_EMAIL ||
-    process.env.SMTP_FROM ||
-    process.env.MAIL_FROM;
-
-  if (!host || !user || !pass) {
-    throw new Error("SMTP env not set (SMTP_HOST/SMTP_USER/SMTP_PASS)");
-  }
+  const smtp = await getEffectiveSmtpConfig();
+  if (!smtp) throw new Error("SMTP is not configured");
 
   // ==안전밸브: 허용목록 외 수신자 차단 ==
   const SAFE_MODE = process.env.SAFE_MODE === "true";
@@ -42,10 +30,12 @@ export async function sendEmail({ to, subject, html, ics, bcc }: SendEmailArgs) 
   };
 
   const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    requireTLS: smtp.requireTLS,
+    ignoreTLS: smtp.ignoreTLS,
+    auth: { user: smtp.user, pass: smtp.pass },
   });
 
   // ===ICS MIME 명시===
@@ -60,12 +50,12 @@ export async function sendEmail({ to, subject, html, ics, bcc }: SendEmailArgs) 
     : undefined;
 
   await transporter.sendMail({
-    from,
+    from: smtp.from,
     to: guardRecipients(to),
     subject,
     html,
     bcc: bcc ? guardRecipients(bcc) : undefined,
     attachments,
-    replyTo,
+    replyTo: smtp.replyTo,
   });
 }
