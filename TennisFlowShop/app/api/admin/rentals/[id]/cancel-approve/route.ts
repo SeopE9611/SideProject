@@ -218,6 +218,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const claimResult: any = await rentals.findOneAndUpdate(
         {
           _id,
+          "cancelRequest.status": { $in: ["requested", "approved"] },
           "cancelRequest.pgCancelClaim.status": { $ne: "processing" },
           $or: [
             { paymentStatus: { $ne: "결제취소" } },
@@ -237,7 +238,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const claimed = claimResult && "value" in claimResult ? claimResult.value : claimResult;
       if (!claimed) {
         const latest: any = await rentals.findOne({ _id });
-        if (!isNiceCancelConfirmed(latest)) {
+        if (latest?.cancelRequest?.status === "rejected") {
+          return NextResponse.json(
+            {
+              ok: false,
+              errorCode: "RENTAL_CANCEL_REQUEST_STATE_CHANGED",
+              message: "취소 요청 상태가 변경되어 승인할 수 없습니다.",
+            },
+            { status: 409 },
+          );
+        }
+        if (latest?.cancelRequest?.pgCancelClaim?.status === "processing") {
           return NextResponse.json(
             {
               ok: false,
@@ -247,7 +258,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             { status: 409 },
           );
         }
-        existing = latest;
+        if (isNiceCancelConfirmed(latest)) {
+          existing = latest;
+        } else {
+          return NextResponse.json(
+            {
+              ok: false,
+              errorCode: "RENTAL_CANCEL_CLAIM_CONFLICT",
+              message: "최신 대여 상태가 NICE 취소 승인 조건과 일치하지 않습니다.",
+            },
+            { status: 409 },
+          );
+        }
       } else {
         existing = claimed;
         let cancelCalled = false;
@@ -397,6 +419,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                       ? "admin_rental_cancel_approve_pg_lookup"
                       : "admin_rental_cancel_approve",
                   pgStatus: "canceled",
+                  manualActionRequired: false,
+                  manualActionReason: null,
                   resultCode: resultCode || "0000",
                   resultMsg: resultMsg || null,
                   canceledAt,
@@ -407,6 +431,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 "cancelRequest.pgCancelClaim.status": "pg_canceled",
                 "cancelRequest.pgCancelClaim.updatedAt": persistedAt,
               },
+              $unset: { "cancelRequest.pgCancelBlocked": "" },
             },
           );
           if (!persisted.modifiedCount) {
@@ -457,6 +482,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         if (!current)
           throw new RentalCancelFinalizationError("RENTAL_NOT_FOUND", "대여를 찾을 수 없습니다.");
         if (current.status === "canceled" && current.cancelRequest?.status === "approved") return;
+        if (!["requested", "approved"].includes(String(current.cancelRequest?.status ?? ""))) {
+          throw new RentalCancelFinalizationError(
+            "RENTAL_CANCEL_REQUEST_STATE_CHANGED",
+            "취소 요청 상태가 변경되어 승인할 수 없습니다.",
+          );
+        }
         if (normalizedProvider === "nicepay" && !isNiceCancelConfirmed(current)) {
           throw new RentalCancelFinalizationError(
             "PG_CANCEL_NOT_CONFIRMED",
@@ -583,7 +614,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             : "대여 취소 내부 후처리가 완료되지 않았습니다. 다시 시도해 주세요.";
       return NextResponse.json(
         { ok: false, errorCode: code, code, message, detail: error?.message || null },
-        { status: code === "PG_CANCEL_NOT_CONFIRMED" || code.endsWith("STOCK_RESTORE_FAILED") ? 409 : 500 },
+        {
+          status:
+            code === "PG_CANCEL_NOT_CONFIRMED" ||
+            code === "RENTAL_CANCEL_REQUEST_STATE_CHANGED" ||
+            code.endsWith("STOCK_RESTORE_FAILED")
+              ? 409
+              : 500,
+        },
       );
     } finally {
       await session.endSession();
