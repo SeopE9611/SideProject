@@ -6,11 +6,9 @@ import { useForm } from "react-hook-form";
 import {
   defaultEmailSettings,
   defaultPaymentSettings,
-  defaultSiteSettings,
   defaultUserSettings,
   emailSettingsSchema,
   paymentSettingsSchema,
-  siteSettingsSchema,
   userSettingsSchema,
 } from "@/lib/admin-settings";
 import { AdminFetchError, adminMutator } from "@/lib/admin/adminFetcher";
@@ -21,7 +19,6 @@ import type {
   PaymentSettings,
   SettingsApiResponse,
   SettingsTab,
-  SiteSettings,
   TabErrorState,
   UserSettings,
 } from "@/types/admin/settings";
@@ -52,10 +49,9 @@ const AUTH_ERROR_MESSAGES = {
 } as const;
 
 export function useAdminSettings() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("site");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("user");
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [tabErrors, setTabErrors] = useState<Record<SettingsTab, TabErrorState>>({
-    site: { type: null, message: "" },
     user: { type: null, message: "" },
     email: { type: null, message: "" },
     payment: { type: null, message: "" },
@@ -72,10 +68,6 @@ export function useAdminSettings() {
   });
   const [pendingTab, setPendingTab] = useState<SettingsTab | null>(null);
 
-  const siteForm = useForm<SiteSettings>({
-    resolver: zodResolver(siteSettingsSchema),
-    defaultValues: defaultSiteSettings,
-  });
   const userForm = useForm<UserSettings>({
     resolver: zodResolver(userSettingsSchema),
     defaultValues: defaultUserSettings,
@@ -91,13 +83,11 @@ export function useAdminSettings() {
 
   const dirtyByTab = useMemo(
     () => ({
-      site: siteForm.formState.isDirty,
       user: userForm.formState.isDirty,
       email: emailForm.formState.isDirty,
       payment: paymentForm.formState.isDirty,
     }),
     [
-      siteForm.formState.isDirty,
       userForm.formState.isDirty,
       emailForm.formState.isDirty,
       paymentForm.formState.isDirty,
@@ -106,7 +96,6 @@ export function useAdminSettings() {
 
   const isDirtyAny = Object.values(dirtyByTab).some(Boolean);
   const isSubmittingAny =
-    siteForm.formState.isSubmitting ||
     userForm.formState.isSubmitting ||
     emailForm.formState.isSubmitting ||
     paymentForm.formState.isSubmitting;
@@ -172,11 +161,6 @@ export function useAdminSettings() {
       setIsBootstrapping(true);
       try {
         await Promise.all([
-          loadTab(
-            "site",
-            "/api/admin/settings/site",
-            (json) => !cancelled && siteForm.reset(json.data ?? defaultSiteSettings),
-          ),
           loadTab(
             "user",
             "/api/admin/settings/user",
@@ -247,16 +231,6 @@ export function useAdminSettings() {
     }
   };
 
-  const onSubmitSiteSettings = async (data: SiteSettings) => {
-    try {
-      const json = await saveTab("site", "/api/admin/settings/site", data);
-      siteForm.reset(json.data ?? data);
-      showSuccessToast("사이트 설정이 저장되었습니다.");
-    } catch (error: unknown) {
-      showErrorToast(error instanceof Error ? error.message : "사이트 설정 저장에 실패했습니다.");
-    }
-  };
-
   const onSubmitUserSettings = async (data: UserSettings) => {
     try {
       const json = await saveTab("user", "/api/admin/settings/user", data);
@@ -320,7 +294,7 @@ export function useAdminSettings() {
   };
 
   const requestTabChange = (nextTab: string) => {
-    if (!["site", "user", "email", "payment"].includes(nextTab) || nextTab === activeTab) return;
+    if (!["user", "email", "payment"].includes(nextTab) || nextTab === activeTab) return;
     const currentDirty = (dirtyByTab as Record<string, boolean>)[activeTab] ?? false;
     if (currentDirty) {
       setPendingTab(nextTab as SettingsTab);
@@ -349,14 +323,12 @@ export function useAdminSettings() {
     tabErrors,
     isDirtyAny,
     isSubmittingAny,
-    siteForm,
     userForm,
     emailForm,
     paymentForm,
     emailMeta,
     isSendingTestEmail,
     paymentMeta,
-    onSubmitSiteSettings,
     onSubmitUserSettings,
     onSubmitEmailSettings,
     onSubmitPaymentSettings,
