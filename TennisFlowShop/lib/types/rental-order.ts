@@ -98,6 +98,27 @@ export type RentalOrder = {
       canceledAt?: string | null;
       cancelAmount?: number;
     } | null;
+    depositRefund?: {
+      provider: "manual_bank_transfer" | "nicepay";
+      status: "processing" | "failed" | "needs_reconciliation" | "completed" | "cleared";
+      amount: number;
+      token?: string;
+      claimedAt?: string | Date;
+      updatedAt: string | Date;
+      tid?: string;
+      cancelOrderId?: string;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      pgStatus?: string | null;
+      pgBalanceAmount?: number | null;
+      refundedAt?: string | Date;
+      manualActionRequired?: boolean;
+      manualActionReason?: "unsettled_amount_shortage" | "unexpected_pg_balance" | "unknown_external_result" | null;
+      completedByAdminId?: string;
+      clearedAt?: string | Date;
+      clearedByAdminId?: string;
+      previousRefund?: unknown;
+    } | null;
     rawSummary?: {
       orderId?: string;
       totalAmount?: number;

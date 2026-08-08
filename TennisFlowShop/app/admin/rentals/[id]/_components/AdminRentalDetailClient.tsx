@@ -96,6 +96,8 @@ const rentalHistoryActionLabels: Record<string, string> = {
   "cancel-approved": "취소 승인",
   "cancel-rejected": "취소 거절",
   "cancel-withdrawn": "취소 철회",
+  "deposit-refund-completed": "보증금 환불 완료",
+  "deposit-refund-cleared": "보증금 수동 환불 기록 정정",
 };
 
 function getRentalHistoryActorLabel(actor?: { role?: string; id?: string } | null) {
@@ -191,7 +193,11 @@ export default function AdminRentalDetailClient() {
         ensureAdminMutationSucceeded(json, "처리 실패");
         return json;
       },
-      successMessage: mark ? "보증금 환불 처리 완료" : "보증금 환불 처리 해제 완료",
+      successMessage: mark
+        ? data?.paymentProvider === "nicepay"
+          ? "NICE 보증금 부분취소 완료"
+          : "무통장 보증금 수동 환불 완료 기록 완료"
+        : "무통장 보증금 수동 환불 기록 정정 완료",
       fallbackErrorMessage: "처리 실패",
     });
     if (result) await mutate();
@@ -246,7 +252,7 @@ export default function AdminRentalDetailClient() {
     setIsSyncingNice(true);
     try {
       const json = await adminMutator<{ success?: boolean; error?: string }>(
-        `/api/admin/payments/nice/rental/sync/${id}`,
+        `/api/payments/nice/rental/sync/${id}`,
         { method: "POST" },
       );
       if (!json?.success) {
@@ -371,19 +377,25 @@ export default function AdminRentalDetailClient() {
                 }
               : pendingAction === "refundMark"
                 ? {
-                    title: "보증금 환불 처리할까요?",
+                    title:
+                      data?.paymentProvider === "nicepay"
+                        ? "NICE 보증금을 부분취소할까요?"
+                        : "무통장 보증금 수동 환불 완료를 기록할까요?",
                     description:
-                      "반납 상태와 라켓 상태를 확인한 뒤 보증금 환불 처리를 진행합니다. 처리 후 운영 이력에 남으므로 환불 계좌/결제 수단과 실제 환불 여부를 함께 확인해주세요.",
-                    confirmText: "환불 처리",
+                      data?.paymentProvider === "nicepay"
+                        ? `NICE 결제에서 보증금 ${won(data?.amount?.deposit)}만 실제 부분취소합니다. 대여료와 교체 비용은 취소되지 않습니다.`
+                        : "관리자가 실제 계좌 송금을 별도로 확인한 뒤 수동 환불 완료 기록을 남깁니다. 이 버튼은 계좌 송금을 실행하지 않습니다.",
+                    confirmText:
+                      data?.paymentProvider === "nicepay" ? "NICE 부분취소" : "수동 환불 완료 기록",
                     eventKey: "admin-rental-detail-refund-mark-confirm",
                     eventMeta: { rentalId: id, currentStatus: data?.status },
                   }
                 : pendingAction === "refundClear"
                   ? {
-                      title: "보증금 환불 처리를 해제할까요?",
+                      title: "무통장 보증금 수동 환불 기록을 정정할까요?",
                       description:
-                        "환불 완료 기록을 해제합니다. 이미 실제 환불이 진행되지 않았는지와 환불 이력 정합성을 먼저 확인해주세요.",
-                      confirmText: "환불 해제",
+                        "잘못 남긴 수동 환불 완료 기록을 정정합니다. 실제 계좌 환불 여부를 먼저 확인해주세요.",
+                      confirmText: "수동 환불 기록 정정",
                       eventKey: "admin-rental-detail-refund-clear-confirm",
                       eventMeta: { rentalId: id, currentStatus: data?.status },
                     }
@@ -1428,9 +1440,9 @@ export default function AdminRentalDetailClient() {
                 </p>
               )}
 
-              {/* 환불/해제 버튼 (아래는 기존 코드 그대로) */}
+              {/* 결제수단별 보증금 환불/수동 기록 정정 */}
               {isReturned &&
-                (data.depositRefundedAt ? (
+                (data.depositRefundedAt && data.paymentProvider === "manual_bank_transfer" ? (
                   <Button
                     size="sm"
                     variant="outline"
@@ -1440,9 +1452,9 @@ export default function AdminRentalDetailClient() {
                       setPendingAction("refundClear");
                     }}
                   >
-                    {busyAction === "refundClear" ? "환불 해제 중…" : "환불 해제"}
+                    {busyAction === "refundClear" ? "기록 정정 중…" : "수동 환불 기록 정정"}
                   </Button>
-                ) : (
+                ) : !data.depositRefundedAt ? (
                   <Button
                     size="sm"
                     variant="outline"
@@ -1452,9 +1464,15 @@ export default function AdminRentalDetailClient() {
                       setPendingAction("refundMark");
                     }}
                   >
-                    {busyAction === "refundMark" ? "환불 처리 중…" : "환불 처리"}
+                    {busyAction === "refundMark"
+                      ? data.paymentProvider === "nicepay"
+                        ? "NICE 부분취소 중…"
+                        : "완료 기록 중…"
+                      : data.paymentProvider === "nicepay"
+                        ? "NICE 보증금 부분취소"
+                        : "수동 환불 완료 기록"}
                   </Button>
-                ))}
+                ) : null)}
             </div>
           </CardFooter>
         </Card>
