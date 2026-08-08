@@ -1165,8 +1165,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       const paymentProvider = String(existing.paymentInfo?.provider ?? "")
         .trim()
         .toLowerCase();
+      const normalizedPaymentMethod = String(existing.paymentInfo?.method ?? "").replace(/\s+/g, "");
+      const isBankTransfer = normalizedPaymentMethod === "무통장입금";
       if (
-        String(existing.paymentInfo?.method ?? "").trim() !== "무통장입금" ||
+        !isBankTransfer ||
         paymentProvider === "nicepay"
       ) {
         return new NextResponse(

@@ -520,17 +520,32 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       existing = claimedOrder;
       let cancelCalled = false;
       let cancelOrderId: string | null = null;
+      let pgStatus = "";
+      let pgBalanceAmount = 0;
+      let cancelAmount = 0;
+      const handleUnsettledAmountShortage = async (resultMsg: string) => {
+        const blockedAt = new Date();
+        await orders.updateOne({ _id, "cancelRequest.pgCancelClaim.token": claimToken }, { $set: {
+          status: "취소처리중",
+          "cancelRequest.status": "approved_pending_pg_cancel",
+          "cancelRequest.pgCancelClaim.status": "failed",
+          "cancelRequest.pgCancelClaim.updatedAt": blockedAt,
+          "cancelRequest.pgCancelBlocked": { reason: "unsettled_amount_shortage", resultCode: "2026", resultMsg: resultMsg || null, tid, amount: cancelAmount, blockedAt },
+          "paymentInfo.niceSync": { ...(existing.paymentInfo?.niceSync ?? {}), lastSyncedAt: blockedAt.toISOString(), source: "admin_cancel_approve_failed", pgStatus, resultCode: "2026", resultMsg: resultMsg || null, cancelAmount, originalOrderId: originalNiceOrderId, cancelOrderId, manualActionRequired: true, manualActionReason: "unsettled_amount_shortage" },
+        }, $push: { history: { status: "PG자동취소실패", date: blockedAt, description: "NICE 미정산금액 부족으로 자동 카드취소가 거절되었습니다. 주문 취소 후처리는 진행하지 않았습니다." } } } as any);
+        return NextResponse.json({ ok: false, errorCode: "NICE_UNSETTLED_AMOUNT_SHORTAGE", message: "NICE 미정산금액 부족으로 자동 카드취소가 불가합니다.", adminGuide: { title: "NICE 자동 카드취소 불가", description: "가맹점 미정산금액이 취소금액보다 부족해 NICE 자동취소가 거절되었습니다. NICE 입금 후 취소 절차를 진행한 뒤, 강제취소 완료 후 PG 상태를 다시 확인해 주세요.", nextActions: ["NICE 미정산금액 입금 후 취소 절차를 진행해 주세요.", "NICE에서 강제취소가 완료되면 관리자 주문 상세에서 PG 상태를 다시 확인해 주세요."], diagnostics: { originalNiceOrderId, cancelOrderId, cancelAmount, pgBalanceAmount, pgStatus, tid, resultCode: "2026", resultMsg: resultMsg || null } } }, { status: 409 });
+      };
       try {
         const pgRaw = await getNicePaymentByTid({ tid, clientKey, secretKey });
         const lookupCode = String(pgRaw.resultCode ?? pgRaw.ResultCode ?? "").trim();
         if (lookupCode && lookupCode !== "0000") throw Object.assign(new Error(String(pgRaw.resultMsg ?? "NICE 상태 조회 실패")), { beforeCancel: true });
-        const pgStatus = String(pgRaw.status ?? pgRaw.Status ?? "").trim().toLowerCase().replace("cancelled", "canceled");
+        pgStatus = String(pgRaw.status ?? pgRaw.Status ?? "").trim().toLowerCase().replace("cancelled", "canceled");
         const localExpectedAmount = Math.floor(Number(existing.paymentInfo?.total ?? existing.totalPrice ?? 0));
-        const pgBalanceAmount = Math.floor(Number(pgRaw.balanceAmt ?? 0));
+        pgBalanceAmount = Math.floor(Number(pgRaw.balanceAmt ?? 0));
         let successRaw = pgRaw;
         let resultCode = lookupCode || "0000";
         let resultMsg = String(pgRaw.resultMsg ?? pgRaw.ResultMsg ?? "").trim();
-        let cancelAmount = Math.max(0, Math.floor(Number(pgRaw.cancAmt ?? pgRaw.cancelAmount ?? 0)));
+        cancelAmount = Math.max(0, Math.floor(Number(pgRaw.cancAmt ?? pgRaw.cancelAmount ?? 0)));
 
         if (pgStatus !== "canceled") {
           if (pgStatus !== "paid" && pgStatus !== "partialcanceled") {
@@ -546,16 +561,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           resultCode = String(successRaw.resultCode ?? successRaw.ResultCode ?? "").trim();
           resultMsg = String(successRaw.resultMsg ?? successRaw.ResultMsg ?? "").trim();
           if (resultCode === "2026") {
-            const blockedAt = new Date();
-            await orders.updateOne({ _id, "cancelRequest.pgCancelClaim.token": claimToken }, { $set: {
-              status: "취소처리중",
-              "cancelRequest.status": "approved_pending_pg_cancel",
-              "cancelRequest.pgCancelClaim.status": "failed",
-              "cancelRequest.pgCancelClaim.updatedAt": blockedAt,
-              "cancelRequest.pgCancelBlocked": { reason: "unsettled_amount_shortage", resultCode: "2026", resultMsg: resultMsg || null, tid, amount: cancelAmount, blockedAt },
-              "paymentInfo.niceSync": { ...(existing.paymentInfo?.niceSync ?? {}), lastSyncedAt: blockedAt.toISOString(), source: "admin_cancel_approve_failed", pgStatus, resultCode: "2026", resultMsg: resultMsg || null, cancelAmount, originalOrderId: originalNiceOrderId, cancelOrderId, manualActionRequired: true, manualActionReason: "unsettled_amount_shortage" },
-            }, $push: { history: { status: "PG자동취소실패", date: blockedAt, description: "NICE 미정산금액 부족으로 자동 카드취소가 거절되었습니다. 주문 취소 후처리는 진행하지 않았습니다." } } } as any);
-            return NextResponse.json({ ok: false, errorCode: "NICE_UNSETTLED_AMOUNT_SHORTAGE", message: "NICE 미정산금액 부족으로 자동 카드취소가 불가합니다.", adminGuide: { title: "NICE 자동 카드취소 불가", description: "가맹점 미정산금액이 취소금액보다 부족해 NICE 자동취소가 거절되었습니다. NICE 입금 후 취소 절차를 진행한 뒤, 강제취소 완료 후 PG 상태를 다시 확인해 주세요.", nextActions: ["NICE 미정산금액 입금 후 취소 절차를 진행해 주세요.", "NICE에서 강제취소가 완료되면 관리자 주문 상세에서 PG 상태를 다시 확인해 주세요."] } }, { status: 409 });
+            return handleUnsettledAmountShortage(resultMsg);
           }
           if (!new Set(["0000", "2001", "2211"]).has(resultCode)) {
             await orders.updateOne({ _id, "cancelRequest.pgCancelClaim.token": claimToken }, { $set: { "cancelRequest.pgCancelClaim.status": "failed", "cancelRequest.pgCancelClaim.updatedAt": new Date() } });
@@ -580,8 +586,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       } catch (error: any) {
         const errorResultCode = String(error?.resultCode ?? "").trim();
         if (errorResultCode === "2026") {
-          await orders.updateOne({ _id, "cancelRequest.pgCancelClaim.token": claimToken }, { $set: { "cancelRequest.pgCancelClaim.status": "failed", "cancelRequest.pgCancelClaim.updatedAt": new Date(), "paymentInfo.niceSync.manualActionRequired": true, "paymentInfo.niceSync.manualActionReason": "unsettled_amount_shortage", "paymentInfo.niceSync.resultCode": "2026" } });
-          return NextResponse.json({ ok: false, errorCode: "NICE_UNSETTLED_AMOUNT_SHORTAGE", message: "NICE 미정산금액 부족으로 자동 카드취소가 불가합니다." }, { status: 409 });
+          const errorResultMsg = String(error?.resultMsg ?? error?.message ?? "").trim();
+          return handleUnsettledAmountShortage(errorResultMsg);
         }
         const reconciliation = cancelCalled || error?.afterCancel;
         await orders.updateOne({ _id, "cancelRequest.pgCancelClaim.token": claimToken }, { $set: { "cancelRequest.pgCancelClaim.status": reconciliation ? "needs_reconciliation" : "failed", "cancelRequest.pgCancelClaim.updatedAt": new Date() } });
@@ -650,7 +656,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     });
   } catch (error: any) {
     const code = error instanceof CancelFinalizationError ? error.code : "ORDER_CANCEL_FINALIZATION_FAILED";
-    return NextResponse.json({ ok: false, errorCode: code, code, message: "PG 결제 취소는 완료되었지만 주문 내부 후처리가 완료되지 않았습니다. 관리자 후처리를 다시 시도해 주세요.", detail: error?.message || null }, { status: code.endsWith("STOCK_RESTORE_FAILED") ? 409 : 500 });
+    const latest: any = await orders.findOne({ _id });
+    const pgCancelConfirmed = isExternallyCanceledPayment(latest ?? {});
+    const message = code === "PG_CANCEL_NOT_CONFIRMED"
+      ? "PG 취소 상태가 확인되지 않아 주문 내부 취소 확정을 진행하지 않았습니다. PG 상태를 확인한 뒤 다시 시도해 주세요."
+      : pgCancelConfirmed
+        ? "PG 결제 취소는 완료되었지만 주문 내부 후처리가 완료되지 않았습니다. 관리자 후처리를 다시 시도해 주세요."
+        : "주문 취소 내부 후처리가 완료되지 않았습니다. 다시 시도해 주세요.";
+    return NextResponse.json({ ok: false, errorCode: code, code, message, detail: error?.message || null }, { status: code === "PG_CANCEL_NOT_CONFIRMED" || code.endsWith("STOCK_RESTORE_FAILED") ? 409 : 500 });
   } finally {
     await session.endSession();
   }
