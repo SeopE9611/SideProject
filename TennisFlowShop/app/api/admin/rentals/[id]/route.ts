@@ -243,6 +243,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     paymentMethod: doc.paymentInfo?.method ?? null,
     paymentProvider: doc.paymentInfo?.provider ?? null,
     paymentTid: doc.paymentInfo?.tid ?? null,
+    depositRefund: doc.paymentInfo?.depositRefund ?? null,
     paymentCardDisplayName: doc.paymentInfo?.cardDisplayName ?? null,
     paymentCardCompany:
       doc.paymentInfo?.cardCompany ??
