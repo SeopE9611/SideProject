@@ -523,7 +523,9 @@ export default function AdminRentalDetailClient() {
     String(data?.shipping?.outbound?.trackingNumber ?? "").trim(),
   );
   const blockRentalStart =
-    (hasLinkedApplication && !isStringingComplete) || (!isVisitPickup && !hasOutboundTracking);
+    cancelInfo?.status === "requested" ||
+    (hasLinkedApplication && !isStringingComplete) ||
+    (!isVisitPickup && !hasOutboundTracking);
 
   const paymentLabel =
     data?.paymentStatusLabel ?? (derivePaymentStatus(data) === "paid" ? "결제완료" : "결제대기");
