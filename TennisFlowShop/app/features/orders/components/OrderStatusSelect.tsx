@@ -10,7 +10,6 @@ import {
 import {
   canEnterShippingPhase,
   getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
 } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import useSWR, { mutate } from "swr";
@@ -68,10 +67,9 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo
   const isCancelled = current === "취소";
   const isConfirmed = current === "구매확정";
   const isLocked = isCancelled || isConfirmed;
-  const isVisitPickup = isVisitPickupOrder(shippingInfo);
 
   // 셀렉트에 노출할 “일반 상태”만 남김 (‘취소’는 모달 전용이므로 제외)
-  const SELECTABLE_STATUSES = ["대기중", "결제완료", "배송중", "배송완료", "환불"] as const;
+  const SELECTABLE_STATUSES = ["대기중", "결제완료", "배송중", "배송완료"] as const;
 
   // 셀렉트 변경 핸들러
   const handleChange = async (nextStatus: string) => {
@@ -153,11 +151,6 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo
           </SelectContent>
         </Select>
       )}
-      <p className="mt-1 text-ui-micro text-muted-foreground">
-        {isVisitPickup
-          ? '취소는 수령 전 단계에서만 사용하고, 수령 완료 이후 금전 반환은 상태 "환불"로 처리하세요.'
-          : '취소는 배송 전 단계에서만 사용하고, 배송 이후 금전 반환은 상태 "환불"로 처리하세요.'}
-      </p>
     </div>
   );
 }

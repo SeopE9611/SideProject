@@ -10,7 +10,6 @@ import { createUserNotification } from "@/lib/notifications/user-notification.se
 import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import { isMountableStringByFee, isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { issuePassesForPaidOrder } from "@/lib/passes.service";
-import { deductPoints, grantPoints } from "@/lib/points.service";
 import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 import { normalizeEmailForSearch } from "@/lib/search-email";
@@ -823,7 +822,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     } catch {
       return NextResponse.json({ ok: false, message: "INVALID_JSON" }, { status: 400 });
     }
-    const { status, cancelReason, cancelReasonDetail, payment, deliveryRequest, customer } = body;
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ ok: false, message: "INVALID_BODY" }, { status: 400 });
+    }
+    const { status, payment, deliveryRequest, customer } = body;
 
     if (!ObjectId.isValid(id)) {
       return new NextResponse("유효하지 않은 주문 ID입니다.", { status: 400 });
@@ -882,6 +884,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return new NextResponse("권한이 없습니다.", { status: 403 });
     }
 
+    const requestedFields = Object.keys(body);
+    const ownerAllowedFields = new Set(["customer", "deliveryRequest"]);
+    const adminAllowedFields = new Set(["customer", "deliveryRequest", "status", "payment"]);
+    const allowedFields = isAdmin ? adminAllowedFields : ownerAllowedFields;
+
+    if (requestedFields.length === 0 || requestedFields.some((field) => !allowedFields.has(field))) {
+      return new NextResponse("요청한 필드를 변경할 권한이 없습니다.", { status: 403 });
+    }
+
+    const requestedOperations = [
+      Object.prototype.hasOwnProperty.call(body, "customer"),
+      Object.prototype.hasOwnProperty.call(body, "deliveryRequest"),
+      Object.prototype.hasOwnProperty.call(body, "status"),
+      Object.prototype.hasOwnProperty.call(body, "payment"),
+    ].filter(Boolean).length;
+    if (requestedOperations !== 1) {
+      return new NextResponse("한 번에 하나의 변경만 요청할 수 있습니다.", { status: 400 });
+    }
+
     const attemptsOrderStatusPatch = Object.prototype.hasOwnProperty.call(body, "status");
     const attemptsPaymentStatusChange =
       Object.prototype.hasOwnProperty.call(body, "paymentStatus") ||
@@ -918,6 +939,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (isOrderConfirmedStatus(existing.status)) {
       return new NextResponse("구매확정된 주문은 상태를 변경할 수 없습니다.", {
         status: 400,
+      });
+    }
+
+    if (
+      !isAdmin &&
+      ["배송중", "배송완료", "환불"].includes(String(existing.status ?? "").trim())
+    ) {
+      return new NextResponse("현재 주문 상태에서는 고객 정보를 수정할 수 없습니다.", {
+        status: 409,
       });
     }
 
@@ -1004,6 +1034,32 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // 결제 금액 수정
     if (payment) {
+      if (!isAdmin) {
+        return new NextResponse("결제 정보는 관리자만 변경할 수 있습니다.", { status: 403 });
+      }
+      const currentPaymentStatus = resolveOrderPaymentStatus(existing);
+      const terminalPaymentStatuses = new Set([
+        "결제완료",
+        "결제취소",
+        "환불",
+        "환불완료",
+        "취소",
+        "canceled",
+        "cancelled",
+        "refunded",
+        "paid",
+      ]);
+      const paymentTid = String(existing.paymentInfo?.tid ?? "").trim();
+      if (terminalPaymentStatuses.has(currentPaymentStatus) || paymentTid) {
+        return new NextResponse("확정되거나 종료된 결제의 금액은 수정할 수 없습니다.", {
+          status: 409,
+        });
+      }
+      if (Object.keys(payment).some((field) => field !== "total")) {
+        return new NextResponse("결제 금액 외의 결제 정보는 이 경로에서 변경할 수 없습니다.", {
+          status: 400,
+        });
+      }
       const { total } = payment;
       const totalNum = Number(total);
       if (!Number.isFinite(totalNum) || totalNum < 0) {
@@ -1059,11 +1115,21 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         status: 409,
       });
     }
-    const ALLOWED_STATUS = new Set(["대기중", "결제완료", "배송중", "배송완료", "환불"]);
+    if (nextStatus === "환불") {
+      return new NextResponse("환불은 실제 결제 취소가 확인되는 전용 절차로 처리해주세요.", {
+        status: 409,
+      });
+    }
+    const ALLOWED_STATUS = new Set(["대기중", "결제완료", "배송중", "배송완료"]);
     if (!ALLOWED_STATUS.has(nextStatus)) {
       return new NextResponse("허용되지 않은 상태 값입니다.", { status: 400 });
     }
     if (nextStatus === "배송중" || nextStatus === "배송완료") {
+      if (resolveOrderPaymentStatus(existing) !== "결제완료") {
+        return new NextResponse("결제가 완료된 주문만 배송 단계로 변경할 수 있습니다.", {
+          status: 409,
+        });
+      }
       const guard = canEnterShippingPhase((existing as any)?.shippingInfo);
       if (!guard.ok) {
         return new NextResponse(guard.message ?? "배송 정보가 등록되지 않았습니다.", {
@@ -1075,21 +1141,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const __nextStatus = nextStatus; // 이번에 바꾸려는 상태
     const __isBackward = (__phaseIndex[__nextStatus] ?? 0) < (__phaseIndex[__prevStatus] ?? 0);
 
-    // 상태 변경 분기
-    // - paymentStatus 계산/정규화를 한 곳에서 수행
-    // - 이 시점에서만 패스 발급 멱등 트리거
+    // 주문 운영 상태와 결제 상태는 분리한다.
+    // 무통장입금의 관리자 입금 확인만 이 경로에서 결제완료 전환을 허용한다.
     const updateFields: Record<string, any> = { status: nextStatus };
 
-    // 결제상태 정규화
     let newPaymentStatus: string | undefined = undefined;
-    if (["결제완료", "배송중", "배송완료"].includes(nextStatus)) {
+    const currentPaymentStatus = resolveOrderPaymentStatus(existing);
+    if (nextStatus === "결제완료" && currentPaymentStatus !== "결제완료") {
+      const paymentProvider = String(existing.paymentInfo?.provider ?? "")
+        .trim()
+        .toLowerCase();
+      if (
+        String(existing.paymentInfo?.method ?? "").trim() !== "무통장입금" ||
+        paymentProvider === "nicepay"
+      ) {
+        return new NextResponse(
+          "온라인 결제는 관리자 주문 상태 변경으로 결제완료 처리할 수 없습니다.",
+          { status: 409 },
+        );
+      }
       newPaymentStatus = "결제완료";
-    } else if (nextStatus === "대기중") {
-      newPaymentStatus = "결제대기";
-    } else if (nextStatus === "취소") {
-      newPaymentStatus = "결제취소";
-    } else if (nextStatus === "환불") {
-      newPaymentStatus = "환불";
     }
     if (newPaymentStatus) {
       updateFields.paymentStatus = newPaymentStatus;
@@ -1106,11 +1177,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     );
 
     const description =
-      __nextStatus === "취소"
-        ? `주문이 취소되었습니다. 사유: ${cancelReason}${cancelReason === "기타" && cancelReasonDetail ? ` (${cancelReasonDetail})` : ""}`
-        : __isBackward
-          ? `주문 상태가 '${prevDisplayStatus}' → '${nextDisplayStatus}'(으)로 되돌려졌습니다.`
-          : `주문 상태가 '${nextDisplayStatus}'(으)로 변경되었습니다.`;
+      __isBackward
+        ? `주문 상태가 '${prevDisplayStatus}' → '${nextDisplayStatus}'(으)로 되돌려졌습니다.`
+        : `주문 상태가 '${nextDisplayStatus}'(으)로 변경되었습니다.`;
 
     const historyEntry = {
       status: nextStatus,
@@ -1174,135 +1243,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         }
       } catch (e) {
         console.error("issuePassesForPaidOrder error:", e);
-      }
-    }
-
-    // 포인트 사용(차감) 복원:
-    // - 주문 생성 시점에 pointsToUse를 즉시 차감하기 때문에,
-    //   결제대기 상태에서 '취소'가 발생하면 사용 포인트를 되돌려줘야 함.
-    // - (중요) 멱등키(refKey)를 사용해 중복 복원을 방지
-    const becameCanceledBeforePaid =
-      (existing.paymentStatus ?? null) !== "결제완료" && newPaymentStatus === "결제취소";
-
-    if (becameCanceledBeforePaid) {
-      try {
-        const updatedOrder = await orders.findOne({ _id });
-        if (!updatedOrder) return NextResponse.json({ ok: true });
-
-        const uid = (updatedOrder as any).userId;
-        const uidStr = uid ? String(uid) : "";
-        if (!ObjectId.isValid(uidStr)) return NextResponse.json({ ok: true });
-
-        const orderObjectId = String((updatedOrder as any)._id);
-
-        const txCol = db.collection("points_transactions");
-        const spendRefKey = `order:${orderObjectId}:spend`;
-        const restoreRefKey = `order:${orderObjectId}:spend_reversal`;
-
-        // 가능한 한 "실제로 차감된 amount"를 원장에서 찾아 복원(주문 문서 필드보다 안전)
-        const spendTx = await txCol.findOne({
-          refKey: spendRefKey,
-          status: "confirmed",
-        });
-        const amountFromTx = Math.abs(Number((spendTx as any)?.amount ?? 0));
-
-        const amountFromOrder = Number(
-          (updatedOrder as any).pointsUsed ?? (updatedOrder as any).paymentInfo?.pointsUsed ?? 0,
-        );
-        const amountToRestore = Math.max(0, Math.trunc(amountFromTx || amountFromOrder || 0));
-
-        if (amountToRestore <= 0) return NextResponse.json({ ok: true });
-
-        await grantPoints(db, {
-          userId: new ObjectId(uidStr),
-          amount: amountToRestore,
-          type: "reversal",
-          status: "confirmed",
-          refKey: restoreRefKey, // 복원 멱등키
-          reason: `주문 취소로 사용 포인트 복원 (${(updatedOrder as any).orderId ?? ""})`.trim(),
-          ref: { orderId: (updatedOrder as any)._id },
-        });
-      } catch (e: any) {
-        // 복원 실패가 "주문 취소" 자체를 막으면 UX 최악 → 로그만 남기고 종료
-        console.error("restore spend points (before paid) error:", e);
-      }
-    }
-
-    const becameCanceledOrRefunded =
-      (existing.paymentStatus ?? null) === "결제완료" &&
-      ["결제취소", "환불"].includes(newPaymentStatus ?? "");
-
-    if (becameCanceledOrRefunded) {
-      try {
-        const updatedOrder = await orders.findOne({ _id });
-        if (!updatedOrder) return NextResponse.json({ ok: true });
-
-        const uid = (updatedOrder as any).userId;
-        const uidStr = uid ? String(uid) : "";
-        if (!ObjectId.isValid(uidStr)) return NextResponse.json({ ok: true });
-
-        const orderObjectId = String((updatedOrder as any)._id);
-        const rewardRefKey = `order_reward:${orderObjectId}`;
-        const revokeRefKey = `order_reward_revoke:${orderObjectId}`; // 회수 멱등키
-
-        // "얼마를 회수해야 하는지"는 가능하면 적립 트랜잭션을 찾아서 그 amount를 쓰는 게 제일 안전
-        const txCol = db.collection("points_transactions");
-
-        // (1) 사용 포인트 복원 (이미 복원된 경우 refKey 유니크로 자동 스킵)
-        const spendRefKey = `order:${orderObjectId}:spend`;
-        const restoreRefKey = `order:${orderObjectId}:spend_reversal`;
-
-        const spendTx = await txCol.findOne({
-          refKey: spendRefKey,
-          status: "confirmed",
-        });
-        const amountFromTx = Math.abs(Number((spendTx as any)?.amount ?? 0));
-
-        const amountFromOrder = Number(
-          (updatedOrder as any).pointsUsed ?? (updatedOrder as any).paymentInfo?.pointsUsed ?? 0,
-        );
-        const amountToRestore = Math.max(0, Math.trunc(amountFromTx || amountFromOrder || 0));
-
-        if (amountToRestore > 0) {
-          await grantPoints(db, {
-            userId: new ObjectId(uidStr),
-            amount: amountToRestore,
-            type: "reversal",
-            status: "confirmed",
-            refKey: restoreRefKey,
-            reason:
-              `주문 취소/환불로 사용 포인트 복원 (${(updatedOrder as any).orderId ?? ""})`.trim(),
-            ref: { orderId: (updatedOrder as any)._id },
-          });
-        }
-
-        const rewardTx = await txCol.findOne({
-          refKey: rewardRefKey,
-          status: "confirmed",
-        });
-
-        // 적립이 없으면 회수할 것도 없음
-        const amountToRevoke = Number((rewardTx as any)?.amount ?? 0);
-        if (amountToRevoke <= 0) return NextResponse.json({ ok: true });
-
-        await deductPoints(db, {
-          userId: new ObjectId(uidStr),
-          amount: amountToRevoke,
-          type: "order_reward", // 같은 타입으로 “-amount” 기록이 남게 됨
-          status: "confirmed",
-          refKey: revokeRefKey, // 회수 멱등
-          reason:
-            `주문 취소/환불로 적립 포인트 회수 (${(updatedOrder as any).orderId ?? ""})`.trim(),
-          ref: { orderId: (updatedOrder as any)._id },
-          // 적립 포인트를 이미 사용한 상태에서도 환불이 발생할 수 있음 → 회수는 음수 잔액을 허용(정책)
-          allowNegativeBalance: true,
-        });
-      } catch (e: any) {
-        // 여기서 throw로 터뜨리면 "주문 취소/환불" 자체가 실패하는 최악의 UX가 됨 → 로그만 남기고 종료
-        console.error("revoke order_reward error:", e);
-
-        // 포인트 회수 실패를 주문 히스토리에 남기고 싶으면 history push 추가
-        // - INSUFFICIENT_POINTS(이미 사용됨) 같은 케이스는 "관리자 확인 필요"로 남겨두는 게 현실적
       }
     }
 

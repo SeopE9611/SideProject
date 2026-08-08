@@ -793,6 +793,19 @@ export default function OrderDetailClient({ orderId }: Props) {
         }).adminLabel;
 
   const paymentStatusDisplayLabel = adminPaymentState.label;
+  const canEditPaymentTotal =
+    !new Set([
+      "결제완료",
+      "결제취소",
+      "환불",
+      "환불완료",
+      "취소",
+      "paid",
+      "canceled",
+      "cancelled",
+      "refunded",
+    ]).has(String(orderDetail.paymentStatus ?? "").trim()) &&
+    !String(orderDetail.paymentTid ?? "").trim();
   const needsPaymentCheck = adminPaymentState.needsCheck;
 
   const paymentBadgeStatus =
@@ -2355,7 +2368,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     </CardContent>
                   </Card>
                 )}
-                {isEditMode && (
+                {isEditMode && canEditPaymentTotal && (
                   <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
                     <Button
                       variant="outline"
