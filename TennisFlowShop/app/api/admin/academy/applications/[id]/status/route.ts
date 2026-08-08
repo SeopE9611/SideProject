@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
-import { ObjectId, type Db, type Document, type Filter } from "mongodb";
+import { ObjectId, type Document } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import {
+  ACADEMY_CLASS_FULL_ERROR,
+  acquireAcademyApplicationLock,
+  acquireAcademyClassCapacityLocks,
+  getAcademyApplicationClassId,
+  getAcademyClass,
+  isAcademyClassAtCapacity,
+  reconcileAcademyClassCapacity,
+} from "@/lib/academy/adminAcademyCapacity";
 import { requireAdmin } from "@/lib/admin.guard";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import {
@@ -88,90 +97,6 @@ function serializeApplication(doc: Document) {
   };
 }
 
-function getClassIdFromSnapshot(value: unknown) {
-  if (!value || typeof value !== "object") return "";
-  const record = value as { classId?: unknown };
-  const serialized = serializeValue(record.classId);
-  return typeof serialized === "string" ? serialized : String(serialized ?? "");
-}
-
-function buildClassApplicationFilter(classId: string): Filter<Document> {
-  const matchers: unknown[] = [classId];
-  if (ObjectId.isValid(classId)) {
-    matchers.push(new ObjectId(classId));
-  }
-
-  return {
-    $or: [{ classId: { $in: matchers } }, { "classSnapshot.classId": classId }],
-  };
-}
-
-function getApplicationClassIdCandidates(application: Document) {
-  const candidates = new Set<string>();
-  if (application.classId) {
-    const serialized = serializeValue(application.classId);
-    const classId = typeof serialized === "string" ? serialized : String(serialized ?? "");
-    if (classId) candidates.add(classId);
-  }
-
-  const snapshotClassId = getClassIdFromSnapshot(application.classSnapshot);
-  if (snapshotClassId) candidates.add(snapshotClassId);
-
-  return [...candidates];
-}
-
-async function autoCloseClassWhenConfirmedCapacityReached(db: Db, application: Document) {
-  const classIdCandidates = getApplicationClassIdCandidates(application);
-  const objectIdCandidates = classIdCandidates
-    .filter((classId) => ObjectId.isValid(classId))
-    .map((classId) => new ObjectId(classId));
-
-  if (objectIdCandidates.length === 0) {
-    return { classAutoClosed: false, confirmedCount: null, capacity: null };
-  }
-
-  const academyClass = await db
-    .collection(CLASS_COLLECTION_NAME)
-    .findOne(
-      { _id: { $in: objectIdCandidates } },
-      { projection: { _id: 1, capacity: 1, status: 1 } },
-    );
-
-  if (!academyClass) {
-    return { classAutoClosed: false, confirmedCount: null, capacity: null };
-  }
-
-  const classId = String(serializeValue(academyClass._id));
-  const capacity =
-    typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
-
-  if (!capacity || capacity <= 0) {
-    return { classAutoClosed: false, confirmedCount: null, capacity };
-  }
-
-  const confirmedCount = await db.collection(COLLECTION_NAME).countDocuments({
-    ...buildClassApplicationFilter(classId),
-    status: "confirmed",
-  });
-
-  if (academyClass.status !== "visible" || confirmedCount < capacity) {
-    return { classAutoClosed: false, confirmedCount, capacity };
-  }
-
-  const updateResult = await db
-    .collection(CLASS_COLLECTION_NAME)
-    .updateOne(
-      { _id: academyClass._id, status: "visible" },
-      { $set: { status: "closed", updatedAt: new Date().toISOString() } },
-    );
-
-  return {
-    classAutoClosed: updateResult.modifiedCount > 0,
-    confirmedCount,
-    capacity,
-  };
-}
-
 function trimString(value: unknown, maxLength: number) {
   if (typeof value !== "string") return "";
   return value.trim().slice(0, maxLength);
@@ -213,101 +138,125 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const collection = guard.db.collection(COLLECTION_NAME);
   const _id = new ObjectId(id);
-  const current = await collection.findOne(
-    { _id },
-    {
-      projection: {
-        status: 1,
-        userId: 1,
-        classSnapshot: 1,
-        customerMessage: 1,
-      },
-    },
-  );
-
-  if (!current) {
+  const releaseApplicationLock = await acquireAcademyApplicationLock(guard.db, id);
+  if (!releaseApplicationLock) {
     return NextResponse.json(
-      { success: false, message: "신청 내역을 찾을 수 없습니다." },
-      { status: 404 },
+      { success: false, message: "신청 변경 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요." },
+      { status: 409 },
     );
   }
 
-  const now = new Date().toISOString();
-  const update: Document = { $set: { status, updatedAt: now } };
+  try {
+    const current = await collection.findOne({ _id });
+    if (!current) {
+      return NextResponse.json(
+        { success: false, message: "신청 내역을 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
 
-  if (current.status !== status) {
-    const description = `${getStatusHistoryDescription(status)}${reason ? ` 사유: ${reason}` : ""}`;
-    update.$push = {
-      history: {
-        status,
-        date: now,
-        description,
-        actorId: guard.admin._id.toHexString(),
-        actorName: guard.admin.name ?? guard.admin.email ?? "관리자",
-      },
-    };
-  }
-
-  const updated = await collection.findOneAndUpdate({ _id }, update, {
-    returnDocument: "after",
-  });
-
-  if (!updated) {
-    return NextResponse.json(
-      { success: false, message: "신청 내역을 찾을 수 없습니다." },
-      { status: 404 },
-    );
-  }
-
-  let classAutoClosed = false;
-  let classAutoClosedConfirmedCount: number | null = null;
-  let classAutoClosedCapacity: number | null = null;
-
-  if (current.status !== status && updated.userId) {
-    try {
-      const titleByStatus: Record<string, string> = {
-        reviewing: "레슨 신청이 검토 중으로 변경되었습니다.",
-        contacted: "레슨 상담이 완료되었습니다.",
-        confirmed: "레슨 등록이 확정되었습니다.",
-        cancelled: "레슨 신청이 취소 처리되었습니다.",
-      };
-      const className =
-        typeof updated.classSnapshot?.name === "string" ? updated.classSnapshot.name : "";
-      await createUserNotification(guard.db, {
-        userId: updated.userId,
-        type: "academy_status",
-        title: titleByStatus[status] ?? "레슨 신청 상태가 변경되었습니다.",
-        body: className ? `${className} 신청 상태가 변경되었습니다.` : undefined,
-        href: "/mypage",
-        source: {
-          collection: "academy_lesson_applications",
-          id: _id,
-          kind: "status",
+    const classId = getAcademyApplicationClassId(current);
+    const releaseLocks = await acquireAcademyClassCapacityLocks(guard.db, classId ? [classId] : []);
+    if (!releaseLocks) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "클래스 정원 변경 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요.",
         },
-        dedupeKey: `academy:${_id.toString()}:status:${status}`,
-      });
-    } catch (error) {
-      console.error("[admin academy application status] create notification failed", error);
+        { status: 409 },
+      );
     }
-  }
 
-  if (status === "confirmed") {
     try {
-      const autoCloseResult = await autoCloseClassWhenConfirmedCapacityReached(guard.db, updated);
-      classAutoClosed = autoCloseResult.classAutoClosed;
-      classAutoClosedConfirmedCount = autoCloseResult.confirmedCount;
-      classAutoClosedCapacity = autoCloseResult.capacity;
-    } catch (error) {
-      console.error("[admin academy application status] auto close failed", error);
-    }
-  }
+      const academyClass = classId ? await getAcademyClass(guard.db, classId) : null;
+      if (
+        current.status !== "confirmed" &&
+        status === "confirmed" &&
+        academyClass &&
+        (await isAcademyClassAtCapacity(guard.db, academyClass, _id))
+      ) {
+        return NextResponse.json(ACADEMY_CLASS_FULL_ERROR, { status: 409 });
+      }
 
-  return NextResponse.json({
-    success: true,
-    item: serializeApplication(updated),
-    classAutoClosed,
-    classAutoClosedMessage: classAutoClosed ? CLASS_AUTO_CLOSED_MESSAGE : null,
-    classAutoClosedConfirmedCount,
-    classAutoClosedCapacity,
-  });
+      const now = new Date().toISOString();
+      const update: Document = { $set: { status, updatedAt: now } };
+      if (current.status !== status) {
+        const description = `${getStatusHistoryDescription(status)}${reason ? ` 사유: ${reason}` : ""}`;
+        update.$push = {
+          history: {
+            status,
+            date: now,
+            description,
+            actorId: guard.admin._id.toHexString(),
+            actorName: guard.admin.name ?? guard.admin.email ?? "관리자",
+          },
+        };
+      }
+
+      const updated = await collection.findOneAndUpdate({ _id }, update, {
+        returnDocument: "after",
+      });
+      if (!updated) {
+        return NextResponse.json(
+          { success: false, message: "신청 내역을 찾을 수 없습니다." },
+          { status: 404 },
+        );
+      }
+
+      let classAutoClosed = false;
+      let classAutoClosedConfirmedCount: number | null = null;
+      let classAutoClosedCapacity: number | null = null;
+
+      if (current.status !== status && updated.userId) {
+        try {
+          const titleByStatus: Record<string, string> = {
+            reviewing: "레슨 신청이 검토 중으로 변경되었습니다.",
+            contacted: "레슨 상담이 완료되었습니다.",
+            confirmed: "레슨 등록이 확정되었습니다.",
+            cancelled: "레슨 신청이 취소 처리되었습니다.",
+          };
+          const className =
+            typeof updated.classSnapshot?.name === "string" ? updated.classSnapshot.name : "";
+          await createUserNotification(guard.db, {
+            userId: updated.userId,
+            type: "academy_status",
+            title: titleByStatus[status] ?? "레슨 신청 상태가 변경되었습니다.",
+            body: className ? `${className} 신청 상태가 변경되었습니다.` : undefined,
+            href: "/mypage",
+            source: { collection: "academy_lesson_applications", id: _id, kind: "status" },
+            dedupeKey: `academy:${_id.toString()}:status:${status}`,
+          });
+        } catch (error) {
+          console.error("[admin academy application status] create notification failed", error);
+        }
+      }
+
+      if (academyClass && (status === "confirmed" || current.status === "confirmed")) {
+        try {
+          const result = await reconcileAcademyClassCapacity(guard.db, academyClass);
+          classAutoClosed = result.classAutoClosed;
+          classAutoClosedConfirmedCount = result.confirmedCount;
+          classAutoClosedCapacity = result.capacity;
+        } catch (error) {
+          console.error(
+            "[admin academy application status] class capacity reconcile failed",
+            error,
+          );
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        item: serializeApplication(updated),
+        classAutoClosed,
+        classAutoClosedMessage: classAutoClosed ? CLASS_AUTO_CLOSED_MESSAGE : null,
+        classAutoClosedConfirmedCount,
+        classAutoClosedCapacity,
+      });
+    } finally {
+      await releaseLocks();
+    }
+  } finally {
+    await releaseApplicationLock();
+  }
 }

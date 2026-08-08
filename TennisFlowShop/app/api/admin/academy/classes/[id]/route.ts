@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { ObjectId, type Db, type Document, type Filter } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import {
+  acquireAcademyClassCapacityLocks,
+  reconcileAcademyClassCapacity,
+} from "@/lib/academy/adminAcademyCapacity";
 import { requireAdmin } from "@/lib/admin.guard";
 import {
   isAcademyClassLevel,
@@ -300,22 +304,53 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ success: false, message: validation.message }, { status: 400 });
   }
 
-  const updated = await guard.db
-    .collection(COLLECTION_NAME)
-    .findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $set: { ...validation.value, updatedAt: new Date().toISOString() } },
-      { returnDocument: "after" },
-    );
-
-  if (!updated) {
+  const releaseClassLocks = await acquireAcademyClassCapacityLocks(guard.db, [id]);
+  if (!releaseClassLocks) {
     return NextResponse.json(
-      { success: false, message: "클래스를 찾을 수 없습니다." },
-      { status: 404 },
+      {
+        success: false,
+        message: "클래스 정원 변경 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요.",
+      },
+      { status: 409 },
     );
   }
 
-  return NextResponse.json({ success: true, item: serializeClass(updated) });
+  try {
+    const collection = guard.db.collection(COLLECTION_NAME);
+    const current = await collection.findOne({ _id: new ObjectId(id) });
+    if (!current) {
+      return NextResponse.json(
+        { success: false, message: "클래스를 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+
+    const statusChanged = current.status !== validation.value.status;
+    const update: Document = {
+      $set: { ...validation.value, updatedAt: new Date().toISOString() },
+    };
+    if (statusChanged) update.$unset = { capacityAutoClosedAt: "" };
+
+    const updated = await collection.findOneAndUpdate({ _id: current._id }, update, {
+      returnDocument: "after",
+    });
+    if (!updated) {
+      return NextResponse.json(
+        { success: false, message: "클래스를 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+
+    if (!statusChanged && current.capacity !== updated.capacity) {
+      await reconcileAcademyClassCapacity(guard.db, updated);
+      const reconciled = await collection.findOne({ _id: current._id });
+      if (reconciled) return NextResponse.json({ success: true, item: serializeClass(reconciled) });
+    }
+
+    return NextResponse.json({ success: true, item: serializeClass(updated) });
+  } finally {
+    await releaseClassLocks();
+  }
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
