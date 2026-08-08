@@ -6,7 +6,11 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { grantPoints } from "@/lib/points.service";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { cancelNicePaymentByTid, getNicePaymentByTid } from "@/lib/payments/nice/server";
+import {
+  cancelNicePaymentByTid,
+  getNicePaymentByTid,
+  NICE_PAYMENT_CLAIM_LEASE_MS,
+} from "@/lib/payments/nice/server";
 
 class RentalCancelFinalizationError extends Error {
   constructor(
@@ -215,14 +219,37 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
       const claimToken = randomUUID();
       const claimedAt = new Date();
+      const claimExpiresAt = new Date(claimedAt.getTime() + NICE_PAYMENT_CLAIM_LEASE_MS);
+      const legacyClaimStaleBefore = new Date(claimedAt.getTime() - NICE_PAYMENT_CLAIM_LEASE_MS);
+      const claimCancelOrderId = String(
+        existing.cancelRequest?.pgCancelClaim?.cancelOrderId ?? createNiceCancelOrderId(_id),
+      );
       const claimResult: any = await rentals.findOneAndUpdate(
         {
           _id,
           "cancelRequest.status": { $in: ["requested", "approved"] },
-          "cancelRequest.pgCancelClaim.status": { $ne: "processing" },
-          $or: [
-            { paymentStatus: { $ne: "결제취소" } },
-            { "paymentInfo.niceSync.pgStatus": { $nin: ["canceled", "cancelled"] } },
+          $and: [
+            {
+              $or: [
+                { "cancelRequest.pgCancelClaim.status": { $ne: "processing" } },
+                {
+                  "cancelRequest.pgCancelClaim.status": "processing",
+                  $or: [
+                    { "cancelRequest.pgCancelClaim.claimExpiresAt": { $lte: claimedAt } },
+                    {
+                      "cancelRequest.pgCancelClaim.claimExpiresAt": { $exists: false },
+                      "cancelRequest.pgCancelClaim.claimedAt": { $lte: legacyClaimStaleBefore },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              $or: [
+                { paymentStatus: { $ne: "결제취소" } },
+                { "paymentInfo.niceSync.pgStatus": { $nin: ["canceled", "cancelled"] } },
+              ],
+            },
           ],
         },
         {
@@ -230,7 +257,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             "cancelRequest.pgCancelClaim.status": "processing",
             "cancelRequest.pgCancelClaim.token": claimToken,
             "cancelRequest.pgCancelClaim.claimedAt": claimedAt,
+            "cancelRequest.pgCancelClaim.claimExpiresAt": claimExpiresAt,
             "cancelRequest.pgCancelClaim.updatedAt": claimedAt,
+            "cancelRequest.pgCancelClaim.cancelOrderId": claimCancelOrderId,
           },
         },
         { returnDocument: "after" },
@@ -273,7 +302,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       } else {
         existing = claimed;
         let cancelCalled = false;
-        let cancelOrderId: string | null = null;
+        let cancelOrderId: string | null = claimCancelOrderId;
         let pgStatus = "";
         let pgBalanceAmount = 0;
         let cancelAmount = 0;
@@ -367,7 +396,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 beforeCancel: true,
               });
             }
-            cancelOrderId = createNiceCancelOrderId(_id);
             cancelCalled = true;
             successRaw = await cancelNicePaymentByTid({
               tid,

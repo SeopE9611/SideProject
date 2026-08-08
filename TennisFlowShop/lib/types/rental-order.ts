@@ -104,6 +104,7 @@ export type RentalOrder = {
       amount: number;
       token?: string;
       claimedAt?: string | Date;
+      claimExpiresAt?: string | Date;
       updatedAt: string | Date;
       tid?: string;
       cancelOrderId?: string;
