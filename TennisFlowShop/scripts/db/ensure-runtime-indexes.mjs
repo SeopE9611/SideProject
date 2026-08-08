@@ -119,6 +119,47 @@ async function ensureIndexes(db, collectionName, specs) {
  * - 그래서 이 스크립트가 런타임 인덱스와 공개 목록 성능 인덱스의 "배포 전 선반영" 책임을 맡는다.
  */
 const INDEX_SPECS = {
+  apps_in_toss_identities: [
+    {
+      name: "apps_in_toss_identities_appName_userKey_unique",
+      keys: { appName: 1, userKey: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_identities_userId_idx",
+      keys: { userId: 1 },
+      options: {},
+    },
+  ],
+  apps_in_toss_sessions: [
+    {
+      name: "apps_in_toss_sessions_tokenHash_unique",
+      keys: { tokenHash: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_sessions_userId_revokedAt_idx",
+      keys: { userId: 1, revokedAt: 1 },
+      options: {},
+    },
+    {
+      name: "apps_in_toss_sessions_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+  ],
+  apps_in_toss_auth_code_claims: [
+    {
+      name: "apps_in_toss_auth_code_claims_codeHash_unique",
+      keys: { codeHash: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_auth_code_claims_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+  ],
   user_notifications: [
     {
       name: "idx_user_notifications_user_read_created",
@@ -610,7 +651,10 @@ const INDEX_SPECS = {
     {
       name: "users_email_unique",
       keys: { email: 1 },
-      options: { unique: true },
+      options: {
+        unique: true,
+        partialFilterExpression: { email: { $type: "string" } },
+      },
     },
     {
       name: "users_lastLoginAt_idx",

@@ -10,6 +10,46 @@ type IndexSpec = {
 };
 
 const AUTH_INDEX_SPECS: Readonly<Record<string, readonly IndexSpec[]>> = {
+  // login-me의 userKey(number)는 양의 safe integer 검증 후 String(userKey)로 저장한다.
+  apps_in_toss_identities: [
+    {
+      name: "apps_in_toss_identities_appName_userKey_unique",
+      keys: { appName: 1, userKey: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_identities_userId_idx",
+      keys: { userId: 1 },
+    },
+  ],
+  apps_in_toss_sessions: [
+    {
+      name: "apps_in_toss_sessions_tokenHash_unique",
+      keys: { tokenHash: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_sessions_userId_revokedAt_idx",
+      keys: { userId: 1, revokedAt: 1 },
+    },
+    {
+      name: "apps_in_toss_sessions_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+  ],
+  apps_in_toss_auth_code_claims: [
+    {
+      name: "apps_in_toss_auth_code_claims_codeHash_unique",
+      keys: { codeHash: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_auth_code_claims_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+  ],
   oauth_pending_signups: [
     {
       name: "ttl_oauth_pending_expiresAt",
