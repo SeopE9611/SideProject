@@ -98,7 +98,15 @@ function focusFirst(ids: string[]) {
   }
 }
 
-export default function LoginPageClient() {
+type LoginPageClientProps = {
+  allowRegistration: boolean;
+  minimumPasswordLength: number;
+};
+
+export default function LoginPageClient({
+  allowRegistration,
+  minimumPasswordLength,
+}: LoginPageClientProps) {
   const router = useRouter();
   const params = useSearchParams();
   const tabParam = params.get("tab");
@@ -150,6 +158,7 @@ export default function LoginPageClient() {
 
   // 탭 전환은 “현재 탭 입력이 날아가는 행동”이 될 수 있으므로 별도 confirm
   const handleTabChange = (nextTab: string) => {
+    if (nextTab === "register" && !allowRegistration) return;
     if (nextTab === activeTab) return;
     const currentDirty = activeTab === "login" ? loginDirty : registerDirty;
     if (currentDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
@@ -161,10 +170,11 @@ export default function LoginPageClient() {
   // URL 파라미터에 따라 탭 전환
   useEffect(() => {
     if (tabParam === "login" || tabParam === "register") {
-      setActiveTab(tabParam);
-      if (tabParam === "login") setRegisterResetSignal((prev) => prev + 1);
+      const nextTab = tabParam === "register" && !allowRegistration ? "login" : tabParam;
+      setActiveTab(nextTab);
+      if (nextTab === "login") setRegisterResetSignal((prev) => prev + 1);
     }
-  }, [tabParam]);
+  }, [allowRegistration, tabParam]);
 
   // 탭 전환 시 이전 탭의 에러 메시지가 남아 혼동되지 않도록 초기화
   useEffect(() => {
@@ -317,6 +327,7 @@ export default function LoginPageClient() {
             </TabsTrigger>
             <TabsTrigger
               value="register"
+              disabled={!allowRegistration}
               className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm"
             >
               회원가입
@@ -498,16 +509,22 @@ export default function LoginPageClient() {
                 </Button>
               </form>
 
-              <div className="text-center text-ui-label text-muted-foreground">
-                일반 회원가입이 필요하신가요?{" "}
-                <button
-                  type="button"
-                  onClick={() => handleTabChange("register")}
-                  className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
-                >
-                  일반가입
-                </button>
-              </div>
+              {allowRegistration ? (
+                <div className="text-center text-ui-label text-muted-foreground">
+                  일반 회원가입이 필요하신가요?{" "}
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange("register")}
+                    className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
+                  >
+                    일반가입
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center text-ui-label text-muted-foreground">
+                  현재 신규 회원가입이 일시 중단되었습니다.
+                </div>
+              )}
 
               {showGuestLookup && (
                 <div className="text-center">
@@ -535,17 +552,20 @@ export default function LoginPageClient() {
           </TabsContent>
         )}
 
-        <RegisterTabPanel
-          isSocialOauthRegister={isSocialOauthRegister}
-          oauthProvider={oauthProvider}
-          oauthToken={oauthToken}
-          onKakaoOAuth={handleKakaoOAuth}
-          onNaverOAuth={handleNaverOAuth}
-          onSwitchToLoginTab={() => setActiveTab("login")}
-          onRegisterDirtyChange={setRegisterDirty}
-          onRegisterSubmittingChange={setRegisterSubmitting}
-          resetSignal={registerResetSignal}
-        />
+        {allowRegistration && (
+          <RegisterTabPanel
+            isSocialOauthRegister={isSocialOauthRegister}
+            oauthProvider={oauthProvider}
+            oauthToken={oauthToken}
+            onKakaoOAuth={handleKakaoOAuth}
+            onNaverOAuth={handleNaverOAuth}
+            onSwitchToLoginTab={() => setActiveTab("login")}
+            onRegisterDirtyChange={setRegisterDirty}
+            onRegisterSubmittingChange={setRegisterSubmitting}
+            resetSignal={registerResetSignal}
+            minimumPasswordLength={minimumPasswordLength}
+          />
+        )}
       </Tabs>
     </AuthShell>
   );

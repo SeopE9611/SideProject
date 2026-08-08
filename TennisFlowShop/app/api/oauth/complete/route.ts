@@ -19,6 +19,7 @@ import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/l
 import { grantPoints } from "@/lib/points.service";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import { getRegistrationPolicy } from "@/lib/registration-policy";
 import jwt from "jsonwebtoken";
 import { Collection } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
@@ -164,6 +165,17 @@ export async function POST(req: NextRequest) {
     user = await users.findOne({ _id: user._id });
   } else {
     // 2) 신규 생성
+    const registrationPolicy = await getRegistrationPolicy(db);
+    if (!registrationPolicy.allowRegistration) {
+      return NextResponse.json(
+        {
+          code: "REGISTRATION_DISABLED",
+          message: "현재 신규 회원가입이 일시 중단되었습니다.",
+        },
+        { status: 403 },
+      );
+    }
+
     isNewUser = true;
     const reservedNameError = getReservedDisplayNameErrorMessage(finalSignupName);
     if (reservedNameError) {

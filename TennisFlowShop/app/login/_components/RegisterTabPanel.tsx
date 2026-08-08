@@ -34,7 +34,6 @@ import { useEffect, useMemo, useState } from "react";
 
 let daumPostcodeScriptPromise: Promise<void> | null = null;
 
-const PASSWORD_POLICY_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 const formatKoreanPhone = (v: string) => {
@@ -93,6 +92,7 @@ type RegisterTabPanelProps = {
   onRegisterDirtyChange: (dirty: boolean) => void;
   onRegisterSubmittingChange: (submitting: boolean) => void;
   resetSignal: number;
+  minimumPasswordLength: number;
 };
 
 export default function RegisterTabPanel({
@@ -105,6 +105,7 @@ export default function RegisterTabPanel({
   onRegisterDirtyChange,
   onRegisterSubmittingChange,
   resetSignal,
+  minimumPasswordLength,
 }: RegisterTabPanelProps) {
   const router = useRouter();
   const params = useSearchParams();
@@ -421,8 +422,12 @@ export default function RegisterTabPanel({
     }
 
     if (!password) nextErrors.password = "비밀번호를 입력해주세요.";
-    else if (!PASSWORD_POLICY_RE.test(password))
-      nextErrors.password = "비밀번호는 8자 이상이며 영문/숫자를 포함해야 합니다.";
+    else if (
+      password.length < minimumPasswordLength ||
+      !/[A-Za-z]/.test(password) ||
+      !/\d/.test(password)
+    )
+      nextErrors.password = `비밀번호는 ${minimumPasswordLength}자 이상이며 영문/숫자를 포함해야 합니다.`;
 
     if (!confirmPassword) nextErrors.confirmPassword = "비밀번호 확인을 입력해주세요.";
     else if (password !== confirmPassword)
