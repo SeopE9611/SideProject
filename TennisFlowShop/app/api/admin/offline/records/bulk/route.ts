@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { ObjectId, type ClientSession } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 function toObjectIds(ids: unknown[]): ObjectId[] {
   const uniqueIds = Array.from(
@@ -36,12 +36,18 @@ function hasActiveLinkedAccounting(record: any): boolean {
   return hasActivePointGrant || hasActivePointDeduct || hasActivePackageUsage;
 }
 
-async function rebuildOfflineCustomerStats(db: any, customerId: ObjectId, adminId: ObjectId) {
+async function rebuildOfflineCustomerStats(
+  db: any,
+  customerId: ObjectId,
+  adminId: ObjectId,
+  session: ClientSession,
+) {
   const records = await db
     .collection("offline_service_records")
     .find(
       { offlineCustomerId: customerId },
       {
+        session,
         projection: {
           occurredAt: 1,
           createdAt: 1,
@@ -78,6 +84,7 @@ async function rebuildOfflineCustomerStats(db: any, customerId: ObjectId, adminI
         updatedBy: adminId,
       },
     },
+    { session },
   );
 }
 
@@ -97,31 +104,81 @@ export async function DELETE(req: Request) {
   }
 
   const recordsCol = guard.db.collection("offline_service_records");
-  const records = await recordsCol
-    .find(
-      { _id: { $in: objectIds } },
-      {
-        projection: {
-          _id: 1,
-          offlineCustomerId: 1,
-          customerSnapshot: 1,
-          payment: 1,
-          points: 1,
-          packageUsage: 1,
-        },
-      },
-    )
-    .toArray();
+  const session = guard.db.client.startSession();
+  let transactionResult:
+    | { status: "not_found" }
+    | { status: "blocked" }
+    | { status: "deleted"; deletedCount: number; recordIds: string[] }
+    | null = null;
 
-  if (records.length === 0) {
+  try {
+    transactionResult = await session.withTransaction(async () => {
+      const records = await recordsCol
+        .find(
+          { _id: { $in: objectIds } },
+          {
+            session,
+            projection: {
+              _id: 1,
+              offlineCustomerId: 1,
+              customerSnapshot: 1,
+              payment: 1,
+              points: 1,
+              packageUsage: 1,
+            },
+          },
+        )
+        .toArray();
+
+      if (records.length === 0) {
+        return { status: "not_found" as const };
+      }
+
+      const blockedRecords = records.filter(hasActiveLinkedAccounting);
+      if (blockedRecords.length > 0) {
+        return { status: "blocked" as const };
+      }
+
+      const customerIds = Array.from(
+        new Map(
+          records
+            .map((record: any) => record.offlineCustomerId)
+            .filter((id: unknown): id is ObjectId => id instanceof ObjectId)
+            .map((id: ObjectId) => [String(id), id]),
+        ).values(),
+      );
+
+      const deleteResult = await recordsCol.deleteMany(
+        { _id: { $in: records.map((record: any) => record._id) } },
+        { session },
+      );
+
+      for (const customerId of customerIds) {
+        await rebuildOfflineCustomerStats(guard.db, customerId, guard.admin._id, session);
+      }
+
+      return {
+        status: "deleted" as const,
+        deletedCount: deleteResult.deletedCount,
+        recordIds: records.map((record: any) => String(record._id)),
+      };
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  if (!transactionResult) {
+    throw new Error("오프라인 기록 선택 삭제 transaction 결과가 없습니다.");
+  }
+
+  if (transactionResult.status === "not_found") {
     return NextResponse.json(
       { message: "삭제할 오프라인 기록을 찾을 수 없습니다." },
       { status: 404 },
     );
   }
 
-  const blockedRecords = records.filter(hasActiveLinkedAccounting);
-  if (blockedRecords.length > 0) {
+  if (transactionResult.status === "blocked") {
     return NextResponse.json(
       {
         message:
@@ -131,26 +188,7 @@ export async function DELETE(req: Request) {
     );
   }
 
-  const customerIds = Array.from(
-    new Map(
-      records
-        .map((record: any) => record.offlineCustomerId)
-        .filter((id: unknown): id is ObjectId => id instanceof ObjectId)
-        .map((id: ObjectId) => [String(id), id]),
-    ).values(),
-  );
-
-  const deleteResult = await recordsCol.deleteMany({
-    _id: { $in: records.map((record: any) => record._id) },
-  });
-
-  await Promise.all(
-    customerIds.map((customerId) =>
-      rebuildOfflineCustomerStats(guard.db, customerId, guard.admin._id),
-    ),
-  );
-
-  await appendAudit(
+  await appendAdminAudit(
     guard.db,
     {
       type: "offline_record_bulk_delete",
@@ -158,8 +196,8 @@ export async function DELETE(req: Request) {
       message: "오프라인 작업/매출 선택 삭제",
       diff: {
         requestedCount: objectIds.length,
-        deletedCount: deleteResult.deletedCount,
-        ids: records.map((record: any) => String(record._id)),
+        deletedCount: transactionResult.deletedCount,
+        ids: transactionResult.recordIds,
       },
     },
     req,
@@ -167,6 +205,6 @@ export async function DELETE(req: Request) {
 
   return NextResponse.json({
     success: true,
-    deletedCount: deleteResult.deletedCount,
+    deletedCount: transactionResult.deletedCount,
   });
 }
