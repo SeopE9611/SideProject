@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
-import { ObjectId, type Db, type Document, type Filter } from "mongodb";
+import { ObjectId, type Document } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import {
+  ACADEMY_CLASS_FULL_ERROR,
+  acquireAcademyApplicationLock,
+  acquireAcademyClassCapacityLocks,
+  getAcademyApplicationClassId,
+  getAcademyClass,
+  isAcademyClassAtCapacity,
+  reconcileAcademyClassCapacity,
+} from "@/lib/academy/adminAcademyCapacity";
 import { requireAdmin } from "@/lib/admin.guard";
 import {
   getAcademyClassLessonTypeLabel,
@@ -109,18 +118,6 @@ function trimString(value: unknown, maxLength: number) {
   return value.trim().slice(0, maxLength);
 }
 
-function buildClassApplicationFilter(classId: string): Filter<AcademyLessonApplicationDoc> {
-  const matchers: Array<string | ObjectId> = [classId];
-  if (ObjectId.isValid(classId)) matchers.push(new ObjectId(classId));
-  return { $or: [{ classId: { $in: matchers } }, { "classSnapshot.classId": classId }] };
-}
-
-function getClassIdFromApplication(application: Document) {
-  if (application.classId) return String(serializeValue(application.classId) ?? "");
-  const snapshot = application.classSnapshot as { classId?: unknown } | null | undefined;
-  return snapshot?.classId ? String(serializeValue(snapshot.classId) ?? "") : "";
-}
-
 function createClassSnapshot(doc: Document): AcademyClassSnapshot {
   const classId = String(serializeValue(doc._id));
   const level = isAcademyClassLevel(doc.level) ? doc.level : null;
@@ -142,34 +139,6 @@ function createClassSnapshot(doc: Document): AcademyClassSnapshot {
     status,
     statusLabel: status ? getAcademyClassStatusLabel(status) : null,
   };
-}
-
-async function autoCloseClassWhenConfirmedCapacityReached(db: Db, academyClass: Document) {
-  const classId = String(serializeValue(academyClass._id));
-  const capacity =
-    typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
-  if (!capacity || capacity <= 0) return { classAutoClosed: false, confirmedCount: null, capacity };
-
-  const confirmedCount = await db
-    .collection<AcademyLessonApplicationDoc>(COLLECTION_NAME)
-    .countDocuments({
-      ...buildClassApplicationFilter(classId),
-      status: "confirmed",
-      adminDeletedAt: { $exists: false },
-    });
-
-  if (academyClass.status !== "visible" || confirmedCount < capacity) {
-    return { classAutoClosed: false, confirmedCount, capacity };
-  }
-
-  const updateResult = await db
-    .collection(CLASS_COLLECTION_NAME)
-    .updateOne(
-      { _id: academyClass._id, status: "visible" },
-      { $set: { status: "closed", updatedAt: new Date().toISOString() } },
-    );
-
-  return { classAutoClosed: updateResult.modifiedCount > 0, confirmedCount, capacity };
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -199,115 +168,137 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const _id = new ObjectId(id);
   const collection = guard.db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME);
-  const current = await collection.findOne({ _id, adminDeletedAt: { $exists: false } });
-  if (!current) {
+  const releaseApplicationLock = await acquireAcademyApplicationLock(guard.db, id);
+  if (!releaseApplicationLock) {
     return NextResponse.json(
-      { success: false, message: "신청 내역을 찾을 수 없습니다." },
-      { status: 404 },
-    );
-  }
-  if (current.status === "cancelled") {
-    return NextResponse.json(
-      { success: false, message: "취소된 신청은 클래스에 연결할 수 없습니다." },
+      { success: false, message: "신청 변경 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요." },
       { status: 409 },
     );
   }
 
-  const academyClass = await guard.db
-    .collection(CLASS_COLLECTION_NAME)
-    .findOne({ _id: new ObjectId(classId) });
-  if (!academyClass) {
-    return NextResponse.json(
-      { success: false, message: "클래스를 찾을 수 없습니다." },
-      { status: 404 },
-    );
-  }
-  if (academyClass.status !== "visible" && academyClass.status !== "closed") {
-    return NextResponse.json(
-      { success: false, message: "모집 중 또는 모집 마감 클래스만 연결할 수 있습니다." },
-      { status: 400 },
-    );
-  }
-
-  const currentClassId = getClassIdFromApplication(current);
-  if (currentClassId === classId) {
-    return NextResponse.json({
-      success: true,
-      message: "이미 연결된 클래스입니다.",
-      item: serializeApplication(current),
-      classAutoClosed: false,
-      classAutoClosedMessage: null,
-      classAutoClosedConfirmedCount: null,
-      classAutoClosedCapacity: null,
-    });
-  }
-
-  const capacity =
-    typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
-  if (current.status === "confirmed" && capacity && capacity > 0) {
-    const confirmedCount = await collection.countDocuments({
-      ...buildClassApplicationFilter(classId),
-      _id: { $ne: _id },
-      status: "confirmed",
-      adminDeletedAt: { $exists: false },
-    });
-    if (confirmedCount >= capacity) {
+  try {
+    const current = await collection.findOne({ _id, adminDeletedAt: { $exists: false } });
+    if (!current) {
       return NextResponse.json(
-        { success: false, code: "ACADEMY_CLASS_FULL", message: "정원이 마감된 클래스입니다." },
+        { success: false, message: "신청 내역을 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+    if (current.status === "cancelled") {
+      return NextResponse.json(
+        { success: false, message: "취소된 신청은 클래스에 연결할 수 없습니다." },
         { status: 409 },
       );
     }
-  }
 
-  const now = new Date().toISOString();
-  const classSnapshot = createClassSnapshot(academyClass);
-  const oldClassName =
-    current.classSnapshot && typeof current.classSnapshot.name === "string"
-      ? current.classSnapshot.name
-      : currentClassId || "클래스 미연결";
-  const baseDescription = currentClassId
-    ? `관리자가 신청 클래스를 변경했습니다: ${oldClassName} → ${classSnapshot.name}`
-    : `관리자가 신청을 클래스에 연결했습니다: ${classSnapshot.name}`;
-  const updated = await collection.findOneAndUpdate(
-    { _id, adminDeletedAt: { $exists: false } },
-    {
-      $set: { classId, classSnapshot, updatedAt: now },
-      $push: {
-        history: {
-          status: current.status,
-          date: now,
-          description: `${baseDescription}${reason ? ` 사유: ${reason}` : ""}`,
-          actorId: guard.admin._id.toHexString(),
-          actorName: guard.admin.name ?? guard.admin.email ?? "관리자",
+    const currentClassId = getAcademyApplicationClassId(current);
+    if (currentClassId === classId) {
+      return NextResponse.json({
+        success: true,
+        message: "이미 연결된 클래스입니다.",
+        item: serializeApplication(current),
+        classAutoClosed: false,
+        classAutoClosedMessage: null,
+        classAutoClosedConfirmedCount: null,
+        classAutoClosedCapacity: null,
+      });
+    }
+
+    const releaseClassLocks = await acquireAcademyClassCapacityLocks(guard.db, [
+      currentClassId,
+      classId,
+    ]);
+    if (!releaseClassLocks) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "클래스 정원 변경 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요.",
         },
-      },
-    },
-    { returnDocument: "after" },
-  );
+        { status: 409 },
+      );
+    }
 
-  if (!updated) {
-    return NextResponse.json(
-      { success: false, message: "신청 내역을 찾을 수 없습니다." },
-      { status: 404 },
-    );
+    try {
+      const academyClass = await getAcademyClass(guard.db, classId);
+      if (!academyClass) {
+        return NextResponse.json(
+          { success: false, message: "클래스를 찾을 수 없습니다." },
+          { status: 404 },
+        );
+      }
+      if (academyClass.status !== "visible" && academyClass.status !== "closed") {
+        return NextResponse.json(
+          { success: false, message: "모집 중 또는 모집 마감 클래스만 연결할 수 있습니다." },
+          { status: 400 },
+        );
+      }
+      if (
+        current.status === "confirmed" &&
+        (await isAcademyClassAtCapacity(guard.db, academyClass, _id))
+      ) {
+        return NextResponse.json(ACADEMY_CLASS_FULL_ERROR, { status: 409 });
+      }
+
+      const now = new Date().toISOString();
+      const classSnapshot = createClassSnapshot(academyClass);
+      const oldClassName =
+        current.classSnapshot && typeof current.classSnapshot.name === "string"
+          ? current.classSnapshot.name
+          : currentClassId || "클래스 미연결";
+      const baseDescription = currentClassId
+        ? `관리자가 신청 클래스를 변경했습니다: ${oldClassName} → ${classSnapshot.name}`
+        : `관리자가 신청을 클래스에 연결했습니다: ${classSnapshot.name}`;
+      const updated = await collection.findOneAndUpdate(
+        { _id, adminDeletedAt: { $exists: false } },
+        {
+          $set: { classId, classSnapshot, updatedAt: now },
+          $push: {
+            history: {
+              status: current.status,
+              date: now,
+              description: `${baseDescription}${reason ? ` 사유: ${reason}` : ""}`,
+              actorId: guard.admin._id.toHexString(),
+              actorName: guard.admin.name ?? guard.admin.email ?? "관리자",
+            },
+          },
+        },
+        { returnDocument: "after" },
+      );
+
+      if (!updated) {
+        return NextResponse.json(
+          { success: false, message: "신청 내역을 찾을 수 없습니다." },
+          { status: 404 },
+        );
+      }
+
+      let classAutoClosed = false;
+      let classAutoClosedConfirmedCount: number | null = null;
+      let classAutoClosedCapacity: number | null = null;
+      if (updated.status === "confirmed") {
+        const result = await reconcileAcademyClassCapacity(guard.db, academyClass);
+        classAutoClosed = result.classAutoClosed;
+        classAutoClosedConfirmedCount = result.confirmedCount;
+        classAutoClosedCapacity = result.capacity;
+
+        if (currentClassId) {
+          const oldClass = await getAcademyClass(guard.db, currentClassId);
+          if (oldClass) await reconcileAcademyClassCapacity(guard.db, oldClass);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        item: serializeApplication(updated),
+        classAutoClosed,
+        classAutoClosedMessage: classAutoClosed ? CLASS_AUTO_CLOSED_MESSAGE : null,
+        classAutoClosedConfirmedCount,
+        classAutoClosedCapacity,
+      });
+    } finally {
+      await releaseClassLocks();
+    }
+  } finally {
+    await releaseApplicationLock();
   }
-
-  let classAutoClosed = false;
-  let classAutoClosedConfirmedCount: number | null = null;
-  let classAutoClosedCapacity: number | null = null;
-  if (updated.status === "confirmed") {
-    const result = await autoCloseClassWhenConfirmedCapacityReached(guard.db, academyClass);
-    classAutoClosed = result.classAutoClosed;
-    classAutoClosedConfirmedCount = result.confirmedCount;
-    classAutoClosedCapacity = result.capacity;
-  }
-
-  return NextResponse.json({
-    success: true,
-    item: serializeApplication(updated),
-    classAutoClosed,
-    classAutoClosedMessage: classAutoClosed ? CLASS_AUTO_CLOSED_MESSAGE : null,
-    classAutoClosedConfirmedCount,
-    classAutoClosedCapacity,
-  });
 }
