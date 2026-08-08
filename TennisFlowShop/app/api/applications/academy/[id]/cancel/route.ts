@@ -4,6 +4,13 @@ import { ObjectId, type Document } from "mongodb";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import clientPromise from "@/lib/mongodb";
 import {
+  acquireAcademyApplicationLock,
+  acquireAcademyClassCapacityLocks,
+  getAcademyApplicationClassId,
+  getAcademyClass,
+  reconcileAcademyClassCapacity,
+} from "@/lib/academy/adminAcademyCapacity";
+import {
   getAcademyApplicationStatusLabel,
   getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
@@ -201,50 +208,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       );
     }
 
-    if (!isAcademyApplicationStatus(current.status)) {
+    const releaseApplicationLock = await acquireAcademyApplicationLock(db, id);
+    if (!releaseApplicationLock) {
       return NextResponse.json(
-        { success: false, message: "신청 취소가 가능한 상태가 아닙니다." },
+        { success: false, message: "신청 변경 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요." },
         { status: 409 },
       );
     }
 
-    const now = new Date().toISOString();
-    const descriptionReason = reasonDetail
-      ? `${expectedReasonLabel} - ${reasonDetail}`
-      : expectedReasonLabel;
-    const cancelUpdate: Document = {
-      $set: {
-        status: "cancelled",
-        updatedAt: now,
-        cancelledAt: now,
-        cancelledBy: "customer",
-        cancelReason: reason,
-        cancelReasonLabel: expectedReasonLabel,
-        cancelReasonDetail: reasonDetail || null,
-      },
-      $push: {
-        history: {
-          status: "cancelled",
-          date: now,
-          description: `${CUSTOMER_CANCEL_DESCRIPTION} 사유: ${descriptionReason}`,
-          actorName: "고객",
-        },
-      },
-    };
-
-    const updated = await collection.findOneAndUpdate(
-      {
-        _id,
-        userId: { $in: [userObjectId, userId] },
-        status: { $ne: "cancelled" },
-      },
-      cancelUpdate,
-      { returnDocument: "after" },
-    );
-
-    if (!updated) {
+    try {
       const latest = await collection.findOne({ _id });
-      if (latest?.status === "cancelled") {
+      const latestApplicationUserId = latest ? serializeObjectId(latest.userId) : null;
+      if (!latest || !latestApplicationUserId || latestApplicationUserId !== userId) {
+        return NextResponse.json(
+          { success: false, message: "신청 내역을 찾을 수 없습니다." },
+          { status: 404 },
+        );
+      }
+
+      if (latest.status === "cancelled") {
         return NextResponse.json({
           success: true,
           item: serializeApplication(latest),
@@ -252,17 +234,98 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         });
       }
 
-      return NextResponse.json(
-        { success: false, message: "신청 내역을 찾을 수 없습니다." },
-        { status: 404 },
-      );
-    }
+      if (!isAcademyApplicationStatus(latest.status)) {
+        return NextResponse.json(
+          { success: false, message: "신청 취소가 가능한 상태가 아닙니다." },
+          { status: 409 },
+        );
+      }
 
-    return NextResponse.json({
-      success: true,
-      item: serializeApplication(updated),
-      message: "아카데미 신청이 취소되었습니다.",
-    });
+      const classId =
+        latest.status === "confirmed" ? getAcademyApplicationClassId(latest) : "";
+      const releaseClassLocks = classId
+        ? await acquireAcademyClassCapacityLocks(db, [classId])
+        : async () => {};
+      if (!releaseClassLocks) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "클래스 정원 변경 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요.",
+          },
+          { status: 409 },
+        );
+      }
+
+      try {
+        const academyClass = classId ? await getAcademyClass(db, classId) : null;
+        const now = new Date().toISOString();
+        const descriptionReason = reasonDetail
+          ? `${expectedReasonLabel} - ${reasonDetail}`
+          : expectedReasonLabel;
+        const cancelUpdate: Document = {
+          $set: {
+            status: "cancelled",
+            updatedAt: now,
+            cancelledAt: now,
+            cancelledBy: "customer",
+            cancelReason: reason,
+            cancelReasonLabel: expectedReasonLabel,
+            cancelReasonDetail: reasonDetail || null,
+          },
+          $push: {
+            history: {
+              status: "cancelled",
+              date: now,
+              description: `${CUSTOMER_CANCEL_DESCRIPTION} 사유: ${descriptionReason}`,
+              actorName: "고객",
+            },
+          },
+        };
+
+        const updated = await collection.findOneAndUpdate(
+          {
+            _id,
+            userId: { $in: [userObjectId, userId] },
+            status: { $ne: "cancelled" },
+          },
+          cancelUpdate,
+          { returnDocument: "after" },
+        );
+
+        if (!updated) {
+          const afterUpdate = await collection.findOne({ _id });
+          if (
+            afterUpdate?.status === "cancelled" &&
+            serializeObjectId(afterUpdate.userId) === userId
+          ) {
+            return NextResponse.json({
+              success: true,
+              item: serializeApplication(afterUpdate),
+              message: "이미 취소된 신청입니다.",
+            });
+          }
+
+          return NextResponse.json(
+            { success: false, message: "신청 내역을 찾을 수 없습니다." },
+            { status: 404 },
+          );
+        }
+
+        if (academyClass) {
+          await reconcileAcademyClassCapacity(db, academyClass);
+        }
+
+        return NextResponse.json({
+          success: true,
+          item: serializeApplication(updated),
+          message: "아카데미 신청이 취소되었습니다.",
+        });
+      } finally {
+        await releaseClassLocks();
+      }
+    } finally {
+      await releaseApplicationLock();
+    }
   } catch (error) {
     console.error("academy application cancel error:", error);
     return NextResponse.json(
