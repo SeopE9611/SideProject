@@ -7,13 +7,6 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { UserSettings, TabErrorState } from "@/types/admin/settings";
 
@@ -30,7 +23,10 @@ export function UserSettingsTab({
 }) {
   return (
     <TabsContent value="user">
-      <AdminPageSection title="사용자 설정" description="회원 가입/인증 정책을 관리합니다.">
+      <AdminPageSection
+        title="사용자 설정"
+        description="현재 실제 회원가입 정책에 적용되는 설정만 표시합니다."
+      >
         {error.message && (
           <div
             className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}
@@ -48,37 +44,6 @@ export function UserSettingsTab({
                   form.setValue("allowRegistration", v, { shouldDirty: true })
                 }
               />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>이메일 인증 필수</Label>
-              <Switch
-                checked={form.watch("requireEmailVerification")}
-                onCheckedChange={(v) =>
-                  form.setValue("requireEmailVerification", v, {
-                    shouldDirty: true,
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label>기본 역할</Label>
-              <Select
-                value={form.watch("defaultUserRole")}
-                onValueChange={(v) =>
-                  form.setValue("defaultUserRole", v as UserSettings["defaultUserRole"], {
-                    shouldDirty: true,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="member">일반 회원</SelectItem>
-                  <SelectItem value="coach">코치</SelectItem>
-                  <SelectItem value="manager">운영 관리자</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <Label htmlFor="minimumPasswordLength">최소 비밀번호 길이</Label>

@@ -11,6 +11,7 @@ import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/l
 import { grantPoints } from "@/lib/points.service";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import { getRegistrationPolicy } from "@/lib/registration-policy";
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -18,7 +19,7 @@ import { z } from "zod";
 /**
  * POST /api/register
  * - 필수값 검증
- * - 비밀번호 정책 검증(8자 이상, 영문+숫자 포함)
+ * - 비밀번호 정책 검증(관리자 설정 최소 길이 이상, 영문+숫자 포함)
  * - 중복 이메일 검사 (11000 duplicate key도 처리)
  * - 해시 후 사용자 생성
  */
@@ -125,9 +126,20 @@ export async function POST(req: Request) {
     );
   }
 
+  const registrationPolicy = await getRegistrationPolicy(db);
+  if (!registrationPolicy.allowRegistration) {
+    return NextResponse.json(
+      {
+        code: "REGISTRATION_DISABLED",
+        message: "현재 신규 회원가입이 일시 중단되었습니다.",
+      },
+      { status: 403 },
+    );
+  }
+
   // 2) 비밀번호 정책
   const isPasswordValid = (pw: string) => {
-    const lengthOk = pw.length >= 8;
+    const lengthOk = pw.length >= registrationPolicy.minimumPasswordLength;
     const hasLetter = /[a-zA-Z]/.test(pw);
     const hasNumber = /\d/.test(pw);
     return lengthOk && hasLetter && hasNumber;
@@ -135,7 +147,7 @@ export async function POST(req: Request) {
   if (!isPasswordValid(password)) {
     return NextResponse.json(
       {
-        message: "비밀번호는 8자 이상이며, 영문과 숫자를 모두 포함해야 합니다.",
+        message: `비밀번호는 ${registrationPolicy.minimumPasswordLength}자 이상이며, 영문과 숫자를 모두 포함해야 합니다.`,
       },
       { status: 400 },
     );
