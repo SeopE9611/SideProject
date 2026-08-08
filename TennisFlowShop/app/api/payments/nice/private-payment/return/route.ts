@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
-import { privatePayments } from "@/lib/private-payments";
+import { privatePayments, type PrivatePaymentDocument } from "@/lib/private-payments";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import {
   approveNicePaymentByTid,
@@ -217,40 +217,78 @@ async function handle(req: Request) {
   const payMethod =
     pick(approved, "payMethod", "PayMethod") || extractNiceEasyPayProvider(approved) || "card";
   const now = new Date();
-  const updated = await privatePayments(db).findOneAndUpdate(
-    {
-      _id: new ObjectId(String(session.privatePaymentId)),
-      amount,
-      status: "active",
-      paymentStatus: "결제대기",
-    },
-    {
-      $set: {
-        paymentStatus: "결제완료",
-        paidAt: now,
-        updatedAt: now,
-        paymentInfo: {
-          provider: "nicepay",
-          method: payMethod,
-          status: "paid",
-          tid,
-          niceOrderId: orderId,
-          approvedAt: pick(approved, "approvedAt", "ApprovedAt") || now.toISOString(),
-          cardDisplayName: card?.displayName || null,
-          cardCompany: card?.issuerName || null,
-          cardLabel: card?.cardName || null,
-          niceCard: card,
-          rawSummary: approved,
-          total: amount,
+  const privatePaymentId = new ObjectId(String(session.privatePaymentId));
+  let updated: PrivatePaymentDocument | null;
+  try {
+    updated = await privatePayments(db).findOneAndUpdate(
+      {
+        _id: privatePaymentId,
+        amount,
+        status: "active",
+        paymentStatus: "결제대기",
+      },
+      {
+        $set: {
+          paymentStatus: "결제완료",
+          paidAt: now,
+          updatedAt: now,
+          paymentInfo: {
+            provider: "nicepay",
+            method: payMethod,
+            status: "paid",
+            tid,
+            niceOrderId: orderId,
+            approvedAt: pick(approved, "approvedAt", "ApprovedAt") || now.toISOString(),
+            cardDisplayName: card?.displayName || null,
+            cardCompany: card?.issuerName || null,
+            cardLabel: card?.cardName || null,
+            niceCard: card,
+            rawSummary: approved,
+            total: amount,
+          },
+        },
+        $push: {
+          history: { status: "결제완료", date: now, description: "NICEPAY 개인결제 승인 완료" },
         },
       },
-      $push: {
-        history: { status: "결제완료", date: now, description: "NICEPAY 개인결제 승인 완료" },
-      },
-    },
-    { returnDocument: "after" },
-  );
+      { returnDocument: "after" },
+    );
+  } catch (updateError: unknown) {
+    try {
+      const stored = await privatePayments(db).findOne({ _id: privatePaymentId });
+      const paymentInfo = stored?.paymentInfo;
+      const isCurrentApprovalStored =
+        stored?._id.equals(privatePaymentId) === true &&
+        stored.paymentStatus === "결제완료" &&
+        stored.amount === amount &&
+        paymentInfo?.provider === "nicepay" &&
+        paymentInfo.tid === tid &&
+        paymentInfo.niceOrderId === orderId &&
+        paymentInfo.total === amount;
+      updated = isCurrentApprovalStored ? stored : null;
+    } catch (recheckError: unknown) {
+      console.error("[NICEPAY private payment] 로컬 결제 반영 여부 확인 실패 - reconciliation 필요", {
+        privatePaymentId: String(privatePaymentId),
+        orderId,
+        tid,
+        updateError,
+        recheckError,
+      });
+      return redirect303(
+        req,
+        failUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "결제 승인 후 내부 처리에 실패했습니다.",
+          paymentId,
+        ),
+      );
+    }
+  }
   if (!updated) {
+    const attemptedAt = new Date();
+    let cancelCode: string;
+    let cancelMsg: string | undefined;
+    let canceledOk = false;
     try {
       const canceled = await cancelNicePaymentByTid({
         tid,
@@ -260,10 +298,19 @@ async function handle(req: Request) {
         secretKey,
         apiBaseUrl: apiBase(),
       });
-      const cancelCode = pick(canceled, "resultCode", "ResultCode");
-      const cancelMsg = pick(canceled, "resultMsg", "ResultMsg");
-      const canceledOk = cancelCode === "0000";
-      await col.updateOne(
+      cancelCode = pick(canceled, "resultCode", "ResultCode") || "UNKNOWN";
+      cancelMsg = pick(canceled, "resultMsg", "ResultMsg") || undefined;
+      canceledOk = cancelCode === "0000";
+    } catch (cancelError: unknown) {
+      cancelCode =
+        cancelError && typeof cancelError === "object" && "code" in cancelError
+          ? String(cancelError.code)
+          : "AUTO_CANCEL_REQUEST_ERROR";
+      cancelMsg =
+        cancelError instanceof Error ? cancelError.message : "자동 취소 중 오류가 발생했습니다.";
+    }
+    const saveAutoCancelResult = () =>
+      col.updateOne(
         { _id: session._id },
         {
           $set: {
@@ -277,41 +324,30 @@ async function handle(req: Request) {
             niceApprovedRaw: approved,
             updatedAt: new Date(),
             niceAutoCancel: {
-              attemptedAt: new Date(),
-              resultCode: cancelCode || "UNKNOWN",
-              resultMsg: cancelMsg || undefined,
+              attemptedAt,
+              resultCode: cancelCode,
+              resultMsg: cancelMsg,
               status: canceledOk ? "succeeded" : "failed",
             },
           },
         },
       );
-    } catch (cancelError: unknown) {
-      await col.updateOne(
-        { _id: session._id },
-        {
-          $set: {
-            status: "approve_succeeded_auto_cancel_failed",
-            failureStage: "create_order_after_approve",
-            failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            failureMessage: "승인 후 개인결제 상태 변경에 실패했습니다.",
-            niceAuthRaw: raw,
-            niceApprovedRaw: approved,
-            updatedAt: new Date(),
-            niceAutoCancel: {
-              attemptedAt: new Date(),
-              resultCode:
-                cancelError && typeof cancelError === "object" && "code" in cancelError
-                  ? String(cancelError.code)
-                  : "AUTO_CANCEL_REQUEST_ERROR",
-              resultMsg:
-                cancelError instanceof Error
-                  ? cancelError.message
-                  : "자동 취소 중 오류가 발생했습니다.",
-              status: "failed",
-            },
-          },
-        },
-      );
+    try {
+      await saveAutoCancelResult();
+    } catch (saveError: unknown) {
+      try {
+        await saveAutoCancelResult();
+      } catch (retryError: unknown) {
+        console.error("[NICEPAY private payment] 자동 취소 결과 저장 실패 - reconciliation 필요", {
+          privatePaymentId: String(privatePaymentId),
+          orderId,
+          tid,
+          cancelCode,
+          canceledOk,
+          saveError,
+          retryError,
+        });
+      }
     }
     return redirect303(
       req,
