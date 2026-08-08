@@ -75,6 +75,8 @@ export default function SettingsPage() {
             onSubmit={vm.onSubmitEmailSettings}
             error={vm.tabErrors.email}
             hasSmtpPassword={vm.emailMeta.hasSmtpPassword}
+            smtpSource={vm.emailMeta.source}
+            isSendingTestEmail={vm.isSendingTestEmail}
             onSendTest={vm.sendTestEmail}
           />
           <PaymentSettingsTab
