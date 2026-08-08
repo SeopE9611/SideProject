@@ -204,7 +204,7 @@ export default function PrivacyPage() {
             </p>
             <div className="flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
-              <span>최종 업데이트: 2026년 8월 8일</span>
+              <span>최종 업데이트: 2026년 8월 9일</span>
             </div>
           </div>
         </SiteContainer>
