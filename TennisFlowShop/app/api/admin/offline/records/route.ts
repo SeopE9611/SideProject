@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { offlineRecordCreateSchema } from "@/lib/offline/validators";
 import { maskPhone, normalizePhone } from "@/lib/offline/normalizers";
 
@@ -234,6 +234,10 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
+  const idempotencyKey = req.headers.get("Idempotency-Key")?.trim();
+  if (!idempotencyKey || idempotencyKey.length > 200) {
+    return NextResponse.json({ message: "invalid Idempotency-Key" }, { status: 400 });
+  }
   const body = await req.json().catch(() => null);
   const parsed = offlineRecordCreateSchema.safeParse(body);
   if (!parsed.success)
@@ -243,64 +247,97 @@ export async function POST(req: Request) {
     );
   if (!ObjectId.isValid(parsed.data.offlineCustomerId))
     return NextResponse.json({ message: "invalid customer" }, { status: 400 });
-  const customer = await guard.db
-    .collection("offline_customers")
-    .findOne(
-      { _id: new ObjectId(parsed.data.offlineCustomerId) },
-      { projection: { name: 1, phone: 1, email: 1, linkedUserId: 1 } },
-    );
-  if (!customer)
-    return NextResponse.json({ message: "offline customer not found" }, { status: 404 });
-  const now = new Date();
-  const doc: Record<string, any> = {
-    ...parsed.data,
-    offlineCustomerId: new ObjectId(parsed.data.offlineCustomerId),
-    userId:
-      customer.linkedUserId ??
-      (parsed.data.userId && ObjectId.isValid(parsed.data.userId)
-        ? new ObjectId(parsed.data.userId)
-        : null),
-    customerSnapshot: {
-      name: customer.name || "",
-      phone: customer.phone || "",
-      email: customer.email || null,
-    },
-    source: "offline_admin",
-    occurredAt: parsed.data.occurredAt ? new Date(parsed.data.occurredAt) : now,
-    payment: {
-      ...parsed.data.payment,
-      paidAt: parsed.data.payment.paidAt ? new Date(parsed.data.payment.paidAt) : undefined,
-    },
-    createdAt: now,
-    updatedAt: now,
-    createdBy: guard.admin._id,
-  };
-  const r = await guard.db.collection("offline_service_records").insertOne(doc);
-  const paidAmount = doc.payment?.status === "paid" ? Number(doc.payment?.amount || 0) : 0;
-  await guard.db.collection("offline_customers").updateOne(
-    { _id: doc.offlineCustomerId },
-    {
-      $inc: {
-        "stats.visitCount": 1,
-        "stats.totalPaid": paidAmount,
-        "stats.totalServiceCount": 1,
-      },
-      $set: {
-        "stats.lastVisitedAt": doc.occurredAt,
+  const records = guard.db.collection("offline_service_records");
+  const customerId = new ObjectId(parsed.data.offlineCustomerId);
+  const session = guard.db.client.startSession();
+  let recordId: ObjectId | null = null;
+  let created = false;
+
+  try {
+    await session.withTransaction(async () => {
+      created = false;
+      const existing = await records.findOne({ idempotencyKey }, { projection: { _id: 1 }, session });
+      if (existing) {
+        recordId = existing._id;
+        return;
+      }
+
+      const customer = await guard.db.collection("offline_customers").findOne(
+        { _id: customerId },
+        { projection: { name: 1, phone: 1, email: 1, linkedUserId: 1 }, session },
+      );
+      if (!customer) return;
+
+      const now = new Date();
+      const doc: Record<string, any> = {
+        ...parsed.data,
+        offlineCustomerId: customerId,
+        userId:
+          customer.linkedUserId ??
+          (parsed.data.userId && ObjectId.isValid(parsed.data.userId)
+            ? new ObjectId(parsed.data.userId)
+            : null),
+        customerSnapshot: {
+          name: customer.name || "",
+          phone: customer.phone || "",
+          email: customer.email || null,
+        },
+        source: "offline_admin",
+        idempotencyKey,
+        occurredAt: parsed.data.occurredAt ? new Date(parsed.data.occurredAt) : now,
+        payment: {
+          ...parsed.data.payment,
+          paidAt: parsed.data.payment.paidAt ? new Date(parsed.data.payment.paidAt) : undefined,
+        },
+        createdAt: now,
         updatedAt: now,
-        updatedBy: guard.admin._id,
+        createdBy: guard.admin._id,
+      };
+      const result = await records.insertOne(doc, { session });
+      const paidAmount = doc.payment?.status === "paid" ? Number(doc.payment?.amount || 0) : 0;
+      await guard.db.collection("offline_customers").updateOne(
+        { _id: customerId },
+        {
+          $inc: {
+            "stats.visitCount": 1,
+            "stats.totalPaid": paidAmount,
+            "stats.totalServiceCount": 1,
+          },
+          $set: {
+            "stats.lastVisitedAt": doc.occurredAt,
+            updatedAt: now,
+            updatedBy: guard.admin._id,
+          },
+        },
+        { session },
+      );
+      recordId = result.insertedId;
+      created = true;
+    });
+  } catch (error: any) {
+    if (error?.code !== 11000) throw error;
+    const existing = await records.findOne({ idempotencyKey }, { projection: { _id: 1 } });
+    if (!existing) throw error;
+    recordId = existing._id;
+    created = false;
+  } finally {
+    await session.endSession();
+  }
+
+  if (!recordId) {
+    return NextResponse.json({ message: "offline customer not found" }, { status: 404 });
+  }
+  if (created) {
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "offline_record_create",
+        actorId: guard.admin._id,
+        targetId: recordId,
+        message: "오프라인 작업/매출 등록",
       },
-    },
-  );
-  await appendAudit(
-    guard.db,
-    {
-      type: "offline_record_create",
-      actorId: guard.admin._id,
-      targetId: r.insertedId,
-      message: "오프라인 작업/매출 등록",
-    },
-    req,
-  );
-  return NextResponse.json({ id: String(r.insertedId) }, { status: 201 });
+      req,
+    );
+  }
+  return NextResponse.json({ id: String(recordId) }, { status: 201 });
 }

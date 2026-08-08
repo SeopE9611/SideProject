@@ -20,6 +20,7 @@ export async function ensureOfflineIndexes(db: Db) {
         { key: { status: 1 } },
         { key: { "payment.status": 1 } },
         { key: { kind: 1 } },
+        { key: { idempotencyKey: 1 }, unique: true, sparse: true },
       ]),
   ]);
 }

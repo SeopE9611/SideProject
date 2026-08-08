@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { offlineRecordPatchSchema } from "@/lib/offline/validators";
 
 const oid = (id: string) => (ObjectId.isValid(id) ? new ObjectId(id) : null);
@@ -27,8 +27,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const body = await req.json().catch(() => null);
   const parsed = offlineRecordPatchSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ message: "invalid body" }, { status: 400 });
-  const existingRecord = await guard.db.collection("offline_service_records").findOne({ _id });
-  if (!existingRecord) return NextResponse.json({ message: "record not found" }, { status: 404 });
   const $set: Record<string, any> = {
     updatedAt: new Date(),
     updatedBy: guard.admin._id,
@@ -43,26 +41,41 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof parsed.data.payment?.amount === "number")
     $set["payment.amount"] = parsed.data.payment.amount;
   if (parsed.data.payment?.paidAt) $set["payment.paidAt"] = new Date(parsed.data.payment.paidAt);
-  const oldPayment = existingRecord.payment ?? {};
-  const nextPayment = { ...oldPayment, ...(parsed.data.payment ?? {}) };
-  const oldPaidAmount = oldPayment.status === "paid" ? Number(oldPayment.amount || 0) : 0;
-  const newPaidAmount = nextPayment.status === "paid" ? Number(nextPayment.amount || 0) : 0;
-  const totalPaidDelta = newPaidAmount - oldPaidAmount;
-  const updateResult = await guard.db
-    .collection("offline_service_records")
-    .updateOne({ _id }, { $set });
-  if (updateResult.matchedCount === 0)
-    return NextResponse.json({ message: "record not found" }, { status: 404 });
-  if (totalPaidDelta !== 0 && existingRecord.offlineCustomerId) {
-    await guard.db.collection("offline_customers").updateOne(
-      { _id: existingRecord.offlineCustomerId },
-      {
-        $inc: { "stats.totalPaid": totalPaidDelta },
-        $set: { updatedAt: new Date(), updatedBy: guard.admin._id },
-      },
-    );
+  const records = guard.db.collection("offline_service_records");
+  const session = guard.db.client.startSession();
+  let doc: Record<string, any> | null = null;
+  try {
+    const transactionResult = await session.withTransaction(async () => {
+      const existingRecord = await records.findOne({ _id }, { session });
+      if (!existingRecord) return null;
+
+      const oldPayment = existingRecord.payment ?? {};
+      const nextPayment = { ...oldPayment, ...(parsed.data.payment ?? {}) };
+      const oldPaidAmount = oldPayment.status === "paid" ? Number(oldPayment.amount || 0) : 0;
+      const newPaidAmount = nextPayment.status === "paid" ? Number(nextPayment.amount || 0) : 0;
+      const totalPaidDelta = newPaidAmount - oldPaidAmount;
+
+      const updateResult = await records.updateOne({ _id }, { $set }, { session });
+      if (updateResult.matchedCount === 0) return null;
+      if (totalPaidDelta !== 0 && existingRecord.offlineCustomerId) {
+        await guard.db.collection("offline_customers").updateOne(
+          { _id: existingRecord.offlineCustomerId },
+          {
+            $inc: { "stats.totalPaid": totalPaidDelta },
+            $set: { updatedAt: new Date(), updatedBy: guard.admin._id },
+          },
+          { session },
+        );
+      }
+      return records.findOne({ _id }, { session });
+    });
+    doc = transactionResult ?? null;
+  } finally {
+    await session.endSession();
   }
-  await appendAudit(
+  if (!doc) return NextResponse.json({ message: "record not found" }, { status: 404 });
+
+  await appendAdminAudit(
     guard.db,
     {
       type: "offline_record_update",
@@ -73,8 +86,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     },
     req,
   );
-  const doc = await guard.db.collection("offline_service_records").findOne({ _id });
-  if (!doc) return NextResponse.json({ message: "record not found" }, { status: 404 });
   return NextResponse.json({
     item: { ...doc, id: String(doc._id), _id: undefined },
   });
