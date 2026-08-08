@@ -7,6 +7,34 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 const PG_CANCEL_REJECT_BLOCKED_STATUSES = ["processing", "pg_canceled", "needs_reconciliation"];
 
+function normalizeNiceStatus(value: unknown) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace("partialcancelled", "partialcanceled")
+    .replace("cancelled", "canceled");
+}
+
+function isNiceCancelConfirmed(rental: any) {
+  return (
+    String(rental?.paymentInfo?.provider ?? "").trim().toLowerCase() === "nicepay" &&
+    rental?.paymentStatus === "결제취소" &&
+    normalizeNiceStatus(rental?.paymentInfo?.status) === "canceled" &&
+    normalizeNiceStatus(rental?.paymentInfo?.niceSync?.pgStatus) === "canceled"
+  );
+}
+
+function niceCancelConfirmedResponse() {
+  return NextResponse.json(
+    {
+      ok: false,
+      message: "INVALID_STATE",
+      detail: "NICE 결제 취소가 확정되어 취소 요청을 거절할 수 없습니다.",
+    },
+    { status: 409 },
+  );
+}
+
 function pgCancelRejectBlockedResponse(status: string) {
   return NextResponse.json(
     {
@@ -52,6 +80,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         { status: 409 },
       );
     }
+    if (isNiceCancelConfirmed(existing)) {
+      return niceCancelConfirmedResponse();
+    }
     const pgCancelClaimStatus = String(cancel.pgCancelClaim?.status ?? "");
     if (PG_CANCEL_REJECT_BLOCKED_STATUSES.includes(pgCancelClaimStatus)) {
       return pgCancelRejectBlockedResponse(pgCancelClaimStatus);
@@ -63,6 +94,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         _id,
         "cancelRequest.status": "requested",
         "cancelRequest.pgCancelClaim.status": { $nin: PG_CANCEL_REJECT_BLOCKED_STATUSES },
+        $nor: [
+          {
+            "paymentInfo.provider": /^\s*nicepay\s*$/i,
+            paymentStatus: "결제취소",
+            "paymentInfo.status": /^\s*cancel(?:ed|led)\s*$/i,
+            "paymentInfo.niceSync.pgStatus": /^\s*cancel(?:ed|led)\s*$/i,
+          },
+        ],
       },
       {
         $set: {
@@ -75,6 +114,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     if (updated.matchedCount === 0) {
       const latest: any = await rentals.findOne({ _id });
+      if (isNiceCancelConfirmed(latest)) {
+        return niceCancelConfirmedResponse();
+      }
       const latestClaimStatus = String(latest?.cancelRequest?.pgCancelClaim?.status ?? "");
       if (PG_CANCEL_REJECT_BLOCKED_STATUSES.includes(latestClaimStatus)) {
         return pgCancelRejectBlockedResponse(latestClaimStatus);
