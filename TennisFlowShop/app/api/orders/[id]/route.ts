@@ -13,7 +13,11 @@ import { issuePassesForPaidOrder } from "@/lib/passes.service";
 import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 import { normalizeEmailForSearch } from "@/lib/search-email";
-import { isOrderCanceledStatus, isOrderConfirmedStatus } from "@/lib/status/flow-status";
+import {
+  isOrderCanceledStatus,
+  isOrderConfirmedStatus,
+  isOrderRefundedStatus,
+} from "@/lib/status/flow-status";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -939,6 +943,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (isOrderConfirmedStatus(existing.status)) {
       return new NextResponse("구매확정된 주문은 상태를 변경할 수 없습니다.", {
         status: 400,
+      });
+    }
+
+    // 주문 또는 실제 결제가 환불 종단 상태이면 일반 PATCH로 다시 변경하지 못하게 함
+    if (
+      isOrderRefundedStatus(existing.status) ||
+      isOrderRefundedStatus(resolveOrderPaymentStatus(existing))
+    ) {
+      return new NextResponse("환불 또는 결제취소된 주문은 일반 변경을 할 수 없습니다.", {
+        status: 409,
       });
     }
 
