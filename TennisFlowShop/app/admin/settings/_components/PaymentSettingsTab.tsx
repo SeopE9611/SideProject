@@ -1,35 +1,15 @@
 "use client";
-import { Save } from "lucide-react";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import type { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { PaymentSettings, TabErrorState } from "@/types/admin/settings";
+import type { TabErrorState } from "@/types/admin/settings";
 
 export function PaymentSettingsTab({
-  form,
-  isBootstrapping,
-  onSubmit,
   error,
   paymentMeta,
 }: {
-  form: UseFormReturn<PaymentSettings>;
-  isBootstrapping: boolean;
-  onSubmit: (data: PaymentSettings) => void;
   error: TabErrorState;
   paymentMeta: {
-    hasPaypalSecret: boolean;
-    hasStripeSecretKey: boolean;
     nicepay: {
       provider: "NICEPay";
       enabled: boolean;
@@ -52,7 +32,7 @@ export function PaymentSettingsTab({
     <TabsContent value="payment">
       <AdminPageSection
         title="결제 설정"
-        description="현재 운영 결제 연동은 NICEPay 기준으로 관리됩니다."
+        description="배포 환경에 설정된 실제 NICEPay 결제 연동 상태를 확인합니다."
       >
         {error.message && (
           <div
@@ -61,78 +41,36 @@ export function PaymentSettingsTab({
             {error.message}
           </div>
         )}
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <div>
-              <Label>통화</Label>
-              <Select
-                value={form.watch("currency")}
-                onValueChange={(v) =>
-                  form.setValue("currency", v as PaymentSettings["currency"], {
-                    shouldDirty: true,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="KRW">KRW</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="JPY">JPY</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="taxRate">세율</Label>
-              <Input
-                id="taxRate"
-                type="number"
-                {...form.register("taxRate", { valueAsNumber: true })}
-              />
-            </div>
-
-            <div className={`${adminSurface.cardMuted} space-y-2 p-4`}>
-              <p className={adminTypography.panelTitle}>NICEPay 상태</p>
-              <p className={adminTypography.body}>사용 PG: {paymentMeta.nicepay.provider}</p>
-              <p className={adminTypography.body}>결제 기능 상태: {nicepayStatus}</p>
-              <p className={adminTypography.body}>결제 모드: {nicepayModeLabel}</p>
-              <p className={`${adminTypography.body} break-all`}>
-                승인 API Base URL: {paymentMeta.nicepay.approveApiBase ?? "미설정"}
-              </p>
-              <p className={adminTypography.body}>
-                Client ID 설정 여부: {paymentMeta.nicepay.hasClientId ? "설정됨" : "미설정"}
-              </p>
-              <p className={adminTypography.body}>
-                Secret Key 설정 여부: {paymentMeta.nicepay.hasSecretKey ? "설정됨" : "미설정"}
-              </p>
-            </div>
-
-            <div className={`${adminSurface.cardMuted} space-y-1 p-4`}>
-              <p className={adminTypography.panelTitle}>운영 안내</p>
-              <p className={adminTypography.metaMuted}>
-                NICEPay 환경변수는 배포 환경(Vercel)에서 관리합니다.
-              </p>
-              <p className={adminTypography.metaMuted}>
-                주문/대여/패키지 결제 동기화는 각 상세 페이지에서 수행됩니다.
-              </p>
-              <p className={adminTypography.metaMuted}>
-                실제 결제 취소/환불은 각 도메인 상세 페이지의 승인 흐름에서 처리됩니다.
-              </p>
-            </div>
+        <div className="space-y-4">
+          <div className={`${adminSurface.cardMuted} space-y-2 p-4`}>
+            <p className={adminTypography.panelTitle}>NICEPay 상태</p>
+            <p className={adminTypography.body}>사용 PG: {paymentMeta.nicepay.provider}</p>
+            <p className={adminTypography.body}>결제 기능 상태: {nicepayStatus}</p>
+            <p className={adminTypography.body}>결제 모드: {nicepayModeLabel}</p>
+            <p className={`${adminTypography.body} break-all`}>
+              승인 API Base URL: {paymentMeta.nicepay.approveApiBase ?? "미설정"}
+            </p>
+            <p className={adminTypography.body}>
+              Client ID 설정 여부: {paymentMeta.nicepay.hasClientId ? "설정됨" : "미설정"}
+            </p>
+            <p className={adminTypography.body}>
+              Secret Key 설정 여부: {paymentMeta.nicepay.hasSecretKey ? "설정됨" : "미설정"}
+            </p>
           </div>
-          <div className="mt-5 flex">
-            <Button
-              disabled={isBootstrapping || form.formState.isSubmitting}
-              type="submit"
-              className="ml-auto"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              설정 저장
-            </Button>
+
+          <div className={`${adminSurface.cardMuted} space-y-1 p-4`}>
+            <p className={adminTypography.panelTitle}>운영 안내</p>
+            <p className={adminTypography.metaMuted}>
+              NICEPay 환경변수는 배포 환경(Vercel)에서 관리합니다.
+            </p>
+            <p className={adminTypography.metaMuted}>
+              주문/대여/패키지 결제 동기화는 각 상세 페이지에서 수행됩니다.
+            </p>
+            <p className={adminTypography.metaMuted}>
+              실제 결제 취소/환불은 각 도메인 상세 페이지의 승인 흐름에서 처리됩니다.
+            </p>
           </div>
-        </form>
+        </div>
       </AdminPageSection>
     </TabsContent>
   );

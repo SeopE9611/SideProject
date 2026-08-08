@@ -69,9 +69,6 @@ export default function SettingsPage() {
             onSendTest={vm.sendTestEmail}
           />
           <PaymentSettingsTab
-            form={vm.paymentForm}
-            isBootstrapping={vm.isBootstrapping}
-            onSubmit={vm.onSubmitPaymentSettings}
             error={vm.tabErrors.payment}
             paymentMeta={vm.paymentMeta}
           />
