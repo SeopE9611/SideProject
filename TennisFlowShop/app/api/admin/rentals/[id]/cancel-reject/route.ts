@@ -5,6 +5,19 @@ import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
+const PG_CANCEL_REJECT_BLOCKED_STATUSES = ["processing", "pg_canceled", "needs_reconciliation"];
+
+function pgCancelRejectBlockedResponse(status: string) {
+  return NextResponse.json(
+    {
+      ok: false,
+      message: "INVALID_STATE",
+      detail: `NICE 취소 승인 상태(${status})에서는 취소 요청을 거절할 수 없습니다.`,
+    },
+    { status: 409 },
+  );
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -39,17 +52,33 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         { status: 409 },
       );
     }
+    const pgCancelClaimStatus = String(cancel.pgCancelClaim?.status ?? "");
+    if (PG_CANCEL_REJECT_BLOCKED_STATUSES.includes(pgCancelClaimStatus)) {
+      return pgCancelRejectBlockedResponse(pgCancelClaimStatus);
+    }
 
     const now = new Date();
-    const updated = await rentals.updateOne({ _id, "cancelRequest.status": "requested" }, {
-      $set: {
-        "cancelRequest.status": "rejected",
-        "cancelRequest.processedAt": now,
-        updatedAt: now,
+    const updated = await rentals.updateOne(
+      {
+        _id,
+        "cancelRequest.status": "requested",
+        "cancelRequest.pgCancelClaim.status": { $nin: PG_CANCEL_REJECT_BLOCKED_STATUSES },
       },
-    } as any);
+      {
+        $set: {
+          "cancelRequest.status": "rejected",
+          "cancelRequest.processedAt": now,
+          updatedAt: now,
+        },
+      } as any,
+    );
 
     if (updated.matchedCount === 0) {
+      const latest: any = await rentals.findOne({ _id });
+      const latestClaimStatus = String(latest?.cancelRequest?.pgCancelClaim?.status ?? "");
+      if (PG_CANCEL_REJECT_BLOCKED_STATUSES.includes(latestClaimStatus)) {
+        return pgCancelRejectBlockedResponse(latestClaimStatus);
+      }
       return NextResponse.json(
         {
           ok: false,
