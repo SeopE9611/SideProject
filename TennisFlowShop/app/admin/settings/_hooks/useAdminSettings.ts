@@ -5,10 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
   defaultEmailSettings,
-  defaultPaymentSettings,
   defaultUserSettings,
   emailSettingsSchema,
-  paymentSettingsSchema,
   userSettingsSchema,
 } from "@/lib/admin-settings";
 import { AdminFetchError, adminMutator } from "@/lib/admin/adminFetcher";
@@ -16,7 +14,6 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 import type {
   EmailSettings,
-  PaymentSettings,
   SettingsApiResponse,
   SettingsTab,
   TabErrorState,
@@ -61,11 +58,7 @@ export function useAdminSettings() {
     source: EmailSource;
   }>({ hasSmtpPassword: false, source: "unconfigured" });
   const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
-  const [paymentMeta, setPaymentMeta] = useState({
-    hasPaypalSecret: false,
-    hasStripeSecretKey: false,
-    nicepay: DEFAULT_NICEPAY_META,
-  });
+  const [paymentMeta, setPaymentMeta] = useState({ nicepay: DEFAULT_NICEPAY_META });
   const [pendingTab, setPendingTab] = useState<SettingsTab | null>(null);
 
   const userForm = useForm<UserSettings>({
@@ -76,29 +69,17 @@ export function useAdminSettings() {
     resolver: zodResolver(emailSettingsSchema),
     defaultValues: defaultEmailSettings,
   });
-  const paymentForm = useForm<PaymentSettings>({
-    resolver: zodResolver(paymentSettingsSchema),
-    defaultValues: defaultPaymentSettings,
-  });
-
   const dirtyByTab = useMemo(
     () => ({
       user: userForm.formState.isDirty,
       email: emailForm.formState.isDirty,
-      payment: paymentForm.formState.isDirty,
+      payment: false,
     }),
-    [
-      userForm.formState.isDirty,
-      emailForm.formState.isDirty,
-      paymentForm.formState.isDirty,
-    ],
+    [userForm.formState.isDirty, emailForm.formState.isDirty],
   );
 
   const isDirtyAny = Object.values(dirtyByTab).some(Boolean);
-  const isSubmittingAny =
-    userForm.formState.isSubmitting ||
-    emailForm.formState.isSubmitting ||
-    paymentForm.formState.isSubmitting;
+  const isSubmittingAny = userForm.formState.isSubmitting || emailForm.formState.isSubmitting;
 
   const parseTabError = async (res: Response): Promise<TabErrorState> => {
     const payload = await res.json().catch(() => ({}));
@@ -179,10 +160,7 @@ export function useAdminSettings() {
           }),
           loadTab("payment", "/api/admin/settings/payment", (json) => {
             if (cancelled) return;
-            paymentForm.reset(json.data ?? defaultPaymentSettings);
             setPaymentMeta({
-              hasPaypalSecret: Boolean(json?.meta?.hasPaypalSecret),
-              hasStripeSecretKey: Boolean(json?.meta?.hasStripeSecretKey),
               nicepay: readNicepayMeta(json.meta),
             });
           }),
@@ -258,21 +236,6 @@ export function useAdminSettings() {
     }
   };
 
-  const onSubmitPaymentSettings = async (data: PaymentSettings) => {
-    try {
-      const json = await saveTab("payment", "/api/admin/settings/payment", data);
-      paymentForm.reset(json.data ?? data);
-      setPaymentMeta({
-        hasPaypalSecret: Boolean(json?.meta?.hasPaypalSecret),
-        hasStripeSecretKey: Boolean(json?.meta?.hasStripeSecretKey),
-        nicepay: readNicepayMeta(json.meta),
-      });
-      showSuccessToast("결제 설정이 저장되었습니다.");
-    } catch (error: unknown) {
-      showErrorToast(error instanceof Error ? error.message : "결제 설정 저장에 실패했습니다.");
-    }
-  };
-
   const sendTestEmail = async () => {
     if (emailForm.formState.isDirty) {
       showErrorToast("변경한 이메일 설정을 먼저 저장해주세요.");
@@ -325,13 +288,11 @@ export function useAdminSettings() {
     isSubmittingAny,
     userForm,
     emailForm,
-    paymentForm,
     emailMeta,
     isSendingTestEmail,
     paymentMeta,
     onSubmitUserSettings,
     onSubmitEmailSettings,
-    onSubmitPaymentSettings,
     sendTestEmail,
   };
 }
