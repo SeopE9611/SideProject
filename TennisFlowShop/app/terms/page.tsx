@@ -100,8 +100,17 @@ export default function TermsPage() {
 5. 회사는 회원 간 또는 회원과 제3자 상호간에 서비스를 매개로 하여 거래 등을 한 경우에는 책임이 면제됩니다.`,
     },
     {
+      id: "orders-and-payment",
+      title: "제8조 (주문, 결제, 배송 및 취소·환불)",
+      icon: FileText,
+      content: `1. 이용자는 서비스에서 제공하는 상품 및 교체서비스를 주문할 수 있으며, 주문 시 표시된 상품가격, 서비스 비용, 배송비 및 최종 결제금액을 확인한 후 결제합니다.
+2. 결제수단은 이용자가 이용하는 서비스의 주문 화면에서 제공되는 방법에 따르며, 결제 채널별로 제공되는 결제수단은 다를 수 있습니다.
+3. 배송 또는 방문 수령 등 제공 방법과 비용은 주문 시 안내된 내용에 따릅니다.
+4. 주문 취소 및 환불 가능 여부는 주문·배송·교체서비스 진행 상태와 결제수단에 따라 달라질 수 있으며, 세부 기준은 서비스에 게시된 환불 및 취소 정책에 따릅니다.`,
+    },
+    {
       id: "terms-change",
-      title: "제8조 (약관의 변경)",
+      title: "제9조 (약관의 변경)",
       icon: RefreshCw,
       content: `1. 회사는 필요한 경우 약관을 변경할 수 있으며, 변경된 약관은 서비스 내 공지사항을 통해 공지하거나 전자메일 등의 방법으로 회원에게 통지함으로써 효력이 발생합니다.
 2. 회원은 변경된 약관에 동의하지 않을 경우 회원 탈퇴를 요청할 수 있으며, 변경된 약관의 효력 발생일로부터 7일 이후에도 거부의사를 표시하지 않고 서비스를 계속 이용할 경우 약관의 변경 사항에 동의한 것으로 간주됩니다.`,
@@ -125,12 +134,12 @@ export default function TermsPage() {
               이용약관
             </h1>
             <p className="max-w-3xl break-keep text-muted-foreground leading-relaxed">
-              도깨비테니스 웹사이트 이용에 관한 약관입니다. 서비스 이용 전 반드시 읽어주시기
-              바랍니다.
+              도깨비테니스가 제공하는 서비스 이용에 관한 약관입니다. 서비스 이용 전 반드시
+              읽어주시기 바랍니다.
             </p>
             <div className="flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
-              <span>최종 업데이트: 2025년 10월 14일</span>
+              <span>최종 업데이트: 2026년 8월 8일</span>
             </div>
           </div>
         </SiteContainer>
@@ -142,7 +151,8 @@ export default function TermsPage() {
           <PublicSurface className="space-y-4">
             <p className="break-keep text-foreground/80 leading-relaxed">
               도깨비테니스(이하 '회사')는 이용자의 권리를 보호하고 안전하고 편리한 서비스를 제공하기
-              위해 본 약관을 마련하였습니다. 본 약관은 회사가 제공하는 모든 서비스에 적용됩니다.
+              위해 본 약관을 마련하였습니다. 본 약관은 웹사이트, 모바일 환경 및 Apps in Toss
+              미니앱 등 회사가 제공하는 도깨비테니스 관련 서비스에 적용됩니다.
             </p>
           </PublicSurface>
 

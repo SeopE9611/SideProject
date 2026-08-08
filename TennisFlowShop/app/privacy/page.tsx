@@ -32,9 +32,10 @@ export default function PrivacyPage() {
 수집항목
 - 필수항목: 이름, 생년월일, 로그인ID, 비밀번호, 휴대전화번호, 이메일, 서비스 이용 기록, 접속 로그, 쿠키, 접속 IP 정보
 - 선택항목: 주소, 직업, 테니스 경력, 관심 분야, 프로필 사진
+- Apps in Toss에서 토스 로그인을 이용하는 경우: 이름, 앱 단위 사용자 식별자(userKey)
 
 개인정보 수집방법
-- 홈페이지(회원가입, 게시판, 상담 게시판), 전화/팩스를 통한 회원가입, 경품 행사 응모, 배송 요청
+- 웹사이트(회원가입, 게시판, 상담 게시판), 모바일 환경, Apps in Toss 미니앱, 배송 요청
 - 생성정보 수집 툴을 통한 수집`,
     },
     {
@@ -43,7 +44,7 @@ export default function PrivacyPage() {
       icon: Eye,
       content: `도깨비테니스는 다음과 같은 방법으로 개인정보를 수집합니다.
 
-- 홈페이지, 모바일 애플리케이션, 서면양식, 팩스, 전화, 상담 게시판, 이메일, 이벤트 응모
+- 웹사이트, 모바일 환경, Apps in Toss 미니앱, 상담 게시판, 이메일
 - 협력회사로부터의 제공
 - 생성정보 수집 툴을 통한 자동 수집
 
@@ -153,11 +154,12 @@ export default function PrivacyPage() {
       id: "changes",
       title: "9. 개인정보처리방침 변경",
       icon: Bell,
-      content: `이 개인정보처리방침은 2025년 10월 14일부터 적용됩니다.
+      content: `이 개인정보처리방침은 2026년 8월 8일부터 적용됩니다.
 
 법령, 정책 또는 보안기술의 변경에 따라 내용의 추가, 삭제 및 수정이 있을 시에는 변경사항의 시행 7일 전부터 홈페이지의 공지사항을 통하여 고지할 것입니다.
 
 개인정보처리방침 변경 이력
+- 2026년 8월 8일: 서비스 제공 환경 및 Apps in Toss 토스 로그인 처리 항목 반영
 - 2025년 10월 14일: 개인정보처리방침 개정
 - 2023년 12월 1일: 개인정보처리방침 제정`,
     },
@@ -202,7 +204,7 @@ export default function PrivacyPage() {
             </p>
             <div className="flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
-              <span>최종 업데이트: 2025년 10월 14일</span>
+              <span>최종 업데이트: 2026년 8월 8일</span>
             </div>
           </div>
         </SiteContainer>
