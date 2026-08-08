@@ -618,6 +618,29 @@ const INDEX_SPECS = {
       options: {},
     },
   ],
+  offline_customers: [
+    { name: "phoneNormalized_1", keys: { phoneNormalized: 1 }, options: {} },
+    { name: "emailLower_1", keys: { emailLower: 1 }, options: {} },
+    { name: "linkedUserId_1", keys: { linkedUserId: 1 }, options: {} },
+    { name: "createdAt_-1", keys: { createdAt: -1 }, options: {} },
+  ],
+  offline_service_records: [
+    {
+      name: "offlineCustomerId_1",
+      keys: { offlineCustomerId: 1 },
+      options: {},
+    },
+    { name: "userId_1", keys: { userId: 1 }, options: {} },
+    { name: "occurredAt_-1", keys: { occurredAt: -1 }, options: {} },
+    { name: "status_1", keys: { status: 1 }, options: {} },
+    { name: "payment.status_1", keys: { "payment.status": 1 }, options: {} },
+    { name: "kind_1", keys: { kind: 1 }, options: {} },
+    {
+      name: "idempotencyKey_1",
+      keys: { idempotencyKey: 1 },
+      options: { unique: true, sparse: true },
+    },
+  ],
   reviews: [
     {
       name: "user_product_order_unique",
