@@ -494,6 +494,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             "PG 결제 취소가 확인되지 않아 후처리할 수 없습니다.",
           );
         }
+        const currentNormalizedProvider = String(current.paymentInfo?.provider ?? "")
+          .trim()
+          .toLowerCase();
+        const niceCancelConfirmed =
+          currentNormalizedProvider === "nicepay" && isNiceCancelConfirmed(current);
 
         const finalizedAt = new Date();
         const stockFields = await restoreRentalStock(guard.db, current, finalizedAt, session);
@@ -575,8 +580,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
               status: "canceled",
               "cancelRequest.status": "approved",
               "cancelRequest.processedAt": finalizedAt,
+              ...(niceCancelConfirmed
+                ? {
+                    "paymentInfo.niceSync.manualActionRequired": false,
+                    "paymentInfo.niceSync.manualActionReason": null,
+                  }
+                : {}),
               updatedAt: finalizedAt,
             },
+            ...(niceCancelConfirmed
+              ? { $unset: { "cancelRequest.pgCancelBlocked": "" } }
+              : {}),
           } as any,
           { session },
         );
