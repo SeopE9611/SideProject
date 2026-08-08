@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
 export const NICE_DEFAULT_APPROVE_API_BASE = "https://api.nicepay.co.kr/v1/payments";
+export const NICE_PAYMENT_CLAIM_LEASE_MS = 5 * 60 * 1000;
 
 function toPositiveAmount(amount: unknown): number {
   const normalized = Math.floor(Number(amount) || 0);

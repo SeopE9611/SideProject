@@ -5,7 +5,11 @@ import clientPromise from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { cancelNicePaymentByTid, getNicePaymentByTid } from "@/lib/payments/nice/server";
+import {
+  cancelNicePaymentByTid,
+  getNicePaymentByTid,
+  NICE_PAYMENT_CLAIM_LEASE_MS,
+} from "@/lib/payments/nice/server";
 
 const NICE_SUCCESS_CODES = new Set(["0000", "2001", "2211"]);
 
@@ -183,13 +187,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const claimToken = randomUUID();
   const claimedAt = new Date();
+  const claimExpiresAt = new Date(claimedAt.getTime() + NICE_PAYMENT_CLAIM_LEASE_MS);
+  const legacyClaimStaleBefore = new Date(claimedAt.getTime() - NICE_PAYMENT_CLAIM_LEASE_MS);
   const cancelOrderId = String(rental.paymentInfo?.depositRefund?.cancelOrderId ?? createCancelOrderId(id));
   const claimResult: any = await rentals.findOneAndUpdate(
     {
       _id,
       depositRefundedAt: null,
       "paymentInfo.provider": "nicepay",
-      "paymentInfo.depositRefund.status": { $ne: "processing" },
+      $or: [
+        { "paymentInfo.depositRefund.status": { $nin: ["processing", "completed"] } },
+        {
+          "paymentInfo.depositRefund.status": "processing",
+          $or: [
+            { "paymentInfo.depositRefund.claimExpiresAt": { $lte: claimedAt } },
+            {
+              "paymentInfo.depositRefund.claimExpiresAt": { $exists: false },
+              "paymentInfo.depositRefund.claimedAt": { $lte: legacyClaimStaleBefore },
+            },
+          ],
+        },
+      ],
     },
     { $set: {
       "paymentInfo.depositRefund.provider": "nicepay",
@@ -197,6 +215,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       "paymentInfo.depositRefund.amount": depositAmount,
       "paymentInfo.depositRefund.token": claimToken,
       "paymentInfo.depositRefund.claimedAt": claimedAt,
+      "paymentInfo.depositRefund.claimExpiresAt": claimExpiresAt,
       "paymentInfo.depositRefund.updatedAt": claimedAt,
       "paymentInfo.depositRefund.tid": tid,
       "paymentInfo.depositRefund.cancelOrderId": cancelOrderId,
