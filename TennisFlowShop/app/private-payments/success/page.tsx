@@ -63,19 +63,32 @@ export default async function PrivatePaymentSuccessPage({
     );
   const paymentStatusLabel =
     getCommonPaymentStatusLabel(item.paymentStatus) ?? item.paymentStatus ?? "-";
+  const isCompleted = item.paymentStatus === "결제완료";
+  const isCanceled = item.paymentStatus === "결제취소";
+  const resultStatus = isCompleted ? "success" : isCanceled ? "error" : "warning";
+  const resultTitle = isCompleted
+    ? "결제가 완료되었습니다."
+    : isCanceled
+      ? "취소된 결제입니다."
+      : "결제가 완료되지 않았습니다.";
+  const resultDescription = isCompleted
+    ? "개인결제 승인 내역을 확인해 주세요."
+    : isCanceled
+      ? "결제 취소 상태를 확인해 주세요."
+      : "현재 결제 상태를 확인해 주세요.";
   return (
     <main className="min-h-screen bg-background pb-10">
       <PublicPageHero
         variant="feature"
         eyebrow="개인결제"
-        title="결제가 완료되었습니다"
-        description="개인결제 승인 내역을 확인해 주세요."
+        title={resultTitle}
+        description={resultDescription}
       />
       <div className="mx-auto max-w-2xl px-4 pt-6">
         <ResultState
-          status="success"
-          title="결제가 완료되었습니다."
-          description="개인결제 승인 내역을 확인해 주세요."
+          status={resultStatus}
+          title={resultTitle}
+          description={resultDescription}
         >
           <div className="w-full space-y-3 rounded-control border border-border bg-muted/40 p-4 text-left text-ui-body-sm sm:p-5">
             <div className="flex items-start justify-between gap-4">
@@ -92,14 +105,20 @@ export default async function PrivatePaymentSuccessPage({
             </div>
             <div className="flex items-start justify-between gap-4">
               <span className="shrink-0 text-muted-foreground">결제상태</span>
-              <span className="min-w-0 break-words text-right font-medium text-success">
+              <span
+                className={`min-w-0 break-words text-right font-medium ${
+                  isCompleted ? "text-success" : isCanceled ? "text-destructive" : ""
+                }`}
+              >
                 {paymentStatusLabel}
               </span>
             </div>
             <div className="flex items-start justify-between gap-4">
-              <span className="shrink-0 text-muted-foreground">결제일</span>
+              <span className="shrink-0 text-muted-foreground">
+                {isCanceled ? "취소일" : "결제일"}
+              </span>
               <span className="min-w-0 break-words text-right">
-                {formatKoreanDateTime(item.paidAt)}
+                {formatKoreanDateTime(isCanceled ? item.canceledAt : item.paidAt)}
               </span>
             </div>
           </div>

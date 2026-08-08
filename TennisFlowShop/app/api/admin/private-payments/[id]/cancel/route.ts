@@ -127,8 +127,9 @@ export async function POST(req: Request, ctx: Ctx) {
       { status: 409 },
     );
 
+  let canceled: Record<string, string>;
   try {
-    const canceled = await cancelNicePaymentByTid({
+    canceled = await cancelNicePaymentByTid({
       tid,
       orderId,
       reason,
@@ -136,70 +137,145 @@ export async function POST(req: Request, ctx: Ctx) {
       secretKey,
       apiBaseUrl: apiBase(),
     });
-    const resultCode = pick(canceled, "resultCode", "ResultCode");
-
-    if (resultCode !== "0000") {
-      const message =
-        pick(canceled, "resultMsg", "ResultMsg", "message") || "NICEPAY 승인취소에 실패했습니다.";
-      const failedAt = new Date();
-
-      await col.updateOne(
-        { _id },
-        {
-          $set: {
-            paymentStatus: "결제완료",
-            updatedAt: failedAt,
-            cancellationInfo: {
-              status: "failed",
-              reason,
-              requestedAt: now,
-              requestedBy: guard.admin._id,
-              failedAt,
-              failureMessage: message,
-              rawSummary: canceled,
-            },
-          },
-        },
-      );
-
-      await appendAdminAudit(
-        guard.db,
-        {
-          type: "private_payment.cancel",
-          actorId: guard.admin._id,
-          targetId: _id,
-          message: "개인결제 승인취소 실패",
-          diff: { reason, tid, orderId, resultCode, failureMessage: message },
-        },
-        req,
-      );
-
-      return NextResponse.json({ ok: false, message }, { status: 502 });
-    }
-
-    const canceledAt = new Date();
-    const paymentCancelResult = await col.updateOne(
-      { _id },
+  } catch (error) {
+    const message = failureMessage(error);
+    const failedAt = new Date();
+    await col.updateOne(
+      { _id, paymentStatus: "결제완료", "cancellationInfo.status": "processing" },
       {
         $set: {
-          paymentStatus: "결제취소",
-          canceledAt,
-          updatedAt: canceledAt,
-          "paymentInfo.status": "canceled",
+          updatedAt: failedAt,
           cancellationInfo: {
-            status: "completed",
+            status: "failed",
             reason,
             requestedAt: now,
             requestedBy: guard.admin._id,
-            canceledAt,
+            failedAt,
+            failureMessage: message,
+          },
+        },
+      },
+    );
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "private_payment.cancel",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "개인결제 승인취소 실패",
+        diff: { reason, tid, orderId, failureMessage: message },
+      },
+      req,
+    );
+    return NextResponse.json({ ok: false, message }, { status: 502 });
+  }
+
+  const resultCode = pick(canceled, "resultCode", "ResultCode");
+
+  if (resultCode !== "0000") {
+    const message =
+      pick(canceled, "resultMsg", "ResultMsg", "message") || "NICEPAY 승인취소에 실패했습니다.";
+    const failedAt = new Date();
+
+    await col.updateOne(
+      { _id, paymentStatus: "결제완료", "cancellationInfo.status": "processing" },
+      {
+        $set: {
+          updatedAt: failedAt,
+          cancellationInfo: {
+            status: "failed",
+            reason,
+            requestedAt: now,
+            requestedBy: guard.admin._id,
+            failedAt,
+            failureMessage: message,
             rawSummary: canceled,
           },
         },
-        $push: { history: { status: "결제취소", date: canceledAt, description: reason } },
       },
     );
 
-    if (paymentCancelResult.matchedCount > 0 && item.offlineLink?.offlineRecordId) {
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "private_payment.cancel",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "개인결제 승인취소 실패",
+        diff: { reason, tid, orderId, resultCode, failureMessage: message },
+      },
+      req,
+    );
+
+    return NextResponse.json({ ok: false, message }, { status: 502 });
+  }
+
+  const canceledAt = new Date();
+  let finalized = false;
+  for (let attempt = 0; attempt < 2 && !finalized; attempt += 1) {
+    try {
+      const paymentCancelResult = await col.updateOne(
+        { _id, paymentStatus: "결제완료", "cancellationInfo.status": "processing" },
+        {
+          $set: {
+            paymentStatus: "결제취소",
+            canceledAt,
+            updatedAt: canceledAt,
+            "paymentInfo.status": "canceled",
+            cancellationInfo: {
+              status: "completed",
+              reason,
+              requestedAt: now,
+              requestedBy: guard.admin._id,
+              canceledAt,
+              rawSummary: canceled,
+            },
+          },
+          $push: { history: { status: "결제취소", date: canceledAt, description: reason } },
+        },
+      );
+      finalized = paymentCancelResult.matchedCount > 0;
+      if (!finalized) {
+        const latest = await col.findOne(
+          { _id },
+          { projection: { paymentStatus: 1, "cancellationInfo.status": 1 } },
+        );
+        finalized =
+          latest?.paymentStatus === "결제취소" && latest.cancellationInfo?.status === "completed";
+      }
+    } catch (finalizeError) {
+      console.error("[private-payments/cancel] local finalization failed", {
+        paymentId: _id.toString(),
+        attempt: attempt + 1,
+        finalizeError,
+      });
+    }
+  }
+
+  if (!finalized) {
+    const message =
+      "NICEPAY 취소는 완료되었으나 내부 상태 확정에 실패했습니다. 재결제 취소를 시도하지 말고 관리자 확인이 필요합니다.";
+    console.error("[private-payments/cancel] reconciliation required", {
+      paymentId: _id.toString(),
+      tid,
+      orderId,
+      resultCode,
+    });
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "private_payment.cancel",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "개인결제 취소 로컬 상태 확인 필요",
+        diff: { reason, tid, orderId, resultCode },
+      },
+      req,
+    ).catch(() => undefined);
+    return NextResponse.json({ ok: false, message }, { status: 500 });
+  }
+
+    if (item.offlineLink?.offlineRecordId) {
       try {
         await guard.db.collection("offline_service_records").updateOne(
           {
@@ -257,37 +333,4 @@ export async function POST(req: Request, ctx: Ctx) {
       });
     } catch {}
     return NextResponse.json({ ok: true, message: "개인결제를 취소했습니다." });
-  } catch (error) {
-    const message = failureMessage(error);
-    const failedAt = new Date();
-    await col.updateOne(
-      { _id },
-      {
-        $set: {
-          paymentStatus: "결제완료",
-          updatedAt: failedAt,
-          cancellationInfo: {
-            status: "failed",
-            reason,
-            requestedAt: now,
-            requestedBy: guard.admin._id,
-            failedAt,
-            failureMessage: message,
-          },
-        },
-      },
-    );
-    await appendAdminAudit(
-      guard.db,
-      {
-        type: "private_payment.cancel",
-        actorId: guard.admin._id,
-        targetId: _id,
-        message: "개인결제 승인취소 실패",
-        diff: { reason, tid, orderId, failureMessage: message },
-      },
-      req,
-    );
-    return NextResponse.json({ ok: false, message }, { status: 502 });
-  }
 }
