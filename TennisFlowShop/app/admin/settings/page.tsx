@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, User, Mail, CreditCard, Shield } from "lucide-react";
+import { User, Mail, CreditCard, Shield } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
@@ -9,7 +9,6 @@ import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { useAdminSettings } from "./_hooks/useAdminSettings";
-import { SiteSettingsTab } from "./_components/SiteSettingsTab";
 import { UserSettingsTab } from "./_components/UserSettingsTab";
 import { EmailSettingsTab } from "./_components/EmailSettingsTab";
 import { PaymentSettingsTab } from "./_components/PaymentSettingsTab";
@@ -23,7 +22,7 @@ export default function SettingsPage() {
       <AdminPageShell variant="narrow" className="space-y-6">
         <AdminPageHeader
           title="시스템 설정"
-          description="사이트, 사용자, 이메일, 결제 설정을 관리합니다."
+          description="사용자, 이메일, 결제 설정을 관리합니다."
           icon={Shield}
           scope="범위: 전역 운영 설정"
           helperText="변경 내용은 저장 전까지 적용되지 않으며, 탭 이동 시 확인 절차가 유지됩니다."
@@ -38,11 +37,7 @@ export default function SettingsPage() {
               <Skeleton className="h-4 w-52 bg-primary/20" />
             </div>
           )}
-          <TabsList className="grid grid-cols-4 gap-2 h-auto">
-            <TabsTrigger value="site">
-              <Globe className="h-4 w-4 mr-2" />
-              사이트
-            </TabsTrigger>
+          <TabsList className="grid grid-cols-3 gap-2 h-auto">
             <TabsTrigger value="user">
               <User className="h-4 w-4 mr-2" />
               사용자
@@ -57,12 +52,6 @@ export default function SettingsPage() {
             </TabsTrigger>
           </TabsList>
 
-          <SiteSettingsTab
-            form={vm.siteForm}
-            isBootstrapping={vm.isBootstrapping}
-            onSubmit={vm.onSubmitSiteSettings}
-            error={vm.tabErrors.site}
-          />
           <UserSettingsTab
             form={vm.userForm}
             isBootstrapping={vm.isBootstrapping}
