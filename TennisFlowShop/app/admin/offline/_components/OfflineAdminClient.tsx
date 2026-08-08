@@ -11,7 +11,12 @@ import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { adminMutator } from "@/lib/admin/adminFetcher";
-import { getKstMonthRange, getKstTodayRange, toKstYmd } from "@/lib/date/kst";
+import {
+  getKstMonthRange,
+  getKstTodayRange,
+  parseKstYmdBoundary,
+  toKstYmd,
+} from "@/lib/date/kst";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { maskPhone } from "@/lib/offline/normalizers";
 import { cn } from "@/lib/utils";
@@ -2704,7 +2709,7 @@ export default function OfflineAdminClient() {
                         body: JSON.stringify({
                           kind: editForm.kind,
                           occurredAt: editForm.occurredAt
-                            ? new Date(`${editForm.occurredAt}T00:00:00.000Z`).toISOString()
+                            ? parseKstYmdBoundary(editForm.occurredAt, "from")?.toISOString()
                             : undefined,
                           status: editForm.status,
                           lines: editForm.lines

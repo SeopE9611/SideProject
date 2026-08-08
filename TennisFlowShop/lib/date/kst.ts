@@ -10,6 +10,23 @@ export function toKstYmd(date = new Date()): string {
   return kst.toISOString().slice(0, 10);
 }
 
+export function parseKstYmdBoundary(
+  value: string,
+  boundary: "from" | "to",
+): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  const [year, month, day] = value.split("-").map(Number);
+  const utcMidnight = new Date(0);
+  utcMidnight.setUTCFullYear(year, month - 1, day);
+  utcMidnight.setUTCHours(0, 0, 0, 0);
+
+  const from = new Date(utcMidnight.getTime() - KST_OFFSET_MS);
+  if (toKstYmd(from) !== value) return null;
+
+  return boundary === "from" ? from : new Date(from.getTime() + 24 * 60 * 60 * 1000 - 1);
+}
+
 export function addKstDaysYmd(days: number, base = new Date()): string {
   const kst = new Date(base.getTime() + KST_OFFSET_MS);
   const shifted = new Date(
