@@ -3,6 +3,7 @@ import { ObjectId, type Document, type Filter } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { maskPhone } from "@/lib/offline/normalizers";
 import { OFFLINE_PACKAGE_ORDER_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
+import { parseKstYmdBoundary } from "@/lib/date/kst";
 
 const TYPES = ["all", "package_issue", "package_usage"] as const;
 const STATUSES = ["open", "resolved", "ignored", "all"] as const;
@@ -31,10 +32,7 @@ function parseDateBoundary(value: string | null, boundary: "from" | "to") {
   if (!value) return null;
   const trimmed = value.trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null;
-  const date = new Date(
-    boundary === "from" ? `${trimmed}T00:00:00.000Z` : `${trimmed}T23:59:59.999Z`,
-  );
-  return Number.isNaN(date.getTime()) ? null : date;
+  return parseKstYmdBoundary(trimmed, boundary);
 }
 
 function serializeDate(value: unknown): string | null {

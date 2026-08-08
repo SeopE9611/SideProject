@@ -11,6 +11,7 @@ import type {
   OfflineRevenueBucket,
   OfflineRevenueKindBucket,
 } from "@/types/admin/offline";
+import { parseKstYmdBoundary, toKstYmd } from "@/lib/date/kst";
 
 const PAYMENT_METHODS: OfflinePaymentMethod[] = ["cash", "card", "bank_transfer", "etc"];
 const KIND_KEYS = ["stringing", "package_sale", "etc"] as const;
@@ -84,8 +85,8 @@ function inRange(date: Date | null, range: DateRange): boolean {
 }
 
 function groupKey(date: Date, groupBy: "day" | "month"): string {
-  const iso = date.toISOString();
-  return groupBy === "month" ? iso.slice(0, 7) : iso.slice(0, 10);
+  const ymd = toKstYmd(date);
+  return groupBy === "month" ? ymd.slice(0, 7) : ymd;
 }
 
 function addStatusAmount(
@@ -145,9 +146,9 @@ export function parseOfflineSummaryDateBoundary(
   if (!trimmed) return null;
   const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
   const date = dateOnly
-    ? new Date(boundary === "from" ? `${trimmed}T00:00:00.000Z` : `${trimmed}T23:59:59.999Z`)
+    ? parseKstYmdBoundary(trimmed, boundary)
     : new Date(trimmed);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return !date || Number.isNaN(date.getTime()) ? null : date;
 }
 
 export async function buildOfflineRevenueSummary(

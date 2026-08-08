@@ -5,6 +5,7 @@ import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { offlineRecordCreateSchema } from "@/lib/offline/validators";
 import { maskPhone, normalizePhone } from "@/lib/offline/normalizers";
+import { parseKstYmdBoundary } from "@/lib/date/kst";
 
 const KIND_VALUES = ["stringing", "package_sale", "etc"] as const;
 const STATUS_VALUES = ["received", "in_progress", "completed", "picked_up", "canceled"] as const;
@@ -28,9 +29,9 @@ function parseDateBoundary(value: string | null, boundary: "from" | "to") {
   if (!trimmed) return null;
   const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
   const date = dateOnly
-    ? new Date(boundary === "from" ? `${trimmed}T00:00:00.000Z` : `${trimmed}T23:59:59.999Z`)
+    ? parseKstYmdBoundary(trimmed, boundary)
     : new Date(trimmed);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return !date || Number.isNaN(date.getTime()) ? null : date;
 }
 
 function enumFilter<T extends readonly string[]>(value: string | null, allowed: T, field: string) {
