@@ -11,6 +11,7 @@ import {
   canEnterShippingPhase,
   getOrderStatusLabelForDisplay,
 } from "@/lib/order-shipping";
+import { isOrderRefundedStatus } from "@/lib/status/flow-status";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import useSWR, { mutate } from "swr";
 import useSWRInfinite from "swr/infinite";
@@ -39,6 +40,7 @@ interface StatusRes {
 interface Props {
   orderId: string; // 대상 주문 ID
   currentStatus: string; // 서버에서 내려준 현재 상태(초깃값)
+  paymentStatus: string;
   shippingInfo?: {
     shippingMethod?: string;
     deliveryMethod?: string;
@@ -50,7 +52,12 @@ interface Props {
   };
 }
 
-export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo }: Props) {
+export default function OrderStatusSelect({
+  orderId,
+  currentStatus,
+  paymentStatus,
+  shippingInfo,
+}: Props) {
   // 상태 전용 SWR: fallbackData로 초기 상태 주입 -> 첫 렌더 안정화
   const { data: statusData, mutate: mutateStatus } = useSWR<StatusRes>(
     `/api/orders/${orderId}/status`,
@@ -66,7 +73,9 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo
   const current = statusData?.status ?? currentStatus;
   const isCancelled = current === "취소";
   const isConfirmed = current === "구매확정";
-  const isLocked = isCancelled || isConfirmed;
+  const isRefunded =
+    isOrderRefundedStatus(current) || isOrderRefundedStatus(paymentStatus);
+  const isLocked = isCancelled || isConfirmed || isRefunded;
 
   // 셀렉트에 노출할 “일반 상태”만 남김 (‘취소’는 모달 전용이므로 제외)
   const SELECTABLE_STATUSES = ["대기중", "결제완료", "배송중", "배송완료"] as const;
@@ -128,13 +137,18 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo
   return (
     <div className="w-[200px]">
       {/*
-        취소 / 구매확정 상태는 최종 상태로 보고 셀렉트 변경을 막습니다.
+        취소 / 구매확정 / 환불 상태는 최종 상태로 보고 셀렉트 변경을 막습니다.
         - 취소: 이미 종료된 주문
         - 구매확정: 사용자가 주문 완료를 확정한 상태
+        - 환불: 주문 또는 결제가 환불/결제취소된 상태
       */}
       {isLocked ? (
         <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-ui-body-sm italic">
-          {isConfirmed ? "구매확정됨 (변경 불가)" : "취소됨 (변경 불가)"}
+          {isRefunded
+            ? "결제취소/환불 상태 · 일반 상태 변경 불가"
+            : isConfirmed
+              ? "구매확정됨 (변경 불가)"
+              : "취소됨 (변경 불가)"}
         </div>
       ) : (
         <Select value={current} onValueChange={handleChange}>

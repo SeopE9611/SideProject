@@ -1778,6 +1778,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         <OrderStatusSelect
                           orderId={orderId!}
                           currentStatus={localStatus}
+                          paymentStatus={orderDetail.paymentStatus}
                           shippingInfo={orderDetail.shippingInfo}
                         />
                       </div>
