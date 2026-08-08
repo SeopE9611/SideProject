@@ -567,6 +567,11 @@ const INDEX_SPECS = {
     { name: "status_1", keys: { status: 1 }, options: {} },
     { name: "payment.status_1", keys: { "payment.status": 1 }, options: {} },
     { name: "kind_1", keys: { kind: 1 }, options: {} },
+    {
+      name: "idempotencyKey_1",
+      keys: { idempotencyKey: 1 },
+      options: { unique: true, sparse: true },
+    },
   ],
   reviews: [
     {
