@@ -19,6 +19,47 @@ if (!uri) {
  *   MongoDB 버전별 의미가 약한 background 옵션은 기존 정책대로 비교하지 않는다.
  */
 const INDEX_SPECS = {
+  apps_in_toss_identities: [
+    {
+      name: "apps_in_toss_identities_appName_userKey_unique",
+      keys: { appName: 1, userKey: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_identities_userId_idx",
+      keys: { userId: 1 },
+      options: {},
+    },
+  ],
+  apps_in_toss_sessions: [
+    {
+      name: "apps_in_toss_sessions_tokenHash_unique",
+      keys: { tokenHash: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_sessions_userId_revokedAt_idx",
+      keys: { userId: 1, revokedAt: 1 },
+      options: {},
+    },
+    {
+      name: "apps_in_toss_sessions_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+  ],
+  apps_in_toss_auth_code_claims: [
+    {
+      name: "apps_in_toss_auth_code_claims_codeHash_unique",
+      keys: { codeHash: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "apps_in_toss_auth_code_claims_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+  ],
   service_passes: [
     {
       name: "idx_pass_user_status_type",
@@ -522,7 +563,10 @@ const INDEX_SPECS = {
     {
       name: "users_email_unique",
       keys: { email: 1 },
-      options: { unique: true },
+      options: {
+        unique: true,
+        partialFilterExpression: { email: { $type: "string" } },
+      },
     },
     {
       name: "users_lastLoginAt_idx",

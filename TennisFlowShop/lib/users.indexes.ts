@@ -13,7 +13,11 @@ const USER_INDEX_SPECS: readonly IndexSpec[] = [
   {
     name: "users_email_unique",
     keys: { email: 1 },
-    options: { unique: true, background: true },
+    options: {
+      unique: true,
+      background: true,
+      partialFilterExpression: { email: { $type: "string" } },
+    },
   },
   {
     name: "users_lastLoginAt_idx",
