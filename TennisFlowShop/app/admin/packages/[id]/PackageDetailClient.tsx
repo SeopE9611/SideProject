@@ -3,6 +3,7 @@
 import AdminCompactField from "@/components/admin/AdminCompactField";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
@@ -334,21 +335,21 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   if (!data) {
     if (isInitialLoading) {
       return (
-        <AdminPageShell>
+        <AdminPageShell variant="wide">
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
               <Skeleton className="h-9 w-56" />
               <div className="flex gap-2">
                 <Skeleton className="h-9 w-24" />
                 <Skeleton className="h-9 w-24" />
               </div>
             </div>
-            <div className="grid gap-4 grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Skeleton key={index} className="h-24 rounded-xl" />
               ))}
             </div>
-            <div className="grid gap-6 grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <Skeleton className="h-[360px] rounded-xl" />
               <Skeleton className="h-[360px] rounded-xl" />
             </div>
@@ -560,63 +561,39 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   };
 
   return (
-    <AdminPageShell>
+    <AdminPageShell variant="wide" className="py-6">
       {isLoading ? (
         <div className="mb-4 rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-muted-foreground">
           최신 상태를 확인하고 있습니다...
         </div>
       ) : null}
-      {/* 헤더 카드 */}
-      <div className={cn("mb-8 p-8", adminSurface.card)}>
-        <div className="flex gap-4 flex-row items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="rounded-xl p-3 bg-card">
-              <PackageIcon className="h-7 w-7 text-foreground" />
-            </div>
-            <div>
-              <h1 className="font-semibold tracking-normal text-foreground text-3xl">
-                패키지 상세 관리
-              </h1>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
-                <span className="font-mono">
-                  패키지 ID: {data.id.slice(0, 8)}…{data.id.slice(-6)}
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(data.id);
-                    showSuccessToast("패키지 ID가 복사되었습니다.");
-                  }}
-                >
-                  <Copy className="mr-1 h-3.5 w-3.5" />
-                  복사
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" className="border-border">
-              <Link href="/admin/packages" data-no-unsaved-guard onClick={onLeaveListClick}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                목록으로
-              </Link>
-            </Button>
-            <Button
-              variant={isEditMode ? "destructive" : "outline"}
-              onClick={() => setIsEditMode((v) => !v)}
-              className={isEditMode ? "" : "border-border"}
-            >
-              <Edit3 className="mr-1 h-4 w-4" />
-              {isEditMode ? "편집 취소" : "편집 모드"}
-            </Button>
-          </div>
-        </div>
+      <AdminPageHeader
+        title="패키지 상세 관리"
+        description="결제 상태, 이용 횟수, 만료일과 패키지 운영 이력을 확인하고 관리합니다."
+        icon={PackageIcon}
+        scope={`범위: ${data.packageType} · ${data.id.slice(0, 8)}…${data.id.slice(-6)}`}
+        helperText="결제·이용권·활성화 상태를 함께 확인한 뒤 운영 작업을 진행하세요."
+        className="flex-col sm:flex-row"
+        actions={<>
+          <Button type="button" variant="ghost" size="sm" onClick={() => {
+            navigator.clipboard.writeText(data.id);
+            showSuccessToast("패키지 ID가 복사되었습니다.");
+          }}>
+            <Copy className="mr-1 h-3.5 w-3.5" />패키지 ID 복사
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/packages" data-no-unsaved-guard onClick={onLeaveListClick}>
+              <ArrowLeft className="mr-2 h-4 w-4" />목록으로
+            </Link>
+          </Button>
+          <Button variant={isEditMode ? "destructive" : "outline"} size="sm" onClick={() => setIsEditMode((v) => !v)}>
+            <Edit3 className="mr-1 h-4 w-4" />{isEditMode ? "편집 취소" : "편집 모드"}
+          </Button>
+        </>}
+      />
 
         {/* 요약 KPI */}
-        <div className="grid grid-cols-5 gap-6">
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
             <div className="flex items-center gap-2 mb-1.5">
               <PackageIcon className="h-4 w-4 text-muted-foreground" />
@@ -677,7 +654,6 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </SemanticBadge>
           </div>
         </div>
-      </div>
 
       <AdminDetailSectionNav
         className="mb-4"
@@ -691,30 +667,16 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
       <Card className={cn("mb-6", packageGuide.toneClass)}>
         <CardContent className="p-4">
-          <div className="flex gap-3 flex-row items-center justify-between">
-            <div>
+          <div>
               <p className="text-sm font-semibold">{packageGuide.title}</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 {packageGuide.description}
               </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="outline">
-                <a href="#admin-package-usage-history">사용 이력 확인</a>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <a href="#admin-package-payment">상태/결제 확인</a>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <a href="#admin-package-operation-history">운영 내역 확인</a>
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* 고객 정보 */}
         <Card id="admin-package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
           <CardHeader className="border-b border-border/60 bg-background/70">
@@ -725,7 +687,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <CardDescription>구매자 연락처와 서비스 유형을 분리해 확인합니다.</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <AdminCompactField
                 label={
                   <span className="inline-flex items-center gap-1.5">
@@ -838,7 +800,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               )}
             </div>
 
-            <div className="grid gap-2 grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <div className="rounded-lg bg-card p-3 text-sm">
                 활성화 상태:{" "}
                 <SemanticBadge {...getAdminPackageActivationBadgeSpec(data.activationState)}>
@@ -951,7 +913,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           </CardContent>
 
           {isEditMode && (
-            <CardFooter className="flex justify-center gap-2 bg-card">
+            <CardFooter className="flex flex-wrap justify-center gap-2 bg-card">
               <Button
                 variant="outline"
                 size="sm"
@@ -979,7 +941,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         <Card
           id="admin-package-usage-history"
           className={cn(
-            "border-border bg-card dark:bg-card dark:border-border col-span-2",
+            "border-border bg-card dark:bg-card dark:border-border xl:col-span-2",
             adminSurface.tableCard,
           )}
         >
@@ -1002,7 +964,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     key={u.id}
                     className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card"
                   >
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <SemanticBadge tone="danger" size="sm">
@@ -1056,7 +1018,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         {/* 운영 내역 */}
         <Card
           id="admin-package-operation-history"
-          className={cn("col-span-2", adminSurface.tableCard)}
+          className={cn("xl:col-span-2", adminSurface.tableCard)}
         >
           <CardHeader className="border-b border-border/60 bg-background/70">
             <CardTitle className="flex items-center gap-2">
