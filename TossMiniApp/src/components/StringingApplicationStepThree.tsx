@@ -374,6 +374,7 @@ function StringingApplicationStepThree({
                 touched.racketType && errors.racketType ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="text"
+              maxLength={100}
               value={work.racketType}
               placeholder="라켓명 또는 구분할 이름"
               onChange={(event) => updateWork("racketType", event.target.value)}
@@ -402,6 +403,7 @@ function StringingApplicationStepThree({
                 }`}
                 type="text"
                 inputMode="decimal"
+                maxLength={4}
                 value={work.tensionMain}
                 placeholder="53"
                 onChange={(event) => updateWork("tensionMain", toNumberText(event.target.value))}
@@ -429,6 +431,7 @@ function StringingApplicationStepThree({
                 }`}
                 type="text"
                 inputMode="decimal"
+                maxLength={4}
                 value={work.tensionCross}
                 placeholder="51"
                 onChange={(event) => updateWork("tensionCross", toNumberText(event.target.value))}
@@ -452,6 +455,7 @@ function StringingApplicationStepThree({
             <textarea
               className="min-h-24 w-full resize-none rounded-xl border border-[#d1d6db] bg-white px-3.5 py-3 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:border-[#688d00] focus:ring-2 focus:ring-[#dcebba]"
               value={work.note}
+              maxLength={500}
               placeholder="작업 시 참고할 요청사항을 입력해주세요"
               onChange={(event) => updateWork("note", event.target.value)}
             />

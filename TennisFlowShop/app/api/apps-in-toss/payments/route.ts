@@ -5,7 +5,7 @@ import {
 } from "@/lib/apps-in-toss";
 import { AppsInTossConfigurationError } from "@/lib/apps-in-toss/server/config";
 import { prepareAppsPayment, AppsPaymentPrepareError } from "@/lib/apps-in-toss/server/payment-prepare";
-import { AppsPaymentPrepareRequestSchema } from "@/lib/apps-in-toss/server/payment-prepare-contract";
+import { AppsPaymentPrepareRequestSchema, toSafeValidationDiagnostic } from "@/lib/apps-in-toss/server/payment-prepare-contract";
 import { authenticateAppsSession, AppsInTossSessionError } from "@/lib/apps-in-toss/server/session";
 import { getDb } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
@@ -33,7 +33,13 @@ export async function POST(request: Request) {
     const db = await getDb();
     const authenticated = await authenticateAppsSession(db, request.headers.get("authorization"));
     const parsed = AppsPaymentPrepareRequestSchema.safeParse(await request.json().catch(() => null));
-    if (!parsed.success) return response(origin, { success: false, code: "INVALID_REQUEST", message: "요청 본문이 올바르지 않습니다." }, 400);
+    if (!parsed.success) {
+      console.warn("[Apps in Toss payment prepare validation 실패]", {
+        operation: "apps_payment_prepare_validation",
+        issues: toSafeValidationDiagnostic(parsed.error.issues),
+      });
+      return response(origin, { success: false, code: "INVALID_REQUEST", message: "요청 본문이 올바르지 않습니다." }, 400);
+    }
     return response(origin, await prepareAppsPayment({ db, request: parsed.data, userId: authenticated.user._id, identityId: authenticated.session.identityId }), 200);
   } catch (error) {
     if (error instanceof AppsInTossSessionError) return response(origin, { success: false, code: "AUTH_REQUIRED", message: "인증이 필요합니다." }, 401);

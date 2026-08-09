@@ -221,6 +221,7 @@ function StringingApplicationStepTwo({
                     touched.address && errors.address ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
                   }`}
                   type="text"
+                  maxLength={200}
                   value={shipping.address}
                   placeholder="도로명 주소를 입력해주세요"
                   onChange={(event) => updateShipping("address", event.target.value)}
@@ -247,6 +248,7 @@ function StringingApplicationStepTwo({
                       : "border-[#d1d6db] focus:border-[#688d00]"
                   }`}
                   type="text"
+                  maxLength={200}
                   value={shipping.addressDetail}
                   autoComplete="street-address"
                   placeholder="상세 주소를 입력해주세요"
