@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const nonEmpty = z.string().trim().min(1);
 const money = z.number().int().nonnegative();
+export const PayTokenSchema = z.string().trim().min(1).max(30);
 export const TOSS_PAY_KNOWN_STATUSES = [
   "PAY_STANDBY", "PAY_APPROVED", "PAY_CANCEL", "PAY_PROGRESS", "PAY_COMPLETE",
   "REFUND_PROGRESS", "REFUND_SUCCESS", "SETTLEMENT_COMPLETE", "SETTLEMENT_REFUND_COMPLETE",
@@ -33,20 +34,21 @@ const AmountSchema = z.object({
 }).refine((v) => v.amountTaxFree <= v.amount);
 export const MakePaymentInputSchema = AmountSchema.and(z.object({
   orderNo: z.string(), productDesc: ProductDescSchema, cashReceipt: z.boolean(),
-  cashReceiptTradeOption: z.string().min(1).optional(), installment: z.number().int().nonnegative().optional(),
+  cashReceiptTradeOption: z.enum(["GENERAL", "CULTURE", "PUBLIC_TP"]).optional(),
+  installment: z.enum(["USE", "NOT_USE"]).optional(),
 })).superRefine((v, ctx) => { if (!isValidTossPayOrderNo(v.orderNo)) ctx.addIssue({ code: "custom", message: "invalid orderNo" }); });
 
 const FailureEnvelopeSchema = z.object({ resultType: z.string().min(1) }).passthrough();
 const ExecuteSuccessSchema = z.object({
   resultType: z.literal("SUCCESS"), success: z.object({
     mode: nonEmpty, orderNo: nonEmpty, amount: money, approvalTime: nonEmpty.nullable(), stateMsg: nonEmpty,
-    discountedAmount: money, paidAmount: money, payMethod: nonEmpty, payToken: nonEmpty, transactionId: nonEmpty,
+    discountedAmount: money, paidAmount: money, payMethod: nonEmpty, payToken: PayTokenSchema, transactionId: nonEmpty,
   }).passthrough(),
 }).passthrough();
 const TransactionSchema = z.object({}).passthrough();
 const StatusSuccessSchema = z.object({
   resultType: z.literal("SUCCESS"), success: z.object({
-    mode: nonEmpty, payToken: nonEmpty, orderNo: nonEmpty, payStatus: nonEmpty, payMethod: nonEmpty.nullable(),
+    mode: nonEmpty, payToken: PayTokenSchema, orderNo: nonEmpty, payStatus: nonEmpty, payMethod: nonEmpty.nullable(),
     amount: money, discountedAmount: money, paidAmount: money, refundableAmount: money,
     amountTaxable: money, amountTaxFree: money, amountVat: money, transactions: z.array(TransactionSchema),
     createdTs: nonEmpty, paidTs: nonEmpty.nullable(),
@@ -56,10 +58,10 @@ const RefundSuccessSchema = z.object({
   resultType: z.literal("SUCCESS"), success: z.object({
     refundNo: nonEmpty, approvalTime: nonEmpty, refundableAmount: money, discountedAmount: money,
     paidAmount: money, refundedAmount: money, refundedDiscountAmount: money, refundedPaidAmount: money,
-    payToken: nonEmpty, transactionId: nonEmpty,
+    payToken: PayTokenSchema, transactionId: nonEmpty,
   }).passthrough(),
 }).passthrough();
-const MakeSuccessSchema = z.object({ resultType: z.literal("SUCCESS"), success: z.object({ payToken: nonEmpty }).passthrough() }).passthrough();
+const MakeSuccessSchema = z.object({ resultType: z.literal("SUCCESS"), success: z.object({ payToken: PayTokenSchema }).passthrough() }).passthrough();
 
 export type TossPayParsedResult<T> = { kind: "success"; value: T } | { kind: "toss_failure"; resultType: string; errorCode?: string };
 function parseEnvelope<T>(value: unknown, schema: z.ZodType<T>): TossPayParsedResult<T> {
@@ -81,7 +83,10 @@ export const parseRefundPaymentResponse = (v: unknown) => parseEnvelope(v, Refun
 export function parseMakePaymentInput(value: unknown) {
   const parsed = MakePaymentInputSchema.safeParse(value); if (!parsed.success) throw new TossPayContractError(); return parsed.data;
 }
+export function parseTossPayToken(value: unknown) {
+  const parsed = PayTokenSchema.safeParse(value); if (!parsed.success) throw new TossPayContractError(); return parsed.data;
+}
 export function assertRefundReason(value: unknown): asserts value is string {
-  // 공식 계약: 한글, 영문, 숫자, 공백과 -._~!$'()*,;:@ 문자를 허용한다.
-  if (typeof value !== "string" || !value.trim() || value.length > 55 || !/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 \-._~!$'()*,;:@]+$/.test(value)) throw new TossPayContractError();
+  // 공식 계약: 한글, 영문, 숫자와 _-:.^@()[]#/!%?& 문자를 허용한다.
+  if (typeof value !== "string" || value.length === 0 || value.length > 55 || !/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9_\-:.^@()[\]#/!%?&]+$/.test(value)) throw new TossPayContractError();
 }
