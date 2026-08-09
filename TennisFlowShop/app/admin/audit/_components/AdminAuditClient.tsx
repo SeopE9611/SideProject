@@ -132,7 +132,7 @@ export default function AdminAuditClient() {
     <div className="space-y-4">
       <AdminPageSection
         title="검색/필터"
-        description="메시지, 실행자, 액션 타입으로 감사 로그를 좁혀봅니다."
+        description="메시지, 실행자, 작업 유형으로 감사 로그를 좁혀봅니다."
         icon={ListFilter}
         className={adminSurface.filterCard}
         contentClassName="space-y-3"
@@ -210,7 +210,6 @@ export default function AdminAuditClient() {
         >
           {data.items.map((item) => {
             const actionName = AUDIT_TYPE_LABELS[item.type] || item.message?.trim() || item.type;
-            const message = item.message?.trim();
 
             return (
               <article
@@ -222,9 +221,6 @@ export default function AdminAuditClient() {
                     <div className={adminTypography.metaMuted}>작업</div>
                     <Badge variant="secondary">{actionName}</Badge>
                     <div className="font-mono text-[11px] text-muted-foreground">{item.type}</div>
-                    {message && message !== actionName ? (
-                      <p className={`line-clamp-2 ${adminTypography.bodyStrong}`}>{message}</p>
-                    ) : null}
                   </div>
                   <div className="min-w-0">
                     <div className={adminTypography.metaMuted}>실행자</div>
@@ -251,7 +247,7 @@ export default function AdminAuditClient() {
                   </div>
                 </div>
                 {item.diffSummary && item.diffSummary.length > 0 ? (
-                  <div className="mt-3 border-t pt-3">
+                  <div className="mt-2 border-t pt-2">
                     <ul className={`list-disc space-y-1 pl-5 ${adminTypography.caption}`}>
                       {item.diffSummary.map((summary, idx) => (
                         <li key={`${item.id}-s-${idx}`}>{summary}</li>
