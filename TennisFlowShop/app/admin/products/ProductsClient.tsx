@@ -819,7 +819,7 @@ export default function ProductsClient() {
                           <TableCell
                             className={cn(
                               adminDataTable.stickyActionCell,
-                              "w-[10%] group-hover:bg-muted dark:group-hover:bg-card",
+                              "w-[10%] group-even:bg-muted group-hover:bg-muted dark:group-even:bg-card dark:group-hover:bg-card",
                             )}
                           >
                             <DropdownMenu>

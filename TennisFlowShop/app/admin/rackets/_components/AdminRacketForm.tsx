@@ -1029,12 +1029,27 @@ export default function AdminRacketForm({
                   <Badge variant="outline">
                     {racketStatusLabel(form.status)}
                   </Badge>
-                  <RacketBadge kind="condition" state={form.condition} size="xs" />
+                  <RacketBadge
+                    kind="condition"
+                    state={form.condition}
+                    size="xs"
+                    className={adminTypography.badgeLabel}
+                  />
                   {form.marketing.isNew && (
-                    <CommerceBadge kind="new" surface="inline" size="xs" />
+                    <CommerceBadge
+                      kind="new"
+                      surface="inline"
+                      size="xs"
+                      className={adminTypography.badgeLabel}
+                    />
                   )}
                   {form.marketing.isFeatured && (
-                    <CommerceBadge kind="recommended" surface="inline" size="xs" />
+                    <CommerceBadge
+                      kind="recommended"
+                      surface="inline"
+                      size="xs"
+                      className={adminTypography.badgeLabel}
+                    />
                   )}
                   {form.marketing.isSale &&
                     form.marketing.salePrice > 0 &&
@@ -1043,6 +1058,7 @@ export default function AdminRacketForm({
                         kind="sale"
                         surface="inline"
                         size="xs"
+                        className={adminTypography.badgeLabel}
                         discountRate={
                           ((form.price - form.marketing.salePrice) / form.price) * 100
                         }

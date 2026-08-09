@@ -74,21 +74,22 @@ export function ProductPreviewCard({
       {/* Badges */}
       <div className="mb-4 flex flex-wrap gap-1.5">
         {inventory.isNew && (
-          <CommerceBadge kind="new" surface="inline" size="sm" />
+          <CommerceBadge kind="new" surface="inline" size="sm" className={adminTypography.badgeLabel} />
         )}
         {inventory.isFeatured && (
-          <CommerceBadge kind="recommended" surface="inline" size="sm" />
+          <CommerceBadge kind="recommended" surface="inline" size="sm" className={adminTypography.badgeLabel} />
         )}
         {inventory.isSale && inventory.salePrice > 0 && inventory.salePrice < basicInfo.price && (
           <CommerceBadge
             kind="sale"
             surface="inline"
             size="sm"
+            className={adminTypography.badgeLabel}
             discountRate={((basicInfo.price - inventory.salePrice) / basicInfo.price) * 100}
           />
         )}
         {inventory.status === "outofstock" && (
-          <CommerceBadge kind="sold_out" surface="inline" size="sm" />
+          <CommerceBadge kind="sold_out" surface="inline" size="sm" className={adminTypography.badgeLabel} />
         )}
       </div>
 
