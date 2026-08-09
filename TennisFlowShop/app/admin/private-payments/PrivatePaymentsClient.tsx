@@ -433,19 +433,22 @@ export default function PrivatePaymentsClient() {
             )}
           </div>
           <div className={adminSurface.filterCard}>
-            <div className="grid gap-2 grid-cols-[minmax(260px,1.4fr)_160px_160px_160px_160px_160px]">
-              <div className="space-y-1.5">
-                <Label>검색어</Label>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor="private-payment-filter-q">검색어</Label>
                 <Input
+                  id="private-payment-filter-q"
+                  className="w-full min-w-0"
                   placeholder="결제명, 고객명, 연락처 검색"
                   value={filters.q}
                   onChange={(e) => setFilters({ ...filters, q: e.target.value })}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label>결제상태</Label>
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor="private-payment-filter-payment-status">결제상태</Label>
                 <select
-                  className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm"
+                  id="private-payment-filter-payment-status"
+                  className="h-10 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
                   value={filters.paymentStatus}
                   onChange={(e) => setFilters({ ...filters, paymentStatus: e.target.value })}
                 >
@@ -455,10 +458,11 @@ export default function PrivatePaymentsClient() {
                   <option>결제취소</option>
                 </select>
               </div>
-              <div className="space-y-1.5">
-                <Label>활성상태</Label>
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor="private-payment-filter-status">활성상태</Label>
                 <select
-                  className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm"
+                  id="private-payment-filter-status"
+                  className="h-10 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
                   value={filters.status}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                 >
@@ -467,10 +471,11 @@ export default function PrivatePaymentsClient() {
                   <option value="inactive">비활성</option>
                 </select>
               </div>
-              <div className="space-y-1.5">
-                <Label>보관상태</Label>
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor="private-payment-filter-archived">보관상태</Label>
                 <select
-                  className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm"
+                  id="private-payment-filter-archived"
+                  className="h-10 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
                   value={filters.archived}
                   onChange={(e) => setFilters({ ...filters, archived: e.target.value })}
                 >
@@ -479,17 +484,21 @@ export default function PrivatePaymentsClient() {
                   <option value="all">전체 보기</option>
                 </select>
               </div>
-              <div className="space-y-1.5">
-                <Label>시작일</Label>
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor="private-payment-filter-from">시작일</Label>
                 <Input
+                  id="private-payment-filter-from"
+                  className="w-full min-w-0"
                   type="date"
                   value={filters.from}
                   onChange={(e) => setFilters({ ...filters, from: e.target.value })}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label>종료일</Label>
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor="private-payment-filter-to">종료일</Label>
                 <Input
+                  id="private-payment-filter-to"
+                  className="w-full min-w-0"
                   type="date"
                   value={filters.to}
                   onChange={(e) => setFilters({ ...filters, to: e.target.value })}
