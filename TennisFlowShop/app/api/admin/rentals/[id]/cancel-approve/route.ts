@@ -302,7 +302,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       } else {
         existing = claimed;
         let cancelCalled = false;
-        let cancelOrderId: string | null = claimCancelOrderId;
+        const cancelOrderId: string | null = claimCancelOrderId;
         let pgStatus = "";
         let pgBalanceAmount = 0;
         let cancelAmount = 0;
