@@ -119,6 +119,15 @@ async function ensureIndexes(db, collectionName, specs) {
  * - 그래서 이 스크립트가 런타임 인덱스와 공개 목록 성능 인덱스의 "배포 전 선반영" 책임을 맡는다.
  */
 const INDEX_SPECS = {
+  apps_in_toss_payment_intents: [
+    { name: "apps_in_toss_payment_intents_attemptId_unique", keys: { attemptId: 1 }, options: { unique: true } },
+    { name: "apps_in_toss_payment_intents_orderNo_unique", keys: { orderNo: 1 }, options: { unique: true } },
+    { name: "apps_in_toss_payment_intents_payToken_unique", keys: { payToken: 1 }, options: { unique: true, sparse: true } },
+    { name: "apps_in_toss_payment_intents_finalOrderId_unique", keys: { finalOrderId: 1 }, options: { unique: true, sparse: true } },
+    { name: "apps_in_toss_payment_intents_user_created_desc", keys: { userId: 1, createdAt: -1 }, options: {} },
+    { name: "apps_in_toss_payment_intents_state_executionLease_idx", keys: { state: 1, "execution.leaseUntil": 1 }, options: {} },
+    { name: "apps_in_toss_payment_intents_retentionUntil_ttl", keys: { retentionUntil: 1 }, options: { expireAfterSeconds: 0 } },
+  ],
   apps_in_toss_identities: [
     {
       name: "apps_in_toss_identities_appName_userKey_unique",

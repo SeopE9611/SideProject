@@ -2,6 +2,7 @@ import { ensureAdminLocksIndexes } from "@/lib/adminLocks.indexes";
 import { ensureAdminNotesIndexes } from "@/lib/adminNotes.indexes";
 import { ensureAdminOperationsIndexes } from "@/lib/adminOperations.indexes";
 import { ensureAuthIndexes } from "@/lib/auth.indexes";
+import { ensureAppsInTossPaymentIndexes } from "@/lib/apps-in-toss-payments.indexes";
 import { ensureBoardIndexes } from "@/lib/boards.indexes";
 import { ensureMessageIndexes } from "@/lib/messages.indexes";
 import { ensurePassIndexes } from "@/lib/passes.indexes";
@@ -47,6 +48,9 @@ declare global {
 
   // oauth/login 관련 인덱스 보장 상태
   var _authIndexesReady: Promise<void> | null | undefined;
+
+  // Apps in Toss Toss Pay payment intent 인덱스 보장 상태
+  var _appsInTossPaymentIndexesReady: Promise<void> | null | undefined;
 
   // 위시리스트 인덱스 보장 상태
   var _wishlistIndexesReady: Promise<void> | null | undefined;
@@ -190,6 +194,14 @@ export async function getDb() {
       // 실패 시 쿨다운 후 재시도되도록 null 처리
       scheduleRuntimeIndexRetry();
       global._passesIndexesReady = null;
+    });
+  }
+
+  if (canStartRuntimeIndexEnsures && !global._appsInTossPaymentIndexesReady) {
+    global._appsInTossPaymentIndexesReady = ensureAppsInTossPaymentIndexes(db).catch((e) => {
+      console.error("[apps-in-toss-payments] ensureAppsInTossPaymentIndexes failed", e);
+      scheduleRuntimeIndexRetry();
+      global._appsInTossPaymentIndexesReady = null;
     });
   }
 
