@@ -6,6 +6,16 @@ import { assertAttemptId } from "./toss-pay-contract";
 const trimmed = (max: number) => z.string().trim().min(1).max(max);
 const optionalTrimmed = (max: number) => z.string().trim().max(max).optional().default("");
 
+export function isSemanticCalendarDate(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1) return false;
+  return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
 export const AppsPaymentPrepareRequestSchema = z.object({
   attemptId: z.string().superRefine((value, context) => {
     try { assertAttemptId(value); } catch { context.addIssue({ code: "custom", message: "invalid attemptId" }); }
@@ -39,7 +49,7 @@ export const AppsPaymentPrepareRequestSchema = z.object({
     if (!value.shipping.addressDetail) context.addIssue({ code: "custom", path: ["shipping", "addressDetail"], message: "addressDetail required" });
   }
   if (value.collectionMethod === "visit") {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value.work.preferredDate)) context.addIssue({ code: "custom", path: ["work", "preferredDate"], message: "preferredDate required" });
+    if (!isSemanticCalendarDate(value.work.preferredDate)) context.addIssue({ code: "custom", path: ["work", "preferredDate"], message: "preferredDate required" });
     if (!/^\d{2}:\d{2}$/.test(value.work.preferredTime)) context.addIssue({ code: "custom", path: ["work", "preferredTime"], message: "preferredTime required" });
   }
 });

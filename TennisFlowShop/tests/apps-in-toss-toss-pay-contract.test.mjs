@@ -91,6 +91,15 @@ test("sandbox/live isTestPayment 계약이 유지된다", () => {
   assert.match(source, /mode === "live"\) return \{ mode, isTestPayment: false \}/);
 });
 
+test("로그인과 Toss Pay API host를 고정 상수로 구분한다", () => {
+  const configSource = fs.readFileSync(new URL("lib/apps-in-toss/server/config.ts", root), "utf8");
+  const httpSource = fs.readFileSync(new URL("lib/apps-in-toss/server/http.ts", root), "utf8");
+  assert.match(configSource, /APPS_IN_TOSS_API_HOST = "apps-in-toss-api\.toss\.im"/);
+  assert.match(configSource, /APPS_IN_TOSS_TOSS_PAY_API_HOST = "pay-apps-in-toss-api\.toss\.im"/);
+  assert.match(httpSource, /requestMtlsJson\(APPS_IN_TOSS_API_HOST, request\)/);
+  assert.match(httpSource, /requestMtlsJson\(APPS_IN_TOSS_TOSS_PAY_API_HOST, request\)/);
+});
+
 test("정상 상태 전이는 허용하고 비정상 전이는 거부한다", () => {
   assert.doesNotThrow(() => state.assertAppsInTossPaymentIntentTransition("creating", "awaiting_authorization"));
   assert.doesNotThrow(() => state.assertAppsInTossPaymentIntentTransition("paid", "finalized"));

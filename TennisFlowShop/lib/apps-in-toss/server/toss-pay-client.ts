@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getAppsInTossTossPayMode } from "./config";
-import { requestTossJson } from "./http";
+import { requestTossPayJson } from "./http";
 import {
   assertRefundReason, assertTossPayOrderNo, parseExecutePaymentResponse, parseMakePaymentInput, parseTossPayToken,
   parseMakePaymentResponse, parsePaymentStatusResponse, parseRefundPaymentResponse,
@@ -12,7 +12,7 @@ function headers(userKey: string) {
   return { "x-toss-user-key": userKey };
 }
 async function post(path: string, userKey: string, body: Record<string, unknown>) {
-  return requestTossJson({ method: "POST", path, headers: headers(userKey), body });
+  return requestTossPayJson({ method: "POST", path, headers: headers(userKey), body });
 }
 export async function makeTossPayPayment(userKey: string, input: unknown) {
   const body = parseMakePaymentInput(input); const { isTestPayment } = getAppsInTossTossPayMode();

@@ -9,9 +9,13 @@ import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quo
 import { publicProductFilter } from "@/lib/public-visibility";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { getAppsInTossTossPayMode } from "./config";
+import { TossApiError } from "./http";
+import { loadActiveAppsInTossUserKey } from "./identity";
 import {
+  attachAppsInTossPayToken,
   createAppsInTossPaymentIntent,
   findAppsInTossPaymentIntentByAttemptId,
+  recordAppsInTossPaymentCreationFailed,
   type AppsCheckoutPayload,
   type AppsInTossPaymentIntentDocument,
 } from "./payment-intents";
@@ -23,7 +27,9 @@ import {
   isSameAppsPaymentPayload,
   type AppsPaymentPrepareRequest,
 } from "./payment-prepare-contract";
-import { generateTossPayOrderNo } from "./toss-pay-contract";
+import { makeTossPayPayment } from "./toss-pay-client";
+import { buildAppsTossPayMakePaymentInput } from "./toss-pay-policy";
+import { generateTossPayOrderNo, parseTossPayToken, TossPayContractError } from "./toss-pay-contract";
 
 export const APPS_PAYMENT_PREPARE_TTL_MS = 30 * 60 * 1000;
 
@@ -38,8 +44,11 @@ function ownsIntent(intent: AppsInTossPaymentIntentDocument, userId: ObjectId, i
 function recoverExisting(intent: AppsInTossPaymentIntentDocument, request: AppsPaymentPrepareRequest, userId: ObjectId, identityId: ObjectId) {
   if (!ownsIntent(intent, userId, identityId)) throw new AppsPaymentPrepareError(409, "ATTEMPT_CONFLICT", "결제 시도 식별자를 사용할 수 없습니다.");
   if (!isSameAppsPaymentPayload(intent.checkoutPayload, request)) throw new AppsPaymentPrepareError(409, "ATTEMPT_PAYLOAD_MISMATCH", "같은 결제 시도 식별자의 요청 내용이 다릅니다.");
+  if (intent.state === "failed") throw new AppsPaymentPrepareError(409, "PAYMENT_CREATION_FAILED", "결제 준비를 다시 시작해 주세요.");
   if (isAppsPaymentIntentExpired(intent.expiresAt)) throw new AppsPaymentPrepareError(409, "PAYMENT_INTENT_EXPIRED", "결제 준비 시간이 만료되었습니다. 다시 시도해 주세요.");
-  return createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt);
+  if (intent.state === "creating") throw new AppsPaymentPrepareError(409, "PAYMENT_CREATION_IN_PROGRESS", "결제 준비를 처리하고 있습니다. 잠시 후 다시 확인해 주세요.");
+  if (intent.state !== "awaiting_authorization") throw new AppsPaymentPrepareError(409, "PAYMENT_STATE_UNAVAILABLE", "현재 결제 준비 상태를 사용할 수 없습니다.");
+  return createSafePaymentIntentResponse(intent.attemptId, "awaiting_authorization", intent.expiresAt);
 }
 
 function isDuplicateKeyError(error: unknown) {
@@ -97,8 +106,10 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
     work: request.work, withStringService: true,
   };
   const mode = getAppsInTossTossPayMode();
+  if (mode.mode !== "sandbox") throw new AppsPaymentPrepareError(503, "PAYMENT_LIVE_NOT_ENABLED", "라이브 결제 준비는 아직 사용할 수 없습니다.");
+  let intent: AppsInTossPaymentIntentDocument;
   try {
-    const intent = await createAppsInTossPaymentIntent(db, {
+    intent = await createAppsInTossPaymentIntent(db, {
       attemptId: request.attemptId, userId, identityId, orderNo: generateTossPayOrderNo(), isTestPayment: mode.isTestPayment,
       checkoutPayload,
       pricingSnapshot: { subtotal: quote.subtotal, shippingFee: quote.shippingFee, serviceFee: quote.serviceFee, pointsUsed: quote.pointsUsed, payableAmount: quote.payableTotalPrice },
@@ -106,14 +117,50 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
       ...(isVisit ? { reservationSnapshot: { preferredDate: request.work.preferredDate, preferredTime: request.work.preferredTime } } : {}),
       expiresAt: new Date(Date.now() + APPS_PAYMENT_PREPARE_TTL_MS),
     });
-    // 세무/현금영수증 운영 정책 확정 후 PR 2-B에서 make-payment를 연결한다.
-    return createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt);
   } catch (error) {
     if (!isDuplicateKeyError(error)) throw error;
     const raced = await findAppsInTossPaymentIntentByAttemptId(db, request.attemptId);
     if (!raced) throw error;
     return recoverExisting(raced, request, userId, identityId);
   }
+
+  const userKey = await loadActiveAppsInTossUserKey(db, identityId, userId);
+  if (isAppsPaymentIntentExpired(intent.expiresAt)) throw new AppsPaymentPrepareError(409, "PAYMENT_INTENT_EXPIRED", "결제 준비 시간이 만료되었습니다. 다시 시도해 주세요.");
+
+  let makeResult: Awaited<ReturnType<typeof makeTossPayPayment>>;
+  try {
+    makeResult = await makeTossPayPayment(userKey, buildAppsTossPayMakePaymentInput(intent));
+  } catch (error) {
+    const failureCode = error instanceof TossApiError
+      ? `MAKE_PAYMENT_${error.kind.toUpperCase()}`
+      : error instanceof TossPayContractError
+        ? "MAKE_PAYMENT_INVALID_RESPONSE"
+        : "MAKE_PAYMENT_UNAVAILABLE";
+    await recordAppsInTossPaymentCreationFailed(db, intent._id, failureCode);
+    throw new AppsPaymentPrepareError(503, "TOSS_PAY_UNAVAILABLE", "결제 준비를 완료하지 못했습니다. 다시 시도해 주세요.");
+  }
+
+  if (makeResult.kind === "toss_failure") {
+    await recordAppsInTossPaymentCreationFailed(db, intent._id, makeResult.errorCode ?? `MAKE_PAYMENT_${makeResult.resultType}`);
+    throw new AppsPaymentPrepareError(503, "TOSS_PAY_MAKE_FAILED", "결제 준비를 완료하지 못했습니다. 다시 시도해 주세요.");
+  }
+
+  const payToken = parseTossPayToken(makeResult.value.success.payToken);
+  try {
+    const attached = await attachAppsInTossPayToken(db, intent._id, payToken);
+    if (attached) return createSafePaymentIntentResponse(attached.attemptId, attached.state, attached.expiresAt);
+  } catch {
+    // 외부 결제 생성은 반복하지 않고 아래에서 저장 상태만 확인한다.
+  }
+  try {
+    const persisted = await findAppsInTossPaymentIntentByAttemptId(db, intent.attemptId);
+    if (persisted?.state === "awaiting_authorization" && persisted.payToken === payToken) {
+      return createSafePaymentIntentResponse(persisted.attemptId, persisted.state, persisted.expiresAt);
+    }
+  } catch {
+    // 외부 결제 생성 결과를 잃지 않도록 재호출 없이 안전한 오류로 종료한다.
+  }
+  throw new AppsPaymentPrepareError(500, "PAYMENT_TOKEN_PERSISTENCE_FAILED", "결제 준비 상태를 저장하지 못했습니다.");
 }
 
 export async function getOwnedAppsPaymentIntent(db: Db, attemptId: string, userId: ObjectId, identityId: ObjectId) {

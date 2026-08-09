@@ -39,6 +39,15 @@ export class AppsInTossUserUnavailableError extends Error {
   }
 }
 
+export async function loadActiveAppsInTossUserKey(db: Db, identityId: ObjectId, userId: ObjectId) {
+  const identity = await db.collection<Pick<IdentityDocument, "userKey">>("apps_in_toss_identities").findOne(
+    { _id: identityId, userId, appName: APPS_IN_TOSS_APP_NAME, status: "active" },
+    { projection: { userKey: 1 } },
+  );
+  if (!identity?.userKey) throw new AppsInTossUserUnavailableError();
+  return identity.userKey;
+}
+
 function isDuplicateKeyError(error: unknown) {
   return typeof error === "object" && error !== null && "code" in error && error.code === 11000;
 }
