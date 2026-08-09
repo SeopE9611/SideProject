@@ -9,7 +9,12 @@ const AUTH_RATE_LIMIT_COLLECTION = "auth_rate_limit_windows";
 const TOO_MANY_REQUESTS_MESSAGE = "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
 
 export type PublicAuthRouteId =
-  "login" | "register" | "oauth_complete" | "forgot_password_request" | "forgot_password_reset";
+  | "login"
+  | "register"
+  | "oauth_complete"
+  | "forgot_password_request"
+  | "forgot_password_reset"
+  | "apps_in_toss_login";
 
 type PublicAuthRateLimitPolicy = {
   limit: number;
@@ -41,6 +46,9 @@ export const AUTH_RATE_LIMIT_POLICIES: Record<PublicAuthRouteId, RoutePolicy> = 
   forgot_password_reset: {
     ip: { limit: 10, windowSec: 60 * 30 },
     identifier: { limit: 5, windowSec: 60 * 30 },
+  },
+  apps_in_toss_login: {
+    ip: { limit: 10, windowSec: 60 * 10 },
   },
 };
 
