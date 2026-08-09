@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Filter, SortDirection } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
+import { APPS_IN_TOSS_APP_NAME } from "@/lib/apps-in-toss/server/config";
 import type {
   AdminUsersListRequestDto,
   AdminUsersListResponseDto,
@@ -49,7 +50,14 @@ export async function GET(req: Request) {
   const role = url.searchParams.get("role"); // 'user' | 'admin' | 'superadmin'
   const status = url.searchParams.get("status") || "all"; // 'all' | 'active' | 'deleted' | 'suspended'
   const sortKey = url.searchParams.get("sort") || "created_desc"; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
-  const signup = (url.searchParams.get("signup") || "all") as UserSignupFilter;
+  const signupParam = url.searchParams.get("signup");
+  const signup: UserSignupFilter =
+    signupParam === "local" ||
+    signupParam === "kakao" ||
+    signupParam === "naver" ||
+    signupParam === "apps_in_toss"
+      ? signupParam
+      : "all";
   const col = db.collection("users");
 
   const login = (url.searchParams.get("login") || "all") as UserLoginFilter;
@@ -122,7 +130,6 @@ export async function GET(req: Request) {
   }
 
   if (signupFilter === "local") {
-    // "둘 다 없음" = 일반 가입자
     and.push({
       $and: [
         {
@@ -137,6 +144,29 @@ export async function GET(req: Request) {
 
   // 최종 필터
   const filter: Filter<UserQueryDoc> = and.length ? { $and: and } : {};
+
+  const appsInTossMatch = {
+    $lookup: {
+      from: "apps_in_toss_identities",
+      let: { userId: "$_id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$userId", "$$userId"] },
+                { $eq: ["$appName", APPS_IN_TOSS_APP_NAME] },
+                { $eq: ["$status", "active"] },
+              ],
+            },
+          },
+        },
+        { $limit: 1 },
+        { $project: { _id: 1 } },
+      ],
+      as: "appsInTossIdentities",
+    },
+  };
 
   // --- 정렬 ---
   type SortDoc = Record<string, SortDirection>;
@@ -158,32 +188,52 @@ export async function GET(req: Request) {
   }
 
   // --- 조회 ---
-  const cursor = col
-    .find(filter, {
-      projection: {
-        _id: 1,
-        name: 1,
-        email: 1,
-        phone: 1,
-        address: 1,
-        addressDetail: 1,
-        postalCode: 1,
-        pointsBalance: 1,
-        role: 1,
-        isDeleted: 1,
-        isSuspended: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        lastLoginAt: 1,
-        "oauth.kakao.id": 1,
-        "oauth.naver.id": 1,
+  const signupMatch =
+    signupFilter === "apps_in_toss"
+      ? { "appsInTossIdentities.0": { $exists: true } }
+      : signupFilter === "local"
+        ? { "appsInTossIdentities.0": { $exists: false } }
+        : null;
+  const pipeline = [
+    { $match: filter },
+    appsInTossMatch,
+    ...(signupMatch ? [{ $match: signupMatch }] : []),
+    {
+      $facet: {
+        items: [
+          { $sort: sort },
+          { $skip: (page - 1) * limit },
+          { $limit: limit },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              email: 1,
+              phone: 1,
+              address: 1,
+              addressDetail: 1,
+              postalCode: 1,
+              pointsBalance: 1,
+              role: 1,
+              isDeleted: 1,
+              isSuspended: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              lastLoginAt: 1,
+              "oauth.kakao.id": 1,
+              "oauth.naver.id": 1,
+              appsInTossLinked: { $gt: [{ $size: "$appsInTossIdentities" }, 0] },
+            },
+          },
+        ],
+        total: [{ $count: "value" }],
       },
-    })
-    .sort(sort)
-    .skip((page - 1) * limit)
-    .limit(limit);
+    },
+  ];
 
-  const [items, total] = await Promise.all([cursor.toArray(), col.countDocuments(filter)]);
+  const [listResult] = await col.aggregate(pipeline).toArray();
+  const items = Array.isArray(listResult?.items) ? listResult.items : [];
+  const total = Number(listResult?.total?.[0]?.value ?? 0);
 
   // 전체 지표(필터 무시) 동시 계산
   const [grandTotal, activeTotal, deletedTotal, adminTotal, suspendedTotal] = await Promise.all([
@@ -225,8 +275,8 @@ export async function GET(req: Request) {
         createdAt: toIso(doc.createdAt),
         updatedAt: toIso(doc.updatedAt),
         lastLoginAt: toIso(doc.lastLoginAt),
-
         socialProviders,
+        appsInTossLinked: doc.appsInTossLinked === true,
       };
     }),
     total,

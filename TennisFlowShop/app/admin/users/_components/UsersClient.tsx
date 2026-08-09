@@ -164,7 +164,7 @@ type UserListQueryState = {
   roleFilter: "all" | "user" | "admin" | "superadmin";
   statusFilter: "all" | "active" | "deleted" | "suspended";
   loginFilter: "all" | "nologin" | "recent30" | "recent90";
-  signupFilter: "all" | "local" | "kakao" | "naver";
+  signupFilter: "all" | "local" | "kakao" | "naver" | "apps_in_toss";
   sort: "created_desc" | "created_asc" | "name_asc" | "name_desc";
 };
 
@@ -216,7 +216,11 @@ function parseUserListQueryState(
         ? login
         : defaults.loginFilter,
     signupFilter:
-      signup === "all" || signup === "local" || signup === "kakao" || signup === "naver"
+      signup === "all" ||
+      signup === "local" ||
+      signup === "kakao" ||
+      signup === "naver" ||
+      signup === "apps_in_toss"
         ? signup
         : defaults.signupFilter,
     sort:
@@ -409,7 +413,7 @@ export default function UsersClient() {
       roleFilter: "all" | "user" | "admin" | "superadmin";
       statusFilter: "all" | "active" | "deleted" | "suspended";
       loginFilter: "all" | "nologin" | "recent30" | "recent90";
-      signupFilter: "all" | "local" | "kakao" | "naver";
+      signupFilter: "all" | "local" | "kakao" | "naver" | "apps_in_toss";
       sort: "created_desc" | "created_asc" | "name_asc" | "name_desc";
     }>,
   ) => {
@@ -443,6 +447,10 @@ export default function UsersClient() {
 
   // 삭제된 회원이 하나라도 선택
   const hasDeletedSelected = useMemo(() => selectedRows.some((u) => u.isDeleted), [selectedRows]);
+  const selectedAppsInTossCount = useMemo(
+    () => selectedRows.filter((u) => !u.isDeleted && u.appsInTossLinked).length,
+    [selectedRows],
+  );
 
   useEffect(() => {
     if (!allCheckboxRef.current) return;
@@ -838,7 +846,7 @@ export default function UsersClient() {
                 value={signupFilter}
                 onValueChange={(v) => {
                   patchState({
-                    signupFilter: v as "all" | "local" | "kakao" | "naver",
+                    signupFilter: v as "all" | "local" | "kakao" | "naver" | "apps_in_toss",
                   });
                 }}
               >
@@ -853,6 +861,7 @@ export default function UsersClient() {
                   <SelectItem value="local">일반 가입</SelectItem>
                   <SelectItem value="kakao">카카오 가입</SelectItem>
                   <SelectItem value="naver">네이버 가입</SelectItem>
+                  <SelectItem value="apps_in_toss">Apps in Toss</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -1209,16 +1218,37 @@ export default function UsersClient() {
                                   <Copy className="h-4 w-4" />
                                 </button>
                               </div>
-                              {/* 소셜 배지: 카카오/네이버 */}
-                              {Array.isArray(u.socialProviders) && u.socialProviders.length > 0 && (
-                                <div className="mt-1 flex items-center gap-1">
-                                  {u.socialProviders.includes("kakao") && (
-                                    <IdentityBadge tone="kakao" className="shrink-0 whitespace-nowrap">카카오</IdentityBadge>
+                              {(u.appsInTossLinked ||
+                                (Array.isArray(u.socialProviders) &&
+                                  u.socialProviders.length > 0)) && (
+                                <div className="mt-1 flex flex-wrap items-center gap-1">
+                                  {u.socialProviders?.includes("kakao") && (
+                                    <IdentityBadge
+                                      tone="kakao"
+                                      className="shrink-0 whitespace-nowrap"
+                                    >
+                                      카카오
+                                    </IdentityBadge>
                                   )}
-                                  {u.socialProviders.includes("naver") && (
-                                    <IdentityBadge tone="naver" className="shrink-0 whitespace-nowrap">네이버</IdentityBadge>
+                                  {u.socialProviders?.includes("naver") && (
+                                    <IdentityBadge
+                                      tone="naver"
+                                      className="shrink-0 whitespace-nowrap"
+                                    >
+                                      네이버
+                                    </IdentityBadge>
+                                  )}
+                                  {u.appsInTossLinked && (
+                                    <Badge variant="info" className="shrink-0 whitespace-nowrap">
+                                      Apps in Toss
+                                    </Badge>
                                   )}
                                 </div>
+                              )}
+                              {u.appsInTossLinked && !u.email && (
+                                <span className="mt-1 text-xs text-muted-foreground">
+                                  Apps in Toss 계정 · 이메일 미수집
+                                </span>
                               )}
                             </div>
                           </TableCell>
@@ -1648,11 +1678,14 @@ export default function UsersClient() {
           void bulkSoftDelete();
         }}
         title="회원 삭제(탈퇴) 처리 확인"
-        description={`영향 개수: ${selectedUsers.length}명\n선택한 회원을 삭제(탈퇴) 상태로 변경합니다. 이 작업은 되돌릴 수 없습니다.`}
+        description={`영향 개수: ${selectedUsers.length}명\n선택한 회원을 삭제(탈퇴) 상태로 변경합니다. 이 작업은 되돌릴 수 없습니다.${selectedAppsInTossCount > 0 ? `\n\n선택한 회원 중 Apps in Toss 연결 계정 ${selectedAppsInTossCount}명이 포함되어 있습니다. 삭제하면 해당 계정의 도깨비테니스 미니앱 로그인이 차단됩니다.` : ""}`}
         confirmText="삭제(탈퇴) 처리"
         severity="danger"
         eventKey="admin-users-soft-delete"
-        eventMeta={{ selectedCount: selectedUsers.length }}
+        eventMeta={{
+          selectedCount: selectedUsers.length,
+          appsInTossLinkedCount: selectedAppsInTossCount,
+        }}
       />
       <UserPointsDialog
         open={pointsDialogOpen}

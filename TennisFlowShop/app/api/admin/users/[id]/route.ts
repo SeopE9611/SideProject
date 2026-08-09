@@ -8,6 +8,7 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { adminValidationError, zodIssuesToDetails } from "@/lib/admin/adminApiError";
 import { isAdminRole, isSuperAdminRole, normalizeUserRole } from "@/lib/admin/roles";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
+import { APPS_IN_TOSS_APP_NAME } from "@/lib/apps-in-toss/server/config";
 
 const userIdParamsSchema = z.object({
   id: z.string().trim().min(1).refine(ObjectId.isValid, {
@@ -97,7 +98,17 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const parsedParams = parseUserIdParams(await ctx.params);
   if (!parsedParams.ok) return parsedParams.res;
 
-  const doc = await usersCollection(db).findOne({ _id: parsedParams._id }, userProjection);
+  const [doc, appsInTossIdentity] = await Promise.all([
+    usersCollection(db).findOne({ _id: parsedParams._id }, userProjection),
+    db.collection("apps_in_toss_identities").findOne(
+      {
+        userId: parsedParams._id,
+        appName: APPS_IN_TOSS_APP_NAME,
+        status: "active",
+      },
+      { projection: { _id: 1 } },
+    ),
+  ]);
 
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -106,6 +117,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     id: doc._id.toString(),
     isSuspended: !!(doc as any).isSuspended,
     isDeleted: !!(doc as any).isDeleted,
+    appsInTossLinked: Boolean(appsInTossIdentity),
     _id: undefined,
   });
 }
@@ -247,10 +259,11 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   delete $set.confirmText;
 
-  const r = await usersCollection(db).updateOne(
-    { _id },
-    { $set, $currentDate: { updatedAt: true } },
-  );
+  if (deleteRequested) $set.deletedAt = new Date();
+  const update: Record<string, any> = { $set, $currentDate: { updatedAt: true } };
+  if (payload.isDeleted === false) update.$unset = { deletedAt: "" };
+
+  const r = await usersCollection(db).updateOne({ _id }, update);
 
   if (!r.matchedCount) return NextResponse.json({ message: "not found" }, { status: 404 });
 
