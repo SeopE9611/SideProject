@@ -347,91 +347,62 @@ export default function AdminRacketsClient() {
         icon={ClipboardList}
         scope="범위: 등록된 라켓"
         helperText="신규 등록 전 가격·배송비·재고 정보를 확인하고, 대여 가능 라켓은 상태와 노출 여부를 우선 점검하세요."
+        actions={
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/operations">오늘 처리할 일 보기</Link>
+          </Button>
+        }
       />
 
-      <section
-        className="mb-6 grid gap-3 grid-cols-4 shrink-0"
-        aria-label="라켓 관리 업무 가이드"
-      >
-        {[
-          {
-            title: "신규 라켓 등록",
-            description: "브랜드, 모델, 대표 이미지와 기본 정보를 먼저 확인한 뒤 등록하세요.",
-          },
-          {
-            title: "판매·대여 상태 확인",
-            description: "판매 가능, 대여 중, 비노출 상태를 점검해 운영 우선순위를 정리하세요.",
-          },
-          {
-            title: "재고·가격·배송비 점검",
-            description: "재고 수량과 판매가, 배송비를 함께 확인해 주문 이슈를 예방하세요.",
-          },
-          {
-            title: "노출·상세 정보 관리",
-            description: "고객이 보는 상세 정보와 노출 상태를 주기적으로 업데이트하세요.",
-          },
-        ].map((guide) => (
-          <Card key={guide.title} className="border-border/70 bg-muted/30">
-            <CardContent className="p-4">
-              <p className="text-sm font-semibold leading-relaxed break-keep text-foreground">
-                {guide.title}
-              </p>
-              <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">
-                {guide.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
-      <div className="mb-6 flex justify-end">
-        <Link
-          href="/admin/operations"
-          className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-        >
-          오늘 처리할 일 보기
-        </Link>
-      </div>
-
-      <section className="grid gap-6 grid-cols-4 mb-8 shrink-0">
-        {[
-          {
-            label: "전체 라켓",
-            icon: <Package className="h-6 w-6 text-primary" />,
-            value: stats.total,
-            bgColor: "bg-muted",
-          },
-          {
-            label: "판매 가능",
-            icon: <CheckCircle className="h-6 w-6 text-success" />,
-            value: stats.available,
-            bgColor: "bg-success/10 dark:bg-success/15",
-          },
-          {
-            label: "대여 중",
-            icon: <AlertTriangle className="h-6 w-6 text-warning" />,
-            value: stats.rented,
-            bgColor: "bg-warning/10 dark:bg-warning/15",
-          },
-          {
-            label: "판매 완료",
-            icon: <XCircle className="h-6 w-6 text-destructive" />,
-            value: stats.sold,
-            bgColor: "bg-destructive/10 dark:bg-destructive/15",
-          },
-        ].map((c, i) => (
-          <Card key={i} className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                  <p className="text-3xl font-bold text-foreground">{renderKpiValue(c.value)}</p>
+      <section aria-label="라켓 운영 현황">
+        <Card className={cn(adminSurface.card, "overflow-hidden")}>
+          <CardContent className="grid grid-cols-2 gap-px bg-border/60 p-0 xl:grid-cols-4">
+            {[
+              {
+                label: "전체 라켓",
+                icon: <Package className="h-4 w-4 text-primary" />,
+                value: stats.total,
+                bgColor: "bg-muted",
+              },
+              {
+                label: "판매 가능",
+                icon: <CheckCircle className="h-4 w-4 text-success" />,
+                value: stats.available,
+                bgColor: "bg-success/10 dark:bg-success/15",
+              },
+              {
+                label: "대여 중",
+                icon: <AlertTriangle className="h-4 w-4 text-warning" />,
+                value: stats.rented,
+                bgColor: "bg-warning/10 dark:bg-warning/15",
+              },
+              {
+                label: "판매 완료",
+                icon: <XCircle className="h-4 w-4 text-destructive" />,
+                value: stats.sold,
+                bgColor: "bg-destructive/10 dark:bg-destructive/15",
+              },
+            ].map((c) => (
+              <div
+                key={c.label}
+                className="flex min-w-0 items-center justify-between gap-3 bg-card px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className={adminTypography.metaMuted}>{c.label}</p>
+                  <p className={adminTypography.kpiValueCompact}>{renderKpiValue(c.value)}</p>
                 </div>
-                <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
+                <div
+                  className={cn(
+                    c.bgColor,
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border",
+                  )}
+                >
+                  {c.icon}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            ))}
+          </CardContent>
+        </Card>
       </section>
       <section className="mb-4 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
         <div className="flex gap-3 flex-row items-center">

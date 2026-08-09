@@ -34,14 +34,12 @@ import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   ArrowLeft,
-  CheckCircle,
   Edit3,
   Package,
   Plus,
   Save,
   Settings,
   Settings2,
-  Star,
   Trash2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -57,29 +55,6 @@ type PackageSettingsResponse = {
 const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
   loading: () => null,
 });
-
-const PACKAGE_SETTINGS_GUIDES = [
-  {
-    icon: Package,
-    title: "패키지 판매 구성",
-    description: "고객에게 노출될 패키지명, 횟수, 가격, 혜택을 관리합니다.",
-  },
-  {
-    icon: CheckCircle,
-    title: "가격·횟수 확인",
-    description: "판매가, 정가, 회당 금액, 할인율이 의도한 값인지 확인합니다.",
-  },
-  {
-    icon: Star,
-    title: "노출 상태 관리",
-    description: "활성화 여부와 추천 패키지 표시 상태를 점검합니다.",
-  },
-  {
-    icon: Settings,
-    title: "일반 정책 점검",
-    description: "유효기간, 연장 허용, 최소·최대 이용 횟수 정책을 관리합니다.",
-  },
-];
 
 function isPositiveInteger(value: unknown): boolean {
   const numberValue = Number(value);
@@ -532,66 +507,7 @@ export default function PackageSettingsClient() {
             </Button>
           }
         />
-        <section className="grid gap-3 grid-cols-4">
-          {PACKAGE_SETTINGS_GUIDES.map(({ icon: Icon, title, description }) => (
-            <Card key={title} className={adminSurface.fieldPanelMuted}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">{title}</p>
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-        <section className="grid gap-4 grid-cols-4">
-          {[
-            {
-              label: "전체 패키지",
-              value: packageSummary.total,
-              icon: Package,
-              tone: "bg-muted",
-            },
-            {
-              label: "활성 패키지",
-              value: packageSummary.active,
-              icon: CheckCircle,
-              tone: "bg-success/10 dark:bg-success/15",
-            },
-            {
-              label: "추천 패키지",
-              value: packageSummary.popular,
-              icon: Star,
-              tone: "bg-primary/10 dark:bg-primary/15",
-            },
-            {
-              label: "비활성 패키지",
-              value: packageSummary.inactive,
-              icon: AlertTriangle,
-              tone: "bg-warning/10 dark:bg-warning/15",
-            },
-          ].map(({ label, value, icon: Icon, tone }) => (
-            <Card key={label} className={adminSurface.kpiCard}>
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {value.toLocaleString("ko-KR")}
-                    </p>
-                  </div>
-                  <div className={cn(tone, "rounded-xl border border-border p-3")}>
-                    <Icon className="h-5 w-5 text-foreground" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-        <div className={adminSurface.filterCard}>
+        <div className={cn(adminSurface.filterCard, "p-4")}>
           <div className="flex gap-3 flex-row items-center justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-foreground">현재 설정 상태</p>
@@ -600,12 +516,20 @@ export default function PackageSettingsClient() {
                 {currentSettingsLabel}
               </Badge>
 
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="text-xs tabular-nums">
+                전체 {packageSummary.total}개
+              </Badge>
+
+              <Badge variant="secondary" className="text-xs tabular-nums">
                 활성 {packageSummary.active}개
               </Badge>
 
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="text-xs tabular-nums">
                 추천 {packageSummary.popular}개
+              </Badge>
+
+              <Badge variant="secondary" className="text-xs tabular-nums">
+                비활성 {packageSummary.inactive}개
               </Badge>
             </div>
 
