@@ -120,9 +120,9 @@ function formatPrice(value: number | null | undefined) {
   return `${value.toLocaleString("ko-KR")}원`;
 }
 
-function formatCapacityLabel(capacity: number | null | undefined) {
-  if (typeof capacity !== "number") return "정원 미정";
-  return `정원 ${capacity.toLocaleString("ko-KR")}명`;
+function formatCapacityValue(capacity: number | null | undefined) {
+  if (typeof capacity !== "number") return "미정";
+  return `${capacity.toLocaleString("ko-KR")}명`;
 }
 
 function getBlockingApplicationCount(item: AcademyClass) {
@@ -136,12 +136,20 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
   const confirmed = item.applicationStats?.confirmed ?? 0;
 
   return (
-    <div className="shrink-0 whitespace-nowrap tabular-nums">
-      <div className="font-medium text-foreground">신청 {total.toLocaleString("ko-KR")}건</div>
-      <div className={adminTypography.caption}>
-        등록 확정 {confirmed.toLocaleString("ko-KR")}명 / {formatCapacityLabel(item.capacity)}
-      </div>
-    </div>
+    <dl className="grid min-w-0 grid-cols-[auto_1fr] gap-x-2 gap-y-1">
+      <dt className={adminTypography.caption}>신청</dt>
+      <dd className="whitespace-nowrap text-right font-medium text-foreground tabular-nums">
+        {total.toLocaleString("ko-KR")}건
+      </dd>
+      <dt className={adminTypography.caption}>확정</dt>
+      <dd className="whitespace-nowrap text-right tabular-nums">
+        {confirmed.toLocaleString("ko-KR")}명
+      </dd>
+      <dt className={adminTypography.caption}>정원</dt>
+      <dd className="whitespace-nowrap text-right tabular-nums">
+        {formatCapacityValue(item.capacity)}
+      </dd>
+    </dl>
   );
 }
 
@@ -345,15 +353,15 @@ export default function AcademyClassesClient() {
           ) : null}
 
           <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
-            <Table className="min-w-[1040px] table-fixed">
+            <Table className="min-w-[1080px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
                   <TableHead className={cn(adminDataTable.headRight, "w-[112px]")}>등록일</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[280px]")}>클래스</TableHead>
-                  <TableHead className={adminDataTable.headCenter}>수업 정보</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[240px]")}>운영 정보</TableHead>
-                  <TableHead className={adminDataTable.headRight}>신청 현황</TableHead>
-                  <TableHead className={adminDataTable.headCenter}>가격/상태</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[240px]")}>클래스</TableHead>
+                  <TableHead className={cn(adminDataTable.headCenter, "w-[96px]")}>수업 정보</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[200px]")}>운영 정보</TableHead>
+                  <TableHead className={cn(adminDataTable.headRight, "w-[144px]")}>신청 현황</TableHead>
+                  <TableHead className={cn(adminDataTable.headCenter, "w-[128px]")}>가격/상태</TableHead>
                   <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>관리</TableHead>
                 </TableRow>
               </TableHeader>
@@ -395,10 +403,10 @@ export default function AcademyClassesClient() {
                         <div className="whitespace-nowrap font-medium text-foreground">{createdAt.date}</div>
                         <div className="whitespace-nowrap text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
-                      <TableCell className={adminDataTable.cellTopLeft}>
+                      <TableCell className={cn(adminDataTable.cellTopLeft, "w-[240px]")}>
                         <div
                           className={cn(
-                            "line-clamp-2 max-w-[260px] break-words",
+                            "line-clamp-2 max-w-[208px] break-words",
                             adminTypography.bodyStrong,
                           )}
                           title={item.name || "-"}
@@ -407,7 +415,7 @@ export default function AcademyClassesClient() {
                         </div>
                         <div
                           className={cn(
-                            "line-clamp-2 max-w-[260px] break-words",
+                            "line-clamp-2 max-w-[208px] break-words",
                             adminTypography.caption,
                           )}
                           title={item.description || "설명 미입력"}
@@ -415,22 +423,22 @@ export default function AcademyClassesClient() {
                           {item.description || "설명 미입력"}
                         </div>
                       </TableCell>
-                      <TableCell className={adminDataTable.cellCenter}>
+                      <TableCell className={cn(adminDataTable.cellCenter, "w-[96px]")}>
                         <div>{getAcademyClassLessonTypeLabel(item.lessonType)}</div>
                         <div className={adminTypography.caption}>
                           {getAcademyClassLevelLabel(item.level)}
                         </div>
                       </TableCell>
-                      <TableCell className={adminDataTable.cellTopLeft}>
+                      <TableCell className={cn(adminDataTable.cellTopLeft, "w-[200px]")}>
                         <div
-                          className="max-w-[220px] truncate"
+                          className="max-w-[168px] truncate"
                           title={item.instructorName || "강사 미입력"}
                         >
                           {item.instructorName || "강사 미입력"}
                         </div>
                         <div
                           className={cn(
-                            "line-clamp-2 max-w-[220px] break-words",
+                            "line-clamp-2 max-w-[168px] break-words",
                             adminTypography.caption,
                           )}
                           title={item.scheduleText || "일정 미입력"}
@@ -439,17 +447,17 @@ export default function AcademyClassesClient() {
                         </div>
                         {item.location ? (
                           <div
-                            className={cn("max-w-[220px] truncate", adminTypography.caption)}
+                            className={cn("max-w-[168px] truncate", adminTypography.caption)}
                             title={item.location}
                           >
                             {item.location}
                           </div>
                         ) : null}
                       </TableCell>
-                      <TableCell className={adminDataTable.cellNumber}>
+                      <TableCell className={cn(adminDataTable.cellNumber, "w-[144px]")}>
                         <ApplicationStatsCell item={item} />
                       </TableCell>
-                      <TableCell className={adminDataTable.cellCenter}>
+                      <TableCell className={cn(adminDataTable.cellCenter, "w-[128px]")}>
                         <div
                           className={cn(
                             "whitespace-nowrap tabular-nums",
