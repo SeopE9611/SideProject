@@ -803,6 +803,7 @@ export default function OrdersClient() {
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   type="search"
+                  aria-label="주문 통합 검색"
                   placeholder="주문/신청 ID, 고객명, 이메일 검색..."
                   className="pl-8 text-ui-label h-9 w-full"
                   value={searchTerm}
@@ -823,7 +824,7 @@ export default function OrdersClient() {
             </div>
 
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
               <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
               <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
               <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
@@ -855,15 +856,6 @@ export default function OrdersClient() {
             {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "조회 중…"}
           </span>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={resetFilters}
-          className="h-8 shrink-0 self-start sm:self-auto"
-        >
-          필터 초기화
-        </Button>
       </div>
 
       {/* 주문 목록 테이블 */}
@@ -958,7 +950,7 @@ export default function OrdersClient() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
+        <CardContent className="relative min-h-[420px] overflow-x-auto pr-2">
           <Table className="min-w-[1080px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>

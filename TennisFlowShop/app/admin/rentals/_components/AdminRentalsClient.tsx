@@ -708,7 +708,7 @@ export default function AdminRentalsClient() {
                 }}
                 placeholder="대여 ID, 고객명, 이메일, 브랜드, 모델 검색..."
                 className="pl-8 w-full"
-                aria-label="통합 검색"
+                aria-label="대여 통합 검색"
               />
             </div>
 
@@ -717,8 +717,8 @@ export default function AdminRentalsClient() {
             </Button>
           </div>
 
-          <div className="grid w-full gap-2 grid-cols-6">
-            <div className="flex items-center">
+          <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+            <div className="flex min-w-0 items-center">
               <Select
                 value={status || "all"}
                 onValueChange={(v) => {
@@ -726,7 +726,10 @@ export default function AdminRentalsClient() {
                   setStatus(v === "all" ? "" : (v as string));
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="대여 상태 필터"
+                >
                   <SelectValue placeholder="상태(전체)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -740,7 +743,7 @@ export default function AdminRentalsClient() {
               </Select>
             </div>
 
-            <div className="flex items-center">
+            <div className="flex min-w-0 items-center">
               <Select
                 value={payFilter}
                 onValueChange={(v) => {
@@ -749,7 +752,10 @@ export default function AdminRentalsClient() {
                     setPayFilter(v as AdminRentalPaymentFilter);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="대여 결제 상태 필터"
+                >
                   <SelectValue placeholder="결제(전체)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -759,7 +765,7 @@ export default function AdminRentalsClient() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center">
+            <div className="flex min-w-0 items-center">
               <Select
                 value={shipFilter}
                 onValueChange={(v) => {
@@ -768,7 +774,10 @@ export default function AdminRentalsClient() {
                     setShipFilter(v as AdminRentalShippingFilter);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="대여 배송 및 운송장 필터"
+                >
                   <SelectValue placeholder="배송/운송장(전체)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -780,10 +789,6 @@ export default function AdminRentalsClient() {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="block" />
-            <div className="block" />
-            <div className="block" />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -847,11 +852,6 @@ export default function AdminRentalsClient() {
         )}
         {hasResolvedData && !hasDataError && data && (
           <p className="text-muted-foreground">총 {data.total}건</p>
-        )}
-        {hasActiveFilters && (
-          <Button size="sm" variant="ghost" className="ml-auto" onClick={resetAllFiltersAndURL}>
-            필터 초기화
-          </Button>
         )}
       </div>
 
