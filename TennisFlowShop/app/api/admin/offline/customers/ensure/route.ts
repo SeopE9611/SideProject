@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
 import { normalizePhone } from "@/lib/offline/normalizers";
 import { sanitizeCustomer } from "@/lib/offline/offline.repository";
 
@@ -36,9 +36,19 @@ export async function POST(req: Request) {
     customer = await guard.db
       .collection("offline_customers")
       .findOne({ name: user.name || "", phoneNormalized });
+    if (customer?.linkedUserId && String(customer.linkedUserId) !== String(linkedId)) {
+      return NextResponse.json(
+        { message: "customer already linked to another user" },
+        { status: 409 },
+      );
+    }
     if (customer && !customer.linkedUserId) {
-      await guard.db.collection("offline_customers").updateOne(
-        { _id: customer._id },
+      const previousLinkedUserId = customer.linkedUserId ?? null;
+      const updateResult = await guard.db.collection("offline_customers").updateOne(
+        {
+          _id: customer._id,
+          $or: [{ linkedUserId: { $exists: false } }, { linkedUserId: null }],
+        },
         {
           $set: {
             linkedUserId: linkedId,
@@ -48,6 +58,34 @@ export async function POST(req: Request) {
         },
       );
       customer = await guard.db.collection("offline_customers").findOne({ _id: customer._id });
+      if (!customer)
+        return NextResponse.json({ message: "customer not found" }, { status: 404 });
+      if (String(customer.linkedUserId) !== String(linkedId)) {
+        return NextResponse.json(
+          { message: "customer already linked to another user" },
+          { status: 409 },
+        );
+      }
+      if (updateResult.modifiedCount > 0) {
+        await appendAdminAudit(
+          guard.db,
+          {
+            type: "offline_customer_link_user",
+            actorId: guard.admin._id,
+            targetId: customer._id,
+            message: "오프라인 고객 온라인 회원 연결",
+            diff: {
+              offlineCustomerId: String(customer._id),
+              userId: String(linkedId),
+              previousLinkedUserId: previousLinkedUserId
+                ? String(previousLinkedUserId)
+                : null,
+              nextLinkedUserId: String(linkedId),
+            },
+          },
+          req,
+        );
+      }
     }
   }
 
@@ -70,7 +108,7 @@ export async function POST(req: Request) {
     };
     const res = await guard.db.collection("offline_customers").insertOne(doc);
     customer = { ...doc, _id: res.insertedId };
-    await appendAudit(
+    await appendAdminAudit(
       guard.db,
       {
         type: "offline_customer_ensure_create",
