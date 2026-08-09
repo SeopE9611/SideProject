@@ -11,7 +11,7 @@ import {
 
 export class TossApiError extends Error {
   constructor(
-    public readonly kind: "network" | "timeout" | "response_too_large" | "invalid_response" | "api_error",
+    public readonly kind: "network" | "timeout" | "response_too_large" | "invalid_response" | "invalid_grant" | "api_error",
     public readonly status?: number,
     public readonly tossCode?: string,
   ) {
