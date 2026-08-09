@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Search, ListFilter, ClipboardList } from "lucide-react";
@@ -35,10 +36,22 @@ type AuditListResponse = {
 };
 
 const PAGE_SIZE = 20;
-const NOTE_TYPE_LABEL: Record<string, string> = {
+const AUDIT_TYPE_LABELS: Record<string, string> = {
   "note.create": "내부 메모 작성",
   "note.update": "내부 메모 수정",
   "note.delete": "내부 메모 삭제",
+  "review.maintenance.run": "후기 데이터 정비 실행",
+  "review.maintenance.delete": "후기 데이터 정비 잠금 해제",
+  admin_board_delete: "게시글 삭제",
+  "racket.create": "라켓 등록",
+  "racket.update": "라켓 수정",
+  "racket.delete": "라켓 삭제",
+  "product.create": "상품 등록",
+  "product.update": "상품 수정",
+  "product.delete": "상품 삭제",
+  "community.post.update": "커뮤니티 게시글 수정",
+  "community.post.delete": "커뮤니티 게시글 삭제",
+  "community.post.status": "커뮤니티 게시글 상태 변경",
 };
 
 const QUICK_TYPE_FILTERS = [
@@ -124,22 +137,30 @@ export default function AdminAuditClient() {
         className={adminSurface.filterCard}
         contentClassName="space-y-3"
       >
-        <div className="grid gap-3 grid-cols-[1fr_280px_auto_auto]">
-          <Input
-            placeholder="검색어(message/actor)"
-            value={draftQ}
-            onChange={(e) => setDraftQ(e.target.value)}
-          />
-          <Input
-            placeholder="type (예: users.update)"
-            value={draftType}
-            onChange={(e) => setDraftType(e.target.value)}
-          />
-          <Button onClick={applyFilters} className="gap-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_280px_auto_auto]">
+          <div className="space-y-2">
+            <Label htmlFor="audit-filter-query">메시지 또는 실행자</Label>
+            <Input
+              id="audit-filter-query"
+              placeholder="메시지 또는 실행자 검색"
+              value={draftQ}
+              onChange={(e) => setDraftQ(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="audit-filter-type">작업 유형 코드</Label>
+            <Input
+              id="audit-filter-type"
+              placeholder="users.update"
+              value={draftType}
+              onChange={(e) => setDraftType(e.target.value)}
+            />
+          </div>
+          <Button onClick={applyFilters} className="self-end gap-2">
             <Search className="h-4 w-4" />
             검색
           </Button>
-          <Button variant="outline" onClick={resetFilters}>
+          <Button variant="outline" onClick={resetFilters} className="self-end">
             초기화
           </Button>
         </div>
@@ -185,40 +206,62 @@ export default function AdminAuditClient() {
           title="감사 로그 목록"
           description={`총 ${data.total.toLocaleString("ko-KR")}건 · ${data.page}/${data.totalPages} 페이지`}
           icon={ClipboardList}
-          contentClassName="space-y-3"
+          contentClassName="space-y-2"
         >
-          {data.items.map((item) => (
-            <article
-              key={item.id}
-              className={`${adminSurface.tableCard} p-4 transition-colors hover:bg-muted/25`}
-            >
-              <div className={`flex flex-wrap items-center gap-2 ${adminTypography.caption}`}>
-                <Badge variant="secondary" className="font-mono">
-                  {item.type}
-                </Badge>
-                {NOTE_TYPE_LABEL[item.type] ? (
-                  <Badge variant="outline">{NOTE_TYPE_LABEL[item.type]}</Badge>
+          {data.items.map((item) => {
+            const actionName = AUDIT_TYPE_LABELS[item.type] || item.message?.trim() || item.type;
+            const message = item.message?.trim();
+
+            return (
+              <article
+                key={item.id}
+                className={`${adminSurface.tableCard} p-3 transition-colors hover:bg-muted/25`}
+              >
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-[minmax(180px,1.1fr)_minmax(180px,1fr)_minmax(140px,0.8fr)_auto]">
+                  <div className="min-w-0">
+                    <div className={adminTypography.metaMuted}>작업</div>
+                    <Badge variant="secondary">{actionName}</Badge>
+                    <div className="font-mono text-[11px] text-muted-foreground">{item.type}</div>
+                    {message && message !== actionName ? (
+                      <p className={`line-clamp-2 ${adminTypography.bodyStrong}`}>{message}</p>
+                    ) : null}
+                  </div>
+                  <div className="min-w-0">
+                    <div className={adminTypography.metaMuted}>실행자</div>
+                    <span title={item.actorTitle} className={adminTypography.body}>
+                      {item.actor}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className={adminTypography.metaMuted}>대상</div>
+                    <span title={item.targetId || undefined} className={adminTypography.body}>
+                      {item.targetId || "없음"}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className={adminTypography.metaMuted}>일시</div>
+                    <time dateTime={item.createdAt ?? undefined} className={adminTypography.body}>
+                      {formatDateTime(item.createdAt)}
+                    </time>
+                    {item.requestId ? (
+                      <div className="font-mono text-[11px] text-muted-foreground">
+                        요청 ID: {item.requestId}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                {item.diffSummary && item.diffSummary.length > 0 ? (
+                  <div className="mt-3 border-t pt-3">
+                    <ul className={`list-disc space-y-1 pl-5 ${adminTypography.caption}`}>
+                      {item.diffSummary.map((summary, idx) => (
+                        <li key={`${item.id}-s-${idx}`}>{summary}</li>
+                      ))}
+                    </ul>
+                  </div>
                 ) : null}
-                <span>{formatDateTime(item.createdAt)}</span>
-                {item.requestId ? <span className="font-mono">req: {item.requestId}</span> : null}
-              </div>
-              <p className={`line-clamp-2 ${adminTypography.bodyStrong}`}>
-                {item.message || "메시지 없음"}
-              </p>
-              <div className={adminTypography.metaMuted}>
-                <span title={item.actorTitle}>{item.actor}</span>
-                <span className="mx-2">·</span>
-                <span title={item.targetId || undefined}>target: {item.targetId || "없음"}</span>
-              </div>
-              {item.diffSummary && item.diffSummary.length > 0 ? (
-                <ul className={`list-disc space-y-1 pl-5 ${adminTypography.caption}`}>
-                  {item.diffSummary.map((summary, idx) => (
-                    <li key={`${item.id}-s-${idx}`}>{summary}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </article>
-          ))}
+              </article>
+            );
+          })}
 
           <div className={`flex items-center justify-between pt-2 ${adminTypography.meta}`}>
             <div className="text-muted-foreground">
