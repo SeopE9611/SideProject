@@ -33,13 +33,9 @@ export function isSemanticCalendarDate(value: string) {
 }
 
 export function isPastTodaySlot(date: string, time: string, now = new Date()) {
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  if (date !== today || !TIME_RE.test(time)) return false;
+  if (!TIME_RE.test(time)) return false;
 
-  const [hour, minute] = time.split(":").map(Number);
-  const slot = new Date(now);
-  slot.setHours(hour, minute, 0, 0);
-  return now.getTime() > slot.getTime();
+  return new Date(`${date}T${time}:00+09:00`).getTime() <= now.getTime();
 }
 
 export function validateApplicant(applicant: StringingApplicantDraft): ApplicantValidationErrors {
