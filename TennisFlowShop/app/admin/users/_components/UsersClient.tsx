@@ -773,18 +773,19 @@ export default function UsersClient() {
       <FiltersSection>
         {/* 검색/필터 바 */}
         <div className={cn(adminSurface.filterCard, "mb-4")}>
-          <div className="flex gap-4 flex-row items-center justify-between">
-            <div className="relative w-full max-w-md">
+          <div className="space-y-2">
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="이름/이메일/전화 검색"
                 value={searchQuery}
                 onChange={(e) => patchState({ searchQuery: e.target.value })}
-                className="pl-9"
+                className="h-9 pl-9"
+                aria-label="회원 검색"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
               {/* 상태 */}
               <Select
                 value={statusFilter}
@@ -793,7 +794,10 @@ export default function UsersClient() {
                     patchState({ statusFilter: v });
                 }}
               >
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="회원 상태 필터"
+                >
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4" />
                     <SelectValue placeholder="상태" />
@@ -815,11 +819,14 @@ export default function UsersClient() {
                     patchState({ roleFilter: v });
                 }}
               >
-                <SelectTrigger className="w-[110px]">
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="회원 역할 필터"
+                >
                   <SelectValue placeholder="역할" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="all">역할 전체</SelectItem>
                   <SelectItem value="user">일반</SelectItem>
                   <SelectItem value="admin">관리자</SelectItem>
                   <SelectItem value="superadmin">최고 관리자</SelectItem>
@@ -835,7 +842,10 @@ export default function UsersClient() {
                   });
                 }}
               >
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="회원 가입 유형 필터"
+                >
                   <SelectValue placeholder="가입유형" />
                 </SelectTrigger>
                 <SelectContent>
@@ -855,7 +865,10 @@ export default function UsersClient() {
                   });
                 }}
               >
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="회원 로그인 이력 필터"
+                >
                   <SelectValue placeholder="로그인" />
                 </SelectTrigger>
                 <SelectContent>
@@ -879,7 +892,10 @@ export default function UsersClient() {
                     patchState({ sort: v });
                 }}
               >
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger
+                  className="h-9 w-full min-w-0 text-ui-label"
+                  aria-label="회원 정렬 기준"
+                >
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent>
@@ -895,8 +911,9 @@ export default function UsersClient() {
                 size="sm"
                 onClick={resetUserFilters}
                 disabled={!hasCustomFilters}
+                className="h-9 w-full"
               >
-                초기화
+                필터 초기화
               </Button>
             </div>
           </div>
