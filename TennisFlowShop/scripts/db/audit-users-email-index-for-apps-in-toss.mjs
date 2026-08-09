@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { MongoClient } from "mongodb";
 
 export const INDEX_NAME = "users_email_unique";
+export const LEGACY_INDEX_NAMES = ["email_1", INDEX_NAME];
 export const INDEX_KEY = { email: 1 };
 export const TARGET_PARTIAL_FILTER = { email: { $type: "string" } };
 
@@ -22,22 +23,35 @@ function isNamedEmailIndex(index) {
   return index.name === INDEX_NAME;
 }
 
+function isAllowedLegacyIndexName(index) {
+  return LEGACY_INDEX_NAMES.includes(index.name);
+}
+
 function hasExpectedKey(index) {
   return stableStringify(index.key) === stableStringify(INDEX_KEY);
 }
 
 export function classifyEmailIndex(index) {
-  if (!index || !isNamedEmailIndex(index) || !hasExpectedKey(index) || index.unique !== true) {
+  if (!index || !hasExpectedKey(index) || index.unique !== true) {
     return "unexpected";
   }
-  if (index.sparse === true) return "unexpected";
-  if (index.partialFilterExpression === undefined) return "legacy";
+  if (index.sparse !== undefined && index.sparse !== false) return "unexpected";
+  if (index.partialFilterExpression === undefined) {
+    return isAllowedLegacyIndexName(index) ? "legacy" : "unexpected";
+  }
   if (
+    isNamedEmailIndex(index) &&
     stableStringify(index.partialFilterExpression) === stableStringify(TARGET_PARTIAL_FILTER)
   ) {
     return "target";
   }
   return "unexpected";
+}
+
+export function classifyEmailIndexes(emailIndexes) {
+  if (emailIndexes.length !== 1) return { indexState: "unexpected", emailIndex: undefined };
+  const emailIndex = emailIndexes[0];
+  return { indexState: classifyEmailIndex(emailIndex), emailIndex };
 }
 
 function fingerprint(value) {
@@ -96,9 +110,7 @@ export async function collectUsersEmailAudit(db) {
   const emailIndexes = indexes.filter(
     (index) => isNamedEmailIndex(index) || Object.hasOwn(index.key ?? {}, "email"),
   );
-  const namedIndexes = indexes.filter(isNamedEmailIndex);
-  const namedIndex = namedIndexes[0];
-  const indexState = namedIndexes.length === 1 ? classifyEmailIndex(namedIndex) : "unexpected";
+  const { indexState, emailIndex } = classifyEmailIndexes(emailIndexes);
   const counts = {
     total: count("total"),
     missing: count("missing"),
@@ -119,7 +131,7 @@ export async function collectUsersEmailAudit(db) {
     exactDuplicates: summarizeDuplicates(exactDuplicates),
     lowercaseDuplicates: summarizeDuplicates(lowercaseDuplicates),
     emailIndexes,
-    namedIndex,
+    emailIndex,
     indexState,
     status,
   };
@@ -143,7 +155,7 @@ export function printUsersEmailAudit(audit) {
     "[users email audit] email 관련 indexes",
     audit.emailIndexes.map(safeIndexView),
   );
-  console.log(`[users email audit] ${INDEX_NAME}`, safeIndexView(audit.namedIndex));
+  console.log("[users email audit] 판정 대상 index", safeIndexView(audit.emailIndex));
   console.log(`[users email audit] RESULT=${audit.status}`);
 }
 
