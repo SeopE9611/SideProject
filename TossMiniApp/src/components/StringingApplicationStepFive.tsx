@@ -57,7 +57,7 @@ function StringingApplicationStepFive({ onBack }: StringingApplicationStepFivePr
         <div className="mb-4">
           <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">STEP 05</p>
           <h1 id="login-confirm-title" className="m-0 text-[22px] leading-[1.35] font-extrabold tracking-[-0.02em]">
-            Toss 로그인 및 결제 준비 확인
+            토스 로그인 및 결제 준비 확인
           </h1>
         </div>
 

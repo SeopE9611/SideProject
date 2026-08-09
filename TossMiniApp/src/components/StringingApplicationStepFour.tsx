@@ -260,7 +260,7 @@ function StringingApplicationStepFour({
               </strong>
 
               <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                사업자 등록 후 토스 로그인과 Toss Pay를 연결하면 마지막 결제 단계로 이어집니다.
+                토스 로그인 확인 후 Toss Pay를 연결하면 실제 결제 단계로 이어집니다.
               </p>
             </aside>
           </div>
