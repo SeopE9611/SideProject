@@ -2,15 +2,69 @@ import { Top } from "@toss/tds-mobile";
 import { useEffect, useState } from "react";
 
 import { AppsAuthApiError } from "../api/auth";
+import { AppsPaymentApiError, getAppsPaymentIntent, prepareAppsPayment } from "../api/payments";
 import { AppsLoginBridgeError, useAppsInTossAuth } from "../auth/AppsInTossAuthContext";
+import type {
+  StringingApplicantDraft,
+  StringingCollectionMethod,
+  StringingShippingDraft,
+  StringingWorkDraft,
+} from "../types/stringing";
 
 type StringingApplicationStepFiveProps = {
+  productId: string;
+  selectedColor: string;
+  selectedGauge: string;
+  applicant: StringingApplicantDraft;
+  collectionMethod: StringingCollectionMethod;
+  shipping: StringingShippingDraft;
+  work: StringingWorkDraft;
+  paymentAttemptId: string | null;
+  onPaymentAttemptIdChange: (attemptId: string | null) => void;
   onBack: () => void;
 };
 
-function StringingApplicationStepFive({ onBack }: StringingApplicationStepFiveProps) {
+function getPaymentErrorMessage(error: AppsPaymentApiError): string {
+  switch (error.code) {
+    case "AUTH_REQUIRED":
+      return "로그인 정보가 만료됐어요. 다시 로그인해주세요.";
+    case "PAYMENT_INTENT_EXPIRED":
+      return "결제 준비 시간이 만료됐어요. 다시 확인해주세요.";
+    case "ATTEMPT_PAYLOAD_MISMATCH":
+      return "주문 정보가 변경됐어요. 다시 결제 준비를 확인해주세요.";
+    case "ATTEMPT_CONFLICT":
+      return "결제 준비 정보를 다시 확인해주세요.";
+    case "VISIT_SLOT_UNAVAILABLE":
+      return "선택한 방문 시간이 더 이상 예약 가능하지 않아요. 이전 단계에서 시간을 다시 선택해주세요.";
+    case "VARIANT_SOLD_OUT":
+    case "VARIANT_INSUFFICIENT_STOCK":
+      return "선택한 상품 옵션의 재고를 다시 확인해주세요.";
+    case "PRODUCT_NOT_AVAILABLE":
+    case "VARIANT_NOT_FOUND":
+      return "선택한 상품 옵션을 다시 확인해주세요.";
+    case "PAYMENT_CONFIGURATION_MISSING":
+      return "결제 준비 서버 설정을 확인하지 못했습니다.";
+    default:
+      return "결제 준비 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.";
+  }
+}
+
+function StringingApplicationStepFive({
+  productId,
+  selectedColor,
+  selectedGauge,
+  applicant,
+  collectionMethod,
+  shipping,
+  work,
+  paymentAttemptId,
+  onPaymentAttemptIdChange,
+  onBack,
+}: StringingApplicationStepFiveProps) {
   const auth = useAppsInTossAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isPreparingPayment, setIsPreparingPayment] = useState(false);
+  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const sessionExpiresAt = auth.status === "authenticated" ? auth.expiresAt : null;
 
@@ -44,6 +98,72 @@ function StringingApplicationStepFive({ onBack }: StringingApplicationStepFivePr
     }
   };
 
+  const handlePreparePayment = async () => {
+    if (isPreparingPayment || auth.status !== "authenticated") return;
+
+    if (Date.parse(auth.expiresAt) <= Date.now()) {
+      auth.clearSession();
+      setErrorMessage("로그인 정보가 만료됐어요. 다시 로그인해주세요.");
+      return;
+    }
+
+    const attemptId = paymentAttemptId ?? crypto.randomUUID();
+    if (!paymentAttemptId) {
+      onPaymentAttemptIdChange(attemptId);
+    }
+
+    setIsPreparingPayment(true);
+    setIsPaymentConfirmed(false);
+    setErrorMessage("");
+
+    try {
+      const prepared = await prepareAppsPayment({
+        sessionToken: auth.sessionToken,
+        attemptId,
+        productId,
+        selectedColor,
+        selectedGauge,
+        applicant,
+        collectionMethod,
+        shipping,
+        work,
+      });
+
+      if (prepared.attemptId !== attemptId) {
+        throw new AppsPaymentApiError("결제 준비 식별자를 확인하지 못했습니다.", 0);
+      }
+
+      const intent = await getAppsPaymentIntent(auth.sessionToken, attemptId);
+      if (intent.attemptId !== attemptId || intent.attemptId !== prepared.attemptId) {
+        throw new AppsPaymentApiError("결제 준비 식별자를 확인하지 못했습니다.", 0);
+      }
+
+      if (intent.state !== "creating" || intent.expired || intent.paymentReady) {
+        throw new AppsPaymentApiError("결제 준비 상태를 확인하지 못했습니다.", 0);
+      }
+
+      setIsPaymentConfirmed(true);
+    } catch (error) {
+      if (error instanceof AppsPaymentApiError) {
+        if (error.status === 401 || error.code === "AUTH_REQUIRED") {
+          auth.clearSession();
+        }
+        if (
+          error.code === "PAYMENT_INTENT_EXPIRED" ||
+          error.code === "ATTEMPT_PAYLOAD_MISMATCH" ||
+          error.code === "ATTEMPT_CONFLICT"
+        ) {
+          onPaymentAttemptIdChange(null);
+        }
+        setErrorMessage(getPaymentErrorMessage(error));
+      } else {
+        setErrorMessage("결제 준비 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
+      setIsPreparingPayment(false);
+    }
+  };
+
   return (
     <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
       <section className="pt-[calc(16px+env(safe-area-inset-top))]">
@@ -62,14 +182,29 @@ function StringingApplicationStepFive({ onBack }: StringingApplicationStepFivePr
         </div>
 
         {auth.status === "authenticated" ? (
-          <div className="rounded-[20px] bg-[#f4f9e8] p-5" role="status">
-            <strong className="block text-base font-extrabold text-[#344700]">로그인이 완료됐어요.</strong>
-            <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#59636e]">
-              {auth.user.name}님으로 로그인했습니다.
-            </p>
-            <p className="mt-2 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-              결제 연결은 다음 구현 단계에서 진행됩니다. 현재는 실제 주문이나 결제를 생성하지 않아요.
-            </p>
+          <div>
+            <div className="rounded-[20px] bg-[#f4f9e8] p-5" role="status">
+              <strong className="block text-base font-extrabold text-[#344700]">
+                {isPaymentConfirmed ? "결제 준비 정보를 확인했어요." : "로그인이 완료됐어요."}
+              </strong>
+              <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#59636e]">
+                {isPaymentConfirmed
+                  ? "상품 옵션, 주문 금액, 신청 정보와 예약 가능 여부를 서버에서 다시 확인했습니다."
+                  : `${auth.user.name}님으로 로그인했습니다.`}
+              </p>
+              <p className="mt-2 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
+                현재는 결제 연동 전 단계로 실제 주문이나 결제는 발생하지 않습니다. 결제 연결은 다음 구현 단계에서 진행됩니다.
+              </p>
+            </div>
+            <button
+              className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] px-4 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]"
+              type="button"
+              disabled={isPreparingPayment}
+              onClick={() => void handlePreparePayment()}
+            >
+              {isPreparingPayment ? "결제 준비 확인 중..." : "결제 준비 확인하기"}
+            </button>
+            {errorMessage && <p className="mt-3 mb-0 text-sm leading-[1.55] text-[#d92d20]" role="alert">{errorMessage}</p>}
           </div>
         ) : (
           <div className="rounded-[20px] border border-[#e5e8eb] p-5">

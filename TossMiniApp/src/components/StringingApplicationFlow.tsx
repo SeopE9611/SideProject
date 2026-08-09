@@ -63,6 +63,12 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
 
   const [work, setWork] = useState<StringingWorkDraft>(EMPTY_WORK);
 
+  const [paymentAttemptId, setPaymentAttemptId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPaymentAttemptId(null);
+  }, [productId, selectedColor, selectedGauge]);
+
   useEffect(() => {
     const initialStep = getApplyStepFromLocation();
 
@@ -144,8 +150,41 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
     window.history.back();
   }, []);
 
+  const handleApplicantChange = useCallback((nextApplicant: StringingApplicantDraft) => {
+    setApplicant(nextApplicant);
+    setPaymentAttemptId(null);
+  }, []);
+
+  const handleCollectionMethodChange = useCallback((nextMethod: StringingCollectionMethod) => {
+    setCollectionMethod(nextMethod);
+    setPaymentAttemptId(null);
+  }, []);
+
+  const handleShippingChange = useCallback((nextShipping: StringingShippingDraft) => {
+    setShipping(nextShipping);
+    setPaymentAttemptId(null);
+  }, []);
+
+  const handleWorkChange = useCallback((nextWork: StringingWorkDraft) => {
+    setWork(nextWork);
+    setPaymentAttemptId(null);
+  }, []);
+
   if (currentStep === 5) {
-    return <StringingApplicationStepFive onBack={handleBack} />;
+    return (
+      <StringingApplicationStepFive
+        productId={productId}
+        selectedColor={selectedColor}
+        selectedGauge={selectedGauge}
+        applicant={applicant}
+        collectionMethod={collectionMethod}
+        shipping={shipping}
+        work={work}
+        paymentAttemptId={paymentAttemptId}
+        onPaymentAttemptIdChange={setPaymentAttemptId}
+        onBack={handleBack}
+      />
+    );
   }
 
   if (currentStep === 4) {
@@ -169,7 +208,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
       <StringingApplicationStepThree
         collectionMethod={collectionMethod}
         work={work}
-        onWorkChange={setWork}
+        onWorkChange={handleWorkChange}
         onBack={handleBack}
         onContinue={() => pushStep(4)}
       />
@@ -180,9 +219,9 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
     return (
       <StringingApplicationStepTwo
         collectionMethod={collectionMethod}
-        onCollectionMethodChange={setCollectionMethod}
+        onCollectionMethodChange={handleCollectionMethodChange}
         shipping={shipping}
-        onShippingChange={setShipping}
+        onShippingChange={handleShippingChange}
         onBack={handleBack}
         onContinue={() => pushStep(3)}
       />
@@ -195,7 +234,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
       selectedColor={selectedColor}
       selectedGauge={selectedGauge}
       applicant={applicant}
-      onApplicantChange={setApplicant}
+      onApplicantChange={handleApplicantChange}
       onContinue={() => pushStep(2)}
     />
   );
