@@ -54,6 +54,7 @@ function actorDisplay(doc: UnknownRecord) {
     (diff.actorRole as string | undefined) ??
     (doc.actorRole as string | undefined) ??
     null;
+  const roleDisplay = role === "admin" ? "관리자" : role;
   const actorId =
     normalizeObjectIdText(metadataActor.id) ??
     normalizeObjectIdText(doc.actorId) ??
@@ -62,13 +63,13 @@ function actorDisplay(doc: UnknownRecord) {
   const principal = name ? (email ? `${name} <${email}>` : name) : email;
   if (principal)
     return {
-      actor: role ? `${principal} · ${role}` : principal,
+      actor: roleDisplay ? `${principal} · ${roleDisplay}` : principal,
       actorTitle: undefined,
       actorId: actorId ?? null,
     };
   if (actorId)
     return {
-      actor: `actorId: ${shortId(actorId)}`,
+      actor: `실행자 ID: ${shortId(actorId)}`,
       actorTitle: actorId,
       actorId,
     };
@@ -93,27 +94,30 @@ function getDiffSummary(doc: UnknownRecord): string[] {
   const changedKeys = Array.isArray(diff.changedKeys)
     ? diff.changedKeys.filter((v) => typeof v === "string")
     : [];
-  if (changedKeys.length) summary.push(`changedKeys: ${changedKeys.slice(0, 6).join(", ")}`);
+  if (changedKeys.length) summary.push(`변경 항목: ${changedKeys.slice(0, 6).join(", ")}`);
 
   const before = asRecord(diff.before);
   const after = asRecord(diff.after);
   const statusKeys = ["status", "paymentStatus", "cancelStatus"] as const;
+  const statusLabels = { status: "상태", paymentStatus: "결제 상태", cancelStatus: "취소 상태" };
+  const statusValueLabels: Record<string, string> = { available: "판매 가능", sold: "판매 완료" };
   for (const key of statusKeys) {
     const b = before[key];
     const a = after[key];
     if (typeof b === "string" && typeof a === "string" && b !== a) {
-      summary.push(`${key}: ${b} → ${a}`);
+      summary.push(`${statusLabels[key]}: ${statusValueLabels[b] ?? b} → ${statusValueLabels[a] ?? a}`);
     }
   }
 
   const metadata = asRecord(diff.metadata);
+  const metadataLabels = { reason: "사유", action: "작업", result: "결과" };
   for (const key of ["reason", "action", "result"] as const) {
     const value = metadata[key];
-    if (typeof value === "string" && value.trim()) summary.push(`${key}: ${value}`);
+    if (typeof value === "string" && value.trim()) summary.push(`${metadataLabels[key]}: ${value}`);
   }
 
   if (typeof diff.targetScope === "string" && diff.targetScope.trim())
-    summary.push(`targetScope: ${diff.targetScope}`);
+    summary.push(`대상 범위: ${diff.targetScope}`);
 
   return summary.slice(0, 5);
 }
