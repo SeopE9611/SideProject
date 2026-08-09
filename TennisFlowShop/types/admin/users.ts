@@ -1,7 +1,7 @@
 export type UserRoleFilter = "all" | "user" | "admin" | "superadmin";
 export type UserStatusFilter = "all" | "active" | "deleted" | "suspended";
 export type UserSortFilter = "created_desc" | "created_asc" | "name_asc" | "name_desc";
-export type UserSignupFilter = "all" | "local" | "kakao" | "naver";
+export type UserSignupFilter = "all" | "local" | "kakao" | "naver" | "apps_in_toss";
 export type UserLoginFilter = "all" | "nologin" | "recent30" | "recent90";
 
 export interface AdminUsersListRequestDto {
@@ -31,6 +31,7 @@ export interface AdminUserListItemDto {
   updatedAt: string | null;
   lastLoginAt: string | null;
   socialProviders: Array<"kakao" | "naver">;
+  appsInTossLinked: boolean;
 }
 
 export interface AdminUsersCountersDto {
@@ -61,6 +62,7 @@ export interface AdminUserDetailDto {
   createdAt?: string;
   updatedAt?: string;
   lastLoginAt?: string;
+  appsInTossLinked: boolean;
 }
 
 export interface AdminUserAuditLogDto {

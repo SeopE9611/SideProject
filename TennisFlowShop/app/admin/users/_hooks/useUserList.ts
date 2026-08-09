@@ -10,7 +10,7 @@ export type UserListFilters = {
   roleFilter: "all" | "user" | "admin" | "superadmin";
   statusFilter: "all" | "active" | "deleted" | "suspended";
   loginFilter: "all" | "nologin" | "recent30" | "recent90";
-  signupFilter: "all" | "local" | "kakao" | "naver";
+  signupFilter: "all" | "local" | "kakao" | "naver" | "apps_in_toss";
   sort: "created_desc" | "created_asc" | "name_asc" | "name_desc";
 };
 
@@ -28,6 +28,7 @@ export type UserListItem = {
   lastLoginAt?: string;
   isSuspended?: boolean;
   socialProviders?: Array<"kakao" | "naver">;
+  appsInTossLinked: boolean;
 };
 
 type UserListResponse = {

@@ -142,6 +142,7 @@ interface UserDetail {
   createdAt?: string;
   updatedAt?: string;
   lastLoginAt?: string;
+  appsInTossLinked: boolean;
 }
 
 type AuditLog = {
@@ -723,6 +724,13 @@ export default function UserDetailClient({ id }: { id: string }) {
                       <AlertDialogTitle>탈퇴(삭제) 처리</AlertDialogTitle>
                       <AlertDialogDescription>
                         이 회원을 삭제(탈퇴) 처리합니다. 진행 후에는 복구할 수 없습니다.
+                        {user.appsInTossLinked && (
+                          <>
+                            <br />
+                            이 회원은 Apps in Toss 로그인과 연결되어 있습니다. 삭제하면 해당
+                            사용자의 도깨비테니스 미니앱 로그인이 차단됩니다.
+                          </>
+                        )}
                         <br />
                         아래 입력창에 <code>{deleteConfirmPhrase}</code> 를 정확히 입력해 주세요.
                       </AlertDialogDescription>
