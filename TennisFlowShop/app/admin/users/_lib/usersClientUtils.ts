@@ -40,7 +40,7 @@ export const STATUS = {
 
 export type UserStatusKey = keyof typeof STATUS;
 
-export const badgeSm = "px-2 py-0.5 text-[11px] rounded-md font-medium border";
+export const badgeSm = "px-2 py-0.5 rounded-md font-medium border";
 
 export const buildPageItems = (page: number, totalPages: number) => {
   const arr: (number | "...")[] = [];

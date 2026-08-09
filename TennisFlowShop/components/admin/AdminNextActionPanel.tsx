@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";

@@ -7,7 +7,7 @@ import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -890,7 +890,7 @@ export default function SettlementsClient() {
                             {statusMap[String(row.yyyymm)] === "checking" && (
                               <Badge
                                 variant={badgeToneVariant(settlementStatusToneMap.checking)}
-                                className="gap-1.5 px-3 py-1.5 text-xs font-medium"
+                                className="gap-1.5 px-3 py-1.5 font-medium"
                               >
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                 검증 중
@@ -899,7 +899,7 @@ export default function SettlementsClient() {
                             {statusMap[String(row.yyyymm)] === "ok" && (
                               <Badge
                                 variant={badgeToneVariant(settlementStatusToneMap.ok)}
-                                className="gap-1.5 px-3 py-1.5 text-xs font-medium"
+                                className="gap-1.5 px-3 py-1.5 font-medium"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                 최신
@@ -908,7 +908,7 @@ export default function SettlementsClient() {
                             {statusMap[String(row.yyyymm)] === "stale" && (
                               <Badge
                                 variant={badgeToneVariant(settlementStatusToneMap.stale)}
-                                className="gap-1.5 px-3 py-1.5 text-xs font-medium"
+                                className="gap-1.5 px-3 py-1.5 font-medium"
                               >
                                 <AlertTriangle className="w-3.5 h-3.5" />
                                 갱신 필요

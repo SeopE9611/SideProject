@@ -37,7 +37,7 @@ export type PackageListItem = AdminPackageListItemDto;
 export type PackageMetrics = AdminPackageMetricsDto;
 export type PackagesResponse = AdminPackageListResponseDto;
 
-export const badgeSizeCls = "px-2.5 py-0.5 text-xs leading-[1.05] rounded-md";
+export const badgeSizeCls = "px-2.5 py-0.5 leading-[1.05] rounded-md";
 export const packageTypeColors: Record<PackageType, string> = {
   "10회권": "bg-muted text-foreground border-border",
   "30회권": "bg-primary/10 text-primary border-border dark:bg-primary/20",

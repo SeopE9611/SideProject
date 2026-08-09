@@ -1,6 +1,6 @@
 "use client";
 
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 

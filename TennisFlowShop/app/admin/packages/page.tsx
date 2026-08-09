@@ -29,7 +29,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {

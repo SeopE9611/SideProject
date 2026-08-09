@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Slider } from "@/components/ui/slider";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";

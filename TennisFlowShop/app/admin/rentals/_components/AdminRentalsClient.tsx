@@ -2,7 +2,8 @@
 
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -36,7 +37,6 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
-  ChevronDown,
   Copy,
   Eye,
   MoreHorizontal,
@@ -928,45 +928,34 @@ export default function AdminRentalsClient() {
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[220px] text-left")}>대여/고객</TableHead>
-                <TableHead
-                  onClick={() => handleSort("date")}
+                <AdminSortableTableHead
+                  label="라켓/기간"
+                  active={sortBy === "date"}
+                  direction={sortDirection}
+                  onSort={() => handleSort("date")}
                   className={cn(
                     thClasses,
-                    "w-[250px] cursor-pointer select-none border-l border-border/20 text-left transition-colors hover:text-primary",
-                    sortBy === "date" && "text-primary",
+                    "w-[250px] border-l border-border/20 text-left",
                   )}
-                >
-                  라켓/기간
-                  <ChevronDown
-                    className={cn(
-                      "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "date" && sortDirection === "desc" && "rotate-180",
-                    )}
-                  />
-                </TableHead>
+                />
                 <TableHead
                   className={cn(thClasses, "w-[220px] border-l border-border/20 text-left")}
                 >
                   상태/다음 작업
                 </TableHead>
-                <TableHead
-                  onClick={() => handleSort("total")}
+                <AdminSortableTableHead
+                  label="결제/보증금"
+                  active={sortBy === "total"}
+                  direction={sortDirection}
+                  align="right"
+                  onSort={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[220px] cursor-pointer select-none border-l border-border/20 text-right",
-                    sortBy === "total" && "text-primary",
+                    "w-[220px] border-l border-border/20 text-right",
                   )}
-                >
-                  결제/보증금
-                  <ChevronDown
-                    className={cn(
-                      "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "total" && sortDirection === "desc" && "rotate-180",
-                    )}
-                  />
-                </TableHead>
+                />
                 <TableHead
-                  className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}
+                  className={cn(adminDataTable.stickyActionHead, "w-[130px]")}
                 >
                   액션
                 </TableHead>
@@ -1025,7 +1014,7 @@ export default function AdminRentalsClient() {
                   return (
                     <TableRow
                       key={rid || `row-${idx}`}
-                      className="align-top transition-colors hover:bg-muted/40"
+                      className="group align-top transition-colors hover:bg-muted/40"
                     >
                       <TableCell className={cn(tdClasses, "py-2 pl-5")}>
                         <TooltipProvider delayDuration={10}>
@@ -1316,7 +1305,12 @@ export default function AdminRentalsClient() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className={cn(tdClasses, "border-l border-border/40 py-2")}>
+                      <TableCell
+                        className={cn(
+                          adminDataTable.stickyActionCell,
+                          "w-[130px] py-2 group-hover:bg-muted/40",
+                        )}
+                      >
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             asChild

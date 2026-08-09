@@ -13,7 +13,7 @@ import {
   pointTxTypeLabel,
   safeLocalDateTime,
 } from "@/lib/points.display";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
@@ -305,10 +305,10 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
                           {tx.amount.toLocaleString()}P
                         </span>
                         <span className="ml-2 inline-flex flex-wrap items-center gap-1">
-                          <Badge variant="secondary" className="h-5 px-2 text-[10px]">
+                          <Badge variant="secondary" className="h-5 px-2">
                             {pointTxTypeLabel(tx.type)}
                           </Badge>
-                          <Badge variant="outline" className="h-5 px-2 text-[10px]">
+                          <Badge variant="outline" className="h-5 px-2">
                             {pointTxStatusLabel(tx.status)}
                           </Badge>
                         </span>

@@ -10,11 +10,12 @@ import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { AdminBadgeRow } from "@/components/admin/AdminBadgeRow";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -57,7 +58,6 @@ import type { ApiResponse, OrderWithType } from "@/lib/types/order";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
-  ChevronDown,
   Copy,
   CreditCard,
   Eye,
@@ -973,24 +973,19 @@ export default function OrdersClient() {
                 >
                   상태/다음 작업
                 </TableHead>
-                <TableHead
-                  onClick={() => handleSort("total")}
+                <AdminSortableTableHead
+                  label="배송/결제"
+                  active={sortBy === "total"}
+                  direction={sortDirection}
+                  align="right"
+                  onSort={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[265px] cursor-pointer select-none border-l border-border/20 text-right",
-                    sortBy === "total" && "text-primary",
+                    "w-[265px] border-l border-border/20 text-right",
                   )}
-                >
-                  배송/결제
-                  <ChevronDown
-                    className={cn(
-                      "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "total" && sortDirection === "desc" && "rotate-180",
-                    )}
-                  />
-                </TableHead>
+                />
                 <TableHead
-                  className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}
+                  className={cn(adminDataTable.stickyActionHead, "w-[130px]")}
                 >
                   액션
                 </TableHead>
@@ -1132,6 +1127,7 @@ export default function OrdersClient() {
                       <TableRow
                         key={order.id}
                         className={cn(
+                          "group",
                           adminSurface.tableRow,
                           "align-top transition-colors hover:bg-muted/35",
                         )}
@@ -1568,7 +1564,12 @@ export default function OrdersClient() {
                           </div>
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
-                        <TableCell className={cn(tdClasses, "border-l border-border/40 py-2")}>
+                        <TableCell
+                          className={cn(
+                            adminDataTable.stickyActionCell,
+                            "w-[130px] py-2 group-hover:bg-muted/25",
+                          )}
+                        >
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               asChild

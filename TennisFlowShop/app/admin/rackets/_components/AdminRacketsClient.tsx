@@ -6,7 +6,7 @@ import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
-import { SemanticBadge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as SemanticBadge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -670,14 +670,14 @@ export default function AdminRacketsClient() {
                       <TableHead className={adminDataTable.headCenter}>상태</TableHead>
                       <TableHead className={adminDataTable.headCenter}>대여</TableHead>
                       <TableHead className={adminDataTable.headCenter}>재고</TableHead>
-                      <TableHead className={adminDataTable.headRight}>관리</TableHead>
+                      <TableHead className={adminDataTable.stickyActionHead}>관리</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredItems.map((item) => (
                       <TableRow
                         key={item.id}
-                        className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors"
+                        className="group border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors"
                       >
                         <TableCell className={adminDataTable.cellLeft}>
                           <div className="flex min-w-0 items-center gap-3">
@@ -741,7 +741,12 @@ export default function AdminRacketsClient() {
                           </div>
                         </TableCell>
                         <RacketStockCells item={item} />
-                        <TableCell className={adminDataTable.actionCell}>
+                        <TableCell
+                          className={cn(
+                            adminDataTable.stickyActionCell,
+                            "group-hover:bg-primary/10 dark:group-hover:bg-primary/20",
+                          )}
+                        >
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button

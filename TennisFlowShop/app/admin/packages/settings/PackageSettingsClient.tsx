@@ -5,7 +5,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -596,15 +596,15 @@ export default function PackageSettingsClient() {
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-foreground">현재 설정 상태</p>
 
-              <Badge variant={isDirty ? "outline" : "success"} className="text-xs">
+              <Badge variant={isDirty ? "outline" : "success"}>
                 {currentSettingsLabel}
               </Badge>
 
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary">
                 활성 {packageSummary.active}개
               </Badge>
 
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary">
                 추천 {packageSummary.popular}개
               </Badge>
             </div>
@@ -1061,7 +1061,7 @@ export default function PackageSettingsClient() {
                           <div className="rounded-xl border border-border/60 bg-card p-4">
                             <div className="mb-3 flex items-center justify-between gap-2">
                               <p className="text-sm font-semibold text-foreground">포함 혜택</p>
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge variant="secondary">
                                 {pkg.features.length}개
                               </Badge>
                             </div>
