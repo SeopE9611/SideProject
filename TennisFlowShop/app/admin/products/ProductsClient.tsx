@@ -26,7 +26,7 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -358,77 +358,64 @@ export default function ProductsClient() {
         icon={PackageSearch}
         scope="범위: 스트링 상품"
         helperText="신규 등록 전 가격·배송비·재고 정보를 확인하고, 판매 중 상품은 품절/옵션 상태를 우선 점검하세요."
+        actions={
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/operations">오늘 처리할 일 보기</Link>
+          </Button>
+        }
       />
 
-      <Card className={adminSurface.card}>
-        <CardContent className="p-5">
-          <div className="mb-3 flex gap-2 flex-row items-center justify-between">
-            <p className="text-sm font-medium leading-relaxed text-foreground">
-              오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.
-            </p>
-            <Link
-              href="/admin/operations"
-              className="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              오늘 처리할 일 보기
-            </Link>
-          </div>
-          <div className="grid gap-2 grid-cols-4">
+      <section aria-label="상품 운영 현황">
+        <Card className={cn(adminSurface.card, "overflow-hidden")}>
+          <CardContent className="grid grid-cols-2 gap-px bg-border/60 p-0 xl:grid-cols-4">
             {[
-              "신규 상품 등록: 상품명·브랜드·규격과 기본 정보를 먼저 확인하세요.",
-              "재고/색상 옵션 확인: 판매 중 상품의 품절 여부와 옵션별 재고를 우선 점검하세요.",
-              "가격·배송비 점검: 판매 가격, 할인 반영, 배송비 설정이 정확한지 확인하세요.",
-              "판매 상태/노출 관리: 비활성·비노출 상품이 의도된 상태인지 주기적으로 검토하세요.",
-            ].map((guide) => (
-              <div key={guide} className="rounded-md border border-border bg-muted/40 px-3 py-2">
-                <p className="text-sm leading-relaxed text-foreground">{guide}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <section className="grid shrink-0 mb-8 gap-6 grid-cols-4">
-        {[
-          {
-            label: "전체 상품",
-            icon: <Package className="h-6 w-6 text-foreground" />,
-            value: totalAll,
-            bgColor: "bg-muted",
-          },
-          {
-            label: "판매 중",
-            icon: <CheckCircle className="h-6 w-6 text-success" />,
-            value: activeAll,
-            bgColor: "bg-success/10 dark:bg-success/15",
-          },
-          {
-            label: "재고 부족",
-            icon: <AlertTriangle className="h-6 w-6 text-warning" />,
-            value: lowStockAll,
-            bgColor: "bg-warning/10 dark:bg-warning/15",
-          },
-          {
-            label: "품절",
-            icon: <XCircle className="h-6 w-6 text-destructive" />,
-            value: outOfStockAll,
-            bgColor: "bg-destructive/10 dark:bg-destructive/15",
-          },
-        ].map((c, i) => (
-          <Card key={i} className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                  <p className="font-bold text-foreground text-3xl">
+              {
+                label: "전체 상품",
+                icon: <Package className="h-4 w-4 text-foreground" />,
+                value: totalAll,
+                bgColor: "bg-muted",
+              },
+              {
+                label: "판매 중",
+                icon: <CheckCircle className="h-4 w-4 text-success" />,
+                value: activeAll,
+                bgColor: "bg-success/10 dark:bg-success/15",
+              },
+              {
+                label: "재고 부족",
+                icon: <AlertTriangle className="h-4 w-4 text-warning" />,
+                value: lowStockAll,
+                bgColor: "bg-warning/10 dark:bg-warning/15",
+              },
+              {
+                label: "품절",
+                icon: <XCircle className="h-4 w-4 text-destructive" />,
+                value: outOfStockAll,
+                bgColor: "bg-destructive/10 dark:bg-destructive/15",
+              },
+            ].map((c) => (
+              <div
+                key={c.label}
+                className="flex min-w-0 items-center justify-between gap-3 bg-card px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className={adminTypography.metaMuted}>{c.label}</p>
+                  <p className={adminTypography.kpiValueCompact}>
                     {hasResolvedData ? c.value : "-"}
                   </p>
                 </div>
-                <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
+                <div
+                  className={cn(
+                    c.bgColor,
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border",
+                  )}
+                >
+                  {c.icon}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            ))}
+          </CardContent>
+        </Card>
       </section>
 
       {/* 빠른 보기 */}
