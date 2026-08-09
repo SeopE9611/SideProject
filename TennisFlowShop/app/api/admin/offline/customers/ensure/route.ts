@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { MongoServerError, ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { normalizePhone } from "@/lib/offline/normalizers";
 import { sanitizeCustomer } from "@/lib/offline/offline.repository";
+
+function isLinkedUserDuplicate(error: unknown) {
+  if (!(error instanceof MongoServerError) || error.code !== 11000) return false;
+  return (
+    error.keyPattern?.linkedUserId === 1 ||
+    Object.prototype.hasOwnProperty.call(error.keyValue ?? {}, "linkedUserId")
+  );
+}
 
 export async function POST(req: Request) {
   const guard = await requireAdmin(req);
@@ -44,19 +52,29 @@ export async function POST(req: Request) {
     }
     if (customer && !customer.linkedUserId) {
       const previousLinkedUserId = customer.linkedUserId ?? null;
-      const updateResult = await guard.db.collection("offline_customers").updateOne(
-        {
-          _id: customer._id,
-          $or: [{ linkedUserId: { $exists: false } }, { linkedUserId: null }],
-        },
-        {
-          $set: {
-            linkedUserId: linkedId,
-            updatedAt: new Date(),
-            updatedBy: guard.admin._id,
+      let updateResult;
+      try {
+        updateResult = await guard.db.collection("offline_customers").updateOne(
+          {
+            _id: customer._id,
+            $or: [{ linkedUserId: { $exists: false } }, { linkedUserId: null }],
           },
-        },
-      );
+          {
+            $set: {
+              linkedUserId: linkedId,
+              updatedAt: new Date(),
+              updatedBy: guard.admin._id,
+            },
+          },
+        );
+      } catch (error) {
+        if (!isLinkedUserDuplicate(error)) throw error;
+        const canonicalCustomer = await guard.db
+          .collection("offline_customers")
+          .findOne({ linkedUserId: linkedId });
+        if (!canonicalCustomer) throw error;
+        return NextResponse.json({ item: sanitizeCustomer(canonicalCustomer as any) });
+      }
       customer = await guard.db.collection("offline_customers").findOne({ _id: customer._id });
       if (!customer)
         return NextResponse.json({ message: "customer not found" }, { status: 404 });
@@ -106,7 +124,17 @@ export async function POST(req: Request) {
       updatedAt: now,
       createdBy: guard.admin._id,
     };
-    const res = await guard.db.collection("offline_customers").insertOne(doc);
+    let res;
+    try {
+      res = await guard.db.collection("offline_customers").insertOne(doc);
+    } catch (error) {
+      if (!isLinkedUserDuplicate(error)) throw error;
+      const canonicalCustomer = await guard.db
+        .collection("offline_customers")
+        .findOne({ linkedUserId: linkedId });
+      if (!canonicalCustomer) throw error;
+      return NextResponse.json({ item: sanitizeCustomer(canonicalCustomer as any) });
+    }
     customer = { ...doc, _id: res.insertedId };
     await appendAdminAudit(
       guard.db,
