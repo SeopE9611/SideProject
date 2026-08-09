@@ -22,8 +22,8 @@ export type AppsCheckoutPayload = {
   work: {
     racketType: NonNullable<StringingApplicationInput["racketType"]>;
     tensionMain: string; tensionCross: string; note: string;
-    preferredDate: NonNullable<StringingApplicationInput["preferredDate"]>;
-    preferredTime: NonNullable<StringingApplicationInput["preferredTime"]>;
+    preferredDate: string;
+    preferredTime: string;
   };
   withStringService: boolean;
 };
