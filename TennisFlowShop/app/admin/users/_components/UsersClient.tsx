@@ -277,7 +277,7 @@ export default function UsersClient() {
 
   useEffect(() => {
     setSelectedUsers([]);
-  }, [searchQuery, roleFilter, statusFilter, loginFilter, signupFilter, sort]);
+  }, [searchQuery, roleFilter, statusFilter, loginFilter, signupFilter, sort, page]);
 
   // 포인트(적립금) 다이얼로그 상태
   const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
