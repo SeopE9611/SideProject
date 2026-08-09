@@ -16,6 +16,10 @@ export type AppsPaymentIntentStatus = {
   expired: boolean;
 };
 
+export type AppsPaymentPrepareResult = AppsPaymentIntentStatus & {
+  payToken: string;
+};
+
 type PrepareAppsPaymentInput = {
   sessionToken: string;
   attemptId: string;
@@ -73,7 +77,16 @@ function parsePaymentIntentStatus(data: unknown): AppsPaymentIntentStatus {
   };
 }
 
-async function requestPayment(path: string, sessionToken: string, init: RequestInit): Promise<AppsPaymentIntentStatus> {
+function parsePaymentPrepareResult(data: unknown): AppsPaymentPrepareResult {
+  const status = parsePaymentIntentStatus(data);
+  if (typeof data !== "object" || data === null || !("payToken" in data) ||
+    typeof data.payToken !== "string" || data.payToken.length === 0 || data.payToken.length > 30 || !data.payToken.trim()) {
+    throw new AppsPaymentApiError("결제 토큰을 확인하지 못했습니다.", 0);
+  }
+  return { ...status, payToken: data.payToken };
+}
+
+async function requestPayment<T>(path: string, sessionToken: string, init: RequestInit, parse: (data: unknown) => T): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     credentials: "omit",
@@ -91,21 +104,21 @@ async function requestPayment(path: string, sessionToken: string, init: RequestI
     throw new AppsPaymentApiError(message, response.status, code);
   }
 
-  return parsePaymentIntentStatus(data);
+  return parse(data);
 }
 
-export function prepareAppsPayment(input: PrepareAppsPaymentInput): Promise<AppsPaymentIntentStatus> {
+export function prepareAppsPayment(input: PrepareAppsPaymentInput): Promise<AppsPaymentPrepareResult> {
   const { sessionToken, ...body } = input;
 
   return requestPayment(PAYMENTS_PATH, sessionToken, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  });
+  }, parsePaymentPrepareResult);
 }
 
 export function getAppsPaymentIntent(sessionToken: string, attemptId: string): Promise<AppsPaymentIntentStatus> {
   return requestPayment(`${PAYMENTS_PATH}/${encodeURIComponent(attemptId)}`, sessionToken, {
     method: "GET",
-  });
+  }, parsePaymentIntentStatus);
 }
