@@ -666,6 +666,16 @@ const INDEX_SPECS = {
     { name: "phoneNormalized_1", keys: { phoneNormalized: 1 }, options: {} },
     { name: "emailLower_1", keys: { emailLower: 1 }, options: {} },
     { name: "linkedUserId_1", keys: { linkedUserId: 1 }, options: {} },
+    {
+      name: "offline_customers_linkedUserId_unique",
+      keys: { linkedUserId: 1 },
+      options: {
+        unique: true,
+        partialFilterExpression: {
+          linkedUserId: { $type: "objectId" },
+        },
+      },
+    },
     { name: "createdAt_-1", keys: { createdAt: -1 }, options: {} },
   ],
   offline_service_records: [
