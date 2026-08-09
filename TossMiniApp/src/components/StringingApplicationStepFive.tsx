@@ -205,7 +205,7 @@ function StringingApplicationStepFive({
   };
 
   const handleAuthorizePayment = async () => {
-    if (isAuthorizationLocked.current || isPreparingPayment || isAuthorizingPayment || !isPaymentConfirmed || !payToken || !paymentAttemptId) return;
+    if (isPaymentAuthorized || isAuthorizationLocked.current || isPreparingPayment || isAuthorizingPayment || !isPaymentConfirmed || !payToken || !paymentAttemptId) return;
 
     if (auth.status !== "authenticated" || Date.parse(auth.expiresAt) <= Date.now()) {
       auth.clearSession();
@@ -307,10 +307,10 @@ function StringingApplicationStepFive({
               <button
                 className="mt-3 min-h-[52px] w-full rounded-2xl bg-[#191f28] px-4 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]"
                 type="button"
-                disabled={isPreparingPayment || isAuthorizingPayment}
+                disabled={isPaymentAuthorized || isPreparingPayment || isAuthorizingPayment}
                 onClick={() => void handleAuthorizePayment()}
               >
-                {isAuthorizingPayment ? "결제 인증 중..." : "토스페이 결제 인증하기"}
+                {isPaymentAuthorized ? "결제 인증 완료" : isAuthorizingPayment ? "결제 인증 중..." : "토스페이 결제 인증하기"}
               </button>
             )}
             {errorMessage && <p className="mt-3 mb-0 text-sm leading-[1.55] text-[#d92d20]" role="alert">{errorMessage}</p>}
