@@ -3,7 +3,10 @@ import test from "node:test";
 
 import {
   AppsPaymentPrepareRequestSchema,
+  canonicalizeAppsPaymentPrepareRequest,
   createSafePaymentIntentResponse,
+  isAppsPaymentIntentExpired,
+  isPastVisitSlot,
   isSameAppsPaymentPayload,
 } from "../lib/apps-in-toss/server/payment-prepare-contract";
 
@@ -36,13 +39,57 @@ test("self_ship 주소를 검증하고 visit 주소는 요구하지 않는다", 
   assert.equal(AppsPaymentPrepareRequestSchema.safeParse({ ...visit, work: { ...visit.work, preferredTime: "" } }).success, false);
 });
 
+test("visit 주소는 비우고 self_ship 주소는 유지한다", () => {
+  const visit = AppsPaymentPrepareRequestSchema.parse({
+    ...validRequest,
+    collectionMethod: "visit",
+    shipping: { postalCode: "12345", address: "테스트 주소", addressDetail: "101호" },
+    work: { ...validRequest.work, preferredDate: "2026-08-10", preferredTime: "10:00" },
+  });
+  assert.deepEqual(canonicalizeAppsPaymentPrepareRequest(visit).shipping, { postalCode: "", address: "", addressDetail: "" });
+  const selfShip = AppsPaymentPrepareRequestSchema.parse(validRequest);
+  assert.deepEqual(canonicalizeAppsPaymentPrepareRequest(selfShip).shipping, selfShip.shipping);
+});
+
+test("visit payload 비교에서 잔존 주소를 결제 의미에서 제외한다", () => {
+  const first = canonicalizeAppsPaymentPrepareRequest(AppsPaymentPrepareRequestSchema.parse({
+    ...validRequest,
+    collectionMethod: "visit",
+    work: { ...validRequest.work, preferredDate: "2026-08-10", preferredTime: "10:00" },
+  }));
+  const retried = canonicalizeAppsPaymentPrepareRequest({ ...first, shipping: { postalCode: "54321", address: "다른 테스트 주소", addressDetail: "202호" } });
+  const checkout = { items: [{ productId: first.productId, selectedColor: first.selectedColor, selectedGauge: first.selectedGauge }], applicant: first.applicant, collectionMethod: first.collectionMethod, shipping: { postalCode: "12345", address: "잔존 테스트 주소", addressDetail: "101호" }, work: first.work };
+  assert.equal(isSameAppsPaymentPayload(checkout, retried), true);
+});
+
+test("Asia/Seoul 방문 시각이 지났는지 주입한 현재 시각으로 판정한다", () => {
+  const now = new Date("2026-08-09T03:00:00.000Z"); // Asia/Seoul 2026-08-09 12:00
+  assert.equal(isPastVisitSlot("2026-08-10", "10:00", now), false);
+  assert.equal(isPastVisitSlot("2026-08-09", "11:59", now), true);
+  assert.equal(isPastVisitSlot("2026-08-09", "12:01", now), false);
+});
+
 test("safe response에는 결제 토큰, 사용자 키, 개인정보가 없다", () => {
-  const response = createSafePaymentIntentResponse(validRequest.attemptId, "creating");
-  assert.deepEqual(Object.keys(response), ["success", "attemptId", "state", "paymentReady"]);
+  const response = createSafePaymentIntentResponse(validRequest.attemptId, "creating", new Date("2026-08-09T03:30:00.000Z"), new Date("2026-08-09T03:00:00.000Z"));
+  assert.deepEqual(Object.keys(response), ["success", "attemptId", "state", "paymentReady", "expired"]);
   assert.equal(response.paymentReady, false);
+  assert.equal(response.expired, false);
   assert.equal(JSON.stringify(response).includes("payToken"), false);
   assert.equal(JSON.stringify(response).includes("userKey"), false);
   assert.equal(JSON.stringify(response).includes(validRequest.applicant.email), false);
+});
+
+test("intent 만료와 paymentReady를 expiresAt까지 포함해 판정한다", () => {
+  const now = new Date("2026-08-09T03:00:00.000Z");
+  const future = new Date("2026-08-09T03:30:00.000Z");
+  const expired = new Date("2026-08-09T03:00:00.000Z");
+  assert.equal(isAppsPaymentIntentExpired(future, now), false);
+  assert.equal(isAppsPaymentIntentExpired(expired, now), true);
+  assert.equal(createSafePaymentIntentResponse(validRequest.attemptId, "awaiting_authorization", future, now).paymentReady, true);
+  const expiredResponse = createSafePaymentIntentResponse(validRequest.attemptId, "awaiting_authorization", expired, now);
+  assert.equal(expiredResponse.expired, true);
+  assert.equal(expiredResponse.paymentReady, false);
+  assert.equal(createSafePaymentIntentResponse(validRequest.attemptId, "creating", future, now).paymentReady, false);
 });
 
 test("같은 payload와 mismatch를 판정한다", () => {

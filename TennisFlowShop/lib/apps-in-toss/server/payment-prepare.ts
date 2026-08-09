@@ -16,7 +16,10 @@ import {
   type AppsInTossPaymentIntentDocument,
 } from "./payment-intents";
 import {
+  canonicalizeAppsPaymentPrepareRequest,
   createSafePaymentIntentResponse,
+  isAppsPaymentIntentExpired,
+  isPastVisitSlot,
   isSameAppsPaymentPayload,
   type AppsPaymentPrepareRequest,
 } from "./payment-prepare-contract";
@@ -35,7 +38,8 @@ function ownsIntent(intent: AppsInTossPaymentIntentDocument, userId: ObjectId, i
 function recoverExisting(intent: AppsInTossPaymentIntentDocument, request: AppsPaymentPrepareRequest, userId: ObjectId, identityId: ObjectId) {
   if (!ownsIntent(intent, userId, identityId)) throw new AppsPaymentPrepareError(409, "ATTEMPT_CONFLICT", "결제 시도 식별자를 사용할 수 없습니다.");
   if (!isSameAppsPaymentPayload(intent.checkoutPayload, request)) throw new AppsPaymentPrepareError(409, "ATTEMPT_PAYLOAD_MISMATCH", "같은 결제 시도 식별자의 요청 내용이 다릅니다.");
-  return createSafePaymentIntentResponse(intent.attemptId, intent.state);
+  if (isAppsPaymentIntentExpired(intent.expiresAt)) throw new AppsPaymentPrepareError(409, "PAYMENT_INTENT_EXPIRED", "결제 준비 시간이 만료되었습니다. 다시 시도해 주세요.");
+  return createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt);
 }
 
 function isDuplicateKeyError(error: unknown) {
@@ -43,7 +47,8 @@ function isDuplicateKeyError(error: unknown) {
 }
 
 export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentPrepareRequest; userId: ObjectId; identityId: ObjectId }) {
-  const { db, request, userId, identityId } = params;
+  const { db, userId, identityId } = params;
+  const request = canonicalizeAppsPaymentPrepareRequest(params.request);
   const existing = await findAppsInTossPaymentIntentByAttemptId(db, request.attemptId);
   if (existing) return recoverExisting(existing, request, userId, identityId);
 
@@ -59,6 +64,7 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
 
   if (request.collectionMethod === "visit") {
     try {
+      if (isPastVisitSlot(request.work.preferredDate, request.work.preferredTime, new Date())) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
       const slots = await buildSlotSummaryForDate(db, request.work.preferredDate, 1);
       if (slots.closed || !slots.availableTimes.includes(request.work.preferredTime)) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
     } catch (error) {
@@ -101,7 +107,7 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
       expiresAt: new Date(Date.now() + APPS_PAYMENT_PREPARE_TTL_MS),
     });
     // 세무/현금영수증 운영 정책 확정 후 PR 2-B에서 make-payment를 연결한다.
-    return createSafePaymentIntentResponse(intent.attemptId, intent.state);
+    return createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt);
   } catch (error) {
     if (!isDuplicateKeyError(error)) throw error;
     const raced = await findAppsInTossPaymentIntentByAttemptId(db, request.attemptId);
@@ -113,5 +119,5 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
 export async function getOwnedAppsPaymentIntent(db: Db, attemptId: string, userId: ObjectId, identityId: ObjectId) {
   const intent = await findAppsInTossPaymentIntentByAttemptId(db, attemptId);
   if (!intent || !ownsIntent(intent, userId, identityId)) throw new AppsPaymentPrepareError(404, "PAYMENT_INTENT_NOT_FOUND", "결제 시도를 찾을 수 없습니다.");
-  return createSafePaymentIntentResponse(intent.attemptId, intent.state);
+  return createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt);
 }

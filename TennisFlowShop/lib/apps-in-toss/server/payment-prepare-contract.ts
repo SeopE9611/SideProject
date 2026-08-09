@@ -47,7 +47,16 @@ export const AppsPaymentPrepareRequestSchema = z.object({
 export type AppsPaymentPrepareRequest = z.infer<typeof AppsPaymentPrepareRequestSchema>;
 
 export function normalizeAppsPaymentPrepareRequest(value: unknown): AppsPaymentPrepareRequest {
-  return AppsPaymentPrepareRequestSchema.parse(value);
+  return canonicalizeAppsPaymentPrepareRequest(AppsPaymentPrepareRequestSchema.parse(value));
+}
+
+export function canonicalizeAppsPaymentPrepareRequest(request: AppsPaymentPrepareRequest): AppsPaymentPrepareRequest {
+  if (request.collectionMethod !== "visit") return request;
+  return { ...request, shipping: { postalCode: "", address: "", addressDetail: "" } };
+}
+
+export function isPastVisitSlot(preferredDate: string, preferredTime: string, now: Date) {
+  return new Date(`${preferredDate}T${preferredTime}:00+09:00`).getTime() <= now.getTime();
 }
 
 export function isSameAppsPaymentPayload(
@@ -59,10 +68,15 @@ export function isSameAppsPaymentPayload(
     item.selectedColor === request.selectedColor && item.selectedGauge === request.selectedGauge &&
     checkout.collectionMethod === request.collectionMethod &&
     JSON.stringify(checkout.applicant) === JSON.stringify(request.applicant) &&
-    JSON.stringify(checkout.shipping) === JSON.stringify(request.shipping) &&
+    (request.collectionMethod === "visit" || JSON.stringify(checkout.shipping) === JSON.stringify(request.shipping)) &&
     JSON.stringify(checkout.work) === JSON.stringify(request.work);
 }
 
-export function createSafePaymentIntentResponse(attemptId: string, state: string) {
-  return { success: true as const, attemptId, state, paymentReady: state === "awaiting_authorization" };
+export function isAppsPaymentIntentExpired(expiresAt: Date, now: Date = new Date()) {
+  return expiresAt.getTime() <= now.getTime();
+}
+
+export function createSafePaymentIntentResponse(attemptId: string, state: string, expiresAt: Date, now: Date = new Date()) {
+  const expired = isAppsPaymentIntentExpired(expiresAt, now);
+  return { success: true as const, attemptId, state, paymentReady: state === "awaiting_authorization" && !expired, expired };
 }
