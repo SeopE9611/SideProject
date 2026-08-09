@@ -9,6 +9,14 @@ export async function ensureOfflineIndexes(db: Db) {
         { key: { phoneNormalized: 1 } },
         { key: { emailLower: 1 } },
         { key: { linkedUserId: 1 } },
+        {
+          key: { linkedUserId: 1 },
+          name: "offline_customers_linkedUserId_unique",
+          unique: true,
+          partialFilterExpression: {
+            linkedUserId: { $type: "objectId" },
+          },
+        },
         { key: { createdAt: -1 } },
       ]),
     db
