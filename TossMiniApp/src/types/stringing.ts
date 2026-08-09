@@ -20,7 +20,7 @@ export type StringingApplicantDraft = {
   phone: string;
 };
 
-export type StringingCollectionMethod = "self_ship" | "courier_pickup" | "visit";
+export type StringingCollectionMethod = "self_ship" | "visit";
 
 export type StringingShippingDraft = {
   postalCode: string;

@@ -1,6 +1,7 @@
 import { Top } from "@toss/tds-mobile";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { validateShipping } from "../lib/stringing-application-validation";
 import type { StringingCollectionMethod, StringingShippingDraft } from "../types/stringing";
 
 type StringingApplicationStepTwoProps = {
@@ -8,11 +9,10 @@ type StringingApplicationStepTwoProps = {
   onCollectionMethodChange: (method: StringingCollectionMethod) => void;
   shipping: StringingShippingDraft;
   onShippingChange: (shipping: StringingShippingDraft) => void;
+  showValidationErrors?: boolean;
   onBack: () => void;
   onContinue: () => void;
 };
-
-const POSTAL_RE = /^\d{5}$/;
 
 const VISIBLE_COLLECTION_METHODS = [
   {
@@ -32,6 +32,7 @@ function StringingApplicationStepTwo({
   onCollectionMethodChange,
   shipping,
   onShippingChange,
+  showValidationErrors = false,
   onBack,
   onContinue,
 }: StringingApplicationStepTwoProps) {
@@ -43,33 +44,13 @@ function StringingApplicationStepTwo({
 
   const isSelfShip = collectionMethod === "self_ship";
 
-  const errors = useMemo(() => {
-    const next: {
-      postalCode?: string;
-      address?: string;
-      addressDetail?: string;
-    } = {};
+  const errors = useMemo(() => validateShipping(collectionMethod, shipping), [collectionMethod, shipping]);
 
-    if (!isSelfShip) {
-      return next;
-    }
-
-    if (!shipping.postalCode.trim()) {
-      next.postalCode = "우편번호를 입력해주세요.";
-    } else if (!POSTAL_RE.test(shipping.postalCode.trim())) {
-      next.postalCode = "우편번호 형식을 확인해주세요. (5자리)";
-    }
-
-    if (!shipping.address.trim()) {
-      next.address = "주소를 입력해주세요.";
-    }
-
-    if (!shipping.addressDetail.trim()) {
-      next.addressDetail = "상세 주소는 필수입니다.";
-    }
-
-    return next;
-  }, [isSelfShip, shipping]);
+  useEffect(() => {
+    if (!showValidationErrors) return;
+    const field = (["postalCode", "address", "addressDetail"] as const).find((key) => errors[key]);
+    if (field) requestAnimationFrame(() => document.getElementById(`shipping-${field}`)?.focus());
+  }, [errors, showValidationErrors]);
 
   const handleMethodChange = (method: "self_ship" | "visit") => {
     onCollectionMethodChange(method);
@@ -91,6 +72,10 @@ function StringingApplicationStepTwo({
       });
 
       if (Object.keys(errors).length > 0) {
+        const firstInvalidField = (["postalCode", "address", "addressDetail"] as const).find((field) => errors[field]);
+        if (firstInvalidField) {
+          requestAnimationFrame(() => document.getElementById(`shipping-${firstInvalidField}`)?.focus());
+        }
         return;
       }
     }
@@ -189,8 +174,9 @@ function StringingApplicationStepTwo({
                 <span className="mb-2 block text-sm font-bold text-[#333d4b]">우편번호 *</span>
 
                 <input
+                  id="shipping-postalCode"
                   className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                    touched.postalCode && errors.postalCode
+                    (touched.postalCode || showValidationErrors) && errors.postalCode
                       ? "border-[#d92d20]"
                       : "border-[#d1d6db] focus:border-[#688d00]"
                   }`}
@@ -208,7 +194,7 @@ function StringingApplicationStepTwo({
                   }
                 />
 
-                {touched.postalCode && errors.postalCode && (
+                {(touched.postalCode || showValidationErrors) && errors.postalCode && (
                   <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.postalCode}</span>
                 )}
               </label>
@@ -217,8 +203,9 @@ function StringingApplicationStepTwo({
                 <span className="mb-2 block text-sm font-bold text-[#333d4b]">주소 *</span>
 
                 <input
+                  id="shipping-address"
                   className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                    touched.address && errors.address ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
+                    (touched.address || showValidationErrors) && errors.address ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
                   }`}
                   type="text"
                   maxLength={200}
@@ -233,7 +220,7 @@ function StringingApplicationStepTwo({
                   }
                 />
 
-                {touched.address && errors.address && (
+                {(touched.address || showValidationErrors) && errors.address && (
                   <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.address}</span>
                 )}
               </label>
@@ -242,8 +229,9 @@ function StringingApplicationStepTwo({
                 <span className="mb-2 block text-sm font-bold text-[#333d4b]">상세 주소 *</span>
 
                 <input
+                  id="shipping-addressDetail"
                   className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                    touched.addressDetail && errors.addressDetail
+                    (touched.addressDetail || showValidationErrors) && errors.addressDetail
                       ? "border-[#d92d20]"
                       : "border-[#d1d6db] focus:border-[#688d00]"
                   }`}
@@ -261,7 +249,7 @@ function StringingApplicationStepTwo({
                   }
                 />
 
-                {touched.addressDetail && errors.addressDetail && (
+                {(touched.addressDetail || showValidationErrors) && errors.addressDetail && (
                   <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.addressDetail}</span>
                 )}
               </label>
