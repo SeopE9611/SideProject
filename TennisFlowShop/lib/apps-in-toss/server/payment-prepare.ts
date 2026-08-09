@@ -41,6 +41,18 @@ function ownsIntent(intent: AppsInTossPaymentIntentDocument, userId: ObjectId, i
   return intent.userId.equals(userId) && intent.identityId.equals(identityId);
 }
 
+function createCheckoutReadyResponse(intent: AppsInTossPaymentIntentDocument) {
+  if (intent.state !== "awaiting_authorization" || isAppsPaymentIntentExpired(intent.expiresAt)) {
+    throw new AppsPaymentPrepareError(409, "PAYMENT_STATE_UNAVAILABLE", "현재 결제 준비 상태를 사용할 수 없습니다.");
+  }
+  try {
+    const payToken = parseTossPayToken(intent.payToken);
+    return { ...createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt), payToken };
+  } catch {
+    throw new AppsPaymentPrepareError(409, "PAYMENT_STATE_UNAVAILABLE", "현재 결제 준비 상태를 사용할 수 없습니다.");
+  }
+}
+
 function recoverExisting(intent: AppsInTossPaymentIntentDocument, request: AppsPaymentPrepareRequest, userId: ObjectId, identityId: ObjectId) {
   if (!ownsIntent(intent, userId, identityId)) throw new AppsPaymentPrepareError(409, "ATTEMPT_CONFLICT", "결제 시도 식별자를 사용할 수 없습니다.");
   if (!isSameAppsPaymentPayload(intent.checkoutPayload, request)) throw new AppsPaymentPrepareError(409, "ATTEMPT_PAYLOAD_MISMATCH", "같은 결제 시도 식별자의 요청 내용이 다릅니다.");
@@ -48,7 +60,7 @@ function recoverExisting(intent: AppsInTossPaymentIntentDocument, request: AppsP
   if (isAppsPaymentIntentExpired(intent.expiresAt)) throw new AppsPaymentPrepareError(409, "PAYMENT_INTENT_EXPIRED", "결제 준비 시간이 만료되었습니다. 다시 시도해 주세요.");
   if (intent.state === "creating") throw new AppsPaymentPrepareError(409, "PAYMENT_CREATION_IN_PROGRESS", "결제 준비를 처리하고 있습니다. 잠시 후 다시 확인해 주세요.");
   if (intent.state !== "awaiting_authorization") throw new AppsPaymentPrepareError(409, "PAYMENT_STATE_UNAVAILABLE", "현재 결제 준비 상태를 사용할 수 없습니다.");
-  return createSafePaymentIntentResponse(intent.attemptId, "awaiting_authorization", intent.expiresAt);
+  return createCheckoutReadyResponse(intent);
 }
 
 function isDuplicateKeyError(error: unknown) {
@@ -148,14 +160,14 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
   const payToken = parseTossPayToken(makeResult.value.success.payToken);
   try {
     const attached = await attachAppsInTossPayToken(db, intent._id, payToken);
-    if (attached) return createSafePaymentIntentResponse(attached.attemptId, attached.state, attached.expiresAt);
+    if (attached) return createCheckoutReadyResponse(attached);
   } catch {
     // 외부 결제 생성은 반복하지 않고 아래에서 저장 상태만 확인한다.
   }
   try {
     const persisted = await findAppsInTossPaymentIntentByAttemptId(db, intent.attemptId);
     if (persisted?.state === "awaiting_authorization" && persisted.payToken === payToken) {
-      return createSafePaymentIntentResponse(persisted.attemptId, persisted.state, persisted.expiresAt);
+      return createCheckoutReadyResponse(persisted);
     }
   } catch {
     // 외부 결제 생성 결과를 잃지 않도록 재호출 없이 안전한 오류로 종료한다.
