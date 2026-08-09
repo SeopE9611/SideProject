@@ -20,6 +20,7 @@ type StringingApplicationStepFourProps = {
   shipping: StringingShippingDraft;
   work: StringingWorkDraft;
   onBack: () => void;
+  onContinue: () => void;
 };
 
 type QuoteLoadState = "loading" | "success" | "error";
@@ -37,14 +38,13 @@ function StringingApplicationStepFour({
   shipping,
   work,
   onBack,
+  onContinue,
 }: StringingApplicationStepFourProps) {
   const [quote, setQuote] = useState<StringingCheckoutQuote | null>(null);
 
   const [loadState, setLoadState] = useState<QuoteLoadState>("loading");
 
   const [errorMessage, setErrorMessage] = useState("");
-
-  const [isConfirmed, setIsConfirmed] = useState(false);
 
   const loadQuote = useCallback(
     async (signal?: AbortSignal) => {
@@ -281,21 +281,12 @@ function StringingApplicationStepFour({
             className="min-h-[52px] rounded-2xl bg-[#191f28] px-4 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]"
             type="button"
             disabled={loadState !== "success" || !quote}
-            onClick={() => setIsConfirmed(true)}
+            onClick={onContinue}
           >
             주문 정보 확인
           </button>
         </div>
 
-        {isConfirmed && (
-          <div className="mt-3 rounded-2xl bg-[#f4f9e8] p-4" role="status">
-            <strong className="block text-sm font-extrabold text-[#344700]">주문 정보 확인이 완료됐어요.</strong>
-
-            <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#59636e]">
-              5단계 실제 결제는 토스 로그인과 Toss Pay 준비가 완료된 뒤 연결합니다.
-            </p>
-          </div>
-        )}
       </section>
     </main>
   );
