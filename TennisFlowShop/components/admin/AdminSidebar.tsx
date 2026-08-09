@@ -2,7 +2,7 @@
 
 import { adminTypography } from "@/components/admin/admin-typography";
 import { SIDEBAR_SECTIONS, type SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { isAdminNavActive } from "@/lib/admin-nav";

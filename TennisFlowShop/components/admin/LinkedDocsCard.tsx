@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Copy, ExternalLink, Link2 } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { shortenId } from "@/lib/shorten";
 import { showSuccessToast } from "@/lib/toast";

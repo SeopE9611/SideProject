@@ -3,7 +3,7 @@
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -971,7 +971,7 @@ export default function OfflineAdminClient() {
                   >
                     {selected.name}
                   </span>
-                  <Badge variant="secondary" className="shrink-0 whitespace-nowrap text-xs">
+                  <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
                     {selected.source === "online" ? "온라인 회원" : "오프라인 명부"}
                   </Badge>
                 </div>
@@ -1103,7 +1103,7 @@ export default function OfflineAdminClient() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm font-medium text-foreground/80">
                         <span>온라인 회원</span>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary">
                           {onlineItems.length}
                         </Badge>
                       </div>
@@ -1157,7 +1157,7 @@ export default function OfflineAdminClient() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm font-medium text-foreground/80">
                         <span>오프라인 명부</span>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary">
                           {offlineItems.length}
                         </Badge>
                       </div>
@@ -2205,12 +2205,12 @@ export default function OfflineAdminClient() {
                             </span>
                             <div className="flex max-w-[130px] flex-wrap justify-center gap-1">
                               {r.source === "private_payment" && (
-                                <Badge variant="secondary" className="text-[11px]">
+                                <Badge variant="secondary">
                                   개인결제 연결
                                 </Badge>
                               )}
                               {r.privatePaymentSync?.paymentStatus === "결제취소" && (
-                                <Badge variant="destructive" className="text-[11px]">
+                                <Badge variant="destructive">
                                   개인결제 취소됨
                                 </Badge>
                               )}
@@ -2231,7 +2231,7 @@ export default function OfflineAdminClient() {
                               {formatCurrency(r.payment?.amount)}
                             </span>
                             {r.revenueExcluded && (
-                              <Badge variant="outline" className="whitespace-nowrap text-[11px]">
+                              <Badge variant="outline" className="whitespace-nowrap">
                                 오프라인 매출 제외
                               </Badge>
                             )}

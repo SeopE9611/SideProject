@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 
 import { adminTypography } from "@/components/admin/admin-typography";
-import { Badge, BadgeProps } from "@/components/ui/badge";
+import {
+  AdminSemanticBadge as Badge,
+  type AdminSemanticBadgeProps,
+} from "@/components/admin/AdminSemanticBadge";
 import { badgeBase, badgeSizeSm } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +15,7 @@ import { cn } from "@/lib/utils";
  */
 export type BadgeItem = {
   label: string; // 뱃지에 표시할 텍스트
-  variant?: BadgeProps["variant"]; // shadcn Badge variant 기반 톤
+  variant?: AdminSemanticBadgeProps["variant"]; // shadcn Badge variant 기반 톤
   className?: string; // 색상/톤 클래스
   title?: string; // hover 시 의미를 보충(접힌 뱃지 목록에도 같이 사용)
   icon?: ReactNode; // 접근성 보강: 색상 외 아이콘으로 의미 전달

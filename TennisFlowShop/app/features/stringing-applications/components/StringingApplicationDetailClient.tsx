@@ -3463,7 +3463,7 @@ export default function StringingApplicationDetailClient({
                                         timeStyle: "short",
                                       })}
                                     </span>
-                                    <span className="text-ui-micro font-medium text-primary">
+                                    <span className="text-ui-label font-medium text-primary">
                                       {c.count ?? 1}회 사용
                                       {c.reverted && (
                                         <span className="ml-1 text-ui-label text-destructive">

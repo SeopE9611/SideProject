@@ -38,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
@@ -319,7 +319,7 @@ export default function ClassesPage() {
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
                           <span className="text-foreground">{cls.name}</span>
-                          <Badge variant="outline" className="w-fit text-xs mt-1">
+                          <Badge variant="outline" className="mt-1 w-fit">
                             {cls.level}
                           </Badge>
                         </div>

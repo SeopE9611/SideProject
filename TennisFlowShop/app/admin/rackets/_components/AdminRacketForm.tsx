@@ -11,7 +11,7 @@ import {
   StepProgress,
   type Step,
 } from "@/components/admin/product-form";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
@@ -1010,7 +1010,7 @@ export default function AdminRacketForm({
                 <h4 className={cn("mt-0.5", adminTypography.panelTitle)}>입력 요약</h4>
               </div>
 
-              <Badge variant={readyToSubmit ? "success" : "outline"} className="text-xs">
+              <Badge variant={readyToSubmit ? "success" : "outline"}>
                 {readyToSubmit ? "저장 준비" : "작성 중"}
               </Badge>
             </div>
@@ -1026,7 +1026,7 @@ export default function AdminRacketForm({
                 </p>
 
                 <div className="mt-2 flex flex-wrap gap-1">
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline">
                     {racketStatusLabel(form.status)}
                   </Badge>
                   <RacketBadge kind="condition" state={form.condition} size="xs" />

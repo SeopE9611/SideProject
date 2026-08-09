@@ -7,7 +7,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Search, ListFilter, ClipboardList } from "lucide-react";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -193,7 +193,7 @@ export default function AdminAuditClient() {
               className={`${adminSurface.tableCard} p-4 transition-colors hover:bg-muted/25`}
             >
               <div className={`flex flex-wrap items-center gap-2 ${adminTypography.caption}`}>
-                <Badge variant="secondary" className="font-mono text-[11px]">
+                <Badge variant="secondary" className="font-mono">
                   {item.type}
                 </Badge>
                 {NOTE_TYPE_LABEL[item.type] ? (

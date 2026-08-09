@@ -2,9 +2,6 @@
 
 import {
   AlertTriangle,
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
   CheckCircle,
   CheckCircle2,
   MoreHorizontal,
@@ -26,10 +23,11 @@ import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
 import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
 import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -238,46 +236,6 @@ export default function ProductsClient() {
       fallbackErrorMessage: "삭제 중 오류가 발생했습니다.",
     });
     if (result) await mutate();
-  };
-
-  // 접근성(aria-sort) + 클릭 가능한 헤더
-  const renderSortButton = ({
-    field,
-    children,
-    align = "left",
-  }: {
-    field: SortField;
-    children: React.ReactNode;
-    align?: "left" | "center" | "right";
-  }) => {
-    const active = !!sort && sort.field === field;
-    return (
-      <button
-        type="button"
-        onClick={() => handleSort(field)}
-        aria-label={`${children} ${active ? (sort!.dir === "asc" ? "오름차순 정렬됨" : "내림차순 정렬됨") : "정렬 안 됨"}`}
-        className={cn(
-          "group inline-flex min-h-8 w-full items-center gap-1 rounded px-1 select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          align === "right"
-            ? "justify-end text-right"
-            : align === "center"
-              ? "justify-center text-center"
-              : "justify-start text-left",
-        )}
-        title={active ? (sort!.dir === "asc" ? "오름차순" : "내림차순") : "등록순"}
-      >
-        <span className="font-medium">{children}</span>
-        {active ? (
-          sort!.dir === "asc" ? (
-            <ArrowUp className="h-3.5 w-3.5 opacity-80" />
-          ) : (
-            <ArrowDown className="h-3.5 w-3.5 opacity-80" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-80" />
-        )}
-      </button>
-    );
   };
 
   const handleSearchChange = (value: string) => {
@@ -697,49 +655,38 @@ export default function ProductsClient() {
               <Table className="min-w-[920px] table-fixed [&_tr]:border-0">
                 <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
                   <TableRow className={adminDataTable.row}>
-                    <TableHead className={cn(adminDataTable.head, "w-[32%]")}>
-                      {renderSortButton({
-                        field: "name",
-                        children: "스트링명",
-                      })}
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[12%]")}>
-                      {renderSortButton({
-                        field: "brand",
-                        align: "center",
-                        children: "브랜드",
-                      })}
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[10%]")}>
-                      {renderSortButton({
-                        field: "gauge",
-                        align: "center",
-                        children: "게이지",
-                      })}
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[14%]")}>
-                      {renderSortButton({
-                        field: "material",
-                        align: "center",
-                        children: "재질",
-                      })}
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.headRight, "w-[12%]")}>
-                      {renderSortButton({
-                        field: "price",
-                        align: "right",
-                        children: "가격",
-                      })}
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.headRight, "w-[10%]")}>
-                      {renderSortButton({
-                        field: "stock",
-                        align: "right",
-                        children: "재고",
-                      })}
-                    </TableHead>
+                    {(["name", "brand", "gauge", "material", "price", "stock"] as const).map(
+                      (field) => {
+                        const config = {
+                          name: ["스트링명", "left", "w-[32%]"],
+                          brand: ["브랜드", "center", "w-[12%]"],
+                          gauge: ["게이지", "center", "w-[10%]"],
+                          material: ["재질", "center", "w-[14%]"],
+                          price: ["가격", "right", "w-[12%]"],
+                          stock: ["재고", "right", "w-[10%]"],
+                        }[field] as [string, "left" | "center" | "right", string];
+                        return (
+                          <AdminSortableTableHead
+                            key={field}
+                            label={config[0]}
+                            active={sort?.field === field}
+                            direction={sort?.dir ?? "asc"}
+                            align={config[1]}
+                            onSort={() => handleSort(field)}
+                            className={cn(
+                              config[1] === "left"
+                                ? adminDataTable.head
+                                : config[1] === "center"
+                                  ? adminDataTable.headCenter
+                                  : adminDataTable.headRight,
+                              config[2],
+                            )}
+                          />
+                        );
+                      },
+                    )}
                     <TableHead className={cn(adminDataTable.headCenter, "w-[10%]")}>상태</TableHead>
-                    <TableHead className={cn(adminDataTable.headRight, "w-[10%]")}>관리</TableHead>
+                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[10%]")}>관리</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -781,7 +728,7 @@ export default function ProductsClient() {
                       return (
                         <TableRow
                           key={s._id}
-                          className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors"
+                          className="group h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors"
                         >
                           <TableCell className={adminDataTable.cellLeft}>
                             <div className="space-y-1">
@@ -796,7 +743,7 @@ export default function ProductsClient() {
                                 {isHidden && (
                                   <Badge
                                     variant="outline"
-                                    className="shrink-0 whitespace-nowrap rounded-full px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
+                                    className="shrink-0 whitespace-nowrap rounded-full px-1.5 py-0 font-medium text-muted-foreground"
                                   >
                                     숨김
                                   </Badge>
@@ -860,7 +807,7 @@ export default function ProductsClient() {
                             <Badge
                               variant="secondary"
                               className={cn(
-                                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 text-xs font-medium",
+                                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 font-medium",
                                 S.color,
                               )}
                             >
@@ -869,7 +816,12 @@ export default function ProductsClient() {
                             </Badge>
                           </TableCell>
 
-                          <TableCell className={adminDataTable.actionCell}>
+                          <TableCell
+                            className={cn(
+                              adminDataTable.stickyActionCell,
+                              "w-[10%] group-hover:bg-muted dark:group-hover:bg-card",
+                            )}
+                          >
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
