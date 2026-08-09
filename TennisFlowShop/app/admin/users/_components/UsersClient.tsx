@@ -1065,15 +1065,15 @@ export default function UsersClient() {
           <div className="relative overflow-x-auto pb-3 px-4">
             <div className="relative rounded-2xl border border-border shadow-sm min-w-0">
               <Table
-                className="min-w-[1020px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"
+                className="min-w-[1100px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"
                 aria-busy={shouldShowLoadingRows}
               >
                 {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
                 <colgroup>
                   <col style={{ width: "40px" }} />
-                  <col style={{ width: "220px" }} />
+                  <col style={{ width: "240px" }} />
                   <col style={{ width: "72px" }} />
-                  <col style={{ width: "110px" }} />
+                  <col style={{ width: "170px" }} />
                   <col style={{ width: "280px" }} />
                   <col style={{ width: "150px" }} />
                   <col style={{ width: "64px" }} />
@@ -1094,7 +1094,7 @@ export default function UsersClient() {
                     <TableHead className={cn(adminDataTable.headCenter, "w-[72px]")}>
                       권한
                     </TableHead>
-                    <TableHead className={cn(adminDataTable.head, "w-[110px]")}>전화</TableHead>
+                    <TableHead className={cn(adminDataTable.head, "w-[170px]")}>전화</TableHead>
                     <TableHead className={cn(adminDataTable.head, "w-[280px]")}>주소</TableHead>
                     {/* 가입일 + 마지막 로그인 병합 */}
                     <TableHead className={cn(adminDataTable.headRight, "w-[150px]")}>
@@ -1237,7 +1237,7 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 전화 */}
-                          <TableCell className={cn(td, "w-[110px] whitespace-nowrap text-left")}>
+                          <TableCell className={cn(td, "w-[170px] whitespace-nowrap text-left")}>
                             {u.phone ? (
                               <div className="flex items-center justify-start gap-1">
                                 <a href={`tel:${u.phone}`} className="underline decoration-dotted">
