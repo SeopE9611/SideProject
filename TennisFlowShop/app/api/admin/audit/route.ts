@@ -61,9 +61,10 @@ function actorDisplay(doc: UnknownRecord) {
     normalizeObjectIdText(doc.by);
 
   const principal = name ? (email ? `${name} <${email}>` : name) : email;
+  const shouldAppendRole = Boolean(roleDisplay) && (!name || name.trim() !== roleDisplay);
   if (principal)
     return {
-      actor: roleDisplay ? `${principal} · ${roleDisplay}` : principal,
+      actor: shouldAppendRole ? `${principal} · ${roleDisplay}` : principal,
       actorTitle: undefined,
       actorId: actorId ?? null,
     };
