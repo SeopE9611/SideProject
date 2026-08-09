@@ -9,6 +9,7 @@ import {
   completeAuthorizationCodeClaim,
   findOrCreateAppsInTossUser,
 } from "@/lib/apps-in-toss/server/identity";
+import { TossApiError } from "@/lib/apps-in-toss/server/http";
 import {
   exchangeAuthorizationCode,
   getTossLoginUser,
@@ -85,6 +86,13 @@ export async function POST(request: Request) {
       user: { id: user._id.toString(), name: user.name },
     }, 200);
   } catch (error) {
+    if (error instanceof TossApiError && error.kind === "invalid_grant") {
+      return response(origin, {
+        success: false,
+        code: "INVALID_AUTHORIZATION_CODE",
+        message: "인가 코드가 만료되었거나 유효하지 않습니다. 다시 로그인해 주세요.",
+      }, 400);
+    }
     const status = error instanceof Error && error.name === "AppsInTossAuthorizationCodeReplayError" ? 409
       : error instanceof Error && (error.name === "AppsInTossUserUnavailableError" || error.name === "AppsInTossSessionError") ? 403
       : 500;

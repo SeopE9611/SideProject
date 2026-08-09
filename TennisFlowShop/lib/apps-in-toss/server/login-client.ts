@@ -6,8 +6,17 @@ import { requestTossJson, TossApiError } from "./http";
 
 const TossFailureSchema = z.object({
   resultType: z.literal("FAIL"),
-  error: z.object({ code: z.string().optional(), message: z.string().optional() }).passthrough(),
+  error: z.object({ errorCode: z.string(), reason: z.string() }).passthrough(),
 });
+
+const InvalidGrantSchema = z.object({
+  error: z.literal("invalid_grant"),
+}).passthrough();
+
+const ExpiresInSchema = z.union([
+  z.number().int().positive(),
+  z.string().regex(/^[1-9]\d*$/).transform(Number).pipe(z.number().int().positive()),
+]);
 
 const TokenSuccessSchema = z.object({
   resultType: z.literal("SUCCESS"),
@@ -15,7 +24,7 @@ const TokenSuccessSchema = z.object({
     accessToken: z.string().min(1),
     refreshToken: z.string().min(1),
     tokenType: z.string().min(1),
-    expiresIn: z.number().positive(),
+    expiresIn: ExpiresInSchema,
     scope: z.string(),
   }).passthrough(),
 });
@@ -31,8 +40,10 @@ const LoginUserSuccessSchema = z.object({
 });
 
 function parseTossResponse<T>(value: unknown, schema: z.ZodType<T>): T {
+  const invalidGrant = InvalidGrantSchema.safeParse(value);
+  if (invalidGrant.success) throw new TossApiError("invalid_grant");
   const failure = TossFailureSchema.safeParse(value);
-  if (failure.success) throw new TossApiError("api_error", undefined, failure.data.error.code);
+  if (failure.success) throw new TossApiError("api_error", undefined, failure.data.error.errorCode);
   const parsed = schema.safeParse(value);
   if (!parsed.success) throw new TossApiError("invalid_response");
   return parsed.data;
