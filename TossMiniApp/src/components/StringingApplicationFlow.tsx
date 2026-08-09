@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { getFirstInvalidApplicationStep } from "../lib/stringing-application-validation";
 import type {
   StringingApplicantDraft,
   StringingCollectionMethod,
@@ -64,6 +65,8 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
   const [work, setWork] = useState<StringingWorkDraft>(EMPTY_WORK);
 
   const [paymentAttemptId, setPaymentAttemptId] = useState<string | null>(null);
+  const [validatedWork, setValidatedWork] = useState<StringingWorkDraft | null>(null);
+  const [validationReturnStep, setValidationReturnStep] = useState<1 | 2 | 3 | null>(null);
 
   useEffect(() => {
     setPaymentAttemptId(null);
@@ -101,9 +104,30 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
     setCurrentStep(1);
   }, [productId]);
 
+  const getAllowedStep = useCallback((requestedStep: ApplyStep): ApplyStep => {
+    if (requestedStep === 1) return 1;
+
+    const invalidStep = getFirstInvalidApplicationStep(
+      { applicant, collectionMethod, shipping, work },
+      { selectedColor, selectedGauge },
+    );
+    if (invalidStep && invalidStep < requestedStep) return invalidStep;
+    if (requestedStep >= 4 && validatedWork !== work) return 3;
+    return requestedStep;
+  }, [applicant, collectionMethod, selectedColor, selectedGauge, shipping, validatedWork, work]);
+
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentStep(getApplyStepFromLocation());
+      const requestedStep = getApplyStepFromLocation();
+      const allowedStep = getAllowedStep(requestedStep);
+
+      if (allowedStep !== requestedStep) {
+        setValidationReturnStep(allowedStep as 1 | 2 | 3);
+        const guardedUrl = new URL(window.location.href);
+        guardedUrl.searchParams.set("step", String(allowedStep));
+        window.history.replaceState({ productId, view: "stringing-checkout", step: allowedStep }, "", `${guardedUrl.pathname}${guardedUrl.search}${guardedUrl.hash}`);
+      }
+      setCurrentStep(allowedStep);
 
       requestAnimationFrame(() => {
         window.scrollTo({
@@ -118,7 +142,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, []);
+  }, [getAllowedStep, productId]);
 
   const pushStep = useCallback(
     (step: ApplyStep) => {
@@ -157,6 +181,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
 
   const handleCollectionMethodChange = useCallback((nextMethod: StringingCollectionMethod) => {
     setCollectionMethod(nextMethod);
+    setValidatedWork(null);
     setPaymentAttemptId(null);
   }, []);
 
@@ -167,8 +192,28 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
 
   const handleWorkChange = useCallback((nextWork: StringingWorkDraft) => {
     setWork(nextWork);
+    setValidatedWork(null);
     setPaymentAttemptId(null);
   }, []);
+
+  const returnToInvalidStep = useCallback((step: 1 | 2 | 3) => {
+    setValidationReturnStep(step);
+    pushStep(step);
+  }, [pushStep]);
+
+  const handleReviewContinue = useCallback(() => {
+    const invalidStep = getFirstInvalidApplicationStep(
+      { applicant, collectionMethod, shipping, work },
+      { selectedColor, selectedGauge },
+    );
+    if (invalidStep || validatedWork !== work) {
+      const step = invalidStep ?? 3;
+      setValidationReturnStep(step);
+      pushStep(step);
+      return;
+    }
+    pushStep(5);
+  }, [applicant, collectionMethod, pushStep, selectedColor, selectedGauge, shipping, validatedWork, work]);
 
   if (currentStep === 5) {
     return (
@@ -182,6 +227,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
         work={work}
         paymentAttemptId={paymentAttemptId}
         onPaymentAttemptIdChange={setPaymentAttemptId}
+        onInvalidStep={returnToInvalidStep}
         onBack={handleBack}
       />
     );
@@ -198,7 +244,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
         shipping={shipping}
         work={work}
         onBack={handleBack}
-        onContinue={() => pushStep(5)}
+        onContinue={handleReviewContinue}
       />
     );
   }
@@ -209,8 +255,12 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
         collectionMethod={collectionMethod}
         work={work}
         onWorkChange={handleWorkChange}
+        showValidationErrors={validationReturnStep === 3}
         onBack={handleBack}
-        onContinue={() => pushStep(4)}
+        onContinue={() => {
+          setValidatedWork(work);
+          pushStep(4);
+        }}
       />
     );
   }
@@ -222,6 +272,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
         onCollectionMethodChange={handleCollectionMethodChange}
         shipping={shipping}
         onShippingChange={handleShippingChange}
+        showValidationErrors={validationReturnStep === 2}
         onBack={handleBack}
         onContinue={() => pushStep(3)}
       />
@@ -235,6 +286,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
       selectedGauge={selectedGauge}
       applicant={applicant}
       onApplicantChange={handleApplicantChange}
+      showValidationErrors={validationReturnStep === 1}
       onContinue={() => pushStep(2)}
     />
   );

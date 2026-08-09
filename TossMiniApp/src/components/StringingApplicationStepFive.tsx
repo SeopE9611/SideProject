@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AppsAuthApiError } from "../api/auth";
 import { AppsPaymentApiError, getAppsPaymentIntent, prepareAppsPayment } from "../api/payments";
 import { AppsLoginBridgeError, useAppsInTossAuth } from "../auth/AppsInTossAuthContext";
+import { getFirstInvalidApplicationStep } from "../lib/stringing-application-validation";
 import type {
   StringingApplicantDraft,
   StringingCollectionMethod,
@@ -21,6 +22,7 @@ type StringingApplicationStepFiveProps = {
   work: StringingWorkDraft;
   paymentAttemptId: string | null;
   onPaymentAttemptIdChange: (attemptId: string | null) => void;
+  onInvalidStep: (step: 1 | 2 | 3) => void;
   onBack: () => void;
 };
 
@@ -69,6 +71,7 @@ function StringingApplicationStepFive({
   work,
   paymentAttemptId,
   onPaymentAttemptIdChange,
+  onInvalidStep,
   onBack,
 }: StringingApplicationStepFiveProps) {
   const auth = useAppsInTossAuth();
@@ -114,6 +117,16 @@ function StringingApplicationStepFive({
     if (Date.parse(auth.expiresAt) <= Date.now()) {
       auth.clearSession();
       setErrorMessage("로그인 정보가 만료됐어요. 다시 로그인해주세요.");
+      return;
+    }
+
+    const invalidStep = getFirstInvalidApplicationStep(
+      { applicant, collectionMethod, shipping, work },
+      { selectedColor, selectedGauge },
+    );
+    if (invalidStep) {
+      setErrorMessage("입력 정보를 다시 확인해주세요.");
+      onInvalidStep(invalidStep);
       return;
     }
 

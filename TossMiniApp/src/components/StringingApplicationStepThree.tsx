@@ -2,6 +2,7 @@ import { Top } from "@toss/tds-mobile";
 import { useEffect, useMemo, useState } from "react";
 
 import { getStringingReservedSlots } from "../api/stringing";
+import { isPastTodaySlot, validateWork } from "../lib/stringing-application-validation";
 import type { StringingCollectionMethod, StringingSlotSummary, StringingWorkDraft } from "../types/stringing";
 
 type SlotLoadState = "idle" | "loading" | "success" | "error";
@@ -10,6 +11,7 @@ type StringingApplicationStepThreeProps = {
   collectionMethod: StringingCollectionMethod;
   work: StringingWorkDraft;
   onWorkChange: (work: StringingWorkDraft) => void;
+  showValidationErrors?: boolean;
   onBack: () => void;
   onContinue: () => void;
 };
@@ -18,6 +20,7 @@ type TouchedFields = {
   racketType: boolean;
   tensionMain: boolean;
   tensionCross: boolean;
+  note: boolean;
   preferredDate: boolean;
   preferredTime: boolean;
 };
@@ -42,28 +45,11 @@ function getTodayLocalDate() {
   return `${year}-${month}-${day}`;
 }
 
-function isPastTodaySlot(date: string, time: string) {
-  if (date !== getTodayLocalDate()) {
-    return false;
-  }
-
-  const [hour, minute] = time.split(":").map(Number);
-
-  if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
-    return false;
-  }
-
-  const slot = new Date();
-
-  slot.setHours(hour, minute, 0, 0);
-
-  return Date.now() > slot.getTime();
-}
-
 function StringingApplicationStepThree({
   collectionMethod,
   work,
   onWorkChange,
+  showValidationErrors = false,
   onBack,
   onContinue,
 }: StringingApplicationStepThreeProps) {
@@ -77,6 +63,7 @@ function StringingApplicationStepThree({
     racketType: false,
     tensionMain: false,
     tensionCross: false,
+    note: false,
     preferredDate: false,
     preferredTime: false,
   });
@@ -125,39 +112,19 @@ function StringingApplicationStepThree({
     };
   }, [isVisit, work.preferredDate]);
 
-  const errors = useMemo(() => {
-    const next: Partial<Record<keyof TouchedFields, string>> = {};
+  const errors = useMemo(
+    () => validateWork(collectionMethod, work, {
+      availableTimes: slotSummary?.availableTimes,
+      requireAvailableTimes: isVisit,
+    }),
+    [collectionMethod, isVisit, slotSummary, work],
+  );
 
-    if (!work.racketType.trim()) {
-      next.racketType = "라켓명을 입력해주세요.";
-    }
-
-    if (!work.tensionMain.trim()) {
-      next.tensionMain = "메인 텐션을 입력해주세요.";
-    }
-
-    if (!work.tensionCross.trim()) {
-      next.tensionCross = "크로스 텐션을 입력해주세요.";
-    }
-
-    if (isVisit) {
-      if (!work.preferredDate.trim()) {
-        next.preferredDate = "방문 희망 날짜를 선택해주세요.";
-      }
-
-      if (!work.preferredTime.trim()) {
-        next.preferredTime = "방문 희망 시간을 선택해주세요.";
-      } else if (
-        slotSummary &&
-        (!slotSummary.availableTimes.includes(work.preferredTime) ||
-          isPastTodaySlot(work.preferredDate, work.preferredTime))
-      ) {
-        next.preferredTime = "선택한 시간은 현재 예약할 수 없습니다.";
-      }
-    }
-
-    return next;
-  }, [isVisit, slotSummary, work]);
+  useEffect(() => {
+    if (!showValidationErrors) return;
+    const field = (["racketType", "tensionMain", "tensionCross", "note", "preferredDate", "preferredTime"] as const).find((key) => errors[key]);
+    if (field) requestAnimationFrame(() => document.getElementById(`work-${field}`)?.focus());
+  }, [errors, showValidationErrors]);
 
   const updateWork = (field: keyof StringingWorkDraft, value: string) => {
     onWorkChange({
@@ -185,11 +152,16 @@ function StringingApplicationStepThree({
       racketType: true,
       tensionMain: true,
       tensionCross: true,
+      note: true,
       preferredDate: isVisit,
       preferredTime: isVisit,
     });
 
     if (Object.keys(errors).length > 0) {
+      const firstInvalidField = (["racketType", "tensionMain", "tensionCross", "note", "preferredDate", "preferredTime"] as const).find((field) => errors[field]);
+      if (firstInvalidField) {
+        requestAnimationFrame(() => document.getElementById(`work-${firstInvalidField}`)?.focus());
+      }
       return;
     }
 
@@ -246,8 +218,9 @@ function StringingApplicationStepThree({
               <span className="mb-2 block text-sm font-bold text-[#333d4b]">희망 날짜 *</span>
 
               <input
+                id="work-preferredDate"
                 className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition focus:ring-2 focus:ring-[#dcebba] ${
-                  touched.preferredDate && errors.preferredDate
+                  (touched.preferredDate || showValidationErrors) && errors.preferredDate
                     ? "border-[#d92d20]"
                     : "border-[#d1d6db] focus:border-[#688d00]"
                 }`}
@@ -263,12 +236,12 @@ function StringingApplicationStepThree({
                 }
               />
 
-              {touched.preferredDate && errors.preferredDate && (
+              {(touched.preferredDate || showValidationErrors) && errors.preferredDate && (
                 <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.preferredDate}</span>
               )}
             </label>
 
-            <div className="mt-4">
+            <div id="work-preferredTime" className="mt-4" tabIndex={-1}>
               <span className="mb-2 block text-sm font-bold text-[#333d4b]">희망 시간 *</span>
 
               {!work.preferredDate && (
@@ -350,7 +323,7 @@ function StringingApplicationStepThree({
                   </div>
                 )}
 
-              {touched.preferredTime && errors.preferredTime && (
+              {(touched.preferredTime || showValidationErrors) && errors.preferredTime && (
                 <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.preferredTime}</span>
               )}
             </div>
@@ -370,8 +343,9 @@ function StringingApplicationStepThree({
             <span className="mb-2 block text-sm font-bold text-[#333d4b]">라켓명 *</span>
 
             <input
+              id="work-racketType"
               className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                touched.racketType && errors.racketType ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
+                (touched.racketType || showValidationErrors) && errors.racketType ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="text"
               maxLength={100}
@@ -386,7 +360,7 @@ function StringingApplicationStepThree({
               }
             />
 
-            {touched.racketType && errors.racketType && (
+            {(touched.racketType || showValidationErrors) && errors.racketType && (
               <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.racketType}</span>
             )}
           </label>
@@ -396,8 +370,9 @@ function StringingApplicationStepThree({
               <span className="mb-2 block text-sm font-bold text-[#333d4b]">메인 텐션(LB) *</span>
 
               <input
+                id="work-tensionMain"
                 className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                  touched.tensionMain && errors.tensionMain
+                  (touched.tensionMain || showValidationErrors) && errors.tensionMain
                     ? "border-[#d92d20]"
                     : "border-[#d1d6db] focus:border-[#688d00]"
                 }`}
@@ -415,7 +390,7 @@ function StringingApplicationStepThree({
                 }
               />
 
-              {touched.tensionMain && errors.tensionMain && (
+              {(touched.tensionMain || showValidationErrors) && errors.tensionMain && (
                 <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.tensionMain}</span>
               )}
             </label>
@@ -424,8 +399,9 @@ function StringingApplicationStepThree({
               <span className="mb-2 block text-sm font-bold text-[#333d4b]">크로스 텐션(LB) *</span>
 
               <input
+                id="work-tensionCross"
                 className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                  touched.tensionCross && errors.tensionCross
+                  (touched.tensionCross || showValidationErrors) && errors.tensionCross
                     ? "border-[#d92d20]"
                     : "border-[#d1d6db] focus:border-[#688d00]"
                 }`}
@@ -443,7 +419,7 @@ function StringingApplicationStepThree({
                 }
               />
 
-              {touched.tensionCross && errors.tensionCross && (
+              {(touched.tensionCross || showValidationErrors) && errors.tensionCross && (
                 <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.tensionCross}</span>
               )}
             </label>
@@ -453,12 +429,17 @@ function StringingApplicationStepThree({
             <span className="mb-2 block text-sm font-bold text-[#333d4b]">작업 요청사항</span>
 
             <textarea
+              id="work-note"
               className="min-h-24 w-full resize-none rounded-xl border border-[#d1d6db] bg-white px-3.5 py-3 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:border-[#688d00] focus:ring-2 focus:ring-[#dcebba]"
               value={work.note}
               maxLength={500}
               placeholder="작업 시 참고할 요청사항을 입력해주세요"
               onChange={(event) => updateWork("note", event.target.value)}
+              onBlur={() => setTouched((current) => ({ ...current, note: true }))}
             />
+            {(touched.note || showValidationErrors) && errors.note && (
+              <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.note}</span>
+            )}
           </label>
         </div>
       </section>

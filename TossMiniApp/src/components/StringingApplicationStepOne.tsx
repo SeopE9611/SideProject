@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getProductDetail } from "../api/products";
 import { formatGaugeLabel, formatPrice, getStringColorLabel, toFiniteNumber } from "../lib/product-labels";
+import { validateApplicant } from "../lib/stringing-application-validation";
 import type { Product } from "../types/product";
 import type { StringingApplicantDraft } from "../types/stringing";
 
@@ -14,6 +15,7 @@ type StringingApplicationStepOneProps = {
   selectedGauge: string;
   applicant: StringingApplicantDraft;
   onApplicantChange: (applicant: StringingApplicantDraft) => void;
+  showValidationErrors?: boolean;
   onContinue: () => void;
 };
 
@@ -38,12 +40,6 @@ function format010Phone(value: string) {
   return `${digits.slice(0, 3)} ${digits.slice(3, 7)} ${digits.slice(7, 11)}`;
 }
 
-function isValid010Phone(value: string) {
-  return /^010\d{8}$/.test(onlyDigits(value));
-}
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function getProductImage(product: Product) {
   return product.images?.[0] ?? product.image ?? product.imageUrl ?? product.thumbnail ?? null;
 }
@@ -54,6 +50,7 @@ function StringingApplicationStepOne({
   selectedGauge,
   applicant,
   onApplicantChange,
+  showValidationErrors = false,
   onContinue,
 }: StringingApplicationStepOneProps) {
   const [product, setProduct] = useState<Product | null>(null);
@@ -103,37 +100,13 @@ function StringingApplicationStepOne({
     };
   }, [loadProduct]);
 
-  const errors = useMemo(() => {
-    const next: Partial<Record<keyof StringingApplicantDraft, string>> = {};
+  const errors = useMemo(() => validateApplicant(applicant), [applicant]);
 
-    const name = applicant.name.trim();
-
-    if (!name) {
-      next.name = "이름을 입력해주세요.";
-    } else if (name.length < 2) {
-      next.name = "이름은 2자 이상 입력해주세요.";
-    } else if (name.length > 100) {
-      next.name = "이름은 100자 이하로 입력해주세요.";
-    }
-
-    const email = applicant.email.trim();
-
-    if (!email) {
-      next.email = "이메일을 입력해주세요.";
-    } else if (!EMAIL_RE.test(email)) {
-      next.email = "이메일 형식을 확인해주세요.";
-    } else if (email.length > 254) {
-      next.email = "이메일은 254자 이하로 입력해주세요.";
-    }
-
-    if (!applicant.phone.trim()) {
-      next.phone = "연락처를 입력해주세요.";
-    } else if (!isValid010Phone(applicant.phone)) {
-      next.phone = "올바른 연락처 형식으로 입력해주세요. (01012345678)";
-    }
-
-    return next;
-  }, [applicant]);
+  useEffect(() => {
+    if (!showValidationErrors) return;
+    const field = (["name", "email", "phone"] as const).find((key) => errors[key]);
+    if (field) requestAnimationFrame(() => document.getElementById(`applicant-${field}`)?.focus());
+  }, [errors, showValidationErrors]);
 
   const selectedVariant = product?.variantInventories?.find(
     (row) => row.colorValue === selectedColor && row.gaugeValue === selectedGauge,
@@ -206,6 +179,10 @@ function StringingApplicationStepOne({
     });
 
     if (Object.keys(errors).length > 0) {
+      const firstInvalidField = (["name", "email", "phone"] as const).find((field) => errors[field]);
+      if (firstInvalidField) {
+        requestAnimationFrame(() => document.getElementById(`applicant-${firstInvalidField}`)?.focus());
+      }
       return;
     }
 
@@ -328,8 +305,9 @@ function StringingApplicationStepOne({
             <span className="mb-2 block text-sm font-bold text-[#333d4b]">신청인 이름 *</span>
 
             <input
+              id="applicant-name"
               className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                touched.name && errors.name ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
+                (touched.name || showValidationErrors) && errors.name ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="text"
               maxLength={100}
@@ -340,7 +318,7 @@ function StringingApplicationStepOne({
               onBlur={() => markTouched("name")}
             />
 
-            {touched.name && errors.name && (
+            {(touched.name || showValidationErrors) && errors.name && (
               <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.name}</span>
             )}
           </label>
@@ -349,8 +327,9 @@ function StringingApplicationStepOne({
             <span className="mb-2 block text-sm font-bold text-[#333d4b]">이메일 *</span>
 
             <input
+              id="applicant-email"
               className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                touched.email && errors.email ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
+                (touched.email || showValidationErrors) && errors.email ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="email"
               maxLength={254}
@@ -361,7 +340,7 @@ function StringingApplicationStepOne({
               onBlur={() => markTouched("email")}
             />
 
-            {touched.email && errors.email && (
+            {(touched.email || showValidationErrors) && errors.email && (
               <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.email}</span>
             )}
           </label>
@@ -370,8 +349,9 @@ function StringingApplicationStepOne({
             <span className="mb-2 block text-sm font-bold text-[#333d4b]">연락처 *</span>
 
             <input
+              id="applicant-phone"
               className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                touched.phone && errors.phone ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
+                (touched.phone || showValidationErrors) && errors.phone ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="tel"
               maxLength={20}
@@ -383,7 +363,7 @@ function StringingApplicationStepOne({
               onBlur={() => markTouched("phone")}
             />
 
-            {touched.phone && errors.phone && (
+            {(touched.phone || showValidationErrors) && errors.phone && (
               <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.phone}</span>
             )}
           </label>
