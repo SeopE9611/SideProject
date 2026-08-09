@@ -32,13 +32,6 @@ import { adminSurface, adminTypography } from "@/components/admin/admin-typograp
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -74,7 +67,6 @@ import {
   CreditCard,
   Eye,
   Filter,
-  MoreHorizontal,
   Package,
   Search,
   X,
@@ -308,6 +300,7 @@ export default function PackageOrdersClient() {
     sortDirection,
   } = state;
   const debouncedSearch = useDebouncedValue(searchTerm, 300);
+  const [showDetailedFilters, setShowDetailedFilters] = useState(false);
 
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
@@ -646,10 +639,16 @@ export default function PackageOrdersClient() {
         icon={Package}
         scope="범위: 구매된 패키지 이용권"
         helperText="패키지 상품 구성은 패키지 설정에서 관리합니다."
+        className="flex-col sm:flex-row"
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/packages/settings">패키지 설정</Link>
+          </Button>
+        }
       />
 
       {/* 통계 카드 */}
-      <div className="grid gap-4 grid-cols-5 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 xl:grid-cols-5">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-0">
             <div className="flex min-w-0 items-center justify-between gap-2">
@@ -836,7 +835,7 @@ export default function PackageOrdersClient() {
             type="button"
             size="sm"
             variant="ghost"
-            className="ml-auto"
+            className="w-full sm:ml-auto sm:w-auto"
             onClick={resetFilters}
           >
             필터 초기화
@@ -846,15 +845,28 @@ export default function PackageOrdersClient() {
 
       {/* 필터 및 검색 카드 */}
       <Card className={cn("mb-6", adminSurface.filterCard)}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            패키지 찾기
-          </CardTitle>
-          <CardDescription>
-            빠른 보기로 주요 상태를 좁히거나 패키지 상태, 유형, 결제 상태, 고객 정보를 조합해
-            검색하세요.
-          </CardDescription>
+        <CardHeader className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              패키지 찾기
+            </CardTitle>
+            <CardDescription>
+              빠른 보기로 주요 상태를 좁히거나 패키지 상태, 유형, 결제 상태, 고객 정보를 조합해
+              검색하세요.
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-expanded={showDetailedFilters}
+            aria-controls="admin-package-detailed-filters"
+            onClick={() => setShowDetailedFilters((shown) => !shown)}
+          >
+            {showDetailedFilters ? <X className="mr-2 h-4 w-4" /> : <Filter className="mr-2 h-4 w-4" />}
+            {showDetailedFilters ? "상세 필터 닫기" : "상세 필터 열기"}
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
@@ -871,6 +883,8 @@ export default function PackageOrdersClient() {
                 />
                 {searchTerm && (
                   <Button
+                    type="button"
+                    aria-label="검색어 지우기"
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
@@ -882,8 +896,10 @@ export default function PackageOrdersClient() {
               </div>
             </div>
 
+            {showDetailedFilters && (
+              <div id="admin-package-detailed-filters" className="space-y-4">
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full gap-2 border-t pt-3 grid-cols-7">
+            <div className="grid w-full grid-cols-1 gap-2 border-t pt-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
               <Select
                 value={usageFilter}
                 onValueChange={(v) => {
@@ -1003,8 +1019,8 @@ export default function PackageOrdersClient() {
               </Button>
             </div>
 
-            <div className="flex items-end gap-2 border-t pt-3">
-              <div className="w-56">
+            <div className="flex flex-col items-stretch gap-2 border-t pt-3 sm:flex-row sm:items-end">
+              <div className="w-full sm:w-56">
                 <label className={adminTypography.meta} htmlFor="package-sort-by">정렬 기준</label>
                 <Select value={sortBy ?? "default"} onValueChange={(value) => patchState({ sortBy: value === "default" ? null : value as SortKey })}>
                   <SelectTrigger id="package-sort-by"><SelectValue /></SelectTrigger>
@@ -1017,6 +1033,8 @@ export default function PackageOrdersClient() {
                 {sortDirection === "asc" ? "오름차순" : "내림차순"}
               </Button>
             </div>
+              </div>
+            )}
 
             {presetFilter === PAYMENT_CHECK_PRESET && (
               <div className="flex flex-wrap items-center gap-2 border-t pt-3">
@@ -1035,7 +1053,7 @@ export default function PackageOrdersClient() {
       {/* 패키지 목록 테이블 */}
       <Card className={adminSurface.tableCard}>
         <CardHeader>
-          <div className="flex min-w-0 items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>패키지 목록</CardTitle>
             <p className="text-sm text-muted-foreground" aria-live="polite">
               총 {hasResolvedTotal && totalCount !== null ? totalCount : "-"}
@@ -1043,10 +1061,10 @@ export default function PackageOrdersClient() {
             </p>
           </div>
         </CardHeader>
-        <CardContent className="relative overflow-x-auto px-4">
-          <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
+        <CardContent className="relative px-4">
+          <div className="relative max-h-[70vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
             <Table
-              className="min-w-[1000px] table-fixed border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0]"
+              className="min-w-[1120px] table-fixed border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0]"
               aria-busy={isValidating && !shouldShowRows}
             >
               <TableHeader className="sticky top-0 bg-card shadow-sm">
@@ -1058,7 +1076,7 @@ export default function PackageOrdersClient() {
                   <TableHead className={cn(adminDataTable.head, "w-[130px]")}>운영 확인</TableHead>
                   <TableHead className={cn(adminDataTable.headRight, "w-[110px]")}>금액</TableHead>
                   <TableHead
-                    className={cn(adminDataTable.actionHead, "sticky right-0 top-0 z-20 w-[72px] bg-card")}
+                    className={cn(adminDataTable.actionHead, "sticky right-0 top-0 z-20 w-[96px] bg-card")}
                   >
                     관리
                   </TableHead>
@@ -1254,17 +1272,11 @@ export default function PackageOrdersClient() {
                           </TableCell>
 
                           <TableCell className={cn(adminDataTable.actionCell, "sticky right-0 z-10 bg-card")}>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`${pkg.customer?.name || pkg.id} 패키지 관리 메뉴`}>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild><Link href={`/admin/packages/${pkg.id}`}><Eye className="mr-2 h-4 w-4" />상세 보기</Link></DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Button asChild variant="ghost" size="sm" className="h-8 whitespace-nowrap">
+                              <Link href={`/admin/packages/${pkg.id}`} aria-label={`${pkg.customer?.name || pkg.id} 패키지 상세 보기`}>
+                                <Eye className="mr-2 h-4 w-4" />상세
+                              </Link>
+                            </Button>
                           </TableCell>
                         </TableRow>
                       );
@@ -1273,9 +1285,9 @@ export default function PackageOrdersClient() {
                 )}
               </TableBody>
             </Table>
+          </div>
             {/* pagination */}
-            <div className="relative mt-4 h-12">
-              <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 flex items-center justify-center gap-1">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-1 pb-1">
                 <Button
                   variant="outline"
                   size="icon"
@@ -1334,9 +1346,7 @@ export default function PackageOrdersClient() {
                 >
                   <ChevronsRight className="h-4 w-4" />
                 </Button>
-              </div>
             </div>
-          </div>
         </CardContent>
       </Card>
     </AdminPageShell>
