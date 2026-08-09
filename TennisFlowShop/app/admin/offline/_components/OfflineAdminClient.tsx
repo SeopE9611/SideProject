@@ -139,26 +139,6 @@ const EMPTY_RECORD_FILTERS = {
   paymentMethod: "",
 };
 
-// 오프라인 접수 흐름 안내용 UI 데이터입니다.
-// 실제 저장/조회 로직에는 영향을 주지 않는 표시 전용 데이터입니다.
-const OFFLINE_WORKFLOW_STEPS = [
-  {
-    icon: Search,
-    title: "1. 고객 확인",
-    description: "온라인 회원과 오프라인 명부를 먼저 검색합니다.",
-  },
-  {
-    icon: UserPlus,
-    title: "2. 고객 선택/등록",
-    description: "기존 고객을 선택하거나 현장 고객을 새로 등록합니다.",
-  },
-  {
-    icon: ClipboardList,
-    title: "3. 작업·결제 기록",
-    description: "선택된 고객 기준으로 작업 내용과 결제 상태를 저장합니다.",
-  },
-];
-
 function toDateInputValue(value: string | Date | null | undefined): string {
   if (!value) return "";
   const date = new Date(value);
@@ -448,6 +428,7 @@ export default function OfflineAdminClient() {
     email: "",
     memo: "",
   });
+  const [isCustomerRegistrationOpen, setIsCustomerRegistrationOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const recordSaveAttemptRef = useRef<{ key: string; serializedPayload: string } | null>(null);
 
@@ -789,13 +770,13 @@ export default function OfflineAdminClient() {
       {/* Offline Revenue Summary */}
       <Card className="overflow-hidden border-border/60">
         <CardHeader className="pb-0">
-          <div className="flex gap-3 flex-row items-start justify-between">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <SectionHeader
               icon={Store}
               title="오프라인 매출 요약"
               description="온라인 주문/정산 총액과 분리된 오프라인 작업·패키지 판매 집계입니다"
             />
-            <div className="flex flex-wrap items-end gap-2">
+            <div className="flex w-full flex-wrap items-end gap-2 lg:w-auto">
               <Button
                 type="button"
                 size="sm"
@@ -858,7 +839,7 @@ export default function OfflineAdminClient() {
           )}
           {summary && !summaryError && (
             <>
-              <div className="grid gap-3 grid-cols-5">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <div className="rounded-xl border border-border/60 bg-primary/5 p-4">
                   <p className="text-xs font-medium text-muted-foreground">오프라인 총 매출</p>
                   <p className="mt-2 text-2xl font-bold tabular-nums">
@@ -905,12 +886,12 @@ export default function OfflineAdminClient() {
                   </p>
                 </div>
               </div>
-              <div className="grid gap-3 grid-cols-[1fr_auto] items-center">
+              <div className="grid grid-cols-1 items-center gap-3 xl:grid-cols-[1fr_auto]">
                 <div className="rounded-xl border border-border/60 p-4">
                   <p className="mb-3 text-sm font-semibold text-foreground">
                     결제수단별 결제완료 매출
                   </p>
-                  <div className="grid gap-2 grid-cols-4">
+                  <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                     {(Object.keys(PAYMENT_METHOD_LABELS) as OfflinePaymentMethod[]).map(
                       (method) => (
                         <div key={method} className="rounded-lg bg-muted/30 px-3 py-2">
@@ -957,7 +938,7 @@ export default function OfflineAdminClient() {
       {/* Top Section: Selected Customer Quick View */}
       {selected && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <div className="flex gap-4 flex-row items-center justify-between">
+          <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <User className="h-5 w-5" />
@@ -1007,25 +988,10 @@ export default function OfflineAdminClient() {
         </div>
       )}
 
-      {/* Offline Workflow Guide */}
-      <div className="grid gap-3 grid-cols-3">
-        {OFFLINE_WORKFLOW_STEPS.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="rounded-xl border border-border/60 bg-background/70 p-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Icon className="h-4 w-4" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">{title}</p>
-            </div>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
-          </div>
-        ))}
-      </div>
-
       {/* Main Grid Layout */}
-      <div className="grid gap-6 grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         {/* Left Column: Customer Search & Registration */}
-        <div className="space-y-6 col-span-4">
+        <div className="space-y-6 xl:col-span-4">
           {/* Customer Search Card */}
           <Card className="overflow-hidden border-border/60">
             <CardHeader className="pb-0">
@@ -1092,7 +1058,7 @@ export default function OfflineAdminClient() {
               )}
               {submittedQuery && !searchLoading && !hasSearchResult && (
                 <Message type="info">
-                  검색 결과가 없습니다. 신규 고객으로 등록할 수 있습니다.
+                  검색 결과가 없습니다. 아래의 신규 오프라인 고객 등록을 열어 등록하세요.
                 </Message>
               )}
 
@@ -1210,18 +1176,42 @@ export default function OfflineAdminClient() {
             </CardContent>
           </Card>
 
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-between"
+            aria-expanded={isCustomerRegistrationOpen}
+            aria-controls="offline-customer-registration-panel"
+            onClick={() => setIsCustomerRegistrationOpen((open) => !open)}
+          >
+            <span className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              {isCustomerRegistrationOpen ? "신규 고객 등록 닫기" : "신규 오프라인 고객 등록"}
+            </span>
+            <ChevronRight
+              className={cn(
+                "h-4 w-4 transition-transform",
+                isCustomerRegistrationOpen && "rotate-90",
+              )}
+            />
+          </Button>
+
           {/* New Customer Registration Card */}
-          <Card className="overflow-hidden border-border/60">
-            <CardHeader className="pb-0">
-              <SectionHeader
-                icon={UserPlus}
-                title="오프라인 고객 등록"
-                description="온라인 계정이 없거나 현장 접수 고객일 때 등록합니다"
-              />
-            </CardHeader>
-            <CardContent className="pt-4 space-y-4">
+          {isCustomerRegistrationOpen && (
+            <Card
+              id="offline-customer-registration-panel"
+              className="overflow-hidden border-border/60"
+            >
+              <CardHeader className="pb-0">
+                <SectionHeader
+                  icon={UserPlus}
+                  title="오프라인 고객 등록"
+                  description="온라인 계정이 없거나 현장 접수 고객일 때 등록합니다"
+                />
+              </CardHeader>
+              <CardContent className="pt-4 space-y-4">
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <FormField label="고객명" htmlFor="offline-new-name">
                     <Input
                       id="offline-new-name"
@@ -1314,12 +1304,13 @@ export default function OfflineAdminClient() {
                 <UserPlus className="mr-2 h-4 w-4" />
                 고객 등록
               </Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Right Column: Work/Payment Registration */}
-        <div className="col-span-8">
+        <div className="xl:col-span-8">
           <Card className="overflow-hidden border-border/60">
             <CardHeader className="pb-0">
               <SectionHeader
@@ -1361,7 +1352,7 @@ export default function OfflineAdminClient() {
                       <Wrench className="h-4 w-4 text-primary" />
                       작업 정보
                     </div>
-                    <div className="grid gap-4 grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <FormField label="작업 유형" htmlFor="kind">
                         <Select
                           id="kind"
@@ -1430,7 +1421,7 @@ export default function OfflineAdminClient() {
                             ) : null}
                           </div>
 
-                          <div className="grid gap-4 grid-cols-2">
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <FormField label="라켓명" htmlFor={`racketName-${line.id}`}>
                               <Input
                                 id={`racketName-${line.id}`}
@@ -1553,7 +1544,7 @@ export default function OfflineAdminClient() {
                       결제 정보
                     </div>
 
-                    <div className="grid gap-4 grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <FormField label="결제 상태" htmlFor="payStatus">
                         <Select
                           id="payStatus"
@@ -1600,7 +1591,7 @@ export default function OfflineAdminClient() {
                     </div>
 
                     <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
-                      <div className="grid gap-3 grid-cols-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <div>
                           <p className="text-xs font-medium text-muted-foreground">
                             라켓별 금액 합계
@@ -1800,7 +1791,7 @@ export default function OfflineAdminClient() {
       {/* Records History Section */}
       <Card className="overflow-hidden border-border/60">
         <CardHeader className="pb-0">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <SectionHeader
               icon={History}
               title="최근 오프라인 작업/매출"
@@ -1968,7 +1959,7 @@ export default function OfflineAdminClient() {
                 setRecordsPage(1);
               }}
             >
-              <div className="grid gap-4 grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <FormField label="시작일" htmlFor="record-from">
                   <Input
                     id="record-from"
@@ -2126,7 +2117,18 @@ export default function OfflineAdminClient() {
           {!!records?.items?.length && (
             <div className={adminSurface.tableCard}>
               <div className="overflow-x-auto">
-                <table className="min-w-[1040px] w-full table-fixed text-sm">
+                <table className="min-w-[1200px] w-full table-fixed text-sm">
+                  <colgroup>
+                    <col className="w-[52px]" />
+                    <col className="w-[120px]" />
+                    <col className="w-[180px]" />
+                    <col className="w-[150px]" />
+                    <col />
+                    <col className="w-[150px]" />
+                    <col className="w-[104px]" />
+                    <col className="w-[104px]" />
+                    <col className="w-[96px]" />
+                  </colgroup>
                   <thead>
                     <tr className={adminSurface.tableHeader}>
                       <th className={adminDataTable.head}>
@@ -2193,7 +2195,10 @@ export default function OfflineAdminClient() {
                                 r.customerName
                               )}
                             </p>
-                            <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                            <p
+                              className="whitespace-nowrap text-xs tabular-nums text-muted-foreground"
+                              title={r.customerPhoneMasked}
+                            >
                               {r.customerPhoneMasked}
                             </p>
                           </div>
@@ -2310,7 +2315,7 @@ export default function OfflineAdminClient() {
           )}
 
           {/* Pagination */}
-          <div className="flex gap-3 rounded-xl border border-border/60 bg-background/70 p-4 flex-row items-center justify-between">
+          <div className="flex flex-col items-stretch gap-3 rounded-xl border border-border/60 bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{currentRecordsPage}</span> /{" "}
               {Math.max(recordsTotalPages, 1)} 페이지
@@ -2408,7 +2413,7 @@ export default function OfflineAdminClient() {
               {/* Basic Info */}
               <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
                 <p className="text-sm font-semibold text-foreground">기본 정보</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <FormField label="작업 유형" htmlFor="edit-kind">
                     <Select
                       id="edit-kind"
@@ -2472,7 +2477,7 @@ export default function OfflineAdminClient() {
                       ) : null}
                     </div>
 
-                    <div className="grid gap-4 grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormField label="라켓명" htmlFor={`edit-racketName-${line.id}`}>
                         <Input
                           id={`edit-racketName-${line.id}`}
@@ -2574,7 +2579,7 @@ export default function OfflineAdminClient() {
               {/* Status & Payment Info */}
               <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
                 <p className="text-sm font-semibold text-foreground">상태/결제 정보</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <FormField label="작업 상태" htmlFor="edit-status">
                     <Select
                       id="edit-status"
@@ -2641,7 +2646,7 @@ export default function OfflineAdminClient() {
                 </div>
               </div>
               <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
-                <div className="grid gap-3 grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">라켓별 금액 합계</p>
                     <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
