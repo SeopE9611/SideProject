@@ -252,7 +252,7 @@ export default function AdminRentalDetailClient() {
     setIsSyncingNice(true);
     try {
       const json = await adminMutator<{ success?: boolean; error?: string }>(
-        `/api/payments/nice/rental/sync/${id}`,
+        `/api/admin/payments/nice/rental/sync/${id}`,
         { method: "POST" },
       );
       if (!json?.success) {
