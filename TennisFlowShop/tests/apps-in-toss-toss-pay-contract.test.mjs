@@ -1,0 +1,70 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+import ts from "typescript";
+import { importFileModule } from "./helpers/import-file-module.mjs";
+
+const root = new URL("..", import.meta.url);
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "apps-in-toss-pay-contract-"));
+fs.symlinkSync(new URL("../node_modules", import.meta.url), path.join(tmp, "node_modules"), "dir");
+
+function loadTypeScriptModule(sourcePath, outputName) {
+  const source = fs.readFileSync(new URL(sourcePath, root), "utf8");
+  const output = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true },
+  }).outputText;
+  const outputPath = path.join(tmp, outputName);
+  fs.writeFileSync(outputPath, output);
+  return importFileModule(outputPath);
+}
+
+const contract = await loadTypeScriptModule("lib/apps-in-toss/server/toss-pay-contract.ts", "contract.cjs");
+const state = await loadTypeScriptModule("lib/apps-in-toss/server/payment-intent-state.ts", "state.cjs");
+
+const validMakePayment = {
+  orderNo: "dkt-order_1", productDesc: "string product", cashReceipt: false,
+  amount: 10_000, amountTaxFree: 0,
+};
+
+test("installment와 현금영수증 거래 옵션을 공식 enum으로만 허용한다", () => {
+  for (const installment of ["USE", "NOT_USE"]) {
+    assert.equal(contract.parseMakePaymentInput({ ...validMakePayment, installment }).installment, installment);
+  }
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, installment: 0 }));
+  for (const cashReceiptTradeOption of ["GENERAL", "CULTURE", "PUBLIC_TP"]) {
+    assert.equal(contract.parseMakePaymentInput({ ...validMakePayment, cashReceiptTradeOption }).cashReceiptTradeOption, cashReceiptTradeOption);
+  }
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, cashReceiptTradeOption: "ETC" }));
+});
+
+test("환불 사유의 공식 문자와 55자 제한을 검증한다", () => {
+  assert.doesNotThrow(() => contract.assertRefundReason("한글AZ09_-:.^@()[]#/!%?&"));
+  for (const unsupported of [" ", "~", "$", "'", "*", ",", ";"]) {
+    assert.throws(() => contract.assertRefundReason(`사유${unsupported}`));
+  }
+  assert.throws(() => contract.assertRefundReason("a".repeat(56)));
+});
+
+test("payToken과 orderNo 길이 및 문자 계약을 검증한다", () => {
+  assert.equal(contract.parseTossPayToken(" token "), "token");
+  assert.equal(contract.parseTossPayToken("a".repeat(30)), "a".repeat(30));
+  assert.throws(() => contract.parseTossPayToken(" "));
+  assert.throws(() => contract.parseTossPayToken("a".repeat(31)));
+  assert.equal(contract.isValidTossPayOrderNo("dkt-order_1:ok"), true);
+  assert.equal(contract.isValidTossPayOrderNo("invalid/order"), false);
+});
+
+test("sandbox/live isTestPayment 계약이 유지된다", () => {
+  const source = fs.readFileSync(new URL("lib/apps-in-toss/server/config.ts", root), "utf8");
+  assert.match(source, /mode === "sandbox"\) return \{ mode, isTestPayment: true \}/);
+  assert.match(source, /mode === "live"\) return \{ mode, isTestPayment: false \}/);
+});
+
+test("정상 상태 전이는 허용하고 비정상 전이는 거부한다", () => {
+  assert.doesNotThrow(() => state.assertAppsInTossPaymentIntentTransition("creating", "awaiting_authorization"));
+  assert.doesNotThrow(() => state.assertAppsInTossPaymentIntentTransition("paid", "finalized"));
+  assert.throws(() => state.assertAppsInTossPaymentIntentTransition("creating", "paid"));
+  assert.throws(() => state.assertAppsInTossPaymentIntentTransition("finalized", "refunding"));
+});

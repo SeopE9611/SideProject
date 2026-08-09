@@ -3,7 +3,7 @@ import "server-only";
 import { getAppsInTossTossPayMode } from "./config";
 import { requestTossJson } from "./http";
 import {
-  assertRefundReason, assertTossPayOrderNo, parseExecutePaymentResponse, parseMakePaymentInput,
+  assertRefundReason, assertTossPayOrderNo, parseExecutePaymentResponse, parseMakePaymentInput, parseTossPayToken,
   parseMakePaymentResponse, parsePaymentStatusResponse, parseRefundPaymentResponse,
 } from "./toss-pay-contract";
 
@@ -19,14 +19,14 @@ export async function makeTossPayPayment(userKey: string, input: unknown) {
   return parseMakePaymentResponse(await post("/api-partner/v1/apps-in-toss/pay/make-payment", userKey, { ...body, isTestPayment }));
 }
 export async function executeTossPayPayment(userKey: string, input: { payToken: string; orderNo: string }) {
-  assertTossPayOrderNo(input.orderNo); const { isTestPayment } = getAppsInTossTossPayMode();
-  return parseExecutePaymentResponse(await post("/api-partner/v1/apps-in-toss/pay/execute-payment", userKey, { ...input, isTestPayment }));
+  assertTossPayOrderNo(input.orderNo); const payToken = parseTossPayToken(input.payToken); const { isTestPayment } = getAppsInTossTossPayMode();
+  return parseExecutePaymentResponse(await post("/api-partner/v1/apps-in-toss/pay/execute-payment", userKey, { ...input, payToken, isTestPayment }));
 }
 export async function getTossPayPaymentStatus(userKey: string, input: { payToken: string; orderNo: string }) {
-  assertTossPayOrderNo(input.orderNo); const { isTestPayment } = getAppsInTossTossPayMode();
-  return parsePaymentStatusResponse(await post("/api-partner/v1/apps-in-toss/pay/get-payment-status", userKey, { ...input, isTestPayment }));
+  assertTossPayOrderNo(input.orderNo); const payToken = parseTossPayToken(input.payToken); const { isTestPayment } = getAppsInTossTossPayMode();
+  return parsePaymentStatusResponse(await post("/api-partner/v1/apps-in-toss/pay/get-payment-status", userKey, { ...input, payToken, isTestPayment }));
 }
 export async function refundTossPayPayment(userKey: string, input: { payToken: string; reason: string }) {
-  assertRefundReason(input.reason); const { isTestPayment } = getAppsInTossTossPayMode();
-  return parseRefundPaymentResponse(await post("/api-partner/v1/apps-in-toss/pay/refund-payment", userKey, { ...input, isTestPayment }));
+  assertRefundReason(input.reason); const payToken = parseTossPayToken(input.payToken); const { isTestPayment } = getAppsInTossTossPayMode();
+  return parseRefundPaymentResponse(await post("/api-partner/v1/apps-in-toss/pay/refund-payment", userKey, { ...input, payToken, isTestPayment }));
 }

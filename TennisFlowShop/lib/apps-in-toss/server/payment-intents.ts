@@ -1,13 +1,30 @@
 import "server-only";
 
 import { ObjectId, type Db } from "mongodb";
-import { assertAttemptId, assertTossPayOrderNo } from "./toss-pay-contract";
+import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
+import { assertAttemptId, assertTossPayOrderNo, parseTossPayToken } from "./toss-pay-contract";
 import { assertAppsInTossPaymentIntentTransition, type AppsInTossPaymentIntentState } from "./payment-intent-state";
 
 export const APPS_IN_TOSS_PAYMENT_INTENTS_COLLECTION = "apps_in_toss_payment_intents";
 export type AppsCheckoutPayload = {
-  items: Array<{ productId: string; quantity: number; kind: "product" | "racket" }>;
-  shippingMethod: "self_ship" | "visit" | "courier_pickup";
+  items: Array<{
+    productId: string; quantity: number; kind: "product" | "racket";
+    selectedColor: NonNullable<StringingApplicationInput["selectedColor"]>;
+    selectedGauge: NonNullable<StringingApplicationInput["selectedGauge"]>;
+  }>;
+  applicant: {
+    name: StringingApplicationInput["name"];
+    email: NonNullable<StringingApplicationInput["email"]>;
+    phone: StringingApplicationInput["phone"];
+  };
+  collectionMethod: "self_ship" | "visit" | "courier_pickup";
+  shipping: { postalCode: string; address: string; addressDetail: string };
+  work: {
+    racketType: NonNullable<StringingApplicationInput["racketType"]>;
+    tensionMain: string; tensionCross: string; note: string;
+    preferredDate: NonNullable<StringingApplicationInput["preferredDate"]>;
+    preferredTime: NonNullable<StringingApplicationInput["preferredTime"]>;
+  };
   withStringService: boolean;
 };
 export type AppsInTossPaymentIntentDocument = {
@@ -37,10 +54,9 @@ async function transition(db: Db, id: ObjectId, from: AppsInTossPaymentIntentSta
   assertAppsInTossPaymentIntentTransition(from, to);
   return appsInTossPaymentIntents(db).findOneAndUpdate({ _id: id, state: from }, { $set: { ...set, state: to, updatedAt: new Date() }, ...(unset ? { $unset: unset } : {}) }, { returnDocument: "after" });
 }
-export const transitionAppsInTossPaymentIntent = transition;
 export function attachAppsInTossPayToken(db: Db, id: ObjectId, payToken: string) {
-  if (!payToken.trim()) throw new Error("유효한 결제 토큰이 필요합니다.");
-  return transition(db, id, "creating", "awaiting_authorization", { payToken });
+  const normalizedPayToken = parseTossPayToken(payToken);
+  return transition(db, id, "creating", "awaiting_authorization", { payToken: normalizedPayToken });
 }
 export function claimAppsInTossPaymentExecution(db: Db, id: ObjectId, leaseUntil: Date) {
   const now = new Date(); if (leaseUntil <= now) throw new Error("실행 leaseUntil은 현재보다 이후여야 합니다.");
