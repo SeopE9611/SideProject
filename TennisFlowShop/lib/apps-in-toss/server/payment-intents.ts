@@ -55,8 +55,8 @@ async function transition(db: Db, id: ObjectId, from: AppsInTossPaymentIntentSta
   return appsInTossPaymentIntents(db).findOneAndUpdate({ _id: id, state: from }, { $set: { ...set, state: to, updatedAt: new Date() }, ...(unset ? { $unset: unset } : {}) }, { returnDocument: "after" });
 }
 export function attachAppsInTossPayToken(db: Db, id: ObjectId, payToken: string) {
-  const normalizedPayToken = parseTossPayToken(payToken);
-  return transition(db, id, "creating", "awaiting_authorization", { payToken: normalizedPayToken });
+  const validatedPayToken = parseTossPayToken(payToken);
+  return transition(db, id, "creating", "awaiting_authorization", { payToken: validatedPayToken });
 }
 export function claimAppsInTossPaymentExecution(db: Db, id: ObjectId, leaseUntil: Date) {
   const now = new Date(); if (leaseUntil <= now) throw new Error("실행 leaseUntil은 현재보다 이후여야 합니다.");
