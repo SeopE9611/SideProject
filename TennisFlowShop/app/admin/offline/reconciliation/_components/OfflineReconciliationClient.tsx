@@ -22,7 +22,6 @@ import {
   RefreshCcw,
   Save,
   Search,
-  ShieldAlert,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -173,7 +172,7 @@ function ItemActions({
         {item.links.offlineRecordUrl && (
           <Button asChild size="sm" variant="outline">
             <Link href={item.links.offlineRecordUrl}>
-              record 보기 <ExternalLink className="h-3 w-3" />
+              기록 보기 <ExternalLink className="h-3 w-3" />
             </Link>
           </Button>
         )}
@@ -360,67 +359,6 @@ export default function OfflineReconciliationClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 rounded-2xl border border-warning/40 bg-warning/5 p-4 text-foreground/80 flex-row items-center">
-        <ShieldAlert className="h-5 w-5 shrink-0 text-warning" />
-        <div>
-          <p className="font-semibold text-foreground">
-            보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한 항목입니다.
-          </p>
-          <p className={adminTypography.caption}>
-            확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동 재발급/자동 환불은 이번
-            화면에서 수행하지 않습니다.
-          </p>
-        </div>
-      </div>
-
-      <div className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-2 p-3`}>
-        <span className={`mr-1 ${adminTypography.caption} font-semibold`}>빠른 보기</span>
-
-        <Button
-          type="button"
-          size="sm"
-          variant={currentViewLabel === "전체 미처리" ? "default" : "outline"}
-          onClick={() => applyQuickFilter({ type: "all", status: "open" })}
-        >
-          전체 미처리
-        </Button>
-
-        <Button
-          type="button"
-          size="sm"
-          variant={currentViewLabel === "패키지 발급 실패" ? "default" : "outline"}
-          onClick={() => applyQuickFilter({ type: "package_issue", status: "open" })}
-        >
-          발급 실패
-        </Button>
-
-        <Button
-          type="button"
-          size="sm"
-          variant={currentViewLabel === "패키지 사용 연결 누락" ? "default" : "outline"}
-          onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}
-        >
-          사용 연결 누락
-        </Button>
-
-        <Button
-          type="button"
-          size="sm"
-          variant={currentViewLabel === "확인 완료" ? "default" : "outline"}
-          onClick={() => applyQuickFilter({ type: "all", status: "resolved" })}
-        >
-          확인 완료
-        </Button>
-
-        <Button
-          type="button"
-          size="sm"
-          variant={currentViewLabel === "무시" ? "default" : "outline"}
-          onClick={() => applyQuickFilter({ type: "all", status: "ignored" })}
-        >
-          무시
-        </Button>
-      </div>
       <div
         className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 ${adminTypography.body}`}
       >
@@ -432,7 +370,7 @@ export default function OfflineReconciliationClient() {
           </p>
         ) : null}
 
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
           {hasCustomFilters && (
             <Button type="button" size="sm" variant="ghost" onClick={resetFilters}>
               필터 초기화
@@ -444,12 +382,49 @@ export default function OfflineReconciliationClient() {
           </span>
         </div>
       </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <SummaryCard
+          label="전체 미처리"
+          value={summary.open}
+          tone="warning"
+          active={currentViewLabel === "전체 미처리"}
+          onClick={() => applyQuickFilter({ type: "all", status: "open" })}
+        />
+        <SummaryCard
+          label="패키지 발급 실패"
+          value={summary.packageIssue}
+          tone="danger"
+          active={currentViewLabel === "패키지 발급 실패"}
+          onClick={() => applyQuickFilter({ type: "package_issue", status: "open" })}
+        />
+        <SummaryCard
+          label="패키지 사용 연결 누락"
+          value={summary.packageUsage}
+          tone="warning"
+          active={currentViewLabel === "패키지 사용 연결 누락"}
+          onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}
+        />
+        <SummaryCard
+          label="확인 완료"
+          value={summary.resolved}
+          tone="success"
+          active={currentViewLabel === "확인 완료"}
+          onClick={() => applyQuickFilter({ type: "all", status: "resolved" })}
+        />
+        <SummaryCard
+          label="무시"
+          value={summary.ignored}
+          tone="muted"
+          active={currentViewLabel === "무시"}
+          onClick={() => applyQuickFilter({ type: "all", status: "ignored" })}
+        />
+      </div>
       <AdminPageSection
         title="필터"
         description="유형, 상태, 기간으로 보정 대상 목록을 조정합니다."
         icon={Search}
       >
-        <div className="grid gap-3 grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className="space-y-1.5">
             <Label htmlFor="type">유형</Label>
             <Select
@@ -506,7 +481,7 @@ export default function OfflineReconciliationClient() {
               onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
             />
           </div>
-          <div className="flex items-end gap-2">
+          <div className="flex w-full items-end gap-2">
             <Button
               type="button"
               className="flex-1"
@@ -519,55 +494,13 @@ export default function OfflineReconciliationClient() {
               <Search className="h-4 w-4" />
               검색
             </Button>
-            <Button type="button" variant="outline" onClick={resetFilters}>
+            <Button type="button" variant="outline" className="flex-1" onClick={resetFilters}>
               <RefreshCcw className="h-4 w-4" />
               초기화
             </Button>
           </div>
         </div>
       </AdminPageSection>
-
-      <div className="grid gap-3 grid-cols-5">
-        <SummaryCard
-          label="전체 미처리"
-          value={summary.open}
-          tone="warning"
-          active={currentViewLabel === "전체 미처리"}
-          onClick={() => applyQuickFilter({ type: "all", status: "open" })}
-        />
-
-        <SummaryCard
-          label="패키지 발급 실패"
-          value={summary.packageIssue}
-          tone="danger"
-          active={currentViewLabel === "패키지 발급 실패"}
-          onClick={() => applyQuickFilter({ type: "package_issue", status: "open" })}
-        />
-
-        <SummaryCard
-          label="패키지 사용 연결 누락"
-          value={summary.packageUsage}
-          tone="warning"
-          active={currentViewLabel === "패키지 사용 연결 누락"}
-          onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}
-        />
-
-        <SummaryCard
-          label="확인 완료"
-          value={summary.resolved}
-          tone="success"
-          active={currentViewLabel === "확인 완료"}
-          onClick={() => applyQuickFilter({ type: "all", status: "resolved" })}
-        />
-
-        <SummaryCard
-          label="무시"
-          value={summary.ignored}
-          tone="muted"
-          active={currentViewLabel === "무시"}
-          onClick={() => applyQuickFilter({ type: "all", status: "ignored" })}
-        />
-      </div>
 
       {message && (
         <div className={`${adminSurface.cardMuted} p-3 ${adminTypography.metaMuted}`}>
@@ -597,7 +530,18 @@ export default function OfflineReconciliationClient() {
         )}
         {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
           <div className={`${adminSurface.tableCard} overflow-x-auto`}>
-            <table className={`w-full min-w-[1180px] table-fixed ${adminTypography.body}`}>
+            <table className={`w-full min-w-[1620px] table-fixed ${adminTypography.body}`}>
+              <colgroup>
+                <col className="w-[130px]" />
+                <col className="w-[105px]" />
+                <col className="w-[90px]" />
+                <col className="w-[150px]" />
+                <col className="w-[180px]" />
+                <col className="w-[230px]" />
+                <col className="w-[190px]" />
+                <col className="w-[240px]" />
+                <col className="w-[300px]" />
+              </colgroup>
               <thead className={adminSurface.tableHeader}>
                 <tr>
                   <th className={adminDataTable.headCenter}>유형</th>
@@ -608,12 +552,19 @@ export default function OfflineReconciliationClient() {
                   <th className={adminDataTable.head}>내용</th>
                   <th className={adminDataTable.headRight}>금액/패키지명</th>
                   <th className={adminDataTable.head}>에러/사유</th>
-                  <th className={adminDataTable.stickyActionHead}>관리</th>
+                  <th className={cn(adminDataTable.stickyActionHead, "w-[300px]")}>관리</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {data!.items.map((item) => {
                   const note = notes[item.id] ?? item.note ?? "";
+                  const description =
+                    item.type === "package_usage"
+                      ? stringValue(item.metadata.lineSummary)
+                      : item.description;
+                  const errorReason = stringValue(
+                    item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
+                  );
                   return (
                     <tr
                       key={`${item.type}-${item.id}`}
@@ -648,10 +599,11 @@ export default function OfflineReconciliationClient() {
                       </td>
                       <td className={adminDataTable.cellTopLeft}>
                         <p className="font-medium">{item.title}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {item.type === "package_usage"
-                            ? stringValue(item.metadata.lineSummary)
-                            : item.description}
+                        <p
+                          className="mt-1 line-clamp-2 break-words text-xs text-muted-foreground"
+                          title={description}
+                        >
+                          {description}
                         </p>
                       </td>
                       <td className={adminDataTable.cellRight}>
@@ -667,11 +619,11 @@ export default function OfflineReconciliationClient() {
                         </p>
                       </td>
                       <td className={adminDataTable.cellTopLeft}>
-                        {stringValue(
-                          item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
-                        )}
+                        <p className="line-clamp-3 break-words" title={errorReason}>
+                          {errorReason}
+                        </p>
                       </td>
-                      <td className={adminDataTable.stickyActionCell}>
+                      <td className={cn(adminDataTable.stickyActionCell, "w-[300px]")}>
                         <ItemActions
                           item={item}
                           note={note}
@@ -691,7 +643,7 @@ export default function OfflineReconciliationClient() {
             </table>
           </div>
         )}
-        <div className={`mt-4 flex items-center justify-between ${adminTypography.metaMuted}`}>
+        <div className={`mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between ${adminTypography.metaMuted}`}>
           <span>
             총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
             {Math.max(data?.totalPages ?? 0, 1)}페이지

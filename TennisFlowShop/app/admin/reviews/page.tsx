@@ -2,9 +2,7 @@ import AdminReviewListClient from "@/app/admin/reviews/_components/AdminReviewLi
 import AdminReviewMaintenancePanel from "@/app/admin/reviews/_components/AdminReviewMaintenancePanel";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import { Star } from "lucide-react";
 
 import type { Metadata } from "next";
@@ -12,21 +10,6 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "후기 관리",
 };
-
-const reviewGuideItems = [
-  {
-    title: "후기 목록 관리",
-    description: "공개 상태, 상품 연결, 작성 내용을 목록에서 빠르게 확인합니다.",
-  },
-  {
-    title: "유지보수 작업",
-    description: "데이터 정비성 작업은 영향 범위를 확인한 뒤 유지보수 탭에서 신중히 진행하세요.",
-  },
-  {
-    title: "신고/문제 후기 확인",
-    description: "문제가 있는 후기는 내용과 주문·상품 연결 정보를 먼저 점검한 뒤 조치합니다.",
-  },
-];
 
 export default function ReviewsPage() {
   return (
@@ -39,17 +22,8 @@ export default function ReviewsPage() {
         icon={Star}
       />
 
-      <section className="grid gap-3 grid-cols-3">
-        {reviewGuideItems.map((item) => (
-          <div key={item.title} className={cn(adminSurface.cardMuted, "p-4 break-keep")}>
-            <p className={adminTypography.bodyStrong}>{item.title}</p>
-            <p className={cn("mt-1", adminTypography.metaMuted)}>{item.description}</p>
-          </div>
-        ))}
-      </section>
-
       <Tabs defaultValue="list" className="space-y-6">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-2 sm:w-auto">
           <TabsTrigger value="list">목록</TabsTrigger>
           <TabsTrigger value="maintenance">유지보수</TabsTrigger>
         </TabsList>

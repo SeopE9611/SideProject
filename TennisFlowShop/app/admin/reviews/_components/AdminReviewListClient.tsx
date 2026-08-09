@@ -465,12 +465,12 @@ export default function AdminReviewListClient() {
     }
   }
   const GRID =
-    "grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
+    "min-w-[980px] grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
 
   return (
     <div className="space-y-5">
       {/* KPI */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -510,13 +510,13 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className={cn(adminSurface.kpiCard, "col-span-2 min-h-0")}>
+        <Card className={cn(adminSurface.kpiCard, "min-h-0 sm:col-span-2 xl:col-span-2")}>
           <CardContent className="space-y-2 p-4">
             <div className="flex items-center justify-between">
               <p className={adminTypography.caption}>유형별 후기</p>
               <TrendingUp className="h-5 w-5 text-foreground" />
             </div>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground tabular-nums">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-1 text-xs text-muted-foreground tabular-nums sm:grid-cols-2">
               <span>상품 후기 {metrics?.byContext?.product ?? 0}</span>
               <span>상품·교체서비스 후기 {metrics?.byContext?.product_stringing ?? 0}</span>
               <span>교체서비스 후기 {metrics?.byContext?.standalone_stringing ?? 0}</span>
@@ -531,10 +531,10 @@ export default function AdminReviewListClient() {
       <div
         className={cn(
           adminSurface.filterCard,
-          "sticky top-0 z-10 -mt-2 mb-2 flex flex-wrap items-center justify-between gap-3 supports-[backdrop-filter]:bg-card/95",
+          "sticky top-20 z-10 -mt-2 mb-2 flex flex-col items-stretch gap-3 supports-[backdrop-filter]:bg-card/95 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between",
         )}
       >
-        <div className="relative w-80">
+        <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
@@ -546,7 +546,7 @@ export default function AdminReviewListClient() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           <Select
             value={status}
             onValueChange={(v) => {
@@ -554,7 +554,7 @@ export default function AdminReviewListClient() {
               setSize(1);
             }}
           >
-            <SelectTrigger className="h-9 w-32">
+            <SelectTrigger className="h-9 w-full sm:w-32">
               <SelectValue placeholder="상태" />
             </SelectTrigger>
             <SelectContent>
@@ -570,7 +570,7 @@ export default function AdminReviewListClient() {
               setSize(1);
             }}
           >
-            <SelectTrigger className="h-9 w-52">
+            <SelectTrigger className="h-9 w-full sm:w-52">
               <SelectValue placeholder="후기 유형" />
             </SelectTrigger>
             <SelectContent>

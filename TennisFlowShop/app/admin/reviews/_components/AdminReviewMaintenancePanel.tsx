@@ -260,7 +260,7 @@ export default function AdminReviewMaintenancePanel() {
 
         {/* 결과 출력 */}
         {lastResult && (
-          <pre className="mt-2 whitespace-pre-wrap rounded-md bg-card p-3 text-xs">
+          <pre className="mt-2 max-h-[360px] overflow-auto whitespace-pre-wrap break-words rounded-md bg-card p-3 text-xs [overflow-wrap:anywhere]">
             {JSON.stringify(lastResult, null, 2)}
           </pre>
         )}

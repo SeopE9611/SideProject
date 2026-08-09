@@ -980,7 +980,12 @@ export default function OfflineAdminClient() {
                   </Link>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelected(null)}
+                aria-label={`${selected.name} 고객 선택 해제`}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -1098,7 +1103,7 @@ export default function OfflineAdminClient() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                              className="shrink-0 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100"
                               onClick={() =>
                                 setSelected({
                                   source: "online",
@@ -1146,21 +1151,24 @@ export default function OfflineAdminClient() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex shrink-0 items-center gap-1">
+                            <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                               <Button
                                 asChild
                                 size="sm"
                                 variant="ghost"
-                                className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                className="shrink-0"
                               >
-                                <Link href={`/admin/offline/customers/${c.id}`}>
+                                <Link
+                                  href={`/admin/offline/customers/${c.id}`}
+                                  aria-label={`${c.name || "오프라인 고객"} 고객 상세 보기`}
+                                >
                                   <ExternalLink className="h-3 w-3" />
                                 </Link>
                               </Button>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                className="shrink-0"
                                 onClick={() => selectOfflineCustomer(c.id)}
                               >
                                 선택 <ChevronRight className="ml-1 h-3 w-3" />
