@@ -3,7 +3,7 @@
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { AdminSemanticBadge as SemanticBadge } from "@/components/admin/AdminSemanticBadge";
@@ -104,6 +104,7 @@ function RacketStockCells({ item }: { item: Item }) {
           kind="availability"
           state={availability}
           size="sm"
+          className={adminTypography.badgeLabel}
         />
       </TableCell>
       <TableCell className={adminDataTable.cellCenter}>
@@ -173,7 +174,14 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
-  return <RacketBadge kind="condition" state={condition} size="sm" />;
+  return (
+    <RacketBadge
+      kind="condition"
+      state={condition}
+      size="sm"
+      className={adminTypography.badgeLabel}
+    />
+  );
 }
 
 export default function AdminRacketsClient() {
@@ -700,16 +708,27 @@ export default function AdminRacketsClient() {
                               </div>
                               <div className="mt-1 flex flex-wrap gap-1">
                                 {item.marketing?.isNew && (
-                                  <CommerceBadge kind="new" surface="inline" size="sm" />
+                                  <CommerceBadge
+                                    kind="new"
+                                    surface="inline"
+                                    size="sm"
+                                    className={adminTypography.badgeLabel}
+                                  />
                                 )}
                                 {item.marketing?.isFeatured && (
-                                  <CommerceBadge kind="recommended" surface="inline" size="sm" />
+                                  <CommerceBadge
+                                    kind="recommended"
+                                    surface="inline"
+                                    size="sm"
+                                    className={adminTypography.badgeLabel}
+                                  />
                                 )}
                                 {item.marketing?.isSale && Number(item.marketing.salePrice) > 0 && Number(item.marketing.salePrice) < Number(item.price) && (
                                   <CommerceBadge
                                     kind="sale"
                                     surface="inline"
                                     size="sm"
+                                    className={adminTypography.badgeLabel}
                                     discountRate={((Number(item.price) - Number(item.marketing.salePrice)) / Number(item.price)) * 100}
                                   />
                                 )}
@@ -744,7 +763,7 @@ export default function AdminRacketsClient() {
                         <TableCell
                           className={cn(
                             adminDataTable.stickyActionCell,
-                            "group-hover:bg-primary/10 dark:group-hover:bg-primary/20",
+                            "group-even:bg-muted/30 group-hover:bg-primary/10 dark:group-even:bg-card dark:group-hover:bg-primary/20",
                           )}
                         >
                           <DropdownMenu>

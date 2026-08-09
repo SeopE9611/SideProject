@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 
 import { TableHead } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
@@ -42,7 +42,7 @@ export function AdminSortableTableHead({
         onClick={onSort}
         aria-label={`${label}, 현재 ${stateLabel}. 정렬 변경`}
         className={cn(
-          "inline-flex w-full items-center gap-1 rounded-sm text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "inline-flex min-h-8 w-full select-none items-center gap-1 whitespace-nowrap rounded-sm px-1 text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           align === "left" && "justify-start text-left",
           align === "center" && "justify-center text-center",
           align === "right" && "justify-end text-right",
@@ -50,13 +50,18 @@ export function AdminSortableTableHead({
         )}
       >
         {children ?? label}
-        <ChevronDown
-          aria-hidden="true"
-          className={cn(
-            "h-3 w-3 shrink-0 text-muted-foreground transition-transform",
-            active && direction === "desc" && "rotate-180",
-          )}
-        />
+        {active ? (
+          direction === "asc" ? (
+            <ArrowUp aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+          ) : (
+            <ArrowDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+          )
+        ) : (
+          <ArrowUpDown
+            aria-hidden="true"
+            className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-50"
+          />
+        )}
       </button>
     </TableHead>
   );

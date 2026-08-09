@@ -3,7 +3,7 @@
 import { getPackagePricingMeta } from "@/app/services/packages/_lib/packageCard";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
@@ -731,7 +731,12 @@ export default function PackageSettingsClient() {
                           </div>
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {pkg.isPopular && (
-                              <CommerceBadge kind="recommended" surface="inline" size="sm" />
+                              <CommerceBadge
+                                kind="recommended"
+                                surface="inline"
+                                size="sm"
+                                className={adminTypography.badgeLabel}
+                              />
                             )}
                             {!pkg.isActive && <Badge variant="secondary">비활성</Badge>}
                           </div>
