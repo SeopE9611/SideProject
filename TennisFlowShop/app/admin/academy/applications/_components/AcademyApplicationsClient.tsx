@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -229,54 +229,24 @@ export default function AcademyApplicationsClient() {
   }
 
   return (
-    <AdminPageShell>
+    <AdminPageShell variant="wide" className="space-y-6">
       <AdminPageHeader
         title="아카데미 신청 관리"
         description="수강 신청 접수, 상담 상태, 등록 확정 여부를 한 곳에서 확인합니다."
         icon={BookOpen}
         scope="도깨비테니스 아카데미"
         helperText="신청 접수 확인 → 상담·검토 진행 → 등록 확정 관리 → 모집 상태 확인 순서로 운영하세요."
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/academy">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              아카데미 허브로 돌아가기
+            </Link>
+          </Button>
+        }
       />
 
-      <Card className={cn(adminSurface.card, "border-dashed")}>
-        <CardContent className="space-y-4 pt-5">
-          <div className="grid gap-2.5 text-sm grid-cols-4">
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
-              <p className="font-medium text-foreground">1) 신청 접수 확인</p>
-              <p className="mt-1 leading-relaxed text-muted-foreground">
-                신규 신청의 기본 정보와 접수 시점을 우선 확인합니다.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
-              <p className="font-medium text-foreground">2) 상담·검토 진행</p>
-              <p className="mt-1 leading-relaxed text-muted-foreground">
-                레슨 목적과 가능 일정을 점검하며 상담 상태를 관리합니다.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
-              <p className="font-medium text-foreground">3) 등록 확정 관리</p>
-              <p className="mt-1 leading-relaxed text-muted-foreground">
-                정원 및 상담 결과를 기준으로 등록 확정 여부를 반영합니다.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
-              <p className="font-medium text-foreground">4) 모집 상태 확인</p>
-              <p className="mt-1 leading-relaxed text-muted-foreground">
-                클래스 모집·마감 상태와 신청 처리 현황을 함께 확인합니다.
-              </p>
-            </div>
-          </div>
-
-          <Link
-            href="/admin/academy"
-            className="inline-flex text-sm font-medium leading-relaxed text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            아카데미 허브로 돌아가기
-          </Link>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-3 grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <SummaryCard label="전체" value={counts.all} active={status === "all"} />
         {ACADEMY_APPLICATION_STATUSES.map((item) => (
           <SummaryCard
@@ -293,7 +263,7 @@ export default function AcademyApplicationsClient() {
           <CardTitle className="text-base">신청 목록</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-3 flex-row items-center justify-between">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Select
               value={status}
               onValueChange={(value) => {
@@ -301,7 +271,7 @@ export default function AcademyApplicationsClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="상태 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -315,7 +285,7 @@ export default function AcademyApplicationsClient() {
             </Select>
 
             <form
-              className="flex w-full gap-2 flex-row max-w-md"
+              className="flex w-full max-w-md flex-col gap-2 sm:flex-row"
               onSubmit={submitSearch}
             >
               <Input
@@ -323,7 +293,7 @@ export default function AcademyApplicationsClient() {
                 onChange={(event) => setKeywordInput(event.target.value)}
                 placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
               />
-              <Button type="submit" variant="outline" className="w-auto">
+              <Button type="submit" variant="outline" className="w-full sm:w-auto">
                 <Search className="mr-2 h-4 w-4" />
                 검색
               </Button>
@@ -337,16 +307,16 @@ export default function AcademyApplicationsClient() {
           ) : null}
 
           <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
-            <Table className="min-w-[940px]">
+            <Table className="min-w-[1120px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className={adminDataTable.headRight}>접수일</TableHead>
-                  <TableHead className={adminDataTable.head}>신청자</TableHead>
-                  <TableHead className={adminDataTable.head}>선택 클래스</TableHead>
-                  <TableHead className={adminDataTable.head}>희망 정보</TableHead>
-                  <TableHead className={adminDataTable.head}>선호 일정</TableHead>
-                  <TableHead className={adminDataTable.headCenter}>상태</TableHead>
-                  <TableHead className={adminDataTable.stickyActionHead}>관리</TableHead>
+                  <TableHead className={cn(adminDataTable.headRight, "w-[120px]")}>접수일</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[200px]")}>신청자</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[220px]")}>선택 클래스</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[130px]")}>희망 정보</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[170px]")}>선호 일정</TableHead>
+                  <TableHead className={cn(adminDataTable.headCenter, "w-[110px]")}>상태</TableHead>
+                  <TableHead className={cn(adminDataTable.stickyActionHead, "w-[170px]")}>관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -434,7 +404,7 @@ export default function AcademyApplicationsClient() {
                             <Eye className="mr-1 h-4 w-4" />
                             상세 보기
                           </Button>
-                          <DropdownMenu>
+                          {item.status === "cancelled" ? <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                             <Button
                               type="button"
@@ -446,17 +416,6 @@ export default function AcademyApplicationsClient() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="min-w-max">
-                            <DropdownMenuItem
-                              className="whitespace-nowrap"
-                              onSelect={(event) => {
-                                event.preventDefault();
-                                goToDetail(item._id);
-                              }}
-                            >
-                              <Eye className="mr-2 h-4 w-4" />
-                              상세 보기
-                            </DropdownMenuItem>
-                            {item.status === "cancelled" ? (
                               <DropdownMenuItem
                                 className="whitespace-nowrap text-destructive focus:text-destructive"
                                 disabled={deletingId === item._id}
@@ -468,9 +427,8 @@ export default function AcademyApplicationsClient() {
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 {deletingId === item._id ? "삭제 중..." : "삭제"}
                               </DropdownMenuItem>
-                            ) : null}
                             </DropdownMenuContent>
-                          </DropdownMenu>
+                          </DropdownMenu> : null}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -480,7 +438,7 @@ export default function AcademyApplicationsClient() {
             </Table>
           </div>
 
-          <div className="flex gap-2 text-sm text-muted-foreground flex-row items-center justify-between">
+          <div className="flex flex-col items-stretch gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <span>
               {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1} 페이지 · 총{" "}
               {data?.pagination.total ?? 0}건
