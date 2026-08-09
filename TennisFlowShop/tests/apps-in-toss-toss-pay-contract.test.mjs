@@ -48,12 +48,41 @@ test("환불 사유의 공식 문자와 55자 제한을 검증한다", () => {
 });
 
 test("payToken과 orderNo 길이 및 문자 계약을 검증한다", () => {
-  assert.equal(contract.parseTossPayToken(" token "), "token");
+  assert.equal(contract.parseTossPayToken("opaque-token"), "opaque-token");
+  assert.equal(contract.parseTossPayToken(" token "), " token ");
   assert.equal(contract.parseTossPayToken("a".repeat(30)), "a".repeat(30));
+  assert.throws(() => contract.parseTossPayToken(""));
   assert.throws(() => contract.parseTossPayToken(" "));
   assert.throws(() => contract.parseTossPayToken("a".repeat(31)));
   assert.equal(contract.isValidTossPayOrderNo("dkt-order_1:ok"), true);
   assert.equal(contract.isValidTossPayOrderNo("invalid/order"), false);
+});
+
+test("결제 금액 필드의 7자리 상한과 기존 정수 정책을 검증한다", () => {
+  assert.equal(contract.parseMakePaymentInput({ ...validMakePayment, amount: 1 }).amount, 1);
+  assert.equal(contract.parseMakePaymentInput({ ...validMakePayment, amount: 9_999_999 }).amount, 9_999_999);
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, amount: 10_000_000 }));
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, amountTaxFree: 10_000_000 }));
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, amountTaxable: 10_000_000 }));
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, amountVat: 10_000_000 }));
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, amount: 1.5 }));
+  assert.throws(() => contract.parseMakePaymentInput({ ...validMakePayment, amount: -1 }));
+});
+
+test("execute SUCCESS의 approvalTime은 비어 있지 않은 문자열만 허용한다", () => {
+  const response = {
+    resultType: "SUCCESS",
+    success: {
+      mode: "TEST", orderNo: "dkt-order_1", amount: 10_000, approvalTime: "2026-01-02T03:04:05Z",
+      stateMsg: "approved", discountedAmount: 0, paidAmount: 10_000, payMethod: "CARD",
+      payToken: "opaque-token", transactionId: "transaction-1",
+    },
+  };
+  assert.equal(contract.parseExecutePaymentResponse(response).kind, "success");
+  assert.throws(
+    () => contract.parseExecutePaymentResponse({ ...response, success: { ...response.success, approvalTime: null } }),
+    contract.TossPayContractError,
+  );
 });
 
 test("sandbox/live isTestPayment 계약이 유지된다", () => {

@@ -3,7 +3,8 @@ import { z } from "zod";
 
 const nonEmpty = z.string().trim().min(1);
 const money = z.number().int().nonnegative();
-export const PayTokenSchema = z.string().trim().min(1).max(30);
+const tossPayAmount = z.number().int().nonnegative().max(9_999_999);
+export const PayTokenSchema = z.string().min(1).max(30).refine((value) => value.trim().length > 0);
 export const TOSS_PAY_KNOWN_STATUSES = [
   "PAY_STANDBY", "PAY_APPROVED", "PAY_CANCEL", "PAY_PROGRESS", "PAY_COMPLETE",
   "REFUND_PROGRESS", "REFUND_SUCCESS", "SETTLEMENT_COMPLETE", "SETTLEMENT_REFUND_COMPLETE",
@@ -29,8 +30,8 @@ export function isKnownTossPayStatus(value: string): value is (typeof TOSS_PAY_K
 
 const ProductDescSchema = z.string().trim().min(1).max(255).refine((v) => !/[\\"]/.test(v));
 const AmountSchema = z.object({
-  amount: z.number().int().positive(), amountTaxFree: money,
-  amountTaxable: money.optional(), amountVat: money.optional(),
+  amount: tossPayAmount.positive(), amountTaxFree: tossPayAmount,
+  amountTaxable: tossPayAmount.optional(), amountVat: tossPayAmount.optional(),
 }).refine((v) => v.amountTaxFree <= v.amount);
 export const MakePaymentInputSchema = AmountSchema.and(z.object({
   orderNo: z.string(), productDesc: ProductDescSchema, cashReceipt: z.boolean(),
@@ -41,7 +42,7 @@ export const MakePaymentInputSchema = AmountSchema.and(z.object({
 const FailureEnvelopeSchema = z.object({ resultType: z.string().min(1) }).passthrough();
 const ExecuteSuccessSchema = z.object({
   resultType: z.literal("SUCCESS"), success: z.object({
-    mode: nonEmpty, orderNo: nonEmpty, amount: money, approvalTime: nonEmpty.nullable(), stateMsg: nonEmpty,
+    mode: nonEmpty, orderNo: nonEmpty, amount: money, approvalTime: nonEmpty, stateMsg: nonEmpty,
     discountedAmount: money, paidAmount: money, payMethod: nonEmpty, payToken: PayTokenSchema, transactionId: nonEmpty,
   }).passthrough(),
 }).passthrough();
