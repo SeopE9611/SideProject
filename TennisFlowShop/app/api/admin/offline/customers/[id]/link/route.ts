@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { MongoServerError, ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
 import { sanitizeCustomer } from "@/lib/offline/offline.repository";
 
 const oid = (id: string) => (ObjectId.isValid(id) ? new ObjectId(id) : null);
+
+function isLinkedUserDuplicate(error: unknown) {
+  if (!(error instanceof MongoServerError) || error.code !== 11000) return false;
+  return (
+    error.keyPattern?.linkedUserId === 1 ||
+    Object.prototype.hasOwnProperty.call(error.keyValue ?? {}, "linkedUserId")
+  );
+}
 
 function sanitizeLinkedUser(user: any) {
   return user
@@ -64,20 +72,50 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     );
   }
 
-  await guard.db.collection("offline_customers").updateOne(
-    { _id },
-    {
-      $set: {
-        linkedUserId: userId,
-        updatedAt: new Date(),
-        updatedBy: guard.admin._id,
+  let updateResult;
+  try {
+    updateResult = await guard.db.collection("offline_customers").updateOne(
+      {
+        _id,
+        $or: [
+          { linkedUserId: { $exists: false } },
+          { linkedUserId: null },
+          { linkedUserId: userId },
+        ],
       },
-    },
-  );
+      {
+        $set: {
+          linkedUserId: userId,
+          updatedAt: new Date(),
+          updatedBy: guard.admin._id,
+        },
+      },
+    );
+  } catch (error) {
+    if (!isLinkedUserDuplicate(error)) throw error;
+    const linkedCustomer = await guard.db.collection("offline_customers").findOne(
+      { _id: { $ne: _id }, linkedUserId: userId },
+      { projection: { _id: 1 } },
+    );
+    if (!linkedCustomer) throw error;
+    return NextResponse.json(
+      {
+        message: "user already linked to another offline customer",
+        offlineCustomerId: String(linkedCustomer._id),
+      },
+      { status: 409 },
+    );
+  }
   const updated = await guard.db.collection("offline_customers").findOne({ _id });
   if (!updated) return NextResponse.json({ message: "customer not found" }, { status: 404 });
+  if (updateResult.matchedCount === 0 || String(updated.linkedUserId) !== String(userId)) {
+    return NextResponse.json(
+      { message: "customer already linked to another user" },
+      { status: 409 },
+    );
+  }
 
-  await appendAudit(
+  await appendAdminAudit(
     guard.db,
     {
       type: "offline_customer_link_user",
@@ -127,7 +165,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const updated = await guard.db.collection("offline_customers").findOne({ _id });
   if (!updated) return NextResponse.json({ message: "customer not found" }, { status: 404 });
 
-  await appendAudit(
+  await appendAdminAudit(
     guard.db,
     {
       type: "offline_customer_unlink_user",

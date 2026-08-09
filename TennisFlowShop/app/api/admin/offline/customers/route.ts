@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { MongoServerError, ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
 import { offlineCustomerCreateSchema } from "@/lib/offline/validators";
 import { buildCustomerSearchFilter, sanitizeCustomer } from "@/lib/offline/offline.repository";
 import { normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
+
+function isLinkedUserDuplicate(error: unknown) {
+  if (!(error instanceof MongoServerError) || error.code !== 11000) return false;
+  return (
+    error.keyPattern?.linkedUserId === 1 ||
+    Object.prototype.hasOwnProperty.call(error.keyValue ?? {}, "linkedUserId")
+  );
+}
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
@@ -39,6 +47,10 @@ export async function POST(req: Request) {
   const data = parsed.data;
   const phoneNormalized = normalizePhone(data.phone);
   const emailLower = normalizeEmail(data.email);
+  const linkedUserId =
+    data.linkedUserId && ObjectId.isValid(data.linkedUserId)
+      ? new ObjectId(data.linkedUserId)
+      : null;
   const duplicate = await db
     .collection("offline_customers")
     .findOne({ name: data.name, phoneNormalized }, { projection: { _id: 1 } });
@@ -47,12 +59,22 @@ export async function POST(req: Request) {
       { message: "duplicate", existingId: String((duplicate as any)._id) },
       { status: 409 },
     );
+  if (linkedUserId) {
+    const linkedCustomer = await db
+      .collection("offline_customers")
+      .findOne({ linkedUserId }, { projection: { _id: 1 } });
+    if (linkedCustomer)
+      return NextResponse.json(
+        {
+          message: "user already linked to another offline customer",
+          offlineCustomerId: String(linkedCustomer._id),
+        },
+        { status: 409 },
+      );
+  }
   const now = new Date();
   const doc: Record<string, any> = {
-    linkedUserId:
-      data.linkedUserId && ObjectId.isValid(data.linkedUserId)
-        ? new ObjectId(data.linkedUserId)
-        : null,
+    linkedUserId,
     name: data.name,
     phone: data.phone,
     phoneNormalized,
@@ -66,8 +88,24 @@ export async function POST(req: Request) {
     updatedAt: now,
     createdBy: admin._id,
   };
-  const result = await db.collection("offline_customers").insertOne(doc);
-  await appendAudit(
+  let result;
+  try {
+    result = await db.collection("offline_customers").insertOne(doc);
+  } catch (error) {
+    if (!linkedUserId || !isLinkedUserDuplicate(error)) throw error;
+    const linkedCustomer = await db
+      .collection("offline_customers")
+      .findOne({ linkedUserId }, { projection: { _id: 1 } });
+    if (!linkedCustomer) throw error;
+    return NextResponse.json(
+      {
+        message: "user already linked to another offline customer",
+        offlineCustomerId: String(linkedCustomer._id),
+      },
+      { status: 409 },
+    );
+  }
+  await appendAdminAudit(
     db,
     {
       type: "offline_customer_create",
