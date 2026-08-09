@@ -7,8 +7,10 @@ import {
   createSafePaymentIntentResponse,
   isAppsPaymentIntentExpired,
   isPastVisitSlot,
+  isSemanticCalendarDate,
   isSameAppsPaymentPayload,
 } from "../lib/apps-in-toss/server/payment-prepare-contract";
+import { buildAppsTossPayMakePaymentInput, normalizeAppsTossPayProductDescription } from "../lib/apps-in-toss/server/toss-pay-policy-contract";
 
 const validRequest = {
   attemptId: "e68bd11d-f557-4a52-a20a-22f84cb28215",
@@ -37,6 +39,30 @@ test("self_ship 주소를 검증하고 visit 주소는 요구하지 않는다", 
   const visit = { ...validRequest, collectionMethod: "visit", shipping: { postalCode: "", address: "", addressDetail: "" }, work: { ...validRequest.work, preferredDate: "2026-08-10", preferredTime: "10:00" } };
   assert.equal(AppsPaymentPrepareRequestSchema.safeParse(visit).success, true);
   assert.equal(AppsPaymentPrepareRequestSchema.safeParse({ ...visit, work: { ...visit.work, preferredTime: "" } }).success, false);
+});
+
+test("visit 날짜가 실제 Gregorian calendar에 존재하는지 검증한다", () => {
+  assert.equal(isSemanticCalendarDate("2026-02-28"), true);
+  assert.equal(isSemanticCalendarDate("2026-02-29"), false);
+  assert.equal(isSemanticCalendarDate("2024-02-29"), true);
+  assert.equal(isSemanticCalendarDate("2026-02-30"), false);
+});
+
+test("Apps Toss Pay 과세 및 현금영수증 정책과 상품 설명을 구성한다", () => {
+  const input = buildAppsTossPayMakePaymentInput({
+    orderNo: "dkt-order_1",
+    pricingSnapshot: { payableAmount: 10_000 },
+    itemSnapshot: [{ name: ' 테스트 \\"상품 '.repeat(30) }],
+  } as never);
+  assert.equal(input.amountTaxFree, 0);
+  assert.equal(input.cashReceipt, true);
+  assert.equal(input.cashReceiptTradeOption, "GENERAL");
+  assert.equal("amountTaxable" in input, false);
+  assert.equal("amountVat" in input, false);
+  assert.equal("installment" in input, false);
+  assert.equal(input.productDesc.length <= 255, true);
+  assert.equal(/[\\"]/.test(input.productDesc), false);
+  assert.equal(normalizeAppsTossPayProductDescription("  ").trim().length > 0, true);
 });
 
 test("visit 주소는 비우고 self_ship 주소는 유지한다", () => {

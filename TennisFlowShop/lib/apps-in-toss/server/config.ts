@@ -10,6 +10,7 @@ const TOSS_PAY_ENV_NAME = "APPS_IN_TOSS_TOSS_PAY_ENV" as const;
 
 export const APPS_IN_TOSS_APP_NAME = "dokkaebitennis";
 export const APPS_IN_TOSS_API_HOST = "apps-in-toss-api.toss.im";
+export const APPS_IN_TOSS_TOSS_PAY_API_HOST = "pay-apps-in-toss-api.toss.im";
 export const APPS_IN_TOSS_HTTP_TIMEOUT_MS = 8_000;
 export const APPS_IN_TOSS_MAX_RESPONSE_BYTES = 64 * 1024;
 

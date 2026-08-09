@@ -4,6 +4,7 @@ import https from "node:https";
 
 import {
   APPS_IN_TOSS_API_HOST,
+  APPS_IN_TOSS_TOSS_PAY_API_HOST,
   APPS_IN_TOSS_HTTP_TIMEOUT_MS,
   APPS_IN_TOSS_MAX_RESPONSE_BYTES,
   getAppsInTossMtlsCredentials,
@@ -27,14 +28,14 @@ type MtlsJsonRequest = {
   body?: unknown;
 };
 
-export function requestTossJson({ method, path, headers = {}, body }: MtlsJsonRequest): Promise<unknown> {
+function requestMtlsJson(hostname: typeof APPS_IN_TOSS_API_HOST | typeof APPS_IN_TOSS_TOSS_PAY_API_HOST, { method, path, headers = {}, body }: MtlsJsonRequest): Promise<unknown> {
   const payload = body === undefined ? undefined : Buffer.from(JSON.stringify(body), "utf8");
   const credentials = getAppsInTossMtlsCredentials();
 
   return new Promise((resolve, reject) => {
     const request = https.request(
       {
-        hostname: APPS_IN_TOSS_API_HOST,
+        hostname,
         port: 443,
         method,
         path,
@@ -86,4 +87,12 @@ export function requestTossJson({ method, path, headers = {}, body }: MtlsJsonRe
     if (payload) request.write(payload);
     request.end();
   });
+}
+
+export function requestTossJson(request: MtlsJsonRequest): Promise<unknown> {
+  return requestMtlsJson(APPS_IN_TOSS_API_HOST, request);
+}
+
+export function requestTossPayJson(request: MtlsJsonRequest): Promise<unknown> {
+  return requestMtlsJson(APPS_IN_TOSS_TOSS_PAY_API_HOST, request);
 }

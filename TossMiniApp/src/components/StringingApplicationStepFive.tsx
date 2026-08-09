@@ -44,6 +44,12 @@ function getPaymentErrorMessage(error: AppsPaymentApiError): string {
       return "선택한 상품 옵션을 다시 확인해주세요.";
     case "PAYMENT_CONFIGURATION_MISSING":
       return "결제 준비 서버 설정을 확인하지 못했습니다.";
+    case "PAYMENT_CREATION_IN_PROGRESS":
+      return "결제 준비를 처리하고 있어요. 잠시 후 다시 확인해주세요.";
+    case "PAYMENT_CREATION_FAILED":
+    case "TOSS_PAY_UNAVAILABLE":
+    case "TOSS_PAY_MAKE_FAILED":
+      return "결제 준비에 실패했어요. 다시 시도해주세요.";
     default:
       return "결제 준비 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.";
   }
@@ -138,7 +144,7 @@ function StringingApplicationStepFive({
         throw new AppsPaymentApiError("결제 준비 식별자를 확인하지 못했습니다.", 0);
       }
 
-      if (intent.state !== "creating" || intent.expired || intent.paymentReady) {
+      if (intent.state !== "awaiting_authorization" || intent.expired || !intent.paymentReady) {
         throw new AppsPaymentApiError("결제 준비 상태를 확인하지 못했습니다.", 0);
       }
 
@@ -151,7 +157,10 @@ function StringingApplicationStepFive({
         if (
           error.code === "PAYMENT_INTENT_EXPIRED" ||
           error.code === "ATTEMPT_PAYLOAD_MISMATCH" ||
-          error.code === "ATTEMPT_CONFLICT"
+          error.code === "ATTEMPT_CONFLICT" ||
+          error.code === "PAYMENT_CREATION_FAILED" ||
+          error.code === "TOSS_PAY_UNAVAILABLE" ||
+          error.code === "TOSS_PAY_MAKE_FAILED"
         ) {
           onPaymentAttemptIdChange(null);
         }
@@ -185,15 +194,15 @@ function StringingApplicationStepFive({
           <div>
             <div className="rounded-[20px] bg-[#f4f9e8] p-5" role="status">
               <strong className="block text-base font-extrabold text-[#344700]">
-                {isPaymentConfirmed ? "결제 준비 정보를 확인했어요." : "로그인이 완료됐어요."}
+                {isPaymentConfirmed ? "결제 준비가 완료됐어요." : "로그인이 완료됐어요."}
               </strong>
               <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#59636e]">
                 {isPaymentConfirmed
-                  ? "상품 옵션, 주문 금액, 신청 정보와 예약 가능 여부를 서버에서 다시 확인했습니다."
+                  ? "서버에서 주문 정보를 다시 확인하고 토스페이 Sandbox 결제 건을 생성했습니다."
                   : `${auth.user.name}님으로 로그인했습니다.`}
               </p>
               <p className="mt-2 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                현재는 결제 연동 전 단계로 실제 주문이나 결제는 발생하지 않습니다. 결제 연결은 다음 구현 단계에서 진행됩니다.
+                현재 테스트 단계에서는 실제 승인이나 결제가 발생하지 않습니다.
               </p>
             </div>
             <button

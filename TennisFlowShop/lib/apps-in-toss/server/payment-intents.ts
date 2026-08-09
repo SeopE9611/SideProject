@@ -58,6 +58,10 @@ export function attachAppsInTossPayToken(db: Db, id: ObjectId, payToken: string)
   const validatedPayToken = parseTossPayToken(payToken);
   return transition(db, id, "creating", "awaiting_authorization", { payToken: validatedPayToken });
 }
+export function recordAppsInTossPaymentCreationFailed(db: Db, id: ObjectId, failureCode: string) {
+  const safeFailureCode = failureCode.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 100) || "MAKE_PAYMENT_FAILED";
+  return transition(db, id, "creating", "failed", { failureStage: "make_payment", failureCode: safeFailureCode });
+}
 export function claimAppsInTossPaymentExecution(db: Db, id: ObjectId, leaseUntil: Date) {
   const now = new Date(); if (leaseUntil <= now) throw new Error("실행 leaseUntil은 현재보다 이후여야 합니다.");
   return transition(db, id, "awaiting_authorization", "executing", { execution: { claimedAt: now, leaseUntil } });
