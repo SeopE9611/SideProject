@@ -6,6 +6,10 @@ import { assertAttemptId } from "./toss-pay-contract";
 const trimmed = (max: number) => z.string().trim().min(1).max(max);
 const optionalTrimmed = (max: number) => z.string().trim().max(max).optional().default("");
 
+export function toSafeValidationDiagnostic(issues: readonly z.ZodIssue[]) {
+  return issues.map((issue) => ({ path: issue.path.join("."), code: issue.code }));
+}
+
 export function isSemanticCalendarDate(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return false;

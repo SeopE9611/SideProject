@@ -26,6 +26,10 @@ type StringingApplicationStepFiveProps = {
 
 function getPaymentErrorMessage(error: AppsPaymentApiError): string {
   switch (error.code) {
+    case "INVALID_REQUEST":
+      return "입력한 주문 정보를 다시 확인해주세요. 이전 단계로 돌아가 정보를 확인해주세요.";
+    case "INVALID_PAYMENT_AMOUNT":
+      return "결제 금액을 확인하지 못했어요. 주문 정보를 다시 확인해주세요.";
     case "AUTH_REQUIRED":
       return "로그인 정보가 만료됐어요. 다시 로그인해주세요.";
     case "PAYMENT_INTENT_EXPIRED":

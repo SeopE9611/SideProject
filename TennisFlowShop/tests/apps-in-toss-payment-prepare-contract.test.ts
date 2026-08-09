@@ -9,6 +9,7 @@ import {
   isPastVisitSlot,
   isSemanticCalendarDate,
   isSameAppsPaymentPayload,
+  toSafeValidationDiagnostic,
 } from "../lib/apps-in-toss/server/payment-prepare-contract";
 import { buildAppsTossPayMakePaymentInput, normalizeAppsTossPayProductDescription } from "../lib/apps-in-toss/server/toss-pay-policy-contract";
 
@@ -41,11 +42,38 @@ test("self_ship 주소를 검증하고 visit 주소는 요구하지 않는다", 
   assert.equal(AppsPaymentPrepareRequestSchema.safeParse({ ...visit, work: { ...visit.work, preferredTime: "" } }).success, false);
 });
 
+test("대표 visit 결제 준비 요청 전체를 허용한다", () => {
+  const visit = {
+    attemptId: "ea075d77-e109-43d7-a7ec-9b97021b99b2",
+    productId: "507f191e810c19729de860ea",
+    selectedColor: "navy",
+    selectedGauge: "1.25",
+    applicant: { name: "테스트", email: "visit@example.com", phone: "01012345678" },
+    collectionMethod: "visit",
+    shipping: { postalCode: "", address: "", addressDetail: "" },
+    work: { racketType: "테스트 라켓", tensionMain: "48", tensionCross: "46", note: "", preferredDate: "2026-08-09", preferredTime: "10:00" },
+  };
+  assert.equal(AppsPaymentPrepareRequestSchema.safeParse(visit).success, true);
+});
+
 test("visit 날짜가 실제 Gregorian calendar에 존재하는지 검증한다", () => {
+  assert.equal(isSemanticCalendarDate("2026-08-09"), true);
+  assert.equal(isSemanticCalendarDate("2026-08-10"), true);
   assert.equal(isSemanticCalendarDate("2026-02-28"), true);
   assert.equal(isSemanticCalendarDate("2026-02-29"), false);
   assert.equal(isSemanticCalendarDate("2024-02-29"), true);
   assert.equal(isSemanticCalendarDate("2026-02-30"), false);
+});
+
+test("validation diagnostic은 path와 code만 포함하고 입력값을 제외한다", () => {
+  const secretInput = "private@example.com";
+  const parsed = AppsPaymentPrepareRequestSchema.safeParse({ ...validRequest, applicant: { ...validRequest.applicant, email: secretInput.repeat(20) } });
+  assert.equal(parsed.success, false);
+  if (parsed.success) return;
+  const diagnostic = toSafeValidationDiagnostic(parsed.error.issues);
+  assert.deepEqual(Object.keys(diagnostic[0] ?? {}).sort(), ["code", "path"]);
+  assert.equal(diagnostic.some((issue) => issue.path === "applicant.email"), true);
+  assert.equal(JSON.stringify(diagnostic).includes(secretInput), false);
 });
 
 test("Apps Toss Pay 과세 및 현금영수증 정책과 상품 설명을 구성한다", () => {

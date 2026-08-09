@@ -112,6 +112,8 @@ function StringingApplicationStepOne({
       next.name = "이름을 입력해주세요.";
     } else if (name.length < 2) {
       next.name = "이름은 2자 이상 입력해주세요.";
+    } else if (name.length > 100) {
+      next.name = "이름은 100자 이하로 입력해주세요.";
     }
 
     const email = applicant.email.trim();
@@ -120,6 +122,8 @@ function StringingApplicationStepOne({
       next.email = "이메일을 입력해주세요.";
     } else if (!EMAIL_RE.test(email)) {
       next.email = "이메일 형식을 확인해주세요.";
+    } else if (email.length > 254) {
+      next.email = "이메일은 254자 이하로 입력해주세요.";
     }
 
     if (!applicant.phone.trim()) {
@@ -328,6 +332,7 @@ function StringingApplicationStepOne({
                 touched.name && errors.name ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="text"
+              maxLength={100}
               value={applicant.name}
               autoComplete="name"
               placeholder="이름을 입력해주세요"
@@ -348,6 +353,7 @@ function StringingApplicationStepOne({
                 touched.email && errors.email ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="email"
+              maxLength={254}
               value={applicant.email}
               autoComplete="email"
               placeholder="이메일을 입력해주세요"
@@ -368,6 +374,7 @@ function StringingApplicationStepOne({
                 touched.phone && errors.phone ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
               }`}
               type="tel"
+              maxLength={20}
               inputMode="numeric"
               value={applicant.phone}
               autoComplete="tel"
