@@ -62,7 +62,14 @@ test("UI는 adminMutator 기반 수동 상태 확인만 제공한다", () => {
   assert.match(client, /adminMutator<AppsInTossAdminStatusCheckResponse>/);
   assert.match(client, /method: "POST"/);
   assert.match(client, /Toss 상태 확인/);
-  assert.match(client, /checkingAttemptId/);
+  assert.doesNotMatch(client, /useState<string \| null>\(null\)/);
+  assert.match(client, /useState<Set<string>>/);
+  assert.match(client, /if \(checkingAttemptIdsRef\.current\.has\(attemptId\)\) return;/);
+  assert.match(client, /setCheckingAttemptIds\(\(current\) => new Set\(current\)\.add\(attemptId\)\)/);
+  assert.match(client, /const next = new Set\(current\);[\s\S]*next\.delete\(attemptId\);[\s\S]*return next;/);
+  assert.match(client, /disabled=\{checkingAttemptIds\.has\(item\.attemptId\)\}/);
+  assert.match(client, /checkingAttemptIds\.has\(item\.attemptId\) \? "확인 중\.\.\." : "Toss 상태 확인"/);
+  assert.equal((client.match(/adminMutator<AppsInTossAdminStatusCheckResponse>/g) ?? []).length, 1);
   assert.match(client, /확인 중\.\.\./);
   assert.match(client, /외부 상태:/);
   assert.doesNotMatch(client, /setInterval|setTimeout|refreshInterval/);
