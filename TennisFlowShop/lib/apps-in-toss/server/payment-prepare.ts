@@ -4,10 +4,9 @@ import type { Db, ObjectId } from "mongodb";
 import { ObjectId as MongoObjectId } from "mongodb";
 
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
-import { buildSlotSummaryForDate } from "@/app/features/stringing-applications/lib/slotEngine";
+import { buildSlotSummaryForDate, loadStringingSettings, resolveDaySchedule } from "@/app/features/stringing-applications/lib/slotEngine";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
 import { publicProductFilter } from "@/lib/public-visibility";
-import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { getAppsInTossTossPayMode } from "./config";
 import { TossApiError } from "./http";
 import { loadActiveAppsInTossUserKey } from "./identity";
@@ -83,17 +82,6 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
   if (variant.isSoldOut === true) throw new AppsPaymentPrepareError(409, "VARIANT_SOLD_OUT", "선택한 옵션 조합은 품절입니다.");
   if (Number(variant.stock ?? 0) < 1) throw new AppsPaymentPrepareError(409, "VARIANT_INSUFFICIENT_STOCK", "선택한 옵션 조합의 재고가 부족합니다.");
 
-  if (request.collectionMethod === "visit") {
-    try {
-      if (isPastVisitSlot(request.work.preferredDate, request.work.preferredTime, new Date())) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
-      const slots = await buildSlotSummaryForDate(db, request.work.preferredDate, 1);
-      if (slots.closed || !slots.availableTimes.includes(request.work.preferredTime)) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
-    } catch (error) {
-      if (error instanceof AppsPaymentPrepareError) throw error;
-      throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
-    }
-  }
-
   const productName = String(product.name ?? "").trim();
   if (!productName) throw new AppsPaymentPrepareError(404, "PRODUCT_NOT_AVAILABLE", "현재 주문할 수 없는 상품입니다.");
   const mountingFee = Number.isFinite(Number(product.mountingFee)) ? Number(product.mountingFee) : 0;
@@ -112,6 +100,27 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
     pointsToUse: 0, stringingApplicationInput: stringingInput,
   });
   if (quote.payableTotalPrice <= 0 || quote.payableTotalPrice > 9_999_999) throw new AppsPaymentPrepareError(400, "INVALID_PAYMENT_AMOUNT", "결제 금액을 사용할 수 없습니다.");
+  const quotedItem = quote.itemsWithSnapshot[0];
+  if (!quotedItem || quotedItem.kind !== "product") throw new AppsPaymentPrepareError(400, "INVALID_PAYMENT_AMOUNT", "결제 금액을 사용할 수 없습니다.");
+  let visitSnapshot: { preferredDate: string; preferredTime: string; slotCount: number; durationMinutes: number; capacityAtPrepare: number } | undefined;
+  if (isVisit) {
+    try {
+      if (isPastVisitSlot(request.work.preferredDate, request.work.preferredTime, new Date())) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
+      const settings = await loadStringingSettings(db);
+      const schedule = resolveDaySchedule(settings, request.work.preferredDate);
+      const slots = await buildSlotSummaryForDate(db, request.work.preferredDate, quote.requiredPassCount, settings);
+      if (slots.closed || !slots.availableTimes.includes(request.work.preferredTime)) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
+      visitSnapshot = {
+        preferredDate: request.work.preferredDate, preferredTime: request.work.preferredTime,
+        slotCount: quote.requiredPassCount,
+        durationMinutes: schedule.interval * quote.requiredPassCount,
+        capacityAtPrepare: slots.capacity,
+      };
+    } catch (error) {
+      if (error instanceof AppsPaymentPrepareError) throw error;
+      throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
+    }
+  }
   const checkoutPayload: AppsCheckoutPayload = {
     items: [{ productId: request.productId, quantity: 1, kind: "product", selectedColor: request.selectedColor, selectedGauge: request.selectedGauge }],
     applicant: request.applicant, collectionMethod: request.collectionMethod, shipping: request.shipping,
@@ -124,9 +133,10 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
     intent = await createAppsInTossPaymentIntent(db, {
       attemptId: request.attemptId, userId, identityId, orderNo: generateTossPayOrderNo(), isTestPayment: mode.isTestPayment,
       checkoutPayload,
-      pricingSnapshot: { subtotal: quote.subtotal, shippingFee: quote.shippingFee, serviceFee: quote.serviceFee, pointsUsed: quote.pointsUsed, payableAmount: quote.payableTotalPrice },
-      itemSnapshot: [{ productId, quantity: 1, selectedColor: request.selectedColor, selectedGauge: request.selectedGauge, name: productName, price: getEffectiveProductPrice(product) }],
-      ...(isVisit ? { reservationSnapshot: { preferredDate: request.work.preferredDate, preferredTime: request.work.preferredTime } } : {}),
+      pricingSnapshot: { subtotal: quote.subtotal, shippingFee: quote.shippingFee, serviceFee: quote.serviceFee, serviceFeeBeforePackage: quote.serviceFeeBeforePackage, pointsUsed: quote.pointsUsed, payableAmount: quote.payableTotalPrice },
+      itemSnapshot: [{ productId, quantity: 1, selectedColor: request.selectedColor, selectedGauge: request.selectedGauge, name: quotedItem.name, price: quotedItem.price, mountingFee: quotedItem.mountingFee }],
+      packageSnapshot: { applied: quote.packageApplied, requiredPassCount: quote.requiredPassCount, ...(quote.packagePassId ? { passId: quote.packagePassId } : {}) },
+      ...(visitSnapshot ? { reservationSnapshot: visitSnapshot } : {}),
       expiresAt: new Date(Date.now() + APPS_PAYMENT_PREPARE_TTL_MS),
     });
   } catch (error) {

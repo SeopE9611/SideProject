@@ -12,6 +12,7 @@ export const coreContractFiles = [
   "admin-points-history.contract.test.mjs",
   "apps-in-toss-toss-pay-contract.test.mjs",
   "apps-in-toss-payment-execution.contract.test.mjs",
+  "apps-in-toss-payment-snapshot.contract.test.mjs",
   "board-public-url-policy.contract.test.mjs",
   "boards-rich-text-content.contract.test.mjs",
   "community-access-and-moderation.contract.test.mjs",
