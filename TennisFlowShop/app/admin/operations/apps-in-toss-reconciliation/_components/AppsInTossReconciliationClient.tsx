@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AlertTriangle, RefreshCcw, Search } from "lucide-react";
 import { useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import useSWR from "swr";
+import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -15,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import type { AppsInTossAdminStatusCheckResponse, AppsInTossAttentionIssueType, AppsInTossObservedPaymentStatusClassification, AppsInTossReconciliationResponse } from "@/types/admin/apps-in-toss-reconciliation";
+import type { AppsInTossAdminRecoveryResponse, AppsInTossAdminStatusCheckResponse, AppsInTossAttentionIssueType, AppsInTossObservedPaymentStatusClassification, AppsInTossReconciliationResponse } from "@/types/admin/apps-in-toss-reconciliation";
 
 const ISSUE_LABELS: Record<AppsInTossAttentionIssueType | "all", string> = {
   all: "전체", reconciliation_required: "수동 대사 필요", compensation_refund_required: "보상 환불 필요",
@@ -44,6 +45,10 @@ export default function AppsInTossReconciliationClient() {
   const [page, setPage] = useState(1);
   const checkingAttemptIdsRef = useRef(new Set<string>());
   const [checkingAttemptIds, setCheckingAttemptIds] = useState<Set<string>>(() => new Set());
+  const recoveringAttemptIdsRef = useRef(new Set<string>());
+  const [recoveringAttemptIds, setRecoveringAttemptIds] = useState<Set<string>>(() => new Set());
+  const [recoveryAttemptId, setRecoveryAttemptId] = useState<string | null>(null);
+  const [recoveryResults, setRecoveryResults] = useState<Record<string, AppsInTossAdminRecoveryResponse>>({});
   const [statusChecks, setStatusChecks] = useState<Record<string, AppsInTossAdminStatusCheckResponse>>({});
   const [statusCheckErrors, setStatusCheckErrors] = useState<Record<string, string>>({});
   const query = useMemo(() => {
@@ -55,7 +60,7 @@ export default function AppsInTossReconciliationClient() {
   const { data, error, isLoading, isValidating, mutate } = useSWR<AppsInTossReconciliationResponse>(query, authenticatedSWRFetcher);
   const summary = data?.summary;
   const checkTossStatus = async (attemptId: string) => {
-    if (checkingAttemptIdsRef.current.has(attemptId)) return;
+    if (checkingAttemptIdsRef.current.has(attemptId) || recoveringAttemptIdsRef.current.has(attemptId)) return;
     checkingAttemptIdsRef.current.add(attemptId);
     setCheckingAttemptIds((current) => new Set(current).add(attemptId));
     setStatusCheckErrors((current) => ({ ...current, [attemptId]: "" }));
@@ -71,6 +76,26 @@ export default function AppsInTossReconciliationClient() {
         next.delete(attemptId);
         return next;
       });
+    }
+  };
+  const recoverPayment = async (attemptId: string) => {
+    if (checkingAttemptIdsRef.current.has(attemptId) || recoveringAttemptIdsRef.current.has(attemptId)) return;
+    recoveringAttemptIdsRef.current.add(attemptId);
+    setRecoveringAttemptIds((current) => new Set(current).add(attemptId));
+    setRecoveryAttemptId(null);
+    setStatusCheckErrors((current) => ({ ...current, [attemptId]: "" }));
+    try {
+      const result = await adminMutator<AppsInTossAdminRecoveryResponse>(`/api/admin/apps-in-toss/reconciliation/${attemptId}/recover`, { method: "POST" });
+      setRecoveryResults((current) => ({ ...current, [attemptId]: result }));
+      if (result.outcome === "recovered" || result.outcome === "followup_required") {
+        setStatusChecks((current) => { const next = { ...current }; delete next[attemptId]; return next; });
+        await mutate();
+      }
+    } catch (recoveryError) {
+      setStatusCheckErrors((current) => ({ ...current, [attemptId]: getAdminErrorMessage(recoveryError) }));
+    } finally {
+      recoveringAttemptIdsRef.current.delete(attemptId);
+      setRecoveringAttemptIds((current) => { const next = new Set(current); next.delete(attemptId); return next; });
     }
   };
   const cards = [
@@ -106,9 +131,10 @@ export default function AppsInTossReconciliationClient() {
         <TableCell className={adminDataTable.moneyCell}>{item.amount.toLocaleString("ko-KR")}원</TableCell>
         <TableCell className={adminDataTable.cellTop}><p>{formatDate(item.timestamps.updatedAt)}</p><p className={adminTypography.metaMuted}>결제 {formatDate(item.timestamps.paidAt)}</p></TableCell>
         <TableCell className={adminDataTable.cellTop}><p>{[item.failure.stage, item.failure.code, item.failure.finalizationCode].filter(Boolean).join(" · ") || "코드 없음"}</p><p className={adminTypography.metaMuted}>시도 ID {item.attemptId}</p>{item.links.orderAdminUrl ? <Link className="text-primary underline" href={item.links.orderAdminUrl}>주문 상세</Link> : null}</TableCell>
-        <TableCell className={adminDataTable.cellTop}><div className="space-y-3"><p>{item.nextAction}</p><Button type="button" variant="outline" size="sm" disabled={checkingAttemptIds.has(item.attemptId)} onClick={() => checkTossStatus(item.attemptId)}>{checkingAttemptIds.has(item.attemptId) ? "확인 중..." : "Toss 상태 확인"}</Button>{statusCheckErrors[item.attemptId] ? <p className="text-sm text-destructive">{statusCheckErrors[item.attemptId]}</p> : null}{statusChecks[item.attemptId] ? <div className={`space-y-1 ${adminTypography.metaMuted}`}><p>외부 상태: {statusChecks[item.attemptId].external.payStatus}</p><p>판정: {STATUS_LABELS[statusChecks[item.attemptId].external.classification]}</p><p>환불 가능 잔액: {statusChecks[item.attemptId].external.refundableAmount.toLocaleString("ko-KR")}원</p><p>확인 시각: {formatDate(statusChecks[item.attemptId].checkedAt)}</p><p>{statusChecks[item.attemptId].guidance}</p></div> : null}</div></TableCell>
+        <TableCell className={adminDataTable.cellTop}><div className="space-y-3"><p>{item.nextAction}</p><Button type="button" variant="outline" size="sm" disabled={checkingAttemptIds.has(item.attemptId) || recoveringAttemptIds.has(item.attemptId)} onClick={() => checkTossStatus(item.attemptId)}>{checkingAttemptIds.has(item.attemptId) ? "확인 중..." : "Toss 상태 확인"}</Button>{statusChecks[item.attemptId]?.recovery.eligibility === "eligible" && item.issueType === "reconciliation_required" ? <Button type="button" size="sm" disabled={checkingAttemptIds.has(item.attemptId) || recoveringAttemptIds.has(item.attemptId)} onClick={() => setRecoveryAttemptId(item.attemptId)}>{recoveringAttemptIds.has(item.attemptId) ? "복구 중..." : "안전 복구 실행"}</Button> : null}{statusCheckErrors[item.attemptId] ? <p className="text-sm text-destructive">{statusCheckErrors[item.attemptId]}</p> : null}{statusChecks[item.attemptId] ? <div className={`space-y-1 ${adminTypography.metaMuted}`}><p>외부 상태: {statusChecks[item.attemptId].external.payStatus}</p><p>판정: {STATUS_LABELS[statusChecks[item.attemptId].external.classification]}</p><p>환불 가능 잔액: {statusChecks[item.attemptId].external.refundableAmount.toLocaleString("ko-KR")}원</p><p>확인 시각: {formatDate(statusChecks[item.attemptId].checkedAt)}</p><p>{statusChecks[item.attemptId].guidance}</p><p>{statusChecks[item.attemptId].recovery.message}</p></div> : null}{recoveryResults[item.attemptId] ? <p className={adminTypography.metaMuted}>{recoveryResults[item.attemptId].message}</p> : null}</div></TableCell>
       </TableRow>)}</TableBody></Table></div>}
       <div className="mt-4 flex items-center justify-between"><p className={adminTypography.metaMuted}>{data?.total ?? 0}건 · {page}/{Math.max(data?.totalPages ?? 0, 1)}페이지</p><div className="flex gap-2"><Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((v) => v - 1)}>이전</Button><Button type="button" variant="outline" size="sm" disabled={!data || page >= data.totalPages} onClick={() => setPage((v) => v + 1)}>다음</Button></div></div>
     </AdminPageSection>
+    <AdminConfirmDialog open={Boolean(recoveryAttemptId)} title="Apps in Toss 결제 안전 복구" description={"Toss의 최신 거래 상태를 다시 확인한 뒤 서버 정책상 안전한 경우에만 내부 결제 상태를 복구합니다.\n결제 완료가 확인된 건은 주문 확정 절차가 이어질 수 있으며, 주문 확정이 불가능하면 기존 정책에 따라 보상 환불이 진행될 수 있습니다."} severity="danger" confirmText="안전 복구 실행" confirmDisabled={Boolean(recoveryAttemptId && recoveringAttemptIds.has(recoveryAttemptId))} onOpenChange={(open) => { if (!open) setRecoveryAttemptId(null); }} onConfirm={() => { if (recoveryAttemptId) void recoverPayment(recoveryAttemptId); }} eventKey="apps-in-toss-reconciliation-recovery" />
   </div>;
 }

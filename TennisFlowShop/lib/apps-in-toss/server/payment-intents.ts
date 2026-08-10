@@ -44,6 +44,12 @@ export type AppsInTossPaymentIntentDocument = {
     refundedAt?: Date; refundNo?: string; approvalTime?: string; transactionId?: string;
   };
   failureStage?: string; failureCode?: string; failureMessage?: string;
+  reconciliationRecovery?: {
+    recoveredAt: Date; actorId: ObjectId; originalFailureStage: string; originalFailureCode: string;
+    observedPayStatus: string;
+    observedClassification: "payment_cancelled" | "payment_complete" | "payment_settled" | "refund_complete" | "refund_settled";
+    targetState: "paid" | "failed" | "refunded";
+  };
 };
 type CreateIntent = Omit<AppsInTossPaymentIntentDocument, "_id" | "state" | "createdAt" | "updatedAt" | "payToken" | "finalOrderId" | "execution" | "refund">;
 
@@ -97,3 +103,41 @@ export function recordAppsInTossPaymentRefunded(db: Db, id: ObjectId, evidence: 
   }, { "refund.leaseUntil": "" });
 }
 export function recordAppsInTossPaymentReconciliationRequired(db: Db, id: ObjectId, from: "executing" | "paid" | "refunding", failure: { failureStage?: string; failureCode?: string; failureMessage?: string } = {}) { return transition(db, id, from, "reconciliation_required", failure); }
+
+type ReconciliationRecoveryInput = {
+  id: ObjectId; actorId: ObjectId; expectedFailureStage: "payment_status" | "refund_status";
+  expectedFailureCode: "PAYMENT_STATUS_UNCONFIRMED" | "PAYMENT_REFUND_STATUS_UNCONFIRMED";
+  observedPayStatus: string;
+  observedClassification: "payment_cancelled" | "payment_complete" | "payment_settled" | "refund_complete" | "refund_settled";
+  targetState: "paid" | "failed" | "refunded"; paidAt?: Date;
+};
+
+export function recoverAppsInTossPaymentReconciliation(db: Db, input: ReconciliationRecoveryInput) {
+  assertAppsInTossPaymentIntentTransition("reconciliation_required", input.targetState);
+  if (input.targetState === "paid" && !input.paidAt) throw new Error("paid 복구에는 외부 결제 완료 시각이 필요합니다.");
+  const now = new Date();
+  const filter = {
+    _id: input.id, state: "reconciliation_required" as const,
+    failureStage: input.expectedFailureStage, failureCode: input.expectedFailureCode,
+    finalOrderId: { $exists: false },
+    "finalization.failureCode": input.expectedFailureStage === "payment_status" ? { $exists: false } : { $exists: true },
+  };
+  const evidence = {
+    recoveredAt: now, actorId: input.actorId,
+    originalFailureStage: input.expectedFailureStage, originalFailureCode: input.expectedFailureCode,
+    observedPayStatus: input.observedPayStatus, observedClassification: input.observedClassification,
+    targetState: input.targetState,
+  };
+  const set: Record<string, unknown> = { state: input.targetState, updatedAt: now, reconciliationRecovery: evidence };
+  const unset: Record<string, ""> = { execution: "", failureMessage: "" };
+  if (input.targetState === "paid") {
+    set.paidAt = input.paidAt;
+    unset.failureStage = ""; unset.failureCode = "";
+  } else if (input.targetState === "failed") {
+    set.failureStage = "execute_payment"; set.failureCode = "PAY_CANCEL";
+  } else {
+    set["refund.refundedAt"] = now; set["refund.updatedAt"] = now;
+    unset["refund.leaseUntil"] = ""; unset.failureStage = ""; unset.failureCode = "";
+  }
+  return appsInTossPaymentIntents(db).findOneAndUpdate(filter, { $set: set, $unset: unset }, { returnDocument: "after" });
+}

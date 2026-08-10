@@ -57,4 +57,12 @@ export type AppsInTossAdminStatusCheckResponse = {
     amount: number; paidAmount: number; refundableAmount: number;
   };
   guidance: string;
+  recovery: { eligibility: "eligible" | "wait" | "blocked"; message: string; targetState?: "paid" | "failed" | "refunded" };
+};
+
+export type AppsInTossAdminRecoveryResponse = {
+  ok: true; attemptId: string; outcome: "recovered" | "wait" | "blocked" | "followup_required";
+  previousState: string; currentState: string; targetState?: "paid" | "failed" | "refunded";
+  observed: { payStatus: string; classification: AppsInTossObservedPaymentStatusClassification; refundableAmount: number };
+  message: string; orderId?: string;
 };
