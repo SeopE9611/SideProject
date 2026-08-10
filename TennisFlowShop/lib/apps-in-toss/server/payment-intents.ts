@@ -67,6 +67,10 @@ export function claimAppsInTossPaymentExecution(db: Db, id: ObjectId, leaseUntil
   return transition(db, id, "awaiting_authorization", "executing", { execution: { claimedAt: now, leaseUntil } });
 }
 export const recordAppsInTossPaymentPaid = (db: Db, id: ObjectId) => transition(db, id, "executing", "paid", {}, { execution: "" });
+export function recordAppsInTossPaymentExecutionFailed(db: Db, id: ObjectId, failureCode: string) {
+  const safeFailureCode = failureCode.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 100) || "EXECUTION_FAILED";
+  return transition(db, id, "executing", "failed", { failureStage: "execute_payment", failureCode: safeFailureCode }, { execution: "" });
+}
 export const recordAppsInTossPaymentFinalized = (db: Db, id: ObjectId, finalOrderId: ObjectId) => transition(db, id, "paid", "finalized", { finalOrderId });
 export function claimAppsInTossPaymentRefund(db: Db, id: ObjectId) { const now = new Date(); return transition(db, id, "paid", "refunding", { refund: { claimedAt: now, updatedAt: now } }); }
 export const recordAppsInTossPaymentRefunded = (db: Db, id: ObjectId) => transition(db, id, "refunding", "refunded", { "refund.updatedAt": new Date() });
