@@ -17,6 +17,10 @@ export class AppsPaymentFinalizationError extends Error {
 const fail = (code: string, message: string): never => { throw new AppsPaymentFinalizationError(409, code, message, true); };
 const owns = (intent: AppsInTossPaymentIntentDocument, userId: ObjectId, identityId: ObjectId) => intent.userId.equals(userId) && intent.identityId.equals(identityId);
 
+const errorCode = (error: unknown) => error instanceof Error && "code" in error ? String(error.code) : error instanceof Error ? error.message : "";
+export const classifyPassBusinessError = (error: unknown) => ["PASS_NOT_FOUND", "ORDER_NOT_PAID", "PASS_CONSUME_FAILED"].includes(errorCode(error)) ? "PACKAGE_PASS_UNAVAILABLE" : null;
+export const classifyVisitBusinessError = (error: unknown) => errorCode(error) === "VISIT_SLOT_UNAVAILABLE" ? "VISIT_SLOT_UNAVAILABLE" : null;
+
 function validateSnapshot(intent: AppsInTossPaymentIntentDocument) {
   const checkout = intent.checkoutPayload;
   const pricing = intent.pricingSnapshot;
@@ -65,17 +69,28 @@ export async function finalizeAppsInTossPayment(params: { db: Db; attemptId: str
       const { checkout, pricing, item, pkg: packageSnapshot, cm } = validateSnapshot(intent);
       const product = await params.db.collection("products").findOne({ _id: item.productId, isDeleted: { $ne: true } }, { projection: { _id: 1 }, session });
       if (!product) fail("PRODUCT_UNAVAILABLE", "결제한 상품을 제공할 수 없습니다.");
-      if (cm === "visit") await guardVisitReservation({ db: params.db, date: intent.reservationSnapshot!.preferredDate!, time: intent.reservationSnapshot!.preferredTime!, slotCount: intent.reservationSnapshot!.slotCount!, session });
+      if (cm === "visit") {
+        try { await guardVisitReservation({ db: params.db, date: intent.reservationSnapshot!.preferredDate!, time: intent.reservationSnapshot!.preferredTime!, slotCount: intent.reservationSnapshot!.slotCount!, session }); }
+        catch (error) {
+          const code = classifyVisitBusinessError(error);
+          if (code) fail(code, "선택한 방문 시간을 예약할 수 없습니다.");
+          throw error;
+        }
+      }
       const quantity = item.quantity;
       const stock = await params.db.collection("products").updateOne({ _id: item.productId, isDeleted: { $ne: true }, "inventory.stock": { $gte: quantity }, variantInventories: { $elemMatch: { colorValue: item.selectedColor, gaugeValue: item.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: quantity } } }, colorInventories: { $elemMatch: { value: item.selectedColor, stock: { $gte: quantity } } }, gaugeInventories: { $elemMatch: { value: item.selectedGauge, stock: { $gte: quantity } } } }, { $inc: { "variantInventories.$[variant].stock": -quantity, "colorInventories.$[color].stock": -quantity, "gaugeInventories.$[gauge].stock": -quantity, "inventory.stock": -quantity, sold: quantity } }, { arrayFilters: [{ "variant.colorValue": item.selectedColor, "variant.gaugeValue": item.selectedGauge }, { "color.value": item.selectedColor }, { "gauge.value": item.selectedGauge }], session });
       if (!stock.matchedCount || !stock.modifiedCount) fail("VARIANT_INSUFFICIENT_STOCK", "선택한 상품 옵션의 재고가 부족합니다.");
       if (packageSnapshot.applied) {
         try { await consumePass(params.db, packageSnapshot.passId!, applicationId, packageSnapshot.requiredPassCount, { session }); }
-        catch (error) { fail(String((error as { code?: string }).code ?? "").includes("INSUFFICIENT") ? "PACKAGE_PASS_INSUFFICIENT" : "PACKAGE_PASS_UNAVAILABLE", "결제에 적용한 패스를 사용할 수 없습니다."); }
+        catch (error) {
+          const code = classifyPassBusinessError(error);
+          if (code) fail(code, "결제에 적용한 패스를 사용할 수 없습니다.");
+          throw error;
+        }
       }
       const now = new Date(); const serviceBefore = Number(pricing.serviceFeeBeforePackage);
       const orderItem = { productId: item.productId, kind: "product", name: item.name, quantity, price: item.price, mountingFee: item.mountingFee, selectedColor: item.selectedColor, selectedGauge: item.selectedGauge, stockDeduction: { mode: "variant", colorValue: item.selectedColor, gaugeValue: item.selectedGauge } };
-      const shippingInfo = { name: checkout.applicant.name, phone: checkout.applicant.phone, email: checkout.applicant.email, address: cm === "visit" ? "" : checkout.shipping.address, addressDetail: cm === "visit" ? "" : checkout.shipping.addressDetail, postalCode: cm === "visit" ? "" : checkout.shipping.postalCode, collectionMethod: cm };
+      const shippingInfo = { name: checkout.applicant.name, phone: checkout.applicant.phone, email: checkout.applicant.email, address: cm === "visit" ? "" : checkout.shipping.address, addressDetail: cm === "visit" ? "" : checkout.shipping.addressDetail, postalCode: cm === "visit" ? "" : checkout.shipping.postalCode, collectionMethod: cm, deliveryMethod: cm === "visit" ? "방문수령" : "택배수령", withStringService: true };
       await params.db.collection("orders").insertOne({ _id: orderId, items: [orderItem], shippingInfo, userId: intent.userId, userSnapshot: { name: checkout.applicant.name, email: checkout.applicant.email }, originalTotalPrice: pricing.payableAmount, pointsUsed: 0, totalPrice: pricing.payableAmount, shippingFee: pricing.shippingFee, serviceFee: pricing.serviceFee, status: "대기중", paymentStatus: "결제완료", paymentInfo: { provider: "apps_in_toss_toss_pay", method: "EASY_PAY", easyPayProvider: "TOSSPAY", status: "paid", total: pricing.payableAmount, originalTotal: pricing.payableAmount, pointsUsed: 0, shippingFee: pricing.shippingFee, serviceFee: pricing.serviceFee, approvedAt: intent.paidAt ?? now }, isStringServiceApplied: true, stringingApplicationId: String(applicationId), idemKey: `apps-in-toss:${intent.attemptId}`, createdAt: now, updatedAt: now, history: [{ status: "대기중", date: now, description: "주문 생성" }] }, { session });
       const line = { racketType: checkout.work.racketType, stringProductId: String(item.productId), stringName: item.name, tensionMain: checkout.work.tensionMain, tensionCross: checkout.work.tensionCross, note: checkout.work.note, mountingFee: item.mountingFee };
       await params.db.collection("stringing_applications").insertOne({ _id: applicationId, orderId, userId: intent.userId, paymentSource: `order:${String(orderId)}`, name: checkout.applicant.name, phone: checkout.applicant.phone, email: checkout.applicant.email, searchEmailLower: normalizeEmailForSearch(checkout.applicant.email), contactEmail: normalizeEmail(checkout.applicant.email), contactPhone: checkout.applicant.phone.replace(/\D/g, "") || null, shippingInfo, collectionMethod: cm, stringDetails: { racketType: checkout.work.racketType, stringTypes: [String(item.productId)], preferredDate: checkout.work.preferredDate, preferredTime: checkout.work.preferredTime, requirements: checkout.work.note, lines: [line] }, stringItems: [{ productId: String(item.productId), name: item.name, quantity, mountingFee: item.mountingFee }], totalPrice: pricing.serviceFee, serviceFeeBefore: serviceBefore, serviceFee: pricing.serviceFee, serviceAmount: pricing.serviceFee, packageApplied: packageSnapshot.applied, packagePassId: packageSnapshot.applied ? packageSnapshot.passId : null, packageRedeemedAt: packageSnapshot.applied ? now : null, ...(packageSnapshot.applied ? { paymentMethod: "package", paymentStatus: "패키지 적용 완료", paymentInfo: { provider: "package", method: "패키지 사용", status: "패키지 적용 완료" } } : {}), status: "검토 중", submittedAt: now, createdAt: now, updatedAt: now, userSnapshot: { name: checkout.applicant.name, email: checkout.applicant.email }, servicePaid: false, ...(cm === "visit" ? { visitSlotCount: intent.reservationSnapshot!.slotCount, visitDurationMinutes: intent.reservationSnapshot!.durationMinutes } : {}), meta: { selectedGauge: item.selectedGauge, selectedColor: item.selectedColor, stockDeductionSource: "order" } }, { session });
