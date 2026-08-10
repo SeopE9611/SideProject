@@ -39,7 +39,10 @@ export type AppsInTossPaymentIntentDocument = {
   paidAt?: Date;
   finalization?: { failureCode: string; failedAt: Date };
   execution?: { claimedAt: Date; leaseUntil: Date };
-  refund?: { claimedAt: Date; updatedAt: Date };
+  refund?: {
+    claimedAt: Date; leaseUntil: Date; updatedAt: Date;
+    refundedAt?: Date; refundNo?: string; approvalTime?: string; transactionId?: string;
+  };
   failureStage?: string; failureCode?: string; failureMessage?: string;
 };
 type CreateIntent = Omit<AppsInTossPaymentIntentDocument, "_id" | "state" | "createdAt" | "updatedAt" | "payToken" | "finalOrderId" | "execution" | "refund">;
@@ -75,6 +78,22 @@ export function recordAppsInTossPaymentExecutionFailed(db: Db, id: ObjectId, fai
   return transition(db, id, "executing", "failed", { failureStage: "execute_payment", failureCode: safeFailureCode }, { execution: "" });
 }
 export const recordAppsInTossPaymentFinalized = (db: Db, id: ObjectId, finalOrderId: ObjectId, session?: ClientSession) => transition(db, id, "paid", "finalized", { finalOrderId }, undefined, session);
-export function claimAppsInTossPaymentRefund(db: Db, id: ObjectId) { const now = new Date(); return transition(db, id, "paid", "refunding", { refund: { claimedAt: now, updatedAt: now } }); }
-export const recordAppsInTossPaymentRefunded = (db: Db, id: ObjectId) => transition(db, id, "refunding", "refunded", { "refund.updatedAt": new Date() });
+export function claimAppsInTossPaymentRefund(db: Db, id: ObjectId, leaseUntil: Date) {
+  const now = new Date(); if (leaseUntil <= now) throw new Error("환불 leaseUntil은 현재보다 이후여야 합니다.");
+  return transition(db, id, "paid", "refunding", { refund: { claimedAt: now, leaseUntil, updatedAt: now } });
+}
+export function renewAppsInTossPaymentRefundLease(db: Db, id: ObjectId, leaseUntil: Date) {
+  const now = new Date(); if (leaseUntil <= now) throw new Error("환불 leaseUntil은 현재보다 이후여야 합니다.");
+  return appsInTossPaymentIntents(db).findOneAndUpdate(
+    { _id: id, state: "refunding" },
+    { $set: { "refund.leaseUntil": leaseUntil, "refund.updatedAt": now, updatedAt: now } },
+    { returnDocument: "after" },
+  );
+}
+export function recordAppsInTossPaymentRefunded(db: Db, id: ObjectId, evidence: { refundNo?: string; approvalTime?: string; transactionId?: string } = {}) {
+  const now = new Date();
+  return transition(db, id, "refunding", "refunded", {
+    "refund.refundedAt": now, "refund.updatedAt": now, ...Object.fromEntries(Object.entries(evidence).map(([key, value]) => [`refund.${key}`, value])),
+  }, { "refund.leaseUntil": "" });
+}
 export function recordAppsInTossPaymentReconciliationRequired(db: Db, id: ObjectId, from: "executing" | "paid" | "refunding", failure: { failureStage?: string; failureCode?: string; failureMessage?: string } = {}) { return transition(db, id, from, "reconciliation_required", failure); }
