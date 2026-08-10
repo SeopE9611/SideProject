@@ -1404,6 +1404,14 @@ export default function OperationsClient() {
                     href="/admin/offline/reconciliation"
                   />
                   <AdminTaskCard
+                    title="Apps in Toss 결제 점검"
+                    count={0}
+                    description="토스 앱 결제 중 자동 처리 미완료·대사 필요 건 확인"
+                    tone="warning"
+                    actionLabel="결제 점검 열기"
+                    href="/admin/operations/apps-in-toss-reconciliation"
+                  />
+                  <AdminTaskCard
                     title="아카데미 상담"
                     count={taskCounts?.academyApplications ?? 0}
                     description="상담 대기·등록 확정 대기 확인"
