@@ -77,7 +77,7 @@ export async function executeAppsInTossPayment(params: { db: Db; attemptId: stri
   }
   if (intent.state === "paid" || intent.state === "finalized" || intent.state === "failed" || intent.state === "cancelled" || intent.state === "refunded" || intent.state === "reconciliation_required") return safeResponse(intent);
   if (intent.state !== "awaiting_authorization" && intent.state !== "executing") throw new AppsPaymentExecutionError(409, "PAYMENT_STATE_UNAVAILABLE", "현재 결제 실행 상태를 사용할 수 없습니다.");
-  if (intent.expiresAt <= new Date()) throw new AppsPaymentExecutionError(409, "PAYMENT_INTENT_EXPIRED", "결제 실행 시간이 만료되었습니다.");
+  if (intent.state === "awaiting_authorization" && intent.expiresAt <= new Date()) throw new AppsPaymentExecutionError(409, "PAYMENT_INTENT_EXPIRED", "결제 실행 시간이 만료되었습니다.");
 
   const canonical = canonicalPayment(intent);
   if (intent.isTestPayment) throw new AppsPaymentExecutionError(409, "PAYMENT_STATE_UNAVAILABLE", "라이브 결제 실행 정보가 아닙니다.");
