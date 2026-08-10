@@ -1,4 +1,4 @@
-import type { Db } from "mongodb";
+import type { ClientSession, Db, ObjectId } from "mongodb";
 
 export type ExceptionItem = {
   date: string;
@@ -27,7 +27,7 @@ const SETTINGS_ID: StringingSettings["_id"] = "stringingSlots";
 /**
  * 1) 설정 로드 + projection
  */
-export async function loadStringingSettings(db: Db): Promise<StringingSettings | null> {
+export async function loadStringingSettings(db: Db, session?: ClientSession): Promise<StringingSettings | null> {
   const doc = await db.collection<StringingSettings>(SETTINGS_COLLECTION).findOne(
     { _id: SETTINGS_ID },
     {
@@ -41,6 +41,7 @@ export async function loadStringingSettings(db: Db): Promise<StringingSettings |
         exceptions: 1,
         bookingWindowDays: 1,
       },
+      session,
     },
   );
 
@@ -268,6 +269,8 @@ export async function findFullyBookedTimesWithSpan(
   date: string,
   capacity: number,
   allTimes: string[],
+  session?: ClientSession,
+  excludeApplicationId?: ObjectId,
 ): Promise<string[]> {
   if (!allTimes.length || capacity <= 0) return [];
 
@@ -288,6 +291,7 @@ export async function findFullyBookedTimesWithSpan(
         "stringDetails.preferredDate": date,
         "stringDetails.preferredTime": { $type: "string", $ne: "" },
         status: { $nin: EXCLUDED },
+        ...(excludeApplicationId ? { _id: { $ne: excludeApplicationId } } : {}),
       },
       {
         projection: {
@@ -295,6 +299,7 @@ export async function findFullyBookedTimesWithSpan(
           visitSlotCount: 1,
           status: 1,
         },
+        session,
       },
     )
     .toArray();

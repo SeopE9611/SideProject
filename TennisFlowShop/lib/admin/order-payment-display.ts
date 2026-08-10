@@ -35,7 +35,7 @@ const compactPaymentToken = (value?: string | null) =>
 // Toss 값은 과거 주문 표시 호환을 위해서만 인식하며,
 // 신규 결제수단 활성화 여부와는 무관하다.
 const KNOWN_ONLINE_PAYMENT_PROVIDERS =
-  new Set(["nicepay", "toss", "tosspayments"]);
+  new Set(["nicepay", "toss", "tosspayments", "appsintosstosspay"]);
 
 export function isAdminBankTransferPayment(params: {
   paymentMethod?: string | null;

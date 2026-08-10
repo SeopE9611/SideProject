@@ -250,6 +250,11 @@ const INDEX_SPECS = {
   ],
   orders: [
     {
+      name: "orders_idemKey_unique_sparse",
+      keys: { idemKey: 1 },
+      options: { unique: true, sparse: true },
+    },
+    {
       name: "ops_orders_stringingApplicationId_idx",
       keys: { stringingApplicationId: 1 },
       options: {},
