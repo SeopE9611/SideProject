@@ -10,6 +10,8 @@ export const APPS_IN_TOSS_PAYMENT_INDEX_SPECS: Readonly<Record<string, readonly 
     { name: "apps_in_toss_payment_intents_finalOrderId_unique", keys: { finalOrderId: 1 }, options: { unique: true, sparse: true } },
     { name: "apps_in_toss_payment_intents_user_created_desc", keys: { userId: 1, createdAt: -1 } },
     { name: "apps_in_toss_payment_intents_state_executionLease_idx", keys: { state: 1, "execution.leaseUntil": 1 } },
+    { name: "apps_in_toss_payment_intents_state_updated_desc", keys: { state: 1, updatedAt: -1 } },
+    { name: "apps_in_toss_payment_intents_state_refundLease_idx", keys: { state: 1, "refund.leaseUntil": 1 } },
     { name: "apps_in_toss_payment_intents_retentionUntil_ttl", keys: { retentionUntil: 1 }, options: { expireAfterSeconds: 0 } },
   ],
 };
