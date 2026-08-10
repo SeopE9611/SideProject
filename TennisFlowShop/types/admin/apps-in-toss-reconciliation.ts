@@ -41,3 +41,20 @@ export type AppsInTossReconciliationResponse = {
   page: number; limit: number; total: number; totalPages: number;
   summary: AppsInTossReconciliationSummary;
 };
+
+export type AppsInTossObservedPaymentStatusClassification =
+  | "payment_pending" | "payment_cancelled" | "payment_complete" | "payment_settled"
+  | "refund_progress" | "refund_complete" | "refund_settled" | "refund_inconsistent" | "unknown";
+
+export type AppsInTossAdminStatusCheckResponse = {
+  ok: true;
+  attemptId: string;
+  issueType: AppsInTossAttentionIssueType;
+  internalState: string;
+  checkedAt: string;
+  external: {
+    mode: string; payStatus: string; classification: AppsInTossObservedPaymentStatusClassification;
+    amount: number; paidAmount: number; refundableAmount: number;
+  };
+  guidance: string;
+};
