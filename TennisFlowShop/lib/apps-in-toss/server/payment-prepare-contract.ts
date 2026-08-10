@@ -90,7 +90,26 @@ export function isAppsPaymentIntentExpired(expiresAt: Date, now: Date = new Date
   return expiresAt.getTime() <= now.getTime();
 }
 
-export function createSafePaymentIntentResponse(attemptId: string, state: string, expiresAt: Date, now: Date = new Date()) {
-  const expired = isAppsPaymentIntentExpired(expiresAt, now);
-  return { success: true as const, attemptId, state, paymentReady: state === "awaiting_authorization" && !expired, expired };
+type SafePaymentIntent = {
+  attemptId: string; state: string; expiresAt: Date;
+  itemSnapshot: Array<{ name: string; quantity: number }>;
+  pricingSnapshot: { subtotal: number; shippingFee: number; serviceFeeBeforePackage?: number; serviceFee: number; payableAmount: number };
+  packageSnapshot?: { applied: boolean };
+};
+
+export function createSafePaymentIntentResponse(intent: SafePaymentIntent, now: Date = new Date()) {
+  const expired = isAppsPaymentIntentExpired(intent.expiresAt, now);
+  const item = intent.itemSnapshot[0];
+  const serviceFeeBeforePackage = intent.pricingSnapshot.serviceFeeBeforePackage ?? intent.pricingSnapshot.serviceFee;
+  return { success: true as const, attemptId: intent.attemptId, state: intent.state,
+    paymentReady: intent.state === "awaiting_authorization" && !expired, expired,
+    paymentSummary: {
+      item: { name: item.name, quantity: item.quantity },
+      pricing: { subtotal: intent.pricingSnapshot.subtotal, shippingFee: intent.pricingSnapshot.shippingFee,
+        serviceFeeBeforePackage, serviceFee: intent.pricingSnapshot.serviceFee,
+        packageDiscount: Math.max(0, serviceFeeBeforePackage - intent.pricingSnapshot.serviceFee),
+        payableAmount: intent.pricingSnapshot.payableAmount },
+      packageApplied: intent.packageSnapshot?.applied === true,
+    },
+  };
 }

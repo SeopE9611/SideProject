@@ -74,7 +74,8 @@ test("complete route는 인증, CORS, validation, no-store 및 safe error 계약
   assert.doesNotMatch(route, /payToken|userKey|orderNo|refundNo|transactionId|failureCode/);
 });
 
-test("completion은 Toss client나 finalization transaction을 복제하지 않고 MiniApp을 연결하지 않는다", () => {
+test("completion은 Toss client나 finalization transaction을 복제하지 않고 MiniApp은 complete만 호출한다", () => {
   assert.doesNotMatch(service, /toss-pay-client|executeTossPayPayment|refundTossPayPayment|withTransaction|consumePass|guardVisitReservation/);
-  assert.doesNotMatch(miniAppPayments, /\/complete/);
+  assert.match(miniAppPayments, /\/complete/);
+  assert.doesNotMatch(miniAppPayments, /\/execute|\/finalize|\/refund-finalization/);
 });

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { getFirstInvalidApplicationStep } from "../lib/stringing-application-validation";
+import { readPendingAppsPayment, type PendingAppsPayment } from "../lib/pending-payment";
 import type {
   StringingApplicantDraft,
   StringingCollectionMethod,
@@ -12,6 +13,7 @@ import StringingApplicationStepFive from "./StringingApplicationStepFive";
 import StringingApplicationStepOne from "./StringingApplicationStepOne";
 import StringingApplicationStepThree from "./StringingApplicationStepThree";
 import StringingApplicationStepTwo from "./StringingApplicationStepTwo";
+import StringingPendingPaymentRecovery from "./StringingPendingPaymentRecovery";
 
 type StringingApplicationFlowProps = {
   productId: string;
@@ -65,6 +67,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
   const [work, setWork] = useState<StringingWorkDraft>(EMPTY_WORK);
 
   const [paymentAttemptId, setPaymentAttemptId] = useState<string | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<PendingAppsPayment | null>(() => readPendingAppsPayment());
   const [validatedWork, setValidatedWork] = useState<StringingWorkDraft | null>(null);
   const [validationReturnStep, setValidationReturnStep] = useState<1 | 2 | 3 | null>(null);
 
@@ -214,6 +217,10 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
     }
     pushStep(5);
   }, [applicant, collectionMethod, pushStep, selectedColor, selectedGauge, shipping, validatedWork, work]);
+
+  if (pendingPayment) {
+    return <StringingPendingPaymentRecovery pending={pendingPayment} onResolved={() => setPendingPayment(null)} />;
+  }
 
   if (currentStep === 5) {
     return (

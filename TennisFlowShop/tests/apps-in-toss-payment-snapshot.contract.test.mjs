@@ -58,9 +58,9 @@ test("신규 snapshot은 서버 소유이며 기존 intent와 안전하게 호�
   assert.doesNotMatch(prepareSource, /recoverExisting[\s\S]{0,900}(updateOne|findOneActivePassForUser)/);
 });
 
-test("공개 응답과 Toss make-payment 금액 계약은 확장되지 않는다", () => {
-  assert.match(prepareContractSource, /return \{ success: true as const, attemptId, state, paymentReady:/);
-  assert.match(prepareSource, /return \{ \.\.\.createSafePaymentIntentResponse\(intent\.attemptId, intent\.state, intent\.expiresAt\), payToken \}/);
+test("공개 응답은 안전한 snapshot summary를 포함하고 Toss make-payment 금액 계약은 유지한다", () => {
+  assert.match(prepareContractSource, /paymentSummary:/);
+  assert.match(prepareSource, /return \{ \.\.\.createSafePaymentIntentResponse\(intent\), payToken \}/);
   assert.doesNotMatch(prepareContractSource.slice(prepareContractSource.indexOf("createSafePaymentIntentResponse")), /packagePassId|mountingFee|capacityAtPrepare/);
   assert.match(policySource, /amount: intent\.pricingSnapshot\.payableAmount/);
 });

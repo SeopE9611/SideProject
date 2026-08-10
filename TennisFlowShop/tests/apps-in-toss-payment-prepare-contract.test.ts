@@ -124,8 +124,8 @@ test("Asia/Seoul 방문 시각이 지났는지 주입한 현재 시각으로 판
 });
 
 test("safe response에는 결제 토큰, 사용자 키, 개인정보가 없다", () => {
-  const response = createSafePaymentIntentResponse(validRequest.attemptId, "creating", new Date("2026-08-09T03:30:00.000Z"), new Date("2026-08-09T03:00:00.000Z"));
-  assert.deepEqual(Object.keys(response), ["success", "attemptId", "state", "paymentReady", "expired"]);
+  const response = createSafePaymentIntentResponse(paymentIntent("creating", new Date("2026-08-09T03:30:00.000Z")), new Date("2026-08-09T03:00:00.000Z"));
+  assert.deepEqual(Object.keys(response), ["success", "attemptId", "state", "paymentReady", "expired", "paymentSummary"]);
   assert.equal(response.paymentReady, false);
   assert.equal(response.expired, false);
   assert.equal(JSON.stringify(response).includes("payToken"), false);
@@ -133,17 +133,24 @@ test("safe response에는 결제 토큰, 사용자 키, 개인정보가 없다",
   assert.equal(JSON.stringify(response).includes(validRequest.applicant.email), false);
 });
 
+function paymentIntent(state: string, expiresAt: Date) {
+  return { attemptId: validRequest.attemptId, state, expiresAt,
+    itemSnapshot: [{ name: "테스트 스트링", quantity: 1 }],
+    pricingSnapshot: { subtotal: 20_000, shippingFee: 3_000, serviceFeeBeforePackage: 5_000, serviceFee: 2_000, payableAmount: 25_000 },
+    packageSnapshot: { applied: true } };
+}
+
 test("intent 만료와 paymentReady를 expiresAt까지 포함해 판정한다", () => {
   const now = new Date("2026-08-09T03:00:00.000Z");
   const future = new Date("2026-08-09T03:30:00.000Z");
   const expired = new Date("2026-08-09T03:00:00.000Z");
   assert.equal(isAppsPaymentIntentExpired(future, now), false);
   assert.equal(isAppsPaymentIntentExpired(expired, now), true);
-  assert.equal(createSafePaymentIntentResponse(validRequest.attemptId, "awaiting_authorization", future, now).paymentReady, true);
-  const expiredResponse = createSafePaymentIntentResponse(validRequest.attemptId, "awaiting_authorization", expired, now);
+  assert.equal(createSafePaymentIntentResponse(paymentIntent("awaiting_authorization", future), now).paymentReady, true);
+  const expiredResponse = createSafePaymentIntentResponse(paymentIntent("awaiting_authorization", expired), now);
   assert.equal(expiredResponse.expired, true);
   assert.equal(expiredResponse.paymentReady, false);
-  assert.equal(createSafePaymentIntentResponse(validRequest.attemptId, "creating", future, now).paymentReady, false);
+  assert.equal(createSafePaymentIntentResponse(paymentIntent("creating", future), now).paymentReady, false);
 });
 
 test("같은 payload와 mismatch를 판정한다", () => {

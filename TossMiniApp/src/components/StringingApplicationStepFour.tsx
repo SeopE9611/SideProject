@@ -260,8 +260,16 @@ function StringingApplicationStepFour({
               </strong>
 
               <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                토스 로그인 확인 후 Toss Pay를 연결하면 실제 결제 단계로 이어집니다.
+                다음 단계에서 Toss Pay 결제 인증 후 서버 승인 및 주문 접수가 진행됩니다.
               </p>
+            </aside>
+            <aside className="rounded-[18px] border border-[#e5e8eb] p-4">
+              <strong className="block text-sm font-extrabold text-[#333d4b]">스트링 교체서비스 취소/환불</strong>
+              <ul className="mt-2 mb-0 list-disc space-y-1 pl-5 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
+                <li>신청 접수 후 작업 시작 전에는 취소 요청이 가능합니다.</li>
+                <li>스트링 장착 작업이 시작된 이후에는 취소/환불이 제한될 수 있습니다.</li>
+                <li>고객 요청 스펙 기반 서비스 특성상 작업 완료 후 단순 변심 환불은 제한될 수 있습니다.</li>
+              </ul>
             </aside>
           </div>
         )}

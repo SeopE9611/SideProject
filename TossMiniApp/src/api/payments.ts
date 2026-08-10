@@ -11,10 +11,19 @@ const PAYMENTS_PATH = "/api/apps-in-toss/payments";
 export type AppsPaymentIntentStatus = {
   success: true;
   attemptId: string;
-  state: string;
+  state: AppsPaymentIntentState;
   paymentReady: boolean;
   expired: boolean;
+  paymentSummary: AppsPaymentSummary;
 };
+
+export type AppsPaymentIntentState = "creating" | "awaiting_authorization" | "executing" | "paid" | "finalized" | "cancelled" | "failed" | "refunding" | "refunded" | "reconciliation_required";
+export type AppsPaymentSummary = {
+  item: { name: string; quantity: number };
+  pricing: { subtotal: number; shippingFee: number; serviceFeeBeforePackage: number; serviceFee: number; packageDiscount: number; payableAmount: number };
+  packageApplied: boolean;
+};
+export type AppsPaymentCompletionResult = { success: true; attemptId: string; state: AppsPaymentIntentState; orderId?: string; stringingApplicationId?: string };
 
 export type AppsPaymentPrepareResult = AppsPaymentIntentStatus & {
   payToken: string;
@@ -48,6 +57,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+const PAYMENT_STATES: readonly AppsPaymentIntentState[] = ["creating", "awaiting_authorization", "executing", "paid", "finalized", "cancelled", "failed", "refunding", "refunded", "reconciliation_required"];
+
+function isPaymentState(value: unknown): value is AppsPaymentIntentState {
+  return typeof value === "string" && PAYMENT_STATES.includes(value as AppsPaymentIntentState);
+}
+
+function parsePaymentSummary(value: unknown): AppsPaymentSummary {
+  if (!isRecord(value) || !isRecord(value.item) || !isRecord(value.pricing)) throw new AppsPaymentApiError("최종 결제 금액 응답을 확인하지 못했습니다.", 0);
+  const { item, pricing } = value;
+  const numbers = [pricing.subtotal, pricing.shippingFee, pricing.serviceFeeBeforePackage, pricing.serviceFee, pricing.packageDiscount, pricing.payableAmount];
+  if (typeof item.name !== "string" || !item.name.trim() || !Number.isInteger(item.quantity) || Number(item.quantity) <= 0 ||
+    numbers.some((number) => typeof number !== "number" || !Number.isFinite(number) || number < 0) ||
+    typeof pricing.payableAmount !== "number" || !Number.isInteger(pricing.payableAmount) || pricing.payableAmount <= 0 || typeof value.packageApplied !== "boolean") {
+    throw new AppsPaymentApiError("최종 결제 금액 응답을 확인하지 못했습니다.", 0);
+  }
+  return { item: { name: item.name, quantity: item.quantity as number }, pricing: pricing as AppsPaymentSummary["pricing"], packageApplied: value.packageApplied };
+}
+
 async function readResponse(response: Response): Promise<unknown> {
   try {
     return await response.json();
@@ -61,9 +88,9 @@ function parsePaymentIntentStatus(data: unknown): AppsPaymentIntentStatus {
     !isRecord(data) ||
     data.success !== true ||
     typeof data.attemptId !== "string" ||
-    typeof data.state !== "string" ||
+    !isPaymentState(data.state) ||
     typeof data.paymentReady !== "boolean" ||
-    typeof data.expired !== "boolean"
+    typeof data.expired !== "boolean" || !("paymentSummary" in data)
   ) {
     throw new AppsPaymentApiError("결제 준비 응답을 확인하지 못했습니다.", 0);
   }
@@ -74,7 +101,19 @@ function parsePaymentIntentStatus(data: unknown): AppsPaymentIntentStatus {
     state: data.state,
     paymentReady: data.paymentReady,
     expired: data.expired,
+    paymentSummary: parsePaymentSummary(data.paymentSummary),
   };
+}
+
+function parsePaymentCompletionResult(data: unknown): AppsPaymentCompletionResult {
+  if (!isRecord(data) || data.success !== true || typeof data.attemptId !== "string" || !isPaymentState(data.state) ||
+    (data.orderId !== undefined && typeof data.orderId !== "string") ||
+    (data.stringingApplicationId !== undefined && typeof data.stringingApplicationId !== "string")) {
+    throw new AppsPaymentApiError("결제 처리 응답을 확인하지 못했습니다.", 0);
+  }
+  return { success: true, attemptId: data.attemptId, state: data.state,
+    ...(typeof data.orderId === "string" ? { orderId: data.orderId } : {}),
+    ...(typeof data.stringingApplicationId === "string" ? { stringingApplicationId: data.stringingApplicationId } : {}) };
 }
 
 function parsePaymentPrepareResult(data: unknown): AppsPaymentPrepareResult {
@@ -121,4 +160,8 @@ export function getAppsPaymentIntent(sessionToken: string, attemptId: string): P
   return requestPayment(`${PAYMENTS_PATH}/${encodeURIComponent(attemptId)}`, sessionToken, {
     method: "GET",
   }, parsePaymentIntentStatus);
+}
+
+export function completeAppsPayment(sessionToken: string, attemptId: string): Promise<AppsPaymentCompletionResult> {
+  return requestPayment(`${PAYMENTS_PATH}/${encodeURIComponent(attemptId)}/complete`, sessionToken, { method: "POST" }, parsePaymentCompletionResult);
 }

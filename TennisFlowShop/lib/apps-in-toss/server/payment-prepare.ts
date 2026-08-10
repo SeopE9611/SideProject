@@ -7,7 +7,7 @@ import type { StringingApplicationInput } from "@/app/features/stringing-applica
 import { buildSlotSummaryForDate, loadStringingSettings, resolveDaySchedule } from "@/app/features/stringing-applications/lib/slotEngine";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
 import { publicProductFilter } from "@/lib/public-visibility";
-import { getAppsInTossTossPayMode } from "./config";
+import { getAppsInTossTossPayMode, isAppsInTossTossPayLiveExecuteEnabled, isAppsInTossTossPayLivePrepareEnabled } from "./config";
 import { TossApiError } from "./http";
 import { loadActiveAppsInTossUserKey } from "./identity";
 import {
@@ -46,7 +46,7 @@ function createCheckoutReadyResponse(intent: AppsInTossPaymentIntentDocument) {
   }
   try {
     const payToken = parseTossPayToken(intent.payToken);
-    return { ...createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt), payToken };
+    return { ...createSafePaymentIntentResponse(intent), payToken };
   } catch {
     throw new AppsPaymentPrepareError(409, "PAYMENT_STATE_UNAVAILABLE", "현재 결제 준비 상태를 사용할 수 없습니다.");
   }
@@ -127,7 +127,9 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
     work: request.work, withStringService: true,
   };
   const mode = getAppsInTossTossPayMode();
-  if (mode.mode !== "sandbox") throw new AppsPaymentPrepareError(503, "PAYMENT_LIVE_NOT_ENABLED", "라이브 결제 준비는 아직 사용할 수 없습니다.");
+  if (mode.mode === "live" && (!isAppsInTossTossPayLivePrepareEnabled() || !isAppsInTossTossPayLiveExecuteEnabled())) {
+    throw new AppsPaymentPrepareError(503, "PAYMENT_LIVE_NOT_ENABLED", "라이브 결제 준비는 아직 사용할 수 없습니다.");
+  }
   let intent: AppsInTossPaymentIntentDocument;
   try {
     intent = await createAppsInTossPaymentIntent(db, {
@@ -188,5 +190,5 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
 export async function getOwnedAppsPaymentIntent(db: Db, attemptId: string, userId: ObjectId, identityId: ObjectId) {
   const intent = await findAppsInTossPaymentIntentByAttemptId(db, attemptId);
   if (!intent || !ownsIntent(intent, userId, identityId)) throw new AppsPaymentPrepareError(404, "PAYMENT_INTENT_NOT_FOUND", "결제 시도를 찾을 수 없습니다.");
-  return createSafePaymentIntentResponse(intent.attemptId, intent.state, intent.expiresAt);
+  return createSafePaymentIntentResponse(intent);
 }

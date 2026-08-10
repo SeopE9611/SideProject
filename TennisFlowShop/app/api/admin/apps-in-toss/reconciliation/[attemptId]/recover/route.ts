@@ -10,6 +10,9 @@ import { classifyAppsInTossReconciliationRecovery, parseObservedPaidAt } from ".
 import { AppsInTossStatusObservationError, observeAppsInTossPaymentStatus } from "../../../_lib/status-observation";
 import { classifyAppsInTossObservedPaymentStatus } from "../../../_lib/status-check";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 const apiError = (status: number, code: string, message = "결제 대사 상태를 안전하게 복구할 수 없습니다.") => NextResponse.json({ ok: false, code, message }, { status });
 
 export async function POST(req: Request, context: { params: Promise<{ attemptId: string }> }) {

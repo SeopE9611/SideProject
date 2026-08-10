@@ -7,6 +7,7 @@ const REQUIRED_ENV_NAMES = [
   "APPS_IN_TOSS_LOGIN_AAD",
 ] as const;
 const TOSS_PAY_ENV_NAME = "APPS_IN_TOSS_TOSS_PAY_ENV" as const;
+const TOSS_PAY_LIVE_PREPARE_ENABLED_NAME = "APPS_IN_TOSS_TOSS_PAY_LIVE_PREPARE_ENABLED" as const;
 const TOSS_PAY_LIVE_EXECUTE_ENABLED_NAME = "APPS_IN_TOSS_TOSS_PAY_LIVE_EXECUTE_ENABLED" as const;
 
 export const APPS_IN_TOSS_APP_NAME = "dokkaebitennis";
@@ -31,6 +32,10 @@ export function getAppsInTossTossPayMode() {
 
 export function isAppsInTossTossPayLiveExecuteEnabled() {
   return getAppsInTossTossPayMode().mode === "live" && process.env[TOSS_PAY_LIVE_EXECUTE_ENABLED_NAME] === "true";
+}
+
+export function isAppsInTossTossPayLivePrepareEnabled() {
+  return getAppsInTossTossPayMode().mode === "live" && process.env[TOSS_PAY_LIVE_PREPARE_ENABLED_NAME] === "true";
 }
 
 function requiredEnvironmentValue(name: (typeof REQUIRED_ENV_NAMES)[number]) {

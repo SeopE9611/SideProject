@@ -10,6 +10,7 @@ import { getDb } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 const CORS_OPTIONS = { methods: ["POST", "OPTIONS"], headers: ["Content-Type", "Accept", "Authorization"] } as const;
 function response(origin: string | null, body: unknown, status: number) { const result = NextResponse.json(body, { status }); result.headers.set("Cache-Control", "no-store"); return applyAppsInTossCors(result, origin, CORS_OPTIONS); }
 export function OPTIONS(request: Request) { const origin = request.headers.get("origin"); if (!isAppsInTossAllowedOrigin(origin)) return response(origin, { success: false, code: "ORIGIN_NOT_ALLOWED", message: "허용되지 않은 Origin입니다." }, 403); return createAppsInTossPreflightResponse(origin, CORS_OPTIONS); }
