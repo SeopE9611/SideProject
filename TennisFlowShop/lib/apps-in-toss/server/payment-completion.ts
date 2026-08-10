@@ -47,8 +47,12 @@ async function refundAndReload(params: { db: Db; attemptId: string; userId: Obje
   } catch (error) {
     if (!(error instanceof AppsPaymentRefundError) || error.code !== "PAYMENT_REFUND_IN_PROGRESS") throw error;
     const current = await reloadOwned(params);
-    if (current.state !== "refunding") throw error;
-    return safeResponse(current);
+    if (current.state === "refunding" || current.state === "refunded" || current.state === "reconciliation_required") return safeResponse(current);
+    if (current.state === "finalized" || current.finalOrderId) {
+      throw new AppsPaymentCompletionError(409, "PAYMENT_REFUND_NOT_ELIGIBLE", "주문 확정 실패 보상 환불 대상이 아닙니다.");
+    }
+    if (current.state === "paid" && current.finalization?.failureCode) throw error;
+    throw new AppsPaymentCompletionError(409, "PAYMENT_STATE_CHANGED", "환불 상태가 변경되었습니다. 다시 조회해 주세요.");
   }
   return safeResponse(await reloadOwned(params));
 }
@@ -66,16 +70,26 @@ export async function completeAppsInTossPayment(params: { db: Db; attemptId: str
   if (action === "refund") return refundAndReload(params);
 
   if (action === "execute") {
+    let executed = false;
     try {
       await executeAppsInTossPayment(params);
+      executed = true;
     } catch (error) {
       if (!(error instanceof AppsPaymentExecutionError) || error.code !== "PAYMENT_EXECUTION_IN_PROGRESS") throw error;
       intent = await reloadOwned(params);
-      if (intent.state !== "executing") throw error;
-      return safeResponse(intent);
+      action = classifyAppsPaymentCompletionAction(intent);
+      if (action === "execute") {
+        if (intent.state === "executing") return safeResponse(intent);
+        throw new AppsPaymentCompletionError(409, "PAYMENT_STATE_CHANGED", "결제 상태가 변경되었습니다. 다시 조회해 주세요.");
+      }
+      if (action === "unavailable") {
+        throw new AppsPaymentCompletionError(409, "PAYMENT_STATE_CHANGED", "결제 상태가 변경되었습니다. 다시 조회해 주세요.");
+      }
     }
-    intent = await reloadOwned(params);
-    action = classifyAppsPaymentCompletionAction(intent);
+    if (executed) {
+      intent = await reloadOwned(params);
+      action = classifyAppsPaymentCompletionAction(intent);
+    }
     if (action === "return") {
       return intent.state === "finalized" ? finalizeAppsInTossPayment(params) : safeResponse(intent);
     }

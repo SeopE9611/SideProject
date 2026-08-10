@@ -20,7 +20,21 @@ test("execute는 한 번만 호출되고 이후 persisted intent를 reload해 �
   const completion = service.slice(service.indexOf("export async function completeAppsInTossPayment"));
   assert.equal(completion.match(/executeAppsInTossPayment\(params\)/g)?.length, 1);
   assert.match(completion, /await executeAppsInTossPayment\(params\);[\s\S]*intent = await reloadOwned\(params\);[\s\S]*classifyAppsPaymentCompletionAction\(intent\)/);
-  assert.match(completion, /PAYMENT_EXECUTION_IN_PROGRESS[\s\S]*reloadOwned\(params\)[\s\S]*intent\.state !== "executing"[\s\S]*safeResponse\(intent\)/);
+  const inProgress = completion.slice(completion.indexOf('error.code !== "PAYMENT_EXECUTION_IN_PROGRESS"'), completion.indexOf("if (executed)"));
+  assert.match(inProgress, /reloadOwned\(params\)[\s\S]*classifyAppsPaymentCompletionAction\(intent\)/);
+  assert.match(inProgress, /action === "execute"[\s\S]*intent\.state === "executing"[\s\S]*safeResponse\(intent\)/);
+  assert.match(inProgress, /action === "unavailable"[\s\S]*PAYMENT_STATE_CHANGED/);
+  assert.doesNotMatch(inProgress, /executeAppsInTossPayment\(params\)/);
+});
+
+test("execution in-progress reload는 paid/finalized/terminal persisted action을 우선한다", () => {
+  const completion = service.slice(service.indexOf("export async function completeAppsInTossPayment"));
+  const reloadStart = completion.indexOf("intent = await reloadOwned(params);", completion.indexOf("PAYMENT_EXECUTION_IN_PROGRESS"));
+  const inProgress = completion.slice(reloadStart, completion.indexOf("if (executed)"));
+  assert.doesNotMatch(inProgress, /throw error/);
+  assert.match(completion, /action === "return"[\s\S]*intent\.state === "finalized" \? finalizeAppsInTossPayment\(params\) : safeResponse\(intent\)/);
+  assert.match(completion, /action === "refund"\) return refundAndReload\(params\)/);
+  assert.match(completion, /action !== "finalize"\) return safeResponse\(intent\)/);
 });
 
 test("finalization exception 뒤 persisted failure와 finalOrderId를 확인한 경우에만 refund한다", () => {
@@ -37,7 +51,10 @@ test("refund orchestration은 기존 service를 한 번만 호출하고 in-progr
   const helper = service.slice(service.indexOf("async function refundAndReload"), service.indexOf("export async function completeAppsInTossPayment"));
   assert.equal(helper.match(/refundAppsInTossFinalizationFailure\(params\)/g)?.length, 1);
   assert.match(helper, /eligible\.state === "finalized" \|\| eligible\.finalOrderId[\s\S]*PAYMENT_REFUND_NOT_ELIGIBLE/);
-  assert.match(helper, /PAYMENT_REFUND_IN_PROGRESS[\s\S]*reloadOwned\(params\)[\s\S]*current\.state !== "refunding"/);
+  assert.match(helper, /PAYMENT_REFUND_IN_PROGRESS[\s\S]*reloadOwned\(params\)[\s\S]*current\.state === "refunding" \|\| current\.state === "refunded" \|\| current\.state === "reconciliation_required"[\s\S]*safeResponse\(current\)/);
+  assert.match(helper, /current\.state === "finalized" \|\| current\.finalOrderId[\s\S]*PAYMENT_REFUND_NOT_ELIGIBLE/);
+  assert.match(helper, /current\.state === "paid" && current\.finalization\?\.failureCode[\s\S]*throw error/);
+  assert.match(helper, /PAYMENT_STATE_CHANGED/);
   assert.match(helper, /safeResponse\(await reloadOwned\(params\)\)/);
 });
 
