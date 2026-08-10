@@ -70,6 +70,7 @@ import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
+import type { AppsInTossReconciliationResponse } from "@/types/admin/apps-in-toss-reconciliation";
 import type {
   AdminDailyOperationsSummaryResponse,
   AdminOperationsGroup,
@@ -880,6 +881,16 @@ export default function OperationsClient() {
         dedupingInterval: 60_000,
       },
     );
+  const { data: appsInTossReconciliation } = useSWR<AppsInTossReconciliationResponse>(
+    "/api/admin/apps-in-toss/reconciliation?issueType=all&environment=all&page=1&limit=1",
+    authenticatedSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      dedupingInterval: 60_000,
+    },
+  );
   const totalGroups = data?.pagination?.totalGroups;
   const pageSize = data?.pagination?.pageSize ?? effectivePageSize;
   const totalPages =
@@ -1405,7 +1416,7 @@ export default function OperationsClient() {
                   />
                   <AdminTaskCard
                     title="Apps in Toss 결제 점검"
-                    count={0}
+                    count={appsInTossReconciliation?.summary.total ?? "—"}
                     description="토스 앱 결제 중 자동 처리 미완료·대사 필요 건 확인"
                     tone="warning"
                     actionLabel="결제 점검 열기"

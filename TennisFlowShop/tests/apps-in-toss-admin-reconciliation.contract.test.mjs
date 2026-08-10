@@ -55,6 +55,18 @@ test("UI는 읽기 전용 진단과 Operations 진입점만 제공한다", () =>
   for (const action of ["환불 실행", "결제 승인", "상태 복구", "재시도", "강제 완료", "대사 완료", "메모 저장"]) assert.doesNotMatch(client, new RegExp(action));
 });
 
+test("Operations 점검 카드는 읽기 전용 summary total을 로딩 완료 후 표시한다", () => {
+  const card = operations.slice(
+    operations.indexOf('title="Apps in Toss 결제 점검"'),
+    operations.indexOf('title="아카데미 상담"'),
+  );
+  assert.match(operations, /import type \{ AppsInTossReconciliationResponse \} from "@\/types\/admin\/apps-in-toss-reconciliation"/);
+  assert.match(operations, /useSWR<AppsInTossReconciliationResponse>\(\s*"\/api\/admin\/apps-in-toss\/reconciliation\?issueType=all&environment=all&page=1&limit=1",\s*authenticatedSWRFetcher/);
+  assert.match(card, /count=\{appsInTossReconciliation\?\.summary\.total \?\? "—"\}/);
+  assert.doesNotMatch(card, /count=\{0\}/);
+  assert.match(card, /href="\/admin\/operations\/apps-in-toss-reconciliation"/);
+});
+
 test("신규 인덱스 2개는 runtime spec, ensure, check에 모두 일치한다", () => {
   for (const source of [runtimeIndexes, ensureIndexes, checkIndexes]) {
     assert.match(source, /apps_in_toss_payment_intents_state_updated_desc/);
