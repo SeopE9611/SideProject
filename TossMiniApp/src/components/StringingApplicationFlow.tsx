@@ -187,6 +187,26 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
     window.history.back();
   }, []);
 
+  const handlePendingPaymentResolved = useCallback(() => {
+    const normalizedUrl = new URL(window.location.href);
+
+    normalizedUrl.searchParams.delete("step");
+
+    window.history.replaceState(
+      {
+        productId,
+        view: "stringing-checkout",
+        step: 1,
+      },
+      "",
+      `${normalizedUrl.pathname}${normalizedUrl.search}${normalizedUrl.hash}`,
+    );
+
+    setPendingPayment(null);
+    setPaymentAttemptId(null);
+    setCurrentStep(1);
+  }, [productId]);
+
   const handleApplicantChange = useCallback((nextApplicant: StringingApplicantDraft) => {
     const pending = readPendingAppsPayment();
     if (pending) { setPendingPayment(pending); return; }
@@ -237,7 +257,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
   }, [applicant, collectionMethod, pushStep, selectedColor, selectedGauge, shipping, validatedWork, work]);
 
   if (pendingPayment) {
-    return <StringingPendingPaymentRecovery pending={pendingPayment} onResolved={() => setPendingPayment(null)} />;
+    return <StringingPendingPaymentRecovery pending={pendingPayment} onResolved={handlePendingPaymentResolved} />;
   }
 
   if (currentStep === 5) {
