@@ -32,6 +32,22 @@ test("paidAt과 durable business failure 정책을 유지한다", () => {
   assert.doesNotMatch(service, /refundTossPayPayment|claimAppsInTossPaymentRefund|recordAppsInTossPaymentRefunded|executeAppsInTossPayment/);
 });
 
+test("명시적인 pass 오류만 business failure로 분류하고 나머지는 rethrow한다", () => {
+  assert.match(service, /\["PASS_NOT_FOUND", "ORDER_NOT_PAID", "PASS_CONSUME_FAILED"\]\.includes\(errorCode\(error\)\)/);
+  assert.match(service, /const code = classifyPassBusinessError\(error\);\s*if \(code\) fail\(code,[\s\S]*?throw error;/);
+  assert.doesNotMatch(service, /includes\("INSUFFICIENT"\)/);
+});
+
+test("예약 불가만 business failure로 분류하고 visit의 다른 오류는 rethrow한다", () => {
+  assert.match(service, /errorCode\(error\) === "VISIT_SLOT_UNAVAILABLE" \? "VISIT_SLOT_UNAVAILABLE" : null/);
+  assert.match(service, /const code = classifyVisitBusinessError\(error\);\s*if \(code\) fail\(code,[\s\S]*?throw error;/);
+  assert.doesNotMatch(service, /VISIT_TRANSACTION_REQUIRED[^\n]*fail/);
+});
+
+test("Apps 주문 shippingInfo에 수령 방식과 교체 서비스 여부를 저장한다", () => {
+  assert.match(service, /collectionMethod: cm, deliveryMethod: cm === "visit" \? "방문수령" : "택배수령", withStringService: true/);
+});
+
 test("MiniApp finalization 연결 파일은 contract 범위 밖이며 변경 대상이 아니다", () => {
   assert.equal(miniAppForbidden.length, 2);
 });
