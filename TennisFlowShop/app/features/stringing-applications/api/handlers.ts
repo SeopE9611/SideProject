@@ -3801,13 +3801,21 @@ export async function handleSubmitStringingApplication(req: Request) {
     const body = await req.json();
     const db = await getDb();
 
-    const result = await submitStringingApplicationCore({
-      db,
-      userId,
-      guestOrderId,
-      guestRentalId,
-      input: body,
-    });
+    let result;
+    if (normalizeCollection(body?.shippingInfo?.collectionMethod ?? "self_ship") === "visit") {
+      const client = await clientPromise;
+      const session = client.startSession();
+      try {
+        await session.withTransaction(async () => {
+          result = await submitStringingApplicationCore({ db, userId, guestOrderId, guestRentalId, input: body, session });
+        });
+      } finally {
+        await session.endSession();
+      }
+    } else {
+      result = await submitStringingApplicationCore({ db, userId, guestOrderId, guestRentalId, input: body });
+    }
+    if (!result) throw new Error("STRINGING_APPLICATION_TRANSACTION_FAILED");
 
     const applicationId = String(result.applicationId);
     let savedApplication: any = null;

@@ -17,6 +17,7 @@ import { consumePass, findOneActivePassForUser } from "@/lib/passes.service";
 import { productVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { normalizeEmailForSearch } from "@/lib/search-email";
+import { guardVisitReservation } from "@/app/features/stringing-applications/lib/visitReservationGuard";
 
 export type StringingApplicationInput = {
   applicationId?: string;
@@ -497,6 +498,17 @@ export async function submitStringingApplicationCore({
     : null;
 
   const targetId = existingDraft?._id ?? applicationId;
+
+  if (cm === "visit") {
+    await guardVisitReservation({
+      db,
+      date: preferredDate ?? "",
+      time: preferredTime ?? "",
+      slotCount: visitSlotCount ?? 1,
+      session,
+      excludeApplicationId: bodyApplicationObjectId ?? existingDraft?._id,
+    });
+  }
 
   const updateDoc: Record<string, unknown> = {
     orderId: orderObjectId,

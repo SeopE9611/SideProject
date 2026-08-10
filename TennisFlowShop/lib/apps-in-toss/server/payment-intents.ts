@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ObjectId, type Db } from "mongodb";
+import { ObjectId, type ClientSession, type Db } from "mongodb";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import { assertAttemptId, assertTossPayOrderNo, parseTossPayToken } from "./toss-pay-contract";
 import { assertAppsInTossPaymentIntentTransition, type AppsInTossPaymentIntentState } from "./payment-intent-state";
@@ -36,6 +36,8 @@ export type AppsInTossPaymentIntentDocument = {
   reservationSnapshot?: { preferredDate?: string; preferredTime?: string; slotCount?: number; durationMinutes?: number; capacityAtPrepare?: number };
   createdAt: Date; updatedAt: Date; expiresAt: Date; retentionUntil?: Date;
   payToken?: string; finalOrderId?: ObjectId;
+  paidAt?: Date;
+  finalization?: { failureCode: string; failedAt: Date };
   execution?: { claimedAt: Date; leaseUntil: Date };
   refund?: { claimedAt: Date; updatedAt: Date };
   failureStage?: string; failureCode?: string; failureMessage?: string;
@@ -51,9 +53,9 @@ export async function createAppsInTossPaymentIntent(db: Db, input: CreateIntent)
 export const findAppsInTossPaymentIntentByAttemptId = (db: Db, attemptId: string) => { assertAttemptId(attemptId); return appsInTossPaymentIntents(db).findOne({ attemptId }); };
 export const findAppsInTossPaymentIntentByOrderNo = (db: Db, orderNo: string) => { assertTossPayOrderNo(orderNo); return appsInTossPaymentIntents(db).findOne({ orderNo }); };
 
-async function transition(db: Db, id: ObjectId, from: AppsInTossPaymentIntentState, to: AppsInTossPaymentIntentState, set: Record<string, unknown> = {}, unset?: Record<string, "">) {
+async function transition(db: Db, id: ObjectId, from: AppsInTossPaymentIntentState, to: AppsInTossPaymentIntentState, set: Record<string, unknown> = {}, unset?: Record<string, "">, session?: ClientSession) {
   assertAppsInTossPaymentIntentTransition(from, to);
-  return appsInTossPaymentIntents(db).findOneAndUpdate({ _id: id, state: from }, { $set: { ...set, state: to, updatedAt: new Date() }, ...(unset ? { $unset: unset } : {}) }, { returnDocument: "after" });
+  return appsInTossPaymentIntents(db).findOneAndUpdate({ _id: id, state: from }, { $set: { ...set, state: to, updatedAt: new Date() }, ...(unset ? { $unset: unset } : {}) }, { returnDocument: "after", session });
 }
 export function attachAppsInTossPayToken(db: Db, id: ObjectId, payToken: string) {
   const validatedPayToken = parseTossPayToken(payToken);
@@ -67,12 +69,12 @@ export function claimAppsInTossPaymentExecution(db: Db, id: ObjectId, leaseUntil
   const now = new Date(); if (leaseUntil <= now) throw new Error("실행 leaseUntil은 현재보다 이후여야 합니다.");
   return transition(db, id, "awaiting_authorization", "executing", { execution: { claimedAt: now, leaseUntil } });
 }
-export const recordAppsInTossPaymentPaid = (db: Db, id: ObjectId) => transition(db, id, "executing", "paid", {}, { execution: "" });
+export const recordAppsInTossPaymentPaid = (db: Db, id: ObjectId) => transition(db, id, "executing", "paid", { paidAt: new Date() }, { execution: "" });
 export function recordAppsInTossPaymentExecutionFailed(db: Db, id: ObjectId, failureCode: string) {
   const safeFailureCode = failureCode.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 100) || "EXECUTION_FAILED";
   return transition(db, id, "executing", "failed", { failureStage: "execute_payment", failureCode: safeFailureCode }, { execution: "" });
 }
-export const recordAppsInTossPaymentFinalized = (db: Db, id: ObjectId, finalOrderId: ObjectId) => transition(db, id, "paid", "finalized", { finalOrderId });
+export const recordAppsInTossPaymentFinalized = (db: Db, id: ObjectId, finalOrderId: ObjectId, session?: ClientSession) => transition(db, id, "paid", "finalized", { finalOrderId }, undefined, session);
 export function claimAppsInTossPaymentRefund(db: Db, id: ObjectId) { const now = new Date(); return transition(db, id, "paid", "refunding", { refund: { claimedAt: now, updatedAt: now } }); }
 export const recordAppsInTossPaymentRefunded = (db: Db, id: ObjectId) => transition(db, id, "refunding", "refunded", { "refund.updatedAt": new Date() });
 export function recordAppsInTossPaymentReconciliationRequired(db: Db, id: ObjectId, from: "executing" | "paid" | "refunding", failure: { failureStage?: string; failureCode?: string; failureMessage?: string } = {}) { return transition(db, id, from, "reconciliation_required", failure); }

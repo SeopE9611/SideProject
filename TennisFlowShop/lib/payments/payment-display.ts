@@ -39,6 +39,7 @@ const PROVIDER_LABEL_MAP: Record<string, string> = {
   nicepay: "NICEPAY",
   tosspayments: "Toss Payments",
   toss: "Toss Payments",
+  apps_in_toss_toss_pay: "Apps in Toss Toss Pay",
   manual_bank_transfer: "무통장입금",
   bank_transfer: "무통장입금",
 };
@@ -152,7 +153,7 @@ export function getPaymentDisplaySummary(params: PaymentDisplayInput): PaymentDi
   const easyPayProviderLabel = getEasyPayProviderLabel(params.easyPayProvider);
   const cardDisplayName = getPaymentCardDisplayName(params);
   const hasBankInfo = Boolean(cleanText(params.bank) || cleanText(params.depositor));
-  const isProviderOnly = ["nicepay", "tosspayments", "toss"].includes(provider);
+  const isProviderOnly = ["nicepay", "tosspayments", "toss", "apps_in_toss_toss_pay"].includes(provider);
   const primaryLabel =
     hasBankInfo && !isProviderOnly
       ? "무통장입금"
