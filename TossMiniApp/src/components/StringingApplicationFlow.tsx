@@ -72,6 +72,11 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
   const [validationReturnStep, setValidationReturnStep] = useState<1 | 2 | 3 | null>(null);
 
   useEffect(() => {
+    const pending = readPendingAppsPayment();
+    if (pending) {
+      setPendingPayment(pending);
+      return;
+    }
     setPaymentAttemptId(null);
   }, [productId, selectedColor, selectedGauge]);
 
@@ -121,6 +126,11 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
 
   useEffect(() => {
     const handlePopState = () => {
+      const pending = readPendingAppsPayment();
+      if (pending) {
+        setPendingPayment(pending);
+        return;
+      }
       const requestedStep = getApplyStepFromLocation();
       const allowedStep = getAllowedStep(requestedStep);
 
@@ -178,22 +188,30 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
   }, []);
 
   const handleApplicantChange = useCallback((nextApplicant: StringingApplicantDraft) => {
+    const pending = readPendingAppsPayment();
+    if (pending) { setPendingPayment(pending); return; }
     setApplicant(nextApplicant);
     setPaymentAttemptId(null);
   }, []);
 
   const handleCollectionMethodChange = useCallback((nextMethod: StringingCollectionMethod) => {
+    const pending = readPendingAppsPayment();
+    if (pending) { setPendingPayment(pending); return; }
     setCollectionMethod(nextMethod);
     setValidatedWork(null);
     setPaymentAttemptId(null);
   }, []);
 
   const handleShippingChange = useCallback((nextShipping: StringingShippingDraft) => {
+    const pending = readPendingAppsPayment();
+    if (pending) { setPendingPayment(pending); return; }
     setShipping(nextShipping);
     setPaymentAttemptId(null);
   }, []);
 
   const handleWorkChange = useCallback((nextWork: StringingWorkDraft) => {
+    const pending = readPendingAppsPayment();
+    if (pending) { setPendingPayment(pending); return; }
     setWork(nextWork);
     setValidatedWork(null);
     setPaymentAttemptId(null);
