@@ -1,350 +1,107 @@
-import { Top } from "@toss/tds-mobile";
 import { checkoutPayment } from "@apps-in-toss/web-framework";
-import { useEffect, useRef, useState } from "react";
+import { Top } from "@toss/tds-mobile";
+import { useRef, useState } from "react";
 
 import { AppsAuthApiError } from "../api/auth";
-import { AppsPaymentApiError, getAppsPaymentIntent, prepareAppsPayment } from "../api/payments";
+import { AppsPaymentApiError, completeAppsPayment, prepareAppsPayment, type AppsPaymentIntentState, type AppsPaymentSummary } from "../api/payments";
 import { AppsLoginBridgeError, useAppsInTossAuth } from "../auth/AppsInTossAuthContext";
+import { clearPendingAppsPayment, savePendingAppsPayment } from "../lib/pending-payment";
+import { formatPrice } from "../lib/product-labels";
 import { getFirstInvalidApplicationStep } from "../lib/stringing-application-validation";
-import type {
-  StringingApplicantDraft,
-  StringingCollectionMethod,
-  StringingShippingDraft,
-  StringingWorkDraft,
-} from "../types/stringing";
+import type { StringingApplicantDraft, StringingCollectionMethod, StringingShippingDraft, StringingWorkDraft } from "../types/stringing";
 
-type StringingApplicationStepFiveProps = {
-  productId: string;
-  selectedColor: string;
-  selectedGauge: string;
-  applicant: StringingApplicantDraft;
-  collectionMethod: StringingCollectionMethod;
-  shipping: StringingShippingDraft;
-  work: StringingWorkDraft;
-  paymentAttemptId: string | null;
-  onPaymentAttemptIdChange: (attemptId: string | null) => void;
-  onInvalidStep: (step: 1 | 2 | 3) => void;
-  onBack: () => void;
-};
+type Props = { productId: string; selectedColor: string; selectedGauge: string; applicant: StringingApplicantDraft; collectionMethod: StringingCollectionMethod; shipping: StringingShippingDraft; work: StringingWorkDraft; paymentAttemptId: string | null; onPaymentAttemptIdChange: (value: string | null) => void; onInvalidStep: (step: 1 | 2 | 3) => void; onBack: () => void };
 
-function getPaymentErrorMessage(error: AppsPaymentApiError): string {
-  switch (error.code) {
-    case "INVALID_REQUEST":
-      return "입력한 주문 정보를 다시 확인해주세요. 이전 단계로 돌아가 정보를 확인해주세요.";
-    case "INVALID_PAYMENT_AMOUNT":
-      return "결제 금액을 확인하지 못했어요. 주문 정보를 다시 확인해주세요.";
-    case "AUTH_REQUIRED":
-      return "로그인 정보가 만료됐어요. 다시 로그인해주세요.";
-    case "PAYMENT_INTENT_EXPIRED":
-      return "결제 준비 시간이 만료됐어요. 다시 확인해주세요.";
-    case "ATTEMPT_PAYLOAD_MISMATCH":
-      return "주문 정보가 변경됐어요. 다시 결제 준비를 확인해주세요.";
-    case "ATTEMPT_CONFLICT":
-      return "결제 준비 정보를 다시 확인해주세요.";
-    case "VISIT_SLOT_UNAVAILABLE":
-      return "선택한 방문 시간이 더 이상 예약 가능하지 않아요. 이전 단계에서 시간을 다시 선택해주세요.";
-    case "VARIANT_SOLD_OUT":
-    case "VARIANT_INSUFFICIENT_STOCK":
-      return "선택한 상품 옵션의 재고를 다시 확인해주세요.";
-    case "PRODUCT_NOT_AVAILABLE":
-    case "VARIANT_NOT_FOUND":
-      return "선택한 상품 옵션을 다시 확인해주세요.";
-    case "PAYMENT_CONFIGURATION_MISSING":
-      return "결제 준비 서버 설정을 확인하지 못했습니다.";
-    case "PAYMENT_CREATION_IN_PROGRESS":
-      return "결제 준비를 처리하고 있어요. 잠시 후 다시 확인해주세요.";
-    case "PAYMENT_CREATION_FAILED":
-    case "TOSS_PAY_UNAVAILABLE":
-    case "TOSS_PAY_MAKE_FAILED":
-      return "결제 준비에 실패했어요. 다시 시도해주세요.";
-    default:
-      return "결제 준비 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.";
-  }
+function errorMessage(error: AppsPaymentApiError) {
+  const messages: Record<string, string> = {
+    PAYMENT_LIVE_NOT_ENABLED: "라이브 결제 준비가 아직 활성화되지 않았어요.", PAYMENT_LIVE_EXECUTION_DISABLED: "라이브 결제 승인이 일시 중지되어 있어요.",
+    PAYMENT_APPROVAL_UNAVAILABLE_IN_SANDBOX: "Sandbox 결제 인증 테스트가 완료됐어요. Sandbox에서는 실제 승인과 주문 생성은 진행되지 않습니다.",
+    PAYMENT_EXECUTION_IN_PROGRESS: "결제 승인 처리가 진행 중이에요.", PAYMENT_COMPLETION_FAILED: "결제 처리 결과를 확인하지 못했어요.",
+    PAYMENT_STATE_CHANGED: "결제 상태가 변경됐어요. 현재 상태를 다시 확인해주세요.", PAYMENT_STATE_UNAVAILABLE: "현재 결제 상태를 확인할 수 없어요.",
+    AUTH_REQUIRED: "로그인 정보가 만료됐어요. 다시 로그인한 뒤 같은 결제 상태를 확인해주세요.", PAYMENT_CONFIGURATION_MISSING: "결제 서버 설정을 확인하고 있어요.",
+  };
+  return error.code ? messages[error.code] ?? "결제 처리 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요." : "결제 처리 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.";
 }
 
-function StringingApplicationStepFive({
-  productId,
-  selectedColor,
-  selectedGauge,
-  applicant,
-  collectionMethod,
-  shipping,
-  work,
-  paymentAttemptId,
-  onPaymentAttemptIdChange,
-  onInvalidStep,
-  onBack,
-}: StringingApplicationStepFiveProps) {
+function stateMessage(state: AppsPaymentIntentState) {
+  if (state === "finalized") return "결제와 주문 접수가 완료됐어요.";
+  if (state === "refunded") return "주문을 확정할 수 없어 결제가 환불되었습니다.";
+  if (state === "failed" || state === "cancelled") return "결제가 완료되지 않았어요. 원하시면 새 결제를 다시 준비할 수 있습니다.";
+  if (state === "reconciliation_required") return "결제 처리 결과를 추가로 확인하고 있습니다. 중복 결제를 방지하기 위해 새 결제를 다시 시도하지 마세요.";
+  return "결제 처리가 진행 중이에요. 같은 결제를 다시 생성하지 않고 현재 상태를 확인해주세요.";
+}
+
+export default function StringingApplicationStepFive(props: Props) {
   const auth = useAppsInTossAuth();
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isPreparingPayment, setIsPreparingPayment] = useState(false);
-  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
+  const [busy, setBusy] = useState<"login" | "prepare" | "authorize" | "complete" | null>(null);
   const [payToken, setPayToken] = useState<string | null>(null);
-  const [isAuthorizingPayment, setIsAuthorizingPayment] = useState(false);
-  const [isPaymentAuthorized, setIsPaymentAuthorized] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const isAuthorizationLocked = useRef(false);
-  const sessionExpiresAt = auth.status === "authenticated" ? auth.expiresAt : null;
+  const [summary, setSummary] = useState<AppsPaymentSummary | null>(null);
+  const [authorized, setAuthorized] = useState(false);
+  const [state, setState] = useState<AppsPaymentIntentState | null>(null);
+  const [message, setMessage] = useState("");
+  const authorizationLock = useRef(false);
+  const completionLock = useRef(false);
 
-  useEffect(() => {
-    if (sessionExpiresAt && Date.parse(sessionExpiresAt) <= Date.now()) {
-      auth.clearSession();
-      setPayToken(null);
-      setIsPaymentConfirmed(false);
-      setIsPaymentAuthorized(false);
-    }
-  }, [auth.clearSession, sessionExpiresAt]);
+  const login = async () => { if (busy || auth.status === "authenticated") return; setBusy("login"); try { await auth.login(); } catch (error) { setMessage(error instanceof AppsAuthApiError || error instanceof AppsLoginBridgeError ? "토스 로그인이 완료되지 않았어요. 다시 시도해주세요." : "로그인에 실패했어요."); } finally { setBusy(null); } };
 
-  const handleLogin = async () => {
-    if (isLoggingIn || auth.status === "authenticated") return;
-
-    setIsLoggingIn(true);
-    setErrorMessage("");
-
+  const complete = async (attemptId: string) => {
+    if (completionLock.current || auth.status !== "authenticated") return;
+    completionLock.current = true; setBusy("complete"); setMessage("결제 처리 중이에요.");
     try {
-      await auth.login();
+      const result = await completeAppsPayment(auth.sessionToken, attemptId);
+      setState(result.state); setMessage(stateMessage(result.state));
+      if (["finalized", "refunded", "failed", "cancelled"].includes(result.state)) clearPendingAppsPayment();
     } catch (error) {
-      if (
-        error instanceof AppsAuthApiError &&
-        (error.code === "INVALID_AUTHORIZATION_CODE" || error.status === 409)
-      ) {
-        setErrorMessage("로그인 정보가 만료됐어요. 다시 시도해주세요.");
-      } else if (error instanceof AppsLoginBridgeError) {
-        setErrorMessage("토스 로그인이 취소되었거나 완료되지 않았어요. 다시 시도해주세요.");
-      } else {
-        setErrorMessage("로그인에 실패했어요. 잠시 후 다시 시도해주세요.");
-      }
-    } finally {
-      setIsLoggingIn(false);
-    }
+      if (error instanceof AppsPaymentApiError && error.code === "PAYMENT_APPROVAL_UNAVAILABLE_IN_SANDBOX") { clearPendingAppsPayment(); setState("cancelled"); setMessage(errorMessage(error)); }
+      else { if (error instanceof AppsPaymentApiError && (error.status === 401 || error.code === "AUTH_REQUIRED")) auth.clearSession(); setMessage(error instanceof AppsPaymentApiError ? errorMessage(error) : "결제 처리 결과를 확인하지 못했어요. 같은 결제를 다시 생성하지 않고 현재 결제 상태를 확인합니다."); }
+    } finally { completionLock.current = false; setBusy(null); }
   };
 
-  const handlePreparePayment = async () => {
-    if (isPreparingPayment || auth.status !== "authenticated") return;
-
-    if (Date.parse(auth.expiresAt) <= Date.now()) {
-      auth.clearSession();
-      setPayToken(null);
-      setIsPaymentConfirmed(false);
-      setIsPaymentAuthorized(false);
-      setErrorMessage("로그인 정보가 만료됐어요. 다시 로그인해주세요.");
-      return;
-    }
-
-    const invalidStep = getFirstInvalidApplicationStep(
-      { applicant, collectionMethod, shipping, work },
-      { selectedColor, selectedGauge },
-    );
-    if (invalidStep) {
-      setErrorMessage("입력 정보를 다시 확인해주세요.");
-      onInvalidStep(invalidStep);
-      return;
-    }
-
-    const attemptId = paymentAttemptId ?? crypto.randomUUID();
-    if (!paymentAttemptId) {
-      onPaymentAttemptIdChange(attemptId);
-    }
-
-    setIsPreparingPayment(true);
-    setIsPaymentConfirmed(false);
-    setPayToken(null);
-    setIsPaymentAuthorized(false);
-    setErrorMessage("");
-
+  const prepare = async () => {
+    if (busy || auth.status !== "authenticated" || authorized) return;
+    const invalid = getFirstInvalidApplicationStep({ applicant: props.applicant, collectionMethod: props.collectionMethod, shipping: props.shipping, work: props.work }, { selectedColor: props.selectedColor, selectedGauge: props.selectedGauge });
+    if (invalid) { props.onInvalidStep(invalid); return; }
+    const attemptId = props.paymentAttemptId ?? crypto.randomUUID(); if (!props.paymentAttemptId) props.onPaymentAttemptIdChange(attemptId);
+    setBusy("prepare"); setMessage("");
     try {
-      const prepared = await prepareAppsPayment({
-        sessionToken: auth.sessionToken,
-        attemptId,
-        productId,
-        selectedColor,
-        selectedGauge,
-        applicant,
-        collectionMethod,
-        shipping,
-        work,
-      });
-
-      if (prepared.attemptId !== attemptId) {
-        throw new AppsPaymentApiError("결제 준비 식별자를 확인하지 못했습니다.", 0);
-      }
-
-      const intent = await getAppsPaymentIntent(auth.sessionToken, attemptId);
-      if (intent.attemptId !== attemptId || intent.attemptId !== prepared.attemptId) {
-        throw new AppsPaymentApiError("결제 준비 식별자를 확인하지 못했습니다.", 0);
-      }
-
-      if (intent.state !== "awaiting_authorization" || intent.expired || !intent.paymentReady) {
-        throw new AppsPaymentApiError("결제 준비 상태를 확인하지 못했습니다.", 0);
-      }
-
-      setPayToken(prepared.payToken);
-      setIsPaymentConfirmed(true);
-    } catch (error) {
-      if (error instanceof AppsPaymentApiError) {
-        if (error.status === 401 || error.code === "AUTH_REQUIRED") {
-          auth.clearSession();
-        }
-        if (
-          error.code === "PAYMENT_INTENT_EXPIRED" ||
-          error.code === "ATTEMPT_PAYLOAD_MISMATCH" ||
-          error.code === "ATTEMPT_CONFLICT" ||
-          error.code === "PAYMENT_CREATION_FAILED" ||
-          error.code === "TOSS_PAY_UNAVAILABLE" ||
-          error.code === "TOSS_PAY_MAKE_FAILED"
-        ) {
-          onPaymentAttemptIdChange(null);
-        }
-        setErrorMessage(getPaymentErrorMessage(error));
-      } else {
-        setErrorMessage("결제 준비 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.");
-      }
-    } finally {
-      setIsPreparingPayment(false);
-    }
+      const result = await prepareAppsPayment({ sessionToken: auth.sessionToken, attemptId, productId: props.productId, selectedColor: props.selectedColor, selectedGauge: props.selectedGauge, applicant: props.applicant, collectionMethod: props.collectionMethod, shipping: props.shipping, work: props.work });
+      setPayToken(result.payToken); setSummary(result.paymentSummary); setState(result.state); setMessage("실제 결제에 사용할 최종 금액을 확인해주세요.");
+    } catch (error) { if (error instanceof AppsPaymentApiError && (error.status === 401 || error.code === "AUTH_REQUIRED")) auth.clearSession(); setMessage(error instanceof AppsPaymentApiError ? errorMessage(error) : "결제 준비 정보를 확인하지 못했어요."); }
+    finally { setBusy(null); }
   };
 
-  const handleAuthorizePayment = async () => {
-    if (isPaymentAuthorized || isAuthorizationLocked.current || isPreparingPayment || isAuthorizingPayment || !isPaymentConfirmed || !payToken || !paymentAttemptId) return;
-
-    if (auth.status !== "authenticated" || Date.parse(auth.expiresAt) <= Date.now()) {
-      auth.clearSession();
-      setPayToken(null);
-      setIsPaymentConfirmed(false);
-      setIsPaymentAuthorized(false);
-      setErrorMessage("로그인 정보가 만료됐어요. 다시 로그인해주세요.");
-      return;
-    }
-
-    isAuthorizationLocked.current = true;
-    setIsAuthorizingPayment(true);
-    setIsPaymentAuthorized(false);
-    setErrorMessage("");
-
+  const authorize = async () => {
+    const attemptId = props.paymentAttemptId;
+    if (authorizationLock.current || busy || authorized || auth.status !== "authenticated" || !payToken || !attemptId) return;
+    authorizationLock.current = true; setBusy("authorize"); setMessage("");
     try {
-      const intent = await getAppsPaymentIntent(auth.sessionToken, paymentAttemptId);
-      if (intent.attemptId !== paymentAttemptId || intent.state !== "awaiting_authorization" || intent.expired || !intent.paymentReady) {
-        setPayToken(null);
-        setIsPaymentConfirmed(false);
-        if (intent.expired) onPaymentAttemptIdChange(null);
-        setErrorMessage(intent.expired
-          ? "결제 준비 시간이 만료됐어요. 다시 확인해주세요."
-          : "결제 준비 상태를 다시 확인해주세요.");
-        return;
-      }
-
       const result = await checkoutPayment({ params: { payToken } });
       if (result.success) {
-        setIsPaymentAuthorized(true);
-      } else {
-        setErrorMessage("결제 인증이 완료되지 않았어요. 다시 시도해주세요.");
-      }
-    } catch (error) {
-      if (error instanceof AppsPaymentApiError) {
-        if (error.status === 401 || error.code === "AUTH_REQUIRED") {
-          auth.clearSession();
-          setPayToken(null);
-          setIsPaymentConfirmed(false);
-        }
-        if (error.code === "PAYMENT_INTENT_EXPIRED") {
-          setPayToken(null);
-          setIsPaymentConfirmed(false);
-          onPaymentAttemptIdChange(null);
-        }
-        setErrorMessage(getPaymentErrorMessage(error));
-      } else {
-        setErrorMessage("토스페이 결제 인증을 시작하지 못했어요. 다시 시도해주세요.");
-      }
-    } finally {
-      isAuthorizationLocked.current = false;
-      setIsAuthorizingPayment(false);
-    }
+        savePendingAppsPayment(attemptId);
+        setAuthorized(true); setPayToken(null); setMessage("구매자 인증이 완료되어 결제 처리 중이에요.");
+        await complete(attemptId);
+      } else setMessage("결제 인증이 완료되지 않았어요. 다시 시도해주세요.");
+    } catch { setMessage("토스페이 결제 인증을 시작하지 못했어요. 다시 시도해주세요."); }
+    finally { authorizationLock.current = false; setBusy(null); }
   };
 
-  return (
-    <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
-      <section className="pt-[calc(16px+env(safe-area-inset-top))]">
-        <Top
-          title={<Top.TitleParagraph size={22}>교체서비스 포함 주문</Top.TitleParagraph>}
-          subtitleBottom={<Top.SubtitleParagraph size={17}>5 / 5 · 로그인 확인</Top.SubtitleParagraph>}
-        />
-      </section>
-
-      <section className="px-6 max-[359px]:px-5" aria-labelledby="login-confirm-title">
-        <div className="mb-4">
-          <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">STEP 05</p>
-          <h1 id="login-confirm-title" className="m-0 text-[22px] leading-[1.35] font-extrabold tracking-[-0.02em]">
-            토스 로그인 및 결제 준비 확인
-          </h1>
-        </div>
-
-        {auth.status === "authenticated" ? (
-          <div>
-            <div className="rounded-[20px] bg-[#f4f9e8] p-5" role="status">
-              <strong className="block text-base font-extrabold text-[#344700]">
-                {isPaymentAuthorized ? "결제 인증이 완료됐어요." : isPaymentConfirmed ? "결제 준비가 완료됐어요." : "로그인이 완료됐어요."}
-              </strong>
-              <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#59636e]">
-                {isPaymentAuthorized
-                  ? "토스페이 결제창에서 사용자 인증 결과를 확인했습니다."
-                  : isPaymentConfirmed
-                  ? "서버에서 주문 정보를 다시 확인하고 토스페이 Sandbox 결제 건을 생성했습니다."
-                  : `${auth.user.name}님으로 로그인했습니다.`}
-              </p>
-              <p className="mt-2 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                현재 테스트 단계에서는 실제 결제 승인이나 주문 생성은 진행되지 않습니다.
-              </p>
-            </div>
-            <button
-              className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] px-4 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]"
-              type="button"
-              disabled={isPreparingPayment || isAuthorizingPayment}
-              onClick={() => void handlePreparePayment()}
-            >
-              {isPreparingPayment ? "결제 준비 확인 중..." : "결제 준비 확인하기"}
-            </button>
-            {isPaymentConfirmed && payToken && (
-              <button
-                className="mt-3 min-h-[52px] w-full rounded-2xl bg-[#191f28] px-4 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]"
-                type="button"
-                disabled={isPaymentAuthorized || isPreparingPayment || isAuthorizingPayment}
-                onClick={() => void handleAuthorizePayment()}
-              >
-                {isPaymentAuthorized ? "결제 인증 완료" : isAuthorizingPayment ? "결제 인증 중..." : "토스페이 결제 인증하기"}
-              </button>
-            )}
-            {errorMessage && <p className="mt-3 mb-0 text-sm leading-[1.55] text-[#d92d20]" role="alert">{errorMessage}</p>}
-          </div>
-        ) : (
-          <div className="rounded-[20px] border border-[#e5e8eb] p-5">
-            <strong className="block text-base font-extrabold text-[#191f28]">결제 전에 로그인이 필요해요.</strong>
-            <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
-              주문자를 안전하게 확인하기 위해 토스 로그인을 진행해주세요.
-            </p>
-            <button
-              className="mt-5 min-h-[52px] w-full rounded-2xl bg-[#191f28] px-4 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]"
-              type="button"
-              disabled={isLoggingIn}
-              onClick={() => void handleLogin()}
-            >
-              {isLoggingIn ? "로그인 중..." : "토스로 로그인하기"}
-            </button>
-            {errorMessage && <p className="mt-3 mb-0 text-sm leading-[1.55] text-[#d92d20]" role="alert">{errorMessage}</p>}
-          </div>
-        )}
-      </section>
-
-      <section className="mt-6 px-6 max-[359px]:px-5">
-        <button
-          className="min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white px-4 text-base font-bold text-[#4e5968]"
-          type="button"
-          onClick={onBack}
-        >
-          이전
-        </button>
-      </section>
-    </main>
-  );
+  const terminal = state === "finalized" || state === "refunded";
+  const retryableTerminal = state === "failed" || state === "cancelled";
+  return <main className="min-h-dvh w-full bg-white pb-8 text-[#191f28]">
+    <section className="pt-[calc(16px+env(safe-area-inset-top))]"><Top title={<Top.TitleParagraph size={22}>교체서비스 포함 주문</Top.TitleParagraph>} subtitleBottom={<Top.SubtitleParagraph size={17}>5 / 5 · 결제 확인</Top.SubtitleParagraph>} /></section>
+    <section className="px-6"><h1 className="text-[22px] font-extrabold">토스 로그인 및 결제 처리</h1>
+      {message && <p className="mt-3 break-keep rounded-2xl bg-[#f4f9e8] p-4 text-sm leading-[1.6]" role="status">{message}</p>}
+      {summary && <section className="mt-4 rounded-[20px] border border-[#e5e8eb] p-[18px]"><strong>최종 결제 정보</strong><dl className="mt-4 space-y-2 text-sm">
+        <div className="flex justify-between"><dt>상품명</dt><dd>{summary.item.name}</dd></div><div className="flex justify-between"><dt>수량</dt><dd>{summary.item.quantity}개</dd></div>
+        <div className="flex justify-between"><dt>상품 금액</dt><dd>{formatPrice(summary.pricing.subtotal)}</dd></div><div className="flex justify-between"><dt>배송비</dt><dd>{formatPrice(summary.pricing.shippingFee)}</dd></div>
+        <div className="flex justify-between"><dt>교체서비스 비용</dt><dd>{formatPrice(summary.pricing.serviceFee)}</dd></div>{summary.pricing.packageDiscount > 0 && <div className="flex justify-between"><dt>패키지 할인</dt><dd>-{formatPrice(summary.pricing.packageDiscount)}</dd></div>}
+        <div className="flex justify-between border-t pt-3 font-extrabold"><dt>최종 결제 금액</dt><dd>{formatPrice(summary.pricing.payableAmount)}</dd></div></dl></section>}
+      {auth.status !== "authenticated" && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => void login()} disabled={busy !== null}>토스로 로그인하기</button>}
+      {auth.status === "authenticated" && !summary && !authorized && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => void prepare()} disabled={busy !== null}>{busy === "prepare" ? "결제 준비 중..." : "결제 준비 확인하기"}</button>}
+      {summary && payToken && !authorized && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => void authorize()} disabled={busy !== null}>토스페이로 {formatPrice(summary.pricing.payableAmount)} 결제 인증하기</button>}
+      {authorized && !terminal && !retryableTerminal && auth.status === "authenticated" && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => props.paymentAttemptId && void complete(props.paymentAttemptId)} disabled={busy !== null}>결제 처리 상태 다시 확인</button>}
+      {retryableTerminal && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => { clearPendingAppsPayment(); props.onPaymentAttemptIdChange(null); setAuthorized(false); setState(null); setSummary(null); setMessage(""); }}>새 결제 다시 준비하기</button>}
+      {!authorized && !terminal && <button className="mt-3 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white font-bold" onClick={props.onBack}>이전</button>}
+    </section>
+  </main>;
 }
-
-export default StringingApplicationStepFive;
