@@ -32,9 +32,9 @@ test("execute route는 canonical 식별자만 받고 결제 비밀값을 body로
   assert.doesNotMatch(routeSource, /request\.json|payToken|orderNo|userKey/);
 });
 
-test("승인 완료, 대기, 취소, 기타 상태를 보수적으로 분류한다", () => {
-  for (const status of ["PAY_APPROVED", "PAY_COMPLETE"]) assert.equal(policy.classifyTossPayStatus(status), "paid");
-  for (const status of ["PAY_STANDBY", "PAY_PROGRESS"]) assert.equal(policy.classifyTossPayStatus(status), "pending");
+test("구매자 인증 완료와 실제 결제 완료를 구분한다", () => {
+  assert.equal(policy.classifyTossPayStatus("PAY_COMPLETE"), "paid");
+  for (const status of ["PAY_APPROVED", "PAY_STANDBY", "PAY_PROGRESS"]) assert.equal(policy.classifyTossPayStatus(status), "pending");
   assert.equal(policy.classifyTossPayStatus("PAY_CANCEL"), "cancelled");
   for (const status of ["REFUND_SUCCESS", "SETTLEMENT_COMPLETE"]) assert.equal(policy.classifyTossPayStatus(status), "other");
   assert.equal(policy.classifyTossPayStatus("NEW_STATUS"), "unknown");
@@ -49,9 +49,18 @@ test("SUCCESS도 payToken, orderNo, amount, LIVE가 모두 일치해야 승인�
   }
 });
 
-test("중복 실행과 만료 lease는 execute를 재호출하지 않는다", () => {
+test("awaiting_authorization의 만료만 신규 execute를 차단한다", () => {
+  assert.match(executionSource, /intent\.state === "awaiting_authorization" && intent\.expiresAt <= new Date\(\).*PAYMENT_INTENT_EXPIRED/);
+  assert.doesNotMatch(executionSource, /if \(intent\.expiresAt <= new Date\(\)\).*PAYMENT_INTENT_EXPIRED/);
+});
+
+test("executing은 intent 만료와 무관하게 lease에 따라 진행 중 또는 상태 대사로 처리한다", () => {
   assert.match(executionSource, /leaseUntil > new Date\(\).*PAYMENT_EXECUTION_IN_PROGRESS/s);
   assert.match(executionSource, /intent\.state === "executing"[\s\S]*return reconcile/);
+  assert.ok(executionSource.indexOf('intent.state === "awaiting_authorization" && intent.expiresAt') < executionSource.indexOf('intent.state === "executing"'));
+  const executingBranch = executionSource.slice(executionSource.indexOf('if (intent.state === "executing")'), executionSource.indexOf("const claimed ="));
+  assert.doesNotMatch(executingBranch, /PAYMENT_INTENT_EXPIRED|executeTossPayPayment/);
+  assert.match(executingBranch, /return reconcile/);
   assert.match(executionSource, /execute-payment를 재시도하지 않고 상태만 조회한다/);
   assert.match(executionSource, /state === "paid" \|\| intent\.state === "finalized"[\s\S]*return safeResponse/);
 });
