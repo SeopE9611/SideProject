@@ -1,4 +1,5 @@
 export const PENDING_PAYMENT_STORAGE_KEY = "dokkaebitennis:apps-payment-pending:v1";
+const PENDING_PAYMENT_STORAGE_PROBE_KEY = "dokkaebitennis:apps-payment-pending:probe";
 
 export type PendingAppsPayment = { attemptId: string; authorizedAt: string };
 
@@ -14,6 +15,16 @@ export function readPendingAppsPayment(): PendingAppsPayment | null {
 
 export function savePendingAppsPayment(attemptId: string) {
   localStorage.setItem(PENDING_PAYMENT_STORAGE_KEY, JSON.stringify({ attemptId, authorizedAt: new Date().toISOString() }));
+}
+
+export function canStorePendingAppsPayment(): boolean {
+  try {
+    localStorage.setItem(PENDING_PAYMENT_STORAGE_PROBE_KEY, "1");
+    localStorage.removeItem(PENDING_PAYMENT_STORAGE_PROBE_KEY);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function clearPendingAppsPayment() {

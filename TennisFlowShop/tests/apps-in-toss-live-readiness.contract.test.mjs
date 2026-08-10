@@ -20,10 +20,37 @@ test("immutable summary와 MiniApp 중복 결제 방지 계약을 유지한다",
   const marker = await read("../TossMiniApp/src/lib/pending-payment.ts");
   assert.match(contract, /itemSnapshot/); assert.match(contract, /pricingSnapshot/); assert.match(contract, /packageSnapshot/);
   assert.match(contract, /Math\.max\(0, serviceFeeBeforePackage - intent\.pricingSnapshot\.serviceFee\)/);
-  assert.match(step, /savePendingAppsPayment\(attemptId\);[\s\S]*await complete\(attemptId\)/);
+  assert.match(marker, /PENDING_PAYMENT_STORAGE_PROBE_KEY/);
+  assert.match(marker, /localStorage\.setItem\(PENDING_PAYMENT_STORAGE_PROBE_KEY[\s\S]*localStorage\.removeItem\(PENDING_PAYMENT_STORAGE_PROBE_KEY[\s\S]*return true[\s\S]*catch[\s\S]*return false/);
+  assert.match(step, /if \(!canStorePendingAppsPayment\(\)\)[\s\S]*return;[\s\S]*getAppsPaymentIntent\(auth\.sessionToken, attemptId\)[\s\S]*checkoutPayment\(\{ params: \{ payToken \} \}\)/);
+  assert.match(step, /setAuthorized\(true\); setPayToken\(null\);[\s\S]*try \{[\s\S]*savePendingAppsPayment\(attemptId\)[\s\S]*catch[\s\S]*결제 인증은 완료됐습니다\. 중복 결제를 시도하지 마세요\.[\s\S]*await complete\(attemptId, markerSaveFailed\)/);
   assert.match(step, /checkoutPayment\(\{ params: \{ payToken \} \}\)/);
+  assert.match(step, /intent\.attemptId !== attemptId \|\| intent\.expired \|\| intent\.state !== "awaiting_authorization" \|\| !intent\.paymentReady/);
+  assert.match(step, /if \(intent\.expired\)[\s\S]*setPayToken\(null\); setSummary\(null\); props\.onPaymentAttemptIdChange\(null\);[\s\S]*return;/);
   assert.doesNotMatch(recovery, /prepareAppsPayment|checkoutPayment/); assert.match(recovery, /completeAppsPayment/);
   assert.match(marker, /dokkaebitennis:apps-payment-pending:v1/);
+  assert.doesNotMatch(marker, /payToken|sessionToken|applicant|shipping|work/);
+  assert.match(recovery, /result === "finalized"[\s\S]*신청 화면으로 돌아가기/);
+  assert.match(recovery, /result === "refunded"[\s\S]*신청 내용 다시 확인하기/);
+  assert.match(recovery, /result === "retryable"[\s\S]*새 결제 다시 준비하기/);
+  assert.match(recovery, /PAYMENT_APPROVAL_UNAVAILABLE_IN_SANDBOX[\s\S]*clearPendingAppsPayment\(\)[\s\S]*setResult\("sandbox"\)/);
+  assert.match(recovery, /if \(loginBusy \|\| auth\.status === "authenticated"\) return;[\s\S]*try \{[\s\S]*await auth\.login\(\)[\s\S]*catch[\s\S]*finally/);
+  assert.doesNotMatch(step + recovery, /\/execute|\/finalize|\/refund/);
+});
+
+test("MiniApp pending marker가 탐색과 신청 변경보다 우선한다", async () => {
+  const flow = await read("../TossMiniApp/src/components/StringingApplicationFlow.tsx");
+  assert.match(flow, /const handlePopState = \(\) => \{\s*const pending = readPendingAppsPayment\(\);\s*if \(pending\) \{\s*setPendingPayment\(pending\);\s*return;/);
+  for (const handler of ["handleApplicantChange", "handleCollectionMethodChange", "handleShippingChange", "handleWorkChange"]) {
+    assert.match(flow, new RegExp(`const ${handler} =[\\s\\S]*?readPendingAppsPayment\\(\\);[\\s\\S]*?setPendingPayment\\(pending\\); return;[\\s\\S]*?setPaymentAttemptId\\(null\\);`));
+  }
+});
+
+test("prepare 실패 시 기존 attempt 폐기 정책과 세부 안내를 유지한다", async () => {
+  const step = await read("../TossMiniApp/src/components/StringingApplicationStepFive.tsx");
+  for (const code of ["PAYMENT_INTENT_EXPIRED", "ATTEMPT_PAYLOAD_MISMATCH", "ATTEMPT_CONFLICT", "PAYMENT_CREATION_FAILED", "TOSS_PAY_UNAVAILABLE", "TOSS_PAY_MAKE_FAILED"]) assert.match(step, new RegExp(code));
+  for (const code of ["PRODUCT_NOT_AVAILABLE", "VARIANT_NOT_FOUND", "VARIANT_INSUFFICIENT_STOCK", "VISIT_SLOT_UNAVAILABLE"]) assert.match(step, new RegExp(code));
+  assert.match(step, /!readPendingAppsPayment\(\)[\s\S]*props\.onPaymentAttemptIdChange\(null\)/);
 });
 
 test("핵심 route duration과 정책 문구를 명시한다", async () => {
