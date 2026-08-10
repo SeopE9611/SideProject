@@ -37,9 +37,11 @@ export async function POST(req: Request, context: { params: Promise<{ attemptId:
   }
   const classification = classifyAppsInTossObservedPaymentStatus(observed);
   const decision = classifyAppsInTossReconciliationRecovery({ intent, observedClassification: classification, payStatus: observed.payStatus, refundableAmount: observed.refundableAmount });
-  const recovery = decision.kind.startsWith("recover_")
+  const recovery = decision.kind === "recover_paid" || decision.kind === "recover_failed" || decision.kind === "recover_refunded"
     ? { eligibility: "eligible" as const, targetState: decision.targetState, message: "최신 외부 상태를 다시 확인한 뒤 서버 정책에 따라 안전 복구할 수 있습니다." }
-    : { eligibility: decision.kind === "wait" ? "wait" as const : "blocked" as const, message: decision.message };
+    : decision.kind === "wait"
+      ? { eligibility: "wait" as const, message: decision.message }
+      : { eligibility: "blocked" as const, message: decision.message };
   const response: AppsInTossAdminStatusCheckResponse = {
     ok: true, attemptId, issueType: attention.issueType, internalState: intent.state, checkedAt: new Date().toISOString(),
     external: { mode: observed.mode, payStatus: observed.payStatus, classification, amount: observed.amount, paidAmount: observed.paidAmount, refundableAmount: observed.refundableAmount },
