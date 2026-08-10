@@ -69,6 +69,29 @@ test("status는 canonical LIVE 결제만 환불 성공 또는 진행 중으로 �
   assert.match(service, /PAYMENT_REFUND_STATUS_UNCONFIRMED/);
 });
 
+test("status 외부 조회 오류만 미확인 대사 상태로 전환한다", () => {
+  const reconcile = service.slice(service.indexOf("async function reconcile"), service.indexOf("export async function refundAppsInTossFinalizationFailure"));
+  const statusCatch = reconcile.slice(reconcile.indexOf("try {"), reconcile.indexOf("if (matchesCanonicalLivePayment"));
+  assert.match(statusCatch, /getTossPayPaymentStatus/);
+  assert.match(statusCatch, /catch \{\s*return reconciliationRequired[\s\S]*PAYMENT_REFUND_STATUS_UNCONFIRMED/);
+  assert.doesNotMatch(statusCatch, /recordAppsInTossPaymentRefunded|renewAppsInTossPaymentRefundLease/);
+});
+
+test("확인된 환불 상태의 로컬 persistence 오류는 미확인 상태로 변환하지 않는다", () => {
+  const reconcile = service.slice(service.indexOf("async function reconcile"), service.indexOf("export async function refundAppsInTossFinalizationFailure"));
+  const persistence = reconcile.slice(reconcile.indexOf("if (matchesCanonicalLivePayment"));
+  assert.match(persistence, /REFUND_SUCCESS[\s\S]*await recordAppsInTossPaymentRefunded/);
+  assert.match(persistence, /REFUND_PROGRESS[\s\S]*await renewAppsInTossPaymentRefundLease/);
+  assert.doesNotMatch(persistence, /catch/);
+});
+
+test("직접 환불 저장 실패도 refund-payment 재호출 없이 status 대사로 복구한다", () => {
+  const orchestration = service.slice(service.indexOf("export async function refundAppsInTossFinalizationFailure"));
+  assert.match(orchestration, /recordAppsInTossPaymentRefunded[\s\S]*catch \{[\s\S]*return reconcile\(params\.db, claimed, userKey, canonical, "refund_payment"\)/);
+  assert.equal((service.match(/await refundTossPayPayment\(/g) ?? []).length, 1);
+  assert.equal((service.match(/await getTossPayPaymentStatus\(/g) ?? []).length, 1);
+});
+
 test("refunded는 멱등 응답하고 API는 안전한 최소 필드만 반환한다", () => {
   assert.match(service, /intent\.state === "refunded"\) return safeResponse\(intent\)/);
   assert.match(service, /return \{ success: true, attemptId: intent\.attemptId, state: intent\.state \}/);
