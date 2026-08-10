@@ -382,6 +382,7 @@ export async function buildSlotSummaryForDate(
   db: Db,
   date: string,
   cap?: number,
+  settingsOverride?: StringingSettings | null,
 ): Promise<{
   closed: boolean;
   date: string;
@@ -392,7 +393,7 @@ export async function buildSlotSummaryForDate(
   availableTimes: string[];
 }> {
   const capCount = Math.max(1, Math.floor(cap || 1));
-  const settings = await loadStringingSettings(db);
+  const settings = settingsOverride === undefined ? await loadStringingSettings(db) : settingsOverride;
 
   // 1) 예약 가능 기간 검증
   const win = validateBookingWindow(settings, date);

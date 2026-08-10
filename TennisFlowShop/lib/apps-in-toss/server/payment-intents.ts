@@ -30,9 +30,10 @@ export type AppsCheckoutPayload = {
 export type AppsInTossPaymentIntentDocument = {
   _id: ObjectId; attemptId: string; userId: ObjectId; identityId: ObjectId; orderNo: string;
   state: AppsInTossPaymentIntentState; isTestPayment: boolean; checkoutPayload: AppsCheckoutPayload;
-  pricingSnapshot: { subtotal: number; shippingFee: number; serviceFee: number; pointsUsed: number; payableAmount: number };
-  itemSnapshot: Array<{ productId: ObjectId; quantity: number; selectedColor?: string; selectedGauge?: string; name: string; price: number }>;
-  reservationSnapshot?: { preferredDate?: string; preferredTime?: string };
+  pricingSnapshot: { subtotal: number; shippingFee: number; serviceFee: number; serviceFeeBeforePackage?: number; pointsUsed: number; payableAmount: number };
+  itemSnapshot: Array<{ productId: ObjectId; quantity: number; selectedColor?: string; selectedGauge?: string; name: string; price: number; mountingFee?: number }>;
+  packageSnapshot?: { applied: boolean; requiredPassCount: number; passId?: ObjectId };
+  reservationSnapshot?: { preferredDate?: string; preferredTime?: string; slotCount?: number; durationMinutes?: number; capacityAtPrepare?: number };
   createdAt: Date; updatedAt: Date; expiresAt: Date; retentionUntil?: Date;
   payToken?: string; finalOrderId?: ObjectId;
   execution?: { claimedAt: Date; leaseUntil: Date };

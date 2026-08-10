@@ -156,7 +156,11 @@ export async function calculateCheckoutPayableAmount(params: {
   return {
     subtotal: computedSubtotal,
     shippingFee: computedShippingFee,
+    serviceFeeBeforePackage: baseServiceFee,
     serviceFee: computedServiceFee,
+    packageApplied: packageUsage.usingPackage,
+    requiredPassCount,
+    packagePassId: packageUsage.usingPackage ? pass?._id : undefined,
     originalTotalPrice: computedTotalPrice,
     pointsUsed: serverPointsToUse,
     payableTotalPrice,
