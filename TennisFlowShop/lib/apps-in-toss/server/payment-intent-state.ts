@@ -12,7 +12,7 @@ const TRANSITIONS: Record<AppsInTossPaymentIntentState, readonly AppsInTossPayme
   paid: ["finalized", "refunding", "reconciliation_required"],
   finalized: [], cancelled: [], failed: [],
   refunding: ["refunded", "reconciliation_required"],
-  refunded: [], reconciliation_required: [],
+  refunded: [], reconciliation_required: ["paid", "failed", "refunded"],
 };
 
 export class AppsInTossPaymentIntentTransitionError extends Error {
