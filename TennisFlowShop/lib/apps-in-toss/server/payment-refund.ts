@@ -64,21 +64,22 @@ async function reconciliationRequired(db: Db, intent: AppsInTossPaymentIntentDoc
 }
 
 async function reconcile(db: Db, intent: AppsInTossPaymentIntentDocument, userKey: string, canonical: CanonicalPayment, failureStage: "refund_payment" | "refund_status") {
+  let result: Awaited<ReturnType<typeof getTossPayPaymentStatus>>;
   try {
-    const result = await getTossPayPaymentStatus(userKey, { payToken: canonical.payToken, orderNo: canonical.orderNo });
-    if (matchesCanonicalLivePayment(result, canonical) && result.kind === "success") {
-      const status = result.value.success.payStatus;
-      if ((status === "REFUND_SUCCESS" || status === "SETTLEMENT_REFUND_COMPLETE") && result.value.success.refundableAmount === 0) {
-        const refunded = await recordAppsInTossPaymentRefunded(db, intent._id);
-        if (refunded) return safeResponse(refunded);
-      }
-      if (status === "REFUND_PROGRESS") {
-        const refunding = await renewAppsInTossPaymentRefundLease(db, intent._id, new Date(Date.now() + APPS_IN_TOSS_PAYMENT_REFUND_LEASE_MS));
-        if (refunding) return safeResponse(refunding);
-      }
-    }
+    result = await getTossPayPaymentStatus(userKey, { payToken: canonical.payToken, orderNo: canonical.orderNo });
   } catch {
-    // refund-payment는 재호출하지 않고 안전한 수동 대사 상태로 보낸다.
+    return reconciliationRequired(db, intent, failureStage === "refund_payment" ? "refund_status" : failureStage, "PAYMENT_REFUND_STATUS_UNCONFIRMED");
+  }
+  if (matchesCanonicalLivePayment(result, canonical) && result.kind === "success") {
+    const status = result.value.success.payStatus;
+    if ((status === "REFUND_SUCCESS" || status === "SETTLEMENT_REFUND_COMPLETE") && result.value.success.refundableAmount === 0) {
+      const refunded = await recordAppsInTossPaymentRefunded(db, intent._id);
+      if (refunded) return safeResponse(refunded);
+    }
+    if (status === "REFUND_PROGRESS") {
+      const refunding = await renewAppsInTossPaymentRefundLease(db, intent._id, new Date(Date.now() + APPS_IN_TOSS_PAYMENT_REFUND_LEASE_MS));
+      if (refunding) return safeResponse(refunding);
+    }
   }
   return reconciliationRequired(db, intent, failureStage === "refund_payment" ? "refund_status" : failureStage, "PAYMENT_REFUND_STATUS_UNCONFIRMED");
 }
@@ -110,15 +111,22 @@ export async function refundAppsInTossFinalizationFailure(params: { db: Db; atte
     throw new AppsPaymentRefundError(409, "PAYMENT_REFUND_IN_PROGRESS", "환불을 처리하고 있습니다.");
   }
 
+  let result: Awaited<ReturnType<typeof refundTossPayPayment>>;
   try {
-    const result = await refundTossPayPayment(userKey, { payToken: canonical.payToken, reason });
-    if (directRefundMatches(result, canonical) && result.kind === "success") {
+    result = await refundTossPayPayment(userKey, { payToken: canonical.payToken, reason });
+  } catch {
+    // 요청 도달 여부가 불확실해도 refund-payment를 절대 재호출하지 않는다.
+    return reconcile(params.db, claimed, userKey, canonical, "refund_payment");
+  }
+  if (directRefundMatches(result, canonical) && result.kind === "success") {
+    try {
       const value = result.value.success;
       const refunded = await recordAppsInTossPaymentRefunded(params.db, claimed._id, { refundNo: value.refundNo, approvalTime: value.approvalTime, transactionId: value.transactionId });
       if (refunded) return safeResponse(refunded);
+    } catch {
+      // 확인된 환불을 다시 요청하지 않고 status 대사에서 로컬 저장을 재시도한다.
+      return reconcile(params.db, claimed, userKey, canonical, "refund_payment");
     }
-  } catch {
-    // 요청 도달 여부가 불확실해도 refund-payment를 절대 재호출하지 않는다.
   }
   return reconcile(params.db, claimed, userKey, canonical, "refund_payment");
 }
