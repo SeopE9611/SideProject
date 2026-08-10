@@ -48,7 +48,7 @@ test("MiniApp pending marker가 탐색과 신청 변경보다 우선한다", asy
 
 test("MiniApp pending recovery 종료 시 Step 1과 새 결제 상태로 초기화한다", async () => {
   const flow = await read("../TossMiniApp/src/components/StringingApplicationFlow.tsx");
-  const resolvedHandler = flow.match(/const handlePendingPaymentResolved = useCallback\(\(\) => \{([\s\S]*?)\n  \}, \[productId\]\);/)?.[1] ?? "";
+  const resolvedHandler = flow.match(/const handlePendingPaymentResolved = useCallback\(\(\) => \{([\s\S]*?)\n {2}\}, \[productId\]\);/)?.[1] ?? "";
   assert.match(resolvedHandler, /normalizedUrl\.searchParams\.delete\("step"\)/);
   assert.match(resolvedHandler, /window\.history\.replaceState\(\s*\{\s*productId,\s*view: "stringing-checkout",\s*step: 1,/);
   assert.match(resolvedHandler, /setPendingPayment\(null\);/);
