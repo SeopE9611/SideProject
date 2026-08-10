@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, RefreshCcw, Search } from "lucide-react";
-import { useMemo, useState, type ChangeEvent, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import useSWR from "swr";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
@@ -42,7 +42,8 @@ export default function AppsInTossReconciliationClient() {
   const [filters, setFilters] = useState({ issueType: "all", environment: "all", from: "", to: "" });
   const [submitted, setSubmitted] = useState(filters);
   const [page, setPage] = useState(1);
-  const [checkingAttemptId, setCheckingAttemptId] = useState<string | null>(null);
+  const checkingAttemptIdsRef = useRef(new Set<string>());
+  const [checkingAttemptIds, setCheckingAttemptIds] = useState<Set<string>>(() => new Set());
   const [statusChecks, setStatusChecks] = useState<Record<string, AppsInTossAdminStatusCheckResponse>>({});
   const [statusCheckErrors, setStatusCheckErrors] = useState<Record<string, string>>({});
   const query = useMemo(() => {
@@ -54,7 +55,9 @@ export default function AppsInTossReconciliationClient() {
   const { data, error, isLoading, isValidating, mutate } = useSWR<AppsInTossReconciliationResponse>(query, authenticatedSWRFetcher);
   const summary = data?.summary;
   const checkTossStatus = async (attemptId: string) => {
-    setCheckingAttemptId(attemptId);
+    if (checkingAttemptIdsRef.current.has(attemptId)) return;
+    checkingAttemptIdsRef.current.add(attemptId);
+    setCheckingAttemptIds((current) => new Set(current).add(attemptId));
     setStatusCheckErrors((current) => ({ ...current, [attemptId]: "" }));
     try {
       const result = await adminMutator<AppsInTossAdminStatusCheckResponse>(`/api/admin/apps-in-toss/reconciliation/${attemptId}/status-check`, { method: "POST" });
@@ -62,7 +65,12 @@ export default function AppsInTossReconciliationClient() {
     } catch (checkError) {
       setStatusCheckErrors((current) => ({ ...current, [attemptId]: getAdminErrorMessage(checkError) }));
     } finally {
-      setCheckingAttemptId(null);
+      checkingAttemptIdsRef.current.delete(attemptId);
+      setCheckingAttemptIds((current) => {
+        const next = new Set(current);
+        next.delete(attemptId);
+        return next;
+      });
     }
   };
   const cards = [
@@ -98,7 +106,7 @@ export default function AppsInTossReconciliationClient() {
         <TableCell className={adminDataTable.moneyCell}>{item.amount.toLocaleString("ko-KR")}원</TableCell>
         <TableCell className={adminDataTable.cellTop}><p>{formatDate(item.timestamps.updatedAt)}</p><p className={adminTypography.metaMuted}>결제 {formatDate(item.timestamps.paidAt)}</p></TableCell>
         <TableCell className={adminDataTable.cellTop}><p>{[item.failure.stage, item.failure.code, item.failure.finalizationCode].filter(Boolean).join(" · ") || "코드 없음"}</p><p className={adminTypography.metaMuted}>시도 ID {item.attemptId}</p>{item.links.orderAdminUrl ? <Link className="text-primary underline" href={item.links.orderAdminUrl}>주문 상세</Link> : null}</TableCell>
-        <TableCell className={adminDataTable.cellTop}><div className="space-y-3"><p>{item.nextAction}</p><Button type="button" variant="outline" size="sm" disabled={checkingAttemptId === item.attemptId} onClick={() => checkTossStatus(item.attemptId)}>{checkingAttemptId === item.attemptId ? "확인 중..." : "Toss 상태 확인"}</Button>{statusCheckErrors[item.attemptId] ? <p className="text-sm text-destructive">{statusCheckErrors[item.attemptId]}</p> : null}{statusChecks[item.attemptId] ? <div className={`space-y-1 ${adminTypography.metaMuted}`}><p>외부 상태: {statusChecks[item.attemptId].external.payStatus}</p><p>판정: {STATUS_LABELS[statusChecks[item.attemptId].external.classification]}</p><p>환불 가능 잔액: {statusChecks[item.attemptId].external.refundableAmount.toLocaleString("ko-KR")}원</p><p>확인 시각: {formatDate(statusChecks[item.attemptId].checkedAt)}</p><p>{statusChecks[item.attemptId].guidance}</p></div> : null}</div></TableCell>
+        <TableCell className={adminDataTable.cellTop}><div className="space-y-3"><p>{item.nextAction}</p><Button type="button" variant="outline" size="sm" disabled={checkingAttemptIds.has(item.attemptId)} onClick={() => checkTossStatus(item.attemptId)}>{checkingAttemptIds.has(item.attemptId) ? "확인 중..." : "Toss 상태 확인"}</Button>{statusCheckErrors[item.attemptId] ? <p className="text-sm text-destructive">{statusCheckErrors[item.attemptId]}</p> : null}{statusChecks[item.attemptId] ? <div className={`space-y-1 ${adminTypography.metaMuted}`}><p>외부 상태: {statusChecks[item.attemptId].external.payStatus}</p><p>판정: {STATUS_LABELS[statusChecks[item.attemptId].external.classification]}</p><p>환불 가능 잔액: {statusChecks[item.attemptId].external.refundableAmount.toLocaleString("ko-KR")}원</p><p>확인 시각: {formatDate(statusChecks[item.attemptId].checkedAt)}</p><p>{statusChecks[item.attemptId].guidance}</p></div> : null}</div></TableCell>
       </TableRow>)}</TableBody></Table></div>}
       <div className="mt-4 flex items-center justify-between"><p className={adminTypography.metaMuted}>{data?.total ?? 0}건 · {page}/{Math.max(data?.totalPages ?? 0, 1)}페이지</p><div className="flex gap-2"><Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((v) => v - 1)}>이전</Button><Button type="button" variant="outline" size="sm" disabled={!data || page >= data.totalPages} onClick={() => setPage((v) => v + 1)}>다음</Button></div></div>
     </AdminPageSection>
