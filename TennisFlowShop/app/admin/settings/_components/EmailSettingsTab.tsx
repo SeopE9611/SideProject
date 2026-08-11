@@ -1,12 +1,12 @@
 "use client";
 import { Save, Send } from "lucide-react";
+import { AdminFormActions, AdminFormField } from "@/components/admin/AdminFormField";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import type { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -52,65 +52,71 @@ export function EmailSettingsTab({
           </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-3">
+          <div className="space-y-5">
             <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body}`}>
               현재 상태: {sourceLabel}
             </div>
-            <div>
-              <Label htmlFor="smtpHost">SMTP 서버 주소</Label>
-              <Input id="smtpHost" {...form.register("smtpHost")} />
-            </div>
-            <div>
-              <Label htmlFor="smtpUsername">SMTP 사용자 이름</Label>
-              <Input id="smtpUsername" {...form.register("smtpUsername")} />
-            </div>
-            <div>
-              <Label htmlFor="smtpPort">SMTP 포트</Label>
-              <Input
-                id="smtpPort"
-                type="number"
-                {...form.register("smtpPort", { valueAsNumber: true })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="senderName">발신자 이름</Label>
-              <Input id="senderName" {...form.register("senderName")} />
-            </div>
-            <div>
-              <Label htmlFor="senderEmail">발신 이메일</Label>
-              <Input id="senderEmail" type="email" {...form.register("senderEmail")} />
-            </div>
-            <div>
-              <Label htmlFor="smtpPassword">SMTP 비밀번호</Label>
-              <Input
-                id="smtpPassword"
-                type="password"
-                placeholder={hasSmtpPassword ? "기존 비밀번호 유지 중" : ""}
-                {...form.register("smtpPassword")}
-              />
-            </div>
-            <div>
-              <Label>암호화</Label>
-              <Select
-                value={form.watch("smtpEncryption")}
-                onValueChange={(v) =>
-                  form.setValue("smtpEncryption", v as EmailSettings["smtpEncryption"], {
-                    shouldDirty: true,
-                  })
-                }
+            <div className="grid grid-cols-3 gap-5">
+              <AdminFormField htmlFor="smtpHost" label="SMTP 서버 주소" className="col-span-2">
+                <Input id="smtpHost" {...form.register("smtpHost")} />
+              </AdminFormField>
+              <AdminFormField htmlFor="smtpPort" label="SMTP 포트">
+                <Input
+                  id="smtpPort"
+                  type="number"
+                  {...form.register("smtpPort", { valueAsNumber: true })}
+                />
+              </AdminFormField>
+              <AdminFormField
+                htmlFor="smtpUsername"
+                label="SMTP 사용자 이름"
+                className="col-span-2"
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">사용 안 함</SelectItem>
-                  <SelectItem value="ssl">SSL</SelectItem>
-                  <SelectItem value="tls">TLS</SelectItem>
-                </SelectContent>
-              </Select>
+                <Input id="smtpUsername" {...form.register("smtpUsername")} />
+              </AdminFormField>
+              <AdminFormField label="암호화">
+                <Select
+                  value={form.watch("smtpEncryption")}
+                  onValueChange={(v) =>
+                    form.setValue("smtpEncryption", v as EmailSettings["smtpEncryption"], {
+                      shouldDirty: true,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">사용 안 함</SelectItem>
+                    <SelectItem value="ssl">SSL</SelectItem>
+                    <SelectItem value="tls">TLS</SelectItem>
+                  </SelectContent>
+                </Select>
+              </AdminFormField>
+              <AdminFormField htmlFor="senderName" label="발신자 이름">
+                <Input id="senderName" {...form.register("senderName")} />
+              </AdminFormField>
+              <AdminFormField htmlFor="senderEmail" label="발신 이메일" className="col-span-2">
+                <Input id="senderEmail" type="email" {...form.register("senderEmail")} />
+              </AdminFormField>
+              <AdminFormField
+                htmlFor="smtpPassword"
+                label="SMTP 비밀번호"
+                description={
+                  hasSmtpPassword ? "비워 두면 현재 저장된 비밀번호를 유지합니다." : undefined
+                }
+                className="col-span-3"
+              >
+                <Input
+                  id="smtpPassword"
+                  type="password"
+                  placeholder={hasSmtpPassword ? "기존 비밀번호 유지 중" : ""}
+                  {...form.register("smtpPassword")}
+                />
+              </AdminFormField>
             </div>
           </div>
-          <div className="mt-5 flex justify-between">
+          <AdminFormActions>
             <Button
               type="button"
               variant="outline"
@@ -124,7 +130,7 @@ export function EmailSettingsTab({
               <Save className="mr-2 h-4 w-4" />
               설정 저장
             </Button>
-          </div>
+          </AdminFormActions>
         </form>
       </AdminPageSection>
     </TabsContent>

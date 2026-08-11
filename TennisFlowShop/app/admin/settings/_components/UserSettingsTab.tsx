@@ -1,12 +1,12 @@
 "use client";
 import { Save } from "lucide-react";
+import { AdminFormActions, AdminFormField } from "@/components/admin/AdminFormField";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import type { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { UserSettings, TabErrorState } from "@/types/admin/settings";
 
@@ -35,9 +35,12 @@ export function UserSettingsTab({
           </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>회원가입 허용</Label>
+          <div className="grid grid-cols-2 gap-5">
+            <div className={`${adminSurface.fieldPanel} flex items-center justify-between gap-4`}>
+              <div>
+                <p className={adminTypography.bodyStrong}>회원가입 허용</p>
+                <p className={adminTypography.caption}>신규 사용자의 회원가입 가능 여부입니다.</p>
+              </div>
               <Switch
                 checked={form.watch("allowRegistration")}
                 onCheckedChange={(v) =>
@@ -45,8 +48,11 @@ export function UserSettingsTab({
                 }
               />
             </div>
-            <div>
-              <Label htmlFor="minimumPasswordLength">최소 비밀번호 길이</Label>
+            <AdminFormField
+              htmlFor="minimumPasswordLength"
+              label="최소 비밀번호 길이"
+              description="회원가입 시 허용할 비밀번호의 최소 글자 수입니다."
+            >
               <Input
                 id="minimumPasswordLength"
                 type="number"
@@ -54,18 +60,17 @@ export function UserSettingsTab({
                   valueAsNumber: true,
                 })}
               />
-            </div>
+            </AdminFormField>
           </div>
-          <div className="mt-5 flex">
+          <AdminFormActions>
             <Button
               disabled={isBootstrapping || form.formState.isSubmitting}
               type="submit"
-              className="ml-auto"
             >
               <Save className="mr-2 h-4 w-4" />
               설정 저장
             </Button>
-          </div>
+          </AdminFormActions>
         </form>
       </AdminPageSection>
     </TabsContent>
