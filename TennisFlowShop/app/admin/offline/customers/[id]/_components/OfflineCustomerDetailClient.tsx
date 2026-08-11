@@ -4,7 +4,7 @@ import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBad
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { Button } from "@/components/ui/button";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
-import { AdminSectionHeader } from "@/components/admin/AdminPageSection";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
@@ -1208,14 +1208,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <section className={`${adminSurface.card} p-6`}>
-        <AdminSectionHeader
-          title="오프라인 고객 상세"
-          description="고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다."
-          icon={User}
-          actions={
-            <>
+      <AdminPageHeader
+        title="오프라인 고객 상세"
+        description="고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다."
+        icon={User}
+        scope={`고객: ${item.name || "이름 없음"}`}
+        helperText={item.linkedUserId ? "온라인 회원 연결됨" : "온라인 회원 미연결"}
+        actions={
+          <>
               <Button asChild variant="outline" size="sm">
                 <Link href="/admin/offline">
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -1240,10 +1240,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 <Trash2 className="mr-2 h-4 w-4" />
                 {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
               </Button>
-            </>
-          }
-        />
-      </section>
+          </>
+        }
+      />
 
       {deleteMessage && (
         <div

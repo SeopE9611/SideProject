@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Copy, ExternalLink, Link2 } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { shortenId } from "@/lib/shorten";
@@ -109,21 +111,21 @@ export default function LinkedDocsCard({
   const list = sortDocs((docs ?? []).filter((d) => d?.id && d?.href));
 
   return (
-    <Card variant="elevatedGradient" className="mb-8">
-      <CardHeader variant="sectionGradient" className="pb-3">
-        <CardTitle className="flex items-center gap-2">
+    <Card className={cn(adminSurface.detailCard, "overflow-hidden", className)}>
+      <CardHeader className={adminSurface.detailHeader}>
+        <CardTitle className={cn("flex items-center gap-2", adminTypography.sectionTitle)}>
           <Link2 className="h-4 w-4" />
           {title}
         </CardTitle>
-        <CardDescription>
+        <CardDescription className={adminTypography.metaMuted}>
           {description ??
             (list.length > 0 ? `연결 문서 ${list.length}개` : "연결된 문서가 없습니다.")}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="pt-4">
+      <CardContent className={adminSurface.detailContent}>
         {list.length === 0 ? (
-          <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+          <div className={cn("rounded-lg border bg-muted/30 p-4", adminTypography.body)}>
             현재 문서는 단독 건으로 보입니다. (주문/대여/신청서 연결 없음)
           </div>
         ) : (
@@ -144,7 +146,7 @@ export default function LinkedDocsCard({
                       <Badge variant={badgeVariant} className={`${badgeBase} ${badgeSizeSm}`}>
                         {kindLabel}
                       </Badge>
-                      <p className="text-sm text-muted-foreground">
+                      <p className={adminTypography.metaMuted}>
                         {idLabel} : ({short})
                       </p>
                     </div>
