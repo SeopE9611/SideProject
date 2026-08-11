@@ -794,7 +794,7 @@ export default function StringingApplicationDetailClient({
                 </div>
               </div>
 
-              <div className={cn("grid gap-4 md:grid-cols-2", isAdmin && "grid-cols-12")}>
+              <div className="grid grid-cols-12 gap-4">
                 <Card
                   className={cn(
                     "overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
@@ -3195,7 +3195,7 @@ export default function StringingApplicationDetailClient({
                     ) : (
                       <div className="space-y-3">
                         {isAdmin ? (
-                          <div className={cn("grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-xl:grid-cols-3", isAdmin && "!grid-cols-2")}>
+                          <div className="grid grid-cols-2 gap-3 bp-xl:grid-cols-3">
                             <AdminCompactField
                               label="총 결제 금액"
                               className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
