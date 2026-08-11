@@ -72,6 +72,7 @@ export function FormFieldGroup({ children, className, columns = 2 }: FormFieldGr
 
 interface FormFieldProps {
   label: string;
+  htmlFor?: string;
   required?: boolean;
   hint?: string;
   error?: string;
@@ -79,10 +80,19 @@ interface FormFieldProps {
   className?: string;
 }
 
-export function FormField({ label, required, hint, error, children, className }: FormFieldProps) {
+export function FormField({
+  label,
+  htmlFor,
+  required,
+  hint,
+  error,
+  children,
+  className,
+}: FormFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
       <label
+        htmlFor={htmlFor}
         className={cn(
           adminTypography.bodyStrong,
           "leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
