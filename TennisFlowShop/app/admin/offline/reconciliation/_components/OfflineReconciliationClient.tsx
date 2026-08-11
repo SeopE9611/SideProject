@@ -593,14 +593,14 @@ export default function OfflineReconciliationClient() {
                       </td>
                       <td className={adminDataTable.cellTopLeft}>
                         <p className="font-medium">{item.customer.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className={adminDataTable.secondaryText}>
                           {item.customer.phoneMasked ?? "연락처 없음"}
                         </p>
                       </td>
                       <td className={adminDataTable.cellTopLeft}>
                         <p className="font-medium">{item.title}</p>
                         <p
-                          className="mt-1 line-clamp-2 break-words text-xs text-muted-foreground"
+                          className={cn(adminDataTable.secondaryText, "mt-1 line-clamp-2 break-words")}
                           title={description}
                         >
                           {description}
@@ -612,7 +612,7 @@ export default function OfflineReconciliationClient() {
                             ? stringValue(item.metadata.packageName)
                             : `passId: ${stringValue(item.metadata.passId)}`}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className={adminDataTable.secondaryText}>
                           {item.type === "package_issue"
                             ? formatCurrency(item.metadata.amount)
                             : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}

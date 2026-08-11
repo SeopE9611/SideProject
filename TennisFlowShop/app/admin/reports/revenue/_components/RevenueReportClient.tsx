@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -366,38 +367,42 @@ function SnapshotDiffCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
-        <table className="min-w-[720px] divide-y divide-border text-sm">
-          <thead>
-            <tr className="text-left text-muted-foreground">
-              <th className="py-2 pr-4 font-medium">항목</th>
-              <th className="py-2 pr-4 font-medium">스냅샷 값</th>
-              <th className="py-2 pr-4 font-medium">현재 값</th>
-              <th className="py-2 pr-4 font-medium">차이</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {rows.map((row) => (
-              <tr key={row.label}>
-                <td className="py-2 pr-4 font-medium text-foreground">{row.label}</td>
-                <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums text-muted-foreground">
-                  {formatSnapshotDiffValue(row.snapshotValue, row.unit)}
-                </td>
-                <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums text-foreground">
-                  {formatSnapshotDiffValue(row.currentValue, row.unit)}
-                </td>
-                <td
-                  className={cn(
-                    "py-2 pr-4 font-semibold tabular-nums",
-                    snapshotDiffClassName(row.diff),
-                  )}
-                >
-                  {formatSnapshotDiff(row.diff, row.unit)}
-                </td>
+      <CardContent>
+        <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
+          <table className="w-full min-w-[720px]">
+            <thead className={adminSurface.tableHeader}>
+              <tr>
+                <th className={adminDataTable.head}>항목</th>
+                <th className={adminDataTable.headRight}>스냅샷 값</th>
+                <th className={adminDataTable.headRight}>현재 값</th>
+                <th className={adminDataTable.headRight}>차이</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.label} className={adminDataTable.row}>
+                  <td className={adminDataTable.cellLeft}>
+                    <span className={adminDataTable.primaryText}>{row.label}</span>
+                  </td>
+                  <td className={cn(adminDataTable.numericCell, adminDataTable.secondaryText)}>
+                    {formatSnapshotDiffValue(row.snapshotValue, row.unit)}
+                  </td>
+                  <td className={adminDataTable.numericCell}>
+                    {formatSnapshotDiffValue(row.currentValue, row.unit)}
+                  </td>
+                  <td
+                    className={cn(
+                      adminDataTable.numericCell,
+                      snapshotDiffClassName(row.diff),
+                    )}
+                  >
+                    {formatSnapshotDiff(row.diff, row.unit)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <p className="mt-4 text-xs text-muted-foreground">
           차이 공식: 현재 실시간 값 - 저장된 스냅샷 값. 일별 series 차이 비교는 이번 화면에서
           제공하지 않습니다.

@@ -542,10 +542,10 @@ export default function PrivatePaymentsClient() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[680px] overflow-auto">
-            <table className="w-full min-w-[1040px] text-sm">
+            <table className="w-full min-w-[1040px]">
               <thead className={cn("sticky top-0 z-10 backdrop-blur", adminSurface.tableHeader)}>
                 <tr className="border-b border-border/60 text-left">
-                  <th className="w-10 px-4 py-3">
+                  <th className={cn(adminDataTable.headCenter, "w-10")}>
                     <input
                       type="checkbox"
                       aria-label="현재 목록의 개인결제 전체 선택"
@@ -555,11 +555,17 @@ export default function PrivatePaymentsClient() {
                       }
                     />
                   </th>
-                  <th className="w-[300px] px-4 py-3">{header("결제 정보", "title")}</th>
-                  <th className="w-[210px] px-4 py-3">고객</th>
-                  <th className="w-[130px] px-4 py-3 text-right">{header("금액", "amount")}</th>
-                  <th className="w-[190px] px-4 py-3">{header("상태", "paymentStatus")}</th>
-                  <th className="w-[170px] px-4 py-3">만료/일시</th>
+                  <th className={cn(adminDataTable.head, "w-[300px]")}>
+                    {header("결제 정보", "title")}
+                  </th>
+                  <th className={cn(adminDataTable.head, "w-[210px]")}>고객</th>
+                  <th className={cn(adminDataTable.headRight, "w-[130px]")}>
+                    {header("금액", "amount")}
+                  </th>
+                  <th className={cn(adminDataTable.head, "w-[190px]")}>
+                    {header("상태", "paymentStatus")}
+                  </th>
+                  <th className={cn(adminDataTable.head, "w-[170px]")}>만료/일시</th>
                   <th className={adminDataTable.stickyActionHead}>작업</th>
                 </tr>
               </thead>
@@ -579,8 +585,8 @@ export default function PrivatePaymentsClient() {
                     const paymentStatusLabel = getPrivatePaymentStatusLabel(item.paymentStatus);
 
                     return (
-                      <tr key={item.id} className={adminSurface.tableRow}>
-                        <td className={adminSurface.tableCell}>
+                      <tr key={item.id} className={adminDataTable.row}>
+                        <td className={adminDataTable.cellCenter}>
                           <input
                             type="checkbox"
                             aria-label={`${item.title || item.customerName || item.id} 개인결제 선택`}
@@ -594,32 +600,38 @@ export default function PrivatePaymentsClient() {
                             }
                           />
                         </td>
-                        <td className={adminSurface.tableCell}>
-                          <div className={adminSurface.tablePrimaryText}>{item.title}</div>
+                        <td className={adminDataTable.cellLeft}>
+                          <div className={adminDataTable.primaryText}>{item.title}</div>
                           {item.description && (
-                            <div className="mt-1 line-clamp-2 max-w-[280px] text-xs leading-5 text-muted-foreground">
+                            <div
+                              className={cn(
+                                adminDataTable.secondaryText,
+                                "mt-1 line-clamp-2 max-w-[280px]",
+                              )}
+                            >
                               {item.description}
                             </div>
                           )}
-                          <div className="mt-2 max-w-[280px] break-all text-xs text-muted-foreground/70">
+                          <div
+                            className={cn(
+                              adminDataTable.secondaryText,
+                              "mt-2 max-w-[280px] break-all",
+                            )}
+                          >
                             ID {item.id}
                           </div>
                         </td>
-                        <td className={adminSurface.tableCell}>
-                          <div className="font-medium text-foreground">
+                        <td className={adminDataTable.cellLeft}>
+                          <div className={adminDataTable.primaryText}>
                             {item.customerName || "-"}
                           </div>
-                          <div className="mt-1 space-y-0.5 text-xs leading-5 text-muted-foreground">
+                          <div className={cn(adminDataTable.secondaryText, "mt-1 space-y-0.5")}>
                             <div>{item.customerPhone || "-"}</div>
                             <div>{item.customerEmail || "-"}</div>
                           </div>
                         </td>
-                        <td className={cn(adminSurface.tableCell, "text-right")}>
-                          <div className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                            {money(item.amount)}
-                          </div>
-                        </td>
-                        <td className={adminSurface.tableCell}>
+                        <td className={adminDataTable.moneyCell}>{money(item.amount)}</td>
+                        <td className={adminDataTable.cellLeft}>
                           <div className="flex flex-wrap gap-1.5">
                             <Badge
                               variant={
@@ -648,12 +660,7 @@ export default function PrivatePaymentsClient() {
                             )}
                           </div>
                         </td>
-                        <td
-                          className={cn(
-                            adminSurface.tableCell,
-                            "whitespace-nowrap text-xs leading-5 text-muted-foreground",
-                          )}
-                        >
+                        <td className={cn(adminDataTable.dateCell, "text-left")}>
                           <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 gap-y-1">
                             <span className="text-muted-foreground">만료</span>
                             <span className="whitespace-nowrap text-foreground/80">

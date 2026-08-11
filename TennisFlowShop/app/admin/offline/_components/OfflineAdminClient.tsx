@@ -302,35 +302,32 @@ function Select({
 
 // Status Badge Component
 function StatusBadge({ status, type }: { status: string; type: "record" | "payment" }) {
-  const colors = {
+  const tones = {
     record: {
-      received: "bg-info/10 text-info dark:text-info border-info/20",
-      in_progress: "bg-warning/10 text-warning dark:text-warning border-warning/20",
-      completed: "bg-success/10 text-success dark:text-success border-success/20",
-      picked_up: "bg-primary/10 text-primary border-primary/20",
-      canceled: "bg-destructive/10 text-destructive border-destructive/20",
+      received: "info",
+      in_progress: "warning",
+      completed: "success",
+      picked_up: "brand",
+      canceled: "danger",
     },
     payment: {
-      pending: "bg-warning/10 text-warning dark:text-warning border-warning/20",
-      paid: "bg-success/10 text-success dark:text-success border-success/20",
-      refunded: "bg-destructive/10 text-destructive border-destructive/20",
+      pending: "warning",
+      paid: "success",
+      refunded: "danger",
     },
-  };
+  } as const;
 
   const labels = type === "record" ? RECORD_STATUS_LABELS : PAYMENT_STATUS_LABELS;
-  const colorMap = colors[type] as Record<string, string>;
-  const colorClass = colorMap[status] || "bg-muted text-muted-foreground border-border";
+  const toneMap = tones[type] as Record<
+    string,
+    "info" | "warning" | "success" | "brand" | "danger"
+  >;
+  const tone = toneMap[status] || "neutral";
 
   return (
-    <span
-      className={cn(
-        "inline-flex shrink-0 items-center whitespace-nowrap rounded-md border px-2 py-0.5 font-medium",
-        adminTypography.badgeLabel,
-        colorClass,
-      )}
-    >
+    <Badge tone={tone}>
       {labels[status as keyof typeof labels] ?? status}
-    </span>
+    </Badge>
   );
 }
 
