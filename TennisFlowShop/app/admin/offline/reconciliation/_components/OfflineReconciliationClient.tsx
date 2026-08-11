@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
@@ -117,23 +118,14 @@ function SummaryCard({
   onClick?: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-xl border p-4 text-left transition-colors",
-        tone === "danger" && "border-destructive/30 bg-destructive/10 hover:bg-destructive/15",
-        tone === "warning" && "border-warning/30 bg-warning/10 hover:bg-warning/15",
-        tone === "success" && "border-success/30 bg-success/10 hover:bg-success/15",
-        (!tone || tone === "muted") && "border-border/60 bg-muted/20 hover:bg-muted/30",
-        active && "ring-2 ring-primary/30",
-      )}
-    >
-      <p className={`${adminTypography.caption} font-medium`}>{label}</p>
-      <p className={`mt-2 ${adminTypography.kpiValue} font-semibold`}>
-        {value.toLocaleString("ko-KR")}건
-      </p>
-    </button>
+    <AdminSummaryCard
+      title={label}
+      value={`${value.toLocaleString("ko-KR")}건`}
+      tone={tone === "muted" ? "neutral" : tone}
+      active={active}
+      onAction={onClick}
+      className="shadow-none"
+    />
   );
 }
 
