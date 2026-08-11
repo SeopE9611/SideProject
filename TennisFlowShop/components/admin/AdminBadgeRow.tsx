@@ -5,7 +5,6 @@ import {
   AdminSemanticBadge as Badge,
   type AdminSemanticBadgeProps,
 } from "@/components/admin/AdminSemanticBadge";
-import { badgeBase, badgeSizeSm } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,6 +14,7 @@ import { cn } from "@/lib/utils";
  */
 export type BadgeItem = {
   label: string; // 뱃지에 표시할 텍스트
+  tone?: AdminSemanticBadgeProps["tone"]; // 권장: 공통 semantic 상태 톤
   variant?: AdminSemanticBadgeProps["variant"]; // shadcn Badge variant 기반 톤
   className?: string; // 색상/톤 클래스
   title?: string; // hover 시 의미를 보충(접힌 뱃지 목록에도 같이 사용)
@@ -44,11 +44,10 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
       {visible.map((b, idx) => (
         <Badge
           key={`${b.label}-${idx}`}
+          tone={b.tone}
           variant={b.variant}
           title={b.title} // 각 뱃지의 의미를 hover로 보충
           className={cn(
-            badgeBase,
-            badgeSizeSm,
             adminTypography.badgeLabel,
             "whitespace-nowrap",
             b.className,
@@ -64,8 +63,6 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
           // +N에 마우스를 올리면, 접힌 뱃지들의 목록을 확인 가능
           title={hiddenTitle}
           className={cn(
-            badgeBase,
-            badgeSizeSm,
             adminTypography.badgeLabel,
             "whitespace-nowrap",
             // overflow 표시는 중립 톤(너무 튀지 않게)
