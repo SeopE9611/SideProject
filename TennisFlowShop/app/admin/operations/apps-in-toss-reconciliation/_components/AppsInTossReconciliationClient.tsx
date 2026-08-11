@@ -8,12 +8,14 @@ import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
+import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
@@ -136,10 +138,13 @@ export default function AppsInTossReconciliationClient() {
       <Button className="mt-4" type="button" onClick={() => { setSubmitted(filters); setPage(1); }}>조회</Button>
     </AdminPageSection>
     <AdminPageSection title="운영 확인 필요 결제" description="MongoDB에 저장된 진단 정보만 표시합니다." icon={AlertTriangle}>
-      {error ? <p className={adminTypography.body}>목록을 불러오지 못했습니다.</p> : isLoading ? <p className={adminTypography.body}>불러오는 중...</p> : !data?.items.length ? <p className={adminTypography.body}>현재 조건에 해당하는 결제가 없습니다.</p> :
       <div className={`${adminSurface.tableCard} overflow-x-auto`}><Table className="min-w-[1180px]"><TableHeader><TableRow>
         {['우선도','문제 유형','결제 상태','고객/상품','금액','발생/갱신 시각','진단 정보','다음 조치'].map((label) => <TableHead key={label} className={adminDataTable.head}>{label}</TableHead>)}
-      </TableRow></TableHeader><TableBody>{data.items.map((item) => <TableRow key={item.id} className={adminDataTable.row}>
+      </TableRow></TableHeader><TableBody>
+        {error ? <TableRow><TableCell colSpan={8} className="p-4"><AsyncState kind="error" variant="inline" tone="admin" resourceName="결제 점검 목록" onAction={() => void mutate()} /></TableCell></TableRow> : null}
+        {isLoading ? Array.from({ length: 4 }, (_, rowIndex) => <TableRow key={rowIndex}>{Array.from({ length: 8 }, (_, cellIndex) => <TableCell key={cellIndex} className={adminDataTable.cell}><Skeleton className="h-5 w-full" /></TableCell>)}</TableRow>) : null}
+        {!error && !isLoading && !data?.items.length ? <TableRow><TableCell colSpan={8} className="p-4"><AsyncState kind="empty" variant="inline" tone="admin" title="현재 조회 조건에 해당하는 결제가 없습니다" description="조회 조건을 변경하거나 목록을 새로고침해 확인해 주세요." /></TableCell></TableRow> : null}
+        {!error && !isLoading ? data?.items.map((item) => <TableRow key={item.id} className={adminDataTable.row}>
         <TableCell className={adminDataTable.cellTop}><Badge variant={item.severity === "critical" ? "danger" : "warning"}>{item.severity === "critical" ? "긴급" : "주의"}</Badge></TableCell>
         <TableCell className={adminDataTable.cellTop}>{ISSUE_LABELS[item.issueType]}</TableCell>
         <TableCell className={adminDataTable.cellTop}><div className="flex flex-col gap-1"><Badge variant="secondary">{item.state}</Badge><Badge variant="info">{item.environment}</Badge></div></TableCell>
@@ -148,7 +153,7 @@ export default function AppsInTossReconciliationClient() {
         <TableCell className={adminDataTable.cellTop}><p>{formatDate(item.timestamps.updatedAt)}</p><p className={adminTypography.metaMuted}>결제 {formatDate(item.timestamps.paidAt)}</p></TableCell>
         <TableCell className={adminDataTable.cellTop}><p>{[item.failure.stage, item.failure.code, item.failure.finalizationCode].filter(Boolean).join(" · ") || "코드 없음"}</p><p className={adminTypography.metaMuted}>시도 ID {item.attemptId}</p>{item.links.orderAdminUrl ? <Link className="text-primary underline" href={item.links.orderAdminUrl}>주문 상세</Link> : null}</TableCell>
         <TableCell className={adminDataTable.cellTop}><div className="space-y-3"><p>{item.nextAction}</p><Button type="button" variant="outline" size="sm" disabled={checkingAttemptIds.has(item.attemptId) || recoveringAttemptIds.has(item.attemptId)} onClick={() => checkTossStatus(item.attemptId)}>{checkingAttemptIds.has(item.attemptId) ? "확인 중..." : "Toss 상태 확인"}</Button>{statusChecks[item.attemptId]?.recovery.eligibility === "eligible" && item.issueType === "reconciliation_required" ? <Button type="button" size="sm" disabled={checkingAttemptIds.has(item.attemptId) || recoveringAttemptIds.has(item.attemptId)} onClick={() => setRecoveryAttemptId(item.attemptId)}>{recoveringAttemptIds.has(item.attemptId) ? "복구 중..." : "안전 복구 실행"}</Button> : null}{statusCheckErrors[item.attemptId] ? <p className="text-sm text-destructive">{statusCheckErrors[item.attemptId]}</p> : null}{statusChecks[item.attemptId] ? <div className={`space-y-1 ${adminTypography.metaMuted}`}><p>외부 상태: {statusChecks[item.attemptId].external.payStatus}</p><p>판정: {STATUS_LABELS[statusChecks[item.attemptId].external.classification]}</p><p>환불 가능 잔액: {statusChecks[item.attemptId].external.refundableAmount.toLocaleString("ko-KR")}원</p><p>확인 시각: {formatDate(statusChecks[item.attemptId].checkedAt)}</p><p>{statusChecks[item.attemptId].guidance}</p><p>{statusChecks[item.attemptId].recovery.message}</p></div> : null}{recoveryResults[item.attemptId] ? <p className={adminTypography.metaMuted}>{recoveryResults[item.attemptId].message}</p> : null}</div></TableCell>
-      </TableRow>)}</TableBody></Table></div>}
+      </TableRow>) : null}</TableBody></Table></div>
       <div className="mt-4 flex items-center justify-between"><p className={adminTypography.metaMuted}>{data?.total ?? 0}건 · {page}/{Math.max(data?.totalPages ?? 0, 1)}페이지</p><div className="flex gap-2"><Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((v) => v - 1)}>이전</Button><Button type="button" variant="outline" size="sm" disabled={!data || page >= data.totalPages} onClick={() => setPage((v) => v + 1)}>다음</Button></div></div>
     </AdminPageSection>
     <AdminConfirmDialog open={Boolean(recoveryAttemptId)} title="Apps in Toss 결제 안전 복구" description={"Toss의 최신 거래 상태를 다시 확인한 뒤 서버 정책상 안전한 경우에만 내부 결제 상태를 복구합니다.\n결제 완료가 확인된 건은 주문 확정 절차가 이어질 수 있으며, 주문 확정이 불가능하면 기존 정책에 따라 보상 환불이 진행될 수 있습니다."} severity="danger" confirmText="안전 복구 실행" confirmDisabled={Boolean(recoveryAttemptId && recoveringAttemptIds.has(recoveryAttemptId))} onOpenChange={(open) => { if (!open) setRecoveryAttemptId(null); }} onConfirm={() => { if (recoveryAttemptId) void recoverPayment(recoveryAttemptId); }} eventKey="apps-in-toss-reconciliation-recovery" />
