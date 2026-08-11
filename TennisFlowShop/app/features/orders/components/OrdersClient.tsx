@@ -727,7 +727,7 @@ export default function OrdersClient() {
   }
 
   return (
-    <AdminPageShell variant="wide" className="py-4 lg:py-5">
+    <AdminPageShell variant="wide" className="py-5">
       {/* 제목 및 설명 */}
       <div>
         <AdminPageHeader
@@ -739,7 +739,7 @@ export default function OrdersClient() {
       </div>
 
       <div className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 shadow-sm">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-row items-center justify-between gap-2">
           <details className="group min-w-0">
             <summary className="cursor-pointer list-none text-ui-body-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
               업무 가이드 · 우선 처리 기준 보기
@@ -759,7 +759,7 @@ export default function OrdersClient() {
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <Card className={cn("mb-4 px-4 py-4 lg:px-5", adminSurface.filterCard)}>
+      <Card className={cn("mb-4 px-5 py-4", adminSurface.filterCard)}>
         <CardHeader className="pb-2.5">
           <CardTitle>주문 찾기</CardTitle>
           <CardDescription className="text-ui-label">
@@ -824,7 +824,7 @@ export default function OrdersClient() {
             </div>
 
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid w-full grid-cols-3 gap-2">
               <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
               <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
               <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
@@ -843,7 +843,7 @@ export default function OrdersClient() {
         </CardContent>
       </Card>
 
-      <div className="mb-4 flex flex-col gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-ui-body-sm shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex flex-row items-center justify-between gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-ui-body-sm shadow-sm">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-semibold text-foreground">현재 보기: {quickViewLabel}</span>
           {searchTerm.trim() ? (
@@ -859,7 +859,7 @@ export default function OrdersClient() {
       </div>
 
       {/* 주문 목록 테이블 */}
-      <Card className={cn("px-4 py-4 lg:px-5", adminSurface.tableCard)}>
+      <Card className={cn("px-5 py-4", adminSurface.tableCard)}>
         <CardHeader className="pb-2 pt-1">
           <div className="flex items-center justify-between">
             <CardTitle className="text-ui-body font-medium">주문 목록</CardTitle>
@@ -910,7 +910,7 @@ export default function OrdersClient() {
               >
                 단독
               </Badge>
-              <details className="group w-full sm:w-auto">
+              <details className="group w-auto">
                 <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md border border-border/60 bg-card px-2.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground [&::-webkit-details-marker]:hidden">
                   주문·신청 구분 안내
                 </summary>

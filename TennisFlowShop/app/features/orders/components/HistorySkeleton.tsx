@@ -7,7 +7,7 @@ const LIMIT = 5;
 
 export function HistorySkeleton() {
   return (
-    <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+    <Card className="col-span-3 border-border/40 bg-card/60 backdrop-blur">
       <CardHeader className="pb-3">
         {/* 제목 스켈레톤 */}
         <Skeleton className="h-6 w-24 rounded bg-muted animate-pulse" />

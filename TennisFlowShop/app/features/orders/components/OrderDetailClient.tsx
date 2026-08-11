@@ -504,7 +504,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   if (!orderDetail) {
     if (isOrderLoading) {
       return (
-        <AdminPageShell className="space-y-6 lg:py-8">
+        <AdminPageShell className="space-y-6 py-8">
           <div className="flex items-center justify-between">
             <Skeleton className="h-9 w-48" />
             <div className="flex gap-2">
@@ -512,12 +512,12 @@ export default function OrderDetailClient({ orderId }: Props) {
               <Skeleton className="h-9 w-24" />
             </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <Skeleton key={index} className="h-24 rounded-xl" />
             ))}
           </div>
-          <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+          <div className="grid grid-cols-[1.4fr_1fr] gap-6">
             <Skeleton className="h-[460px] rounded-xl" />
             <Skeleton className="h-[460px] rounded-xl" />
           </div>
@@ -1090,12 +1090,12 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
   };
 
   return (
-    <AdminPageShell className="space-y-6 lg:py-8">
+    <AdminPageShell className="space-y-6 py-8">
       <div className="mx-auto w-full max-w-[1500px]">
         {/* 개선된 관리자 헤더 */}
-        <div className={cn("mb-6 p-5 lg:p-6", adminSurface.cardMuted)}>
-          <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+        <div className={cn("mb-6 p-6", adminSurface.cardMuted)}>
+          <div className="mb-4 flex flex-row items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-4">
               <div className="bg-card rounded-full p-3 shadow-md">
                 <Settings className="h-8 w-8 text-primary" />
               </div>
@@ -1128,17 +1128,16 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="col-span-2 h-9 whitespace-nowrap border-border bg-card hover:bg-muted sm:col-span-1"
+                className="h-9 whitespace-nowrap border-border bg-card hover:bg-muted"
                 asChild
               >
                 <Link href="/admin/orders">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  <span className="sm:hidden">목록</span>
-                  <span className="hidden sm:inline">주문 목록으로 돌아가기</span>
+                  <span>주문 목록으로 돌아가기</span>
                 </Link>
               </Button>
               <Button
@@ -1146,7 +1145,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 size="sm"
                 onClick={() => setIsEditMode(!isEditMode)}
                 className={cn(
-                  "w-full sm:w-auto",
+                  "w-auto",
                   isEditMode ? "" : "border-border bg-card hover:bg-muted",
                 )}
               >
@@ -1155,7 +1154,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               </Button>
               <Button
                 onClick={handleShippingUpdate}
-                className="w-full whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+                className="w-auto whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Truck className="mr-2 h-4 w-4" />
                 {/* 방문 수령 주문은 배송 용어 대신 수령 용어로 노출 */}
@@ -1350,7 +1349,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
             note="결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다."
             footer={
               latestProcessingHistory ? (
-                <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-1.5 leading-relaxed">
                   <p>
                     <span className="font-medium text-foreground">마지막 처리:</span>{" "}
                     {latestProcessingHistoryStatusLabel}
@@ -1360,7 +1359,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     {latestProcessingDate}
                   </p>
                   {latestProcessingHistory.description ? (
-                    <p className="sm:col-span-2">
+                    <p className="col-span-2">
                       <span className="font-medium text-foreground">내용:</span>{" "}
                       {latestProcessingHistory.description}
                     </p>
@@ -1421,7 +1420,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
           <div id="admin-order-linked" className="mb-6">
             <Card className={cn(adminSurface.card, "border-primary/25")}>
               <CardHeader className="pb-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-row items-start justify-between gap-3">
                   <div>
                     <CardTitle className={adminTypography.sectionTitle}>
                       주문에 포함된 교체 작업
@@ -1458,14 +1457,14 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                   </div>
                 ) : null}
                 {latestLinkedApplication?.id && latestLinkedApplication?.status && (
-                  <div className="grid gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
+                  <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2">
                     <p className={adminTypography.bodyStrong}>
                       연결 진행 단계:{" "}
                       {orderGuide.stage ||
                         getCommonApplicationStatusLabel(latestLinkedApplication.status) ||
                         latestLinkedApplication.status}
                     </p>
-                    <p className={cn("md:text-right", adminTypography.meta)}>
+                    <p className={cn("text-right", adminTypography.meta)}>
                       다음 할 일:{" "}
                       <span className="font-medium text-foreground">{orderGuide.nextAction}</span>
                     </p>
@@ -1500,7 +1499,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     </div>
                   </details>
                 )}
-                <div className="grid gap-3 lg:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                   <div className={adminSurface.fieldPanel}>
                     <p className={cn("mb-2", adminTypography.panelTitle)}>교체 작업 문서</p>
                     <div className="space-y-2">
@@ -1508,7 +1507,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         linkedDocs.map((doc) => (
                           <div
                             key={`${doc.kind}:${doc.id}`}
-                            className="flex flex-col gap-2 border-b border-border/50 py-2 last:border-0 sm:flex-row sm:items-center sm:justify-between"
+                            className="flex flex-row items-center justify-between gap-2 border-b border-border/50 py-2 last:border-0"
                           >
                             <p className="text-ui-body-sm text-foreground/80">
                               교체 작업 ID:{" "}
@@ -1551,7 +1550,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     <p className="mb-2 text-ui-body-sm font-semibold text-foreground">
                       최신 작업 접수 요약
                     </p>
-                    <div className="grid gap-2 text-ui-body-sm sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-2 text-ui-body-sm">
                       {latestLinkedApplication?.status && (
                         <p>
                           <span className="text-muted-foreground">작업 상태:</span>{" "}
@@ -1598,7 +1597,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         </p>
                       )}
                       {latestApplicationLines.length > 0 && (
-                        <div className="sm:col-span-2">
+                        <div className="col-span-2">
                           <span className="text-muted-foreground">장착 정보:</span>{" "}
                           <div className="mt-1 space-y-1">
                             {latestApplicationLines.map((line, index) => (
@@ -1617,7 +1616,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         </div>
                       )}
                       {latestRequirements && (
-                        <p className="sm:col-span-2">
+                        <p className="col-span-2">
                           <span className="text-muted-foreground">요청사항:</span>{" "}
                           <span className="whitespace-pre-wrap font-medium text-foreground">
                             {latestRequirements}
@@ -1649,7 +1648,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       {latestPackageSize !== null &&
                         latestPackageUsedCount !== null &&
                         latestPackageRemainingCount !== null && (
-                          <p className="sm:col-span-2">
+                          <p className="col-span-2">
                             <span className="text-muted-foreground">패키지 사용 현황:</span>{" "}
                             <span className="font-medium text-foreground">
                               총 {latestPackageSize}회 / 사용 {latestPackageUsedCount}회 / 남은{" "}
@@ -1745,8 +1744,8 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 : `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.`}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 lg:p-5">
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <CardContent className="p-5">
+            <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-3">
               {/* 왼쪽: 상태 변경 영역 */}
               <div className="rounded-xl border border-border/60 bg-background p-4">
                 <div className="space-y-3">
@@ -1918,11 +1917,11 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 xl:grid-cols-12">
+        <div className="grid grid-cols-12 gap-4">
           {/* 고객 및 수령 정보 */}
           <Card
             id="admin-order-customer"
-            className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}
+            className={cn("col-span-6 overflow-hidden", adminSurface.tableCard)}
           >
             <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle className="flex items-center justify-between">
@@ -1935,7 +1934,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
             </CardHeader>
 
             {editingCustomer ? (
-              <CardContent className="p-4 lg:p-5">
+              <CardContent className="p-5">
                 <CustomerEditForm
                   initialData={{
                     name: orderDetail.customer.name,
@@ -1957,8 +1956,8 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               </CardContent>
             ) : (
               <>
-                <CardContent className="p-4 lg:p-5">
-                  <div className="grid gap-3 sm:grid-cols-2">
+                <CardContent className="p-5">
+                  <div className="grid grid-cols-2 gap-3">
                     <AdminCompactField
                       label="이름"
                       value={orderDetail.customer.name}
@@ -1995,7 +1994,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         ) : null
                       }
                       emptyValue="주소 미등록"
-                      className="sm:col-span-2"
+                      className="col-span-2"
                     />
                   </div>
                 </CardContent>
@@ -2019,7 +2018,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
           {/* 배송 정보 */}
           <Card
             id="admin-order-shipping"
-            className="overflow-hidden border border-border/70 bg-card shadow-sm xl:col-span-6"
+            className="overflow-hidden border border-border/70 bg-card shadow-sm col-span-6"
           >
             <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle className="flex items-center">
@@ -2035,7 +2034,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 </CardDescription>
               )}
             </CardHeader>
-            <CardContent className="p-4 lg:p-5">
+            <CardContent className="p-5">
               {isShippingManagedByApplication && linkedStringingAppId ? (
                 <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-ui-body-sm text-foreground dark:bg-primary/20">
                   <div className="flex items-start gap-2">
@@ -2228,7 +2227,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
           {/* 결제 정보 */}
           <Card
             id="admin-order-payment"
-            className="overflow-hidden border border-border/70 bg-card shadow-sm xl:col-span-6"
+            className="overflow-hidden border border-border/70 bg-card shadow-sm col-span-6"
           >
             <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle className="flex items-center justify-between">
@@ -2241,7 +2240,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
             </CardHeader>
 
             {editingPayment ? (
-              <CardContent className="p-4 lg:p-5">
+              <CardContent className="p-5">
                 <PaymentEditForm
                   initialData={{ total: orderDetail.total }}
                   orderId={orderId}
@@ -2255,9 +2254,9 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               </CardContent>
             ) : (
               <>
-                <CardContent className="p-4 lg:p-5">
+                <CardContent className="p-5">
                   <div className="space-y-3">
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <AdminCompactField
                         label="총 결제 금액"
                         value={formatCurrency(orderDetail.total)}
@@ -2333,7 +2332,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-0">
-                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="grid grid-cols-4 gap-3">
                         <AdminCompactField label="TID" value={niceBlockedTid || "-"} />
                         <AdminCompactField
                           label="거래금액"
@@ -2388,7 +2387,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
           {/* 주문 항목 */}
           <Card
             id="admin-order-items"
-            className="overflow-hidden border border-border/70 bg-card shadow-sm xl:col-span-6"
+            className="overflow-hidden border border-border/70 bg-card shadow-sm col-span-6"
           >
             <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle className="flex items-center">
@@ -2396,7 +2395,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 주문 항목
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 lg:p-5">
+            <CardContent className="p-5">
               <div className="space-y-4">
                 {orderDetail.items.map((item, idx) => (
                   <div
@@ -2461,7 +2460,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
 
         {/* 방문 수령 주문은 배송 요청사항 카드를 숨김 */}
         {showDeliveryOnlyFields && (
-          <Card className="mt-6 mb-6 overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6">
+          <Card className="mt-6 mb-6 overflow-hidden border border-border/60 bg-muted/20 shadow-none col-span-6">
             <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle className="flex items-center justify-between">
                 <span>배송 요청사항</span>
@@ -2470,7 +2469,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
             </CardHeader>
             {editingRequest ? (
-              <CardContent className="p-4 lg:p-5">
+              <CardContent className="p-5">
                 <RequestEditForm
                   initialData={orderDetail.shippingInfo.deliveryRequest || ""}
                   orderId={orderId}
@@ -2484,7 +2483,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               </CardContent>
             ) : (
               <>
-                <CardContent className="p-4 lg:p-5">
+                <CardContent className="p-5">
                   {orderDetail.shippingInfo.deliveryRequest ? (
                     <div className="bg-muted border border-border rounded-lg p-4">
                       <p className="text-foreground whitespace-pre-line">
@@ -2512,7 +2511,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
           </Card>
         )}
 
-        <div id="admin-order-notes" className="xl:col-span-12">
+        <div id="admin-order-notes" className="col-span-12">
           <AdminInternalNotesCard
             targetType="order"
             targetId={orderDetail._id}
@@ -2523,7 +2522,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
         {/* 처리 이력 */}
         <Card
           id="admin-order-history"
-          className={cn("overflow-hidden xl:col-span-12", adminSurface.tableCard)}
+          className={cn("overflow-hidden col-span-12", adminSurface.tableCard)}
         >
           <CardHeader className="border-b bg-muted/20">
             <CardTitle className="flex items-center space-x-2">
@@ -2531,7 +2530,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               <span>처리 이력</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 lg:p-5">
+          <CardContent className="p-5">
             <OrderHistory orderId={orderId} shippingMethod={orderDetail.shippingInfo} embedded />
           </CardContent>
         </Card>
