@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -142,12 +143,14 @@ export default function AdminInternalNotesCard({
   };
 
   return (
-    <Card className={cn("border-0 bg-muted/30 shadow-xl", className)}>
-      <CardHeader>
-        <CardTitle>관리자 내부 메모</CardTitle>
-        <CardDescription>고객에게 노출되지 않는 운영자 전용 메모입니다.</CardDescription>
+    <Card className={cn(adminSurface.detailCard, "overflow-hidden", className)}>
+      <CardHeader className={adminSurface.detailHeader}>
+        <CardTitle className={adminTypography.sectionTitle}>관리자 내부 메모</CardTitle>
+        <CardDescription className={adminTypography.metaMuted}>
+          고객에게 노출되지 않는 운영자 전용 메모입니다.
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className={adminSurface.detailContent}>
         <div className="space-y-2">
           <Textarea
             value={draft}
@@ -161,8 +164,8 @@ export default function AdminInternalNotesCard({
             </Button>
           </div>
         </div>
-        <div className="space-y-2 rounded-md border bg-background/50 p-3">
-          <div className="grid grid-cols-2 gap-2">
+        <div className={cn("space-y-2", adminSurface.fieldPanelMuted)}>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Input
               value={draftQ}
               onChange={(e) => setDraftQ(e.target.value)}
@@ -185,17 +188,19 @@ export default function AdminInternalNotesCard({
         </div>
 
         {error ? (
-          <p className="text-sm text-destructive">내부 메모를 불러오지 못했습니다.</p>
+          <p className={cn(adminTypography.body, "text-destructive")}>
+            내부 메모를 불러오지 못했습니다.
+          </p>
         ) : null}
         {!error && !data && isValidating ? (
-          <p className="text-sm text-muted-foreground">불러오는 중...</p>
+          <p className={adminTypography.metaMuted}>불러오는 중...</p>
         ) : null}
         {data && data.items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">아직 등록된 내부 메모가 없습니다.</p>
+          <p className={adminTypography.metaMuted}>아직 등록된 내부 메모가 없습니다.</p>
         ) : null}
         <div className="space-y-3">
           {data?.items.map((note) => (
-            <div key={note.id} className="rounded-lg border bg-background p-3">
+            <div key={note.id} className={adminSurface.fieldPanel}>
               {editingId === note.id ? (
                 <div className="space-y-2">
                   <Textarea
@@ -226,8 +231,13 @@ export default function AdminInternalNotesCard({
                 </div>
               ) : (
                 <>
-                  <p className="whitespace-pre-wrap text-sm">{note.body}</p>
-                  <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                  <p className={cn("whitespace-pre-wrap", adminTypography.body)}>{note.body}</p>
+                  <div
+                    className={cn(
+                      "mt-2 flex flex-wrap items-center justify-between gap-2",
+                      adminTypography.metaMuted,
+                    )}
+                  >
                     <span>
                       {note.createdByName || note.createdByEmail || "관리자"} ·{" "}
                       {note.createdAt ? new Date(note.createdAt).toLocaleString("ko-KR") : "-"}

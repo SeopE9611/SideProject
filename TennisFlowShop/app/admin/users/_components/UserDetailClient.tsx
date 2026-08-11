@@ -891,7 +891,7 @@ export default function UserDetailClient({ id }: { id: string }) {
         />
 
         {/* 좌: 요약/보안/액티비티 KPI/최근 항목 탭  |  우: 프로필 수정 */}
-        <div className="grid gap-6 grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           {/* 좌측 스택 */}
           <div className="space-y-6">
             {/* 계정 요약 */}
@@ -1066,7 +1066,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   aside={<ActivityIcon className="h-4 w-4 text-muted-foreground" />}
                 />
                 <SectionBody>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <StatCard
                       tone="emerald"
                       icon={<ShoppingBag className="h-4 w-4" />}
@@ -1169,7 +1169,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 aside={<RefreshCw className="h-4 w-4 text-muted-foreground" />}
               />
               <SectionBody>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormRow label="이름" htmlFor="name">
                     <Input
                       id="name"
