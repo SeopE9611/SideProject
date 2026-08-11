@@ -20,6 +20,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -859,14 +860,6 @@ export default function AdminReviewListClient() {
                       >
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
-                          onSelect={() => setDetail(r)}
-                          className="cursor-pointer whitespace-nowrap"
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          <span>상세 보기</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onPointerDown={(e) => e.stopPropagation()}
                           onSelect={() => toggleVisible(r)}
                           className="cursor-pointer whitespace-nowrap"
                         >
@@ -882,6 +875,7 @@ export default function AdminReviewListClient() {
                             </>
                           )}
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
                           className="cursor-pointer whitespace-nowrap text-destructive focus:text-destructive"
