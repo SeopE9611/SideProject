@@ -17,6 +17,7 @@ import useSWR from "swr";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -47,22 +48,14 @@ function SummaryCard({
   description: string;
   tone?: "default" | "warning" | "danger" | "success" | "info";
 }) {
-  const toneClass = {
-    default: adminSurface.card,
-    warning: "rounded-2xl border border-warning/35 bg-warning/5 shadow-sm",
-    danger: "rounded-2xl border border-destructive/35 bg-destructive/5 shadow-sm",
-    success: "rounded-2xl border border-success/35 bg-success/5 shadow-sm",
-    info: "rounded-2xl border border-primary/25 bg-primary/5 shadow-sm",
-  }[tone];
-
   return (
-    <Card className={toneClass}>
-      <CardContent className="p-4">
-        <p className={adminTypography.panelMeta}>{title}</p>
-        <p className={cn(adminTypography.kpiValueCompact, "mt-2")}>{value}</p>
-        <p className={cn(adminTypography.caption, "mt-1 break-keep")}>{description}</p>
-      </CardContent>
-    </Card>
+    <AdminSummaryCard
+      title={title}
+      value={value}
+      description={description}
+      tone={tone === "default" ? "neutral" : tone}
+      className="shadow-none"
+    />
   );
 }
 

@@ -7,6 +7,7 @@ import useSWR from "swr";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
+import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -98,8 +99,8 @@ export default function AppsInTossReconciliationClient() {
       setRecoveringAttemptIds((current) => { const next = new Set(current); next.delete(attemptId); return next; });
     }
   };
-  const cards = [
-    ["전체 확인 필요", summary?.total, "danger"], ["수동 대사 필요", summary?.reconciliationRequired, "danger"],
+  const statusCards = [
+    ["수동 대사 필요", summary?.reconciliationRequired, "danger"],
     ["보상 환불 필요", summary?.compensationRefundRequired, "danger"], ["승인 확인 필요", summary?.executionLeaseExpired, "danger"],
     ["환불 확인 필요", summary?.refundLeaseExpired, "danger"], ["주문 확정 지연", summary?.finalizationStale, "warning"],
     ["상태 불일치", summary?.stateInconsistent, "danger"],
@@ -107,9 +108,24 @@ export default function AppsInTossReconciliationClient() {
 
   return <div className="space-y-6">
     <div className={adminSurface.fieldPanelMuted}>현재 보기: {ISSUE_LABELS[submitted.issueType as keyof typeof ISSUE_LABELS]} · {submitted.environment === "all" ? "전체 환경" : submitted.environment} · {data?.total ?? 0}건</div>
-    <div className="grid gap-3 grid-cols-4">
-      {cards.map(([title, value, tone]) => <AdminSummaryCard key={title} title={title} value={`${value ?? 0}건`} tone={tone} />)}
-    </div>
+    <section className="space-y-3" aria-label="결제 정합성 상태">
+      <AdminSummaryCard
+        title="전체 확인 필요"
+        value={`${summary?.total ?? 0}건`}
+        description="자동 처리가 완료되지 않았거나 운영 확인이 필요한 전체 결제"
+        tone="danger"
+      />
+      <div className="grid gap-3 grid-cols-3">
+        {statusCards.map(([title, value, tone]) => (
+          <AdminStatusCard
+            key={title}
+            title={title}
+            value={`${value ?? 0}건`}
+            tone={tone}
+          />
+        ))}
+      </div>
+    </section>
     <AdminPageSection title="조회 조건" description="기간은 결제 intent의 마지막 갱신 시각을 기준으로 합니다. 목록 새로고침은 MongoDB 내부 점검 큐만 다시 조회합니다." icon={Search} actions={<Button type="button" variant="outline" size="sm" onClick={() => mutate()} disabled={isValidating}><RefreshCcw className="h-4 w-4" />목록 새로고침</Button>}>
       <div className="grid gap-3 grid-cols-4">
         <div><Label htmlFor="issueType">유형</Label><Select id="issueType" value={filters.issueType} onChange={(e) => setFilters({ ...filters, issueType: e.target.value })}>{Object.entries(ISSUE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></div>
