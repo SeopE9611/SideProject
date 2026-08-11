@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { adminTypography } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 
 type SectionProps = {
@@ -13,8 +13,7 @@ export function Section({ children, className, variant = "card" }: SectionProps)
   return (
     <section
       className={cn(
-        variant === "card" &&
-          "rounded-2xl border border-border/70 bg-card/70 shadow-sm dark:bg-card/70",
+        variant === "card" && adminSurface.card,
         className,
       )}
     >
@@ -37,7 +36,7 @@ export function SectionHeader({
   return (
     <div
       className={cn(
-        "flex items-center justify-between rounded-t-2xl border-b border-border/70 bg-background/70 px-5 py-3",
+        "flex items-center justify-between rounded-t-xl border-b border-border bg-muted/20 px-5 py-3",
         description && "flex-row items-start gap-4",
         className,
       )}
@@ -45,7 +44,7 @@ export function SectionHeader({
       <div className="min-w-0">
         <h3 className={adminTypography.panelTitle}>{title}</h3>
         {description ? (
-          <p className="mt-1 text-sm leading-relaxed text-foreground/75">{description}</p>
+          <p className={cn("mt-1", adminTypography.body)}>{description}</p>
         ) : null}
       </div>
       {aside}

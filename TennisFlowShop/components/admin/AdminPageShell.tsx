@@ -9,8 +9,11 @@ type AdminPageShellProps = {
 };
 
 const widthByVariant = {
+  // 상세·정보 화면의 기본 읽기 폭
   default: "max-w-[1280px]",
+  // 데이터 테이블 중심 목록 화면의 가로 정보 밀도를 보존하는 폭
   wide: "max-w-[1560px]",
+  // 집중 입력 및 간단한 단일 열 폼을 위한 폭
   narrow: "max-w-4xl",
 } as const;
 

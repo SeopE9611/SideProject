@@ -1,8 +1,7 @@
-// 상태 뱃지 하나로 통일: active/suspended/deleted
+// 계정 생명주기(active/suspended/deleted) 전용 상태 뱃지입니다.
 "use client";
 import { AdminSemanticBadge } from "@/components/admin/AdminSemanticBadge";
 import { cn } from "@/lib/utils";
-import { adminTypography } from "@/components/admin/admin-typography";
 
 type Status = "active" | "suspended" | "deleted";
 
@@ -15,7 +14,7 @@ export default function StatusBadge({ status, className }: { status: Status; cla
     <AdminSemanticBadge
       tone={tone}
       size="sm"
-      className={cn("px-2.5 py-0.5 font-medium shadow-sm", adminTypography.badgeLabel, className)}
+      className={cn("font-medium", className)}
     >
       {label}
     </AdminSemanticBadge>
