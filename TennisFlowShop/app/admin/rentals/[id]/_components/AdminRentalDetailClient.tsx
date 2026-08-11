@@ -724,11 +724,11 @@ export default function AdminRentalDetailClient() {
   return (
     <AdminPageShell variant="wide" className="py-8">
       {isLoading ? (
-        <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-foreground/80">
+        <div className="mb-4 w-full rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-foreground/80">
           최신 상태를 확인하고 있습니다...
         </div>
       ) : null}
-      <div className="mx-auto w-full max-w-[1500px] space-y-8">
+      <div className="space-y-8">
         <div className={cn("mb-8 p-6", adminSurface.cardMuted)}>
           <div className="flex mb-6 gap-4 flex-row items-center justify-between">
             <div className="flex items-center space-x-4">

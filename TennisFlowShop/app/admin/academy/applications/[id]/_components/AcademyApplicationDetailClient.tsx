@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { ArrowLeft, BookOpen, LinkIcon, Save } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -345,7 +346,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1280px] space-y-5 px-5 py-5">
+    <AdminPageShell className="space-y-5">
       <AdminPageHeader
         title="레슨 신청 상세"
         description="신청자 정보와 희망 레슨 정보를 확인하고 상담 상태를 관리합니다."
@@ -765,6 +766,6 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           </AdminPageSection>
         </div>
       </div>
-    </div>
+    </AdminPageShell>
   );
 }

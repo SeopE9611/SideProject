@@ -1090,8 +1090,8 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
   };
 
   return (
-    <AdminPageShell className="space-y-6 py-8">
-      <div className="mx-auto w-full max-w-[1500px]">
+    <AdminPageShell variant="wide" className="space-y-6 py-8">
+      <div>
         {/* 개선된 관리자 헤더 */}
         <div className={cn("mb-6 p-6", adminSurface.cardMuted)}>
           <div className="mb-4 flex flex-row items-center justify-between gap-3">

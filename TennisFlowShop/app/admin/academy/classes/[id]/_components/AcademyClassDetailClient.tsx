@@ -8,6 +8,7 @@ import { ArrowLeft, BookOpen, Eye, Pencil } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -192,7 +193,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1280px] space-y-5 px-5 py-5">
+    <AdminPageShell className="space-y-5">
       <AdminPageHeader
         title="클래스 상세"
         description="클래스 기본 정보와 클래스별 신청자 현황을 확인합니다."
@@ -373,6 +374,6 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
           </Table>
         </div>
       </AdminPageSection>
-    </div>
+    </AdminPageShell>
   );
 }
