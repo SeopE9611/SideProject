@@ -1031,23 +1031,23 @@ export default function RevenueReportClient() {
               </CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
-              <table className="min-w-[820px] divide-y divide-border text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="whitespace-nowrap py-2 pr-4 font-medium">날짜</th>
-                    <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+              <table className="min-w-[820px] divide-y divide-border">
+                <thead className={adminSurface.tableHeader}>
+                  <tr>
+                    <th className={adminDataTable.head}>날짜</th>
+                    <th className={adminDataTable.headRight}>
                       온라인 매출
                     </th>
-                    <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                    <th className={adminDataTable.headRight}>
                       개인결제 환불
                     </th>
-                    <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                    <th className={adminDataTable.headRight}>
                       온라인 순매출
                     </th>
-                    <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                    <th className={adminDataTable.headRight}>
                       오프라인 매출
                     </th>
-                    <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                    <th className={adminDataTable.headRight}>
                       참고 합계
                     </th>
                   </tr>
@@ -1061,21 +1061,21 @@ export default function RevenueReportClient() {
                     </tr>
                   ) : (
                     report.series.map((point) => (
-                      <tr key={point.date} className="hover:bg-muted/50">
-                        <td className="whitespace-nowrap py-2 pr-4 font-medium">{point.date}</td>
-                        <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
+                      <tr key={point.date} className={adminDataTable.row}>
+                        <td className={adminDataTable.dateCell}>{point.date}</td>
+                        <td className={adminDataTable.moneyCell}>
                           {formatKRW(point.onlinePaidAmount)}
                         </td>
-                        <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums text-destructive">
+                        <td className={cn(adminDataTable.moneyCell, "text-destructive")}>
                           {formatKRW(point.onlineRefundAmount)}
                         </td>
-                        <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
+                        <td className={adminDataTable.moneyCell}>
                           {formatKRW(point.onlineNetAmount ?? point.onlinePaidAmount)}
                         </td>
-                        <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
+                        <td className={adminDataTable.moneyCell}>
                           {formatKRW(point.offlinePaidAmount)}
                         </td>
-                        <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
+                        <td className={adminDataTable.moneyCell}>
                           {formatKRW(point.combinedPaidAmount)}
                         </td>
                       </tr>

@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { Button } from "@/components/ui/button";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import { AdminSectionHeader } from "@/components/admin/AdminPageSection";
@@ -1938,29 +1939,29 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   </p>
                 ) : (
                   <div className="overflow-x-auto rounded-lg border border-border/40">
-                    <table className={`min-w-[980px] text-left ${adminTypography.body}`}>
-                      <thead className={`bg-muted/50 ${adminTypography.caption}`}>
+                    <table className="min-w-[980px] text-left">
+                      <thead className={adminSurface.tableHeader}>
                         <tr>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">패키지</th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                          <th className={adminDataTable.head}>패키지</th>
+                          <th className={adminDataTable.headRight}>
                             횟수
                           </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                          <th className={adminDataTable.headRight}>
                             금액
                           </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">
+                          <th className={adminDataTable.headCenter}>
                             결제수단
                           </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">
+                          <th className={adminDataTable.headCenter}>
                             결제상태
                           </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                          <th className={adminDataTable.headRight}>
                             결제일
                           </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">
+                          <th className={adminDataTable.headCenter}>
                             출처
                           </th>
-                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">
+                          <th className={adminDataTable.actionHead}>
                             환불 처리
                           </th>
                         </tr>
@@ -1978,20 +1979,20 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           return (
                             <tr
                               key={sale.id}
-                              className="border-t border-border/40 align-top transition-colors hover:bg-muted/30"
+                              className={adminDataTable.row}
                             >
-                              <td className="px-4 py-3 font-medium text-foreground">
+                              <td className={adminDataTable.cellTopLeft}>
                                 <span
-                                  className="line-clamp-2 max-w-[220px] break-keep"
+                                  className={`line-clamp-2 max-w-[220px] break-keep ${adminDataTable.primaryText}`}
                                   title={sale.packageName || "교체 서비스 패키지"}
                                 >
                                   {sale.packageName || "교체 서비스 패키지"}
                                 </span>
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                              <td className={adminDataTable.numericCell}>
                                 {Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                              <td className={adminDataTable.moneyCell}>
                                 <div>{formatCurrency(sale.price)}</div>
                                 {sale.isRefunded && (
                                   <div
@@ -2001,14 +2002,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   </div>
                                 )}
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-center">
+                              <td className={adminDataTable.cellCenter}>
                                 {PAYMENT_METHOD_LABELS[
                                   sale.paymentMethod as OfflinePaymentMethod
                                 ] ??
                                   sale.paymentMethod ??
                                   "-"}
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-center">
+                              <td className={adminDataTable.cellCenter}>
                                 <div>{sale.paymentStatus || "-"}</div>
                                 {sale.isRefunded && (
                                   <Badge
@@ -2019,7 +2020,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   </Badge>
                                 )}
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                              <td className={adminDataTable.dateCell}>
                                 <div>{formatDate(sale.paidAt || sale.createdAt)}</div>
                                 {sale.refundedAt && (
                                   <div className={`mt-1 ${adminTypography.caption}`}>
@@ -2027,7 +2028,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   </div>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-center">
+                              <td className={adminDataTable.cellCenter}>
                                 <Badge
                                   variant={isOfflineSale ? "secondary" : "outline"}
                                   className="shrink-0 whitespace-nowrap"
@@ -2036,7 +2037,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                     (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문")}
                                 </Badge>
                               </td>
-                              <td className="px-4 py-3 text-right">
+                              <td className={adminDataTable.actionCell}>
                                 {!isOfflineSale ? (
                                   <span className={adminTypography.caption}>-</span>
                                 ) : sale.isRefunded ? (
