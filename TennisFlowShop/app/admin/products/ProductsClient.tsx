@@ -715,7 +715,7 @@ export default function ProductsClient() {
                       return (
                         <TableRow
                           key={s._id}
-                          className="group h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors"
+                          className={adminDataTable.row}
                         >
                           <TableCell className={adminDataTable.cellLeft}>
                             <div className="space-y-1">
@@ -737,7 +737,7 @@ export default function ProductsClient() {
                                 )}
                               </div>
                               <div
-                                className="truncate font-mono text-[11px] text-muted-foreground"
+                                className={cn("truncate font-mono", adminDataTable.secondaryText)}
                                 title={s.sku}
                               >
                                 {s.sku}

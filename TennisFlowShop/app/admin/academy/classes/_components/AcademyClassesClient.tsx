@@ -270,7 +270,7 @@ export default function AcademyClassesClient() {
   };
 
   return (
-    <AdminPageShell>
+    <AdminPageShell variant="wide">
       <AdminPageHeader
         title="아카데미 클래스 관리"
         description="레슨 프로그램을 등록하고 노출 상태를 관리합니다."
@@ -398,7 +398,7 @@ export default function AcademyClassesClient() {
                   const isDeleteDisabled = blockingApplicationTotal > 0 || deletingId === classId;
 
                   return (
-                    <TableRow key={classId} className="hover:bg-muted/50">
+                    <TableRow key={classId} className={adminDataTable.row}>
                       <TableCell className={cn(adminDataTable.dateCell, "w-[112px]")}>
                         <div className="whitespace-nowrap font-medium text-foreground">{createdAt.date}</div>
                         <div className="whitespace-nowrap text-muted-foreground">{createdAt.time}</div>

@@ -1062,12 +1062,12 @@ export default function PackageOrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative px-4">
-          <div className="relative max-h-[70vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
+          <div className={cn(adminSurface.tableCard, "relative max-h-[70vh] min-w-0 overflow-x-auto overflow-y-auto")}>
             <Table
               className="min-w-[1120px] table-fixed border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0]"
               aria-busy={isValidating && !shouldShowRows}
             >
-              <TableHeader className="sticky top-0 bg-card shadow-sm">
+              <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
                 <TableRow>
                   <TableHead className={cn(adminDataTable.head, "w-[250px]")}>패키지/고객</TableHead>
                   <TableHead className={cn(adminDataTable.headCenter, "w-[150px]")}>이용 현황</TableHead>
@@ -1076,7 +1076,7 @@ export default function PackageOrdersClient() {
                   <TableHead className={cn(adminDataTable.head, "w-[130px]")}>운영 확인</TableHead>
                   <TableHead className={cn(adminDataTable.headRight, "w-[110px]")}>금액</TableHead>
                   <TableHead
-                    className={cn(adminDataTable.actionHead, "sticky right-0 top-0 z-20 w-[96px] bg-card")}
+                    className={cn(adminDataTable.stickyActionHead, "top-0 w-[96px]")}
                   >
                     관리
                   </TableHead>
@@ -1166,7 +1166,7 @@ export default function PackageOrdersClient() {
                         // 라이트/다크 줄 배경 토큰 통일
                         <TableRow
                           key={pkg.id}
-                          className="hover:bg-primary/5 transition-colors even:bg-muted/40 border-b last:border-0"
+                          className={adminDataTable.row}
                         >
                           <TableCell className={tdClasses}>
                             <div className="space-y-2">
@@ -1271,7 +1271,7 @@ export default function PackageOrdersClient() {
                             </span>
                           </TableCell>
 
-                          <TableCell className={cn(adminDataTable.actionCell, "sticky right-0 z-10 bg-card")}>
+                          <TableCell className={cn(adminDataTable.stickyActionCell, "w-[96px]")}>
                             <Button asChild variant="ghost" size="sm" className="h-8 whitespace-nowrap">
                               <Link href={`/admin/packages/${pkg.id}`} aria-label={`${pkg.customer?.name || pkg.id} 패키지 상세 보기`}>
                                 <Eye className="mr-2 h-4 w-4" />상세

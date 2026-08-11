@@ -404,9 +404,9 @@ export default function AdminRacketsClient() {
           </CardContent>
         </Card>
       </section>
-      <section className="mb-4 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+      <section className={cn(adminSurface.filterCard, "mb-4 p-4")}>
         <div className="flex gap-3 flex-row items-center">
-          <p className="shrink-0 text-sm font-semibold text-muted-foreground">빠른 보기</p>
+          <p className={cn("shrink-0", adminTypography.panelTitleCompact)}>빠른 보기</p>
 
           <div className="flex flex-wrap gap-2">
             {[
@@ -485,7 +485,7 @@ export default function AdminRacketsClient() {
                 size="sm"
                 variant={preset.active ? "default" : "outline"}
                 onClick={preset.onClick}
-                className="h-8 rounded-lg px-3 text-xs"
+                className="h-8 rounded-lg px-3"
               >
                 {preset.label}
               </Button>
@@ -493,7 +493,7 @@ export default function AdminRacketsClient() {
           </div>
         </div>
       </section>
-      <div className="mb-6 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+      <div className={cn(adminSurface.filterCard, "mb-6 p-4")}>
         <div className="flex gap-3 flex-row items-center justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
@@ -511,7 +511,7 @@ export default function AdminRacketsClient() {
             )}
           </div>
 
-          <p className="text-xs text-muted-foreground">
+          <p className={adminTypography.metaMuted}>
             {hasResolvedData
               ? `총 ${filteredItems.length.toLocaleString("ko-KR")}개`
               : "라켓 목록을 불러오는 중입니다."}
@@ -560,13 +560,13 @@ export default function AdminRacketsClient() {
                     placeholder="브랜드, 모델 검색..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 h-9 text-xs border-border focus:border-border dark:focus:border-border bg-card"
+                    className="h-9 border-border bg-card pl-8 focus:border-border dark:focus:border-border"
                   />
                 </div>
               </div>
               <div className="grid w-full gap-2 grid-cols-4">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
+                  <SelectTrigger className="h-9 w-full min-w-0 border-border">
                     <SelectValue placeholder="상태 필터" />
                   </SelectTrigger>
                   <SelectContent>
@@ -579,7 +579,7 @@ export default function AdminRacketsClient() {
                 </Select>
 
                 <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                  <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
+                  <SelectTrigger className="h-9 w-full min-w-0 border-border">
                     <SelectValue placeholder="등급 필터" />
                   </SelectTrigger>
                   <SelectContent>
@@ -591,7 +591,7 @@ export default function AdminRacketsClient() {
                 </Select>
 
                 <Select value={exposureFilter} onValueChange={setExposureFilter}>
-                  <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
+                  <SelectTrigger className="h-9 w-full min-w-0 border-border">
                     <SelectValue placeholder="노출 유형" />
                   </SelectTrigger>
                   <SelectContent>
@@ -606,7 +606,7 @@ export default function AdminRacketsClient() {
                   variant="outline"
                   size="sm"
                   onClick={resetFilters}
-                  className="h-9 w-full border-border text-xs hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border"
+                  className="h-9 w-full border-border hover:bg-primary/10 dark:border-border dark:hover:bg-primary/20"
                 >
                   필터 초기화
                 </Button>
@@ -616,7 +616,7 @@ export default function AdminRacketsClient() {
 
           <div className="flex-1">
             {isLoading ? (
-              <div className="overflow-auto rounded-lg border border-border">
+              <div className={cn(adminSurface.tableCard, "overflow-auto")}>
                 <div className="space-y-4 p-8">
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className="h-16 rounded bg-muted animate-pulse" />
@@ -656,7 +656,7 @@ export default function AdminRacketsClient() {
                     {filteredItems.map((item) => (
                       <TableRow
                         key={item.id}
-                        className="group border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors"
+                        className={adminDataTable.row}
                       >
                         <TableCell className={adminDataTable.cellLeft}>
                           <div className="flex min-w-0 items-center gap-3">
@@ -732,10 +732,7 @@ export default function AdminRacketsClient() {
                         </TableCell>
                         <RacketStockCells item={item} />
                         <TableCell
-                          className={cn(
-                            adminDataTable.stickyActionCell,
-                            "group-even:bg-muted/30 group-hover:bg-primary/10 dark:group-even:bg-card dark:group-hover:bg-primary/20",
-                          )}
+                          className={adminDataTable.stickyActionCell}
                         >
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
