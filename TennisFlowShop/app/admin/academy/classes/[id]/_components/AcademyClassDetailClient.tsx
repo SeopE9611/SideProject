@@ -217,7 +217,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         }
       />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid gap-3 grid-cols-3 2xl:grid-cols-6">
         <StatCard label="전체 신청" value={stats.total} />
         <StatCard label="접수완료" value={stats.submitted} />
         <StatCard label="검토 중" value={stats.reviewing} />
@@ -231,7 +231,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         description="신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 취소되지 않은 신청 내역이 1건 이상 있으면 영구 삭제는 차단되며, 취소 내역만 남은 클래스는 영구 삭제할 수 있습니다."
         contentClassName="pt-4"
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 grid-cols-2">
           <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
             <div className={adminTypography.metaMuted}>등록 확정</div>
             <div className={cn("mt-2", adminTypography.kpiValueCompact)}>

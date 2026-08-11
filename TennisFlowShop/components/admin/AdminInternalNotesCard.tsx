@@ -165,7 +165,7 @@ export default function AdminInternalNotesCard({
           </div>
         </div>
         <div className={cn("space-y-2", adminSurface.fieldPanelMuted)}>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 grid-cols-2">
             <Input
               value={draftQ}
               onChange={(e) => setDraftQ(e.target.value)}

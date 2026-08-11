@@ -367,7 +367,7 @@ export default function ProductsClient() {
 
       <section aria-label="상품 운영 현황">
         <Card className={cn(adminSurface.card, "overflow-hidden")}>
-          <CardContent className="grid grid-cols-2 gap-px bg-border/60 p-0 xl:grid-cols-4">
+          <CardContent className="grid gap-px bg-border/60 p-0 grid-cols-4">
             {[
               {
                 label: "전체 상품",

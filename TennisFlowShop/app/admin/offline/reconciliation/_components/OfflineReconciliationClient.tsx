@@ -370,7 +370,7 @@ export default function OfflineReconciliationClient() {
           </p>
         ) : null}
 
-        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
+        <div className="flex flex-wrap items-center gap-2 ml-auto w-auto justify-end">
           {hasCustomFilters && (
             <Button type="button" size="sm" variant="ghost" onClick={resetFilters}>
               필터 초기화
@@ -382,7 +382,7 @@ export default function OfflineReconciliationClient() {
           </span>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 grid-cols-5">
         <SummaryCard
           label="전체 미처리"
           value={summary.open}
@@ -424,7 +424,7 @@ export default function OfflineReconciliationClient() {
         description="유형, 상태, 기간으로 보정 대상 목록을 조정합니다."
         icon={Search}
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-3 grid-cols-5">
           <div className="space-y-1.5">
             <Label htmlFor="type">유형</Label>
             <Select
@@ -643,7 +643,7 @@ export default function OfflineReconciliationClient() {
             </table>
           </div>
         )}
-        <div className={`mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between ${adminTypography.metaMuted}`}>
+        <div className={`mt-4 flex flex-row items-center gap-3 justify-between ${adminTypography.metaMuted}`}>
           <span>
             총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
             {Math.max(data?.totalPages ?? 0, 1)}페이지

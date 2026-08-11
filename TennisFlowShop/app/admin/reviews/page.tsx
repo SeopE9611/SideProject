@@ -23,7 +23,7 @@ export default function ReviewsPage() {
       />
 
       <Tabs defaultValue="list" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:w-auto">
+        <TabsList className="grid grid-cols-2 w-auto">
           <TabsTrigger value="list">목록</TabsTrigger>
           <TabsTrigger value="maintenance">유지보수</TabsTrigger>
         </TabsList>

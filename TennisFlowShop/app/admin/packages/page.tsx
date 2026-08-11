@@ -639,7 +639,7 @@ export default function PackageOrdersClient() {
         icon={Package}
         scope="범위: 구매된 패키지 이용권"
         helperText="패키지 상품 구성은 패키지 설정에서 관리합니다."
-        className="flex-col sm:flex-row"
+        className="flex-row"
         actions={
           <Button asChild variant="outline" size="sm">
             <Link href="/admin/packages/settings">패키지 설정</Link>
@@ -648,7 +648,7 @@ export default function PackageOrdersClient() {
       />
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 mb-6 grid-cols-5">
         <Card className={adminSurface.kpiCard}>
           <CardContent className="p-0">
             <div className="flex min-w-0 items-center justify-between gap-2">
@@ -835,7 +835,7 @@ export default function PackageOrdersClient() {
             type="button"
             size="sm"
             variant="ghost"
-            className="w-full sm:ml-auto sm:w-auto"
+            className="ml-auto w-auto"
             onClick={resetFilters}
           >
             필터 초기화
@@ -845,7 +845,7 @@ export default function PackageOrdersClient() {
 
       {/* 필터 및 검색 카드 */}
       <Card className={cn("mb-6", adminSurface.filterCard)}>
-        <CardHeader className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <CardHeader className="flex gap-3 flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
@@ -899,7 +899,7 @@ export default function PackageOrdersClient() {
             {showDetailedFilters && (
               <div id="admin-package-detailed-filters" className="space-y-4">
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full grid-cols-1 gap-2 border-t pt-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            <div className="grid w-full gap-2 border-t pt-3 grid-cols-7">
               <Select
                 value={usageFilter}
                 onValueChange={(v) => {
@@ -1019,8 +1019,8 @@ export default function PackageOrdersClient() {
               </Button>
             </div>
 
-            <div className="flex flex-col items-stretch gap-2 border-t pt-3 sm:flex-row sm:items-end">
-              <div className="w-full sm:w-56">
+            <div className="flex gap-2 border-t pt-3 flex-row items-end">
+              <div className="w-56">
                 <label className={adminTypography.meta} htmlFor="package-sort-by">정렬 기준</label>
                 <Select value={sortBy ?? "default"} onValueChange={(value) => patchState({ sortBy: value === "default" ? null : value as SortKey })}>
                   <SelectTrigger id="package-sort-by"><SelectValue /></SelectTrigger>
@@ -1053,7 +1053,7 @@ export default function PackageOrdersClient() {
       {/* 패키지 목록 테이블 */}
       <Card className={adminSurface.tableCard}>
         <CardHeader>
-          <div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 gap-2 flex-row items-center justify-between">
             <CardTitle>패키지 목록</CardTitle>
             <p className="text-sm text-muted-foreground" aria-live="polite">
               총 {hasResolvedTotal && totalCount !== null ? totalCount : "-"}

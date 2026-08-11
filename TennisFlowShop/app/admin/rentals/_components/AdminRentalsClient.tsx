@@ -717,7 +717,7 @@ export default function AdminRentalsClient() {
             </Button>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid w-full gap-2 grid-cols-3">
             <div className="flex min-w-0 items-center">
               <Select
                 value={status || "all"}

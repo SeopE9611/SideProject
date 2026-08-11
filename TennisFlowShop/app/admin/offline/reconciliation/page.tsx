@@ -12,7 +12,7 @@ export default function OfflineReconciliationPage() {
   return (
     <AdminPageShell variant="wide" className="space-y-6">
       <AdminPageHeader
-        className="flex-col sm:flex-row"
+        className="flex-row"
         title="오프라인 보정 필요 항목"
         description="오프라인 패키지 발급 실패, 패키지 사용 연결 누락 등 운영 확인이 필요한 항목을 관리합니다."
         icon={AlertTriangle}
