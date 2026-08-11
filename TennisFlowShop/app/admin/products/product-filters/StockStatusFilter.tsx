@@ -7,6 +7,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { adminTypography } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 import { Filter } from "lucide-react";
 
 interface Props {
@@ -16,7 +18,7 @@ interface Props {
 export default function StockStatusFilter({ value, onChange }: Props) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-full h-9 text-xs">
+      <SelectTrigger className={cn("h-9 w-full", adminTypography.body)}>
         <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
         <SelectValue placeholder="상품 상태 전체" />
       </SelectTrigger>

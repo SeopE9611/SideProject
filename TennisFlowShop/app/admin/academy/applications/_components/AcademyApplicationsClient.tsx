@@ -9,7 +9,7 @@ import { ArrowLeft, BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,8 +119,10 @@ function SelectedClassCell({
   if (!classSnapshot?.name) {
     return (
       <div className="min-w-0 max-w-[220px]">
-        <div className="font-medium text-muted-foreground">클래스 미선택</div>
-        <div className="truncate text-xs text-muted-foreground">일반 레슨 신청 · 연결 필요</div>
+        <div className={adminDataTable.primaryText}>클래스 미선택</div>
+        <div className={cn("truncate", adminDataTable.secondaryText)}>
+          일반 레슨 신청 · 연결 필요
+        </div>
       </div>
     );
   }
@@ -134,12 +136,12 @@ function SelectedClassCell({
   return (
     <div className="min-w-0 max-w-[240px]">
       <div
-        className="line-clamp-2 break-keep font-medium text-foreground"
+        className={cn("line-clamp-2 break-keep", adminDataTable.primaryText)}
         title={classSnapshot.name}
       >
         {classSnapshot.name}
       </div>
-      <div className="truncate text-xs text-muted-foreground">
+      <div className={cn("truncate", adminDataTable.secondaryText)}>
         {details.length ? details.join(" · ") : "클래스 상세 정보 미입력"}
       </div>
     </div>
@@ -351,18 +353,21 @@ export default function AcademyApplicationsClient() {
                       </TableCell>
                       <TableCell className={adminDataTable.cellTopLeft}>
                         <div
-                          className="line-clamp-2 max-w-[180px] break-keep font-medium text-foreground"
+                          className={cn(
+                            "line-clamp-2 max-w-[180px] break-keep",
+                            adminDataTable.primaryText,
+                          )}
                           title={item.applicantName || "-"}
                         >
                           {item.applicantName || "-"}
                         </div>
                         <div
-                          className="max-w-[180px] truncate text-xs text-muted-foreground"
+                          className={cn("max-w-[180px] truncate", adminDataTable.secondaryText)}
                           title={item.email || "이메일 미입력"}
                         >
                           {item.email || "이메일 미입력"}
                         </div>
-                        <div className="whitespace-nowrap text-xs text-muted-foreground">
+                        <div className={cn("whitespace-nowrap", adminDataTable.secondaryText)}>
                           {item.phone || "연락처 미입력"}
                         </div>
                       </TableCell>
@@ -371,7 +376,7 @@ export default function AcademyApplicationsClient() {
                       </TableCell>
                       <TableCell className={adminDataTable.cellTopLeft}>
                         <div>{getAcademyLessonTypeLabel(item.desiredLessonType)}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className={adminDataTable.secondaryText}>
                           {getAcademyCurrentLevelLabel(item.currentLevel)}
                         </div>
                       </TableCell>
@@ -383,7 +388,7 @@ export default function AcademyApplicationsClient() {
                           {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
                         </div>
                         <div
-                          className="max-w-[160px] truncate text-xs text-muted-foreground"
+                          className={cn("max-w-[160px] truncate", adminDataTable.secondaryText)}
                           title={item.preferredTimeText || "희망 시간 미입력"}
                         >
                           {item.preferredTimeText || "희망 시간 미입력"}
@@ -502,8 +507,8 @@ export default function AcademyApplicationsClient() {
 function SummaryCard({ label, value, active }: { label: string; value: number; active: boolean }) {
   return (
     <div className={cn(adminSurface.kpiCard, active ? "border-primary/40 bg-primary/5" : "")}>
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
+      <div className={adminTypography.metaMuted}>{label}</div>
+      <div className={cn("mt-2", adminTypography.kpiValueCompact)}>{value}</div>
     </div>
   );
 }

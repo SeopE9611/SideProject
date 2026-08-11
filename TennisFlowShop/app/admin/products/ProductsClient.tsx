@@ -57,6 +57,7 @@ import {
 } from "@/components/ui/table";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import {
   STRING_BRANDS,
   STRING_MATERIALS,
@@ -84,28 +85,22 @@ const STATUS_KEYS = ["active", "low_stock", "out_of_stock"] as const;
 type StatusKey = (typeof STATUS_KEYS)[number];
 
 // 상태 매핑(아이콘+색)
-const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.ElementType }> = {
+const STATUS_UI: Record<StatusKey, { label: string; tone: BadgeSemanticTone; Icon: React.ElementType }> = {
   active: {
     label: "판매중",
-    color:
-      "bg-success/10 text-success ring-1 ring-success/30 " +
-      "dark:bg-success/15 dark:text-success dark:ring-success/40",
+    tone: "success",
     Icon: CheckCircle2,
   },
 
   low_stock: {
     label: "재고 부족",
-    color:
-      "bg-warning/10 text-warning ring-1 ring-warning/30 " +
-      "dark:bg-warning/15 dark:text-warning dark:ring-warning/40",
+    tone: "warning",
     Icon: TriangleAlert,
   },
 
   out_of_stock: {
     label: "품절",
-    color:
-      "bg-destructive/10 text-destructive ring-1 ring-destructive/30 " +
-      "dark:bg-destructive/15 dark:text-destructive dark:ring-destructive/40",
+    tone: "danger",
     Icon: XCircle,
   },
 };
@@ -421,7 +416,7 @@ export default function ProductsClient() {
       {/* 빠른 보기 */}
       <Card className={adminSurface.filterCard}>
         <CardContent className="flex flex-wrap items-center gap-2 p-4">
-          <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+          <span className={cn("mr-1 font-semibold", adminTypography.metaMuted)}>빠른 보기</span>
 
           <Button
             type="button"
@@ -577,7 +572,10 @@ export default function ProductsClient() {
                     placeholder="스트링명, 브랜드, SKU로 검색"
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-8 h-9 text-xs border-border focus:border-border dark:border-border dark:focus:border-border bg-card"
+                    className={cn(
+                      "h-9 border-border bg-card pl-8 focus:border-border dark:border-border dark:focus:border-border",
+                      adminTypography.body,
+                    )}
                   />
                   {searchTerm && (
                     <Button
@@ -606,7 +604,7 @@ export default function ProductsClient() {
                 />
                 <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
                 <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
-                  <SelectTrigger className="h-9 w-full min-w-0 text-xs">
+                  <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}>
                     <SelectValue placeholder="노출 유형 전체" />
                   </SelectTrigger>
                   <SelectContent>
@@ -620,14 +618,20 @@ export default function ProductsClient() {
                   variant="outline"
                   size="sm"
                   onClick={resetFilters}
-                  className="h-9 w-full border-border text-xs hover:bg-muted dark:border-border dark:hover:bg-card"
+                  className={cn(
+                    "h-9 w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card",
+                    adminTypography.body,
+                  )}
                 >
                   필터 초기화
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 w-full bg-transparent border-border text-xs hover:bg-muted dark:border-border dark:hover:bg-card"
+                  className={cn(
+                    "h-9 w-full border-border bg-transparent hover:bg-muted dark:border-border dark:hover:bg-card",
+                    adminTypography.body,
+                  )}
                   onClick={() => setSort(null)}
                 >
                   정렬 초기화
@@ -638,7 +642,7 @@ export default function ProductsClient() {
 
           {/* 테이블 */}
           <div className="flex-1">
-            <div className="overflow-auto rounded-lg border border-border">
+            <div className={cn(adminSurface.tableCard, "overflow-auto")}>
               <Table className="min-w-[920px] table-fixed [&_tr]:border-0">
                 <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
                   <TableRow className={adminDataTable.row}>
@@ -792,10 +796,9 @@ export default function ProductsClient() {
 
                           <TableCell className={adminDataTable.cellCenter}>
                             <Badge
-                              variant="secondary"
+                              variant={badgeToneVariant(S.tone)}
                               className={cn(
-                                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 font-medium",
-                                S.color,
+                                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap",
                               )}
                             >
                               <S.Icon className="h-3.5 w-3.5" />
