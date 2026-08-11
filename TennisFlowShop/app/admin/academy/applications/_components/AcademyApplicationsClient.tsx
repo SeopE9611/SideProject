@@ -344,7 +344,7 @@ export default function AcademyApplicationsClient() {
                   const createdAt = formatAdminDateTimeParts(item.createdAt);
 
                   return (
-                    <TableRow key={item._id} className="hover:bg-muted/50">
+                    <TableRow key={item._id} className={adminDataTable.row}>
                       <TableCell className={adminDataTable.dateCell}>
                         <div className="font-medium text-foreground">{createdAt.date}</div>
                         <div className="text-muted-foreground">{createdAt.time}</div>

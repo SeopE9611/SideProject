@@ -741,7 +741,7 @@ export default function UsersClient() {
   };
 
   return (
-    <AdminPageShell>
+    <AdminPageShell variant="wide">
       <AdminPageHeader
         title="회원 관리"
         description="회원 정보, 권한, 상태, 활동 이력을 한 곳에서 확인하고 관리합니다."
@@ -1072,9 +1072,9 @@ export default function UsersClient() {
           </div>
 
           <div className="relative overflow-x-auto pb-3 px-4">
-            <div className="relative rounded-2xl border border-border shadow-sm min-w-0">
+            <div className={cn(adminSurface.tableCard, "relative min-w-0")}>
               <Table
-                className="min-w-[1100px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"
+                className="min-w-[1100px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] [&_th]:text-center [&_td]:text-center"
                 aria-busy={shouldShowLoadingRows}
               >
                 {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}

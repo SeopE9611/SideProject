@@ -924,7 +924,7 @@ export default function AdminRentalsClient() {
           </details>
         </CardHeader>
         <CardContent className="relative overflow-x-auto pr-2">
-          <Table className="min-w-[1040px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0] text-xs">
+          <Table className="min-w-[1040px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[220px] text-left")}>대여/고객</TableHead>

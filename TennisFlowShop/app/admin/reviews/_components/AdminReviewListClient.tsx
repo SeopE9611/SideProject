@@ -706,9 +706,7 @@ export default function AdminReviewListClient() {
                     GRID,
                     "items-center gap-y-2 gap-x-3 px-3",
                     compact ? "py-2" : "py-3",
-                    "transition-colors",
-                    "even:bg-background hover:bg-primary/10",
-                    "dark:even:bg-card dark:hover:bg-primary/20",
+                    adminDataTable.row,
                     isSel ? "border-l-4 border-primary bg-primary/10 dark:bg-primary/20" : "",
                   ].join(" ")}
                 >
@@ -727,14 +725,14 @@ export default function AdminReviewListClient() {
                   {/* 작성자 */}
                   <div className={`min-w-0 ${dim}`}>
                     <div
-                      className="truncate font-medium text-foreground"
+                      className={cn("truncate", adminDataTable.primaryText)}
                       title={r.userName || r.userEmail || "-"}
                     >
                       {r.userName || r.userEmail || "-"}
                     </div>
                     {r.userEmail && r.userName && (
                       <div
-                        className="max-w-[180px] truncate text-xs text-muted-foreground"
+                        className={cn("max-w-[180px] truncate", adminDataTable.secondaryText)}
                         title={r.userEmail}
                       >
                         {r.userEmail}
@@ -756,7 +754,7 @@ export default function AdminReviewListClient() {
                         <TooltipTrigger asChild>
                           <p
                             className={[
-                              "text-sm leading-5",
+                              adminDataTable.primaryText,
                               expanded[r._id] ? "whitespace-pre-wrap" : "line-clamp-2",
                               "break-keep",
                             ].join(" ")}
@@ -801,8 +799,8 @@ export default function AdminReviewListClient() {
 
                   {/* 작성일 */}
                   <div className={`min-w-0 ${dim} text-right tabular-nums`}>
-                    <div className="text-foreground text-sm">{date}</div>
-                    <div className="text-xs text-muted-foreground">{time}</div>
+                    <div className={adminDataTable.primaryText}>{date}</div>
+                    <div className={adminDataTable.secondaryText}>{time}</div>
                   </div>
 
                   {/* 후기 유형 */}
@@ -820,7 +818,7 @@ export default function AdminReviewListClient() {
                     className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="inline text-xs text-muted-foreground">
+                    <span className={adminDataTable.secondaryText}>
                       {r.moderationStatus === "visible" ? "관리자 공개" : "관리자 숨김"}
                     </span>
                     {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
