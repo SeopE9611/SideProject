@@ -23,7 +23,7 @@ type Props = {
 };
 
 const VARIANT_CLASS: Record<AsyncStateVariant, string> = {
-  card: "rounded-2xl border px-4 py-5 shadow-sm sm:px-5 sm:py-6",
+  card: "rounded-2xl border shadow-sm",
   inline: "rounded-md border px-3 py-2",
   "page-center":
     "mx-auto flex min-h-[220px] w-full max-w-xl items-center justify-center rounded-2xl border px-5 py-10 shadow-sm",
@@ -70,6 +70,8 @@ export default function AsyncState({
       className={cn(
         "text-center",
         VARIANT_CLASS[variant],
+        variant === "card" &&
+          (tone === "admin" ? "px-5 py-6" : "px-4 py-5 sm:px-5 sm:py-6"),
         isError
           ? "border-destructive/30 bg-destructive/10 text-destructive dark:border-destructive/40 dark:bg-destructive/15"
           : "border-dashed border-border bg-muted/20 text-foreground",
@@ -89,7 +91,11 @@ export default function AsyncState({
         <p
           className={cn(
             "font-ui-medium",
-            variant === "inline" ? "text-ui-body-sm" : "text-ui-body-sm sm:text-ui-body",
+            variant === "inline"
+              ? "text-ui-body-sm"
+              : tone === "admin"
+                ? "text-ui-body"
+                : "text-ui-body-sm sm:text-ui-body",
           )}
         >
           {resolvedTitle}
@@ -97,7 +103,11 @@ export default function AsyncState({
         <p
           className={cn(
             "text-muted-foreground",
-            variant === "inline" ? "text-ui-label" : "text-ui-label sm:text-ui-body-sm",
+            variant === "inline"
+              ? "text-ui-label"
+              : tone === "admin"
+                ? "text-ui-body-sm"
+                : "text-ui-label sm:text-ui-body-sm",
           )}
         >
           {resolvedDescription}
