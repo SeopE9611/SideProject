@@ -345,7 +345,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="space-y-5 py-6 px-8">
+    <div className="mx-auto w-full max-w-[1280px] space-y-5 px-5 py-5">
       <AdminPageHeader
         title="레슨 신청 상세"
         description="신청자 정보와 희망 레슨 정보를 확인하고 상담 상태를 관리합니다."
@@ -364,7 +364,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         }
       />
 
-      <div className="grid gap-5 grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-5">
           <AdminPageSection title="신청자 정보" contentClassName="pt-4">
             <InfoRow label="이름" value={item.applicantName} />
@@ -526,7 +526,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             {item.status === "cancelled" ? (
               <p className={adminTypography.caption}>취소된 신청은 수정할 수 없습니다.</p>
             ) : null}
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Input
                 value={editForm.applicantName}
                 onChange={(event) =>
@@ -555,7 +555,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               disabled={!canAdminEditApplication || savingEdit}
               maxLength={100}
             />
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Select
                 value={editForm.desiredLessonType}
                 onValueChange={(value) =>
