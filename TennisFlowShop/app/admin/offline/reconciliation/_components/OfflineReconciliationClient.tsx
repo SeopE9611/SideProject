@@ -4,8 +4,10 @@ import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBad
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
+import AsyncState from "@/components/system/AsyncState";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
@@ -506,19 +508,32 @@ export default function OfflineReconciliationClient() {
         icon={AlertTriangle}
       >
         {isLoading && (
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
-            보정 항목을 불러오는 중...
+          <div className={`${adminSurface.tableCard} overflow-x-auto`}>
+            <table className="w-full min-w-[1620px] table-fixed">
+              <tbody className="divide-y">
+                {Array.from({ length: 4 }, (_, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {Array.from({ length: 9 }, (_, cellIndex) => (
+                      <td key={cellIndex} className={adminDataTable.cell}>
+                        <Skeleton className="h-5 w-full" />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
         {error && !isLoading && (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">
-            보정 항목을 불러오지 못했습니다.
-          </div>
+          <AsyncState kind="error" tone="admin" resourceName="보정 필요 항목" onAction={() => void mutate()} />
         )}
         {!isLoading && !error && (data?.items.length ?? 0) === 0 && (
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
-            조회 조건에 해당하는 보정 필요 항목이 없습니다.
-          </div>
+          <AsyncState
+            kind="empty"
+            tone="admin"
+            title="조회 조건에 해당하는 보정 필요 항목이 없습니다"
+            description="검색 조건을 변경하거나 초기화해 다시 확인해 주세요."
+          />
         )}
         {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
           <div className={`${adminSurface.tableCard} overflow-x-auto`}>
