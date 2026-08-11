@@ -12,7 +12,7 @@ export default function AppsInTossReconciliationPage() {
   return (
     <AdminPageShell variant="wide" className="space-y-6">
       <AdminPageHeader
-        className="flex-col sm:flex-row"
+        className="flex-row"
         title="Apps in Toss 결제 점검"
         description="토스 앱 결제 중 자동 처리가 완료되지 않았거나 수동 상태 대사가 필요한 결제를 확인합니다."
         icon={ShieldAlert}

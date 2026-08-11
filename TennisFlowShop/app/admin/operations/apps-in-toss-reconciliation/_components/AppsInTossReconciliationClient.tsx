@@ -107,11 +107,11 @@ export default function AppsInTossReconciliationClient() {
 
   return <div className="space-y-6">
     <div className={adminSurface.fieldPanelMuted}>현재 보기: {ISSUE_LABELS[submitted.issueType as keyof typeof ISSUE_LABELS]} · {submitted.environment === "all" ? "전체 환경" : submitted.environment} · {data?.total ?? 0}건</div>
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid gap-3 grid-cols-4">
       {cards.map(([title, value, tone]) => <AdminSummaryCard key={title} title={title} value={`${value ?? 0}건`} tone={tone} />)}
     </div>
     <AdminPageSection title="조회 조건" description="기간은 결제 intent의 마지막 갱신 시각을 기준으로 합니다. 목록 새로고침은 MongoDB 내부 점검 큐만 다시 조회합니다." icon={Search} actions={<Button type="button" variant="outline" size="sm" onClick={() => mutate()} disabled={isValidating}><RefreshCcw className="h-4 w-4" />목록 새로고침</Button>}>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-4">
         <div><Label htmlFor="issueType">유형</Label><Select id="issueType" value={filters.issueType} onChange={(e) => setFilters({ ...filters, issueType: e.target.value })}>{Object.entries(ISSUE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></div>
         <div><Label htmlFor="environment">환경</Label><Select id="environment" value={filters.environment} onChange={(e) => setFilters({ ...filters, environment: e.target.value })}><option value="all">전체</option><option value="live">live</option><option value="test">test</option></Select></div>
         <div><Label htmlFor="from">시작일</Label><Input id="from" type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} /></div>

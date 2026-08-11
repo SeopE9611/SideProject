@@ -137,7 +137,7 @@ export default function AdminAuditClient() {
         className={adminSurface.filterCard}
         contentClassName="space-y-3"
       >
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_280px_auto_auto]">
+        <div className="grid gap-3 grid-cols-[minmax(0,1fr)_280px_auto_auto]">
           <div className="space-y-2">
             <Label htmlFor="audit-filter-query">메시지 또는 실행자</Label>
             <Input
@@ -216,7 +216,7 @@ export default function AdminAuditClient() {
                 key={item.id}
                 className={`${adminSurface.tableCard} p-3 transition-colors hover:bg-muted/25`}
               >
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-[minmax(180px,1.1fr)_minmax(180px,1fr)_minmax(140px,0.8fr)_auto]">
+                <div className="grid gap-3 grid-cols-[minmax(180px,1.1fr)_minmax(180px,1fr)_minmax(140px,0.8fr)_auto]">
                   <div className="min-w-0">
                     <div className={adminTypography.metaMuted}>작업</div>
                     <Badge variant="secondary">{actionName}</Badge>

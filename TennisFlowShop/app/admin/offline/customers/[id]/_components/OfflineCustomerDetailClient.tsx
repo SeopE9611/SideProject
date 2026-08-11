@@ -1316,9 +1316,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <div className="grid gap-6 grid-cols-12">
         {/* Left Column - Customer Info & Link */}
-        <div className="space-y-6 xl:col-span-5">
+        <div className="space-y-6 col-span-5">
           {/* Customer Basic Info */}
           <SectionCard id="offline-customer-basic">
             <SectionHeader
@@ -1327,7 +1327,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="휴대폰 번호와 연락처 정보"
             />
             <div className="space-y-4 p-6">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-2">
                 <InfoItem
                   icon={User}
                   label="고객명"
@@ -1637,7 +1637,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         </div>
 
         {/* Right Column - Points, Packages, Stats */}
-        <div className="space-y-6 xl:col-span-7">
+        <div className="space-y-6 col-span-7">
           {/* Statistics */}
           <SectionCard id="offline-customer-stats">
             <SectionHeader
@@ -1646,7 +1646,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="오프라인 고객 기준 누적 데이터"
             />
             <div className="p-6">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 grid-cols-3">
                 <StatCard
                   label="방문 횟수"
                   value={`${item.stats?.visitCount ?? 0}회`}
@@ -1746,7 +1746,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               ) : passes.length === 0 ? (
                 <p className={adminTypography.metaMuted}>보유 패키지/서비스권이 없습니다.</p>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 grid-cols-3">
                   {passes.map((pass) => {
                     const usable = isUsablePass(pass);
                     return (
@@ -1820,7 +1820,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     </FormField>
                   )}
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div className="grid gap-4 grid-cols-3">
                     <FormField label="패키지명" htmlFor="offline-package-name">
                       <Input
                         id="offline-package-name"

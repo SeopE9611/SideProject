@@ -246,7 +246,7 @@ export default function AcademyApplicationsClient() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 grid-cols-6">
         <SummaryCard label="전체" value={counts.all} active={status === "all"} />
         {ACADEMY_APPLICATION_STATUSES.map((item) => (
           <SummaryCard
@@ -263,7 +263,7 @@ export default function AcademyApplicationsClient() {
           <CardTitle className="text-base">신청 목록</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-3 flex-row items-center justify-between">
             <Select
               value={status}
               onValueChange={(value) => {
@@ -271,7 +271,7 @@ export default function AcademyApplicationsClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="상태 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -285,7 +285,7 @@ export default function AcademyApplicationsClient() {
             </Select>
 
             <form
-              className="flex w-full max-w-md flex-col gap-2 sm:flex-row"
+              className="flex w-full max-w-md gap-2 flex-row"
               onSubmit={submitSearch}
             >
               <Input
@@ -293,7 +293,7 @@ export default function AcademyApplicationsClient() {
                 onChange={(event) => setKeywordInput(event.target.value)}
                 placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
               />
-              <Button type="submit" variant="outline" className="w-full sm:w-auto">
+              <Button type="submit" variant="outline" className="w-auto">
                 <Search className="mr-2 h-4 w-4" />
                 검색
               </Button>
@@ -438,7 +438,7 @@ export default function AcademyApplicationsClient() {
             </Table>
           </div>
 
-          <div className="flex flex-col items-stretch gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-3 text-sm text-muted-foreground flex-row items-center justify-between">
             <span>
               {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1} 페이지 · 총{" "}
               {data?.pagination.total ?? 0}건
