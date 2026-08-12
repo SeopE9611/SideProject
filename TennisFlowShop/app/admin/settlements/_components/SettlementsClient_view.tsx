@@ -18,7 +18,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -1120,14 +1119,13 @@ export default function SettlementsClient() {
                                 </button>
                               </DropdownMenuTrigger>
 
-                              <DropdownMenuPortal>
-                                <DropdownMenuContent
-                                  align="end"
-                                  sideOffset={8}
-                                  collisionPadding={8}
-                                  className="z-[9999] w-44"
-                                  onCloseAutoFocus={(e) => e.preventDefault()}
-                                >
+                              <DropdownMenuContent
+                                align="end"
+                                sideOffset={8}
+                                collisionPadding={8}
+                                className="z-50 w-44"
+                                onCloseAutoFocus={(e) => e.preventDefault()}
+                              >
                                   {" "}
                                   <DropdownMenuLabel>작업</DropdownMenuLabel>
                                   <DropdownMenuItem
@@ -1154,8 +1152,7 @@ export default function SettlementsClient() {
                                     <Trash2 className="w-4 h-4 mr-2" />
                                     삭제
                                   </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenuPortal>
+                              </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
                         </div>

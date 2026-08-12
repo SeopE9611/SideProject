@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronRight, Circle } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -63,17 +63,19 @@ const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, sideOffset = 8, align = "center", ...props }, ref) => (
-  <DropdownMenuPrimitive.Content
-    ref={ref}
-    align={align}
-    sideOffset={sideOffset}
-    className={cn(
-      "z-50 min-w-[10rem] rounded-md border border-border bg-popover p-1 text-ui-body-sm text-popover-foreground shadow-md",
-      "animate-in fade-in slide-in-from-top-1",
-      className,
-    )}
-    {...props}
-  />
+  <DropdownMenuPortal>
+    <DropdownMenuPrimitive.Content
+      ref={ref}
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 min-w-[10rem] rounded-md border border-border bg-popover p-1 text-ui-body-sm text-popover-foreground shadow-md",
+        "animate-in fade-in slide-in-from-top-1",
+        className,
+      )}
+      {...props}
+    />
+  </DropdownMenuPortal>
 ));
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
@@ -182,18 +184,18 @@ DropdownMenuShortcut.displayName = "DropdownMenuShortcut";
 
 export {
   DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuCheckboxItem,
-  DropdownMenuRadioItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
+  DropdownMenuTrigger,
 };
