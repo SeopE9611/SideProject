@@ -31,5 +31,5 @@ export default function AdminNavigationShell() {
   );
   const badgeCounts = normalizeCounts(data);
 
-  return <AdminSidebar defaultCollapsed={false} badgeCounts={badgeCounts} />;
+  return <AdminSidebar defaultCollapsed badgeCounts={badgeCounts} />;
 }

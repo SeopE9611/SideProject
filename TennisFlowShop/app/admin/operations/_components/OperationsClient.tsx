@@ -1266,19 +1266,19 @@ export default function OperationsClient() {
           </div>
         )}
 
-        <Section variant="plain" className="mt-4 space-y-3">
+        <Section variant="plain" className="mt-3 space-y-2">
           <SectionHeader
             title="지금 확인할 업무"
-            description="긴급, 확인 필요, 미처리 순서로 우선순위를 바로 확인하세요."
             className="border-0 bg-transparent px-0 py-0"
           />
-          <div className="grid gap-3 grid-cols-4">
+          <div className="grid grid-cols-4 gap-2">
             <AdminSummaryCard
               title={PAGE_COPY.dailyTodoLabels.urgent}
               value={todayTodoCount ? `${todayTodoCount.urgent}건` : "-"}
               description="오류 또는 긴급 확인이 필요한 항목"
               icon={Siren}
               tone="danger"
+              compact
               active={activeKpi === "urgent"}
               onAction={() => {
                 setWarnFilter("warn");
@@ -1293,6 +1293,7 @@ export default function OperationsClient() {
               description="운영자 확인이 필요한 항목"
               icon={BellRing}
               tone="warning"
+              compact
               active={activeKpi === "caution"}
               onAction={() => {
                 setOnlyWarn(false);
@@ -1307,6 +1308,7 @@ export default function OperationsClient() {
               description="아직 처리가 시작되지 않은 항목"
               icon={ClipboardCheck}
               tone="info"
+              compact
               active={activeKpi === "pending"}
               onAction={() => {
                 setOnlyWarn(false);
@@ -1321,16 +1323,24 @@ export default function OperationsClient() {
               description="주문·대여·단독 교체서비스 기준"
               icon={Inbox}
               actionLabel="오늘 업무 보기"
+              compact
               active={activeQuickView === "today"}
               onAction={() => applyQuickView("today")}
             />
           </div>
         </Section>
 
-        <div className={cn(adminSurface.card, "mt-4 p-2")}>
-          <p className="px-2 pb-2 text-ui-label font-semibold uppercase tracking-widest text-muted-foreground">
-            보조 운영 정보
-          </p>
+        <details className={cn(adminSurface.card, "mt-3 overflow-hidden")}>
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+            <span className="inline-flex items-center gap-2">
+              <ClipboardCheck className="h-4 w-4 text-primary" />
+              보조 운영 정보
+            </span>
+            <span className="text-ui-label font-normal text-muted-foreground">
+              대표 업무·처리 순서·마감 참고치
+            </span>
+          </summary>
+          <div className="border-t border-border/60 p-2">
           <details className="rounded-xl border border-border/60 bg-muted/20">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
               <span className="inline-flex items-center gap-2">
@@ -1554,11 +1564,12 @@ export default function OperationsClient() {
               </Card>
             </div>
           </details>
-        </div>
+          </div>
+        </details>
 
-        <div className="mt-4 rounded-xl border border-border bg-card p-2.5">
+        <div className="mt-3 rounded-xl border border-border bg-card p-2">
           <AdminFilterBar
-            className="mb-3 rounded-xl bg-background/70 shadow-none p-4"
+            className="mb-2 rounded-lg bg-background/70 p-3 shadow-none"
             quickFilters={QUICK_VIEWS.map((view) => (
               <Button
                 key={view.key}
@@ -1577,10 +1588,6 @@ export default function OperationsClient() {
                 <p className="text-sm font-semibold text-foreground">빠른 보기</p>
                 <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
               </div>
-              <p className="mt-1 text-xs leading-relaxed text-foreground/75">
-                {activeQuickViewMeta.description} 자주 처리하는 업무 유형을 한 번에 전환할 수
-                있습니다.
-              </p>
             </div>
           </AdminFilterBar>
           <details className="mt-2 rounded-lg border border-border/60 bg-muted/10 px-3 py-2">
@@ -1653,41 +1660,39 @@ export default function OperationsClient() {
       {/* 필터 및 검색 카드 */}
       <div
         className={cn(
-          "top-3 z-30 mb-4 transition-all duration-200",
+          "top-3 z-30 mb-3 transition-all duration-200",
           isFilterScrolled && "shadow-sm",
         )}
       >
         <Card
           className={cn(
-            "rounded-xl border-border py-4 px-5 shadow-md transition-all duration-200",
+            "rounded-xl border-border px-3 py-2 shadow-sm transition-all duration-200",
             onlyWarn
               ? "bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30"
               : "bg-card",
             isFilterScrolled && adminSurface.stickyToolbar,
           )}
         >
-          <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 p-0">
             <div>
-              <CardTitle className="text-ui-body-sm">고급 필터</CardTitle>
-              <CardDescription className="mt-0.5 text-ui-label">
-                고급 필터는 특정 고객, 문서 ID, 운영 흐름, 문제 유형을 직접 좁힐 때만 사용합니다.
-                일반 처리는 위의 대표 업무 큐를 먼저 사용하세요.
-              </CardDescription>
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle className="text-ui-body-sm">고급 필터</CardTitle>
+                {activeFilterCount > 0 ? (
+                  <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>
+                    적용 {activeFilterCount}개
+                  </Badge>
+                ) : null}
+              </div>
+              {showAdvancedFilters ? (
+                <CardDescription className="mt-0.5 text-ui-label">
+                  고객, 문서 ID, 운영 흐름과 문제 유형을 직접 좁힙니다.
+                </CardDescription>
+              ) : null}
               {error && !shouldShowGlobalError && (
                 <p className={cn("mt-1", adminTypography.warning)}>
                   검색 결과를 새로 불러오지 못해 이전 결과를 유지 중입니다. 잠시 후 다시 시도해
                   주세요.
                 </p>
-              )}
-              {activeFilterCount > 0 && (
-                <>
-                  <Badge className={cn(badgeBase, badgeSizeSm, "mt-2 " + badgeToneClass("brand"))}>
-                    적용된 필터 {activeFilterCount}개
-                  </Badge>
-                  <p className={cn("mt-1", adminTypography.metaMuted)}>
-                    필터가 켜져 있어 일부 업무만 보입니다.
-                  </p>
-                </>
               )}
             </div>
 
@@ -1713,7 +1718,7 @@ export default function OperationsClient() {
             </div>
           </CardHeader>
           {showAdvancedFilters && (
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 px-0 pb-1 pt-3">
               {/* 검색 + 주요 버튼 */}
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative w-full max-w-md">
@@ -1912,8 +1917,8 @@ export default function OperationsClient() {
       </div>
 
       {/* 업무 목록 카드 */}
-      <Card className={cn(adminSurface.tableCard, "py-4 px-5")}>
-        <CardHeader id="operations-list" className="scroll-mt-6 pb-2">
+      <Card className={cn(adminSurface.tableCard, "px-4 py-3")}>
+        <CardHeader id="operations-list" className="scroll-mt-6 p-0 pb-2">
           <div className="flex gap-2 flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-base font-medium">업무 목록</CardTitle>
@@ -1926,7 +1931,7 @@ export default function OperationsClient() {
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">
                 {typeof totalGroups === "number"
-                  ? `총 ${totalGroups.toLocaleString("ko-KR")}건 표시됨`
+                  ? `총 ${totalGroups.toLocaleString("ko-KR")}건 · ${totalPages ? `${page}/${totalPages}페이지` : "페이지 계산 중"}`
                   : "목록을 불러오는 중…"}
               </p>
                 <span className="inline text-xs text-muted-foreground">
@@ -1954,34 +1959,17 @@ export default function OperationsClient() {
                   핵심만
                 </Button>
               </div>
-            </div>
-          </div>
-          <div className="mt-2 flex gap-2 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 flex-row items-center justify-between">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">현재 보기</span>
-              <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
-              <span>{activeQuickViewMeta.description}</span>
-              <span className="font-semibold text-foreground">
-                {typeof totalGroups === "number"
-                  ? `총 ${totalGroups.toLocaleString("ko-KR")}건`
-                  : "건수 확인 중"}
-              </span>
-            </div>
-            {(activeQuickView !== "all" || activeFilterCount > 0) && (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-7 px-2 text-xs self-auto"
-                onClick={reset}
-              >
-                필터 초기화
-              </Button>
-            )}
-          </div>
-          <div className="flex items-center gap-2 pt-2">
-            <div className="text-xs text-muted-foreground">
-              {totalPages ? `${page} / ${totalPages} 페이지` : "페이지 계산 중…"}
+              {(activeQuickView !== "all" || activeFilterCount > 0) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs"
+                  onClick={reset}
+                >
+                  필터 초기화
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -2080,6 +2068,20 @@ export default function OperationsClient() {
                         hasShipping: hasShippingMissing(g),
                         hasRental: hasRentalDue(g),
                       });
+                      const displayedPriorityMeta =
+                        slaLevel === "urgent" && priorityMeta.label !== "즉시 처리"
+                          ? {
+                              label: "긴급",
+                              description: "SLA 긴급 기준 초과",
+                              tone: "warning" as const,
+                            }
+                          : priorityMeta.label === "정상" && slaLevel === "watch"
+                            ? {
+                                label: "확인 필요",
+                                description: "SLA 확인 기준 초과",
+                                tone: "info" as const,
+                              }
+                            : priorityMeta;
                       const headline = statusHeadlineOf(g.anchor);
                       const primaryActionTarget = resolvePrimaryActionTarget({
                         anchor: g.anchor,
@@ -2124,15 +2126,15 @@ export default function OperationsClient() {
                           >
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className={adminDataTable.cellStack}>
-                                {slaLevel !== "normal" ? (
+                                {displayedPriorityMeta.label !== "정상" ? (
                                   <Badge
                                     className={cn(
                                       badgeBase,
                                       badgeSizeSm,
-                                      badgeToneClass(priorityMeta.tone),
+                                      badgeToneClass(displayedPriorityMeta.tone),
                                     )}
                                   >
-                                    {priorityMeta.label}
+                                    {displayedPriorityMeta.label}
                                   </Badge>
                                 ) : null}
                                 {elapsedText ? (

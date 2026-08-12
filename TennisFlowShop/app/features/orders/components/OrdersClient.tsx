@@ -667,7 +667,7 @@ export default function OrdersClient() {
   }
 
   return (
-    <AdminPageShell variant="wide" className="py-5">
+    <AdminPageShell variant="wide" className="py-4">
       {/* 제목 및 설명 */}
       <div>
         <AdminPageHeader
@@ -678,7 +678,7 @@ export default function OrdersClient() {
         />
       </div>
 
-      <div className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 shadow-sm">
+      <div className="mb-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 shadow-sm">
         <div className="flex flex-row items-center justify-between gap-2">
           <details className="group min-w-0">
             <summary className="cursor-pointer list-none text-ui-body-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
@@ -699,18 +699,29 @@ export default function OrdersClient() {
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <Card className={cn("mb-4 px-5 py-4", adminSurface.filterCard)}>
-        <CardHeader className="pb-2.5">
-          <CardTitle>주문 찾기</CardTitle>
-          <CardDescription className="text-ui-label">
-            빠른 보기로 우선 처리 대상을 찾거나 상세 조건으로 좁혀보세요.
-          </CardDescription>
+      <Card className={cn(adminSurface.filterCard, "mb-3 p-0")}>
+        <CardHeader className="flex flex-row items-center justify-between gap-3 px-4 pb-2 pt-3">
+          <div>
+            <CardTitle className="text-ui-body-sm">주문 찾기</CardTitle>
+            <CardDescription className="text-ui-label">
+              빠른 보기 또는 검색으로 처리 대상을 찾습니다.
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 bg-transparent"
+            aria-expanded={showAdvanced}
+            onClick={() => setShowAdvanced((current) => !current)}
+          >
+            {showAdvanced ? "상세 필터 닫기" : "상세 필터"}
+          </Button>
         </CardHeader>
-        <CardContent className="pt-1">
-          <div className="flex flex-col gap-4">
-            <div>
-              <p className="mb-2 text-ui-label font-medium text-foreground/80">빠른 보기</p>
-              <div className="flex flex-wrap gap-2">
+        <CardContent className="px-4 pb-3 pt-0">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-row items-center gap-3">
+              <div className="flex min-w-0 flex-1 flex-wrap gap-2">
                 {[
                   ["all", "전체"],
                   ["payment", "결제 확인"],
@@ -735,11 +746,7 @@ export default function OrdersClient() {
                   </Button>
                 ))}
               </div>
-            </div>
-
-            {/* 검색 input */}
-            <div className="w-full max-w-md border-t border-border/60 pt-3">
-              <div className="relative">
+              <div className="relative w-[320px] shrink-0">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   type="search"
@@ -764,58 +771,60 @@ export default function OrdersClient() {
             </div>
 
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full grid-cols-3 gap-2">
-              <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
-              <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
-              <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
-              <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
-              <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetFilters}
-                className="w-full bg-transparent"
-              >
-                필터 초기화
-              </Button>
-            </div>
+            {showAdvanced ? (
+              <div className="grid w-full grid-cols-3 gap-2 border-t border-border/60 pt-3">
+                <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
+                <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
+                <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
+                <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
+                <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="w-full bg-transparent"
+                >
+                  필터 초기화
+                </Button>
+              </div>
+            ) : null}
           </div>
         </CardContent>
       </Card>
 
-      <div className="mb-4 flex flex-row items-center justify-between gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-ui-body-sm shadow-sm">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-semibold text-foreground">현재 보기: {quickViewLabel}</span>
-          {searchTerm.trim() ? (
-            <span className="text-foreground/75">검색어: {searchTerm.trim()}</span>
-          ) : null}
-          {appliedFilterLabels.length > 0 ? (
-            <span className="text-foreground/75">필터: {appliedFilterLabels.join(" / ")}</span>
-          ) : null}
-          <span className="text-foreground/75">
-            {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "조회 중…"}
-          </span>
-        </div>
-      </div>
-
       {/* 주문 목록 테이블 */}
-      <Card className={cn("px-5 py-4", adminSurface.tableCard)}>
-        <CardHeader className="pb-2 pt-1">
+      <Card className={cn("px-4 py-3", adminSurface.tableCard)}>
+        <CardHeader className="px-2 pb-2 pt-0">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-ui-body font-medium">주문 목록</CardTitle>
-            <p className="text-ui-label text-muted-foreground">
-              {data ? `총 ${data.total}개의 주문` : "목록을 불러오는 중…"}
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <CardTitle className="text-ui-body font-medium">주문 목록</CardTitle>
+              <span className="text-ui-label font-medium text-foreground/80">{quickViewLabel}</span>
+              {searchTerm.trim() ? (
+                <span className="truncate text-ui-label text-muted-foreground">검색: {searchTerm.trim()}</span>
+              ) : null}
+              {appliedFilterLabels.length > 0 ? (
+                <span className="truncate text-ui-label text-muted-foreground">
+                  필터: {appliedFilterLabels.join(" / ")}
+                </span>
+              ) : null}
+            </div>
+            <p className="shrink-0 text-ui-label text-muted-foreground">
+              {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "불러오는 중…"}
             </p>
           </div>
-          <p className="mt-1.5 text-ui-label text-muted-foreground">
-            문서 ID를 선택하면 전체 ID와 연결 문서를 확인할 수 있습니다.
-          </p>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto pr-2">
-          <Table className="min-w-[1180px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1080px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[190px] text-left")}>고객 / 주문</TableHead>
+                <AdminSortableTableHead
+                  label="고객 / 주문 · 접수"
+                  active={sortBy === "date"}
+                  direction={sortDirection}
+                  align="left"
+                  onSort={() => handleSort("date")}
+                  className={cn(thClasses, "w-[220px] text-left")}
+                />
                 <TableHead className={cn(thClasses, "w-[210px] text-left")}>
                   상품 / 서비스
                 </TableHead>
@@ -831,14 +840,6 @@ export default function OrdersClient() {
                 <TableHead className={cn(thClasses, "w-[170px] text-left")}>
                   배송 / 수령
                 </TableHead>
-                <AdminSortableTableHead
-                  label="접수"
-                  active={sortBy === "date"}
-                  direction={sortDirection}
-                  align="right"
-                  onSort={() => handleSort("date")}
-                  className={cn(thClasses, "w-[120px] text-right")}
-                />
                 <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>
                   액션
                 </TableHead>
@@ -847,7 +848,7 @@ export default function OrdersClient() {
             <TableBody>
               {error ? (
                 <TableRow>
-                  <TableCell colSpan={7} className={tdClasses}>
+                  <TableCell colSpan={6} className={tdClasses}>
                     <AsyncState
                       kind="error"
                       tone="admin"
@@ -861,7 +862,7 @@ export default function OrdersClient() {
                 </TableRow>
               ) : !data ? (
                 <TableRow>
-                  <TableCell colSpan={7} className={tdClasses}>
+                  <TableCell colSpan={6} className={tdClasses}>
                     <div className="space-y-2 py-2">
                       {Array.from({ length: 6 }).map((_, index) => (
                         <div
@@ -881,7 +882,7 @@ export default function OrdersClient() {
                 </TableRow>
               ) : data.items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className={tdClasses}>
+                  <TableCell colSpan={6} className={tdClasses}>
                     <AsyncState
                       kind="empty"
                       tone="admin"
@@ -1018,6 +1019,9 @@ export default function OrdersClient() {
                                   { label: "연결 문서", value: linkedDocumentId ?? null },
                                 ]}
                               />
+                              <span className="ml-auto shrink-0 text-ui-label tabular-nums text-foreground/70">
+                                {formatDate(order.date)}
+                              </span>
                             </div>
                           </div>
                         </TableCell>
@@ -1143,10 +1147,6 @@ export default function OrdersClient() {
                               );
                             })()}
                           </div>
-                        </TableCell>
-                        {/* 접수 셀 */}
-                        <TableCell className={cn(adminDataTable.dateCell, "py-2")}>
-                          {formatDate(order.date)}
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
                         <TableCell

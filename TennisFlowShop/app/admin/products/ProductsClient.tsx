@@ -343,7 +343,7 @@ export default function ProductsClient() {
                 : "사용자 지정 조건";
 
   return (
-    <AdminPageShell variant="wide" className="space-y-6">
+    <AdminPageShell variant="wide" className="space-y-4">
       {commonErrorMessage && (
         <div className="text-center text-destructive">{commonErrorMessage}</div>
       )}
@@ -415,7 +415,7 @@ export default function ProductsClient() {
 
       {/* 빠른 보기 */}
       <Card className={adminSurface.filterCard}>
-        <CardContent className="flex flex-wrap items-center gap-2 p-4">
+        <CardContent className="flex flex-wrap items-center gap-2 p-3">
           <span className={cn("mr-1 font-semibold", adminTypography.metaMuted)}>빠른 보기</span>
 
           <Button
@@ -480,92 +480,73 @@ export default function ProductsClient() {
           >
             할인 상품
           </Button>
+          <span className="ml-auto text-ui-label text-muted-foreground">
+            현재 {currentViewLabel} · {hasResolvedData ? total.toLocaleString("ko-KR") : "-"}개
+          </span>
         </CardContent>
       </Card>
 
-      {/* 현재 보기 요약 */}
-      <div
-        className={cn(
-          "mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border px-4 py-3 text-sm",
-          adminSurface.cardMuted,
-        )}
-      >
-        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
-
-        {activeFilterLabels.length > 0 && (
-          <p className="text-muted-foreground">필터: {activeFilterLabels.join(" / ")}</p>
-        )}
-
-        <p className="text-muted-foreground">
-          총 {hasResolvedData ? total.toLocaleString("ko-KR") : "-"}개
-        </p>
-
-        {hasActiveTableFilter && (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="ml-auto"
-            onClick={resetFilters}
-          >
-            필터 초기화
-          </Button>
-        )}
-      </div>
-
       <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
-        <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
+        <CardHeader className="shrink-0 border-b border-border bg-muted/30 px-4 py-3">
           <div className="flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-xl font-semibold text-foreground">
-                스트링 상품 찾기
-              </CardTitle>
-              <CardDescription className="text-foreground">
-                {hasDataError
-                  ? "상품 목록을 불러오지 못했습니다."
-                  : hasResolvedData
-                    ? total > 0
-                      ? `현재 조건으로 ${total}개의 스트링 상품이 검색되었습니다.`
-                      : "현재 조건에 맞는 스트링 상품이 없습니다."
-                    : "스트링 상품의 재고, 노출 상태, 가격 정보를 조회하고 관리합니다."}
-              </CardDescription>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle className="text-ui-body font-semibold text-foreground">
+                  스트링 상품 목록
+                </CardTitle>
+                <span className="text-ui-label text-muted-foreground">{currentViewLabel}</span>
+                {activeFilterLabels.length > 0 ? (
+                  <span className="truncate text-ui-label text-muted-foreground">
+                    필터: {activeFilterLabels.join(" / ")}
+                  </span>
+                ) : null}
+              </div>
+              {hasDataError ? (
+                <CardDescription className="text-destructive">
+                  상품 목록을 불러오지 못했습니다.
+                </CardDescription>
+              ) : null}
             </div>
-            <Button
-              asChild
-              className={[
-                // 사이즈/레이아웃
-                "h-auto min-h-9 px-4 rounded-lg font-medium inline-flex items-center justify-center gap-2 whitespace-normal text-center leading-snug w-auto",
-                // 색상(라이트/다크 모두 자연스러운 플랫)
-                "bg-primary text-primary-foreground hover:bg-primary/90",
-                // 경계/그림자: 지나치지 않게만
-                "border border-border/10 dark:border-border/10 shadow-sm hover:shadow",
-                // 포커스 접근성
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                "ring-offset-2 ring-offset-background dark:ring-offset-background",
-                // 전환
-                "transition-colors",
-              ].join(" ")}
-            >
-              <Link href="/admin/products/new">
-                <Plus className="mr-2 h-4 w-4" />
-                신규 스트링 등록
-              </Link>
-            </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              {sort ? (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setSort(null)}>
+                  정렬 해제
+                </Button>
+              ) : null}
+              <Button
+                asChild
+                className={[
+                  // 사이즈/레이아웃
+                  "h-auto min-h-9 px-4 rounded-lg font-medium inline-flex items-center justify-center gap-2 whitespace-normal text-center leading-snug w-auto",
+                  // 색상(라이트/다크 모두 자연스러운 플랫)
+                  "bg-primary text-primary-foreground hover:bg-primary/90",
+                  // 경계/그림자: 지나치지 않게만
+                  "border border-border/10 dark:border-border/10 shadow-sm hover:shadow",
+                  // 포커스 접근성
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "ring-offset-2 ring-offset-background dark:ring-offset-background",
+                  // 전환
+                  "transition-colors",
+                ].join(" ")}
+              >
+                <Link href="/admin/products/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  신규 스트링 등록
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardHeader>
 
-        <CardContent className="flex min-h-0 flex-1 flex-col space-y-6 p-6">
+        <CardContent className="flex min-h-0 flex-1 flex-col space-y-3 p-4">
           {/* 검색/필터 */}
           <div
             className={cn(
               adminSurface.filterCard,
-              "mb-4 flex flex-row items-center justify-between space-y-0",
+              "grid grid-cols-[minmax(220px,2fr)_repeat(4,minmax(110px,1fr))_auto] items-center gap-2 p-3",
             )}
           >
-            <div className="w-full space-y-3">
-              {/* 검색 */}
-              <div className="w-full max-w-md">
-                <div className="relative">
+            <div className="relative min-w-0">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
                     type="search"
@@ -587,57 +568,40 @@ export default function ProductsClient() {
                       <X className="h-4 w-4" />
                     </Button>
                   )}
-                </div>
-              </div>
-
-              {/* 필터 */}
-              <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-6">
-                <BrandFilter
-                  value={brandFilter}
-                  onChange={handleBrandFilterChange}
-                  options={BRAND_OPTIONS.map((o) => o.id)}
-                />
-                <MaterialFilter
-                  value={materialFilter}
-                  onChange={handleMaterialFilterChange}
-                  options={MATERIAL_OPTIONS.map((o) => o.id)}
-                />
-                <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
-                <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
-                  <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}>
-                    <SelectValue placeholder="노출 유형 전체" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">노출 유형 전체</SelectItem>
-                    <SelectItem value="featured">추천 상품</SelectItem>
-                    <SelectItem value="new">신상품</SelectItem>
-                    <SelectItem value="sale">할인 상품</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetFilters}
-                  className={cn(
-                    "h-9 w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card",
-                    adminTypography.body,
-                  )}
-                >
-                  필터 초기화
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={cn(
-                    "h-9 w-full border-border bg-transparent hover:bg-muted dark:border-border dark:hover:bg-card",
-                    adminTypography.body,
-                  )}
-                  onClick={() => setSort(null)}
-                >
-                  정렬 초기화
-                </Button>
-              </div>
             </div>
+            <BrandFilter
+              value={brandFilter}
+              onChange={handleBrandFilterChange}
+              options={BRAND_OPTIONS.map((o) => o.id)}
+            />
+            <MaterialFilter
+              value={materialFilter}
+              onChange={handleMaterialFilterChange}
+              options={MATERIAL_OPTIONS.map((o) => o.id)}
+            />
+            <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+            <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
+              <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}>
+                <SelectValue placeholder="노출 유형 전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">노출 유형 전체</SelectItem>
+                <SelectItem value="featured">추천 상품</SelectItem>
+                <SelectItem value="new">신상품</SelectItem>
+                <SelectItem value="sale">할인 상품</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetFilters}
+              className={cn(
+                "h-9 border-border bg-transparent px-3 hover:bg-muted dark:border-border dark:hover:bg-card",
+                adminTypography.body,
+              )}
+            >
+              초기화
+            </Button>
           </div>
 
           {/* 테이블 */}

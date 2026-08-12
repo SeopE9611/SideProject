@@ -17,7 +17,7 @@ export default function AdminFilterBar({
 }: AdminFilterBarProps) {
   return (
     <div
-      className={cn("rounded-2xl border border-border/70 bg-card p-5 shadow-sm", className)}
+      className={cn("rounded-xl border border-border/70 bg-card p-4 shadow-sm", className)}
     >
       <div className="flex flex-row items-end justify-between gap-3">
         <div className="min-w-0 flex-1">{children}</div>

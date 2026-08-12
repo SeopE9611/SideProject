@@ -25,14 +25,14 @@ export default function AdminPageHeader({
   return (
     <div
       className={cn(
-        "mb-5 flex flex-row items-start justify-between gap-3 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-sm",
+        "mb-4 flex flex-row items-start justify-between gap-3 rounded-xl border border-border/70 bg-card/80 p-4 shadow-sm",
         className,
       )}
     >
       <div className="flex min-w-0 items-start gap-3">
         {Icon ? (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-            <Icon className="h-5 w-5" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+            <Icon className="h-4 w-4" />
           </div>
         ) : null}
 
@@ -42,7 +42,7 @@ export default function AdminPageHeader({
 
           {(scope || helperText) && (
             <div
-              className={cn("mt-2 flex flex-wrap items-center gap-1.5", adminTypography.caption)}
+              className={cn("mt-1.5 flex flex-wrap items-center gap-1.5", adminTypography.caption)}
             >
               {scope ? (
                 <span className="rounded-md border border-border/70 bg-muted/40 px-2 py-1">

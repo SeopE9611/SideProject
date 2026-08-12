@@ -8,11 +8,20 @@ import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Search, ListFilter, ClipboardList } from "lucide-react";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 
 type AuditItem = {
   id: string;
@@ -207,49 +216,54 @@ export default function AdminAuditClient() {
           title="감사 로그 목록"
           description={`총 ${data.total.toLocaleString("ko-KR")}건 · ${data.page}/${data.totalPages} 페이지`}
           icon={ClipboardList}
-          contentClassName="space-y-2"
+          contentClassName="p-0"
         >
-          {data.items.map((item) => {
-            const actionName = AUDIT_TYPE_LABELS[item.type] || item.message?.trim() || item.type;
+          <Table className="min-w-[900px] table-fixed">
+            <TableHeader className={adminSurface.tableHeader}>
+              <TableRow className={adminDataTable.row}>
+                <TableHead className={cn(adminDataTable.head, "w-[34%]")}>작업</TableHead>
+                <TableHead className={cn(adminDataTable.head, "w-[20%]")}>실행자</TableHead>
+                <TableHead className={cn(adminDataTable.head, "w-[16%]")}>대상</TableHead>
+                <TableHead className={cn(adminDataTable.headRight, "w-[18%]")}>일시</TableHead>
+                <TableHead className={cn(adminDataTable.headRight, "w-[12%]")}>상세</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.items.map((item) => {
+                const actionName = AUDIT_TYPE_LABELS[item.type] || item.message?.trim() || item.type;
 
-            return (
-              <article
-                key={item.id}
-                className={`${adminSurface.tableCard} p-3 transition-colors hover:bg-muted/25`}
-              >
-                <div className="grid gap-3 grid-cols-[minmax(180px,1.1fr)_minmax(160px,1fr)_minmax(120px,0.8fr)_minmax(150px,0.8fr)_130px]">
-                  <div className="min-w-0">
-                    <div className={adminTypography.metaMuted}>작업</div>
-                    <div className={adminDataTable.primaryLine}>{actionName}</div>
-                    <div className={adminDataTable.secondaryLine}>{item.type}</div>
-                  </div>
-                  <div className="min-w-0">
-                    <div className={adminTypography.metaMuted}>실행자</div>
-                    <span title={item.actorTitle} className={adminTypography.body}>
-                      {item.actor}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <div className={adminTypography.metaMuted}>대상</div>
-                    <span className={adminTypography.body}>
-                      {item.targetId
-                        ? `${item.targetId.slice(0, 8)}${item.targetId.length > 8 ? "…" : ""}`
-                        : "없음"}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <div className={adminTypography.metaMuted}>일시</div>
-                    <time dateTime={item.createdAt ?? undefined} className={adminTypography.body}>
-                      {formatDateTime(item.createdAt)}
-                    </time>
-                  </div>
-                  <div className="flex items-center justify-end">
+                return (
+                  <TableRow key={item.id} className={adminDataTable.compactRow}>
+                    <TableCell className={adminDataTable.cellCompact}>
+                      <div className={adminDataTable.cellStack}>
+                        <div className={adminDataTable.primaryLine}>{actionName}</div>
+                        <div className={adminDataTable.secondaryLine}>{item.type}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className={adminDataTable.cellCompact}>
+                      <span title={item.actorTitle} className={adminDataTable.primaryLine}>
+                        {item.actor}
+                      </span>
+                    </TableCell>
+                    <TableCell className={adminDataTable.cellCompact}>
+                      <span className={adminDataTable.secondaryLine} title={item.targetId ?? undefined}>
+                        {item.targetId
+                          ? `${item.targetId.slice(0, 8)}${item.targetId.length > 8 ? "…" : ""}`
+                          : "없음"}
+                      </span>
+                    </TableCell>
+                    <TableCell className={cn(adminDataTable.dateCell, "py-2.5")}>
+                      <time dateTime={item.createdAt ?? undefined}>
+                        {formatDateTime(item.createdAt)}
+                      </time>
+                    </TableCell>
+                    <TableCell className={cn(adminDataTable.cellCompact, "text-right")}>
                     <AdminRowDetailsSheet
                       title={actionName}
                       description={`${item.actor} · ${formatDateTime(item.createdAt)}`}
                       trigger={
-                        <Button type="button" size="sm" variant="outline">
-                          {item.diffSummary?.length ? `변경 ${item.diffSummary.length}건` : "참조 정보"}
+                        <Button type="button" size="sm" variant="outline" className="h-8">
+                          {item.diffSummary?.length ? `변경 ${item.diffSummary.length}건` : "보기"}
                         </Button>
                       }
                     >
@@ -285,13 +299,14 @@ export default function AdminAuditClient() {
                         </div>
                       ) : null}
                     </AdminRowDetailsSheet>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
 
-          <div className={`flex items-center justify-between pt-2 ${adminTypography.meta}`}>
+          <div className={`flex items-center justify-between border-t border-border px-4 py-3 ${adminTypography.meta}`}>
             <div className="text-muted-foreground">
               총 {data.total}건 · {data.page}/{data.totalPages} 페이지
             </div>

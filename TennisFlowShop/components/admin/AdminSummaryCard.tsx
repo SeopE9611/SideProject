@@ -16,6 +16,7 @@ type AdminSummaryCardProps = {
   href?: string;
   onAction?: () => void;
   active?: boolean;
+  compact?: boolean;
   className?: string;
 };
 
@@ -45,6 +46,7 @@ export default function AdminSummaryCard({
   href,
   onAction,
   active = false,
+  compact = false,
   className,
 }: AdminSummaryCardProps) {
   const content = (
@@ -53,19 +55,37 @@ export default function AdminSummaryCard({
         {Icon ? <Icon className={cn("h-4 w-4", accentClass[tone])} /> : null}
         <span>{title}</span>
       </div>
-      <div className={cn("mt-2", adminTypography.kpiValue)}>{value}</div>
+      <div className={cn(compact ? "mt-1" : "mt-2", compact ? adminTypography.kpiValueCompact : adminTypography.kpiValue)}>
+        {value}
+      </div>
       {description ? (
-        <p className={cn("mt-1 text-foreground/75", adminTypography.meta)}>{description}</p>
+        <p
+          className={cn(
+            "mt-1 text-foreground/75",
+            adminTypography.meta,
+            compact && "line-clamp-1",
+          )}
+        >
+          {description}
+        </p>
       ) : null}
       {actionLabel ? (
-        <span className={cn("mt-3 block", adminTypography.actionLabel, accentClass[tone])}>
+        <span
+          className={cn(
+            compact ? "mt-1" : "mt-3",
+            "block",
+            adminTypography.actionLabel,
+            accentClass[tone],
+          )}
+        >
           {actionLabel}
         </span>
       ) : null}
     </>
   );
   const styles = cn(
-    "block w-full rounded-2xl border p-4 text-left shadow-sm transition-[border-color,box-shadow] hover:shadow-md",
+    "block w-full rounded-xl border text-left shadow-sm transition-[border-color,box-shadow] hover:shadow-md",
+    compact ? "p-3" : "p-4",
     toneClass[tone],
     active && "ring-2 ring-ring/60",
     className,

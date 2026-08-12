@@ -21,13 +21,13 @@ export const adminDataTable = {
   secondaryText: adminTypography.tableSecondary,
   /** 기본 목록 셀은 primary 1줄 + secondary 1줄을 원칙으로 합니다. */
   cellStack: "min-w-0 space-y-1",
-  primaryLine: `truncate ${adminTypography.tablePrimary}`,
-  secondaryLine: `truncate ${adminTypography.tableSecondary}`,
+  primaryLine: `block truncate ${adminTypography.tablePrimary}`,
+  secondaryLine: `block truncate ${adminTypography.tableSecondary}`,
   categoryText: "text-ui-label font-medium text-foreground/75",
   attentionText: "text-ui-label font-medium text-warning",
   dangerText: "text-ui-label font-medium text-destructive",
   referenceTrigger:
-    "inline-flex min-h-8 items-center rounded-md px-1 text-ui-label font-medium text-foreground/75 underline decoration-border underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    "inline-flex min-h-8 min-w-0 items-center rounded-md px-1 text-ui-label font-medium text-foreground/75 underline decoration-border underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
   actionHead: `w-[132px] px-4 py-3 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
   actionCell: "w-[132px] px-4 py-3 text-right align-middle text-ui-body-sm",
   stickyActionHead: `sticky right-0 z-20 w-[132px] border-l border-border bg-muted/30 px-4 py-3 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,

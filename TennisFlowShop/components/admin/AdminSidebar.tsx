@@ -21,7 +21,8 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
 
   useEffect(() => {
     const saved = localStorage.getItem("admin.sidebar.collapsed");
-    if (saved != null) setCollapsed(saved === "1");
+    const prefersCompactSidebar = window.matchMedia("(max-width: 1440px)").matches;
+    setCollapsed(prefersCompactSidebar || saved === "1");
   }, []);
   useEffect(() => {
     localStorage.setItem("admin.sidebar.collapsed", collapsed ? "1" : "0");
@@ -64,17 +65,15 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
         <Separator />
 
         <nav className="mt-2 h-[calc(100%-2.75rem)] overflow-y-auto px-2 pb-8">
-          {SIDEBAR_SECTIONS.map((section) => (
+          {SIDEBAR_SECTIONS.map((section, sectionIndex) => (
             <div key={section.label} className="mt-3">
-              <div
-                className={cn(
-                  "px-3",
-                  adminTypography.sidebarSection,
-                  collapsed && "px-0 text-center",
-                )}
-              >
-                {section.label}
-              </div>
+              {collapsed ? (
+                sectionIndex > 0 ? <Separator className="mx-auto mb-2 w-8" /> : null
+              ) : (
+                <div className={cn("px-3", adminTypography.sidebarSection)}>
+                  {section.label}
+                </div>
+              )}
               <ul className="mt-2 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
