@@ -2,6 +2,8 @@ import { Top } from "@toss/tds-mobile";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getStringingProducts } from "./api/products";
+import { useAppsInTossAuth } from "./auth/AppsInTossAuthContext";
+import ActivityScreen from "./components/ActivityScreen";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
 import StringingApplicationFlow from "./components/StringingApplicationFlow";
@@ -9,17 +11,6 @@ import type { Product } from "./types/product";
 import type { StringingStartSelection } from "./types/stringing";
 
 type ProductLoadState = "loading" | "success" | "error";
-
-const plannedFeatures = [
-  {
-    title: "교체서비스",
-    description: "스트링 선택부터 교체 신청까지 한 흐름으로 이용할 수 있도록 준비하고 있어요.",
-  },
-  {
-    title: "중고 라켓",
-    description: "판매 중인 중고 라켓의 상태와 주요 정보를 모바일에서 편하게 확인할 수 있어요.",
-  },
-] as const;
 
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
@@ -35,6 +26,10 @@ function getProductIdFromLocation() {
 
 function getStringingCheckoutModeFromLocation() {
   return getSearchParamsFromLocation().get("view") === "stringing-checkout";
+}
+
+function getActivityModeFromLocation() {
+  return getSearchParamsFromLocation().get("view") === "activity";
 }
 
 function getSelectedColorFromLocation() {
@@ -97,6 +92,7 @@ function ProductSkeleton() {
 }
 
 function App() {
+  const auth = useAppsInTossAuth();
   const [products, setProducts] = useState<Product[]>([]);
 
   const [loadState, setLoadState] = useState<ProductLoadState>("loading");
@@ -104,6 +100,7 @@ function App() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(() => getProductIdFromLocation());
 
   const [isStringingCheckout, setIsStringingCheckout] = useState(() => getStringingCheckoutModeFromLocation());
+  const [isActivity, setIsActivity] = useState(() => getActivityModeFromLocation());
 
   const [detailSelectedColor, setDetailSelectedColor] = useState(() => getSelectedColorFromLocation());
 
@@ -151,6 +148,7 @@ function App() {
 
       setSelectedProductId(nextProductId);
       setIsStringingCheckout(getStringingCheckoutModeFromLocation());
+      setIsActivity(getActivityModeFromLocation());
 
       setDetailSelectedColor(getSelectedColorFromLocation());
 
@@ -169,6 +167,14 @@ function App() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
+  }, []);
+
+  const navigate = useCallback((view?: "activity") => {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.search = view ? `?view=${view}` : "";
+    window.history.pushState({ view }, "", `${nextUrl.pathname}${nextUrl.search}`);
+    setSelectedProductId(null); setIsStringingCheckout(false); setIsActivity(view === "activity");
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
   const handleSelectProduct = useCallback((productId: string) => {
@@ -249,12 +255,15 @@ function App() {
     });
   }, []);
 
+  if (isActivity) return <ActivityScreen onHome={() => navigate()} />;
+
   if (selectedProductId && isStringingCheckout) {
     return (
       <StringingApplicationFlow
         productId={selectedProductId}
         selectedColor={detailSelectedColor}
         selectedGauge={detailSelectedGauge}
+        onViewActivity={() => navigate("activity")}
       />
     );
   }
@@ -287,14 +296,15 @@ function App() {
         <Top
           title={<Top.TitleParagraph size={22}>도깨비테니스</Top.TitleParagraph>}
           subtitleBottom={
-            <Top.SubtitleParagraph size={17}>토스에서 만나는 테니스 쇼핑·스트링 교체 서비스</Top.SubtitleParagraph>
+          <Top.SubtitleParagraph size={17}>토스에서 바로 신청하는 스트링 교체서비스</Top.SubtitleParagraph>
           }
         />
 
         <p className="m-0 break-keep px-6 text-[15px] leading-[1.65] text-[#6b7684] max-[359px]:px-5">
-          도깨비테니스에서 판매 중인 스트링을 앱인토스에서 확인할 수 있어요. 주문과 교체서비스 기능은 안정성 검증 후
-          순차적으로 연결할 예정이에요.
+          스트링을 고르고 옵션을 선택한 뒤 교체서비스 신청과 토스페이 결제까지 한 번에 진행할 수 있어요.
         </p>
+        <div className="mt-5 flex gap-2 px-6 max-[359px]:px-5"><button type="button" className="min-h-12 flex-1 rounded-2xl border-0 bg-[#191f28] font-bold text-white" onClick={() => document.getElementById("products-title")?.scrollIntoView()}>교체서비스 시작</button><button type="button" className="min-h-12 flex-1 rounded-2xl border border-[#d1d6db] bg-white font-bold" onClick={() => navigate("activity")}>내 이용내역</button></div>
+        <div className="mt-3 px-6 text-sm text-[#6b7684] max-[359px]:px-5">{auth.status === "authenticated" ? `${auth.user.name}님, 로그인 중이에요.` : "결제 단계에서 토스 로그인으로 안전하게 연결해요."}</div>
       </section>
 
       <section className="px-6 pt-[38px] max-[359px]:px-5" aria-labelledby="products-title">
@@ -333,44 +343,6 @@ function App() {
         )}
       </section>
 
-      <section className="px-6 pt-[38px] max-[359px]:px-5" aria-labelledby="planned-features-title">
-        <SectionHeading eyebrow="COMING SOON" title="다음으로 준비 중인 기능" titleId="planned-features-title" />
-
-        <ol className="m-0 flex list-none flex-col gap-3 p-0">
-          {plannedFeatures.map((feature, index) => (
-            <li
-              className="grid grid-cols-[42px_minmax(0,1fr)] items-start gap-3.5 rounded-[20px] border border-[#e5e8eb] bg-white p-5 max-[359px]:grid-cols-[38px_minmax(0,1fr)] max-[359px]:gap-3 max-[359px]:p-[17px]"
-              key={feature.title}
-            >
-              <span
-                className="inline-flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#eff8d8] text-[13px] leading-none font-extrabold text-[#344700] max-[359px]:h-[38px] max-[359px]:w-[38px]"
-                aria-hidden="true"
-              >
-                {String(index + 1).padStart(2, "0")}
-              </span>
-
-              <div className="min-w-0">
-                <h3 className="mt-px mb-1.5 text-[17px] leading-[1.4] font-extrabold tracking-[-0.015em] text-[#191f28]">
-                  {feature.title}
-                </h3>
-
-                <p className="m-0 break-keep text-sm leading-[1.55] text-[#6b7684]">{feature.description}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <aside className="mx-6 mt-6 rounded-[20px] bg-[#f2f4f6] p-5 max-[359px]:mx-5" aria-label="서비스 준비 안내">
-        <strong className="mb-[7px] block text-[15px] leading-[1.45] font-extrabold text-[#333d4b]">
-          상품 조회 기능을 먼저 연결하고 있어요.
-        </strong>
-
-        <p className="m-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
-          로그인, 장바구니, 주문 및 결제 기능은 아직 연결하지 않았어요. 기존 도깨비테니스 서비스와의 연동을 검증한 뒤
-          순차적으로 제공할 예정입니다.
-        </p>
-      </aside>
     </main>
   );
 }
