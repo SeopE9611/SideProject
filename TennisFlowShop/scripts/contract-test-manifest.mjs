@@ -11,6 +11,7 @@ export const coreContractFiles = [
   "admin-mutation-authz.contract.test.mjs",
   "admin-points-history.contract.test.mjs",
   "apps-in-toss-toss-pay-contract.test.mjs",
+  "apps-in-toss-activity.contract.test.mjs",
   "apps-in-toss-live-readiness.contract.test.mjs",
   "apps-in-toss-payment-execution.contract.test.mjs",
   "apps-in-toss-payment-snapshot.contract.test.mjs",
