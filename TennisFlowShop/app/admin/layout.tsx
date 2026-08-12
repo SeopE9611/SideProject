@@ -91,9 +91,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </span>
         </p>
       </div>
-      <div className="border-b border-border/70 bg-card/80 px-6 py-2 backdrop-blur supports-[backdrop-filter]:bg-card/70">
+      <div className="border-b border-border/70 bg-card/80 px-3 py-1.5 backdrop-blur supports-[backdrop-filter]:bg-card/70 2xl:px-6 2xl:py-2">
         <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-3">
-          <Link href="/admin/dashboard" className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <Link
+            href="/admin/dashboard"
+            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             <p className="text-ui-label font-semibold uppercase tracking-widest text-muted-foreground">
               Admin Console
             </p>
@@ -114,7 +117,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-[1800px] flex-1 flex-row gap-5 px-6 pb-10 pt-4">
+      <div className="mx-auto flex w-full max-w-[1800px] flex-1 flex-row gap-3 px-3 pb-8 pt-3 2xl:gap-5 2xl:px-6 2xl:pb-10 2xl:pt-4">
         <AdminNavigationShell />
 
         <main className="min-w-0 flex-1">{children}</main>
