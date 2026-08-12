@@ -8,7 +8,6 @@ import { ShippingStatusFilter } from "@/app/features/orders/components/order-fil
 import ApplicationStatusBadge from "@/app/features/stringing-applications/components/ApplicationStatusBadge";
 import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
-import { AdminBadgeRow } from "@/components/admin/AdminBadgeRow";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -951,34 +950,34 @@ export default function OrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto pr-2">
-          <Table className="min-w-[1080px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1400px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[230px] text-left")}>주문/고객</TableHead>
-                <TableHead
-                  className={cn(thClasses, "w-[215px] border-l border-border/20 text-left")}
-                >
-                  상품/서비스
+                <TableHead className={cn(thClasses, "w-[220px] text-left")}>고객 / 주문</TableHead>
+                <TableHead className={cn(thClasses, "w-[235px] text-left")}>
+                  상품 / 서비스
                 </TableHead>
-                <TableHead
-                  className={cn(thClasses, "w-[240px] border-l border-border/20 text-left")}
-                >
-                  상태/다음 작업
-                </TableHead>
+                <TableHead className={cn(thClasses, "w-[220px] text-left")}>상태</TableHead>
                 <AdminSortableTableHead
-                  label="배송/결제"
+                  label="결제"
                   active={sortBy === "total"}
                   direction={sortDirection}
                   align="right"
                   onSort={() => handleSort("total")}
-                  className={cn(
-                    thClasses,
-                    "w-[265px] border-l border-border/20 text-right",
-                  )}
+                  className={cn(thClasses, "w-[150px] text-right")}
                 />
-                <TableHead
-                  className={cn(adminDataTable.stickyActionHead, "w-[130px]")}
-                >
+                <TableHead className={cn(thClasses, "w-[190px] text-left")}>
+                  배송 / 수령
+                </TableHead>
+                <AdminSortableTableHead
+                  label="접수"
+                  active={sortBy === "date"}
+                  direction={sortDirection}
+                  align="right"
+                  onSort={() => handleSort("date")}
+                  className={cn(thClasses, "w-[145px] text-right")}
+                />
+                <TableHead className={cn(adminDataTable.stickyActionHead, "w-[170px]")}>
                   액션
                 </TableHead>
               </TableRow>
@@ -986,7 +985,7 @@ export default function OrdersClient() {
             <TableBody>
               {error ? (
                 <TableRow>
-                  <TableCell colSpan={5} className={tdClasses}>
+                  <TableCell colSpan={7} className={tdClasses}>
                     <AsyncState
                       kind="error"
                       tone="admin"
@@ -1000,14 +999,14 @@ export default function OrdersClient() {
                 </TableRow>
               ) : !data ? (
                 <TableRow>
-                  <TableCell colSpan={5} className={tdClasses}>
+                  <TableCell colSpan={7} className={tdClasses}>
                     <div className="space-y-2 py-2">
                       {Array.from({ length: 6 }).map((_, index) => (
                         <div
                           key={`orders-table-skeleton-${index}`}
-                          className="grid grid-cols-[repeat(5,minmax(0,1fr))] gap-2"
+                          className="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-2"
                         >
-                          {Array.from({ length: 5 }).map((__, cellIndex) => (
+                          {Array.from({ length: 7 }).map((__, cellIndex) => (
                             <Skeleton
                               key={`orders-table-skeleton-${index}-${cellIndex}`}
                               className="h-6 w-full"
@@ -1020,7 +1019,7 @@ export default function OrdersClient() {
                 </TableRow>
               ) : data.items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className={tdClasses}>
+                  <TableCell colSpan={7} className={tdClasses}>
                     <AsyncState
                       kind="empty"
                       tone="admin"
@@ -1135,93 +1134,37 @@ export default function OrdersClient() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div
-                                  className="flex w-full max-w-[220px] cursor-pointer flex-col items-start gap-1"
+                                  className="flex w-full max-w-[210px] cursor-pointer flex-col items-start gap-1"
                                   title={order.id}
                                 >
-                                  <div className="flex w-full min-w-0 items-center justify-start gap-1 border-b border-border/40 pb-0.5">
-                                    {/* 취소요청 상태일 때만 아이콘 노출 */}
+                                  <p className={cn("line-clamp-1", adminDataTable.primaryText)}>
+                                    {order.customer.name
+                                      .replace(/\s*\(비회원\)\s*$/, "")
+                                      .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                                  </p>
+                                  <div className="flex min-w-0 items-center gap-1.5">
                                     {hasCancelRequest && (
                                       <AlertTriangle
-                                        className="h-3 w-3 text-primary shrink-0"
+                                        className="h-3 w-3 shrink-0 text-primary"
                                         aria-hidden="true"
                                       />
                                     )}
-                                    {/* 실제 표시되는 주문 ID (짧게) */}
-                                    <span className="truncate whitespace-nowrap font-mono text-ui-label font-medium text-foreground">
+                                    <Badge className={cn(badgeBase, badgeSizeSm, kind.className)}>
+                                      {kind.label}
+                                    </Badge>
+                                    <span className="truncate font-mono text-ui-label text-foreground/75">
                                       {shortenId(order.id)}
                                     </span>
+                                    {link.label !== "단독" && (
+                                      <span className={adminDataTable.secondaryText}>{link.label}</span>
+                                    )}
                                   </div>
-
-                                  {/* 운영자에게 가장 중요한 정보: “이게 주문인지/신청서인지 + 통합/단독인지” */}
-                                  {/*
-                                      테이블 난잡도 개선:
-                                      - 테이블에서는 핵심 2개(종류/연결)만 우선 노출
-                                      - 나머지(flow/정산)는 +N으로 접어서(hover title) 필요할 때만 확인
-                                    */}
-                                  <AdminBadgeRow
-                                    maxVisible={2}
-                                    items={[
-                                      {
-                                        label: kind.label,
-                                        className: kind.className,
-                                        title: "문서 종류",
-                                      },
-                                      {
-                                        label: link.label,
-                                        className: link.className,
-                                        title: "통합/연결 상태",
-                                      },
-                                      {
-                                        label: flow.shortLabel,
-                                        className: flow.className,
-                                        title: `주문/신청 시나리오: ${flow.label}`,
-                                      },
-                                      {
-                                        label: settlement.label,
-                                        className: settlement.className,
-                                        title: "정산 앵커(금액 해석 기준)",
-                                      },
-                                      ...(order.cancelStatus
-                                        ? [
-                                            {
-                                              label:
-                                                order.cancelStatus === "requested"
-                                                  ? "취소요청"
-                                                  : order.cancelStatus === "approved"
-                                                    ? "취소승인"
-                                                    : "취소거절",
-                                              className:
-                                                order.cancelStatus === "requested"
-                                                  ? "bg-destructive/10 text-destructive border border-destructive/30"
-                                                  : "bg-muted text-muted-foreground border border-border",
-                                              title: "취소 요청 상태",
-                                            },
-                                          ]
-                                        : []),
-                                      ...(cancelQuickSignal
-                                        ? [
-                                            {
-                                              label: cancelQuickSignal.label,
-                                              className: cancelQuickSignal.className,
-                                              title: "환불 계좌 준비 상태",
-                                            },
-                                          ]
-                                        : []),
-                                    ]}
-                                  />
-                                  <div className="mt-1 min-w-0 text-left">
-                                    <p className="line-clamp-1 text-ui-body-sm font-medium text-foreground">
-                                      {order.customer.name
-                                        .replace(/\s*\(비회원\)\s*$/, "")
-                                        .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
-                                    </p>
-                                    <p
-                                      className="truncate text-ui-label text-foreground/70"
-                                      title={order.customer.email}
-                                    >
-                                      {order.customer.email || "이메일 없음"}
-                                    </p>
-                                  </div>
+                                  <p
+                                    className={cn("w-full truncate", adminDataTable.secondaryText)}
+                                    title={order.customer.email}
+                                  >
+                                    {order.customer.email || "이메일 없음"}
+                                  </p>
                                 </div>
                               </TooltipTrigger>
 
@@ -1479,87 +1422,67 @@ export default function OrdersClient() {
                               );
                             })()
                           )}
-                          <p className="mt-1 line-clamp-2 text-ui-label font-medium leading-snug text-primary">
-                            다음: {nextActionLabel}
-                          </p>
-                          <p className="mt-0.5 text-ui-label text-foreground/75 tabular-nums">
-                            접수 {formatDate(order.date)}
-                          </p>
+                          {order.cancelStatus && order.cancelStatus !== "requested" ? (
+                            <p className={cn("mt-1", adminDataTable.secondaryText)}>
+                              {order.cancelStatus === "approved" ? "취소 승인" : "취소 거절"}
+                            </p>
+                          ) : null}
                         </TableCell>
-                        {/* 배송/결제 셀 */}
-                        <TableCell
-                          className={cn(tdClasses, "border-l border-border/20 py-2 text-right")}
-                        >
-                          <div className="flex flex-col items-end gap-1 text-right">
-                            <div className="flex flex-wrap justify-end gap-1">
-                              {(() => {
-                                const methodSource =
-                                  order.__type === "stringing_application" &&
-                                  anchorOrder &&
-                                  (order as any).linkedOrderId
-                                    ? (anchorOrder as any)
-                                    : (order as any);
-                                const m = getShippingMethodBadge(methodSource);
-                                return (
-                                  <Badge
-                                    variant={m.variant}
-                                    className={cn(
-                                      badgeBase,
-                                      badgeSizeSm,
-                                      "whitespace-nowrap shrink-0",
-                                    )}
-                                    title={`수령방식 코드: ${String(m.code ?? "null")}`}
-                                  >
-                                    {m.label}
-                                  </Badge>
-                                );
-                              })()}
-                              {(() => {
-                                if (isLinkedProductOrder) {
-                                  return (
-                                    <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "whitespace-nowrap shrink-0",
-                                        linkBadgeClass("standalone"),
-                                      )}
-                                    >
-                                      신청서에서 관리
-                                    </Badge>
-                                  );
-                                }
-                                const t = getTrackingBadge(order);
-                                return (
-                                  <Badge
-                                    variant={t.variant}
-                                    className={cn(
-                                      badgeBase,
-                                      badgeSizeSm,
-                                      "whitespace-nowrap shrink-0",
-                                    )}
-                                    title="택배인 경우만 운송장 등록/미등록 의미가 있습니다."
-                                  >
-                                    {t.label}
-                                  </Badge>
-                                );
-                              })()}
-                            </div>
-                            <div className="mt-1.5 flex w-full items-baseline justify-end gap-3 tabular-nums">
-                              <span className="text-ui-label font-medium text-foreground/75">
-                                {paymentState.label}
-                              </span>
-                              <span className="whitespace-nowrap text-ui-body-sm font-medium text-foreground">
-                                {formatCurrency(order.total)}
-                              </span>
-                            </div>
+                        {/* 결제 셀 */}
+                        <TableCell className={cn(adminDataTable.moneyCell, "py-2")}>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={adminDataTable.secondaryText}>{paymentState.label}</span>
+                            <span className={adminDataTable.primaryText}>
+                              {formatCurrency(order.total)}
+                            </span>
                           </div>
+                        </TableCell>
+                        {/* 배송/수령 셀 */}
+                        <TableCell className={cn(tdClasses, "py-2")}>
+                          <div className="flex flex-col items-start gap-1">
+                            {(() => {
+                              const methodSource =
+                                order.__type === "stringing_application" &&
+                                anchorOrder &&
+                                (order as any).linkedOrderId
+                                  ? (anchorOrder as any)
+                                  : (order as any);
+                              const m = getShippingMethodBadge(methodSource);
+                              return (
+                                <span className={adminDataTable.primaryText} title={`수령방식 코드: ${String(m.code ?? "null")}`}>
+                                  {m.label}
+                                </span>
+                              );
+                            })()}
+                            {(() => {
+                              if (isLinkedProductOrder) {
+                                return (
+                                  <span className={adminDataTable.secondaryText}>
+                                    신청서에서 관리
+                                  </span>
+                                );
+                              }
+                              const t = getTrackingBadge(order);
+                              return (
+                                <span
+                                  className={adminDataTable.secondaryText}
+                                  title="택배인 경우만 운송장 등록/미등록 의미가 있습니다."
+                                >
+                                  {t.label}
+                                </span>
+                              );
+                            })()}
+                          </div>
+                        </TableCell>
+                        {/* 접수 셀 */}
+                        <TableCell className={cn(adminDataTable.dateCell, "py-2")}>
+                          {formatDate(order.date)}
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
                         <TableCell
                           className={cn(
                             adminDataTable.stickyActionCell,
-                            "w-[130px] py-2 group-hover:bg-muted/25",
+                            "w-[170px] py-2 group-hover:bg-muted/25",
                           )}
                         >
                           <div className="flex items-center justify-end gap-1">

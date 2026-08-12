@@ -2035,19 +2035,15 @@ export default function OperationsClient() {
           {isLoading ? (
             <div className="space-y-4 px-4 py-4">
               <div className="overflow-x-auto">
-                <Table className="min-w-[1320px]">
+                <Table className="min-w-[1480px] table-fixed">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
-                      <TableHead className={cn(thClasses, "w-[24%]")}>
-                        <Skeleton className="h-4 w-24" />
-                      </TableHead>
-                      <TableHead className={cn(thClasses, "w-[42%]")}>
-                        <Skeleton className="h-4 w-36" />
-                      </TableHead>
-                      <TableHead className={cn(thClasses, "w-[18%] text-right")}>
-                        <Skeleton className="ml-auto h-4 w-16" />
-                      </TableHead>
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[16%]")}>
+                      {Array.from({ length: 6 }).map((_, idx) => (
+                        <TableHead key={idx} className={cn(thClasses, idx === 5 && "text-right")}>
+                          <Skeleton className={cn("h-4", idx === 5 ? "ml-auto w-16" : "w-24")} />
+                        </TableHead>
+                      ))}
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[170px]")}>
                         <Skeleton className="ml-auto h-4 w-16" />
                       </TableHead>
                     </TableRow>
@@ -2055,20 +2051,15 @@ export default function OperationsClient() {
                   <TableBody>
                     {Array.from({ length: 6 }).map((_, idx) => (
                       <TableRow key={idx}>
-                        <TableCell className={cn(tdClasses, "py-5")}>
-                          <Skeleton className="h-5 w-40" />
-                        </TableCell>
-                        <TableCell className={cn(tdClasses, "py-5")}>
-                          <Skeleton className="h-5 w-3/4" />
-                        </TableCell>
-                        <TableCell className={cn(tdClasses, "py-5")}>
-                          <Skeleton className="ml-auto h-5 w-24" />
-                        </TableCell>
+                        {Array.from({ length: 6 }).map((_, cellIndex) => (
+                          <TableCell key={cellIndex} className={cn(tdClasses, "py-5")}>
+                            <Skeleton className={cn("h-5", cellIndex === 5 ? "ml-auto w-24" : "w-3/4")} />
+                          </TableCell>
+                        ))}
                         <TableCell
                           className={cn(
                             tdClasses,
-                            "sticky right-0 z-10 border-l border-border/60 bg-background",
-                            "py-5",
+                            "sticky right-0 z-10 border-l border-border/60 bg-background py-5",
                           )}
                         >
                           <Skeleton className="ml-auto h-8 w-20" />
@@ -2082,22 +2073,18 @@ export default function OperationsClient() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <Table className="min-w-[1180px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+                <Table className="min-w-[1480px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
-                      <TableHead className={cn(thClasses, "w-[18%]")}>우선순위/업무</TableHead>
-                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>
-                        문서/고객
+                      <TableHead className={cn(thClasses, "w-[130px]")}>우선순위</TableHead>
+                      <TableHead className={cn(thClasses, "w-[245px]")}>업무</TableHead>
+                      <TableHead className={cn(thClasses, "w-[250px]")}>고객 / 문서</TableHead>
+                      <TableHead className={cn(thClasses, "w-[220px]")}>상태</TableHead>
+                      <TableHead className={cn(thClasses, "w-[210px]")}>다음 작업</TableHead>
+                      <TableHead className={cn(thClasses, "w-[175px] text-right")}>
+                        금액 / 경과
                       </TableHead>
-                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>
-                        상태/다음 작업
-                      </TableHead>
-                      <TableHead
-                        className={cn(thClasses, "w-[16%] border-l border-border/20 text-right")}
-                      >
-                        금액/접수
-                      </TableHead>
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[12%]")}>
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[170px]")}>
                         액션
                       </TableHead>
                     </TableRow>
@@ -2178,77 +2165,58 @@ export default function OperationsClient() {
                             )}
                           >
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="min-w-0 space-y-1">
-                                <div className="flex flex-wrap items-center gap-1">
-                                  <Badge
-                                    className={cn(
-                                      badgeBase,
-                                      badgeSizeSm,
-                                      badgeToneClass(priorityMeta.tone),
-                                    )}
+                              <div className="space-y-1">
+                                <Badge
+                                  className={cn(
+                                    badgeBase,
+                                    badgeSizeSm,
+                                    badgeToneClass(priorityMeta.tone),
+                                  )}
+                                >
+                                  {priorityMeta.label}
+                                </Badge>
+                                <p className={adminTypography.caption}>{priorityMeta.description}</p>
+                                {slaMeta ? (
+                                  <span
+                                    className={cn("block", adminTypography.caption, slaMeta.className)}
+                                    title="접수 시점 기준 경과 시간입니다."
                                   >
-                                    {priorityMeta.label}
-                                  </Badge>
-                                  <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                                    {opsKindLabel(g.anchor.kind)}
-                                  </Badge>
-                                </div>
-                                <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
-                                  {headline}
-                                </p>
-                                <div className={cn("space-y-0.5", adminTypography.metaMuted)}>
-                                  {isGroup && (
-                                    <p className="leading-snug">연결 {g.items.length}건</p>
-                                  )}
-                                  <p className="line-clamp-2 leading-snug" title={scenarioLabel}>
-                                    {scenarioLabel}
-                                  </p>
-                                  {g.anchor.canSyncNicePayment && (
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="ghost"
-                                      className={cn(
-                                        "h-8 min-w-[96px] justify-center px-2.5 text-muted-foreground hover:text-foreground",
-                                        adminTypography.actionLabel,
-                                      )}
-                                      title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
-                                      disabled={syncingNiceOrderId === g.anchor.id}
-                                      onClick={() => {
-                                        void handleNicePaymentSync(g.anchor.id);
-                                      }}
-                                    >
-                                      <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                                      {syncingNiceOrderId === g.anchor.id
-                                        ? "확인 중..."
-                                        : "PG 상태 확인"}
-                                    </Button>
-                                  )}
-                                </div>
+                                    {slaMeta.label}
+                                  </span>
+                                ) : null}
                               </div>
                             </TableCell>
 
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                rowDensityClass,
-                                "border-l border-border/20",
-                              )}
-                            >
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="min-w-0 space-y-1">
-                                <div className="flex min-w-0 items-center gap-1.5">
-                                  <span
-                                    className={cn(
-                                      "truncate font-mono text-foreground/70",
-                                      adminTypography.caption,
-                                    )}
-                                  >
+                                <p className={cn("line-clamp-2", adminDataTable.primaryText)}>
+                                  {headline}
+                                </p>
+                                <p
+                                  className={cn("line-clamp-1", adminDataTable.secondaryText)}
+                                  title={`${opsKindLabel(g.anchor.kind)} · ${scenarioLabel}`}
+                                >
+                                  {opsKindLabel(g.anchor.kind)} · {scenarioLabel}
+                                </p>
+                                {isGroup && (
+                                  <p className={adminDataTable.secondaryText}>연결 {g.items.length}건</p>
+                                )}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
+                              <div className="min-w-0 space-y-1">
+                                <span className={cn("block truncate", adminDataTable.primaryText)}>
+                                  {customerName || "-"}
+                                </span>
+                                <div className="flex min-w-0 items-center gap-1">
+                                  <span className={cn("truncate font-mono", adminDataTable.secondaryText)}>
                                     {docLabel}
                                   </span>
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                    className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
                                     onClick={() => copyToClipboard(g.anchor.id)}
                                     title={ROW_ACTION_LABELS.copyId}
                                     aria-label={ROW_ACTION_LABELS.copyId}
@@ -2256,18 +2224,15 @@ export default function OperationsClient() {
                                     <Copy className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
-                                <span className={cn("block truncate", adminTypography.bodyStrong)}>
-                                  {customerName || "-"}
-                                </span>
-                                <div className="flex min-w-0 items-center gap-1.5">
-                                  <span className={cn("truncate", adminTypography.caption)}>
+                                <div className="flex min-w-0 items-center gap-1">
+                                  <span className={cn("truncate", adminDataTable.secondaryText)}>
                                     {customerEmail || "이메일 없음"}
                                   </span>
                                   {customerEmail && (
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                      className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
                                       onClick={() => copyToClipboard(customerEmail)}
                                       title="이메일 복사"
                                       aria-label="이메일 복사"
@@ -2277,30 +2242,20 @@ export default function OperationsClient() {
                                   )}
                                 </div>
                                 {isGroup && children[0] && (
-                                  <p className={cn("line-clamp-1", adminTypography.caption)}>
-                                    연결 {opsKindLabel(children[0].kind)}{" "}
-                                    {shortenId(children[0].id)}
+                                  <p className={cn("line-clamp-1", adminDataTable.secondaryText)}>
+                                    연결 {opsKindLabel(children[0].kind)} {shortenId(children[0].id)}
                                     {children.length > 1 ? ` 외 ${children.length - 1}건` : ""}
                                   </p>
                                 )}
                               </div>
                             </TableCell>
 
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                rowDensityClass,
-                                "border-l border-border/20",
-                              )}
-                            >
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="space-y-1">
                                 <div className="flex flex-wrap items-center gap-1">
                                   <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                                    {g.anchor.statusDisplayLabel ??
-                                      g.anchor.statusLabel ??
-                                      "상태 확인"}
+                                    {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
                                   </Badge>
-
                                   {anchorPaymentBadgeSpec && g.anchor.paymentDisplayLabel ? (
                                     <Badge
                                       variant={anchorPaymentBadgeSpec.variant}
@@ -2309,79 +2264,24 @@ export default function OperationsClient() {
                                       {g.anchor.paymentDisplayLabel}
                                     </Badge>
                                   ) : null}
-
                                   {g.anchor.needsStringingApplication ? (
-                                    <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "border border-warning/30 bg-warning/10 text-warning",
-                                      )}
-                                    >
+                                    <Badge className={cn(badgeBase, badgeSizeSm, "border border-warning/30 bg-warning/10 text-warning")}>
                                       교체 신청서 미접수
-                                    </Badge>
-                                  ) : null}
-
-                                  {slaMeta ? (
-                                    <Badge
-                                      title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
-                                      variant="outline"
-                                      className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
-                                    >
-                                      {slaMeta.label}
                                     </Badge>
                                   ) : null}
                                 </div>
                                 {primarySignal ? (
                                   <p
-                                    className={cn(
-                                      "line-clamp-1 rounded-sm bg-warning/10 px-1.5 py-0.5 text-warning",
-                                      adminTypography.caption,
-                                    )}
+                                    className={cn("line-clamp-1 text-warning", adminTypography.caption)}
                                     title={toOperatorSentence(primarySignal.description)}
                                   >
                                     {toOperatorSentence(primarySignal.title)}
                                   </p>
                                 ) : null}
-                                <div className="border-l-2 border-primary/25 pl-2">
-                                  <p
-                                    className={cn(
-                                      "mb-0.5 text-foreground/55",
-                                      adminTypography.caption,
-                                    )}
-                                  >
-                                    다음
-                                  </p>
-                                  <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
-                                    {nextActionText}
-                                  </p>
-                                </div>
-                              </div>
-                            </TableCell>
-
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                rowDensityClass,
-                                "border-l border-border/20 text-right tabular-nums",
-                              )}
-                            >
-                              <div className="flex flex-col items-end gap-1.5">
-                                <div className="text-right">
-                                  <span className="whitespace-nowrap text-xs text-foreground/75">
-                                    {isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
-                                  </span>
-                                  <p className="whitespace-nowrap text-ui-body-sm font-semibold tracking-normal text-foreground tabular-nums">
-                                    {won(g.anchor.amount)}
-                                  </p>
-                                </div>
                                 {(() => {
                                   const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
                                   return cancelBadge ? (
-                                    <Badge
-                                      variant={cancelBadge.spec.variant}
-                                      className={cn(badgeBase, badgeSizeSm)}
-                                    >
+                                    <Badge variant={cancelBadge.spec.variant} className={cn(badgeBase, badgeSizeSm)}>
                                       {cancelBadge.label}
                                     </Badge>
                                   ) : null;
@@ -2390,26 +2290,12 @@ export default function OperationsClient() {
                                   <TooltipProvider delayDuration={50}>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <Badge
-                                          className={cn(
-                                            badgeBase,
-                                            badgeSizeSm,
-                                            badgeToneClass(anchorCancelQuickSignal.tone),
-                                            "cursor-help",
-                                          )}
-                                        >
+                                        <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(anchorCancelQuickSignal.tone), "cursor-help")}>
                                           {anchorCancelQuickSignal.label}
                                         </Badge>
                                       </TooltipTrigger>
-                                      <TooltipContent
-                                        side="top"
-                                        align="start"
-                                        sideOffset={6}
-                                        className={adminRichTooltipClass}
-                                      >
-                                        <p className="text-sm text-foreground">
-                                          취소 요청이 접수된 항목입니다.
-                                        </p>
+                                      <TooltipContent side="top" align="start" sideOffset={6} className={adminRichTooltipClass}>
+                                        <p className="text-sm text-foreground">취소 요청이 접수된 항목입니다.</p>
                                         <p className="mt-1 text-xs text-muted-foreground">
                                           {toOperatorSentence(anchorCancelQuickSignal.tooltipCopy)}
                                         </p>
@@ -2422,42 +2308,58 @@ export default function OperationsClient() {
                                     </Tooltip>
                                   </TooltipProvider>
                                 )}
-                                <span className={cn("text-right", adminTypography.caption)}>
-                                  접수 {createdAtLabel}
-                                </span>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
+                              <p className={cn("line-clamp-2", adminDataTable.primaryText)}>
+                                {nextActionText}
+                              </p>
+                            </TableCell>
+
+                            <TableCell className={cn(tdClasses, rowDensityClass, "text-right tabular-nums")}>
+                              <div className="flex flex-col items-end gap-1">
+                                <p className={adminTypography.money}>{won(g.anchor.amount)}</p>
+                                <span className={adminDataTable.secondaryText}>{elapsedText}</span>
+                                <span className={adminDataTable.secondaryText}>{createdAtLabel}</span>
                                 {amountMeaningText(g.anchor) ? (
-                                  <span className="line-clamp-1 text-right text-xs text-foreground/75">
+                                  <span className={cn("line-clamp-1 text-right", adminDataTable.secondaryText)}>
                                     {amountMeaningText(g.anchor)}
                                   </span>
                                 ) : null}
                               </div>
                             </TableCell>
 
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                rowDensityClass,
-                                "text-right",
-                                stickyActionCellClass,
-                              )}
-                            >
-                              <div className="flex w-full flex-col items-end gap-1">
-                                <div className="flex w-full flex-col items-end gap-1">
+                            <TableCell className={cn(tdClasses, rowDensityClass, "text-right", stickyActionCellClass)}>
+                              <div className="flex flex-col items-end gap-1">
+                                <Button
+                                  asChild
+                                  size="sm"
+                                  variant="outline"
+                                  className={cn(
+                                    "h-8 min-w-[112px] justify-center border-border/70 px-2.5 shadow-sm hover:border-border hover:bg-muted/40 focus-visible:ring-2",
+                                    adminTypography.actionLabel,
+                                  )}
+                                  title={groupGuide.nextAction ?? primaryActionTarget.label}
+                                >
+                                  <Link href={primaryActionTarget.href}>{primaryActionTarget.label}</Link>
+                                </Button>
+                                {g.anchor.canSyncNicePayment && (
                                   <Button
-                                    asChild
+                                    type="button"
                                     size="sm"
-                                    variant="outline"
-                                    className={cn(
-                                      "h-8 min-w-[104px] justify-center border-border/70 px-2.5 shadow-sm hover:border-border hover:bg-muted/40 focus-visible:ring-2",
-                                      adminTypography.actionLabel,
-                                    )}
-                                    title={groupGuide.nextAction ?? primaryActionTarget.label}
+                                    variant="ghost"
+                                    className={cn("h-7 min-w-[112px] px-2 text-muted-foreground hover:text-foreground", adminTypography.caption)}
+                                    title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                                    disabled={syncingNiceOrderId === g.anchor.id}
+                                    onClick={() => {
+                                      void handleNicePaymentSync(g.anchor.id);
+                                    }}
                                   >
-                                    <Link href={primaryActionTarget.href}>
-                                      {primaryActionTarget.label}
-                                    </Link>
+                                    <CreditCard className="mr-1.5 h-3.5 w-3.5" />
+                                    {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
                                   </Button>
-                                </div>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -2467,7 +2369,7 @@ export default function OperationsClient() {
 
                     {shouldShowEmptyState && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={5} className="py-16 text-center">
+                        <TableCell colSpan={7} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
                             <p className="text-sm text-muted-foreground">
