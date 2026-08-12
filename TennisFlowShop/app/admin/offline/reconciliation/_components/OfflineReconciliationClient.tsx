@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AsyncState from "@/components/system/AsyncState";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
@@ -73,12 +74,6 @@ function stringValue(value: unknown, fallback = "-") {
   return fallback;
 }
 
-function statusVariant(status: OfflineReconciliationStatus) {
-  if (status === "resolved") return "success" as const;
-  if (status === "ignored") return "secondary" as const;
-  return "warning" as const;
-}
-
 function severityVariant(severity: "warning" | "critical") {
   return severity === "critical" ? ("danger" as const) : ("warning" as const);
 }
@@ -134,11 +129,15 @@ function SummaryCard({
 function ItemActions({
   item,
   note,
+  description,
+  errorReason,
   setNote,
   onUpdate,
 }: {
   item: OfflineReconciliationItem;
   note: string;
+  description: string;
+  errorReason: string;
   setNote: (value: string) => void;
   onUpdate: (
     item: OfflineReconciliationItem,
@@ -147,67 +146,90 @@ function ItemActions({
   ) => Promise<void>;
 }) {
   return (
-    <div className="flex min-w-[260px] flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
-        {item.links.customerDetailUrl && (
-          <Button asChild size="sm" variant="outline">
-            <Link href={item.links.customerDetailUrl}>
-              고객 상세 <ExternalLink className="h-3 w-3" />
-            </Link>
+    <AdminRowDetailsSheet
+      title={item.title}
+      description={`${TYPE_LABELS[item.type]} · ${item.customer.name}`}
+      trigger={
+        <Button type="button" size="sm" variant={item.status === "open" ? "default" : "outline"}>
+          {item.status === "open" ? "처리" : "검토"}
+        </Button>
+      }
+      footer={
+        <div className="flex w-full flex-wrap justify-end gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => onUpdate(item, item.status, note)}
+          >
+            <Save className="h-3.5 w-3.5" />
+            메모 저장
           </Button>
-        )}
-        {item.links.packageOrderAdminUrl && (
-          <Button asChild size="sm" variant="outline">
-            <Link href={item.links.packageOrderAdminUrl}>
-              주문 보기 <ExternalLink className="h-3 w-3" />
-            </Link>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => onUpdate(item, "ignored", note)}
+          >
+            <XCircle className="h-3.5 w-3.5" />
+            무시
           </Button>
-        )}
-        {item.links.offlineRecordUrl && (
-          <Button asChild size="sm" variant="outline">
-            <Link href={item.links.offlineRecordUrl}>
-              기록 보기 <ExternalLink className="h-3 w-3" />
-            </Link>
+          <Button type="button" size="sm" onClick={() => onUpdate(item, "resolved", note)}>
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            확인 완료
           </Button>
-        )}
+        </div>
+      }
+    >
+      <div className="space-y-5">
+        <section className={cn(adminSurface.fieldPanelMuted, "space-y-2")}>
+          <h3 className={adminTypography.panelTitle}>발생 내용</h3>
+          <p className={adminTypography.body}>{description}</p>
+          <div className="rounded-lg border border-warning/25 bg-warning/5 p-3">
+            <p className={adminTypography.caution}>오류·확인 사유</p>
+            <p className={cn("mt-1 break-words", adminTypography.body)}>{errorReason}</p>
+          </div>
+        </section>
+
+        <section className="space-y-2">
+          <h3 className={adminTypography.panelTitle}>관련 화면</h3>
+          <div className="flex flex-wrap gap-2">
+            {item.links.customerDetailUrl ? (
+              <Button asChild size="sm" variant="outline">
+                <Link href={item.links.customerDetailUrl}>
+                  고객 상세 <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            ) : null}
+            {item.links.packageOrderAdminUrl ? (
+              <Button asChild size="sm" variant="outline">
+                <Link href={item.links.packageOrderAdminUrl}>
+                  주문 보기 <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            ) : null}
+            {item.links.offlineRecordUrl ? (
+              <Button asChild size="sm" variant="outline">
+                <Link href={item.links.offlineRecordUrl}>
+                  기록 보기 <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="space-y-2">
+          <Label htmlFor={`reconciliation-note-${item.id}`}>처리 메모</Label>
+          <textarea
+            id={`reconciliation-note-${item.id}`}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="예: 고객 확인 완료, 수동 발급 완료, 중복 항목으로 무시"
+            className={`min-h-28 w-full rounded-lg border border-input bg-background px-3 py-2 ${adminTypography.body} focus:outline-none focus:ring-2 focus:ring-ring/20`}
+          />
+        </section>
       </div>
-      <textarea
-        aria-label="보정 메모"
-        value={note}
-        onChange={(event) => setNote(event.target.value)}
-        placeholder="예: 고객 확인 완료, 수동 발급 완료, 중복 항목으로 무시"
-        className={`min-h-[68px] w-full rounded-lg border border-input bg-background px-3 py-2 ${adminTypography.caption} focus:outline-none focus:ring-2 focus:ring-ring/20`}
-      />
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          onClick={() => onUpdate(item, item.status, note)}
-        >
-          <Save className="h-3 w-3" />
-          메모 저장
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => onUpdate(item, "resolved", note)}
-        >
-          <CheckCircle2 className="h-3 w-3" />
-          확인 완료
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => onUpdate(item, "ignored", note)}
-        >
-          <XCircle className="h-3 w-3" />
-          무시
-        </Button>
-      </div>
-    </div>
+    </AdminRowDetailsSheet>
   );
 }
 
@@ -376,7 +398,7 @@ export default function OfflineReconciliationClient() {
           </span>
         </div>
       </div>
-      <div className="grid gap-3 grid-cols-5">
+      <div className="grid gap-3 grid-cols-3">
         <SummaryCard
           label="전체 미처리"
           value={summary.open}
@@ -397,20 +419,6 @@ export default function OfflineReconciliationClient() {
           tone="warning"
           active={currentViewLabel === "패키지 사용 연결 누락"}
           onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}
-        />
-        <SummaryCard
-          label="확인 완료"
-          value={summary.resolved}
-          tone="success"
-          active={currentViewLabel === "확인 완료"}
-          onClick={() => applyQuickFilter({ type: "all", status: "resolved" })}
-        />
-        <SummaryCard
-          label="무시"
-          value={summary.ignored}
-          tone="muted"
-          active={currentViewLabel === "무시"}
-          onClick={() => applyQuickFilter({ type: "all", status: "ignored" })}
         />
       </div>
       <AdminPageSection
@@ -509,11 +517,11 @@ export default function OfflineReconciliationClient() {
       >
         {isLoading && (
           <div className={`${adminSurface.tableCard} overflow-x-auto`}>
-            <table className="w-full min-w-[1620px] table-fixed">
+            <table className="w-full min-w-[1150px] table-fixed">
               <tbody className="divide-y">
                 {Array.from({ length: 4 }, (_, rowIndex) => (
                   <tr key={rowIndex}>
-                    {Array.from({ length: 9 }, (_, cellIndex) => (
+                    {Array.from({ length: 7 }, (_, cellIndex) => (
                       <td key={cellIndex} className={adminDataTable.cell}>
                         <Skeleton className="h-5 w-full" />
                       </td>
@@ -537,29 +545,25 @@ export default function OfflineReconciliationClient() {
         )}
         {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
           <div className={`${adminSurface.tableCard} overflow-x-auto`}>
-            <table className={`w-full min-w-[1620px] table-fixed ${adminTypography.body}`}>
+            <table className={`w-full min-w-[1150px] table-fixed ${adminTypography.body}`}>
               <colgroup>
-                <col className="w-[130px]" />
-                <col className="w-[105px]" />
                 <col className="w-[90px]" />
                 <col className="w-[150px]" />
+                <col className="w-[150px]" />
                 <col className="w-[180px]" />
-                <col className="w-[230px]" />
-                <col className="w-[190px]" />
-                <col className="w-[240px]" />
-                <col className="w-[300px]" />
+                <col className="w-[280px]" />
+                <col className="w-[180px]" />
+                <col className="w-[120px]" />
               </colgroup>
               <thead className={adminSurface.tableHeader}>
                 <tr>
-                  <th className={adminDataTable.headCenter}>유형</th>
-                  <th className={adminDataTable.headCenter}>상태</th>
-                  <th className={adminDataTable.headCenter}>심각도</th>
+                  <th className={adminDataTable.headCenter}>주의</th>
+                  <th className={adminDataTable.head}>이슈</th>
                   <th className={adminDataTable.headRight}>발생일</th>
                   <th className={adminDataTable.head}>고객</th>
                   <th className={adminDataTable.head}>내용</th>
-                  <th className={adminDataTable.headRight}>금액/패키지명</th>
-                  <th className={adminDataTable.head}>에러/사유</th>
-                  <th className={cn(adminDataTable.stickyActionHead, "w-[300px]")}>관리</th>
+                  <th className={adminDataTable.headRight}>금액 / 패키지</th>
+                  <th className={cn(adminDataTable.stickyActionHead, "w-[120px]")}>처리</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -578,17 +582,15 @@ export default function OfflineReconciliationClient() {
                       className={cn(adminDataTable.row, updatingId === item.id && "opacity-60")}
                     >
                       <td className={adminDataTable.cellCenter}>
-                        <Badge variant="info">{TYPE_LABELS[item.type]}</Badge>
-                      </td>
-                      <td className={adminDataTable.cellCenter}>
-                        <Badge variant={statusVariant(item.status)}>
-                          {STATUS_LABELS[item.status]}
-                        </Badge>
-                      </td>
-                      <td className={adminDataTable.cellCenter}>
                         <Badge variant={severityVariant(item.severity)}>
                           {SEVERITY_LABELS[item.severity]}
                         </Badge>
+                      </td>
+                      <td className={adminDataTable.cellTopLeft}>
+                        <p className={adminDataTable.categoryText}>{TYPE_LABELS[item.type]}</p>
+                        {submitted.status === "all" ? (
+                          <p className={adminDataTable.secondaryText}>{STATUS_LABELS[item.status]}</p>
+                        ) : null}
                       </td>
                       <td className={adminDataTable.dateCell}>
                         {formatDate(
@@ -625,15 +627,12 @@ export default function OfflineReconciliationClient() {
                             : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}
                         </p>
                       </td>
-                      <td className={adminDataTable.cellTopLeft}>
-                        <p className="line-clamp-3 break-words" title={errorReason}>
-                          {errorReason}
-                        </p>
-                      </td>
-                      <td className={cn(adminDataTable.stickyActionCell, "w-[300px]")}>
+                      <td className={cn(adminDataTable.stickyActionCell, "w-[120px]")}>
                         <ItemActions
                           item={item}
                           note={note}
+                          description={description}
+                          errorReason={errorReason}
                           setNote={(value) =>
                             setNotes((prev) => ({
                               ...prev,

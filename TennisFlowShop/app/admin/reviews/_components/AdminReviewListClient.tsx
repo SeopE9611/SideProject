@@ -32,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -436,9 +435,6 @@ export default function AdminReviewListClient() {
   // --- 카드 밀도 토글 ----
   const [compact, setCompact] = useState(false);
 
-  // 더보기/ 접기----
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
   // ---- 렌더 유틸 ----
   const renderStars = (n: number) => (
     <div className="flex items-center">
@@ -466,7 +462,7 @@ export default function AdminReviewListClient() {
     }
   }
   const GRID =
-    "min-w-[980px] grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
+    "min-w-[1080px] grid-cols-[44px_minmax(120px,1fr)_minmax(260px,2.4fr)_minmax(100px,0.9fr)_minmax(110px,1fr)_minmax(96px,0.8fr)_minmax(112px,0.9fr)_144px]";
 
   return (
     <div className="space-y-5">
@@ -750,48 +746,21 @@ export default function AdminReviewListClient() {
 
                   {/* 후기 내용 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <p
-                            className={[
-                              adminDataTable.primaryText,
-                              expanded[r._id] ? "whitespace-pre-wrap" : "line-clamp-2",
-                              "break-keep",
-                            ].join(" ")}
-                          >
-                            {r.content}
-                          </p>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-md bg-card text-foreground border dark:border-border shadow-md rounded-md p-3">
-                          <p className="whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere]">
-                            {r.content}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
-                    {r.content && r.content.length > 80 && (
-                      <button
-                        type="button"
-                        className="mt-1 text-xs text-primary hover:underline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpanded((s) => ({ ...s, [r._id]: !s[r._id] }));
-                        }}
-                        aria-expanded={!!expanded[r._id]}
-                      >
-                        {expanded[r._id] ? "접기" : "더보기"}
-                      </button>
-                    )}
+                    <p className={cn(adminDataTable.primaryText, "line-clamp-2 break-keep")}>
+                      {r.content}
+                    </p>
+                    {r.content && r.content.length > 80 ? (
+                      <span className={adminDataTable.secondaryText}>전체 내용은 상세에서 확인</span>
+                    ) : null}
                   </div>
 
                   {/* 평점 / 도움돼요 */}
                   <div className={`min-w-0 ${dim} text-center`}>
                     <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-                      {renderStars(r.rating)}
-                      <span className="text-sm text-foreground">{r.rating}/5</span>
-                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-xs leading-none bg-card text-foreground border-border">
+                      <span className="text-sm font-semibold tabular-nums text-foreground">
+                        {r.rating}/5
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
                       </span>
@@ -822,7 +791,6 @@ export default function AdminReviewListClient() {
                     <span className={adminDataTable.secondaryText}>
                       {r.moderationStatus === "visible" ? "관리자 공개" : "관리자 숨김"}
                     </span>
-                    {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
                     <div className="h-6 flex items-center">
                       <Switch
                         checked={r.moderationStatus === "visible"}
@@ -858,24 +826,6 @@ export default function AdminReviewListClient() {
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <DropdownMenuItem
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onSelect={() => toggleVisible(r)}
-                          className="cursor-pointer whitespace-nowrap"
-                        >
-                          {r.status === "visible" ? (
-                            <>
-                              <EyeOff className="mr-2 h-4 w-4" />
-                              <span>비공개</span>
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="mr-2 h-4 w-4" />
-                              <span>공개</span>
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
                           className="cursor-pointer whitespace-nowrap text-destructive focus:text-destructive"

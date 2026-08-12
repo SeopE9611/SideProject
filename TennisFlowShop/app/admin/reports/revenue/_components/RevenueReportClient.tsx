@@ -908,34 +908,36 @@ export default function RevenueReportClient() {
               tone="warning"
             />
             <SummaryCard
-              title="오프라인 패키지 발급 보정 필요"
-              value={`${Number(report.offline.issueFailedCount ?? 0).toLocaleString("ko-KR")}건`}
-              sub="오프라인 패키지 발급 확인"
-            />
-            <SummaryCard
-              title="개인결제 환불"
-              value={formatKRW(report.online.refundedAmount)}
-              sub="개인결제 취소 기준"
-              tone="danger"
-            />
-            <SummaryCard
-              title="오프라인 환불"
-              value={formatKRW(report.offline.refundedAmount)}
-              sub="오프라인 summary 기준"
-              tone="danger"
-            />
-            <SummaryCard
-              title="오프라인 미결제"
-              value={formatKRW(report.offline.pendingAmount)}
-              sub="참고 합계 결제완료 매출 제외"
-              tone="warning"
-            />
-            <SummaryCard
               title="참고 순매출"
               value={formatKRW(report.combinedPreview.netAmount)}
               sub="온라인 net + 오프라인 net 단순 합계"
             />
           </div>
+
+          <Card className={cn(adminSurface.card, "border-warning/30 bg-warning/5")}>
+            <CardContent className="flex flex-wrap items-center gap-x-8 gap-y-3 p-4">
+              <div className="mr-auto">
+                <p className="text-sm font-semibold text-foreground">확인할 금액·예외</p>
+                <p className="text-xs text-muted-foreground">
+                  정상 매출 합계와 분리해 환불·미결제·발급 보정만 모았습니다.
+                </p>
+              </div>
+              {[
+                [
+                  "발급 보정",
+                  `${Number(report.offline.issueFailedCount ?? 0).toLocaleString("ko-KR")}건`,
+                ],
+                ["개인결제 환불", formatKRW(report.online.refundedAmount)],
+                ["오프라인 환불", formatKRW(report.offline.refundedAmount)],
+                ["오프라인 미결제", formatKRW(report.offline.pendingAmount)],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-[120px] text-right">
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p className="font-semibold tabular-nums text-foreground">{value}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
           <Card className={adminSurface.card}>
             <CardContent className="p-5">

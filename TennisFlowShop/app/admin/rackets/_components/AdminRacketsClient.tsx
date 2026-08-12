@@ -4,7 +4,6 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import { CommerceBadge } from "@/components/badges/CommerceBadge";
 import { RacketBadge } from "@/components/badges/RacketBadge";
 import { AdminSemanticBadge as SemanticBadge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -50,10 +49,11 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
-function RacketStockCells({ item }: { item: Item }) {
+function RacketAvailabilityCell({ item }: { item: Item }) {
   const { data } = useSWR<{ ok: boolean; available: number }>(
     `/api/admin/rentals/active-count/${item.id}`,
     authenticatedSWRFetcher,
@@ -81,38 +81,37 @@ function RacketStockCells({ item }: { item: Item }) {
   const stockDisplay = (() => {
     switch (availability) {
       case "loading":
-        return { label: "확인 중", tone: "neutral" as const };
+        return "확인 중";
       case "sold":
-        return { label: "재고 없음", tone: "neutral" as const };
+        return "재고 없음";
       case "rented":
       case "all_rented":
-        return { label: "대여 중", tone: "warning" as const };
+        return "대여 중";
       case "unavailable":
-        return { label: "이용 불가", tone: "neutral" as const };
+        return "이용 불가";
       case "low_stock":
-        return { label: `${avail}/${qty}`, tone: "warning" as const };
+        return `재고 ${avail}/${qty}`;
       case "purchase_rental_available":
-        return { label: qty > 1 ? `${avail}/${qty}` : "대여 가능", tone: "success" as const };
+        return qty > 1 ? `재고 ${avail}/${qty}` : "대여 가능";
       case "purchase_available":
-        return { label: qty > 1 ? `${avail}/${qty}` : "재고 있음", tone: "success" as const };
+        return qty > 1 ? `재고 ${avail}/${qty}` : "재고 있음";
     }
   })();
   return (
-    <>
-      <TableCell className={adminDataTable.cellCenter}>
+    <TableCell className={adminDataTable.cellCenter}>
+      <div className={cn(adminDataTable.cellStack, "flex flex-col items-center")}>
         <RacketBadge
           kind="availability"
           state={availability}
           size="sm"
           className={adminTypography.badgeLabel}
         />
-      </TableCell>
-      <TableCell className={adminDataTable.cellCenter}>
-        <SemanticBadge tone={stockDisplay.tone} size="xs" className="font-normal">
-          {stockDisplay.label}
-        </SemanticBadge>
-      </TableCell>
-    </>
+        <span className={adminDataTable.secondaryText}>{stockDisplay}</span>
+        {item.isVisible === false || item.status === "inactive" || item.status === "비노출" ? (
+          <span className={adminDataTable.attentionText}>스토어 숨김</span>
+        ) : null}
+      </div>
+    </TableCell>
   );
 }
 
@@ -138,40 +137,6 @@ type Item = {
     salePrice?: number;
   };
 };
-
-function StatusBadge({ status }: { status: string }) {
-  if (status === "available") {
-    return (
-      <SemanticBadge tone="success" size="sm" className="shrink-0">
-        판매 가능
-      </SemanticBadge>
-    );
-  }
-  if (status === "rented") {
-    return (
-      <SemanticBadge tone="warning" size="sm" className="shrink-0">
-        대여 중
-      </SemanticBadge>
-    );
-  }
-  if (status === "sold") {
-    return (
-      <SemanticBadge tone="neutral" size="sm" className="shrink-0">
-        판매 완료
-      </SemanticBadge>
-    );
-  }
-  return (
-    <SemanticBadge
-      tone="neutral"
-      emphasis="outline"
-      size="sm"
-      className="shrink-0"
-    >
-      비노출 상태
-    </SemanticBadge>
-  );
-}
 
 function ConditionBadge({ condition }: { condition: string }) {
   return (
@@ -640,16 +605,14 @@ export default function AdminRacketsClient() {
               </div>
             ) : (
               <div className="overflow-auto rounded-lg border border-border">
-                <Table className="min-w-[860px]">
+                <Table className="min-w-[720px] table-fixed">
                   <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
                     <TableRow className={adminDataTable.row}>
-                      <TableHead className={adminDataTable.head}>라켓 정보</TableHead>
-                      <TableHead className={adminDataTable.headRight}>가격</TableHead>
-                      <TableHead className={adminDataTable.headCenter}>등급</TableHead>
-                      <TableHead className={adminDataTable.headCenter}>상태</TableHead>
-                      <TableHead className={adminDataTable.headCenter}>대여</TableHead>
-                      <TableHead className={adminDataTable.headCenter}>재고</TableHead>
-                      <TableHead className={adminDataTable.stickyActionHead}>관리</TableHead>
+                      <TableHead className={cn(adminDataTable.head, "w-[300px]")}>라켓 정보</TableHead>
+                      <TableHead className={cn(adminDataTable.headRight, "w-[120px]")}>가격</TableHead>
+                      <TableHead className={cn(adminDataTable.headCenter, "w-[90px]")}>등급</TableHead>
+                      <TableHead className={cn(adminDataTable.headCenter, "w-[130px]")}>이용 / 재고</TableHead>
+                      <TableHead className={cn(adminDataTable.stickyActionHead, "w-[150px]")}>관리</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -661,9 +624,12 @@ export default function AdminRacketsClient() {
                         <TableCell className={adminDataTable.cellLeft}>
                           <div className="flex min-w-0 items-center gap-3">
                             {item.images?.[0] && (
-                              <img
+                              <Image
                                 src={item.images[0] || "/placeholder.svg"}
                                 alt={item.model}
+                                width={48}
+                                height={48}
+                                sizes="48px"
                                 className="h-12 w-12 rounded-lg object-cover"
                               />
                             )}
@@ -677,33 +643,29 @@ export default function AdminRacketsClient() {
                               >
                                 {item.model}
                               </div>
-                              <div className="mt-1 flex flex-wrap gap-1">
-                                {item.marketing?.isNew && (
-                                  <CommerceBadge
-                                    kind="new"
-                                    surface="inline"
-                                    size="sm"
-                                    className={adminTypography.badgeLabel}
-                                  />
-                                )}
-                                {item.marketing?.isFeatured && (
-                                  <CommerceBadge
-                                    kind="recommended"
-                                    surface="inline"
-                                    size="sm"
-                                    className={adminTypography.badgeLabel}
-                                  />
-                                )}
-                                {item.marketing?.isSale && Number(item.marketing.salePrice) > 0 && Number(item.marketing.salePrice) < Number(item.price) && (
-                                  <CommerceBadge
-                                    kind="sale"
-                                    surface="inline"
-                                    size="sm"
-                                    className={adminTypography.badgeLabel}
-                                    discountRate={((Number(item.price) - Number(item.marketing.salePrice)) / Number(item.price)) * 100}
-                                  />
-                                )}
-                              </div>
+                              {item.marketing?.isNew ||
+                              item.marketing?.isFeatured ||
+                              (item.marketing?.isSale &&
+                                Number(item.marketing.salePrice) > 0 &&
+                                Number(item.marketing.salePrice) < Number(item.price)) ? (
+                                <div className={cn("mt-1", adminDataTable.secondaryLine)}>
+                                  {[
+                                    item.marketing?.isNew ? "신상품" : null,
+                                    item.marketing?.isFeatured ? "추천" : null,
+                                    item.marketing?.isSale &&
+                                    Number(item.marketing.salePrice) > 0 &&
+                                    Number(item.marketing.salePrice) < Number(item.price)
+                                      ? `할인 ${Math.round(
+                                          ((Number(item.price) - Number(item.marketing.salePrice)) /
+                                            Number(item.price)) *
+                                            100,
+                                        )}%`
+                                      : null,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </TableCell>
@@ -715,59 +677,52 @@ export default function AdminRacketsClient() {
                         <TableCell className={adminDataTable.cellCenter}>
                           <ConditionBadge condition={item.condition} />
                         </TableCell>
-                        <TableCell className={adminDataTable.cellCenter}>
-                          <div className="flex flex-col items-center gap-1">
-                            <StatusBadge status={item.status} />
-                            {item.isVisible === false && (
-                              <SemanticBadge tone="warning" emphasis="outline" size="sm">
-                                숨김
-                              </SemanticBadge>
-                            )}
-                            {(item.status === "inactive" || item.status === "비노출") && (
-                              <SemanticBadge tone="neutral" emphasis="outline" size="sm">
-                                기존 비노출 상태
-                              </SemanticBadge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <RacketStockCells item={item} />
+                        <RacketAvailabilityCell item={item} />
                         <TableCell
-                          className={adminDataTable.stickyActionCell}
+                          className={cn(adminDataTable.stickyActionCell, "w-[150px]")}
                         >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
-                                aria-label={`${item.model || "라켓"} 관리 메뉴`}
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="min-w-max border-border">
-                              <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem asChild className="whitespace-nowrap">
-                                <Link href={`/rackets/${item.id}`} className="flex items-center">
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  {item.isVisible === false ||
-                                  item.status === "inactive" ||
-                                  item.status === "비노출"
-                                    ? "관리자 미리보기"
-                                    : "상세 보기"}
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild className="whitespace-nowrap">
-                                <Link
-                                  href={`/admin/rackets/${item.id}/edit`}
-                                  className="flex items-center"
+                          <div className="flex items-center justify-end gap-1">
+                            <Button asChild size="sm" variant="outline">
+                              <Link href={`/admin/rackets/${item.id}/edit`}>
+                                <Edit className="mr-1.5 h-3.5 w-3.5" />
+                                수정
+                              </Link>
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
+                                  aria-label={`${item.model || "라켓"} 관리 메뉴`}
                                 >
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  수정
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="min-w-max border-border">
+                                <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                <DropdownMenuItem asChild className="whitespace-nowrap">
+                                  <Link href={`/rackets/${item.id}`} className="flex items-center">
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    {item.isVisible === false ||
+                                    item.status === "inactive" ||
+                                    item.status === "비노출"
+                                      ? "관리자 미리보기"
+                                      : "상세 보기"}
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild className="whitespace-nowrap">
+                                  <Link
+                                    href={`/admin/rackets/${item.id}/edit`}
+                                    className="flex items-center"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    수정
+                                  </Link>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

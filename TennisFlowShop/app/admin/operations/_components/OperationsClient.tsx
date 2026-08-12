@@ -5,7 +5,6 @@ import {
   BellRing,
   ChevronRight,
   ClipboardCheck,
-  Copy,
   CreditCard,
   Inbox,
   Link2,
@@ -22,6 +21,7 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AdminTaskCard from "@/components/admin/AdminTaskCard";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
@@ -47,14 +47,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
   formatElapsedText,
   getElapsedHours,
-  getSlaBadgeMeta,
   resolveOperationsSlaLevel,
 } from "@/lib/admin/operations-sla";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
@@ -68,7 +66,6 @@ import {
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
 import type { AppsInTossReconciliationResponse } from "@/types/admin/apps-in-toss-reconciliation";
 import type {
@@ -101,15 +98,6 @@ type NavigationSummaryResponse = {
   operationSignalCounts?: Partial<OperationSignalCounts>;
 };
 
-function amountMeaningText(item: OpItem) {
-  const bits: string[] = [];
-  if (item.amountNote) bits.push(item.amountNote);
-  if (typeof item.amountReference === "number" && item.amountReference > 0) {
-    bits.push(`${item.amountReferenceLabel ?? "기준금액"} ${won(item.amountReference)}`);
-  }
-  return bits.join(" · ");
-}
-
 const PAGE_COPY = {
   title: "운영 업무",
   description: "대표 업무와 결제·정산 확인 항목을 구분해 남은 운영 업무를 확인합니다.",
@@ -139,10 +127,6 @@ const PAGE_COPY = {
     },
   ],
 };
-
-const ROW_ACTION_LABELS = {
-  copyId: "문서 ID 복사",
-} as const;
 
 const OPERATOR_TERM_MAP: Array<[RegExp, string]> = [
   [/\bpaymentStatus\b/gi, "결제 상태 정보"],
@@ -414,31 +398,6 @@ function hasPaymentCheckNeeded(group: { items: OpItem[] }) {
 
     return includeKeywords.some((word) => combined.includes(word));
   });
-}
-
-function getOperationPaymentBadgeStatus(item: OpItem) {
-  switch (item.paymentStateKind) {
-    case "not_required":
-    case "paid":
-      return "결제완료";
-
-    case "bank_pending":
-    case "pg_pending":
-    case "pending":
-      return "결제대기";
-
-    case "failed":
-      return "결제실패";
-
-    case "canceled":
-      return "결제취소";
-
-    case "refunded":
-      return "환불완료";
-
-    default:
-      return item.paymentLabel ?? null;
-  }
 }
 
 function hasShippingMissing(group: { items: OpItem[] }) {
@@ -1970,8 +1929,8 @@ export default function OperationsClient() {
                   ? `총 ${totalGroups.toLocaleString("ko-KR")}건 표시됨`
                   : "목록을 불러오는 중…"}
               </p>
-              <span className="inline text-xs text-muted-foreground">
-                표시 밀도(데스크톱)
+                <span className="inline text-xs text-muted-foreground">
+                  표시 정보
               </span>
               <div className="inline-flex items-center rounded-md border border-border p-0.5">
                 <Button
@@ -1992,7 +1951,7 @@ export default function OperationsClient() {
                   onClick={() => setDisplayDensity("compact")}
                   aria-pressed={displayDensity === "compact"}
                 >
-                  컴팩트
+                  핵심만
                 </Button>
               </div>
             </div>
@@ -2035,12 +1994,12 @@ export default function OperationsClient() {
           {isLoading ? (
             <div className="space-y-4 px-4 py-4">
               <div className="overflow-x-auto">
-                <Table className="min-w-[1480px] table-fixed">
+                <Table className="min-w-[1060px] table-fixed">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
-                      {Array.from({ length: 6 }).map((_, idx) => (
-                        <TableHead key={idx} className={cn(thClasses, idx === 5 && "text-right")}>
-                          <Skeleton className={cn("h-4", idx === 5 ? "ml-auto w-16" : "w-24")} />
+                      {Array.from({ length: 4 }).map((_, idx) => (
+                        <TableHead key={idx} className={thClasses}>
+                          <Skeleton className="h-4 w-24" />
                         </TableHead>
                       ))}
                       <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[170px]")}>
@@ -2051,9 +2010,9 @@ export default function OperationsClient() {
                   <TableBody>
                     {Array.from({ length: 6 }).map((_, idx) => (
                       <TableRow key={idx}>
-                        {Array.from({ length: 6 }).map((_, cellIndex) => (
+                        {Array.from({ length: 4 }).map((_, cellIndex) => (
                           <TableCell key={cellIndex} className={cn(tdClasses, "py-5")}>
-                            <Skeleton className={cn("h-5", cellIndex === 5 ? "ml-auto w-24" : "w-3/4")} />
+                            <Skeleton className="h-5 w-3/4" />
                           </TableCell>
                         ))}
                         <TableCell
@@ -2073,17 +2032,13 @@ export default function OperationsClient() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <Table className="min-w-[1480px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+                <Table className="min-w-[1060px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
-                      <TableHead className={cn(thClasses, "w-[130px]")}>우선순위</TableHead>
-                      <TableHead className={cn(thClasses, "w-[245px]")}>업무</TableHead>
-                      <TableHead className={cn(thClasses, "w-[250px]")}>고객 / 문서</TableHead>
-                      <TableHead className={cn(thClasses, "w-[220px]")}>상태</TableHead>
-                      <TableHead className={cn(thClasses, "w-[210px]")}>다음 작업</TableHead>
-                      <TableHead className={cn(thClasses, "w-[175px] text-right")}>
-                        금액 / 경과
-                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[150px]")}>주의 / 경과</TableHead>
+                      <TableHead className={cn(thClasses, "w-[270px]")}>업무</TableHead>
+                      <TableHead className={cn(thClasses, "w-[240px]")}>고객 / 문서</TableHead>
+                      <TableHead className={cn(thClasses, "w-[220px]")}>현재 단계</TableHead>
                       <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[170px]")}>
                         액션
                       </TableHead>
@@ -2125,7 +2080,6 @@ export default function OperationsClient() {
                         hasShipping: hasShippingMissing(g),
                         hasRental: hasRentalDue(g),
                       });
-                      const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
                       const headline = statusHeadlineOf(g.anchor);
                       const primaryActionTarget = resolvePrimaryActionTarget({
                         anchor: g.anchor,
@@ -2134,17 +2088,21 @@ export default function OperationsClient() {
 
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
 
-                      const anchorPaymentBadgeStatus = getOperationPaymentBadgeStatus(g.anchor);
-
-                      const anchorPaymentBadgeSpec =
-                        g.anchor.kind === "order" &&
-                        g.anchor.paymentDisplayLabel &&
-                        anchorPaymentBadgeStatus
-                          ? getPaymentStatusBadgeSpec(anchorPaymentBadgeStatus)
-                          : null;
-
                       const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2";
                       const primarySignal = visibleSignalSummary(g.signals, 1).visible[0];
+                      const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
+                      const exceptionLabel =
+                        anchorCancelQuickSignal?.label ??
+                        (g.anchor.needsStringingApplication ? "교체 신청서 미접수" : null) ??
+                        (primarySignal ? toOperatorSentence(primarySignal.title) : null) ??
+                        cancelBadge?.label ??
+                        null;
+                      const linkedDocumentLabel =
+                        isGroup && children[0]
+                          ? `${opsKindLabel(children[0].kind)} ${children[0].id}${
+                              children.length > 1 ? ` 외 ${children.length - 1}건` : ""
+                            }`
+                          : null;
                       const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.12]";
                       const warnEmphasisClass = warn
                         ? "border-l-2 border-l-warning/60 bg-warning/[0.08]"
@@ -2165,24 +2123,33 @@ export default function OperationsClient() {
                             )}
                           >
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1">
-                                <Badge
-                                  className={cn(
-                                    badgeBase,
-                                    badgeSizeSm,
-                                    badgeToneClass(priorityMeta.tone),
-                                  )}
-                                >
-                                  {priorityMeta.label}
-                                </Badge>
-                                <p className={adminTypography.caption}>{priorityMeta.description}</p>
-                                {slaMeta ? (
+                              <div className={adminDataTable.cellStack}>
+                                {slaLevel !== "normal" ? (
+                                  <Badge
+                                    className={cn(
+                                      badgeBase,
+                                      badgeSizeSm,
+                                      badgeToneClass(priorityMeta.tone),
+                                    )}
+                                  >
+                                    {priorityMeta.label}
+                                  </Badge>
+                                ) : null}
+                                {elapsedText ? (
                                   <span
-                                    className={cn("block", adminTypography.caption, slaMeta.className)}
+                                    className={cn(
+                                      "block",
+                                      slaLevel === "normal"
+                                        ? adminDataTable.secondaryText
+                                        : adminDataTable.attentionText,
+                                    )}
                                     title="접수 시점 기준 경과 시간입니다."
                                   >
-                                    {slaMeta.label}
+                                    {elapsedText}
                                   </span>
+                                ) : null}
+                                {displayDensity === "default" ? (
+                                  <span className={adminDataTable.secondaryLine}>{createdAtLabel}</span>
                                 ) : null}
                               </div>
                             </TableCell>
@@ -2192,140 +2159,56 @@ export default function OperationsClient() {
                                 <p className={cn("line-clamp-2", adminDataTable.primaryText)}>
                                   {headline}
                                 </p>
-                                <p
-                                  className={cn("line-clamp-1", adminDataTable.secondaryText)}
-                                  title={`${opsKindLabel(g.anchor.kind)} · ${scenarioLabel}`}
-                                >
-                                  {opsKindLabel(g.anchor.kind)} · {scenarioLabel}
-                                </p>
-                                {isGroup && (
-                                  <p className={adminDataTable.secondaryText}>연결 {g.items.length}건</p>
-                                )}
+                                {displayDensity === "default" ? (
+                                  <p
+                                    className={adminDataTable.secondaryLine}
+                                    title={`${opsKindLabel(g.anchor.kind)} · ${scenarioLabel}`}
+                                  >
+                                    {opsKindLabel(g.anchor.kind)} · {scenarioLabel}
+                                    {isGroup ? ` · 연결 ${g.items.length}건` : ""}
+                                  </p>
+                                ) : null}
                               </div>
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="min-w-0 space-y-1">
+                              <div className={adminDataTable.cellStack}>
                                 <span className={cn("block truncate", adminDataTable.primaryText)}>
                                   {customerName || "-"}
                                 </span>
-                                <div className="flex min-w-0 items-center gap-1">
-                                  <span className={cn("truncate font-mono", adminDataTable.secondaryText)}>
-                                    {docLabel}
-                                  </span>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-                                    onClick={() => copyToClipboard(g.anchor.id)}
-                                    title={ROW_ACTION_LABELS.copyId}
-                                    aria-label={ROW_ACTION_LABELS.copyId}
-                                  >
-                                    <Copy className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                                <div className="flex min-w-0 items-center gap-1">
-                                  <span className={cn("truncate", adminDataTable.secondaryText)}>
-                                    {customerEmail || "이메일 없음"}
-                                  </span>
-                                  {customerEmail && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-                                      onClick={() => copyToClipboard(customerEmail)}
-                                      title="이메일 복사"
-                                      aria-label="이메일 복사"
-                                    >
-                                      <Copy className="h-3.5 w-3.5" />
-                                    </Button>
-                                  )}
-                                </div>
-                                {isGroup && children[0] && (
-                                  <p className={cn("line-clamp-1", adminDataTable.secondaryText)}>
-                                    연결 {opsKindLabel(children[0].kind)} {shortenId(children[0].id)}
-                                    {children.length > 1 ? ` 외 ${children.length - 1}건` : ""}
-                                  </p>
-                                )}
+                                <AdminReferencePopover
+                                  title="업무 참조 정보"
+                                  trigger={
+                                    <button type="button" className={adminDataTable.referenceTrigger}>
+                                      <span className="truncate font-mono">{docLabel}</span>
+                                    </button>
+                                  }
+                                  items={[
+                                    { label: "문서 ID", value: g.anchor.id },
+                                    { label: "이메일", value: customerEmail || null },
+                                    { label: "연결 문서", value: linkedDocumentLabel },
+                                    {
+                                      label: "결제",
+                                      value: g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? null,
+                                    },
+                                    { label: "금액", value: won(g.anchor.amount) },
+                                  ]}
+                                />
                               </div>
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1">
-                                <div className="flex flex-wrap items-center gap-1">
-                                  <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                                    {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
-                                  </Badge>
-                                  {anchorPaymentBadgeSpec && g.anchor.paymentDisplayLabel ? (
-                                    <Badge
-                                      variant={anchorPaymentBadgeSpec.variant}
-                                      className={cn(badgeBase, badgeSizeSm)}
-                                    >
-                                      {g.anchor.paymentDisplayLabel}
-                                    </Badge>
-                                  ) : null}
-                                  {g.anchor.needsStringingApplication ? (
-                                    <Badge className={cn(badgeBase, badgeSizeSm, "border border-warning/30 bg-warning/10 text-warning")}>
-                                      교체 신청서 미접수
-                                    </Badge>
-                                  ) : null}
-                                </div>
-                                {primarySignal ? (
+                              <div className={adminDataTable.cellStack}>
+                                <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                                  {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
+                                </Badge>
+                                {exceptionLabel ? (
                                   <p
-                                    className={cn("line-clamp-1 text-warning", adminTypography.caption)}
-                                    title={toOperatorSentence(primarySignal.description)}
+                                    className={adminDataTable.attentionText}
+                                    title={primarySignal ? toOperatorSentence(primarySignal.description) : undefined}
                                   >
-                                    {toOperatorSentence(primarySignal.title)}
+                                    {exceptionLabel}
                                   </p>
-                                ) : null}
-                                {(() => {
-                                  const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
-                                  return cancelBadge ? (
-                                    <Badge variant={cancelBadge.spec.variant} className={cn(badgeBase, badgeSizeSm)}>
-                                      {cancelBadge.label}
-                                    </Badge>
-                                  ) : null;
-                                })()}
-                                {anchorCancelQuickSignal && (
-                                  <TooltipProvider delayDuration={50}>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(anchorCancelQuickSignal.tone), "cursor-help")}>
-                                          {anchorCancelQuickSignal.label}
-                                        </Badge>
-                                      </TooltipTrigger>
-                                      <TooltipContent side="top" align="start" sideOffset={6} className={adminRichTooltipClass}>
-                                        <p className="text-sm text-foreground">취소 요청이 접수된 항목입니다.</p>
-                                        <p className="mt-1 text-xs text-muted-foreground">
-                                          {toOperatorSentence(anchorCancelQuickSignal.tooltipCopy)}
-                                        </p>
-                                        {g.anchor.cancel?.refundBankLabel && (
-                                          <p className="mt-1 text-xs text-muted-foreground">
-                                            환불 은행: {g.anchor.cancel.refundBankLabel}
-                                          </p>
-                                        )}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
-                              </div>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <p className={cn("line-clamp-2", adminDataTable.primaryText)}>
-                                {nextActionText}
-                              </p>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass, "text-right tabular-nums")}>
-                              <div className="flex flex-col items-end gap-1">
-                                <p className={adminTypography.money}>{won(g.anchor.amount)}</p>
-                                <span className={adminDataTable.secondaryText}>{elapsedText}</span>
-                                <span className={adminDataTable.secondaryText}>{createdAtLabel}</span>
-                                {amountMeaningText(g.anchor) ? (
-                                  <span className={cn("line-clamp-1 text-right", adminDataTable.secondaryText)}>
-                                    {amountMeaningText(g.anchor)}
-                                  </span>
                                 ) : null}
                               </div>
                             </TableCell>
@@ -2340,7 +2223,7 @@ export default function OperationsClient() {
                                     "h-8 min-w-[112px] justify-center border-border/70 px-2.5 shadow-sm hover:border-border hover:bg-muted/40 focus-visible:ring-2",
                                     adminTypography.actionLabel,
                                   )}
-                                  title={groupGuide.nextAction ?? primaryActionTarget.label}
+                                  title={nextActionText}
                                 >
                                   <Link href={primaryActionTarget.href}>{primaryActionTarget.label}</Link>
                                 </Button>
@@ -2369,7 +2252,7 @@ export default function OperationsClient() {
 
                     {shouldShowEmptyState && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={7} className="py-16 text-center">
+                        <TableCell colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
                             <p className="text-sm text-muted-foreground">

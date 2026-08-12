@@ -2,6 +2,7 @@
 
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   badgeBase,
   badgeSizeSm,
@@ -33,11 +33,10 @@ import {
   getRentalStatusBadgeSpec,
 } from "@/lib/badge-style";
 import { shortenId } from "@/lib/shorten";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
-  Copy,
   Eye,
   MoreHorizontal,
   Package,
@@ -50,7 +49,6 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
-import { AdminBadgeRow, BadgeItem } from "@/components/admin/AdminBadgeRow";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import {
@@ -72,7 +70,6 @@ import {
 } from "@/lib/admin/adminFetcher";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import type {
   AdminRentalListItemDto,
   AdminRentalPaymentFilter,
@@ -168,26 +165,12 @@ const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirm
 });
 
 export default function AdminRentalsClient() {
-  function getCancelQuickSignal(cancelRequest: RentalRow["cancelRequest"]): {
-    label: "계좌확인 필요" | "검토 가능";
-    variant: ReturnType<typeof badgeToneVariant>;
-  } | null {
-    if (cancelRequest?.status !== "requested") return null;
-    if (cancelRequest.refundAccountReady === true) {
-      return { label: "검토 가능", variant: badgeToneVariant("success") };
-    }
-    return { label: "계좌확인 필요", variant: badgeToneVariant("warning") };
-  }
-
   /**
    *  관리자 UX용 뱃지(대여 페이지)
    *  - Orders 페이지와 동일하게 “시나리오(F#)” + “정산 앵커”를 표준화해
    *    운영자가 페이지를 옮겨 다녀도 같은 언어로 인지할 수 있게 만든다.
    * - 운영자가 “이 대여가 단독인지 / 교체서비스 포함인지 / 신청서 연결인지”를 한눈에 확인.
    */
-  function getKindBadge() {
-    return { label: "대여", variant: "success" as const };
-  }
   function getServiceBadge(r: RentalRow) {
     if (r.withStringService) {
       return { label: "교체서비스 포함", variant: badgeToneVariant("brand") };
@@ -206,39 +189,14 @@ export default function AdminRentalsClient() {
     6: "라켓 단품 대여",
     7: "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)",
   };
-  const FLOW_SHORT: Record<Flow, string> = {
-    6: "F6 대여",
-    7: "F7 대여+신청",
-  };
-  const FLOW_BADGE_VARIANT: Record<Flow, ReturnType<typeof badgeToneVariant>> = {
-    6: badgeToneVariant("neutral"),
-    7: badgeToneVariant("info"),
-  };
-
   function getFlowBadge(r: RentalRow) {
     // 대여 페이지에서는 “신청서 연결(또는 교체서비스 포함)”이면 통합(F7), 아니면 단독 대여(F6)로 취급
     const isIntegrated = !!r.stringingApplicationId || !!r.withStringService;
     const flow: Flow = isIntegrated ? 7 : 6;
     return {
       flow,
-      shortLabel: FLOW_SHORT[flow],
       label: FLOW_LABEL[flow],
-      variant: FLOW_BADGE_VARIANT[flow],
     };
-  }
-
-  function getSettlementBadge() {
-    // 대여 화면의 정산 앵커는 항상 “대여”
-    return { label: "정산: 대여", variant: badgeToneVariant("neutral") };
-  }
-
-  function getPickupBadge(r: RentalRow) {
-    const label = r.pickupMethodLabel ?? "택배 발송";
-    const variant =
-      r.servicePickupMethod === "SHOP_VISIT"
-        ? badgeToneVariant("brand")
-        : badgeToneVariant("neutral");
-    return { label, variant };
   }
 
   function getRentalNextAction(r: RentalRow) {
@@ -581,13 +539,9 @@ export default function AdminRentalsClient() {
     );
   }
 
-  function ShippingBadge({ item }: { item: RentalRow }) {
+  function getShippingLabel(item: RentalRow) {
     if (item.servicePickupMethod === "SHOP_VISIT") {
-      return (
-        <Badge tone="neutral" size="sm">
-          운송장 불필요
-        </Badge>
-      );
+      return "운송장 불필요";
     }
 
     const s = deriveShippingStatus(item);
@@ -598,12 +552,7 @@ export default function AdminRentalsClient() {
       "both-set": ["왕복 운송장", "success"],
     } as const;
 
-    const [label, tone] = map[s];
-    return (
-      <Badge tone={tone} size="sm">
-        {label}
-      </Badge>
-    );
+    return map[s][0];
   }
 
   return (
@@ -870,64 +819,15 @@ export default function AdminRentalsClient() {
               </>
             )}
           </div>
-          {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
-          <details className="px-6 -mt-2 mb-2 text-sm text-foreground/75">
-            <summary className="cursor-pointer font-medium text-foreground">목록 뱃지 안내</summary>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Badge
-                variant={getKindBadge().variant}
-                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-              >
-                {getKindBadge().label}
-              </Badge>
-              <Badge
-                variant="outline"
-                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-              >
-                단독
-              </Badge>
-              <Badge
-                variant="brand"
-                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-              >
-                교체서비스 포함
-              </Badge>
-              <Badge
-                variant="info"
-                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-              >
-                신청서 연결
-              </Badge>
-              <Badge
-                variant={FLOW_BADGE_VARIANT[6]}
-                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-              >
-                {FLOW_SHORT[6]}
-              </Badge>
-              <Badge
-                variant={FLOW_BADGE_VARIANT[7]}
-                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-              >
-                {FLOW_SHORT[7]}
-              </Badge>
-              <Badge
-                variant={getSettlementBadge().variant}
-                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-              >
-                {getSettlementBadge().label}
-              </Badge>
-              <span className="ml-1 leading-relaxed">
-                대여는 라켓 대여 주문, 교체서비스 포함은 스트링 작업 연결 흐름, 신청서 연결은
-                작업·배송 확인 링크, 정산: 대여는 결제·보증금 기준 문서를 뜻합니다.
-              </span>
-            </div>
-          </details>
+          <p className="px-6 -mt-2 mb-2 text-ui-label text-muted-foreground">
+            대여 ID를 선택하면 연락처와 연결 신청서를 확인할 수 있습니다.
+          </p>
         </CardHeader>
         <CardContent className="relative overflow-x-auto pr-2">
-          <Table className="min-w-[1040px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0]">
+          <Table className="min-w-[980px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[220px] text-left")}>대여/고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[200px] text-left")}>대여 / 고객</TableHead>
                 <AdminSortableTableHead
                   label="라켓/기간"
                   active={sortBy === "date"}
@@ -935,13 +835,13 @@ export default function AdminRentalsClient() {
                   onSort={() => handleSort("date")}
                   className={cn(
                     thClasses,
-                    "w-[250px] border-l border-border/20 text-left",
+                    "w-[240px] border-l border-border/20 text-left",
                   )}
                 />
                 <TableHead
-                  className={cn(thClasses, "w-[220px] border-l border-border/20 text-left")}
+                  className={cn(thClasses, "w-[210px] border-l border-border/20 text-left")}
                 >
-                  상태/다음 작업
+                  진행 / 예외
                 </TableHead>
                 <AdminSortableTableHead
                   label="결제/보증금"
@@ -951,7 +851,7 @@ export default function AdminRentalsClient() {
                   onSort={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[220px] border-l border-border/20 text-right",
+                    "w-[200px] border-l border-border/20 text-right",
                   )}
                 />
                 <TableHead
@@ -1005,222 +905,63 @@ export default function AdminRentalsClient() {
                   const svc = getServiceBadge(r);
                   const link = getLinkBadge(r);
                   const flow = getFlowBadge(r);
-                  const settlement = getSettlementBadge();
-                  const pickup = getPickupBadge(r);
                   const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
-                  const cancelQuickSignal = getCancelQuickSignal(r.cancelRequest);
                   const nextActionLabel = getRentalNextAction(r);
                   const isReturned = isRentalReturnedStatus(r.status);
+                  const shippingLabel = getShippingLabel(r);
+                  const applicationStatusLabel = r.stringingApplicationStatus
+                    ? getStringingApplicationStatusDisplayLabel(r.stringingApplicationStatus)
+                    : null;
+                  const exceptionLabel =
+                    r.cancelRequest?.status === "requested"
+                      ? "취소 요청"
+                      : warnMissingApp
+                        ? "신청서 연결 필요"
+                        : isReturned && !r.depositRefundedAt
+                          ? "보증금 환불 확인 필요"
+                          : null;
                   return (
                     <TableRow
                       key={rid || `row-${idx}`}
                       className="group align-top transition-colors hover:bg-muted/40"
                     >
                       <TableCell className={cn(tdClasses, "py-2 pl-5")}>
-                        <TooltipProvider delayDuration={10}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div
-                                className="inline-flex max-w-[190px] flex-col items-start gap-1"
-                                title={rid}
-                              >
-                                <div className="inline-flex w-full items-center gap-1 truncate text-foreground/70">
-                                  {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
-                                  {r.cancelRequest?.status === "requested" && (
-                                    <AlertTriangle
-                                      className="h-3.5 w-3.5 text-primary shrink-0"
-                                      aria-label="취소 요청된 대여"
-                                    />
-                                  )}
-                                  <span className="inline-block truncate font-mono whitespace-nowrap">
-                                    {shortenId(rid)}
+                        <div className={adminDataTable.cellStack}>
+                          <p className={adminDataTable.primaryLine}>
+                            {r.customer?.name || "고객명 없음"}
+                          </p>
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            {r.cancelRequest?.status === "requested" ? (
+                              <AlertTriangle
+                                className="h-3.5 w-3.5 shrink-0 text-warning"
+                                aria-label="취소 요청된 대여"
+                              />
+                            ) : null}
+                            <AdminReferencePopover
+                              title="대여 참조 정보"
+                              trigger={
+                                <button type="button" className={adminDataTable.referenceTrigger}>
+                                  <span className="truncate">
+                                    대여 · {shortenId(rid)} · {svc.label}
                                   </span>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(rid);
-                                      showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
-                                    }}
-                                    title="대여 ID 복사"
-                                    aria-label="대여 ID 복사"
-                                  >
-                                    <Copy className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-
-                                {/* 단독/교체서비스 포함/신청서 연결 여부 */}
-                                {(() => {
-                                  const items: BadgeItem[] = [
-                                    {
-                                      label: svc.label,
-                                      variant: svc.variant,
-                                      title: "교체서비스 포함 여부",
-                                    },
-                                    ...(link
-                                      ? [
-                                          {
-                                            label: link.label,
-                                            variant: link.variant,
-                                            title: "신청서 연결 여부",
-                                          },
-                                        ]
-                                      : []),
-                                  ];
-                                  return <AdminBadgeRow maxVisible={2} items={items} />;
-                                })()}
-                                <div className="mt-0.5 min-w-0 text-left">
-                                  <p
-                                    className="line-clamp-1 text-sm font-medium text-foreground"
-                                    title={r.customer?.name || "-"}
-                                  >
-                                    {r.customer?.name || "고객명 없음"}
-                                  </p>
-                                  <div className="flex min-w-0 items-center gap-1.5">
-                                    <span
-                                      className="truncate text-xs text-foreground/70"
-                                      title={r.customer?.email || "-"}
-                                    >
-                                      {r.customer?.email || "이메일 없음"}
-                                    </span>
-                                    {r.customer?.email && (
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(r.customer!.email!);
-                                          showSuccessToast("이메일이 클립보드에 복사되었습니다.");
-                                        }}
-                                        title="이메일 복사"
-                                        aria-label="이메일 복사"
-                                      >
-                                        <Copy className="h-3.5 w-3.5" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                                {r.stringingApplicationStatus && (
-                                  <p className="line-clamp-1 text-xs text-foreground/70">
-                                    교체서비스{" "}
-                                    {getStringingApplicationStatusDisplayLabel(
-                                      r.stringingApplicationStatus,
-                                    )}
-                                  </p>
-                                )}
-                              </div>
-                            </TooltipTrigger>
-
-                            <TooltipContent
-                              side="top"
-                              align="center"
-                              sideOffset={6}
-                              className={adminRichTooltipClass}
-                            >
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-mono">{rid}</span>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8 border border-border/60 bg-background hover:bg-muted/25"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(rid);
-                                      showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
-                                    }}
-                                  >
-                                    <Copy className="w-4 h-4" />
-                                    <span className="sr-only">복사</span>
-                                  </Button>
-                                </div>
-
-                                {r.cancelRequest?.status === "requested" && (
-                                  <p className="mt-2 text-sm text-primary">
-                                    취소 요청이 접수된 항목입니다.
-                                  </p>
-                                )}
-                                {cancelQuickSignal && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    {cancelQuickSignal.label === "검토 가능"
-                                      ? "환불 계좌 준비가 완료되어 검토 가능합니다."
-                                      : "환불 계좌 확인이 필요합니다."}
-                                  </p>
-                                )}
-                                {cancelQuickSignal && r.cancelRequest?.refundBankLabel && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    환불 은행: {r.cancelRequest.refundBankLabel}
-                                  </p>
-                                )}
-
-                                {/* 교체서비스 포함 안내 */}
-                                {r.withStringService && (
-                                  <p className="mt-2 text-sm text-foreground/75">
-                                    교체서비스 포함 대여입니다. (신청서 연결 시 신청서에서
-                                    상태/배송을 관리합니다)
-                                  </p>
-                                )}
-                                {r.stringingReceptionLabel && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    접수 방식: {r.stringingReceptionLabel}
-                                  </p>
-                                )}
-                                {typeof r.stringingRacketCount === "number" &&
-                                  r.stringingRacketCount > 0 && (
-                                    <p className="mt-1 text-sm text-foreground/75">
-                                      라인 수: {r.stringingRacketCount}개
-                                    </p>
-                                  )}
-                                {Array.isArray(r.stringingNames) && r.stringingNames.length > 0 && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    스트링: {r.stringingNames.join(", ")}
-                                  </p>
-                                )}
-                                {r.stringingTensionSummary && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    텐션: {r.stringingTensionSummary}
-                                  </p>
-                                )}
-                                {r.stringingReservationLabel && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    예약: {r.stringingReservationLabel}
-                                  </p>
-                                )}
-                                <p className="mt-2 text-sm text-foreground/75">
-                                  시나리오:{" "}
-                                  <span className="font-medium text-foreground">{flow.label}</span>
-                                </p>
-                                <p className="mt-1 text-sm text-foreground/75">
-                                  수령 방법: {pickup.label}
-                                </p>
-                                <p className="mt-1 text-sm text-foreground/75">
-                                  {settlement.label}
-                                </p>
-                                {warnMissingApp && (
-                                  <p className="mt-2 text-xs leading-relaxed break-keep text-primary">
-                                    주의: 교체서비스 포함인데 신청서 연결이 없습니다.
-                                  </p>
-                                )}
-
-                                {/* 신청서 연결이 있으면 툴팁에서 바로 이동 링크 제공 */}
-                                {r.stringingApplicationId && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    연결 신청서:{" "}
-                                    <span className="font-mono">
-                                      {shortenId(String(r.stringingApplicationId))}
-                                    </span>{" "}
-                                    <Link
-                                      href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
-                                      className="ml-1 underline underline-offset-2 text-primary"
-                                    >
-                                      신청서 보기
-                                    </Link>
-                                  </p>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                                </button>
+                              }
+                              items={[
+                                { label: "대여 ID", value: rid },
+                                { label: "이메일", value: r.customer?.email || null },
+                                { label: "서비스", value: svc.label },
+                                { label: "연결", value: link?.label ?? "연결 없음" },
+                                { label: "시나리오", value: flow.label },
+                                {
+                                  label: "신청서 ID",
+                                  value: r.stringingApplicationId
+                                    ? String(r.stringingApplicationId)
+                                    : null,
+                                },
+                              ]}
+                            />
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
                         <div className="min-w-0 text-left">
@@ -1246,32 +987,34 @@ export default function AdminRentalsClient() {
                         </div>
                       </TableCell>
                       <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
-                        <div className="flex flex-col items-start gap-1 text-left">
-                          <div className="flex flex-wrap gap-1">
-                            {(() => {
-                              const spec = getRentalStatusBadgeSpec(r.status);
-                              return (
-                                <Badge
-                                  variant={spec.variant}
-                                  className={cn(
-                                    badgeBase,
-                                    badgeSizeSm,
-                                    "whitespace-nowrap shrink-0",
-                                  )}
-                                >
-                                  {getRentalStatusDisplayLabel(r.status)}
-                                </Badge>
-                              );
-                            })()}
-                            <ShippingBadge item={r} />
-                          </div>
-                          <p className="line-clamp-2 text-xs font-medium leading-snug text-primary">
-                            다음: {nextActionLabel}
+                        <div className={cn(adminDataTable.cellStack, "text-left")}>
+                          {(() => {
+                            const spec = getRentalStatusBadgeSpec(r.status);
+                            return (
+                              <Badge
+                                variant={spec.variant}
+                                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                              >
+                                {getRentalStatusDisplayLabel(r.status)}
+                              </Badge>
+                            );
+                          })()}
+                          <p className={adminDataTable.secondaryLine}>
+                            {shippingLabel}
+                            {applicationStatusLabel
+                              ? ` · 교체서비스 ${applicationStatusLabel}`
+                              : ""}
                           </p>
-                          {r.depositRefundedAt ? (
-                            <p className="text-xs text-foreground/70">보증금 환불 완료</p>
-                          ) : isReturned ? (
-                            <p className="text-xs text-primary">보증금 환불 확인 필요</p>
+                          {exceptionLabel ? (
+                            <p
+                              className={
+                                r.cancelRequest?.status === "requested"
+                                  ? adminDataTable.dangerText
+                                  : adminDataTable.attentionText
+                              }
+                            >
+                              {exceptionLabel}
+                            </p>
                           ) : null}
                         </div>
                       </TableCell>
@@ -1281,28 +1024,38 @@ export default function AdminRentalsClient() {
                           "border-l border-border/20 py-2 text-right tabular-nums",
                         )}
                       >
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className="font-semibold tabular-nums text-foreground">
-                            {won(r.amount.total)}
-                          </span>
-                          <span className="max-w-[200px] text-right text-xs text-foreground/75">
-                            수수료 {won(r.amount.fee)} · 보증금 {won(r.amount.deposit)}
-                          </span>
-                          {/* 스트링/교체비: 있을 때만 추가 노출 (대여만 한 케이스 UI 과밀 방지) */}
-                          {((r.amount.stringPrice ?? 0) > 0 ||
-                            (r.amount.stringingFee ?? 0) > 0) && (
-                            <span className="max-w-[200px] text-right text-xs text-foreground/75">
-                              {(r.amount.stringPrice ?? 0) > 0
-                                ? `스트링: ${won(r.amount.stringPrice ?? 0)}`
-                                : ""}
-                              {(r.amount.stringPrice ?? 0) > 0 && (r.amount.stringingFee ?? 0) > 0
-                                ? " / "
-                                : ""}
-                              {(r.amount.stringingFee ?? 0) > 0
-                                ? `교체비: ${won(r.amount.stringingFee ?? 0)}`
-                                : ""}
-                            </span>
-                          )}
+                        <div className="flex flex-col items-end gap-1">
+                          <PaymentBadge item={r} />
+                          <AdminReferencePopover
+                            title="결제·보증금 구성"
+                            align="end"
+                            trigger={
+                              <button type="button" className={adminDataTable.referenceTrigger}>
+                                <span className="font-semibold tabular-nums text-foreground">
+                                  {won(r.amount.total)}
+                                </span>
+                              </button>
+                            }
+                            items={[
+                              { label: "총액", value: won(r.amount.total) },
+                              { label: "수수료", value: won(r.amount.fee) },
+                              { label: "보증금", value: won(r.amount.deposit) },
+                              {
+                                label: "스트링",
+                                value:
+                                  (r.amount.stringPrice ?? 0) > 0
+                                    ? won(r.amount.stringPrice ?? 0)
+                                    : null,
+                              },
+                              {
+                                label: "교체비",
+                                value:
+                                  (r.amount.stringingFee ?? 0) > 0
+                                    ? won(r.amount.stringingFee ?? 0)
+                                    : null,
+                              },
+                            ]}
+                          />
                         </div>
                       </TableCell>
                       <TableCell

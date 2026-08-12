@@ -21,6 +21,7 @@ import {
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import { adminSurface } from "@/components/admin/admin-typography";
 import {
   AlertDialog,
@@ -34,7 +35,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
-import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -76,7 +76,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Copy,
   Filter,
   Loader2,
   Mail,
@@ -461,16 +460,6 @@ export default function UsersClient() {
   const handleSelectAll = () => setSelectedUsers(isAllSelected ? [] : safeRows.map((u) => u.id));
   const handleSelectUser = (id: string) =>
     setSelectedUsers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-
-  // 복사 공통
-  const copy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      showSuccessToast("클립보드에 복사되었습니다.");
-    } catch {
-      showErrorToast("복사에 실패했습니다.");
-    }
-  };
 
   const goToPage = (p: number) => setPage(Math.max(1, Math.min(totalPages, p)));
 
@@ -1072,21 +1061,20 @@ export default function UsersClient() {
           </div>
 
           <div className="relative overflow-x-auto pb-3 px-4">
-            <div className={cn(adminSurface.tableCard, "relative min-w-0")}>
+            <div className="relative min-w-0 overflow-hidden rounded-lg border border-border">
               <Table
-                className="min-w-[1100px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] [&_th]:text-center [&_td]:text-center"
+                className="min-w-[1020px] table-fixed [&_th]:text-center [&_td]:text-center"
                 aria-busy={shouldShowLoadingRows}
               >
-                {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
+                {/* 열 폭 고정: 체크 / 회원 / 권한 / 연락처 / 활동 / 상태 / 작업 */}
                 <colgroup>
                   <col style={{ width: "40px" }} />
-                  <col style={{ width: "240px" }} />
-                  <col style={{ width: "72px" }} />
-                  <col style={{ width: "170px" }} />
-                  <col style={{ width: "280px" }} />
-                  <col style={{ width: "150px" }} />
-                  <col style={{ width: "64px" }} />
-                  <col style={{ width: "44px" }} />
+                  <col style={{ width: "250px" }} />
+                  <col style={{ width: "80px" }} />
+                  <col style={{ width: "250px" }} />
+                  <col style={{ width: "160px" }} />
+                  <col style={{ width: "80px" }} />
+                  <col style={{ width: "160px" }} />
                 </colgroup>
                 <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
                   <TableRow>
@@ -1099,20 +1087,18 @@ export default function UsersClient() {
                         className="mx-auto"
                       />
                     </TableHead>
-                    <TableHead className={cn(adminDataTable.head, "w-[240px]")}>회원</TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[72px]")}>
+                    <TableHead className={cn(adminDataTable.head, "w-[250px]")}>회원</TableHead>
+                    <TableHead className={cn(adminDataTable.headCenter, "w-[80px]")}>
                       권한
                     </TableHead>
-                    <TableHead className={cn(adminDataTable.head, "w-[170px]")}>전화</TableHead>
-                    <TableHead className={cn(adminDataTable.head, "w-[280px]")}>주소</TableHead>
-                    {/* 가입일 + 마지막 로그인 병합 */}
-                    <TableHead className={cn(adminDataTable.headRight, "w-[150px]")}>
-                      활동(가입/로그인)
+                    <TableHead className={cn(adminDataTable.head, "w-[250px]")}>연락처 / 주소</TableHead>
+                    <TableHead className={cn(adminDataTable.headRight, "w-[160px]")}>
+                      활동
                     </TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[64px] px-0")}>
+                    <TableHead className={cn(adminDataTable.headCenter, "w-[80px] px-0")}>
                       상태
                     </TableHead>
-                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[44px] px-0")}>
+                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>
                       작업
                     </TableHead>
                   </TableRow>
@@ -1134,9 +1120,6 @@ export default function UsersClient() {
                           <div className="h-4 w-10 mx-auto rounded-full bg-muted" />
                         </TableCell>
                         <TableCell className={td}>
-                          <div className="h-3.5 w-24 mx-auto rounded bg-muted" />
-                        </TableCell>
-                        <TableCell className={td}>
                           <div className="h-3.5 w-48 mx-auto rounded bg-muted" />
                         </TableCell>
                         <TableCell className={td}>
@@ -1154,7 +1137,7 @@ export default function UsersClient() {
                   {/* 조회 실패 */}
                   {shouldShowErrorRow && (
                     <TableRow>
-                      <TableCell colSpan={8} className={cn(td, "py-6 text-destructive")}>
+                      <TableCell colSpan={7} className={cn(td, "py-6 text-destructive")}>
                         회원 목록을 불러오지 못했습니다.{" "}
                         {errorMessage || "잠시 후 다시 시도해 주세요."}
                       </TableCell>
@@ -1164,7 +1147,7 @@ export default function UsersClient() {
                   {/* 실제 빈 데이터 */}
                   {shouldShowEmptyRow && (
                     <TableRow>
-                      <TableCell colSpan={8} className={cn(td, "py-8 text-muted-foreground")}>
+                      <TableCell colSpan={7} className={cn(td, "py-8 text-muted-foreground")}>
                         조회된 회원이 없습니다.
                       </TableCell>
                     </TableRow>
@@ -1196,65 +1179,42 @@ export default function UsersClient() {
                             />
                           </TableCell>
 
-                          {/* 회원: 이름/이메일 두 줄 + 복사 */}
-                          <TableCell className={cn(td, "w-[240px] text-left")}>
-                            <div className="flex max-w-[220px] min-w-0 flex-col items-start overflow-hidden text-left">
+                          {/* 회원: 이름 + 로그인 경로 */}
+                          <TableCell className={cn(td, "w-[250px] text-left")}>
+                            <div className="flex max-w-[230px] min-w-0 flex-col items-start overflow-hidden text-left">
                               <span
                                 className="line-clamp-2 max-w-full break-words font-medium"
                                 title={u.name || "(이름없음)"}
                               >
                                 {u.name || "(이름없음)"}
                               </span>
-                              <div className="flex max-w-full min-w-0 items-center gap-1 overflow-hidden text-xs text-foreground/75">
-                                <span className="block max-w-[190px] truncate" title={u.email}>
-                                  {u.email}
-                                </span>
-                                <button
-                                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                  onClick={() => copy(u.email)}
-                                  title="복사"
-                                  aria-label={`${u.name || "사용자"} 이메일 복사`}
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </button>
-                              </div>
-                              {(u.appsInTossLinked ||
-                                (Array.isArray(u.socialProviders) &&
-                                  u.socialProviders.length > 0)) && (
-                                <div className="mt-1 flex flex-wrap items-center gap-1">
-                                  {u.socialProviders?.includes("kakao") && (
-                                    <IdentityBadge
-                                      tone="kakao"
-                                      className="shrink-0 whitespace-nowrap"
-                                    >
-                                      카카오
-                                    </IdentityBadge>
-                                  )}
-                                  {u.socialProviders?.includes("naver") && (
-                                    <IdentityBadge
-                                      tone="naver"
-                                      className="shrink-0 whitespace-nowrap"
-                                    >
-                                      네이버
-                                    </IdentityBadge>
-                                  )}
-                                  {u.appsInTossLinked && (
-                                    <Badge variant="info" className="shrink-0 whitespace-nowrap">
-                                      Apps in Toss
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                              {u.appsInTossLinked && !u.email && (
-                                <span className="mt-1 text-xs text-muted-foreground">
-                                  Apps in Toss 계정 · 이메일 미수집
-                                </span>
-                              )}
+                              <span className={adminDataTable.secondaryLine}>
+                                {[
+                                  u.socialProviders?.includes("kakao") ? "카카오" : null,
+                                  u.socialProviders?.includes("naver") ? "네이버" : null,
+                                  u.appsInTossLinked ? "Apps in Toss" : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ") || "이메일 계정"}
+                              </span>
+                              <AdminReferencePopover
+                                title={`${u.name || "회원"} 계정 참조`}
+                                trigger={
+                                  <button type="button" className={adminDataTable.referenceTrigger}>
+                                    계정 정보
+                                  </button>
+                                }
+                                items={[
+                                  { label: "회원 ID", value: u.id },
+                                  { label: "이메일", value: u.email },
+                                  { label: "전화", value: formatKoreanPhone(u.phone || "") || u.phone },
+                                ]}
+                              />
                             </div>
                           </TableCell>
 
                           {/* 권한 */}
-                          <TableCell className={cn(td, "w-[72px] whitespace-nowrap")}>
+                          <TableCell className={cn(td, "w-[80px] whitespace-nowrap")}>
                             <Badge
                               className={cn(
                                 badgeSm,
@@ -1266,61 +1226,53 @@ export default function UsersClient() {
                             </Badge>
                           </TableCell>
 
-                          {/* 전화 */}
-                          <TableCell className={cn(td, "w-[170px] whitespace-nowrap text-left")}>
-                            {u.phone ? (
-                              <div className="flex items-center justify-start gap-1">
-                                <a href={`tel:${u.phone}`} className="underline decoration-dotted">
-                                  {formatKoreanPhone(u.phone) || u.phone}
-                                </a>
-                                <button
-                                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                  onClick={() => copy(u.phone!)}
-                                  title="복사"
-                                  aria-label={`${u.name || "사용자"} 전화번호 복사`}
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </button>
-                              </div>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-
-                          {/* 주소: 요약 + 복사, 전체는 title로 */}
+                          {/* 연락처/주소: 목록은 요약, 전체 값은 참조 팝오버 */}
                           <TableCell
-                            className={cn(td, "w-[280px] text-left")}
+                            className={cn(td, "w-[250px] text-left")}
                             title={fullAddress(u.postalCode, u.address, u.addressDetail)}
                           >
-                            <div className="flex min-w-0 items-center justify-start gap-1 overflow-hidden">
-                              <span className="line-clamp-2 block max-w-[250px] break-words">
-                                {shortAddress(u.address)}
+                            <div className={adminDataTable.cellStack}>
+                              <span className={adminDataTable.primaryLine}>
+                                {u.phone ? formatKoreanPhone(u.phone) || u.phone : "전화 미등록"}
                               </span>
-                              <button
-                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                onClick={() =>
-                                  copy(fullAddress(u.postalCode, u.address, u.addressDetail))
+                              <span className={adminDataTable.secondaryLine}>
+                                {shortAddress(u.address) || "주소 미등록"}
+                              </span>
+                              <AdminReferencePopover
+                                title={`${u.name || "회원"} 연락처`}
+                                trigger={
+                                  <button type="button" className={adminDataTable.referenceTrigger}>
+                                    전체 연락처
+                                  </button>
                                 }
-                                title="전체 주소 복사"
-                                aria-label={`${u.name || "사용자"} 주소 복사`}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </button>
+                                items={[
+                                  { label: "이메일", value: u.email },
+                                  {
+                                    label: "전화",
+                                    value: formatKoreanPhone(u.phone || "") || u.phone,
+                                    href: u.phone ? `tel:${u.phone}` : undefined,
+                                  },
+                                  {
+                                    label: "주소",
+                                    value: fullAddress(u.postalCode, u.address, u.addressDetail),
+                                  },
+                                ]}
+                              />
                             </div>
                           </TableCell>
 
                           {/* 활동(가입/로그인) 한 칼럼 */}
-                          <TableCell className={cn(td, "w-[150px] whitespace-nowrap text-right")}>
+                          <TableCell className={cn(td, "w-[160px] whitespace-nowrap text-right")}>
                             <div className="flex flex-col items-end whitespace-nowrap leading-tight tabular-nums">
-                              <span className="text-xs">{joined.date}</span>
+                              <span className="text-xs">로그인 {last.time ? `${last.date} ${last.time}` : "-"}</span>
                               <span className="text-xs text-foreground/75">
-                                {last.time ? `${last.date} ${last.time}` : "-"}
+                                가입 {joined.date}
                               </span>
                             </div>
                           </TableCell>
 
                           {/* 상태 */}
-                          <TableCell className={cn(td, "w-[64px] whitespace-nowrap px-0")}>
+                          <TableCell className={cn(td, "w-[80px] whitespace-nowrap px-0")}>
                             <div className="flex justify-center">
                               <Badge
                                 className={cn(
@@ -1339,8 +1291,12 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 작업 */}
-                          <TableCell className={cn(td, adminDataTable.stickyActionCell, "w-[44px] p-0 text-right")}>
-                            <DropdownMenu>
+                          <TableCell className={cn(td, adminDataTable.stickyActionCell, "w-[160px]")}>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button asChild size="sm" variant="outline">
+                                <Link href={`/admin/users/${u.id}`}>상세</Link>
+                              </Button>
+                              <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
                                   variant="ghost"
@@ -1365,7 +1321,8 @@ export default function UsersClient() {
                                   포인트 내역/조정
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
-                            </DropdownMenu>
+                              </DropdownMenu>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );

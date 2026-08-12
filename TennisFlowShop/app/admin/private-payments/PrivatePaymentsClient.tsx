@@ -14,6 +14,7 @@ import { adminSurface, adminTypography } from "@/components/admin/admin-typograp
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import { formatKoreanDateTime } from "@/lib/korean-date";
 import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
@@ -391,12 +392,11 @@ export default function PrivatePaymentsClient() {
       />
       <div className="space-y-6">
 
-      <div className="grid gap-3 grid-cols-5">
+      <div className="grid gap-3 grid-cols-4">
         {[
           ["전체", summary.total],
           ["결제대기", summary.pending],
           ["결제완료", summary.paid],
-          ["결제취소", summary.canceled],
           ["이번 달 완료금액", money(summary.monthPaidAmount)],
         ].map(([label, value]) => (
           <Card key={label} className={adminSurface.kpiCard}>
@@ -555,18 +555,18 @@ export default function PrivatePaymentsClient() {
                       }
                     />
                   </th>
-                  <th className={cn(adminDataTable.head, "w-[300px]")}>
+                  <th className={cn(adminDataTable.head, "w-[270px]")}>
                     {header("결제 정보", "title")}
                   </th>
                   <th className={cn(adminDataTable.head, "w-[210px]")}>고객</th>
                   <th className={cn(adminDataTable.headRight, "w-[130px]")}>
                     {header("금액", "amount")}
                   </th>
-                  <th className={cn(adminDataTable.head, "w-[190px]")}>
+                  <th className={cn(adminDataTable.head, "w-[170px]")}>
                     {header("상태", "paymentStatus")}
                   </th>
-                  <th className={cn(adminDataTable.head, "w-[170px]")}>만료/일시</th>
-                  <th className={adminDataTable.stickyActionHead}>작업</th>
+                  <th className={cn(adminDataTable.head, "w-[170px]")}>만료 / 생성</th>
+                  <th className={cn(adminDataTable.stickyActionHead, "w-[150px]")}>작업</th>
                 </tr>
               </thead>
               <tbody>
@@ -583,6 +583,13 @@ export default function PrivatePaymentsClient() {
                 ) : (
                   items.map((item) => {
                     const paymentStatusLabel = getPrivatePaymentStatusLabel(item.paymentStatus);
+                    const expired = now !== null && isExpired(item, now);
+                    const exceptionLabel =
+                      item.cancellationInfo?.status === "processing"
+                        ? "취소 처리 확인 중"
+                        : expired
+                          ? "만료"
+                          : null;
 
                     return (
                       <tr key={item.id} className={adminDataTable.row}>
@@ -601,38 +608,51 @@ export default function PrivatePaymentsClient() {
                           />
                         </td>
                         <td className={adminDataTable.cellLeft}>
-                          <div className={adminDataTable.primaryText}>{item.title}</div>
-                          {item.description && (
-                            <div
-                              className={cn(
-                                adminDataTable.secondaryText,
-                                "mt-1 line-clamp-2 max-w-[280px]",
-                              )}
-                            >
-                              {item.description}
-                            </div>
-                          )}
-                          <div
-                            className={cn(
-                              adminDataTable.secondaryText,
-                              "mt-2 max-w-[280px] break-all",
-                            )}
-                          >
-                            ID {item.id}
+                          <div className={adminDataTable.cellStack}>
+                            <div className={adminDataTable.primaryLine}>{item.title}</div>
+                            <AdminReferencePopover
+                              title="개인결제 참조 정보"
+                              trigger={
+                                <button type="button" className={adminDataTable.referenceTrigger}>
+                                  결제 ID 보기
+                                </button>
+                              }
+                              items={[
+                                { label: "결제 ID", value: item.id },
+                                { label: "설명", value: item.description || null },
+                                { label: "활성 상태", value: statusLabel(item.status) },
+                                { label: "보관", value: item.archivedAt ? "보관됨" : "보관 안 됨" },
+                                {
+                                  label: "오프라인",
+                                  value:
+                                    item.offlineLink?.status === "linked"
+                                      ? `연결됨 · ${item.offlineLink.offlineCustomerId}`
+                                      : "연결 없음",
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                         <td className={adminDataTable.cellLeft}>
-                          <div className={adminDataTable.primaryText}>
-                            {item.customerName || "-"}
-                          </div>
-                          <div className={cn(adminDataTable.secondaryText, "mt-1 space-y-0.5")}>
-                            <div>{item.customerPhone || "-"}</div>
-                            <div>{item.customerEmail || "-"}</div>
+                          <div className={adminDataTable.cellStack}>
+                            <div className={adminDataTable.primaryLine}>{item.customerName || "-"}</div>
+                            <AdminReferencePopover
+                              title="고객 연락처"
+                              trigger={
+                                <button type="button" className={adminDataTable.referenceTrigger}>
+                                  연락처 보기
+                                </button>
+                              }
+                              items={[
+                                { label: "전화", value: item.customerPhone || null },
+                                { label: "이메일", value: item.customerEmail || null },
+                              ]}
+                            />
                           </div>
                         </td>
                         <td className={adminDataTable.moneyCell}>{money(item.amount)}</td>
                         <td className={adminDataTable.cellLeft}>
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className={adminDataTable.cellStack}>
                             <Badge
                               variant={
                                 paymentStatusLabel === "결제완료"
@@ -645,51 +665,35 @@ export default function PrivatePaymentsClient() {
                             >
                               {paymentStatusLabel}
                             </Badge>
-                            <Badge variant={item.status === "active" ? "secondary" : "outline"}>
-                              {statusLabel(item.status)}
-                            </Badge>
-                            {now !== null && isExpired(item, now) && (
-                              <Badge variant="destructive">만료됨</Badge>
-                            )}
-                            {item.archivedAt && <Badge variant="outline">보관됨</Badge>}
-                            {item.offlineLink?.status === "linked" && (
-                              <Badge variant="secondary">오프라인 연결됨</Badge>
-                            )}
-                            {item.cancellationInfo?.status === "processing" && (
-                              <Badge variant="outline">취소 처리 확인 중</Badge>
-                            )}
+                            {exceptionLabel ? (
+                              <p
+                                className={
+                                  expired
+                                    ? adminDataTable.dangerText
+                                    : adminDataTable.attentionText
+                                }
+                              >
+                                {exceptionLabel}
+                              </p>
+                            ) : null}
                           </div>
                         </td>
                         <td className={cn(adminDataTable.dateCell, "text-left")}>
-                          <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 gap-y-1">
-                            <span className="text-muted-foreground">만료</span>
-                            <span className="whitespace-nowrap text-foreground/80">
+                          <div className={adminDataTable.cellStack}>
+                            <span className={adminDataTable.primaryLine}>
                               {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}
                             </span>
-                            <span className="text-muted-foreground">생성</span>
-                            <span className="whitespace-nowrap text-foreground/80">
-                              {formatKoreanDateTime(item.createdAt)}
+                            <span className={adminDataTable.secondaryLine}>
+                              생성 {formatKoreanDateTime(item.createdAt)}
                             </span>
-                            {item.paidAt && (
-                              <>
-                                <span className="text-muted-foreground">완료</span>
-                                <span className="whitespace-nowrap text-foreground/80">
-                                  {formatKoreanDateTime(item.paidAt)}
-                                </span>
-                              </>
-                            )}
-                            {item.canceledAt && (
-                              <>
-                                <span className="text-muted-foreground">취소</span>
-                                <span className="whitespace-nowrap text-foreground/80">
-                                  {formatKoreanDateTime(item.canceledAt)}
-                                </span>
-                              </>
-                            )}
                           </div>
                         </td>
-                        <td className={adminDataTable.stickyActionCell}>
-                          <DropdownMenu>
+                        <td className={cn(adminDataTable.stickyActionCell, "w-[150px]")}>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button type="button" size="sm" variant="outline" onClick={() => edit(item)}>
+                              상세
+                            </Button>
+                            <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 className="h-8 w-8 p-0"
@@ -788,7 +792,8 @@ export default function PrivatePaymentsClient() {
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
-                          </DropdownMenu>
+                            </DropdownMenu>
+                          </div>
                         </td>
                       </tr>
                     );

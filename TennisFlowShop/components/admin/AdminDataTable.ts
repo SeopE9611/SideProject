@@ -19,13 +19,21 @@ export const adminDataTable = {
   cellNumber: `px-4 py-3 text-right align-middle ${adminTypography.numeric}`,
   primaryText: adminTypography.tablePrimary,
   secondaryText: adminTypography.tableSecondary,
-  actionHead:
-    `w-[132px] px-4 py-3 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
+  /** 기본 목록 셀은 primary 1줄 + secondary 1줄을 원칙으로 합니다. */
+  cellStack: "min-w-0 space-y-1",
+  primaryLine: `truncate ${adminTypography.tablePrimary}`,
+  secondaryLine: `truncate ${adminTypography.tableSecondary}`,
+  categoryText: "text-ui-label font-medium text-foreground/75",
+  attentionText: "text-ui-label font-medium text-warning",
+  dangerText: "text-ui-label font-medium text-destructive",
+  referenceTrigger:
+    "inline-flex min-h-8 items-center rounded-md px-1 text-ui-label font-medium text-foreground/75 underline decoration-border underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+  actionHead: `w-[132px] px-4 py-3 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
   actionCell: "w-[132px] px-4 py-3 text-right align-middle text-ui-body-sm",
-  stickyActionHead:
-    `sticky right-0 z-20 w-[132px] border-l border-border bg-muted/30 px-4 py-3 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
+  stickyActionHead: `sticky right-0 z-20 w-[132px] border-l border-border bg-muted/30 px-4 py-3 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
   stickyActionCell:
     "sticky right-0 z-10 w-[132px] border-l border-border bg-card px-4 py-3 text-right align-middle text-ui-body-sm group-hover:bg-muted/25 group-data-[state=selected]:bg-muted/50",
   row: adminSurface.tableRow,
-  compactRow: "group border-b border-border transition-colors hover:bg-muted/25 data-[state=selected]:bg-muted/50",
+  compactRow:
+    "group border-b border-border transition-colors hover:bg-muted/25 data-[state=selected]:bg-muted/50",
 } as const;

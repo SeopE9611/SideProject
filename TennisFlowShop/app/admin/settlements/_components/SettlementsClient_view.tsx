@@ -4,8 +4,11 @@
 
 import KpiCard from "@/app/admin/settlements/_components/KpiCard";
 import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
+import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -352,6 +355,61 @@ export default function SettlementsClient() {
     };
   }
 
+  async function validateSnapshotRow(row: SettlementSnapshot) {
+    const key = String(row.yyyymm);
+    try {
+      setStatusMap((prev) => ({ ...prev, [key]: "checking" }));
+      const { ok, live } = await checkStalenessOfRow(row);
+      const snap = {
+        paid: row.totals?.paid || 0,
+        refund: row.totals?.refund || 0,
+        net: row.totals?.net || 0,
+        orders: row.breakdown?.orders || 0,
+        applications: row.breakdown?.applications || 0,
+        packages: row.breakdown?.packages || 0,
+      };
+      const livePack = {
+        paid: live.totals?.paid || 0,
+        refund: live.totals?.refund || 0,
+        net: live.totals?.net || 0,
+        orders: live.breakdown?.orders || 0,
+        applications: live.breakdown?.applications || 0,
+        packages: live.breakdown?.packages || 0,
+      };
+
+      setDiffMap((prev) => ({ ...prev, [key]: { live: livePack, snap } }));
+      setStatusMap((prev) => ({ ...prev, [key]: ok ? "ok" : "stale" }));
+      setStaleMap((prev) => ({ ...prev, [key]: !ok }));
+      setOpenMap((prev) => ({ ...prev, [key]: !ok }));
+      sessionStorage.setItem(getSettlementCacheKey(row), ok ? "ok" : "stale");
+
+      if (ok) showSuccessToast("스냅샷이 현재 집계와 일치합니다.");
+      else showInfoToast(`변경 감지됨: ${key} 스냅샷과 현재 집계가 다릅니다.`);
+    } catch (error) {
+      console.error(error);
+      setStatusMap((prev) => ({ ...prev, [key]: "stale" }));
+      showErrorToast("검증 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function rebuildSnapshotRow(row: SettlementSnapshot) {
+    const key = String(row.yyyymm);
+    try {
+      setDoing((current) => ({ ...current, rebuild: key }));
+      await rebuildSnapshot(key);
+      await mutate();
+      setStatusMap((prev) => ({ ...prev, [key]: "ok" }));
+      setStaleMap((prev) => ({ ...prev, [key]: false }));
+      setOpenMap((prev) => ({ ...prev, [key]: false }));
+      showSuccessToast(`${key} 스냅샷을 갱신했습니다.`);
+    } catch (error) {
+      console.error(error);
+      showErrorToast("스냅샷 갱신 중 오류가 발생했습니다.");
+    } finally {
+      setDoing((current) => ({ ...current, rebuild: undefined }));
+    }
+  }
+
   // 전체 검증
   async function validateAll(rows: SettlementSnapshot[]) {
     setBulkChecking(true);
@@ -678,7 +736,7 @@ export default function SettlementsClient() {
                   />
                 </div>
 
-                <div className="grid grid-cols-5 gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={async () => {
                       // 사전 검증
@@ -773,8 +831,8 @@ export default function SettlementsClient() {
               <div className="min-w-[1000px]">
                 <div className="sticky top-0 z-10 bg-muted border-b border-border">
                   <div
-                    className="grid gap-3 p-5 text-sm font-semibold text-foreground"
-                    style={{ gridTemplateColumns: "44px 100px 230px 220px 190px 110px 72px" }}
+                    className="grid gap-3 p-4 text-sm font-semibold text-foreground"
+                    style={{ gridTemplateColumns: "44px 100px 220px 190px 180px 130px 150px" }}
                   >
                     <div className="flex items-center justify-center">
                       <input
@@ -788,24 +846,17 @@ export default function SettlementsClient() {
                       />
                     </div>
                     <div className="text-center">정산 월</div>
-                    <div>
-                      <p className="mb-1 text-right">온라인 금액</p>
-                      <div className="flex justify-end gap-2 text-xs font-medium">
-                        {([ ["paid", "결제"], ["refund", "환불"], ["net", "순매출"] ] as const).map(([field, label]) => (
-                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex min-h-8 items-center gap-0.5 whitespace-nowrap rounded px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="mb-1 text-right">처리 건수</p>
-                      <div className="flex justify-end gap-2 text-xs font-medium">
-                        {([ ["orders", "주문"], ["applications", "교체서비스"], ["packages", "패키지"] ] as const).map(([field, label]) => (
-                          <button key={field} type="button" onClick={() => toggleSort(field)} className="inline-flex min-h-8 items-center gap-0.5 whitespace-nowrap rounded px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}{renderSortIcon(field)}</button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-right">개인결제<br /><span className="text-xs font-medium">결제 / 환불</span></div>
-                    <div className="text-center">상태</div>
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("net")}
+                      className="inline-flex min-h-8 items-center justify-end gap-1 rounded px-1 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      온라인 순매출
+                      {renderSortIcon("net")}
+                    </button>
+                    <div className="text-right">처리 건수</div>
+                    <div className="text-right">개인결제 순액</div>
+                    <div className="text-center">검증 상태</div>
                     <div className="sticky right-0 bg-muted text-center">관리</div>
                   </div>
                 </div>
@@ -817,7 +868,7 @@ export default function SettlementsClient() {
                         key={i}
                         className="grid gap-3 p-5 animate-pulse"
                         style={{
-                          gridTemplateColumns: "44px 100px 230px 220px 190px 110px 72px",
+                          gridTemplateColumns: "44px 100px 220px 190px 180px 130px 150px",
                         }}
                       >
                         {Array.from({ length: 7 }).map((_, column) => (
@@ -841,12 +892,12 @@ export default function SettlementsClient() {
                     {(sortedData() ?? []).map((row, idx: number) => (
                       <div key={row.yyyymm}>
                         <div
-                          className="grid gap-3 p-5 text-sm font-semibold text-foreground"
+                          className="grid gap-3 p-4 text-sm font-semibold text-foreground"
                           style={{
-                            gridTemplateColumns: "44px 100px 230px 220px 190px 110px 72px",
+                            gridTemplateColumns: "44px 100px 220px 190px 180px 130px 150px",
                           }}
                         >
-                          <div className="flex items-center justify-center">
+                          <div className="flex flex-col items-center justify-center gap-1.5">
                             <input
                               type="checkbox"
                               checked={selectedSnapshots.has(String(row.yyyymm))}
@@ -871,19 +922,75 @@ export default function SettlementsClient() {
                           </div>
 
                           <div className="space-y-1 text-right tabular-nums">
-                            <p className="text-sm font-semibold">결제 {(row.totals?.paid || 0).toLocaleString()}</p>
-                            <p className="text-xs text-muted-foreground">환불 {(row.totals?.refund || 0).toLocaleString()}</p>
-                            <p className="text-sm font-bold text-primary">순매출 {(row.totals?.net || 0).toLocaleString()}</p>
-                          </div>
-                          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-right tabular-nums">
-                            <span className="text-xs text-muted-foreground">주문</span><span className="text-sm">{row.breakdown?.orders || 0}</span>
-                            <span className="text-xs text-muted-foreground">교체서비스</span><span className="text-sm">{row.breakdown?.applications || 0}</span>
-                            <span className="text-xs text-muted-foreground">대여</span><span className="text-sm">{row.breakdown?.rentals ?? 0}</span>
-                            <span className="text-xs text-muted-foreground">패키지</span><span className="text-sm">{row.breakdown?.packages || 0}</span>
+                            <p className="text-sm font-bold text-foreground">
+                              {(row.totals?.net || 0).toLocaleString()}원
+                            </p>
+                            <AdminReferencePopover
+                              align="end"
+                              title={`${row.yyyymm} 온라인 금액 구성`}
+                              trigger={
+                                <button type="button" className={adminDataTable.referenceTrigger}>
+                                  결제·환불 보기
+                                </button>
+                              }
+                              items={[
+                                { label: "결제", value: `${(row.totals?.paid || 0).toLocaleString()}원` },
+                                { label: "환불", value: `${(row.totals?.refund || 0).toLocaleString()}원` },
+                                { label: "순매출", value: `${(row.totals?.net || 0).toLocaleString()}원` },
+                              ]}
+                            />
                           </div>
                           <div className="space-y-1 text-right tabular-nums">
-                            <p className="text-sm font-semibold">결제 {(row.breakdown?.privatePaymentsPaidAmount || 0).toLocaleString()}</p>
-                            <p className="text-xs text-muted-foreground">환불 {(row.breakdown?.privatePaymentsRefundAmount || 0).toLocaleString()}</p>
+                            <p className="text-sm font-semibold text-foreground">
+                              {(row.breakdown?.orders || 0) +
+                                (row.breakdown?.applications || 0) +
+                                (row.breakdown?.rentals ?? 0) +
+                                (row.breakdown?.packages || 0)}
+                              건
+                            </p>
+                            <AdminReferencePopover
+                              align="end"
+                              title={`${row.yyyymm} 처리 건수`}
+                              trigger={
+                                <button type="button" className={adminDataTable.referenceTrigger}>
+                                  구성 보기
+                                </button>
+                              }
+                              items={[
+                                { label: "주문", value: `${row.breakdown?.orders || 0}건` },
+                                { label: "교체서비스", value: `${row.breakdown?.applications || 0}건` },
+                                { label: "대여", value: `${row.breakdown?.rentals ?? 0}건` },
+                                { label: "패키지", value: `${row.breakdown?.packages || 0}건` },
+                              ]}
+                            />
+                          </div>
+                          <div className="space-y-1 text-right tabular-nums">
+                            <p className="text-sm font-semibold text-foreground">
+                              {(
+                                (row.breakdown?.privatePaymentsPaidAmount || 0) -
+                                (row.breakdown?.privatePaymentsRefundAmount || 0)
+                              ).toLocaleString()}
+                              원
+                            </p>
+                            <AdminReferencePopover
+                              align="end"
+                              title={`${row.yyyymm} 개인결제 금액`}
+                              trigger={
+                                <button type="button" className={adminDataTable.referenceTrigger}>
+                                  결제·환불 보기
+                                </button>
+                              }
+                              items={[
+                                {
+                                  label: "결제",
+                                  value: `${(row.breakdown?.privatePaymentsPaidAmount || 0).toLocaleString()}원`,
+                                },
+                                {
+                                  label: "환불",
+                                  value: `${(row.breakdown?.privatePaymentsRefundAmount || 0).toLocaleString()}원`,
+                                },
+                              ]}
+                            />
                           </div>
 
                           <div className="flex items-center justify-center">
@@ -917,9 +1024,91 @@ export default function SettlementsClient() {
                             {!statusMap[String(row.yyyymm)] && (
                               <span className="text-xs text-muted-foreground">-</span>
                             )}
+                            {openMap[String(row.yyyymm)] &&
+                            statusMap[String(row.yyyymm)] === "stale" &&
+                            diffMap[String(row.yyyymm)] ? (
+                              <AdminRowDetailsSheet
+                                title={`${row.yyyymm} 검증 결과`}
+                                description="저장된 스냅샷과 현재 집계를 비교합니다."
+                                trigger={
+                                  <Button type="button" variant="link" size="sm" className="h-7 px-1">
+                                    차이 보기
+                                  </Button>
+                                }
+                                footer={
+                                  <Button
+                                    type="button"
+                                    disabled={doing.rebuild === row.yyyymm}
+                                    onClick={() => void rebuildSnapshotRow(row)}
+                                  >
+                                    {doing.rebuild === row.yyyymm ? (
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <RefreshCw className="mr-2 h-4 w-4" />
+                                    )}
+                                    지금 갱신
+                                  </Button>
+                                }
+                              >
+                                <div className="overflow-hidden rounded-lg border border-border">
+                                  <div className="grid grid-cols-[120px_1fr_1fr] gap-3 bg-muted/50 px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                    <span>항목</span>
+                                    <span className="text-right">스냅샷</span>
+                                    <span className="text-right">현재 집계</span>
+                                  </div>
+                                  {(
+                                    [
+                                      ["결제 금액", "paid"],
+                                      ["환불 금액", "refund"],
+                                      ["순매출", "net"],
+                                      ["주문", "orders"],
+                                      ["교체서비스", "applications"],
+                                      ["패키지", "packages"],
+                                    ] as const
+                                  ).map(([label, field]) => (
+                                    <div
+                                      key={field}
+                                      className="grid grid-cols-[120px_1fr_1fr] gap-3 border-t border-border px-4 py-3 text-sm"
+                                    >
+                                      <span className="text-muted-foreground">{label}</span>
+                                      <span className="text-right tabular-nums">
+                                        {diffMap[String(row.yyyymm)]!.snap[field].toLocaleString()}
+                                      </span>
+                                      <span
+                                        className={cn(
+                                          "text-right font-medium tabular-nums",
+                                          diffMap[String(row.yyyymm)]!.snap[field] !==
+                                            diffMap[String(row.yyyymm)]!.live[field] &&
+                                            "text-destructive",
+                                        )}
+                                      >
+                                        {diffMap[String(row.yyyymm)]!.live[field].toLocaleString()}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <p className="mt-4 text-sm text-muted-foreground">
+                                  값이 다른 경우 갱신하면 현재 집계로 스냅샷을 다시 생성합니다.
+                                </p>
+                              </AdminRowDetailsSheet>
+                            ) : null}
                           </div>
 
-                          <div className="sticky right-0 flex items-center justify-center bg-card">
+                          <div className="sticky right-0 flex items-center justify-end gap-1 bg-card">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={statusMap[String(row.yyyymm)] === "checking"}
+                              onClick={() => void validateSnapshotRow(row)}
+                            >
+                              {statusMap[String(row.yyyymm)] === "checking" ? (
+                                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                              )}
+                              검증
+                            </Button>
                             <DropdownMenu modal={false}>
                               <DropdownMenuTrigger asChild>
                                 <button
@@ -943,33 +1132,7 @@ export default function SettlementsClient() {
                                   <DropdownMenuLabel>작업</DropdownMenuLabel>
                                   <DropdownMenuItem
                                     disabled={doing.rebuild === row.yyyymm}
-                                    onSelect={async () => {
-                                      try {
-                                        setDoing((d) => ({
-                                          ...d,
-                                          rebuild: row.yyyymm,
-                                        }));
-                                        await rebuildSnapshot(String(row.yyyymm));
-                                        await mutate();
-                                        setStatusMap((prev) => ({
-                                          ...prev,
-                                          [String(row.yyyymm)]: "ok",
-                                        }));
-                                        setStaleMap((prev) => ({
-                                          ...prev,
-                                          [String(row.yyyymm)]: false,
-                                        }));
-                                        showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
-                                      } catch (e) {
-                                        console.error(e);
-                                        showErrorToast("스냅샷 갱신 중 오류가 발생했습니다.");
-                                      } finally {
-                                        setDoing((d) => ({
-                                          ...d,
-                                          rebuild: undefined,
-                                        }));
-                                      }
-                                    }}
+                                    onSelect={() => void rebuildSnapshotRow(row)}
                                   >
                                     {doing.rebuild === row.yyyymm ? (
                                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -977,74 +1140,6 @@ export default function SettlementsClient() {
                                       <RefreshCw className="w-4 h-4 mr-2" />
                                     )}
                                     갱신
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onSelect={async () => {
-                                      const key = String(row.yyyymm);
-                                      try {
-                                        setStatusMap((prev) => ({
-                                          ...prev,
-                                          [key]: "checking",
-                                        }));
-                                        const { ok, live } = await checkStalenessOfRow(row);
-
-                                        const snap = {
-                                          paid: row.totals?.paid || 0,
-                                          refund: row.totals?.refund || 0,
-                                          net: row.totals?.net || 0,
-                                          orders: row.breakdown?.orders || 0,
-                                          applications: row.breakdown?.applications || 0,
-                                          packages: row.breakdown?.packages || 0,
-                                        };
-                                        const livePack = {
-                                          paid: live.totals?.paid || 0,
-                                          refund: live.totals?.refund || 0,
-                                          net: live.totals?.net || 0,
-                                          orders: live.breakdown?.orders || 0,
-                                          applications: live.breakdown?.applications || 0,
-                                          packages: live.breakdown?.packages || 0,
-                                        };
-
-                                        setDiffMap((prev) => ({
-                                          ...prev,
-                                          [key]: { live: livePack, snap },
-                                        }));
-                                        setStatusMap((prev) => ({
-                                          ...prev,
-                                          [key]: ok ? "ok" : "stale",
-                                        }));
-                                        setStaleMap((prev) => ({
-                                          ...prev,
-                                          [key]: !ok,
-                                        }));
-
-                                        if (ok) {
-                                          showSuccessToast("스냅샷이 현재 집계와 일치합니다.");
-                                          setOpenMap((prev) => ({
-                                            ...prev,
-                                            [key]: false,
-                                          }));
-                                        } else {
-                                          showInfoToast(
-                                            `변경 감지됨: ${key} 스냅샷과 현재 집계가 다릅니다.`,
-                                          );
-                                          setOpenMap((prev) => ({
-                                            ...prev,
-                                            [key]: true,
-                                          }));
-                                        }
-                                      } catch (e) {
-                                        console.error(e);
-                                        setStatusMap((prev) => ({
-                                          ...prev,
-                                          [key]: "stale",
-                                        }));
-                                        showErrorToast("검증 중 오류가 발생했습니다.");
-                                      }
-                                    }}
-                                  >
-                                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                                    검증
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
@@ -1064,146 +1159,6 @@ export default function SettlementsClient() {
                             </DropdownMenu>
                           </div>
                         </div>
-
-                        {openMap[String(row.yyyymm)] &&
-                          statusMap[String(row.yyyymm)] === "stale" &&
-                          diffMap[String(row.yyyymm)] && (
-                            <div className="mx-5 mb-5 rounded-2xl border-2 border-destructive/40 bg-destructive/10 dark:bg-destructive/15 shadow-xl max-h-[60vh] overflow-auto overscroll-auto">
-                              <div className="p-4 border-b border-destructive/40 bg-card flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <AlertTriangle className="w-5 h-5 text-destructive" />
-                                  <span className="font-semibold text-sm text-destructive">
-                                    검증 결과 비교
-                                  </span>
-                                </div>
-                                <button
-                                  className="text-xs text-muted-foreground hover:text-foreground dark:hover:text-foreground transition-colors font-medium"
-                                  onClick={() =>
-                                    setOpenMap((prev) => ({
-                                      ...prev,
-                                      [String(row.yyyymm)]: false,
-                                    }))
-                                  }
-                                >
-                                  닫기
-                                </button>
-                              </div>
-
-                              <div className="p-5">
-                                <div className="rounded-xl border-2 border-destructive/40 overflow-hidden bg-card shadow-sm">
-                                  <div className="grid grid-cols-7 gap-4 p-4 bg-destructive/10 dark:bg-destructive/15 text-xs font-semibold border-b border-destructive/40 text-destructive">
-                                    <div></div>
-                                    <div className="text-right">결제금액</div>
-                                    <div className="text-right">환불금액</div>
-                                    <div className="text-right">순매출</div>
-                                    <div className="text-right">주문 건수</div>
-                                    <div className="text-right">스트링 신청 건수</div>
-                                    <div className="text-right">패키지 건수</div>
-                                  </div>
-                                  <div className="grid grid-cols-7 gap-4 p-4 border-b border-border hover:bg-muted/50 dark:hover:bg-card/50 transition-colors">
-                                    <div className="text-xs text-muted-foreground font-semibold">
-                                      스냅샷
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.snap.refund.toLocaleString()}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm font-bold text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.snap.net.toLocaleString()}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.snap.orders}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.snap.applications}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.snap.packages}
-                                    </div>
-                                  </div>
-                                  <div className="grid grid-cols-7 gap-4 p-4 hover:bg-muted/50 dark:hover:bg-card/50 transition-colors">
-                                    <div className="text-xs text-muted-foreground font-semibold">
-                                      실시간
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.live.refund.toLocaleString()}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm font-bold text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.live.net.toLocaleString()}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.live.orders}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.live.applications}
-                                    </div>
-                                    <div className="text-right tabular-nums text-sm text-foreground">
-                                      {diffMap[String(row.yyyymm)]!.live.packages}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-destructive/15 dark:bg-destructive/20 border-2 border-destructive/40">
-                                  <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
-                                  <span className="text-sm text-destructive flex-1 font-medium">
-                                    값이 다릅니다. '지금 갱신'을 눌러 스냅샷을 업데이트 하세요.
-                                  </span>
-                                  <button
-                                    className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
-                                    disabled={doing.rebuild === row.yyyymm}
-                                    onClick={async () => {
-                                      try {
-                                        setDoing((d) => ({
-                                          ...d,
-                                          rebuild: row.yyyymm,
-                                        }));
-                                        await rebuildSnapshot(String(row.yyyymm));
-                                        await mutate();
-                                        setStatusMap((prev) => ({
-                                          ...prev,
-                                          [String(row.yyyymm)]: "ok",
-                                        }));
-                                        setStaleMap((prev) => ({
-                                          ...prev,
-                                          [String(row.yyyymm)]: false,
-                                        }));
-                                        setOpenMap((prev) => ({
-                                          ...prev,
-                                          [String(row.yyyymm)]: false,
-                                        }));
-                                        showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
-                                      } catch (e) {
-                                        console.error(e);
-                                        showErrorToast("스냅샷 갱신 중 오류가 발생했습니다.");
-                                      } finally {
-                                        setDoing((d) => ({
-                                          ...d,
-                                          rebuild: undefined,
-                                        }));
-                                      }
-                                    }}
-                                  >
-                                    {doing.rebuild === row.yyyymm ? (
-                                      <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        갱신 중...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <RefreshCw className="w-4 h-4" />
-                                        지금 갱신
-                                      </>
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
                       </div>
                     ))}
                   </div>

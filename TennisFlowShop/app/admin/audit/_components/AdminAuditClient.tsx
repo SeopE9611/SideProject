@@ -8,9 +8,10 @@ import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Search, ListFilter, ClipboardList } from "lucide-react";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 
 type AuditItem = {
@@ -216,11 +217,11 @@ export default function AdminAuditClient() {
                 key={item.id}
                 className={`${adminSurface.tableCard} p-3 transition-colors hover:bg-muted/25`}
               >
-                <div className="grid gap-3 grid-cols-[minmax(180px,1.1fr)_minmax(180px,1fr)_minmax(140px,0.8fr)_auto]">
+                <div className="grid gap-3 grid-cols-[minmax(180px,1.1fr)_minmax(160px,1fr)_minmax(120px,0.8fr)_minmax(150px,0.8fr)_130px]">
                   <div className="min-w-0">
                     <div className={adminTypography.metaMuted}>작업</div>
-                    <Badge variant="secondary">{actionName}</Badge>
-                    <div className="font-mono text-[11px] text-muted-foreground">{item.type}</div>
+                    <div className={adminDataTable.primaryLine}>{actionName}</div>
+                    <div className={adminDataTable.secondaryLine}>{item.type}</div>
                   </div>
                   <div className="min-w-0">
                     <div className={adminTypography.metaMuted}>실행자</div>
@@ -230,8 +231,10 @@ export default function AdminAuditClient() {
                   </div>
                   <div className="min-w-0">
                     <div className={adminTypography.metaMuted}>대상</div>
-                    <span title={item.targetId || undefined} className={adminTypography.body}>
-                      {item.targetId || "없음"}
+                    <span className={adminTypography.body}>
+                      {item.targetId
+                        ? `${item.targetId.slice(0, 8)}${item.targetId.length > 8 ? "…" : ""}`
+                        : "없음"}
                     </span>
                   </div>
                   <div className="min-w-0">
@@ -239,22 +242,51 @@ export default function AdminAuditClient() {
                     <time dateTime={item.createdAt ?? undefined} className={adminTypography.body}>
                       {formatDateTime(item.createdAt)}
                     </time>
-                    {item.requestId ? (
-                      <div className="font-mono text-[11px] text-muted-foreground">
-                        요청 ID: {item.requestId}
-                      </div>
-                    ) : null}
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <AdminRowDetailsSheet
+                      title={actionName}
+                      description={`${item.actor} · ${formatDateTime(item.createdAt)}`}
+                      trigger={
+                        <Button type="button" size="sm" variant="outline">
+                          {item.diffSummary?.length ? `변경 ${item.diffSummary.length}건` : "참조 정보"}
+                        </Button>
+                      }
+                    >
+                      <dl className="divide-y divide-border rounded-lg border border-border">
+                        {[
+                          ["감사 ID", item.id],
+                          ["작업 코드", item.type],
+                          ["실행자 ID", item.actorId],
+                          ["대상 ID", item.targetId],
+                          ["요청 ID", item.requestId],
+                        ].map(([label, value]) => (
+                          <div key={label} className="grid grid-cols-[100px_1fr] gap-3 px-4 py-3">
+                            <dt className={adminDataTable.secondaryText}>{label}</dt>
+                            <dd className="break-all text-sm font-medium text-foreground">
+                              {value || "-"}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                      {item.diffSummary?.length ? (
+                        <div className="mt-5">
+                          <h3 className={adminTypography.sectionTitle}>변경 요약</h3>
+                          <ul className="mt-3 space-y-2">
+                            {item.diffSummary.map((summary, idx) => (
+                              <li
+                                key={`${item.id}-detail-${idx}`}
+                                className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm"
+                              >
+                                {summary}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                    </AdminRowDetailsSheet>
                   </div>
                 </div>
-                {item.diffSummary && item.diffSummary.length > 0 ? (
-                  <div className="mt-2 border-t pt-2">
-                    <ul className={`list-disc space-y-1 pl-5 ${adminTypography.caption}`}>
-                      {item.diffSummary.map((summary, idx) => (
-                        <li key={`${item.id}-s-${idx}`}>{summary}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
               </article>
             );
           })}

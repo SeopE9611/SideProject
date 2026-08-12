@@ -13,7 +13,6 @@ import {
   getAdminPackageUsageBadgeSpec,
   getAdminPackageActivationBadgeSpec,
   getAdminPackageAttentionBadgeSpec,
-  packageTypeColors,
   type PackageListItem,
   type PackageType,
   type PackagesResponse,
@@ -28,6 +27,7 @@ import {
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -49,13 +49,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { getPaymentStatusBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   Calendar,
@@ -63,7 +62,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Copy,
   CreditCard,
   Eye,
   Filter,
@@ -1062,9 +1060,9 @@ export default function PackageOrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative px-4">
-          <div className={cn(adminSurface.tableCard, "relative max-h-[70vh] min-w-0 overflow-x-auto overflow-y-auto")}>
+          <div className="relative max-h-[70vh] min-w-0 overflow-x-auto overflow-y-auto rounded-lg border border-border">
             <Table
-              className="min-w-[1120px] table-fixed border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0]"
+              className="min-w-[1040px] table-fixed"
               aria-busy={isValidating && !shouldShowRows}
             >
               <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
@@ -1157,7 +1155,6 @@ export default function PackageOrdersClient() {
                       const reasonLabels = pkg.attentionReasons.map(
                         getAdminPackageAttentionReasonLabel,
                       );
-                      const attentionLabel = pkg.requiresAttention ? "확인 필요" : "확인 완료";
                       const rawName = pkg.customer?.name ?? "이름없음";
                       const isGuest = /\(비회원\)\s*$/.test(rawName);
                       const displayName = rawName.replace(/\s*\(비회원\)\s*$/, "");
@@ -1169,48 +1166,31 @@ export default function PackageOrdersClient() {
                           className={adminDataTable.row}
                         >
                           <TableCell className={tdClasses}>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  className={cn(
-                                    "border font-medium",
-                                    packageTypeColors[pkg.packageType as PackageType] ??
-                                      "bg-card text-foreground border-border",
-                                    badgeSizeCls,
-                                  )}
-                                >
-                                  {pkg.packageType}
-                                </Badge>
-                                {pkg.serviceType ? (
-                                  <span className={adminTypography.bodyStrong}>{pkg.serviceType}</span>
+                            <div className={adminDataTable.cellStack}>
+                              <p className={adminDataTable.primaryLine}>
+                                {displayName}
+                                {isGuest ? (
+                                  <span className={cn(adminTypography.caption, "ml-1")}>(비회원)</span>
                                 ) : null}
-                              </div>
-                              <div>
-                                <p className={adminTypography.bodyStrong}>
-                                  {displayName}
-                                  {isGuest ? <span className={cn(adminTypography.caption, "ml-1")}>(비회원)</span> : null}
-                                </p>
-                                <p className={cn(adminTypography.meta, "truncate")} title={pkg.customer?.email ?? ""}>
-                                  {pkg.customer?.email ?? ""}
-                                </p>
-                              </div>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className={cn(adminTypography.caption, "block cursor-pointer truncate font-mono")}>
-                                      {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <div className="flex items-center gap-2">
-                                      <span>{pkg.id}</span>
-                                      <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={`${pkg.id} 패키지 ID 복사`} onClick={() => { navigator.clipboard.writeText(pkg.id); showSuccessToast("패키지 ID가 클립보드에 복사되었습니다."); }}>
-                                        <Copy className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              </p>
+                              <p className={adminDataTable.categoryText}>
+                                {pkg.packageType}
+                                {pkg.serviceType ? ` · ${pkg.serviceType}` : ""}
+                              </p>
+                              <AdminReferencePopover
+                                title={`${displayName} 패키지 참조`}
+                                trigger={
+                                  <button type="button" className={adminDataTable.referenceTrigger}>
+                                    {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
+                                  </button>
+                                }
+                                items={[
+                                  { label: "패키지 ID", value: pkg.id },
+                                  { label: "이메일", value: pkg.customer?.email },
+                                  { label: "패키지", value: pkg.packageType },
+                                  { label: "서비스", value: pkg.serviceType },
+                                ]}
+                              />
                             </div>
                           </TableCell>
 
@@ -1255,14 +1235,22 @@ export default function PackageOrdersClient() {
                           </TableCell>
 
                           <TableCell className={tdClasses}>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge {...getAdminPackageAttentionBadgeSpec(pkg.requiresAttention)} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={pkg.requiresAttention ? `운영 확인 필요: ${reasonLabels.length ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}` : "운영 확인 완료"}>{attentionLabel}</Badge>
-                                </TooltipTrigger>
-                                {pkg.requiresAttention && <TooltipContent><p className="font-medium">운영 확인 필요</p><p className={adminTypography.caption}>{reasonLabels.length ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}</p></TooltipContent>}
-                              </Tooltip>
-                            </TooltipProvider>
+                            {pkg.requiresAttention ? (
+                              <div className={adminDataTable.cellStack}>
+                                <Badge
+                                  {...getAdminPackageAttentionBadgeSpec(true)}
+                                  className={cn("w-fit whitespace-nowrap font-medium", badgeSizeCls)}
+                                  aria-label={`운영 확인 필요: ${reasonLabels.length ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}`}
+                                >
+                                  확인 필요
+                                </Badge>
+                                <p className={adminDataTable.attentionText}>
+                                  {reasonLabels[0] || "사유 확인 필요"}
+                                </p>
+                              </div>
+                            ) : (
+                              <span className={adminDataTable.secondaryText}>이상 없음</span>
+                            )}
                           </TableCell>
 
                           <TableCell className={cn(tdClasses, "text-right")}>

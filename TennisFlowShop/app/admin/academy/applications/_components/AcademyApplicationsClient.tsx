@@ -308,7 +308,7 @@ export default function AcademyApplicationsClient() {
             </div>
           ) : null}
 
-          <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
+          <div className="overflow-x-auto rounded-lg border border-border">
             <Table className="min-w-[1120px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>

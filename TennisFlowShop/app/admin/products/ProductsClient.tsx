@@ -642,56 +642,49 @@ export default function ProductsClient() {
 
           {/* 테이블 */}
           <div className="flex-1">
-            <div className={cn(adminSurface.tableCard, "overflow-auto")}>
-              <Table className="min-w-[920px] table-fixed [&_tr]:border-0">
+            <div className="overflow-auto rounded-lg border border-border">
+              <Table className="min-w-[720px] table-fixed">
                 <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
                   <TableRow className={adminDataTable.row}>
-                    {(["name", "brand", "gauge", "material", "price", "stock"] as const).map(
-                      (field) => {
-                        const config = {
-                          name: ["스트링명", "left", "w-[32%]"],
-                          brand: ["브랜드", "center", "w-[12%]"],
-                          gauge: ["게이지", "center", "w-[10%]"],
-                          material: ["재질", "center", "w-[14%]"],
-                          price: ["가격", "right", "w-[12%]"],
-                          stock: ["재고", "right", "w-[10%]"],
-                        }[field] as [string, "left" | "center" | "right", string];
-                        return (
-                          <AdminSortableTableHead
-                            key={field}
-                            label={config[0]}
-                            active={sort?.field === field}
-                            direction={sort?.dir ?? "asc"}
-                            align={config[1]}
-                            onSort={() => handleSort(field)}
-                            className={cn(
-                              config[1] === "left"
-                                ? adminDataTable.head
-                                : config[1] === "center"
-                                  ? adminDataTable.headCenter
-                                  : adminDataTable.headRight,
-                              config[2],
-                            )}
-                          />
-                        );
-                      },
-                    )}
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[10%]")}>상태</TableHead>
-                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[10%]")}>관리</TableHead>
+                    <AdminSortableTableHead
+                      label="스트링 상품"
+                      active={sort?.field === "name"}
+                      direction={sort?.dir ?? "asc"}
+                      align="left"
+                      onSort={() => handleSort("name")}
+                      className={cn(adminDataTable.head, "w-[44%]")}
+                    />
+                    <AdminSortableTableHead
+                      label="가격"
+                      active={sort?.field === "price"}
+                      direction={sort?.dir ?? "asc"}
+                      align="right"
+                      onSort={() => handleSort("price")}
+                      className={cn(adminDataTable.headRight, "w-[16%]")}
+                    />
+                    <AdminSortableTableHead
+                      label="판매 / 재고"
+                      active={sort?.field === "stock"}
+                      direction={sort?.dir ?? "asc"}
+                      align="center"
+                      onSort={() => handleSort("stock")}
+                      className={cn(adminDataTable.headCenter, "w-[20%]")}
+                    />
+                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[20%]")}>관리</TableHead>
                   </TableRow>
                 </TableHeader>
 
                 <TableBody>
                   {isListLoadingState ? (
                     <TableRow className="border-0">
-                      <TableCell colSpan={8} className="py-4">
+                      <TableCell colSpan={4} className="py-4">
                         <div className="space-y-2">
                           {Array.from({ length: 6 }).map((_, rowIdx) => (
                             <div
                               key={`admin-products-loading-row-${rowIdx}`}
-                              className="grid grid-cols-8 gap-2"
+                              className="grid grid-cols-4 gap-2"
                             >
-                              {Array.from({ length: 8 }).map((__, colIdx) => (
+                              {Array.from({ length: 4 }).map((__, colIdx) => (
                                 <Skeleton
                                   key={`admin-products-loading-cell-${rowIdx}-${colIdx}`}
                                   className="h-7 w-full"
@@ -704,7 +697,7 @@ export default function ProductsClient() {
                     </TableRow>
                   ) : isActualEmptyState ? (
                     <TableRow className="border-0">
-                      <TableCell colSpan={8} className="py-16 text-center">
+                      <TableCell colSpan={4} className="py-16 text-center">
                         <div className="flex flex-col items-center gap-2">
                           <Search className="h-8 w-8 text-muted-foreground/50" />
                           <p className="text-sm text-muted-foreground">등록된 상품이 없습니다.</p>
@@ -722,57 +715,21 @@ export default function ProductsClient() {
                           className={adminDataTable.row}
                         >
                           <TableCell className={adminDataTable.cellLeft}>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Link
-                                  href={`/products/${s._id}`}
-                                  className="line-clamp-2 break-keep font-medium text-foreground hover:text-foreground dark:hover:text-foreground"
-                                  title={s.name}
-                                >
-                                  {s.name}
-                                </Link>
-                                {isHidden && (
-                                  <Badge
-                                    variant="outline"
-                                    className="shrink-0 whitespace-nowrap rounded-full px-1.5 py-0 font-medium text-muted-foreground"
-                                  >
-                                    숨김
-                                  </Badge>
-                                )}
-                              </div>
-                              <div
-                                className={cn("truncate font-mono", adminDataTable.secondaryText)}
-                                title={s.sku}
+                            <div className={adminDataTable.cellStack}>
+                              <Link
+                                href={`/products/${s._id}`}
+                                className={cn(adminDataTable.primaryLine, "block hover:text-primary")}
+                                title={s.name}
                               >
-                                {s.sku}
+                                {s.name}
+                              </Link>
+                              <div className={adminDataTable.categoryText}>
+                                {brandLabel(s.brand)} · {s.gauge} · {materialLabel(s.material)}
+                              </div>
+                              <div className={adminDataTable.secondaryLine} title={s.sku}>
+                                SKU {s.sku}
                               </div>
                             </div>
-                          </TableCell>
-
-                          <TableCell className={adminDataTable.cellCenter}>
-                            <Badge
-                              variant="secondary"
-                              className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-2 py-0.5 text-foreground dark:border-border dark:bg-muted dark:text-foreground"
-                            >
-                              {brandLabel(s.brand)}
-                            </Badge>
-                          </TableCell>
-
-                          <TableCell
-                            className={cn(
-                              adminDataTable.cellCenter,
-                              "whitespace-nowrap text-foreground",
-                            )}
-                          >
-                            {s.gauge}
-                          </TableCell>
-                          <TableCell
-                            className={cn(
-                              adminDataTable.cellCenter,
-                              "whitespace-nowrap text-foreground",
-                            )}
-                          >
-                            {materialLabel(s.material)}
                           </TableCell>
 
                           <TableCell
@@ -784,35 +741,35 @@ export default function ProductsClient() {
                             {s.price?.toLocaleString?.() ?? s.price}원
                           </TableCell>
 
-                          <TableCell className={adminDataTable.cellNumber}>
-                            {s.inventory?.stock && s.inventory.stock > 0 ? (
-                              <span className="font-medium text-foreground">
-                                {s.inventory.stock}
-                              </span>
-                            ) : (
-                              <span className="font-medium text-foreground">품절</span>
-                            )}
-                          </TableCell>
-
                           <TableCell className={adminDataTable.cellCenter}>
-                            <Badge
-                              variant={badgeToneVariant(S.tone)}
-                              className={cn(
-                                "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap",
-                              )}
-                            >
-                              <S.Icon className="h-3.5 w-3.5" />
-                              {S.label}
-                            </Badge>
+                            <div className={cn(adminDataTable.cellStack, "flex flex-col items-center")}>
+                              <Badge
+                                variant={badgeToneVariant(S.tone)}
+                                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap"
+                              >
+                                <S.Icon className="h-3.5 w-3.5" />
+                                {S.label}
+                              </Badge>
+                              <span className={adminDataTable.secondaryText}>
+                                재고 {Math.max(0, Number(s.inventory?.stock ?? 0)).toLocaleString("ko-KR")}
+                              </span>
+                              {isHidden ? (
+                                <span className={adminDataTable.attentionText}>스토어 숨김</span>
+                              ) : null}
+                            </div>
                           </TableCell>
 
                           <TableCell
                             className={cn(
                               adminDataTable.stickyActionCell,
-                              "w-[10%] group-even:bg-muted group-hover:bg-muted dark:group-even:bg-card dark:group-hover:bg-card",
-                            )}
+                               "w-[20%]",
+                             )}
                           >
-                            <DropdownMenu>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button asChild size="sm" variant="outline">
+                                <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
+                              </Button>
+                              <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
                                   variant="ghost"
@@ -841,7 +798,8 @@ export default function ProductsClient() {
                                   삭제
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
-                            </DropdownMenu>
+                              </DropdownMenu>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -858,7 +816,7 @@ export default function ProductsClient() {
                       length: Math.max(0, PAGE_SIZE - items.length),
                     }).map((_, i) => (
                       <TableRow key={`filler-${i}`} className="pointer-events-none">
-                        <TableCell colSpan={8} className="p-0">
+                        <TableCell colSpan={4} className="p-0">
                           <div className="h-14" />
                         </TableCell>
                       </TableRow>

@@ -36,6 +36,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import { buildAdminBoardDetailUrl, buildBoardPublicUrl } from "@/lib/board-public-url-policy";
@@ -43,7 +44,6 @@ import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   adminPostVisibilityBadgeVariant,
   adminReportStatusBadgeVariant,
-  adminReportTargetBadgeVariant,
 } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -594,9 +594,9 @@ export default function BoardsClient() {
                                   />
                                   <div className="flex-1 space-y-2">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <Badge variant="outline" className="font-medium">
+                                      <span className={adminDataTable.categoryText}>
                                         {resolveBoardLabel(p.type)}
-                                      </Badge>
+                                      </span>
                                       <span className={adminTypography.caption}>
                                         #{p.postNo ?? "-"}
                                       </span>
@@ -879,18 +879,10 @@ export default function BoardsClient() {
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex-1 space-y-2">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      {r.targetType === "post" ? (
-                                        <Badge variant={adminReportTargetBadgeVariant("post")}>
-                                          게시글
-                                        </Badge>
-                                      ) : (
-                                        <Badge variant={adminReportTargetBadgeVariant("comment")}>
-                                          댓글
-                                        </Badge>
-                                      )}
-                                      <Badge variant="outline" className="font-medium">
+                                      <span className={adminDataTable.categoryText}>
+                                        {r.targetType === "post" ? "게시글" : "댓글"} ·{" "}
                                         {resolveBoardLabel(r.boardType)}
-                                      </Badge>
+                                      </span>
                                       {r.status === "pending" && (
                                         <Badge variant={adminReportStatusBadgeVariant("pending")}>
                                           대기

@@ -12,6 +12,7 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -35,7 +36,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
 import {
   badgeBase,
@@ -52,12 +52,11 @@ import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-s
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { adminRichTooltipClass } from "@/lib/tooltip-style";
+import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
 import type { ApiResponse, OrderWithType } from "@/lib/types/order";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
-  Copy,
   CreditCard,
   Eye,
   MoreHorizontal,
@@ -72,38 +71,6 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 export default function OrdersClient() {
-  function getSelectedColorLabel(value: {
-    selectedColorLabel?: string | null;
-    selectedColor?: string | null;
-  }) {
-    return String(value?.selectedColorLabel ?? value?.selectedColor ?? "").trim();
-  }
-
-  function getMetaSelectedColorLabel(
-    meta?: {
-      selectedColorLabel?: string | null;
-      selectedColor?: string | null;
-    } | null,
-  ) {
-    return String(meta?.selectedColorLabel ?? meta?.selectedColor ?? "").trim();
-  }
-
-  function getCancelQuickSignal(
-    order: OrderWithType,
-  ): { label: "계좌확인 필요" | "검토 가능"; className: string } | null {
-    if (order.cancelStatus !== "requested") return null;
-    if (order.refundAccountReady === true) {
-      return {
-        label: "검토 가능",
-        className: "bg-primary/10 text-primary border border-primary/30",
-      };
-    }
-    return {
-      label: "계좌확인 필요",
-      className: "bg-muted text-muted-foreground border border-border",
-    };
-  }
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const { mutate: mutateGlobal } = useSWRConfig();
@@ -415,21 +382,6 @@ export default function OrdersClient() {
     return "상세 보기";
   }
 
-  function getSettlementBadge(order: OrderWithType, ctx: { isIntegratedApp: boolean }) {
-    // /admin/orders 화면 기준 정산 앵커:
-    // - 주문 행: 항상 주문 앵커
-    // - 신청서 행: 통합이면 주문 앵커 / 단독이면 신청서 앵커
-    if (order.__type === "stringing_application") {
-      return ctx.isIntegratedApp
-        ? { label: "정산: 주문", className: linkBadgeClass("integrated") }
-        : {
-            label: "정산: 신청(단독)",
-            className: linkBadgeClass("standalone"),
-          };
-    }
-    return { label: "정산: 주문", className: linkBadgeClass("integrated") };
-  }
-
   // 연결 신청서는 "최신 수정/생성 시각" 기준으로 1건을 선택해 요약에 사용
   function getLatestStringingApplicationInGroup(group: OrderWithType[]) {
     const apps = group.filter((o) => o.__type === "stringing_application") as Array<
@@ -446,17 +398,6 @@ export default function OrdersClient() {
     return apps
       .map((app, idx) => ({ app, ts: getStamp(app, idx), idx }))
       .sort((a, b) => (b.ts !== a.ts ? b.ts - a.ts : a.idx - b.idx))[0]?.app;
-  }
-
-  // 관리자 목록에서는 원문 코드 대신 접수 방식 라벨로 노출
-  function getReceptionLabel(raw: unknown): string | null {
-    const method = String(raw ?? "")
-      .trim()
-      .toLowerCase();
-    if (!method) return null;
-    if (method === "visit") return "방문 접수";
-    if (method === "courier_pickup") return "자가 발송(택배)";
-    return "발송 접수";
   }
 
   // 날짜 포맷터
@@ -866,107 +807,28 @@ export default function OrdersClient() {
               {data ? `총 ${data.total}개의 주문` : "목록을 불러오는 중…"}
             </p>
           </div>
-          {/* 운영자용: 빠른 구분 범례와 상세 도움말 */}
-          <div className="mt-1.5 flex flex-col gap-2 text-ui-body-sm text-foreground/75">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  kindBadgeClass("order"),
-                )}
-              >
-                주문
-              </Badge>
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  kindBadgeClass("stringing_application"),
-                )}
-              >
-                신청서
-              </Badge>
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  linkBadgeClass("integrated"),
-                )}
-              >
-                통합
-              </Badge>
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  linkBadgeClass("standalone"),
-                )}
-              >
-                단독
-              </Badge>
-              <details className="group w-auto">
-                <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md border border-border/60 bg-card px-2.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground [&::-webkit-details-marker]:hidden">
-                  주문·신청 구분 안내
-                </summary>
-                <div className="mt-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-ui-label leading-5 text-muted-foreground">
-                  <ul className="space-y-1">
-                    <li>
-                      <strong className="font-medium text-foreground">주문:</strong> 상품 구매,
-                      스트링 구매, 라켓 구매 등 결제 주문입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">신청서:</strong> 교체서비스
-                      작업 정보를 관리하는 신청 문서입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">통합:</strong> 주문과
-                      교체서비스 신청이 연결된 고객 흐름입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">단독:</strong> 주문 또는
-                      신청서가 단독으로 접수된 항목입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">연결 묶음:</strong> 같은
-                      묶음으로 정렬된 주문·신청입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">신청서에서 관리:</strong>{" "}
-                      배송/운송장 정보가 신청서 상세에서 관리되는 항목입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">대여 주문:</strong> 라켓 대여
-                      관련 업무는 “라켓 대여 처리” 화면에서 관리합니다.
-                    </li>
-                  </ul>
-                </div>
-              </details>
-            </div>
-          </div>
+          <p className="mt-1.5 text-ui-label text-muted-foreground">
+            문서 ID를 선택하면 전체 ID와 연결 문서를 확인할 수 있습니다.
+          </p>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto pr-2">
-          <Table className="min-w-[1400px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1180px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[220px] text-left")}>고객 / 주문</TableHead>
-                <TableHead className={cn(thClasses, "w-[235px] text-left")}>
+                <TableHead className={cn(thClasses, "w-[190px] text-left")}>고객 / 주문</TableHead>
+                <TableHead className={cn(thClasses, "w-[210px] text-left")}>
                   상품 / 서비스
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[220px] text-left")}>상태</TableHead>
+                <TableHead className={cn(thClasses, "w-[190px] text-left")}>진행 / 예외</TableHead>
                 <AdminSortableTableHead
                   label="결제"
                   active={sortBy === "total"}
                   direction={sortDirection}
                   align="right"
                   onSort={() => handleSort("total")}
-                  className={cn(thClasses, "w-[150px] text-right")}
+                  className={cn(thClasses, "w-[130px] text-right")}
                 />
-                <TableHead className={cn(thClasses, "w-[190px] text-left")}>
+                <TableHead className={cn(thClasses, "w-[170px] text-left")}>
                   배송 / 수령
                 </TableHead>
                 <AdminSortableTableHead
@@ -975,9 +837,9 @@ export default function OrdersClient() {
                   direction={sortDirection}
                   align="right"
                   onSort={() => handleSort("date")}
-                  className={cn(thClasses, "w-[145px] text-right")}
+                  className={cn(thClasses, "w-[120px] text-right")}
                 />
-                <TableHead className={cn(adminDataTable.stickyActionHead, "w-[170px]")}>
+                <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>
                   액션
                 </TableHead>
               </TableRow>
@@ -1079,19 +941,11 @@ export default function OrdersClient() {
                     const hasCancelRequest =
                       order.cancelStatus === "requested" ||
                       linkedApplication?.cancelStatus === "requested";
-                    const linkedReceptionLabel = getReceptionLabel(
-                      (linkedApplication as any)?.shippingInfo?.shippingMethod ??
-                        (linkedApplication as any)?.collectionMethod,
-                    );
-
                     const kind = getKindBadge(order);
                     const link = getLinkBadge(order, isLinkedProductOrder);
                     const flow = getFlowBadge(order, {
                       isLinkedProductOrder,
                       anchorHasRacket,
-                      isIntegratedApp,
-                    });
-                    const settlement = getSettlementBadge(order, {
                       isIntegratedApp,
                     });
                     const actionMethodSource =
@@ -1102,7 +956,6 @@ export default function OrdersClient() {
                     const shippingActionLabel = isVisitPickupOrder(actionMethodSource)
                       ? "수령 정보 등록"
                       : "배송 정보 등록";
-                    const cancelQuickSignal = getCancelQuickSignal(order);
                     const productSummary = getProductServiceSummary(order, linkedApplication);
                     const nextActionLabel = getOrderNextAction(order, {
                       isLinkedProductOrder,
@@ -1113,6 +966,10 @@ export default function OrdersClient() {
                       order.__type === "stringing_application"
                         ? `/admin/applications/stringing/${order.id}`
                         : `/admin/orders/${order.id}`;
+                    const linkedDocumentId =
+                      order.__type === "stringing_application"
+                        ? order.linkedOrderId
+                        : linkedApplication?.id;
 
                     return (
                       <TableRow
@@ -1130,177 +987,39 @@ export default function OrdersClient() {
                             isGrouped ? borderColor : "border-transparent",
                           )}
                         >
-                          <TooltipProvider delayDuration={10}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div
-                                  className="flex w-full max-w-[210px] cursor-pointer flex-col items-start gap-1"
-                                  title={order.id}
-                                >
-                                  <p className={cn("line-clamp-1", adminDataTable.primaryText)}>
-                                    {order.customer.name
-                                      .replace(/\s*\(비회원\)\s*$/, "")
-                                      .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
-                                  </p>
-                                  <div className="flex min-w-0 items-center gap-1.5">
-                                    {hasCancelRequest && (
-                                      <AlertTriangle
-                                        className="h-3 w-3 shrink-0 text-primary"
-                                        aria-hidden="true"
-                                      />
-                                    )}
-                                    <Badge className={cn(badgeBase, badgeSizeSm, kind.className)}>
-                                      {kind.label}
-                                    </Badge>
-                                    <span className="truncate font-mono text-ui-label text-foreground/75">
-                                      {shortenId(order.id)}
+                          <div className={adminDataTable.cellStack}>
+                            <p className={adminDataTable.primaryLine}>
+                              {order.customer.name
+                                .replace(/\s*\(비회원\)\s*$/, "")
+                                .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                            </p>
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              {hasCancelRequest ? (
+                                <AlertTriangle
+                                  className="h-3.5 w-3.5 shrink-0 text-warning"
+                                  aria-label="취소 요청 있음"
+                                />
+                              ) : null}
+                              <AdminReferencePopover
+                                title="주문·신청 참조 정보"
+                                trigger={
+                                  <button type="button" className={adminDataTable.referenceTrigger}>
+                                    <span className="truncate">
+                                      {kind.label} · {shortenId(order.id)}
+                                      {link.label !== "단독" ? ` · ${link.label}` : ""}
                                     </span>
-                                    {link.label !== "단독" && (
-                                      <span className={adminDataTable.secondaryText}>{link.label}</span>
-                                    )}
-                                  </div>
-                                  <p
-                                    className={cn("w-full truncate", adminDataTable.secondaryText)}
-                                    title={order.customer.email}
-                                  >
-                                    {order.customer.email || "이메일 없음"}
-                                  </p>
-                                </div>
-                              </TooltipTrigger>
-
-                              <TooltipContent
-                                side="top"
-                                align="center"
-                                sideOffset={6}
-                                className={adminRichTooltipClass}
-                              >
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono">{order.id}</span>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-6 w-6"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(order.id);
-                                        showSuccessToast("주문 ID가 클립보드에 복사되었습니다.");
-                                      }}
-                                    >
-                                      <Copy className="w-4 h-4" />
-                                      <span className="sr-only">복사</span>
-                                    </Button>
-                                  </div>
-
-                                  {hasCancelRequest && (
-                                    <p className="mt-2 text-ui-body-sm text-primary">
-                                      취소 요청이 접수된 항목입니다.
-                                    </p>
-                                  )}
-                                  {cancelQuickSignal && (
-                                    <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                      {cancelQuickSignal.label === "검토 가능"
-                                        ? "환불 계좌 준비가 완료되어 검토 가능합니다."
-                                        : "환불 계좌 확인이 필요합니다."}
-                                    </p>
-                                  )}
-                                  {cancelQuickSignal && order.refundBankLabel && (
-                                    <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                      환불 은행: {order.refundBankLabel}
-                                    </p>
-                                  )}
-                                  {order.__type === "stringing_application" &&
-                                    order.stringSummary && (
-                                      <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                        장착 상품: {order.stringSummary}
-                                      </p>
-                                    )}
-                                  {order.__type === "stringing_application" &&
-                                    (() => {
-                                      const meta = (order as any).meta;
-                                      const gauge = String(meta?.selectedGauge ?? "").trim();
-                                      const color = getMetaSelectedColorLabel(meta);
-                                      if (!gauge && !color) return null;
-                                      return (
-                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                          {gauge && `게이지(굵기) ${gauge}`}
-                                          {gauge && color ? " · " : ""}
-                                          {color && `색상 ${color}`}
-                                        </p>
-                                      );
-                                    })()}
-
-                                  <p className="mt-2 text-ui-body-sm text-foreground/75">
-                                    주문/신청 시나리오:{" "}
-                                    <span className="font-medium text-foreground">
-                                      {flow.label}
-                                    </span>
-                                  </p>
-                                  <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                    {settlement.label}
-                                  </p>
-                                  <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                    포함 범위: 주문 + 신청 (대여 제외)
-                                  </p>
-
-                                  {isLinkedProductOrder && (
-                                    <p className="mt-2 text-ui-body-sm text-foreground/75">
-                                      연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)
-                                    </p>
-                                  )}
-                                  {isLinkedProductOrder && linkedApplication && (
-                                    <>
-                                      {linkedReceptionLabel && (
-                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                          접수 방식: {linkedReceptionLabel}
-                                        </p>
-                                      )}
-                                      {linkedApplication.stringSummary && (
-                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                          스트링: {linkedApplication.stringSummary}
-                                        </p>
-                                      )}
-                                      {(() => {
-                                        const gauge = String(
-                                          (linkedApplication as any)?.meta?.selectedGauge ?? "",
-                                        ).trim();
-                                        const color =
-                                          getMetaSelectedColorLabel(
-                                            (linkedApplication as any)?.meta,
-                                          ) || getSelectedColorLabel(linkedApplication as any);
-                                        if (!gauge && !color) return null;
-                                        return (
-                                          <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                            {gauge && `게이지(굵기) ${gauge}`}
-                                            {gauge && color ? " · " : ""}
-                                            {color && `색상 ${color}`}
-                                          </p>
-                                        );
-                                      })()}
-                                      {(linkedApplication as any)?.tensionSummary && (
-                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                          텐션: {(linkedApplication as any).tensionSummary}
-                                        </p>
-                                      )}
-                                      {(linkedApplication as any)?.reservationLabel && (
-                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                          예약: {(linkedApplication as any).reservationLabel}
-                                        </p>
-                                      )}
-                                    </>
-                                  )}
-                                  {order.__type === "stringing_application" &&
-                                    order.linkedOrderId && (
-                                      <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                        연결 주문:{" "}
-                                        <span className="font-mono">
-                                          {shortenId(order.linkedOrderId)}
-                                        </span>
-                                      </p>
-                                    )}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                                  </button>
+                                }
+                                items={[
+                                  { label: "문서 ID", value: order.id },
+                                  { label: "이메일", value: order.customer.email || null },
+                                  { label: "문서 유형", value: `${kind.label} · ${link.label}` },
+                                  { label: "시나리오", value: flow.label },
+                                  { label: "연결 문서", value: linkedDocumentId ?? null },
+                                ]}
+                              />
+                            </div>
+                          </div>
                         </TableCell>
                         {/* 상품/서비스 셀 */}
                         <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
@@ -1315,118 +1034,69 @@ export default function OrdersClient() {
                             )}
                           </div>
                         </TableCell>
-                        {/* 상태/다음 작업 셀 */}
+                        {/* 진행/예외 셀 */}
                         <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
                           {order.__type === "stringing_application" ? (
-                            <div className="flex flex-col items-start gap-0.5">
+                            <div className={adminDataTable.cellStack}>
                               <ApplicationStatusBadge status={order.status} />
-                              {hasCancelRequest && (
-                                <Badge
-                                  className={cn(
-                                    badgeBase,
-                                    badgeSizeSm,
-                                    "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
-                                  )}
-                                >
-                                  취소요청
-                                </Badge>
-                              )}
+                              {hasCancelRequest ? (
+                                <p className={adminDataTable.dangerText}>취소 요청</p>
+                              ) : null}
                             </div>
                           ) : (
                             (() => {
                               const st = getOrderStatusBadgeSpec(order.status);
                               const needsCancelFinalization = needsOrderCancelFinalization(order);
+                              const statusLabel = getOrderStatusLabelForDisplay(
+                                order.status,
+                                (order as any).shippingInfo,
+                              );
+                              const normalizedStatus = statusLabel.replace(/\s/g, "");
+                              const normalizedPayment = paymentState.label.replace(/\s/g, "");
+                              const isPaymentEquivalent =
+                                normalizedStatus === normalizedPayment ||
+                                (normalizedStatus === "결제완료" && normalizedPayment === "결제완료");
+                              const exceptionLabel = needsCancelFinalization
+                                ? "주문 취소 후처리 필요"
+                                : hasCancelRequest
+                                  ? "취소 요청"
+                                  : needsStringingApplication
+                                    ? "교체 신청서 미접수"
+                                    : null;
+                              const linkedStatusLabel = linkedApplication?.status
+                                ? (getCommonApplicationStatusLabel(linkedApplication.status) ??
+                                  linkedApplication.status)
+                                : null;
+
                               return (
-                                <div className="flex flex-col items-start gap-0.5">
-                                  {needsCancelFinalization ? (
-                                    <>
-                                      <Badge
-                                        className={cn(
-                                          badgeBase,
-                                          badgeSizeSm,
-                                          "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
-                                        )}
-                                      >
-                                        PG 결제취소 감지
-                                      </Badge>
-                                      <Badge
-                                        className={cn(
-                                          badgeBase,
-                                          badgeSizeSm,
-                                          "whitespace-nowrap shrink-0 bg-warning/10 text-warning border border-warning/30",
-                                        )}
-                                      >
-                                        주문 취소 후처리 필요
-                                      </Badge>
-                                      <span className="text-ui-label text-foreground/70">
-                                        주문 상태:{" "}
-                                        {getOrderStatusLabelForDisplay(
-                                          order.status,
-                                          (order as any).shippingInfo,
-                                        )}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <Badge
-                                      variant={st.variant}
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "whitespace-nowrap shrink-0",
-                                      )}
+                                <div className={adminDataTable.cellStack}>
+                                  <Badge
+                                    variant={isPaymentEquivalent ? "secondary" : st.variant}
+                                    className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                                    title={isPaymentEquivalent ? `주문 상태: ${statusLabel}` : undefined}
+                                  >
+                                    {isPaymentEquivalent ? "결제 단계" : statusLabel}
+                                  </Badge>
+                                  {isLinkedProductOrder && linkedStatusLabel ? (
+                                    <p className={adminDataTable.secondaryLine}>
+                                      교체서비스 · {linkedStatusLabel}
+                                    </p>
+                                  ) : null}
+                                  {exceptionLabel ? (
+                                    <p
+                                      className={
+                                        needsCancelFinalization || hasCancelRequest
+                                          ? adminDataTable.dangerText
+                                          : adminDataTable.attentionText
+                                      }
                                     >
-                                      {getOrderStatusLabelForDisplay(
-                                        order.status,
-                                        (order as any).shippingInfo,
-                                      )}
-                                    </Badge>
-                                  )}
-
-                                  {needsCancelFinalization && (
-                                    <span className="text-ui-label text-destructive">
-                                      결제는 취소되었지만 주문 후처리가 완료되지 않았습니다.
-                                    </span>
-                                  )}
-
-                                  {hasCancelRequest && (
-                                    <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
-                                      )}
-                                    >
-                                      취소요청
-                                    </Badge>
-                                  )}
-
-                                  {isLinkedProductOrder && linkedApplication?.status ? (
-                                    <div className="mt-1 flex flex-wrap items-center gap-1">
-                                      <span className="text-ui-micro font-medium text-muted-foreground">
-                                        교체서비스
-                                      </span>
-                                      <ApplicationStatusBadge status={linkedApplication.status} />
-                                    </div>
-                                  ) : needsStringingApplication ? (
-                                    <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "mt-1 whitespace-nowrap border border-warning/30 bg-warning/10 text-warning",
-                                      )}
-                                    >
-                                      교체 신청서 미접수
-                                    </Badge>
+                                      {exceptionLabel}
+                                    </p>
                                   ) : null}
                                 </div>
                               );
                             })()
                           )}
-                          {order.cancelStatus && order.cancelStatus !== "requested" ? (
-                            <p className={cn("mt-1", adminDataTable.secondaryText)}>
-                              {order.cancelStatus === "approved" ? "취소 승인" : "취소 거절"}
-                            </p>
-                          ) : null}
                         </TableCell>
                         {/* 결제 셀 */}
                         <TableCell className={cn(adminDataTable.moneyCell, "py-2")}>
@@ -1482,7 +1152,7 @@ export default function OrdersClient() {
                         <TableCell
                           className={cn(
                             adminDataTable.stickyActionCell,
-                            "w-[170px] py-2 group-hover:bg-muted/25",
+                            "w-[160px] py-2 group-hover:bg-muted/25",
                           )}
                         >
                           <div className="flex items-center justify-end gap-1">
