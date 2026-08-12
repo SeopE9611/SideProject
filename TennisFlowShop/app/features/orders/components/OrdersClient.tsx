@@ -68,7 +68,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+  import { useEffect, useMemo, useState, type ReactNode } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 export default function OrdersClient() {
@@ -733,28 +733,16 @@ export default function OrdersClient() {
           title="주문 관리"
           description="결제 확인, 배송 누락, 취소 요청, 교체서비스 연결 주문을 한곳에서 확인하고 처리합니다."
           icon={PackageSearch}
-          helperText="오늘 처리함에서 우선순위를 확인한 뒤, 이 화면에서 주문별 상세 처리를 진행하세요."
+          helperText="행을 클릭하면 상세로 이동합니다."
+          actions={
+            <Link
+              href="/admin/operations"
+              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-background px-3.5 text-ui-label font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              오늘 처리함 보기
+            </Link>
+          }
         />
-      </div>
-
-      <div className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 shadow-sm">
-        <div className="flex flex-row items-center justify-between gap-2">
-          <details className="group min-w-0">
-            <summary className="cursor-pointer list-none text-ui-body-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
-              업무 가이드 · 우선 처리 기준 보기
-            </summary>
-            <p className="mt-2 max-w-4xl text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
-              결제 대기와 배송 미등록 건을 먼저 확인하고, 취소 요청은 환불 계좌 준비 여부를 함께
-              검토하세요. 통합 주문의 배송 정보는 연결된 교체서비스 신청서에서 관리합니다.
-            </p>
-          </details>
-          <Link
-            href="/admin/operations"
-            className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-border bg-background px-3 text-ui-label font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            오늘 처리함 보기
-          </Link>
-        </div>
       </div>
 
       {/* 필터 및 검색 카드 */}
@@ -842,115 +830,28 @@ export default function OrdersClient() {
         </CardContent>
       </Card>
 
-      <div className="mb-4 flex flex-row items-center justify-between gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-ui-body-sm shadow-sm">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-semibold text-foreground">현재 보기: {quickViewLabel}</span>
-          {searchTerm.trim() ? (
-            <span className="text-foreground/75">검색어: {searchTerm.trim()}</span>
-          ) : null}
-          {appliedFilterLabels.length > 0 ? (
-            <span className="text-foreground/75">필터: {appliedFilterLabels.join(" / ")}</span>
-          ) : null}
-          <span className="text-foreground/75">
-            {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "조회 중…"}
-          </span>
-        </div>
-      </div>
-
       {/* 주문 목록 테이블 */}
       <Card className={cn("px-5 py-4", adminSurface.tableCard)}>
         <CardHeader className="pb-2 pt-1">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-ui-body font-medium">주문 목록</CardTitle>
-            <p className="text-ui-label text-muted-foreground">
-              {data ? `총 ${data.total}개의 주문` : "목록을 불러오는 중…"}
-            </p>
-          </div>
-          {/* 운영자용: 빠른 구분 범례와 상세 도움말 */}
-          <div className="mt-1.5 flex flex-col gap-2 text-ui-body-sm text-foreground/75">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  kindBadgeClass("order"),
-                )}
-              >
-                주문
-              </Badge>
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  kindBadgeClass("stringing_application"),
-                )}
-              >
-                신청서
-              </Badge>
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  linkBadgeClass("integrated"),
-                )}
-              >
-                통합
-              </Badge>
-              <Badge
-                className={cn(
-                  badgeBase,
-                  badgeSizeSm,
-                  "whitespace-nowrap shrink-0",
-                  linkBadgeClass("standalone"),
-                )}
-              >
-                단독
-              </Badge>
-              <details className="group w-auto">
-                <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md border border-border/60 bg-card px-2.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground [&::-webkit-details-marker]:hidden">
-                  주문·신청 구분 안내
-                </summary>
-                <div className="mt-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-ui-label leading-5 text-muted-foreground">
-                  <ul className="space-y-1">
-                    <li>
-                      <strong className="font-medium text-foreground">주문:</strong> 상품 구매,
-                      스트링 구매, 라켓 구매 등 결제 주문입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">신청서:</strong> 교체서비스
-                      작업 정보를 관리하는 신청 문서입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">통합:</strong> 주문과
-                      교체서비스 신청이 연결된 고객 흐름입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">단독:</strong> 주문 또는
-                      신청서가 단독으로 접수된 항목입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">연결 묶음:</strong> 같은
-                      묶음으로 정렬된 주문·신청입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">신청서에서 관리:</strong>{" "}
-                      배송/운송장 정보가 신청서 상세에서 관리되는 항목입니다.
-                    </li>
-                    <li>
-                      <strong className="font-medium text-foreground">대여 주문:</strong> 라켓 대여
-                      관련 업무는 “라켓 대여 처리” 화면에서 관리합니다.
-                    </li>
-                  </ul>
-                </div>
-              </details>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <CardTitle className="text-ui-body font-medium">주문 목록</CardTitle>
+              <span className="rounded-md bg-muted/60 px-2 py-0.5 text-ui-label font-medium text-foreground/80">
+                {quickViewLabel}
+              </span>
+              {appliedFilterLabels.length > 0 ? (
+                <span className="text-ui-label text-muted-foreground">
+                  {appliedFilterLabels.join(" · ")}
+                </span>
+              ) : null}
             </div>
+            <p className="text-ui-label text-muted-foreground">
+              {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "목록을 불러오는 중…"}
+            </p>
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto pr-2">
-          <Table className="min-w-[1400px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1400px] table-fixed text-ui-label">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[220px] text-left")}>고객 / 주문</TableHead>
@@ -1113,14 +1014,32 @@ export default function OrdersClient() {
                       order.__type === "stringing_application"
                         ? `/admin/applications/stringing/${order.id}`
                         : `/admin/orders/${order.id}`;
+                    const openDetail = () => {
+                      if (order.__type === "stringing_application") {
+                        useStringingStore.getState().setSelectedApplicationId(order.id);
+                      } else {
+                        useOrderStore.getState().setSelectedOrderId(order.id);
+                      }
+                      router.push(detailHref);
+                    };
 
                     return (
                       <TableRow
                         key={order.id}
+                        role="link"
+                        tabIndex={0}
+                        aria-label={`${order.customer.name} 주문 상세 열기`}
+                        onClick={openDetail}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            openDetail();
+                          }
+                        }}
                         className={cn(
-                          "group",
+                          "group cursor-pointer",
                           adminSurface.tableRow,
-                          "align-top transition-colors hover:bg-muted/35",
+                          "align-top transition-colors hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                         )}
                       >
                         <TableCell
@@ -1315,118 +1234,126 @@ export default function OrdersClient() {
                             )}
                           </div>
                         </TableCell>
-                        {/* 상태/다음 작업 셀 */}
+                        {/* 상태 셀: 핵심 배지 1개 + 나머지 신호는 hover 툴팁으로 압축 */}
                         <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
-                          {order.__type === "stringing_application" ? (
-                            <div className="flex flex-col items-start gap-0.5">
-                              <ApplicationStatusBadge status={order.status} />
-                              {hasCancelRequest && (
-                                <Badge
-                                  className={cn(
-                                    badgeBase,
-                                    badgeSizeSm,
-                                    "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
-                                  )}
-                                >
-                                  취소요청
-                                </Badge>
-                              )}
-                            </div>
-                          ) : (
-                            (() => {
+                          {(() => {
+                            // 부가 신호 수집 (핵심 배지 외 항목은 툴팁으로 접어둠)
+                            const signals: { content: ReactNode; danger?: boolean }[] = [];
+                            let primary: ReactNode = null;
+
+                            if (order.__type === "stringing_application") {
+                              primary = <ApplicationStatusBadge status={order.status} />;
+                              if (hasCancelRequest)
+                                signals.push({ content: "취소 요청 접수됨", danger: true });
+                            } else {
                               const st = getOrderStatusBadgeSpec(order.status);
                               const needsCancelFinalization = needsOrderCancelFinalization(order);
-                              return (
-                                <div className="flex flex-col items-start gap-0.5">
-                                  {needsCancelFinalization ? (
-                                    <>
-                                      <Badge
-                                        className={cn(
-                                          badgeBase,
-                                          badgeSizeSm,
-                                          "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
-                                        )}
-                                      >
-                                        PG 결제취소 감지
-                                      </Badge>
-                                      <Badge
-                                        className={cn(
-                                          badgeBase,
-                                          badgeSizeSm,
-                                          "whitespace-nowrap shrink-0 bg-warning/10 text-warning border border-warning/30",
-                                        )}
-                                      >
-                                        주문 취소 후처리 필요
-                                      </Badge>
-                                      <span className="text-ui-label text-foreground/70">
-                                        주문 상태:{" "}
-                                        {getOrderStatusLabelForDisplay(
-                                          order.status,
-                                          (order as any).shippingInfo,
-                                        )}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <Badge
-                                      variant={st.variant}
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "whitespace-nowrap shrink-0",
-                                      )}
-                                    >
-                                      {getOrderStatusLabelForDisplay(
-                                        order.status,
-                                        (order as any).shippingInfo,
-                                      )}
-                                    </Badge>
-                                  )}
-
-                                  {needsCancelFinalization && (
-                                    <span className="text-ui-label text-destructive">
-                                      결제는 취소되었지만 주문 후처리가 완료되지 않았습니다.
-                                    </span>
-                                  )}
-
-                                  {hasCancelRequest && (
-                                    <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
-                                      )}
-                                    >
-                                      취소요청
-                                    </Badge>
-                                  )}
-
-                                  {isLinkedProductOrder && linkedApplication?.status ? (
-                                    <div className="mt-1 flex flex-wrap items-center gap-1">
-                                      <span className="text-ui-micro font-medium text-muted-foreground">
-                                        교체서비스
-                                      </span>
-                                      <ApplicationStatusBadge status={linkedApplication.status} />
-                                    </div>
-                                  ) : needsStringingApplication ? (
-                                    <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        "mt-1 whitespace-nowrap border border-warning/30 bg-warning/10 text-warning",
-                                      )}
-                                    >
-                                      교체 신청서 미접수
-                                    </Badge>
-                                  ) : null}
-                                </div>
+                              const statusLabel = getOrderStatusLabelForDisplay(
+                                order.status,
+                                (order as any).shippingInfo,
                               );
-                            })()
-                          )}
-                          {order.cancelStatus && order.cancelStatus !== "requested" ? (
-                            <p className={cn("mt-1", adminDataTable.secondaryText)}>
-                              {order.cancelStatus === "approved" ? "취소 승인" : "취소 거절"}
-                            </p>
-                          ) : null}
+                              if (needsCancelFinalization) {
+                                primary = (
+                                  <Badge
+                                    className={cn(
+                                      badgeBase,
+                                      badgeSizeSm,
+                                      "whitespace-nowrap border border-warning/30 bg-warning/10 text-warning",
+                                    )}
+                                  >
+                                    주문 취소 후처리 필요
+                                  </Badge>
+                                );
+                                signals.push({ content: "PG 결제취소 감지", danger: true });
+                                signals.push({
+                                  content: "결제는 취소되었지만 주문 후처리가 완료되지 않았습니다.",
+                                  danger: true,
+                                });
+                                signals.push({ content: `주문 상태: ${statusLabel}` });
+                              } else {
+                                primary = (
+                                  <Badge
+                                    variant={st.variant}
+                                    className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                                  >
+                                    {statusLabel}
+                                  </Badge>
+                                );
+                              }
+                              if (hasCancelRequest)
+                                signals.push({ content: "취소 요청 접수됨", danger: true });
+                              if (isLinkedProductOrder && linkedApplication?.status) {
+                                signals.push({
+                                  content: (
+                                    <span className="inline-flex items-center gap-1">
+                                      교체서비스
+                                      <ApplicationStatusBadge status={linkedApplication.status} />
+                                    </span>
+                                  ),
+                                });
+                              } else if (needsStringingApplication) {
+                                signals.push({ content: "교체 신청서 미접수" });
+                              }
+                            }
+
+                            if (order.cancelStatus && order.cancelStatus !== "requested") {
+                              signals.push({
+                                content:
+                                  order.cancelStatus === "approved" ? "취소 승인" : "취소 거절",
+                              });
+                            }
+
+                            const hasDanger = signals.some((s) => s.danger);
+
+                            return (
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {primary}
+                                {signals.length > 0 && (
+                                  <TooltipProvider delayDuration={50}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span
+                                          className={cn(
+                                            badgeBase,
+                                            badgeSizeSm,
+                                            "inline-flex cursor-help items-center gap-1 whitespace-nowrap border",
+                                            hasDanger
+                                              ? "border-destructive/30 bg-destructive/10 text-destructive"
+                                              : "border-warning/30 bg-warning/10 text-warning",
+                                          )}
+                                        >
+                                          <AlertTriangle className="h-3 w-3" />
+                                          주의 {signals.length}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent
+                                        side="top"
+                                        align="start"
+                                        sideOffset={6}
+                                        className={adminRichTooltipClass}
+                                      >
+                                        <ul className="space-y-1">
+                                          {signals.map((s, i) => (
+                                            <li
+                                              key={i}
+                                              className={cn(
+                                                "text-ui-body-sm",
+                                                s.danger
+                                                  ? "text-destructive"
+                                                  : "text-foreground/80",
+                                              )}
+                                            >
+                                              {s.content}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         {/* 결제 셀 */}
                         <TableCell className={cn(adminDataTable.moneyCell, "py-2")}>
@@ -1478,14 +1405,18 @@ export default function OrdersClient() {
                         <TableCell className={cn(adminDataTable.dateCell, "py-2")}>
                           {formatDate(order.date)}
                         </TableCell>
-                        {/* 작업 메뉴 셀 */}
+                        {/* ��업 메뉴 셀 */}
                         <TableCell
                           className={cn(
                             adminDataTable.stickyActionCell,
                             "w-[170px] py-2 group-hover:bg-muted/25",
                           )}
                         >
-                          <div className="flex items-center justify-end gap-1">
+                          <div
+                            className="flex items-center justify-end gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          >
                             <Button
                               asChild
                               size="sm"

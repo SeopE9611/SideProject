@@ -442,7 +442,7 @@ function getOperationPaymentBadgeStatus(item: OpItem) {
 }
 
 function hasShippingMissing(group: { items: OpItem[] }) {
-  const excludeKeywords = ["배송완료", "수령완료", "방문 수령 완료", "반납완료"];
+  const excludeKeywords = ["배송완료", "수령완료", "방문 수령 완료", "반납��료"];
   const includeKeywords = [
     "운송장",
     "배송 등록",
@@ -2073,7 +2073,7 @@ export default function OperationsClient() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <Table className="min-w-[1480px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+                <Table className="min-w-[1480px] table-fixed">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
                       <TableHead className={cn(thClasses, "w-[130px]")}>우선순위</TableHead>
@@ -2179,7 +2179,7 @@ export default function OperationsClient() {
                                 {slaMeta ? (
                                   <span
                                     className={cn("block", adminTypography.caption, slaMeta.className)}
-                                    title="접수 시점 기준 경과 시간입니다."
+                                    title="접수 시점 기준 경��� 시간입니다."
                                   >
                                     {slaMeta.label}
                                   </span>
