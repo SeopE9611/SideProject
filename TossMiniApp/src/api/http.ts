@@ -29,12 +29,13 @@ async function getErrorMessage(response: Response) {
   return message;
 }
 
-export async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
+export async function getJson<T>(path: string, signal?: AbortSignal, headers?: HeadersInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "GET",
     credentials: "omit",
     headers: {
       Accept: "application/json",
+      ...headers,
     },
     signal,
   });

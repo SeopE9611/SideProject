@@ -19,6 +19,7 @@ type StringingApplicationFlowProps = {
   productId: string;
   selectedColor: string;
   selectedGauge: string;
+  onViewActivity: () => void;
 };
 
 type ApplyStep = 1 | 2 | 3 | 4 | 5;
@@ -55,7 +56,7 @@ function getApplyStepFromLocation(): ApplyStep {
   return 1;
 }
 
-function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: StringingApplicationFlowProps) {
+function StringingApplicationFlow({ productId, selectedColor, selectedGauge, onViewActivity }: StringingApplicationFlowProps) {
   const [currentStep, setCurrentStep] = useState<ApplyStep>(() => getApplyStepFromLocation());
 
   const [applicant, setApplicant] = useState<StringingApplicantDraft>(EMPTY_APPLICANT);
@@ -274,6 +275,7 @@ function StringingApplicationFlow({ productId, selectedColor, selectedGauge }: S
         onPaymentAttemptIdChange={setPaymentAttemptId}
         onInvalidStep={returnToInvalidStep}
         onBack={handleBack}
+        onViewActivity={onViewActivity}
       />
     );
   }

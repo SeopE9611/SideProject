@@ -10,7 +10,7 @@ import { formatPrice } from "../lib/product-labels";
 import { getFirstInvalidApplicationStep } from "../lib/stringing-application-validation";
 import type { StringingApplicantDraft, StringingCollectionMethod, StringingShippingDraft, StringingWorkDraft } from "../types/stringing";
 
-type Props = { productId: string; selectedColor: string; selectedGauge: string; applicant: StringingApplicantDraft; collectionMethod: StringingCollectionMethod; shipping: StringingShippingDraft; work: StringingWorkDraft; paymentAttemptId: string | null; onPaymentAttemptIdChange: (value: string | null) => void; onInvalidStep: (step: 1 | 2 | 3) => void; onBack: () => void };
+type Props = { productId: string; selectedColor: string; selectedGauge: string; applicant: StringingApplicantDraft; collectionMethod: StringingCollectionMethod; shipping: StringingShippingDraft; work: StringingWorkDraft; paymentAttemptId: string | null; onPaymentAttemptIdChange: (value: string | null) => void; onInvalidStep: (step: 1 | 2 | 3) => void; onBack: () => void; onViewActivity: () => void };
 
 function errorMessage(error: AppsPaymentApiError) {
   const messages: Record<string, string> = {
@@ -136,6 +136,7 @@ export default function StringingApplicationStepFive(props: Props) {
       {auth.status === "authenticated" && !summary && !authorized && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => void prepare()} disabled={busy !== null}>{busy === "prepare" ? "결제 준비 중..." : "결제 준비 확인하기"}</button>}
       {summary && payToken && !authorized && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => void authorize()} disabled={busy !== null}>토스페이로 {formatPrice(summary.pricing.payableAmount)} 결제 인증하기</button>}
       {authorized && !terminal && !retryableTerminal && auth.status === "authenticated" && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => props.paymentAttemptId && void complete(props.paymentAttemptId)} disabled={busy !== null}>결제 처리 상태 다시 확인</button>}
+      {state === "finalized" && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" type="button" onClick={props.onViewActivity}>내 이용내역 보기</button>}
       {retryableTerminal && <button className="mt-4 min-h-[52px] w-full rounded-2xl bg-[#191f28] font-extrabold text-white" onClick={() => { clearPendingAppsPayment(); props.onPaymentAttemptIdChange(null); setAuthorized(false); setState(null); setSummary(null); setMessage(""); }}>새 결제 다시 준비하기</button>}
       {!authorized && !terminal && <button className="mt-3 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white font-bold" onClick={props.onBack}>이전</button>}
     </section>
