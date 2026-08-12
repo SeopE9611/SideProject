@@ -57,7 +57,8 @@ test("UI는 확인 dialog와 attempt별 상호 배타 ref lock을 사용한다",
   assert.match(client, /AdminConfirmDialog/);
   assert.match(client, /recoveringAttemptIdsRef\.current\.has\(attemptId\)/);
   assert.match(client, /\/recover`, \{ method: "POST" \}/);
-  assert.match(client, /"복구 중\.\.\."/);
+  assert.match(client, /recoveringAttemptIds\.has\(item\.attemptId\)/);
+  assert.match(client, /disabled=\{isBusy\}/);
   assert.match(client, /await mutate\(\)/);
   assert.match(client, /delete next\[attemptId\]/);
   assert.doesNotMatch(client, /prompt\(|target state|강제 상태|환불 실행|결제 승인/);

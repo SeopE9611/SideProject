@@ -3,7 +3,7 @@ import {
   createAppsInTossPreflightResponse,
   isAppsInTossAllowedOrigin,
 } from "@/lib/apps-in-toss";
-import { authenticateAppsSession } from "@/lib/apps-in-toss/server/session";
+import { AppsInTossSessionError, authenticateAppsSession } from "@/lib/apps-in-toss/server/session";
 import { getDb } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
@@ -64,7 +64,10 @@ export async function GET(request: Request) {
       }];
     });
     return response(origin, { success: true, activities }, 200);
-  } catch {
-    return response(origin, { success: false, message: "인증이 필요합니다." }, 401);
+  } catch (error) {
+    if (error instanceof AppsInTossSessionError) {
+      return response(origin, { success: false, message: "인증이 필요합니다." }, 401);
+    }
+    return response(origin, { success: false, message: "이용내역을 불러오지 못했습니다." }, 500);
   }
 }
