@@ -29,7 +29,9 @@ test("status-check는 read-only advisory이며 state machine은 복구 terminal�
 
 test("UI의 행별 status lock과 안전 복구 advisory 표시를 유지한다", () => {
   assert.match(client, /checkingAttemptIdsRef\.current\.has\(attemptId\) \|\| recoveringAttemptIdsRef\.current\.has\(attemptId\)/);
-  assert.match(client, /recovery\.eligibility === "eligible" && item\.issueType === "reconciliation_required"/);
+  assert.match(client, /statusCheck\?\.recovery\.eligibility === "eligible"\s*&&\s*item\.issueType === "reconciliation_required"/);
   assert.match(client, /Toss 상태 확인/);
+  assert.match(route, /observeAppsInTossPaymentStatus/);
+  assert.doesNotMatch(client, /executeTossPayPayment|refundTossPayPayment/);
   assert.doesNotMatch(client, /setInterval|refreshInterval|targetState|forceState/);
 });

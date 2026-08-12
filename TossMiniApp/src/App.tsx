@@ -7,6 +7,8 @@ import ActivityScreen from "./components/ActivityScreen";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
 import StringingApplicationFlow from "./components/StringingApplicationFlow";
+import StringingPendingPaymentRecovery from "./components/StringingPendingPaymentRecovery";
+import { readPendingAppsPayment, type PendingAppsPayment } from "./lib/pending-payment";
 import type { Product } from "./types/product";
 import type { StringingStartSelection } from "./types/stringing";
 
@@ -101,6 +103,7 @@ function App() {
 
   const [isStringingCheckout, setIsStringingCheckout] = useState(() => getStringingCheckoutModeFromLocation());
   const [isActivity, setIsActivity] = useState(() => getActivityModeFromLocation());
+  const [pendingPayment, setPendingPayment] = useState<PendingAppsPayment | null>(() => readPendingAppsPayment());
 
   const [detailSelectedColor, setDetailSelectedColor] = useState(() => getSelectedColorFromLocation());
 
@@ -144,6 +147,7 @@ function App() {
 
   useEffect(() => {
     const handlePopState = () => {
+      setPendingPayment(readPendingAppsPayment());
       const nextProductId = getProductIdFromLocation();
 
       setSelectedProductId(nextProductId);
@@ -167,6 +171,10 @@ function App() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
+  }, []);
+
+  const handlePendingPaymentResolved = useCallback(() => {
+    setPendingPayment(readPendingAppsPayment());
   }, []);
 
   const navigate = useCallback((view?: "activity") => {
@@ -254,6 +262,10 @@ function App() {
       behavior: "auto",
     });
   }, []);
+
+  if (pendingPayment) {
+    return <StringingPendingPaymentRecovery pending={pendingPayment} onResolved={handlePendingPaymentResolved} />;
+  }
 
   if (isActivity) return <ActivityScreen onHome={() => navigate()} />;
 
