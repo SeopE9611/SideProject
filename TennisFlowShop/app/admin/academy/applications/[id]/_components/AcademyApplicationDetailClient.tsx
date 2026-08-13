@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { ArrowLeft, BookOpen, LinkIcon, Save } from "lucide-react";
 
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminPageSection from "@/components/admin/AdminPageSection";
@@ -319,17 +320,17 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="py-6 px-8">
+      <AdminPageShell variant="wide">
         <div className={`${adminSurface.cardMuted} p-8 ${adminTypography.metaMuted}`}>
           레슨 신청 상세를 불러오는 중입니다.
         </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   if (error || !item) {
     return (
-      <div className="space-y-4 py-6 px-8">
+      <AdminPageShell variant="wide" className="space-y-4">
         <Button asChild variant="outline" size="sm">
           <Link href="/admin/academy/applications">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -341,19 +342,22 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         >
           레슨 신청 상세를 불러오지 못했습니다.
         </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   return (
-    <AdminPageShell className="space-y-5">
+    <AdminPageShell variant="wide" className="space-y-5">
       <AdminPageHeader
-        title="레슨 신청 상세"
-        description="신청자 정보와 희망 레슨 정보를 확인하고 상담 상태를 관리합니다."
+        variant="detail"
+        className="flex-wrap"
+        title={`${item.applicantName} 레슨 신청`}
+        description="연락처와 신청 레슨 정보를 확인하고 상담 상태를 관리하는 화면입니다."
         icon={BookOpen}
-        scope="도깨비테니스 아카데미"
+        scope={`신청 ID ${item._id}`}
+        helperText={`접수일 ${formatDateTime(item.createdAt)} · ${item.userId ? "회원 신청" : "비회원 신청"} · ${hasLinkedClass ? "클래스 연결" : "클래스 미연결"}`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <AcademyStatusBadge status={item.status} />
             <Button asChild variant="outline" size="sm">
               <Link href="/admin/academy/applications">
@@ -365,9 +369,23 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         }
       />
 
-      <div className="grid gap-5 grid-cols-[minmax(0,1fr)_380px]">
+      <AdminDetailSectionNav
+        items={[
+          { href: "#admin-academy-application-customer", label: "신청자 정보" },
+          { href: "#admin-academy-application-class", label: "클래스 정보" },
+          { href: "#admin-academy-application-preference", label: "희망 정보" },
+          { href: "#admin-academy-application-history", label: "처리 이력" },
+          { href: "#admin-academy-application-status", label: "상태 관리" },
+          { href: "#admin-academy-application-edit", label: "신청 수정" },
+          { href: "#admin-academy-application-class-link", label: "클래스 연결" },
+          { href: "#admin-academy-application-memo", label: "메모" },
+        ]}
+      />
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,380px)]">
         <div className="space-y-5">
-          <AdminPageSection title="신청자 정보" contentClassName="pt-4">
+          <div id="admin-academy-application-customer">
+            <AdminPageSection title="신청자 정보" contentClassName="pt-4">
             <InfoRow label="이름" value={item.applicantName} />
             <InfoRow label="연락처" value={item.phone} />
             <InfoRow label="이메일" value={item.email ?? "-"} />
@@ -390,9 +408,11 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 />
               </>
             ) : null}
-          </AdminPageSection>
+            </AdminPageSection>
+          </div>
 
-          {item.classSnapshot ? (
+          <div id="admin-academy-application-class">
+            {item.classSnapshot ? (
             <AdminPageSection
               title="선택 클래스 정보"
               description="신청 당시 저장된 클래스 스냅샷입니다."
@@ -424,9 +444,11 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 </p>
               </div>
             </AdminPageSection>
-          )}
+            )}
+          </div>
 
-          <AdminPageSection title="레슨 희망 정보" contentClassName="pt-4">
+          <div id="admin-academy-application-preference">
+            <AdminPageSection title="레슨 희망 정보" contentClassName="pt-4">
             <InfoRow
               label="희망 레슨 유형"
               value={getAcademyLessonTypeLabel(item.desiredLessonType)}
@@ -439,13 +461,15 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <InfoRow label="희망 시간대" value={item.preferredTimeText ?? "-"} />
             <InfoRow label="레슨 목표" value={item.lessonGoal ?? "-"} />
             <InfoRow label="요청사항" value={item.requestMemo ?? "-"} />
-          </AdminPageSection>
+            </AdminPageSection>
+          </div>
 
-          <AdminPageSection
-            title="처리 이력"
-            description="상태 변경 및 메모 변경 내역입니다."
-            contentClassName="pt-4"
-          >
+          <div id="admin-academy-application-history">
+            <AdminPageSection
+              title="처리 이력"
+              description="상태 변경 및 메모 변경 내역입니다."
+              contentClassName="pt-4"
+            >
             {sortedHistory.length === 0 ? (
               <div className={`${adminSurface.cardMuted} p-5 ${adminTypography.metaMuted}`}>
                 아직 처리 이력이 없습니다.
@@ -473,11 +497,13 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 ))}
               </div>
             )}
-          </AdminPageSection>
+            </AdminPageSection>
+          </div>
         </div>
 
         <div className="space-y-5">
-          <AdminPageSection
+          <div id="admin-academy-application-status">
+            <AdminPageSection
             title="상태 관리"
             description="상담 진행 상황에 맞게 신청 상태를 변경합니다. 결제 요청이 아니라 상담과 등록 확정 흐름을 관리합니다."
             contentClassName="space-y-4 pt-4"
@@ -513,13 +539,15 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 placeholder="예: 상담 일정 확인"
               />
             </div>
-            <Button className="w-full" onClick={saveStatus} disabled={savingStatus}>
+            <Button type="button" className="w-full" onClick={saveStatus} disabled={savingStatus}>
               <Save className="mr-2 h-4 w-4" />
               {savingStatus ? "저장 중..." : "상태 변경 저장"}
             </Button>
-          </AdminPageSection>
+            </AdminPageSection>
+          </div>
 
-          <AdminPageSection
+          <div id="admin-academy-application-edit">
+            <AdminPageSection
             title="신청 정보 수정"
             description="신청자 정보와 희망 레슨 정보를 수정합니다. 상태, 메모, 클래스 연결 정보는 각 전용 섹션에서만 변경합니다."
             contentClassName="space-y-4 pt-4"
@@ -527,7 +555,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             {item.status === "cancelled" ? (
               <p className={adminTypography.caption}>취소된 신청은 수정할 수 없습니다.</p>
             ) : null}
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Input
                 value={editForm.applicantName}
                 onChange={(event) =>
@@ -556,7 +584,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               disabled={!canAdminEditApplication || savingEdit}
               maxLength={100}
             />
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Select
                 value={editForm.desiredLessonType}
                 onValueChange={(value) =>
@@ -638,6 +666,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               maxLength={1000}
             />
             <Button
+              type="button"
               className="w-full"
               onClick={saveApplicationEdit}
               disabled={
@@ -647,9 +676,11 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <Save className="mr-2 h-4 w-4" />
               {savingEdit ? "저장 중..." : "신청 정보 저장"}
             </Button>
-          </AdminPageSection>
+            </AdminPageSection>
+          </div>
 
-          <AdminPageSection
+          <div id="admin-academy-application-class-link">
+            <AdminPageSection
             title={hasLinkedClass ? "클래스 변경" : "클래스 연결"}
             description="모집 클래스에 신청을 연결하면 고객 마이페이지와 클래스 집계에 반영됩니다."
             contentClassName="space-y-4 pt-4"
@@ -706,6 +737,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <p className={adminTypography.caption}>취소된 신청은 클래스에 연결할 수 없습니다.</p>
             ) : null}
             <Button
+              type="button"
               className="w-full"
               onClick={saveClassLink}
               disabled={item.status === "cancelled" || savingClass || !selectedClassId}
@@ -713,9 +745,11 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <LinkIcon className="mr-2 h-4 w-4" />
               {savingClass ? "저장 중..." : hasLinkedClass ? "클래스 변경" : "클래스 연결"}
             </Button>
-          </AdminPageSection>
+            </AdminPageSection>
+          </div>
 
-          <AdminPageSection
+          <div id="admin-academy-application-memo">
+            <AdminPageSection
             title="관리자 메모"
             description="내부 메모와 고객 안내 메시지를 분리해서 저장합니다."
             contentClassName="space-y-4 pt-4"
@@ -759,11 +793,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            <Button className="w-full" onClick={saveMemo} disabled={savingMemo}>
+            <Button type="button" className="w-full" onClick={saveMemo} disabled={savingMemo}>
               <Save className="mr-2 h-4 w-4" />
               {savingMemo ? "저장 중..." : "메모 저장"}
             </Button>
-          </AdminPageSection>
+            </AdminPageSection>
+          </div>
         </div>
       </div>
     </AdminPageShell>

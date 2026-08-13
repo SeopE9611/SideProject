@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { ArrowLeft, BookOpen, Eye, Pencil } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminPageSection from "@/components/admin/AdminPageSection";
@@ -166,17 +167,17 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="py-6 px-8">
+      <AdminPageShell variant="wide">
         <div className={`${adminSurface.cardMuted} p-8 ${adminTypography.metaMuted}`}>
           클래스 상세 정보를 불러오는 중입니다.
         </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   if (error || !item) {
     return (
-      <div className="space-y-4 py-6 px-8">
+      <AdminPageShell variant="wide" className="space-y-4">
         <Button asChild variant="outline" size="sm">
           <Link href="/admin/academy/classes">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -188,17 +189,20 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         >
           클래스 상세 정보를 불러오지 못했습니다.
         </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   return (
-    <AdminPageShell className="space-y-5">
+    <AdminPageShell variant="wide" className="space-y-5">
       <AdminPageHeader
-        title="클래스 상세"
-        description="클래스 기본 정보와 클래스별 신청자 현황을 확인합니다."
+        variant="detail"
+        className="flex-wrap"
+        title={item.name}
+        description="클래스 유형·레벨·운영 정보를 확인하는 화면입니다."
         icon={BookOpen}
-        scope="도깨비테니스 아카데미"
+        scope={`클래스 ID ${id}`}
+        helperText={`강사 ${item.instructorName || "미정"} · 일정 ${item.scheduleText || "미정"} · ${formatCapacity(item.capacity)}`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <AcademyClassStatusBadge status={item.status} />
@@ -218,7 +222,19 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         }
       />
 
-      <div className="grid gap-3 grid-cols-3 2xl:grid-cols-6">
+      <AdminDetailSectionNav
+        items={[
+          { href: "#admin-academy-class-stats", label: "현황" },
+          { href: "#admin-academy-class-registration", label: "등록 현황" },
+          { href: "#admin-academy-class-info", label: "클래스 정보" },
+          { href: "#admin-academy-class-applications", label: "신청자 목록" },
+        ]}
+      />
+
+      <div
+        id="admin-academy-class-stats"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6"
+      >
         <StatCard label="전체 신청" value={stats.total} />
         <StatCard label="접수완료" value={stats.submitted} />
         <StatCard label="검토 중" value={stats.reviewing} />
@@ -227,12 +243,13 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         <StatCard label="취소" value={stats.cancelled} />
       </div>
 
-      <AdminPageSection
-        title="등록 현황"
-        description="신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 취소되지 않은 신청 내역이 1건 이상 있으면 영구 삭제는 차단되며, 취소 내역만 남은 클래스는 영구 삭제할 수 있습니다."
-        contentClassName="pt-4"
-      >
-        <div className="grid gap-3 grid-cols-2">
+      <div id="admin-academy-class-registration">
+        <AdminPageSection
+          title="등록 현황"
+          description="신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 취소되지 않은 신청 내역이 1건 이상 있으면 영구 삭제는 차단되며, 취소 내역만 남은 클래스는 영구 삭제할 수 있습니다."
+          contentClassName="pt-4"
+        >
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className={cn(adminSurface.fieldPanelMuted, "p-4")}>
             <div className={adminTypography.metaMuted}>등록 확정</div>
             <div className={cn("mt-2", adminTypography.kpiValueCompact)}>
@@ -246,15 +263,17 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
               전체 신청 {stats.total.toLocaleString("ko-KR")}건
             </div>
           </div>
-        </div>
-      </AdminPageSection>
+          </div>
+        </AdminPageSection>
+      </div>
 
-      <AdminPageSection
-        title="클래스 기본 정보"
-        description="고객에게 노출되는 클래스 운영 정보를 확인합니다."
-        className="min-w-0"
-        contentClassName="pt-4"
-      >
+      <div id="admin-academy-class-info" className="min-w-0">
+        <AdminPageSection
+          title="클래스 기본 정보"
+          description="고객에게 노출되는 클래스 운영 정보를 확인합니다."
+          className="min-w-0"
+          contentClassName="pt-4"
+        >
         <InfoRow label="클래스명" value={item.name} />
         <InfoRow label="설명" value={item.description} />
         <InfoRow
@@ -270,14 +289,16 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         <InfoRow label="상태" value={item.statusLabel ?? getAcademyClassStatusLabel(item.status)} />
         <InfoRow label="생성일" value={formatAdminDateTime(item.createdAt)} />
         <InfoRow label="수정일" value={formatAdminDateTime(item.updatedAt)} />
-      </AdminPageSection>
+        </AdminPageSection>
+      </div>
 
-      <AdminPageSection
-        title="신청자 목록"
-        description="이 클래스와 연결된 최근 신청 50건을 최신순으로 표시합니다."
-        className="min-w-0"
-        contentClassName="pt-4"
-      >
+      <div id="admin-academy-class-applications" className="min-w-0">
+        <AdminPageSection
+          title="신청자 목록"
+          description="이 클래스와 연결된 최근 신청 50건을 최신순으로 표시합니다."
+          className="min-w-0"
+          contentClassName="pt-4"
+        >
         <div className={adminSurface.tableCard}>
           <Table>
             <TableHeader className={adminSurface.tableHeader}>
@@ -373,7 +394,8 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
             </TableBody>
           </Table>
         </div>
-      </AdminPageSection>
+        </AdminPageSection>
+      </div>
     </AdminPageShell>
   );
 }
