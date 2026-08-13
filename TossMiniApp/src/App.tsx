@@ -7,6 +7,7 @@ import ActivityScreen from "./components/ActivityScreen";
 import RacketCatalogScreen, { initialRacketCatalogState } from "./components/RacketCatalogScreen";
 import RacketDetail from "./components/RacketDetail";
 import RacketPurchaseFlow from "./components/RacketPurchaseFlow";
+import RacketRentalFlow from "./components/RacketRentalFlow";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
 import StringingApplicationFlow from "./components/StringingApplicationFlow";
@@ -44,6 +45,7 @@ function getRacketModeFromLocation() {
 function getRacketPurchaseModeFromLocation() {
   return getSearchParamsFromLocation().get("view") === "racket-purchase";
 }
+function getRacketRentalModeFromLocation() { return getSearchParamsFromLocation().get("view") === "racket-rental"; }
 
 function getRacketIdFromLocation() {
   return getSearchParamsFromLocation().get("racketId");
@@ -120,6 +122,7 @@ function App() {
   const [isActivity, setIsActivity] = useState(() => getActivityModeFromLocation());
   const [isRackets, setIsRackets] = useState(() => getRacketModeFromLocation());
   const [isRacketPurchase, setIsRacketPurchase] = useState(() => getRacketPurchaseModeFromLocation());
+  const [isRacketRental, setIsRacketRental] = useState(() => getRacketRentalModeFromLocation());
   const [selectedRacketId, setSelectedRacketId] = useState<string | null>(() => getRacketIdFromLocation());
   const [racketCatalog, setRacketCatalog] = useState(initialRacketCatalogState);
   const [pendingPayment, setPendingPayment] = useState<PendingAppsPayment | null>(() => readPendingAppsPayment());
@@ -175,9 +178,11 @@ function App() {
       setIsActivity(getActivityModeFromLocation());
       const nextIsRackets = getRacketModeFromLocation();
       const nextIsRacketPurchase = getRacketPurchaseModeFromLocation();
+      const nextIsRacketRental = getRacketRentalModeFromLocation();
       const nextRacketId = getRacketIdFromLocation();
       setIsRackets(nextIsRackets);
       setIsRacketPurchase(nextIsRacketPurchase);
+      setIsRacketRental(nextIsRacketRental);
       setSelectedRacketId(nextRacketId);
 
       setDetailSelectedColor(getSelectedColorFromLocation());
@@ -208,7 +213,7 @@ function App() {
     nextUrl.search = view ? `?view=${view}` : "";
     window.history.pushState({ view }, "", `${nextUrl.pathname}${nextUrl.search}`);
     setSelectedProductId(null); setIsStringingCheckout(false); setIsActivity(view === "activity");
-    setIsRackets(view === "rackets"); setIsRacketPurchase(false); setSelectedRacketId(null);
+    setIsRackets(view === "rackets"); setIsRacketPurchase(false); setIsRacketRental(false); setSelectedRacketId(null);
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
@@ -219,7 +224,7 @@ function App() {
     nextUrl.searchParams.set("view", "rackets");
     nextUrl.searchParams.set("racketId", racketId);
     window.history.pushState({ view: "rackets", racketId }, "", `${nextUrl.pathname}${nextUrl.search}`);
-    setIsRackets(true); setIsRacketPurchase(false); setSelectedRacketId(racketId); window.scrollTo({ top: 0, behavior: "auto" });
+    setIsRackets(true); setIsRacketPurchase(false); setIsRacketRental(false); setSelectedRacketId(racketId); window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
   const handleRacketList = useCallback(() => {
@@ -229,6 +234,7 @@ function App() {
     window.history.replaceState({ view: "rackets" }, "", `${nextUrl.pathname}${nextUrl.search}`);
     setIsRackets(true);
     setIsRacketPurchase(false);
+    setIsRacketRental(false);
     setSelectedRacketId(null);
     requestAnimationFrame(() => window.scrollTo({ top: racketListScrollYRef.current, behavior: "auto" }));
   }, []);
@@ -257,6 +263,9 @@ function App() {
     setIsRackets(true);
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [selectedRacketId]);
+
+  const handleStartRacketRental = useCallback((racketId: string) => { const url = new URL(window.location.href); url.search = ""; url.searchParams.set("view", "racket-rental"); url.searchParams.set("racketId", racketId); url.searchParams.set("step", "1"); window.history.pushState({ view: "racket-rental", racketId, step: 1 }, "", `${url.pathname}${url.search}`); setIsRackets(false); setIsRacketPurchase(false); setIsRacketRental(true); setSelectedRacketId(racketId); window.scrollTo({ top: 0 }); }, []);
+  const handleRacketRentalBackToDetail = useCallback(() => { if (!selectedRacketId) return; const url = new URL(window.location.href); url.search = ""; url.searchParams.set("view", "rackets"); url.searchParams.set("racketId", selectedRacketId); window.history.replaceState({ view: "rackets", racketId: selectedRacketId }, "", `${url.pathname}${url.search}`); setIsRacketRental(false); setIsRackets(true); }, [selectedRacketId]);
 
   const handleSelectProduct = useCallback((productId: string) => {
     listScrollYRef.current = window.scrollY;
@@ -340,6 +349,8 @@ function App() {
     return <StringingPendingPaymentRecovery pending={pendingPayment} onResolved={handlePendingPaymentResolved} />;
   }
 
+  if (isRacketRental && selectedRacketId) return <RacketRentalFlow key={selectedRacketId} racketId={selectedRacketId} onBackToDetail={handleRacketRentalBackToDetail} onViewActivity={() => navigate("activity")} />;
+
   if (isRacketPurchase && selectedRacketId) {
     return (
       <RacketPurchaseFlow
@@ -352,7 +363,7 @@ function App() {
   }
 
   if (isRackets && selectedRacketId) {
-    return <RacketDetail racketId={selectedRacketId} onBack={handleRacketList} onPurchase={() => handleStartRacketPurchase(selectedRacketId)} />;
+    return <RacketDetail racketId={selectedRacketId} onBack={handleRacketList} onPurchase={() => handleStartRacketPurchase(selectedRacketId)} onRental={() => handleStartRacketRental(selectedRacketId)} />;
   }
 
   if (isRackets) return <RacketCatalogScreen catalog={racketCatalog} setCatalog={setRacketCatalog} onHome={() => navigate()} onSelect={handleSelectRacket} />;

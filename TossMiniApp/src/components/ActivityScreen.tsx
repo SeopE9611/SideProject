@@ -28,13 +28,15 @@ export default function ActivityScreen({ onHome }: { onHome: () => void }) {
       {auth.status === "authenticated" && state === "success" && items.length === 0 && <p className="rounded-[20px] bg-[#f2f4f6] p-6 text-center text-sm text-[#6b7684]">아직 MiniApp에서 접수한 이용내역이 없어요.</p>}
       {auth.status === "authenticated" && state === "success" && <ul className="m-0 list-none space-y-3 p-0">{items.map((item) => {
         const purchase = item.activityType === "racket_purchase";
+        const rental = item.activityType === "racket_rental";
         const option = [getStringColorLabel(item.color), formatGaugeLabel(item.gauge)].filter(Boolean).join(" · ");
         return <li key={item.id} className="rounded-[20px] border border-[#e5e8eb] p-5">
-          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${purchase ? "bg-[#e9f6c9] text-[#344700]" : "bg-[#f2f4f6] text-[#4e5968]"}`}>{purchase ? "라켓 구매" : "교체서비스"}</span>
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${purchase || rental ? "bg-[#e9f6c9] text-[#344700]" : "bg-[#f2f4f6] text-[#4e5968]"}`}>{rental ? "라켓 대여" : purchase ? "라켓 구매" : "교체서비스"}</span>
           <strong className="mt-3 block text-[17px]">{item.productName}</strong>
-          {purchase && item.stringName ? <p className="mt-1 mb-0 text-sm text-[#4e5968]">스트링 {item.stringName}</p> : null}
+          {(purchase || rental) && item.stringName ? <p className="mt-1 mb-0 text-sm text-[#4e5968]">스트링 {item.stringName}</p> : null}
+          {rental ? <><p className="mt-1 mb-0 text-sm">{item.days}일 · 대여료 {formatPrice(item.rentalFee ?? 0)} · 보증금 {formatPrice(item.deposit ?? 0)}</p><p className="mt-1 mb-0 text-sm text-[#6b7684]">교체서비스 {item.stringingRequested ? "신청" : "미신청"}</p></> : null}
           {option ? <p className="mt-1 mb-0 text-sm text-[#6b7684]">{option}{purchase ? ` · ${item.quantity ?? 1}개` : ""}</p> : null}
-          <p className="mt-2 mb-0 text-sm text-[#6b7684]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString("ko-KR") : "신청일 확인 중"} · {item.collectionMethod === "visit" ? (purchase ? "방문 수령" : "방문 접수") : (purchase ? "택배 배송" : "직접 발송")}</p>
+          <p className="mt-2 mb-0 text-sm text-[#6b7684]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString("ko-KR") : "신청일 확인 중"} · {item.collectionMethod === "visit" ? (purchase || rental ? "방문 수령" : "방문 접수") : (purchase || rental ? "택배 수령" : "직접 발송")}</p>
           {item.collectionMethod === "visit" && item.preferredDate ? <p className="mt-1 mb-0 text-sm">방문 {item.preferredDate} {item.preferredTime ?? ""}</p> : null}
           <div className="mt-4 flex justify-between gap-3 text-sm"><span>{item.status} · {item.paymentStatus}</span><b>{formatPrice(item.amount)}</b></div>
         </li>;

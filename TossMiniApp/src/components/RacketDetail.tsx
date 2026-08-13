@@ -6,7 +6,7 @@ import { formatPrice } from "../lib/product-labels";
 import { gripSizeLabel, racketBrandLabel, racketConditionLabel, stringPatternLabel, validRacketSalePrice } from "../lib/racket-labels";
 import type { RacketAvailability, RacketDetail as RacketDetailType } from "../types/racket";
 
-export default function RacketDetail({ racketId, onBack, onPurchase }: { racketId: string; onBack: () => void; onPurchase: () => void }) {
+export default function RacketDetail({ racketId, onBack, onPurchase, onRental }: { racketId: string; onBack: () => void; onPurchase: () => void; onRental: () => void }) {
   const [racket, setRacket] = useState<RacketDetailType | null>(null);
   const [availability, setAvailability] = useState<RacketAvailability | null>(null);
   const [state, setState] = useState<"loading" | "success" | "error">("loading");
@@ -31,6 +31,11 @@ export default function RacketDetail({ racketId, onBack, onPurchase }: { racketI
   const saleEnded = racket.status === "sold" || availability.quantity <= 0;
   const hasValidSalePrice = displayPrice !== null && Number.isFinite(displayPrice) && displayPrice > 0;
   const canPurchase = availability.available > 0 && hasValidSalePrice && !saleEnded;
+  const rentalFees = [racket.rental?.fee?.d7, racket.rental?.fee?.d15, racket.rental?.fee?.d30];
+  const validRentalPrice = rentalFees.some((fee) => Number.isInteger(fee) && Number(fee) >= 0);
+  const validDeposit = Number.isInteger(racket.rental?.deposit) && Number(racket.rental?.deposit) >= 0;
+  const canRent = racket.rental?.enabled === true && availability.available > 0 && validRentalPrice && validDeposit && racket.status !== "sold";
+  const rentalAvailabilityLabel = racket.rental?.enabled !== true ? "대여 운영 중지" : availability.available <= 0 ? "전량 대여 중" : !validRentalPrice || !validDeposit ? "대여 요금 확인 필요" : "대여 가능";
   const reviewCount = Math.max(0, racket.reviewSummary?.count ?? racket.reviewCount ?? racket.ratingCount ?? 0);
   const rating = Math.max(0, racket.reviewSummary?.average ?? racket.ratingAvg ?? racket.ratingAverage ?? 0);
   const availabilityLabel = saleEnded ? "판매 종료" : availability.available <= 0 && availability.count > 0 ? "전량 대여 중" : availability.available > 0 ? `구매 가능한 재고 ${availability.available}개` : "현재 구매 불가";
@@ -56,6 +61,7 @@ export default function RacketDetail({ racketId, onBack, onPurchase }: { racketI
         <button type="button" disabled={!canPurchase} onClick={onPurchase} className="min-h-[54px] w-full rounded-2xl border-0 bg-[#191f28] px-5 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]">스트링 선택 후 구매</button>
         <p className="mt-2 mb-0 text-center text-sm leading-6 text-[#6b7684]">{canPurchase ? "라켓·스트링·장착서비스를 하나의 주문으로 진행합니다." : availabilityLabel}</p>
       </section>
+      <section className="mt-3" aria-label="라켓 대여"><button type="button" disabled={!canRent} onClick={onRental} className="min-h-[54px] w-full rounded-2xl border-2 border-[#688d00] bg-[#f4f9e8] px-5 text-base font-extrabold text-[#344700] disabled:border-[#e5e8eb] disabled:text-[#8b95a1]">라켓 대여하기</button><p className="mt-2 text-center text-sm text-[#6b7684]">{rentalAvailabilityLabel}</p></section>
     </section>
   </main>;
 }
