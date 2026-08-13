@@ -1,0 +1,31 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import test from "node:test";
+
+const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+
+test("라켓 구매 prepare는 별도 목적과 두 item snapshot을 고정한다", () => {
+  const contract = read("lib/apps-in-toss/server/payment-prepare-contract.ts");
+  const prepare = read("lib/apps-in-toss/server/payment-prepare.ts");
+  assert.match(contract, /AppsRacketPurchasePrepareRequestSchema/);
+  assert.match(contract, /purpose: z\.literal\("racket_purchase"\)/);
+  assert.match(prepare, /paymentPurpose: "racket_purchase"/);
+  assert.match(prepare, /kind: "racket"/);
+  assert.match(prepare, /kind: "product"/);
+});
+
+test("라켓 구매 finalization은 같은 transaction에서 두 재고와 주문·신청을 확정한다", () => {
+  const source = read("lib/apps-in-toss/server/payment-finalization.ts");
+  assert.match(source, /getAppsInTossPaymentPurpose\(initial\) === "racket_purchase"/);
+  assert.match(source, /session\.withTransaction/);
+  assert.match(source, /collection\("rental_orders"\).*\["paid", "out"\]/s);
+  assert.match(source, /collection\("used_rackets"\)\.findOneAndUpdate/);
+  assert.match(source, /collection\("products"\)\.updateOne/);
+  assert.match(source, /collection\("orders"\)\.insertOne/);
+  assert.match(source, /collection\("stringing_applications"\)\.insertOne/);
+});
+
+test("기존 discriminator 없는 intent는 stringing service로 해석한다", () => {
+  const source = read("lib/apps-in-toss/server/payment-intents.ts");
+  assert.match(source, /intent\.paymentPurpose \?\? "stringing_service"/);
+});

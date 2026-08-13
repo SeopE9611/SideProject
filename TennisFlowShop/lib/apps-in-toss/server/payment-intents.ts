@@ -6,12 +6,12 @@ import { assertAttemptId, assertTossPayOrderNo, parseTossPayToken } from "./toss
 import { assertAppsInTossPaymentIntentTransition, type AppsInTossPaymentIntentState } from "./payment-intent-state";
 
 export const APPS_IN_TOSS_PAYMENT_INTENTS_COLLECTION = "apps_in_toss_payment_intents";
+export type AppsPaymentPurpose = "stringing_service" | "racket_purchase";
+export type AppsCheckoutItem =
+  | { productId: string; quantity: number; kind: "product"; selectedColor: NonNullable<StringingApplicationInput["selectedColor"]>; selectedGauge: NonNullable<StringingApplicationInput["selectedGauge"]> }
+  | { productId: string; quantity: number; kind: "racket" };
 export type AppsCheckoutPayload = {
-  items: Array<{
-    productId: string; quantity: number; kind: "product" | "racket";
-    selectedColor: NonNullable<StringingApplicationInput["selectedColor"]>;
-    selectedGauge: NonNullable<StringingApplicationInput["selectedGauge"]>;
-  }>;
+  items: AppsCheckoutItem[];
   applicant: {
     name: StringingApplicationInput["name"];
     email: NonNullable<StringingApplicationInput["email"]>;
@@ -20,7 +20,7 @@ export type AppsCheckoutPayload = {
   collectionMethod: "self_ship" | "visit" | "courier_pickup";
   shipping: { postalCode: string; address: string; addressDetail: string };
   work: {
-    racketType: NonNullable<StringingApplicationInput["racketType"]>;
+    racketType?: NonNullable<StringingApplicationInput["racketType"]>;
     tensionMain: string; tensionCross: string; note: string;
     preferredDate: string;
     preferredTime: string;
@@ -29,9 +29,9 @@ export type AppsCheckoutPayload = {
 };
 export type AppsInTossPaymentIntentDocument = {
   _id: ObjectId; attemptId: string; userId: ObjectId; identityId: ObjectId; orderNo: string;
-  state: AppsInTossPaymentIntentState; isTestPayment: boolean; checkoutPayload: AppsCheckoutPayload;
+  state: AppsInTossPaymentIntentState; isTestPayment: boolean; paymentPurpose?: AppsPaymentPurpose; checkoutPayload: AppsCheckoutPayload;
   pricingSnapshot: { subtotal: number; shippingFee: number; serviceFee: number; serviceFeeBeforePackage?: number; pointsUsed: number; payableAmount: number };
-  itemSnapshot: Array<{ productId: ObjectId; quantity: number; selectedColor?: string; selectedGauge?: string; name: string; price: number; mountingFee?: number }>;
+  itemSnapshot: Array<{ productId: ObjectId; quantity: number; kind?: "product" | "racket"; selectedColor?: string; selectedGauge?: string; name: string; price: number; mountingFee?: number }>;
   packageSnapshot?: { applied: boolean; requiredPassCount: number; passId?: ObjectId };
   reservationSnapshot?: { preferredDate?: string; preferredTime?: string; slotCount?: number; durationMinutes?: number; capacityAtPrepare?: number };
   createdAt: Date; updatedAt: Date; expiresAt: Date; retentionUntil?: Date;
@@ -51,6 +51,7 @@ export type AppsInTossPaymentIntentDocument = {
     targetState: "paid" | "failed" | "refunded";
   };
 };
+export const getAppsInTossPaymentPurpose = (intent: Pick<AppsInTossPaymentIntentDocument, "paymentPurpose">): AppsPaymentPurpose => intent.paymentPurpose ?? "stringing_service";
 type CreateIntent = Omit<AppsInTossPaymentIntentDocument, "_id" | "state" | "createdAt" | "updatedAt" | "payToken" | "finalOrderId" | "execution" | "refund">;
 
 export function appsInTossPaymentIntents(db: Db) { return db.collection<AppsInTossPaymentIntentDocument>(APPS_IN_TOSS_PAYMENT_INTENTS_COLLECTION); }

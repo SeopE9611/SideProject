@@ -7,6 +7,9 @@ import type { StringingApplicationInput } from "@/app/features/stringing-applica
 import { buildSlotSummaryForDate, loadStringingSettings, resolveDaySchedule } from "@/app/features/stringing-applications/lib/slotEngine";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
 import { publicProductFilter } from "@/lib/public-visibility";
+import { racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
+import { racketBrandLabel } from "@/lib/constants";
 import { getAppsInTossTossPayMode, isAppsInTossTossPayLiveExecuteEnabled, isAppsInTossTossPayLivePrepareEnabled } from "./config";
 import { TossApiError } from "./http";
 import { loadActiveAppsInTossUserKey } from "./identity";
@@ -25,6 +28,8 @@ import {
   isPastVisitSlot,
   isSameAppsPaymentPayload,
   type AppsPaymentPrepareRequest,
+  type AppsRacketPurchasePrepareRequest,
+  type AppsStringingPaymentPrepareRequest,
 } from "./payment-prepare-contract";
 import { makeTossPayPayment } from "./toss-pay-client";
 import { buildAppsTossPayMakePaymentInput } from "./toss-pay-policy";
@@ -67,8 +72,9 @@ function isDuplicateKeyError(error: unknown) {
 }
 
 export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentPrepareRequest; userId: ObjectId; identityId: ObjectId }) {
+  if (params.request.purpose === "racket_purchase") return prepareAppsRacketPurchasePayment({ ...params, request: params.request });
   const { db, userId, identityId } = params;
-  const request = canonicalizeAppsPaymentPrepareRequest(params.request);
+  const request = canonicalizeAppsPaymentPrepareRequest(params.request) as AppsStringingPaymentPrepareRequest;
   const existing = await findAppsInTossPaymentIntentByAttemptId(db, request.attemptId);
   if (existing) return recoverExisting(existing, request, userId, identityId);
 
@@ -134,6 +140,7 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
   try {
     intent = await createAppsInTossPaymentIntent(db, {
       attemptId: request.attemptId, userId, identityId, orderNo: generateTossPayOrderNo(), isTestPayment: mode.isTestPayment,
+      paymentPurpose: "stringing_service",
       checkoutPayload,
       pricingSnapshot: { subtotal: quote.subtotal, shippingFee: quote.shippingFee, serviceFee: quote.serviceFee, serviceFeeBeforePackage: quote.serviceFeeBeforePackage, pointsUsed: quote.pointsUsed, payableAmount: quote.payableTotalPrice },
       itemSnapshot: [{ productId, quantity: 1, selectedColor: request.selectedColor, selectedGauge: request.selectedGauge, name: quotedItem.name, price: quotedItem.price, mountingFee: quotedItem.mountingFee }],
@@ -184,6 +191,72 @@ export async function prepareAppsPayment(params: { db: Db; request: AppsPaymentP
   } catch {
     // 외부 결제 생성 결과를 잃지 않도록 재호출 없이 안전한 오류로 종료한다.
   }
+  throw new AppsPaymentPrepareError(500, "PAYMENT_TOKEN_PERSISTENCE_FAILED", "결제 준비 상태를 저장하지 못했습니다.");
+}
+
+export async function prepareAppsRacketPurchasePayment(params: { db: Db; request: AppsRacketPurchasePrepareRequest; userId: ObjectId; identityId: ObjectId }) {
+  const { db, userId, identityId } = params;
+  const request = canonicalizeAppsPaymentPrepareRequest(params.request) as AppsRacketPurchasePrepareRequest;
+  const existing = await findAppsInTossPaymentIntentByAttemptId(db, request.attemptId);
+  if (existing) return recoverExisting(existing, request, userId, identityId);
+
+  const racketId = new MongoObjectId(request.racketId);
+  const stringProductId = new MongoObjectId(request.stringProductId);
+  const racket = await db.collection("used_rackets").findOne({ _id: racketId, ...racketVisibilityFilterFor({ isAdmin: false }) });
+  if (!racket) throw new AppsPaymentPrepareError(404, "RACKET_NOT_AVAILABLE", "현재 구매할 수 없는 라켓입니다.");
+  const hasStockQty = typeof racket.quantity === "number" && Number.isFinite(racket.quantity);
+  const baseQty = hasStockQty ? Math.max(0, Math.trunc(racket.quantity)) : racket.status === "available" ? 1 : 0;
+  const activeRentalCount = await db.collection("rental_orders").countDocuments({ racketId, status: { $in: ["paid", "out"] } });
+  if (Math.max(0, baseQty - activeRentalCount) < request.quantity) throw new AppsPaymentPrepareError(409, activeRentalCount > 0 ? "RACKET_RENTAL_RESERVED" : "RACKET_INSUFFICIENT_STOCK", "라켓 재고가 부족합니다.");
+
+  const product = await db.collection("products").findOne({ _id: stringProductId, ...publicProductFilter });
+  const variant = Array.isArray(product?.variantInventories) ? product.variantInventories.find((row: any) => String(row?.colorValue ?? "").trim() === request.selectedColor && String(row?.gaugeValue ?? "").trim() === request.selectedGauge) : undefined;
+  if (!product || Number(product.inventory?.stock ?? 0) < request.quantity) throw new AppsPaymentPrepareError(404, "PRODUCT_NOT_AVAILABLE", "현재 주문할 수 없는 상품입니다.");
+  if (!variant) throw new AppsPaymentPrepareError(400, "VARIANT_NOT_FOUND", "선택한 옵션 조합을 찾을 수 없습니다.");
+  if (variant.isSoldOut === true || Number(variant.stock ?? 0) < request.quantity) throw new AppsPaymentPrepareError(409, "VARIANT_INSUFFICIENT_STOCK", "선택한 옵션 조합의 재고가 부족합니다.");
+  const productName = String(product.name ?? "").trim();
+  const racketName = `${racketBrandLabel(String(racket.brand ?? ""))} ${String(racket.model ?? "")}`.trim();
+  if (!productName || !racketName) throw new AppsPaymentPrepareError(404, "PRODUCT_NOT_AVAILABLE", "현재 주문할 수 없는 상품입니다.");
+  const mountingFee = Number.isFinite(Number(product.mountingFee)) ? Number(product.mountingFee) : 0;
+  const stringingInput: StringingApplicationInput = {
+    name: request.applicant.name, email: request.applicant.email, phone: request.applicant.phone,
+    shippingInfo: { ...request.applicant, ...request.shipping, collectionMethod: request.collectionMethod },
+    racketType: racketName, stringTypes: [productName], preferredDate: request.work.preferredDate || undefined,
+    preferredTime: request.work.preferredTime || undefined, requirements: request.work.note,
+    selectedColor: request.selectedColor, selectedGauge: request.selectedGauge,
+    lines: Array.from({ length: request.quantity }, () => ({ racketType: racketName, stringProductId: request.stringProductId, stringName: productName, tensionMain: request.work.tensionMain, tensionCross: request.work.tensionCross, note: request.work.note, mountingFee })),
+  };
+  const isVisit = request.collectionMethod === "visit";
+  const quote = await calculateCheckoutPayableAmount({ db, userId: String(userId), items: [{ productId: request.racketId, quantity: request.quantity, kind: "racket" }, { productId: request.stringProductId, quantity: request.quantity, kind: "product" }], shippingInfo: { withStringService: true, deliveryMethod: isVisit ? "방문수령" : "택배수령", shippingMethod: request.collectionMethod }, pointsToUse: 0, stringingApplicationInput: stringingInput });
+  if (quote.payableTotalPrice <= 0 || quote.payableTotalPrice > 9_999_999) throw new AppsPaymentPrepareError(400, "INVALID_PAYMENT_AMOUNT", "결제 금액을 사용할 수 없습니다.");
+  let visitSnapshot: AppsInTossPaymentIntentDocument["reservationSnapshot"];
+  if (isVisit) {
+    if (isPastVisitSlot(request.work.preferredDate, request.work.preferredTime, new Date())) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
+    const settings = await loadStringingSettings(db); const schedule = resolveDaySchedule(settings, request.work.preferredDate);
+    const slots = await buildSlotSummaryForDate(db, request.work.preferredDate, quote.requiredPassCount, settings);
+    if (slots.closed || !slots.availableTimes.includes(request.work.preferredTime)) throw new AppsPaymentPrepareError(409, "VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다.");
+    visitSnapshot = { preferredDate: request.work.preferredDate, preferredTime: request.work.preferredTime, slotCount: quote.requiredPassCount, durationMinutes: schedule.interval * quote.requiredPassCount, capacityAtPrepare: slots.capacity };
+  }
+  const checkoutPayload: AppsCheckoutPayload = { items: [{ productId: request.racketId, quantity: request.quantity, kind: "racket" }, { productId: request.stringProductId, quantity: request.quantity, kind: "product", selectedColor: request.selectedColor, selectedGauge: request.selectedGauge }], applicant: request.applicant, collectionMethod: request.collectionMethod, shipping: request.shipping, work: { ...request.work, racketType: racketName }, withStringService: true };
+  const mode = getAppsInTossTossPayMode();
+  if (mode.mode === "live" && (!isAppsInTossTossPayLivePrepareEnabled() || !isAppsInTossTossPayLiveExecuteEnabled())) throw new AppsPaymentPrepareError(503, "PAYMENT_LIVE_NOT_ENABLED", "라이브 결제 준비는 아직 사용할 수 없습니다.");
+  let intent: AppsInTossPaymentIntentDocument;
+  try {
+    intent = await createAppsInTossPaymentIntent(db, { attemptId: request.attemptId, userId, identityId, orderNo: generateTossPayOrderNo(), isTestPayment: mode.isTestPayment, paymentPurpose: "racket_purchase", checkoutPayload,
+      pricingSnapshot: { subtotal: quote.subtotal, shippingFee: quote.shippingFee, serviceFee: quote.serviceFee, serviceFeeBeforePackage: quote.serviceFeeBeforePackage, pointsUsed: 0, payableAmount: quote.payableTotalPrice },
+      itemSnapshot: quote.itemsWithSnapshot.map((item, index) => ({ productId: index === 0 ? racketId : stringProductId, kind: item.kind, quantity: item.quantity, name: item.name, price: item.price, ...(item.kind === "product" ? { selectedColor: request.selectedColor, selectedGauge: request.selectedGauge, mountingFee: item.mountingFee } : {}) })),
+      packageSnapshot: { applied: quote.packageApplied, requiredPassCount: quote.requiredPassCount, ...(quote.packagePassId ? { passId: quote.packagePassId } : {}) }, ...(visitSnapshot ? { reservationSnapshot: visitSnapshot } : {}), expiresAt: new Date(Date.now() + APPS_PAYMENT_PREPARE_TTL_MS) });
+  } catch (error) { if (!isDuplicateKeyError(error)) throw error; const raced = await findAppsInTossPaymentIntentByAttemptId(db, request.attemptId); if (!raced) throw error; return recoverExisting(raced, request, userId, identityId); }
+  const userKey = await loadActiveAppsInTossUserKey(db, identityId, userId);
+  let makeResult: Awaited<ReturnType<typeof makeTossPayPayment>>;
+  try { makeResult = await makeTossPayPayment(userKey, buildAppsTossPayMakePaymentInput(intent)); }
+  catch { await recordAppsInTossPaymentCreationFailed(db, intent._id, "MAKE_PAYMENT_UNAVAILABLE"); throw new AppsPaymentPrepareError(503, "TOSS_PAY_UNAVAILABLE", "결제 준비를 완료하지 못했습니다. 다시 시도해 주세요."); }
+  if (makeResult.kind === "toss_failure") { await recordAppsInTossPaymentCreationFailed(db, intent._id, makeResult.errorCode ?? `MAKE_PAYMENT_${makeResult.resultType}`); throw new AppsPaymentPrepareError(503, "TOSS_PAY_MAKE_FAILED", "결제 준비를 완료하지 못했습니다. 다시 시도해 주세요."); }
+  const payToken = parseTossPayToken(makeResult.value.success.payToken);
+  const attached = await attachAppsInTossPayToken(db, intent._id, payToken);
+  if (attached) return createCheckoutReadyResponse(attached);
+  const persisted = await findAppsInTossPaymentIntentByAttemptId(db, intent.attemptId);
+  if (persisted?.state === "awaiting_authorization" && persisted.payToken === payToken) return createCheckoutReadyResponse(persisted);
   throw new AppsPaymentPrepareError(500, "PAYMENT_TOKEN_PERSISTENCE_FAILED", "결제 준비 상태를 저장하지 못했습니다.");
 }
 

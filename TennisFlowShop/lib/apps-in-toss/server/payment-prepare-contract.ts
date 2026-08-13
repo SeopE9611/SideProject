@@ -20,13 +20,10 @@ export function isSemanticCalendarDate(value: string) {
   return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
-export const AppsPaymentPrepareRequestSchema = z.object({
+const commonFields = {
   attemptId: z.string().superRefine((value, context) => {
     try { assertAttemptId(value); } catch { context.addIssue({ code: "custom", message: "invalid attemptId" }); }
   }),
-  productId: z.string().refine((value) => ObjectId.isValid(value), "invalid productId"),
-  selectedColor: trimmed(100),
-  selectedGauge: trimmed(100),
   applicant: z.object({
     name: trimmed(100).refine((value) => value.length >= 2),
     email: z.string().trim().email().max(254),
@@ -39,14 +36,17 @@ export const AppsPaymentPrepareRequestSchema = z.object({
     addressDetail: z.string().trim().max(200),
   }).strict(),
   work: z.object({
-    racketType: trimmed(100),
+    racketType: trimmed(100).optional(),
     tensionMain: trimmed(4),
     tensionCross: trimmed(4),
     note: optionalTrimmed(500),
     preferredDate: optionalTrimmed(10),
     preferredTime: optionalTrimmed(5),
   }).strict(),
-}).strict().superRefine((value, context) => {
+};
+
+function withCollectionGuards<T extends z.ZodRawShape>(schema: z.ZodObject<T>) {
+  return schema.strict().superRefine((value: any, context) => {
   if (value.collectionMethod === "self_ship") {
     if (!/^\d{5}$/.test(value.shipping.postalCode)) context.addIssue({ code: "custom", path: ["shipping", "postalCode"], message: "invalid postalCode" });
     if (!value.shipping.address) context.addIssue({ code: "custom", path: ["shipping", "address"], message: "address required" });
@@ -56,15 +56,40 @@ export const AppsPaymentPrepareRequestSchema = z.object({
     if (!isSemanticCalendarDate(value.work.preferredDate)) context.addIssue({ code: "custom", path: ["work", "preferredDate"], message: "preferredDate required" });
     if (!/^\d{2}:\d{2}$/.test(value.work.preferredTime)) context.addIssue({ code: "custom", path: ["work", "preferredTime"], message: "preferredTime required" });
   }
-});
-
-export type AppsPaymentPrepareRequest = z.infer<typeof AppsPaymentPrepareRequestSchema>;
-
-export function normalizeAppsPaymentPrepareRequest(value: unknown): AppsPaymentPrepareRequest {
-  return canonicalizeAppsPaymentPrepareRequest(AppsPaymentPrepareRequestSchema.parse(value));
+  });
 }
 
-export function canonicalizeAppsPaymentPrepareRequest(request: AppsPaymentPrepareRequest): AppsPaymentPrepareRequest {
+export const AppsStringingPaymentPrepareRequestSchema = withCollectionGuards(z.object({
+  ...commonFields,
+  purpose: z.literal("stringing_service").optional(),
+  productId: z.string().refine((value) => ObjectId.isValid(value), "invalid productId"),
+  selectedColor: trimmed(100), selectedGauge: trimmed(100),
+  work: (commonFields.work as z.ZodObject<any>).extend({ racketType: trimmed(100) }),
+}));
+export const AppsRacketPurchasePrepareRequestSchema = withCollectionGuards(z.object({
+  ...commonFields,
+  purpose: z.literal("racket_purchase"),
+  racketId: z.string().refine((value) => ObjectId.isValid(value), "invalid racketId"),
+  productId: z.never().optional(),
+  stringProductId: z.string().refine((value) => ObjectId.isValid(value), "invalid stringProductId"),
+  selectedColor: trimmed(100), selectedGauge: trimmed(100), quantity: z.number().int().min(1).max(10),
+}));
+export const AppsPaymentPrepareRequestSchema = z.union([AppsStringingPaymentPrepareRequestSchema, AppsRacketPurchasePrepareRequestSchema]);
+
+export type AppsPaymentPrepareRequest = z.infer<typeof AppsPaymentPrepareRequestSchema>;
+export type AppsStringingPaymentPrepareRequest = {
+  attemptId: string; purpose?: "stringing_service"; productId: string; selectedColor: string; selectedGauge: string;
+  applicant: { name: string; email: string; phone: string }; collectionMethod: "self_ship" | "visit";
+  shipping: { postalCode: string; address: string; addressDetail: string };
+  work: { racketType: string; tensionMain: string; tensionCross: string; note: string; preferredDate: string; preferredTime: string };
+};
+export type AppsRacketPurchasePrepareRequest = z.infer<typeof AppsRacketPurchasePrepareRequestSchema>;
+
+export function normalizeAppsPaymentPrepareRequest(value: unknown): AppsStringingPaymentPrepareRequest {
+  return canonicalizeAppsPaymentPrepareRequest(AppsStringingPaymentPrepareRequestSchema.parse(value) as unknown as AppsStringingPaymentPrepareRequest);
+}
+
+export function canonicalizeAppsPaymentPrepareRequest<T extends AppsPaymentPrepareRequest>(request: T): T {
   if (request.collectionMethod !== "visit") return request;
   return { ...request, shipping: { postalCode: "", address: "", addressDetail: "" } };
 }
@@ -74,9 +99,15 @@ export function isPastVisitSlot(preferredDate: string, preferredTime: string, no
 }
 
 export function isSameAppsPaymentPayload(
-  checkout: { items: Array<{ productId: string; selectedColor: string; selectedGauge: string }>; applicant: unknown; collectionMethod: string; shipping: unknown; work: unknown },
+  checkout: { items: Array<{ productId?: string; kind?: string; quantity?: number; selectedColor?: string; selectedGauge?: string }>; applicant: unknown; collectionMethod: string; shipping: unknown; work: unknown },
   request: AppsPaymentPrepareRequest,
 ) {
+  if (request.purpose === "racket_purchase") return checkout.items.length === 2 &&
+    checkout.items[0]?.kind === "racket" && checkout.items[0].productId === request.racketId && checkout.items[0].quantity === request.quantity &&
+    checkout.items[1]?.kind === "product" && checkout.items[1].productId === request.stringProductId && checkout.items[1].quantity === request.quantity &&
+    checkout.items[1].selectedColor === request.selectedColor && checkout.items[1].selectedGauge === request.selectedGauge &&
+    checkout.collectionMethod === request.collectionMethod && JSON.stringify(checkout.applicant) === JSON.stringify(request.applicant) &&
+    (request.collectionMethod === "visit" || JSON.stringify(checkout.shipping) === JSON.stringify(request.shipping)) && JSON.stringify(checkout.work) === JSON.stringify(request.work);
   const item = checkout.items[0];
   return checkout.items.length === 1 && item?.productId === request.productId &&
     item.selectedColor === request.selectedColor && item.selectedGauge === request.selectedGauge &&
