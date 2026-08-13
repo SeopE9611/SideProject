@@ -72,7 +72,7 @@ export type RentalOrder = {
   };
   paymentStatus?: string;
   paymentInfo?: {
-    provider?: "manual_bank_transfer" | "tosspayments" | "nicepay";
+    provider?: "manual_bank_transfer" | "tosspayments" | "nicepay" | "apps_in_toss_toss_pay";
     method?: string;
     status?: string | null;
     tid?: string;

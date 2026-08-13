@@ -2,14 +2,33 @@ import "server-only";
 
 import { ObjectId, type ClientSession, type Db } from "mongodb";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
+import type { RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 import { assertAttemptId, assertTossPayOrderNo, parseTossPayToken } from "./toss-pay-contract";
 import { assertAppsInTossPaymentIntentTransition, type AppsInTossPaymentIntentState } from "./payment-intent-state";
+import { getAppsInTossPaymentPurpose, type AppsPaymentPurpose } from "./payment-purpose-contract";
+
+export { getAppsInTossPaymentPurpose, type AppsPaymentPurpose } from "./payment-purpose-contract";
 
 export const APPS_IN_TOSS_PAYMENT_INTENTS_COLLECTION = "apps_in_toss_payment_intents";
-export type AppsPaymentPurpose = "stringing_service" | "racket_purchase";
 export type AppsCheckoutItem =
   | { productId: string; quantity: number; kind: "product"; selectedColor: NonNullable<StringingApplicationInput["selectedColor"]>; selectedGauge: NonNullable<StringingApplicationInput["selectedGauge"]> }
-  | { productId: string; quantity: number; kind: "racket" };
+  | { productId: string; quantity: number; kind: "racket" | "rental_racket" };
+export type AppsRentalStringingSnapshot =
+  | { requested: false }
+  | {
+      requested: true; stringProductId: ObjectId; name: string; price: number; mountingFee: number;
+      selectedColor: string; selectedGauge: string;
+      work: { tensionMain: string; tensionCross: string; note: string; preferredDate: string; preferredTime: string };
+    };
+export type AppsRentalSnapshot = {
+  paymentPurpose: "racket_rental"; racketId: ObjectId; brand: string; model: string; displayName: string;
+  days: 7 | 15 | 30; rentalFee: number; deposit: number; refundAccount: RefundAccountInfo;
+  applicant: { name: string; email: string; phone: string }; collectionMethod: "self_ship" | "visit";
+  shipping: { postalCode: string; address: string; addressDetail: string; deliveryRequest: string };
+  stringing: AppsRentalStringingSnapshot;
+  pricing: { rentalFee: number; deposit: number; stringPrice: number; serviceFee: number; total: number };
+  payableAmount: number;
+};
 export type AppsCheckoutPayload = {
   items: AppsCheckoutItem[];
   applicant: {
@@ -18,7 +37,7 @@ export type AppsCheckoutPayload = {
     phone: StringingApplicationInput["phone"];
   };
   collectionMethod: "self_ship" | "visit" | "courier_pickup";
-  shipping: { postalCode: string; address: string; addressDetail: string };
+  shipping: { postalCode: string; address: string; addressDetail: string; deliveryRequest?: string };
   work: {
     racketType?: NonNullable<StringingApplicationInput["racketType"]>;
     tensionMain: string; tensionCross: string; note: string;
@@ -26,12 +45,18 @@ export type AppsCheckoutPayload = {
     preferredTime: string;
   };
   withStringService: boolean;
+  rental?: {
+    days: 7 | 15 | 30;
+    refundAccount: RefundAccountInfo;
+    stringing: { requested: false } | { requested: true; stringProductId: string; selectedColor: string; selectedGauge: string };
+  };
 };
 export type AppsInTossPaymentIntentDocument = {
   _id: ObjectId; attemptId: string; userId: ObjectId; identityId: ObjectId; orderNo: string;
   state: AppsInTossPaymentIntentState; isTestPayment: boolean; paymentPurpose?: AppsPaymentPurpose; checkoutPayload: AppsCheckoutPayload;
   pricingSnapshot: { subtotal: number; shippingFee: number; serviceFee: number; serviceFeeBeforePackage?: number; pointsUsed: number; payableAmount: number };
-  itemSnapshot: Array<{ productId: ObjectId; quantity: number; kind?: "product" | "racket"; selectedColor?: string; selectedGauge?: string; name: string; price: number; mountingFee?: number }>;
+  itemSnapshot: Array<{ productId: ObjectId; quantity: number; kind?: "product" | "racket" | "rental_racket"; selectedColor?: string; selectedGauge?: string; name: string; price: number; mountingFee?: number }>;
+  rentalSnapshot?: AppsRentalSnapshot;
   packageSnapshot?: { applied: boolean; requiredPassCount: number; passId?: ObjectId };
   reservationSnapshot?: { preferredDate?: string; preferredTime?: string; slotCount?: number; durationMinutes?: number; capacityAtPrepare?: number };
   createdAt: Date; updatedAt: Date; expiresAt: Date; retentionUntil?: Date;
@@ -51,7 +76,6 @@ export type AppsInTossPaymentIntentDocument = {
     targetState: "paid" | "failed" | "refunded";
   };
 };
-export const getAppsInTossPaymentPurpose = (intent: Pick<AppsInTossPaymentIntentDocument, "paymentPurpose">): AppsPaymentPurpose => intent.paymentPurpose ?? "stringing_service";
 type CreateIntent = Omit<AppsInTossPaymentIntentDocument, "_id" | "state" | "createdAt" | "updatedAt" | "payToken" | "finalOrderId" | "execution" | "refund">;
 
 export function appsInTossPaymentIntents(db: Db) { return db.collection<AppsInTossPaymentIntentDocument>(APPS_IN_TOSS_PAYMENT_INTENTS_COLLECTION); }

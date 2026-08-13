@@ -1,4 +1,4 @@
-import { getRefundBankCatalogLabel, isRefundBankCode } from "@/lib/refund-bank-catalog";
+import { getRefundBankCatalogLabel, isRefundBankCode } from "../refund-bank-catalog";
 import { z } from "zod";
 
 export type RefundAccountInfo = {

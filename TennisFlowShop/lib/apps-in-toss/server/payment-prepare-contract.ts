@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 
+import { RefundAccountSchema } from "../../cancel-request/refund-account";
 import { assertAttemptId } from "./toss-pay-contract";
 
 const trimmed = (max: number) => z.string().trim().min(1).max(max);
@@ -34,6 +35,7 @@ const commonFields = {
     postalCode: z.string().trim().max(5),
     address: z.string().trim().max(200),
     addressDetail: z.string().trim().max(200),
+    deliveryRequest: z.string().trim().max(200).optional(),
   }).strict(),
   work: z.object({
     racketType: trimmed(100).optional(),
@@ -74,24 +76,67 @@ export const AppsRacketPurchasePrepareRequestSchema = withCollectionGuards(z.obj
   stringProductId: z.string().refine((value) => ObjectId.isValid(value), "invalid stringProductId"),
   selectedColor: trimmed(100), selectedGauge: trimmed(100), quantity: z.number().int().min(1).max(10),
 }));
-export const AppsPaymentPrepareRequestSchema = z.union([AppsStringingPaymentPrepareRequestSchema, AppsRacketPurchasePrepareRequestSchema]);
+const AppsRentalStringingSchema = z.discriminatedUnion("requested", [
+  z.object({ requested: z.literal(false) }).strict(),
+  z.object({
+    requested: z.literal(true),
+    stringProductId: z.string().refine((value) => ObjectId.isValid(value), "invalid stringProductId"),
+    selectedColor: trimmed(100),
+    selectedGauge: trimmed(100),
+    work: z.object({
+      tensionMain: trimmed(4), tensionCross: trimmed(4), note: optionalTrimmed(500),
+      preferredDate: optionalTrimmed(10), preferredTime: optionalTrimmed(5),
+    }).strict(),
+  }).strict(),
+]);
+
+export const AppsRacketRentalPrepareRequestSchema = z.object({
+  attemptId: commonFields.attemptId,
+  purpose: z.literal("racket_rental"),
+  racketId: z.string().refine((value) => ObjectId.isValid(value), "invalid racketId"),
+  days: z.union([z.literal(7), z.literal(15), z.literal(30)]),
+  applicant: commonFields.applicant,
+  collectionMethod: commonFields.collectionMethod,
+  shipping: commonFields.shipping,
+  refundAccount: RefundAccountSchema,
+  stringing: AppsRentalStringingSchema,
+  productId: z.never().optional(),
+  selectedColor: z.never().optional(),
+  selectedGauge: z.never().optional(),
+  work: z.never().optional(),
+}).strict().superRefine((value, context) => {
+  if (value.collectionMethod === "self_ship") {
+    if (!/^\d{5}$/.test(value.shipping.postalCode)) context.addIssue({ code: "custom", path: ["shipping", "postalCode"], message: "invalid postalCode" });
+    if (!value.shipping.address) context.addIssue({ code: "custom", path: ["shipping", "address"], message: "address required" });
+    if (!value.shipping.addressDetail) context.addIssue({ code: "custom", path: ["shipping", "addressDetail"], message: "addressDetail required" });
+  }
+  if (value.collectionMethod === "visit" && value.stringing.requested) {
+    if (!isSemanticCalendarDate(value.stringing.work.preferredDate)) context.addIssue({ code: "custom", path: ["stringing", "work", "preferredDate"], message: "preferredDate required" });
+    if (!/^\d{2}:\d{2}$/.test(value.stringing.work.preferredTime)) context.addIssue({ code: "custom", path: ["stringing", "work", "preferredTime"], message: "preferredTime required" });
+  }
+});
+export const AppsPaymentPrepareRequestSchema = z.union([AppsStringingPaymentPrepareRequestSchema, AppsRacketPurchasePrepareRequestSchema, AppsRacketRentalPrepareRequestSchema]);
 
 export type AppsPaymentPrepareRequest = z.infer<typeof AppsPaymentPrepareRequestSchema>;
 export type AppsStringingPaymentPrepareRequest = {
   attemptId: string; purpose?: "stringing_service"; productId: string; selectedColor: string; selectedGauge: string;
   applicant: { name: string; email: string; phone: string }; collectionMethod: "self_ship" | "visit";
-  shipping: { postalCode: string; address: string; addressDetail: string };
+  shipping: { postalCode: string; address: string; addressDetail: string; deliveryRequest?: string };
   work: { racketType: string; tensionMain: string; tensionCross: string; note: string; preferredDate: string; preferredTime: string };
 };
 export type AppsRacketPurchasePrepareRequest = z.infer<typeof AppsRacketPurchasePrepareRequestSchema>;
+export type AppsRacketRentalPrepareRequest = z.infer<typeof AppsRacketRentalPrepareRequestSchema>;
 
 export function normalizeAppsPaymentPrepareRequest(value: unknown): AppsStringingPaymentPrepareRequest {
-  return canonicalizeAppsPaymentPrepareRequest(AppsStringingPaymentPrepareRequestSchema.parse(value) as unknown as AppsStringingPaymentPrepareRequest);
+  return canonicalizeAppsPaymentPrepareRequest(AppsStringingPaymentPrepareRequestSchema.parse(value) as unknown as AppsStringingPaymentPrepareRequest) as AppsStringingPaymentPrepareRequest;
 }
 
 export function canonicalizeAppsPaymentPrepareRequest<T extends AppsPaymentPrepareRequest>(request: T): T {
   if (request.collectionMethod !== "visit") return request;
-  return { ...request, shipping: { postalCode: "", address: "", addressDetail: "" } };
+  return { ...request, shipping: {
+    postalCode: "", address: "", addressDetail: "",
+    ...("deliveryRequest" in request.shipping ? { deliveryRequest: "" } : {}),
+  } } as T;
 }
 
 export function isPastVisitSlot(preferredDate: string, preferredTime: string, now: Date) {
@@ -99,9 +144,24 @@ export function isPastVisitSlot(preferredDate: string, preferredTime: string, no
 }
 
 export function isSameAppsPaymentPayload(
-  checkout: { items: Array<{ productId?: string; kind?: string; quantity?: number; selectedColor?: string; selectedGauge?: string }>; applicant: unknown; collectionMethod: string; shipping: unknown; work: unknown },
+  checkout: { items: Array<{ productId?: string; kind?: string; quantity?: number; selectedColor?: string; selectedGauge?: string }>; applicant: unknown; collectionMethod: string; shipping: unknown; work: unknown; rental?: { days?: number; refundAccount?: unknown; stringing?: unknown } },
   request: AppsPaymentPrepareRequest,
 ) {
+  if (request.purpose === "racket_rental") {
+    const item = checkout.items[0];
+    const requestedStringing = request.stringing.requested
+      ? { requested: true, stringProductId: request.stringing.stringProductId, selectedColor: request.stringing.selectedColor, selectedGauge: request.stringing.selectedGauge }
+      : { requested: false };
+    const checkoutWork = checkout.work as Record<string, unknown>;
+    const requestWork = request.stringing.requested ? request.stringing.work : { tensionMain: "", tensionCross: "", note: "", preferredDate: "", preferredTime: "" };
+    return checkout.items.length === (request.stringing.requested ? 2 : 1) &&
+      item?.kind === "rental_racket" && item.productId === request.racketId && item.quantity === 1 &&
+      checkout.collectionMethod === request.collectionMethod && JSON.stringify(checkout.applicant) === JSON.stringify(request.applicant) &&
+      (request.collectionMethod === "visit" || JSON.stringify(checkout.shipping) === JSON.stringify(request.shipping)) &&
+      checkout.rental?.days === request.days && JSON.stringify(checkout.rental.refundAccount) === JSON.stringify(request.refundAccount) &&
+      JSON.stringify(checkout.rental.stringing) === JSON.stringify(requestedStringing) &&
+      JSON.stringify(checkoutWork) === JSON.stringify(requestWork);
+  }
   if (request.purpose === "racket_purchase") {
     const checkoutWork = checkout.work as Partial<AppsRacketPurchasePrepareRequest["work"]>;
     return checkout.items.length === 2 &&
@@ -127,11 +187,22 @@ export function isAppsPaymentIntentExpired(expiresAt: Date, now: Date = new Date
   return expiresAt.getTime() <= now.getTime();
 }
 
+export function calculateAppsRentalPaymentAmount(input: { rentalFee: number; deposit: number; stringPrice?: number; serviceFee?: number }) {
+  const stringPrice = input.stringPrice ?? 0;
+  const serviceFee = input.serviceFee ?? 0;
+  const values = [input.rentalFee, input.deposit, stringPrice, serviceFee];
+  if (!values.every((value) => Number.isInteger(value) && value >= 0)) throw new Error("INVALID_RENTAL_PRICE");
+  const payableAmount = input.rentalFee + input.deposit + stringPrice + serviceFee;
+  if (payableAmount <= 0 || payableAmount > 9_999_999) throw new Error("INVALID_PAYMENT_AMOUNT");
+  return { rentalFee: input.rentalFee, deposit: input.deposit, stringPrice, serviceFee, payableAmount };
+}
+
 type SafePaymentIntent = {
   attemptId: string; state: string; expiresAt: Date;
   itemSnapshot: Array<{ name: string; quantity: number }>;
   pricingSnapshot: { subtotal: number; shippingFee: number; serviceFeeBeforePackage?: number; serviceFee: number; payableAmount: number };
   packageSnapshot?: { applied: boolean };
+  rentalSnapshot?: { days: number; rentalFee: number; deposit: number; stringing: { requested: boolean }; pricing: { stringPrice: number; serviceFee: number } };
 };
 
 export function createSafePaymentIntentResponse(intent: SafePaymentIntent, now: Date = new Date()) {
@@ -147,6 +218,14 @@ export function createSafePaymentIntentResponse(intent: SafePaymentIntent, now: 
         packageDiscount: Math.max(0, serviceFeeBeforePackage - intent.pricingSnapshot.serviceFee),
         payableAmount: intent.pricingSnapshot.payableAmount },
       packageApplied: intent.packageSnapshot?.applied === true,
+      ...(intent.rentalSnapshot ? { rental: {
+        days: intent.rentalSnapshot.days,
+        rentalFee: intent.rentalSnapshot.rentalFee,
+        deposit: intent.rentalSnapshot.deposit,
+        stringingRequested: intent.rentalSnapshot.stringing.requested,
+        stringPrice: intent.rentalSnapshot.stringing.requested ? intent.rentalSnapshot.pricing.stringPrice : 0,
+        serviceFee: intent.rentalSnapshot.stringing.requested ? intent.rentalSnapshot.pricing.serviceFee : 0,
+      } } : {}),
     },
   };
 }

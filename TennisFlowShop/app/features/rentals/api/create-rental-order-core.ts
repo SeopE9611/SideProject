@@ -30,7 +30,7 @@ import { RefundAccountSchema, type RefundAccountInfo } from "@/lib/cancel-reques
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
 import type { MongoClient, Db } from "mongodb";
 import { ObjectId } from "mongodb";
-import { reservePaidRentalRacket } from "./paid-rental-availability";
+import { createRentalOrderInTransaction } from "./rental-order-transaction";
 
 const POINT_UNIT = 100;
 const PAYMENT_BANKS = new Set(["kakao"] as const);
@@ -39,7 +39,7 @@ const rentalOrdersIdemIndexGlobal = globalThis as typeof globalThis & {
   __tf_rental_orders_idem_index_promise__?: Promise<string>;
 };
 
-async function ensureRentalOrdersIdemIndex(db: Db) {
+export async function ensureRentalOrdersIdemIndex(db: Db) {
   if (!rentalOrdersIdemIndexGlobal.__tf_rental_orders_idem_index_promise__) {
     rentalOrdersIdemIndexGlobal.__tf_rental_orders_idem_index_promise__ = db
       .collection("rental_orders")
@@ -48,7 +48,7 @@ async function ensureRentalOrdersIdemIndex(db: Db) {
   await rentalOrdersIdemIndexGlobal.__tf_rental_orders_idem_index_promise__;
 }
 
-async function applyRentalVariantInventoryDeduction(params: {
+export async function applyRentalVariantInventoryDeduction(params: {
   db: Db;
   session: any;
   productId: ObjectId;
@@ -86,6 +86,16 @@ async function applyRentalVariantInventoryDeduction(params: {
   if (!Number.isFinite(variantStock) || variantStock < quantity) {
     throw new Error("VARIANT_INSUFFICIENT_STOCK");
   }
+  const colorRow = Array.isArray(product?.colorInventories)
+    ? product.colorInventories.find((row: any) => String(row?.value ?? "").trim() === selectedColor)
+    : undefined;
+  const gaugeRow = Array.isArray(product?.gaugeInventories)
+    ? product.gaugeInventories.find((row: any) => String(row?.value ?? "").trim() === selectedGauge)
+    : undefined;
+  if (!colorRow || !gaugeRow) throw new Error("VARIANT_NOT_FOUND");
+  if (colorRow.isSoldOut === true || gaugeRow.isSoldOut === true || Number(colorRow.stock ?? 0) < quantity || Number(gaugeRow.stock ?? 0) < quantity) {
+    throw new Error("VARIANT_INSUFFICIENT_STOCK");
+  }
 
   const stockUpdateResult = await db.collection("products").updateOne(
     {
@@ -99,6 +109,12 @@ async function applyRentalVariantInventoryDeduction(params: {
           isSoldOut: { $ne: true },
           stock: { $gte: quantity },
         },
+      },
+      colorInventories: {
+        $elemMatch: { value: selectedColor, isSoldOut: { $ne: true }, stock: { $gte: quantity } },
+      },
+      gaugeInventories: {
+        $elemMatch: { value: selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: quantity } },
       },
     },
     {
@@ -134,7 +150,7 @@ export type RentalCreatePayload = {
   pointsToUse?: number;
   servicePickupMethod?: "SELF_SEND" | "SHOP_VISIT" | "delivery" | "pickup";
   payment?: {
-    method?: "bank_transfer" | "nicepay";
+    method?: "bank_transfer" | "nicepay" | "apps_in_toss_toss_pay";
     bank?: string;
     depositor?: string;
   } | null;
@@ -523,23 +539,19 @@ export async function createRentalOrderCore(params: {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         await session.startTransaction();
-        if (initialStatus === "paid") {
-          await reservePaidRentalRacket({
-            db,
-            session,
-            racketId: racketObjectId,
-            visibilityViewer: { isAdmin: false },
-          });
-        }
-        const res = await rentalOrders.insertOne(
-          {
-            ...doc,
-            ...(idemKey ? { idemKey } : {}),
-          },
-          { session },
-        );
-        insertedId = res.insertedId;
-        const rentalIdStr = String(res.insertedId);
+        const transactionRentalId = new ObjectId();
+        const transactionResult = await createRentalOrderInTransaction({
+          db,
+          session,
+          rentalId: transactionRentalId,
+          racketId: racketObjectId,
+          rentalDocument: doc,
+          idemKey,
+          reservePaidRental: initialStatus === "paid",
+          visibilityViewer,
+          afterInsert: async (insertedRentalId) => {
+        insertedId = insertedRentalId;
+        const rentalIdStr = String(insertedRentalId);
 
         if (stringingSnap?.requested) {
           if (stringingSnap.selectedGauge || stringingSnap.selectedColor) {
@@ -733,7 +745,7 @@ export async function createRentalOrderCore(params: {
 
           if (stringingSubmitted && stringingApplicationId) {
             await db.collection("rental_orders").updateOne(
-              { _id: res.insertedId },
+              { _id: insertedRentalId },
               {
                 $set: {
                   stringingApplicationId,
@@ -759,6 +771,13 @@ export async function createRentalOrderCore(params: {
             { session },
           );
         }
+
+        return { stringingApplicationId, stringingSubmitted };
+          },
+        });
+        insertedId = transactionResult.rentalId;
+        stringingApplicationId = transactionResult.stringingApplicationId;
+        stringingSubmitted = transactionResult.stringingSubmitted;
 
         await session.commitTransaction();
         break;
