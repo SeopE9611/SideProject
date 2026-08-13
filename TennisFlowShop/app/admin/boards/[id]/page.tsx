@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Eye, MessageSquare, Settings, User } from "lucide-react";
 import type { Metadata } from "next";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -138,7 +139,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
       notFound();
     }
     return (
-      <AdminPageShell>
+      <AdminPageShell variant="wide">
         <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive dark:border-destructive/40 dark:bg-destructive/15">
           게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
         </p>
@@ -163,15 +164,22 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
   const safeContent = await sanitizeHtml(String(post.content ?? ""));
 
   return (
-    <AdminPageShell variant="wide">
+    <AdminPageShell variant="wide" className="space-y-4">
       <AdminPageHeader
-        title="게시물 상세 보기"
-        description="게시물의 상세 정보를 확인하고 관리할 수 있습니다."
+        variant="detail"
+        className="flex-wrap"
+        title={post.title || "(제목 없음)"}
+        description="게시판 유형과 카테고리를 확인하고 게시 상태를 관리하는 화면입니다."
         icon={Settings}
-        scope={`상태: ${getStatusName(postStatus)}`}
-        helperText={`작성일: ${formatDate(post.createdAt)}`}
+        scope={`게시글 ID ${postId}`}
+        helperText={`작성자 ${post.authorDisplayName || post.authorNickname || "작성자 미상"} · 작성일 ${formatDate(post.createdAt)} · 조회 ${Number(post.views ?? 0)} · 댓글 ${Number(post.commentsCount ?? 0)}`}
         actions={
-          <>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
+              {getBoardTypeName(String(post.type ?? ""))}
+            </Badge>
+            <Badge variant={getStatusVariant(postStatus)}>{getStatusName(postStatus)}</Badge>
+            {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
             <Link
               href="/admin/boards"
               className={cn(
@@ -183,13 +191,21 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               목록으로
             </Link>
             <BoardDetailActions postId={postId} currentStatus={postStatus} />
-          </>
+          </div>
         }
       />
 
+      <AdminDetailSectionNav
+        items={[
+          { href: "#admin-board-content", label: "게시글 본문" },
+          { href: "#admin-board-info", label: "게시물 정보" },
+          { href: "#admin-board-comments", label: "댓글 관리" },
+        ]}
+      />
+
       <div className="flex flex-col space-y-6">
-        <div className="grid gap-6 grid-cols-3">
-          <Card className={cn("min-w-0 col-span-2", adminSurface.detailCard)}>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
+          <Card id="admin-board-content" className={cn("min-w-0", adminSurface.detailCard)}>
             <CardHeader className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
@@ -200,25 +216,25 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                 {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
               </div>
               <CardTitle className={adminTypography.sectionTitle}>
-                {post.title || "(제목 없음)"}
+                게시글 본문
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div
-                className="prose prose-blue dark:prose-invert max-w-none"
+                className="prose prose-blue dark:prose-invert max-w-none break-words"
                 dangerouslySetInnerHTML={{ __html: safeContent }}
               />
             </CardContent>
           </Card>
 
-          <Card className={adminSurface.detailCard}>
+          <Card id="admin-board-info" className={cn("min-w-0", adminSurface.detailCard)}>
             <CardHeader className="border-b border-border/60 bg-muted/20">
               <CardTitle className={adminTypography.sectionTitle}>게시물 정보</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 p-5">
               <div className={cn("flex items-center", adminSurface.fieldPanel)}>
                 <User className="mr-3 h-4 w-4 text-primary" />
-                <div className="space-y-1">
+                <div className="min-w-0 space-y-1">
                   <p className={adminTypography.bodyStrong}>
                     {post.authorDisplayName || post.authorNickname || "작성자 미상"}
                   </p>
@@ -253,7 +269,9 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
             </CardContent>
           </Card>
         </div>
-        <AdminBoardComments postId={postId} />
+        <div id="admin-board-comments">
+          <AdminBoardComments postId={postId} />
+        </div>
       </div>
     </AdminPageShell>
   );

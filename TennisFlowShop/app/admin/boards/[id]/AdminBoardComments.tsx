@@ -59,7 +59,12 @@ export default function AdminBoardComments({ postId }: Props) {
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <span className={adminTypography.caption}>삭제 후 복구 불가</span>
-                <Button size="sm" variant="destructive" onClick={() => deleteComment(comment)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => deleteComment(comment)}
+                >
                   <Trash2 className="mr-1 h-4 w-4" /> 삭제
                 </Button>
               </div>

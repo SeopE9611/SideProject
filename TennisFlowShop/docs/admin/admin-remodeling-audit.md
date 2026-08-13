@@ -164,6 +164,16 @@
   마감 안내, 처리 이력 정렬을 보존했다.
 - 두 화면의 API URL, SWR key·fetcher와 응답 타입은 변경하지 않았다.
 
+### Step 3-E — 게시글 상세 완료
+
+- `/admin/boards/[id]`에 detail Header·section nav·반응형 본문/정보 Grid를 적용했다.
+- 게시글 서버 조회·404·sanitize 정책과 공개·숨김·수정·삭제 액션을 보존했다.
+- 댓글 조회·삭제 mutation을 보존했으며 API URL·fetcher·payload는 변경하지 않았다.
+- 현재 활성 관리자 `[id]` 상세 화면은 리모델링 완료했다. `/admin/reviews/[id]`는 목록 redirect이므로
+  활성 상세로 세지 않으며, edit 및 shipping-update 경로는 상세가 아니라 등록·수정·배송 폼 범위다.
+- 별도 도구·리포트는 아직 남아 있다.
+- 다음 단계는 Step 4-A 등록·수정 폼 전수조사 및 대표 상품 수정 화면 정리다.
+
 #### 실제 `[id]` 라우트·클라이언트 전수조사 결과
 
 아래 분류는 `app/admin`의 실제 `[id]/page.tsx`, `[id]/*Client.tsx`,
@@ -180,15 +190,17 @@
 | 완료 | `/admin/offline/customers/[id]` | `_components/OfflineCustomerDetailClient.tsx`; Step 3-C에서 Shell·detail Header·section nav 적용 | 완료 |
 | 완료 | `/admin/academy/classes/[id]` | `_components/AcademyClassDetailClient.tsx`; Step 3-D에서 Shell·detail Header·section nav 적용 | 완료 |
 | 완료 | `/admin/academy/applications/[id]` | `_components/AcademyApplicationDetailClient.tsx`; Step 3-D에서 Shell·detail Header·section nav 적용 | 완료 |
-| 복합 상세 | `/admin/boards/[id]` | 서버 `page.tsx`가 상세와 관리 액션을 직접 렌더; Shell·기본 Header 사용, detail 변형·section nav 없음 | 미완료 |
+| 완료 | `/admin/boards/[id]` | 서버 `page.tsx`; Step 3-E에서 Shell·detail Header·section nav 적용 | 완료 |
 | 별도 도구 | `/admin/reviews/[id]` | `page.tsx`는 `/admin/reviews`로 redirect하며 `ReviewDetailClient.tsx`를 렌더하지 않음 | 별도 검토 |
 | 등록·수정 폼 | `/admin/products/[id]/edit`, `/admin/rackets/[id]/edit`, `/admin/academy/classes/[id]/edit`, `/admin/boards/[id]/edit` | 각 edit 클라이언트 또는 공용 폼을 렌더 | Step 4 후보 |
 | 등록·수정 폼 | `/admin/orders/[id]/shipping-update`, `/admin/applications/stringing/[id]/shipping-update` | 각 `ShippingFormClient.tsx` 또는 배송 폼을 렌더 | 별도 폼 후보 |
 
 `ReviewDetailClient.tsx`는 실제 파일은 남아 있지만 현재 `[id]` 라우트에서는 사용하지 않으므로 상세
 리모델링 완료 화면으로 세지 않는다. 이번 조사에서 새로운 상세 라우트는 추정하거나 추가하지 않았다.
-다음 단계는 Step 3-E 게시글 상세이며, 이후 Step 4에서 등록·수정 폼을 진행한다. 리뷰 redirect와
-미사용 상세, 배송 폼 및 별도 도구·리포트는 완료로 세지 않고 별도 단계에서 분리해 다룬다.
+현재 활성 관리자 `[id]` 상세 화면은 리모델링 완료했다. `/admin/reviews/[id]`는 목록 redirect이므로
+활성 상세로 세지 않는다. edit 및 shipping-update 경로는 상세가 아니라 등록·수정·배송 폼 범위이며,
+별도 도구·리포트는 아직 남아 있다. 다음 단계는 Step 4-A 등록·수정 폼 전수조사 및 대표 상품 수정
+화면 정리다.
 
 ## 기능 로직 보존 확인
 
@@ -200,7 +212,6 @@
 ## 아직 전파하지 않은 화면과 남은 불일치
 
 - 감사 로그, 사설 결제, 매출 보고, 오프라인 운영은 별도 도구·리포트 분류와 화면 규격 정리가 남아 있다.
-- 게시글 상세에는 아직 `detail` 헤더와 섹션 순서를 전파하지 않았다.
 - 상품 수정, 라켓 및 아카데미 폼에는 `form` 헤더와 입력 흐름 규격을 전파하지 않았다.
 - 로딩 행, 빈 결과 행, 페이지네이션, sticky 액션 열의 마크업은 화면별 차이가 남아 있다.
 - 대형 클라이언트 파일은 기능 회귀를 피하기 위해 상태 훅이나 데이터 가공 함수를 분리하지 않았다.
@@ -212,7 +223,7 @@
 
 ## 후속 권장 순서
 
-1. Step 3-E에서 게시글 상세에 공통 상세 구조를 전파한다.
-2. 이후 Step 4에서 상품 신규 등록 패턴을 상품 수정에 먼저 맞춘 뒤 라켓과 아카데미 폼으로 확장한다.
+1. Step 4-A에서 등록·수정 폼을 전수조사하고 대표 상품 수정 화면을 정리한다.
+2. 이후 상품 신규 등록 패턴을 라켓과 아카데미 폼으로 확장한다.
 3. 감사 로그, 사설 결제, 매출 보고, 오프라인 운영 등 별도 도구·리포트는 분류 후 밀도와 표 규격을 정리한다.
 4. 각 단계에서 1280, 1366, 1440, 1536, 1920px을 확인하고 기능 변경과 디자인 변경을 분리한다.
