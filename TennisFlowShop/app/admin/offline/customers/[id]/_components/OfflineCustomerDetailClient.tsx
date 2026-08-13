@@ -5,6 +5,7 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { Button } from "@/components/ui/button";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ import {
   Calendar,
   Check,
   CheckCircle2,
+  Copy,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -1207,13 +1209,15 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   ───────────────────────────────────────────────────────────────────────────── */
 
   return (
-    <div className="space-y-6">
+    <AdminPageShell variant="wide" className="space-y-4">
       <AdminPageHeader
-        title="오프라인 고객 상세"
-        description="고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다."
+        variant="detail"
+        className="flex-wrap"
+        title={item.name || "이름 없음"}
+        description={item.phoneMasked || item.phone || "연락처 미등록"}
         icon={User}
-        scope={`고객: ${item.name || "이름 없음"}`}
-        helperText={item.linkedUserId ? "온라인 회원 연결됨" : "온라인 회원 미연결"}
+        scope={`오프라인 고객 ID: ${item.id}`}
+        helperText={`등록일 ${formatDate(item.createdAt)} · 최근 방문 ${formatDate(item.stats?.lastVisitedAt)} · ${item.linkedUserId ? "온라인 회원 연결됨" : "온라인 회원 미연결"}`}
         actions={
           <>
               <Button asChild variant="outline" size="sm">
@@ -1223,6 +1227,17 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 </Link>
               </Button>
 
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => navigator.clipboard.writeText(item.id)}
+                title={item.id}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                ID 복사
+              </Button>
+
               <Button asChild variant="ghost" size="sm">
                 <a href="#offline-records">
                   <History className="mr-2 h-4 w-4" />
@@ -1230,31 +1245,13 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 </a>
               </Button>
 
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                disabled={isDeletingCustomer}
-                onClick={deleteOfflineCustomer}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
-              </Button>
           </>
         }
       />
 
-      {deleteMessage && (
-        <div
-          className={`rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 ${adminTypography.body} text-destructive`}
-        >
-          {deleteMessage}
-        </div>
-      )}
-
       {/* Customer Quick Info Banner */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-        <div className="flex gap-4 flex-row items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
               <User className="h-7 w-7" />
@@ -1308,17 +1305,19 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       <AdminDetailSectionNav
         items={[
           { href: "#offline-customer-basic", label: "고객정보" },
+          { href: "#offline-customer-link", label: "연결 회원" },
           { href: "#offline-customer-stats", label: "정산/요약" },
           { href: "#offline-customer-points", label: "포인트" },
           { href: "#offline-customer-packages", label: "패키지권" },
           { href: "#offline-records", label: "이력" },
+          { href: "#offline-customer-danger", label: "위험 작업" },
         ]}
       />
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 grid-cols-12">
+      <div className="grid gap-6 xl:grid-cols-2">
         {/* Left Column - Customer Info & Link */}
-        <div className="space-y-6 col-span-5">
+        <div className="space-y-6">
           {/* Customer Basic Info */}
           <SectionCard id="offline-customer-basic">
             <SectionHeader
@@ -1327,7 +1326,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="휴대폰 번호와 연락처 정보"
             />
             <div className="space-y-4 p-6">
-              <div className="grid gap-3 grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <InfoItem
                   icon={User}
                   label="고객명"
@@ -1396,7 +1395,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           </SectionCard>
 
           {/* Online Member Link */}
-          <SectionCard>
+          <SectionCard id="offline-customer-link">
             <SectionHeader
               icon={Link2}
               title="온라인 회원 연결"
@@ -1637,7 +1636,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         </div>
 
         {/* Right Column - Points, Packages, Stats */}
-        <div className="space-y-6 col-span-7">
+        <div className="space-y-6">
           {/* Statistics */}
           <SectionCard id="offline-customer-stats">
             <SectionHeader
@@ -2700,6 +2699,27 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           )}
         </div>
       </SectionCard>
-    </div>
+
+      <SectionCard id="offline-customer-danger" className="border-destructive/30">
+        <SectionHeader
+          icon={Trash2}
+          title="위험 작업"
+          description="고객 삭제는 작업·매출 기록이 없을 때만 가능합니다."
+        />
+        <div className="space-y-3 p-6">
+          {deleteMessage && <Message type="error">{deleteMessage}</Message>}
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            disabled={isDeletingCustomer}
+            onClick={deleteOfflineCustomer}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
+          </Button>
+        </div>
+      </SectionCard>
+    </AdminPageShell>
   );
 }
