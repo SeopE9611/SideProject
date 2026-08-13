@@ -3,6 +3,8 @@ import { getRacketDetailPayload } from "@/lib/racket-detail.server";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { applyAppsInTossCors, createAppsInTossPreflightResponse } from "@/lib/apps-in-toss";
 
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
@@ -14,7 +16,13 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export function OPTIONS(req: NextRequest) {
+  return createAppsInTossPreflightResponse(req.headers.get("origin"));
+}
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const origin = req.headers.get("origin");
+  try {
   const { id } = await params;
 
   const token = (await cookies()).get("accessToken")?.value;
@@ -30,13 +38,20 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const payloadDoc = await getRacketDetailPayload(id, { userId: currentUserId });
 
   if (!payloadDoc) {
-    return NextResponse.json(
+    return applyAppsInTossCors(NextResponse.json(
       { message: "Not Found" },
       { status: 404, headers: { "Cache-Control": "no-store" } },
-    );
+    ), origin);
   }
 
-  return NextResponse.json(payloadDoc, {
+  return applyAppsInTossCors(NextResponse.json(payloadDoc, {
     headers: { "Cache-Control": "no-store" },
-  });
+  }), origin);
+  } catch (error) {
+    console.error("[GET /api/rackets/[id]] failed", error);
+    return applyAppsInTossCors(
+      NextResponse.json({ message: "서버 오류" }, { status: 500 }),
+      origin,
+    );
+  }
 }

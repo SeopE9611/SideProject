@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getStringingProducts } from "./api/products";
 import { useAppsInTossAuth } from "./auth/AppsInTossAuthContext";
 import ActivityScreen from "./components/ActivityScreen";
+import RacketCatalogScreen from "./components/RacketCatalogScreen";
+import RacketDetail from "./components/RacketDetail";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
 import StringingApplicationFlow from "./components/StringingApplicationFlow";
@@ -32,6 +34,14 @@ function getStringingCheckoutModeFromLocation() {
 
 function getActivityModeFromLocation() {
   return getSearchParamsFromLocation().get("view") === "activity";
+}
+
+function getRacketModeFromLocation() {
+  return getSearchParamsFromLocation().get("view") === "rackets";
+}
+
+function getRacketIdFromLocation() {
+  return getSearchParamsFromLocation().get("racketId");
 }
 
 function getSelectedColorFromLocation() {
@@ -103,6 +113,8 @@ function App() {
 
   const [isStringingCheckout, setIsStringingCheckout] = useState(() => getStringingCheckoutModeFromLocation());
   const [isActivity, setIsActivity] = useState(() => getActivityModeFromLocation());
+  const [isRackets, setIsRackets] = useState(() => getRacketModeFromLocation());
+  const [selectedRacketId, setSelectedRacketId] = useState<string | null>(() => getRacketIdFromLocation());
   const [pendingPayment, setPendingPayment] = useState<PendingAppsPayment | null>(() => readPendingAppsPayment());
 
   const [detailSelectedColor, setDetailSelectedColor] = useState(() => getSelectedColorFromLocation());
@@ -110,6 +122,7 @@ function App() {
   const [detailSelectedGauge, setDetailSelectedGauge] = useState(() => getSelectedGaugeFromLocation());
 
   const listScrollYRef = useRef(0);
+  const racketListScrollYRef = useRef(0);
 
   const loadProducts = useCallback(async (signal?: AbortSignal) => {
     setLoadState("loading");
@@ -153,6 +166,10 @@ function App() {
       setSelectedProductId(nextProductId);
       setIsStringingCheckout(getStringingCheckoutModeFromLocation());
       setIsActivity(getActivityModeFromLocation());
+      const nextIsRackets = getRacketModeFromLocation();
+      const nextRacketId = getRacketIdFromLocation();
+      setIsRackets(nextIsRackets);
+      setSelectedRacketId(nextRacketId);
 
       setDetailSelectedColor(getSelectedColorFromLocation());
 
@@ -160,7 +177,7 @@ function App() {
 
       requestAnimationFrame(() => {
         window.scrollTo({
-          top: nextProductId ? 0 : listScrollYRef.current,
+          top: nextRacketId ? 0 : nextIsRackets ? racketListScrollYRef.current : nextProductId ? 0 : listScrollYRef.current,
           behavior: "auto",
         });
       });
@@ -177,12 +194,23 @@ function App() {
     setPendingPayment(readPendingAppsPayment());
   }, []);
 
-  const navigate = useCallback((view?: "activity") => {
+  const navigate = useCallback((view?: "activity" | "rackets") => {
     const nextUrl = new URL(window.location.href);
     nextUrl.search = view ? `?view=${view}` : "";
     window.history.pushState({ view }, "", `${nextUrl.pathname}${nextUrl.search}`);
     setSelectedProductId(null); setIsStringingCheckout(false); setIsActivity(view === "activity");
+    setIsRackets(view === "rackets"); setSelectedRacketId(null);
     window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  const handleSelectRacket = useCallback((racketId: string) => {
+    racketListScrollYRef.current = window.scrollY;
+    const nextUrl = new URL(window.location.href);
+    nextUrl.search = "";
+    nextUrl.searchParams.set("view", "rackets");
+    nextUrl.searchParams.set("racketId", racketId);
+    window.history.pushState({ view: "rackets", racketId }, "", `${nextUrl.pathname}${nextUrl.search}`);
+    setIsRackets(true); setSelectedRacketId(racketId); window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
   const handleSelectProduct = useCallback((productId: string) => {
@@ -266,6 +294,12 @@ function App() {
   if (pendingPayment) {
     return <StringingPendingPaymentRecovery pending={pendingPayment} onResolved={handlePendingPaymentResolved} />;
   }
+
+  if (isRackets && selectedRacketId) {
+    return <RacketDetail racketId={selectedRacketId} onBack={() => window.history.back()} />;
+  }
+
+  if (isRackets) return <RacketCatalogScreen onHome={() => navigate()} onSelect={handleSelectRacket} />;
 
   if (isActivity) return <ActivityScreen onHome={() => navigate()} />;
 
@@ -353,6 +387,13 @@ function App() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="mx-6 mt-10 rounded-[20px] border border-[#e5e8eb] p-5 max-[359px]:mx-5" aria-labelledby="rackets-entry-title">
+        <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">RACKET SHOP</p>
+        <h2 id="rackets-entry-title" className="m-0 text-xl font-extrabold">중고 라켓</h2>
+        <p className="mt-2 mb-4 text-sm leading-6 text-[#6b7684]">검수된 중고 라켓을 조건별로 둘러보세요.</p>
+        <button type="button" className="min-h-11 w-full rounded-xl border border-[#d1d6db] bg-white font-bold" onClick={() => navigate("rackets")}>라켓 둘러보기</button>
       </section>
 
     </main>

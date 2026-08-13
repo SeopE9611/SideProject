@@ -5,6 +5,8 @@ import { parseBenefitFilters } from "@/lib/benefit-labels";
 import { createApiPerfLogger } from "@/lib/api/perf";
 import { racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
+import { applyAppsInTossCors, createAppsInTossPreflightResponse } from "@/lib/apps-in-toss";
+import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +25,14 @@ function normalizeRacketMarketing(value: any) {
 
 // - 관리자/사용자 공용 목록(최소형): status !== 'inactive' 만 노출
 // - 쿼리 파라미터(brand/condition/min/max/minPrice/maxPrice/sort) 지원
-export async function GET(req: Request) {
+export function OPTIONS(req: NextRequest) {
+  return createAppsInTossPreflightResponse(req.headers.get("origin"));
+}
+
+export async function GET(req: NextRequest) {
   const perf = createApiPerfLogger("GET /api/rackets");
+  const origin = req.headers.get("origin");
+  try {
   const client = await perf.measure("dbConnect", clientPromise);
   const db = client.db();
   const { searchParams } = new URL(req.url);
@@ -196,7 +204,7 @@ export async function GET(req: Request) {
       "private, no-store, max-age=0",
     );
     perf.log({ resultCount: items.length });
-    return response;
+    return applyAppsInTossCors(response, origin);
   }
 
   // 확장 응답: total 포함
@@ -206,5 +214,12 @@ export async function GET(req: Request) {
     "private, no-store, max-age=0",
   );
   perf.log({ resultCount: items.length, total });
-  return response;
+  return applyAppsInTossCors(response, origin);
+  } catch (error) {
+    console.error("[GET /api/rackets] failed", error);
+    return applyAppsInTossCors(
+      NextResponse.json({ message: "서버 오류" }, { status: 500 }),
+      origin,
+    );
+  }
 }
