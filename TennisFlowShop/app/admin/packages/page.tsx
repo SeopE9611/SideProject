@@ -651,8 +651,8 @@ export default function PackageOrdersClient() {
           <CardContent className="p-0">
             <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">전체 결과</p>
-                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-foreground">
+                <p className={cn("whitespace-nowrap", adminTypography.metaMuted)}>전체 결과</p>
+                <div className={cn("whitespace-nowrap", adminTypography.kpiValue)}>
                   {kpiTotal === null ? "-" : kpiTotal}
                 </div>
               </div>
@@ -667,8 +667,8 @@ export default function PackageOrdersClient() {
           <CardContent className="p-0">
             <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">운영 확인 필요</p>
-                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-warning">
+                <p className={cn("whitespace-nowrap", adminTypography.metaMuted)}>운영 확인 필요</p>
+                <div className={cn("whitespace-nowrap text-warning", adminTypography.kpiValue)}>
                   {kpiNeedsAttention === null ? "-" : kpiNeedsAttention}
                 </div>
               </div>
@@ -683,8 +683,8 @@ export default function PackageOrdersClient() {
           <CardContent className="p-0">
             <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">사용 가능</p>
-                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-success">
+                <p className={cn("whitespace-nowrap", adminTypography.metaMuted)}>사용 가능</p>
+                <div className={cn("whitespace-nowrap text-success", adminTypography.kpiValue)}>
                   {kpiAvailable === null ? "-" : kpiAvailable}
                 </div>
               </div>
@@ -699,8 +699,8 @@ export default function PackageOrdersClient() {
           <CardContent className="p-0">
             <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">결제 완료 금액</p>
-                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-foreground">
+                <p className={cn("whitespace-nowrap", adminTypography.metaMuted)}>결제 완료 금액</p>
+                <div className={cn("whitespace-nowrap", adminTypography.kpiValue)}>
                   {kpiRevenue === null ? "집계 중" : formatCurrency(kpiRevenue)}
                 </div>
               </div>
@@ -715,8 +715,8 @@ export default function PackageOrdersClient() {
           <CardContent className="p-0">
             <div className="flex min-w-0 items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="whitespace-nowrap text-sm font-medium text-muted-foreground">30일 내 만료</p>
-                <div className="whitespace-nowrap text-2xl font-bold tabular-nums text-warning">
+                <p className={cn("whitespace-nowrap", adminTypography.metaMuted)}>30일 내 만료</p>
+                <div className={cn("whitespace-nowrap text-warning", adminTypography.kpiValue)}>
                   {kpiExpSoon === null ? "-" : kpiExpSoon}
                 </div>
               </div>

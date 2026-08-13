@@ -1,5 +1,7 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 
 // 길이 추정 스케일은 제거(혹은 fallback로만 유지해도 OK)
 const MIN_SCALE = 0.66; // 너무 작아지지 않도록 하한선
@@ -16,8 +18,10 @@ type Props = {
   skeletonWidthClass?: string; // 스켈레톤 너비 클래스 (기본 w-24)
 };
 
-const numberClass =
-  "block tabular-nums font-extrabold tracking-normal leading-none whitespace-nowrap";
+const numberClass = cn(
+  "block leading-none whitespace-nowrap",
+  adminTypography.kpiValue,
+);
 
 // 글자 길이에 따라 '스케일'만 변경 (폰트사이즈는 고정)
 function scaleByLength(len: number) {
@@ -27,10 +31,6 @@ function scaleByLength(len: number) {
   if (len <= 12) return 0.82;
   return 0.76; // 더 길어지면 조금 더 축소
 }
-const numberBaseClass =
-  "text-3xl font-bold text-foreground " +
-  "tabular-nums tracking-normal leading-none whitespace-nowrap";
-
 const formatFull = (n: number) => `₩${n.toLocaleString()}`;
 
 export default function KpiCard({
@@ -114,16 +114,16 @@ export default function KpiCard({
   }, [recomputeScale]);
 
   return (
-    <div className="h-full min-h-[144px] border-0 bg-card/80 shadow-xl backdrop-blur-sm overflow-hidden rounded-xl">
+    <div className={cn(adminSurface.kpiCard, "h-full min-h-[144px] overflow-hidden")}>
       <div className="flex h-full p-6">
         <div className="grid w-full grid-cols-[minmax(0,1fr)_40px] items-center gap-3">
           <div ref={wrapRef} className="min-w-0 overflow-hidden">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <p className={adminTypography.metaMuted}>{label}</p>
             <button
               type="button"
               onClick={() => setCompact((v) => !v)}
               aria-pressed={hydrated ? !compact : undefined} // 초기 SSR과 불일치 방지
-              className="block w-full text-left focus:outline-none"
+              className="block w-full rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {isLoading ? (
                 <span
@@ -146,7 +146,7 @@ export default function KpiCard({
               )}
 
               {hint && (
-                <span className="mt-1 block text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                <span className={cn("mt-1 block whitespace-nowrap overflow-hidden text-ellipsis", adminTypography.caption)}>
                   클릭하여 단위 전환
                 </span>
               )}
@@ -154,7 +154,7 @@ export default function KpiCard({
           </div>
 
           {icon && (
-            <div className="w-10 h-10 flex-shrink-0 grid place-items-center rounded-xl bg-muted/60 border border-border/60">
+            <div className={cn(adminSurface.fieldPanelMuted, "w-10 h-10 flex-shrink-0 grid place-items-center p-0")}>
               {icon}
             </div>
           )}

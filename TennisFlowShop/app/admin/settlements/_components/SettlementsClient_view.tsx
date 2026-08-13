@@ -9,7 +9,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -183,12 +183,12 @@ export default function SettlementsClient() {
     }[tone];
 
     return (
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-        <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-        <p className={cn("mt-2 whitespace-nowrap text-xl font-bold tabular-nums", toneClass)}>
+      <div className={cn(adminSurface.fieldPanel, "p-4")}>
+        <p className={adminTypography.caption}>{label}</p>
+        <p className={cn("mt-2 whitespace-nowrap", adminTypography.kpiValueCompact, toneClass)}>
           {displayKRW(value)}
         </p>
-        {sub ? <p className="mt-1 text-xs text-muted-foreground">{sub}</p> : null}
+        {sub ? <p className={cn("mt-1", adminTypography.caption)}>{sub}</p> : null}
       </div>
     );
   };
@@ -209,15 +209,15 @@ export default function SettlementsClient() {
           <div className="flex gap-3 flex-row items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-foreground">오프라인 매출 참고</h3>
+                <h3 className={adminTypography.sectionTitle}>오프라인 매출 참고</h3>
                 <Badge variant="secondary">정산 지급액 미포함</Badge>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              <p className={cn("mt-2 text-muted-foreground", adminTypography.body)}>
                 오프라인 매출은 현금/매장 카드/계좌이체 등으로 처리된 별도 운영 매출이며, 현재
                 온라인 PG 정산 지급액 계산에는 포함되지 않습니다.
               </p>
             </div>
-            <div className="rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
+            <div className={cn(adminSurface.fieldPanelMuted, adminTypography.caption)}>
               {offline.notice}
             </div>
           </div>
@@ -262,15 +262,15 @@ export default function SettlementsClient() {
           </div>
 
           <div className="grid grid-cols-[1fr_320px] gap-4">
-            <div className="rounded-xl border border-border bg-muted/30 p-4">
-              <h4 className="text-sm font-bold text-foreground mb-3">
+            <div className={cn(adminSurface.fieldPanelMuted, "p-4")}>
+              <h4 className={cn("mb-3", adminTypography.panelTitle)}>
                 결제수단별 오프라인 결제완료 매출
               </h4>
               <div className="grid grid-cols-4 gap-3">
                 {methodLabels.map(([key, label]) => (
                   <div key={key} className="rounded-lg bg-card border border-border p-3">
-                    <p className="text-xs text-muted-foreground">{label}</p>
-                    <p className="mt-1 whitespace-nowrap font-bold tabular-nums text-foreground">
+                    <p className={adminTypography.caption}>{label}</p>
+                    <p className={cn("mt-1 whitespace-nowrap", adminTypography.money)}>
                       {displayKRW(offline.byMethod[key] || 0)}
                     </p>
                   </div>
@@ -278,21 +278,21 @@ export default function SettlementsClient() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-muted/30 p-4">
+            <div className={cn(adminSurface.fieldPanelMuted, "p-4")}>
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-4 h-4 text-primary" />
-                <h4 className="text-sm font-bold text-foreground">발급 보정 필요</h4>
+                <h4 className={adminTypography.panelTitle}>발급 보정 필요</h4>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg bg-card border border-border p-3">
-                  <p className="text-xs text-muted-foreground">건수</p>
-                  <p className="mt-1 whitespace-nowrap font-bold tabular-nums text-foreground">
+                  <p className={adminTypography.caption}>건수</p>
+                  <p className={cn("mt-1 whitespace-nowrap", adminTypography.numeric)}>
                     {(offline.packageSales.issueFailedCount || 0).toLocaleString()}건
                   </p>
                 </div>
                 <div className="rounded-lg bg-card border border-border p-3">
-                  <p className="text-xs text-muted-foreground">금액</p>
-                  <p className="mt-1 whitespace-nowrap font-bold tabular-nums text-foreground">
+                  <p className={adminTypography.caption}>금액</p>
+                  <p className={cn("mt-1 whitespace-nowrap", adminTypography.money)}>
                     {displayKRW(offline.packageSales.issueFailedAmount || 0)}
                   </p>
                 </div>
@@ -627,8 +627,8 @@ export default function SettlementsClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">전체 정산 월</p>
-                <p className="text-3xl font-bold text-foreground">
+                <p className={adminTypography.metaMuted}>전체 정산 월</p>
+                <p className={adminTypography.kpiValue}>
                   {isLoading ? (
                     <span className="inline-block h-9 w-16 rounded bg-muted/70 animate-pulse" />
                   ) : (
@@ -636,7 +636,7 @@ export default function SettlementsClient() {
                   )}
                 </p>
               </div>
-              <div className="bg-muted rounded-xl p-3 border border-border">
+              <div className={adminSurface.fieldPanelMuted}>
                 <Calendar className="h-6 w-6 text-primary" />
               </div>
             </div>
@@ -752,7 +752,7 @@ export default function SettlementsClient() {
                       }
                     }}
                     disabled={doing.create}
-                    className="px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {doing.create ? (
                       <>
@@ -881,8 +881,8 @@ export default function SettlementsClient() {
                     <div className="bg-muted rounded-full p-4 mb-4">
                       <Package className="w-12 h-12 text-primary" />
                     </div>
-                    <p className="text-lg font-semibold text-foreground mb-2">데이터가 없습니다</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className={cn("mb-2", adminTypography.panelTitle)}>데이터가 없습니다</p>
+                    <p className={adminTypography.metaMuted}>
                       위에서 월을 선택하여 스냅샷을 생성하세요
                     </p>
                   </div>
@@ -1050,7 +1050,7 @@ export default function SettlementsClient() {
                                 }
                               >
                                 <div className="overflow-hidden rounded-lg border border-border">
-                                  <div className="grid grid-cols-[120px_1fr_1fr] gap-3 bg-muted/50 px-4 py-3 text-xs font-semibold text-muted-foreground">
+                                  <div className={cn("grid grid-cols-[120px_1fr_1fr] gap-3 bg-muted/50 px-4 py-3", adminTypography.tableHeader)}>
                                     <span>항목</span>
                                     <span className="text-right">스냅샷</span>
                                     <span className="text-right">현재 집계</span>
@@ -1086,7 +1086,7 @@ export default function SettlementsClient() {
                                     </div>
                                   ))}
                                 </div>
-                                <p className="mt-4 text-sm text-muted-foreground">
+                                <p className={cn("mt-4", adminTypography.metaMuted)}>
                                   값이 다른 경우 갱신하면 현재 집계로 스냅샷을 다시 생성합니다.
                                 </p>
                               </AdminRowDetailsSheet>
@@ -1112,7 +1112,7 @@ export default function SettlementsClient() {
                               <DropdownMenuTrigger asChild>
                                 <button
                                   type="button"
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted dark:hover:bg-card focus:outline-none focus:ring-2 focus:ring-ring"
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted dark:hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                   aria-label="작업 메뉴 열기"
                                 >
                                   <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
@@ -1241,7 +1241,7 @@ export default function SettlementsClient() {
 
                   <button
                     onClick={fetchLive}
-                    className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-1"
+                    className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-1"
                     disabled={doing.live || invalidRange}
                   >
                     {doing.live ? (
@@ -1303,7 +1303,7 @@ export default function SettlementsClient() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-lg px-3 py-2 w-fit">
+                <div className={cn("flex items-center gap-2 bg-muted rounded-lg px-3 py-2 w-fit", adminTypography.caption)}>
                   <Calendar className="w-3.5 h-3.5" />
                   <span className="font-medium">KST 기준 합산</span>
                 </div>
