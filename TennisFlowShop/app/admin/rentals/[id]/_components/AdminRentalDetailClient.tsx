@@ -7,6 +7,8 @@ import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import { AdminInfoGrid, AdminInfoItem } from "@/components/admin/AdminInfoGrid";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -729,47 +731,36 @@ export default function AdminRentalDetailClient() {
         </div>
       ) : null}
       <div className="space-y-8">
-        <div className={cn("mb-8 p-6", adminSurface.cardMuted)}>
-          <div className="flex mb-6 gap-4 flex-row items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-card rounded-full p-3 shadow-md">
-                <Settings className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className={adminTypography.pageTitle}>대여 상세 관리</h1>
-                <div
-                  className={cn(
-                    "mt-1 flex flex-wrap items-center gap-2 text-foreground/75",
-                    adminTypography.body,
-                  )}
+        <div className="space-y-4">
+          <AdminPageHeader
+            variant="detail"
+            title={`대여 ${shortenId(String(data.id))}`}
+            description={`현재 ${rentalStatusLabels[data.status] || data.status} · ${data.outAt ? `${fmtDateOnly(data.outAt)} 시작` : "대여 시작 전"} · ${data.dueAt ? `${fmtDateOnly(data.dueAt)} 반납 예정` : "반납일 미정"}`}
+            icon={Settings}
+            scope={`결제 ${paymentLabel} · ${won(data.amount?.total)}`}
+            helperText={`고객 ${data.user?.name || data.user?.email || "-"}`}
+            actions={
+              <>
+                <Badge variant={getRentalStatusBadgeSpec(data.status).variant} className={cn(badgeBase, badgeSizeSm)}>
+                  현재 상태 · {rentalStatusLabels[data.status] || data.status}
+                </Badge>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="전체 대여 ID 복사"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(String(data.id));
+                      showSuccessToast("대여 ID가 복사되었습니다");
+                    } catch {
+                      showErrorToast("대여 ID 복사에 실패했습니다");
+                    }
+                  }}
                 >
-                  <span>대여 ID: {shortenId(String(data.id))}</span>
-                  <span>고객: {data.user?.name || data.user?.email || "-"}</span>
-                  <span>
-                    결제: {paymentLabel} · {won(data.amount?.total)}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 gap-1 px-2 text-xs"
-                    aria-label="전체 대여 ID 복사"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(String(data.id));
-                        showSuccessToast("대여 ID가 복사되었습니다");
-                      } catch {
-                        showErrorToast("대여 ID 복사에 실패했습니다");
-                      }
-                    }}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                    전체 ID 복사
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="ml-auto flex flex-wrap items-center justify-end gap-2.5">
+                  <Copy className="mr-1.5 h-3.5 w-3.5" />
+                  ID 복사
+                </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -806,10 +797,16 @@ export default function AdminRentalDetailClient() {
                     </Link>
                   </Button>
                 ))}
-            </div>
-          </div>
+              </>
+            }
+          />
 
-          <div className="grid grid-cols-4 gap-4">
+          <AdminPageSection
+            variant="subtle"
+            title="현재 상태 요약"
+            description="현재 처리 단계와 결제, 교체 작업, 인도·반납 상태를 함께 확인합니다."
+            contentClassName="grid grid-cols-4 gap-3"
+          >
             <AdminStatusCard
               density="compact"
               title="대여 상태"
@@ -899,7 +896,7 @@ export default function AdminRentalDetailClient() {
               }
               description={pickupMethodLabel}
             />
-          </div>
+          </AdminPageSection>
         </div>
 
         <AdminDetailSectionNav

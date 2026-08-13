@@ -1035,7 +1035,7 @@ export default function NewStringPage() {
             actions={<StepIndicator current={currentStepIndex + 1} total={STEPS.length} />}
           />
           {/* 등록 흐름 안내 */}
-          <div className="grid gap-3 grid-cols-4">
+          <div className="grid gap-3 grid-cols-4 opacity-90">
             {PRODUCT_NEW_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
               <div key={title} className={cn(adminSurface.cardMuted, "p-4")}>
                 <div className="flex items-center gap-2">
@@ -1050,7 +1050,7 @@ export default function NewStringPage() {
           </div>
           <>
             {/* Step Progress */}
-            <div className={cn(adminSurface.cardMuted, "p-6 backdrop-blur-sm")}>
+            <div className={cn(adminSurface.cardMuted, "px-6 py-4 backdrop-blur-sm")}>
               <StepProgress
                 steps={STEPS}
                 currentStep={currentStep.id}
@@ -1059,11 +1059,11 @@ export default function NewStringPage() {
               />
             </div>
             {/* 현재 작성 상태 요약 */}
-            <div className="grid gap-3 grid-cols-[1.2fr_1fr]">
+            <div className="grid gap-3 grid-cols-[minmax(0,1.2fr)_minmax(280px,1fr)]">
               <div className={cn(adminSurface.cardMuted, "p-4")}>
                 <div className="flex gap-2 flex-row items-center justify-between">
                   <div>
-                    <p className={adminTypography.bodyStrong}>현재 단계: {currentStep.label}</p>
+                    <p className={adminTypography.sectionTitle}>현재 단계: {currentStep.label}</p>
                     <p className={cn("mt-1", adminTypography.caption)}>
                       입력한 내용은 단계 이동 중에도 유지됩니다. 최종 저장은 이미지 단계에서
                       진행됩니다.
@@ -1088,9 +1088,9 @@ export default function NewStringPage() {
               </div>
             </div>
             {/* Main Content - 2 Column Layout */}
-            <div className="flex gap-6 flex-row">
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[minmax(0,1fr)_22rem]">
               {/* Left: Form Content */}
-              <div ref={stepContentRef} className="flex-1 space-y-6 scroll-mt-24">
+              <div ref={stepContentRef} className="min-w-0 space-y-6 scroll-mt-24">
                 {/* Step 1: Basic Info */}
                 {currentStep.id === "basic" && (
                   <div className="space-y-6 animate-in fade-in-0 slide-in-from-right-4 duration-300">
@@ -2504,7 +2504,7 @@ export default function NewStringPage() {
               </div>
 
               {/* Right: Preview Card (sticky on desktop) */}
-              <div className="block w-80">
+              <aside className="min-w-0 xl:w-80 2xl:w-[22rem]" aria-label="상품 미리보기">
                 <ProductPreviewCard
                   basicInfo={{
                     name: basicInfo.name,
@@ -2520,13 +2520,13 @@ export default function NewStringPage() {
                   colorCount={colorInventories.length}
                   gaugeCount={uniqueGaugeCount}
                   imageCount={images.length}
-                  className="top-24 max-h-[calc(100vh-7rem)] overflow-y-auto"
+                  className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain"
                 />
-              </div>
+              </aside>
             </div>
 
             {/* Step Navigation */}
-            <div className={cn(adminSurface.stickyToolbar, "p-4")}>
+            <div className={cn(adminSurface.stickyToolbar, "sticky bottom-3 z-20 p-4 shadow-lg")}>
               <StepNavigation
                 currentStepIndex={currentStepIndex}
                 totalSteps={STEPS.length}

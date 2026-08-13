@@ -29,11 +29,11 @@ export function FormSection({
       variant="ghost"
       className={cn(
         adminSurface.card,
-        "overflow-hidden transition-shadow hover:shadow-md",
+        "overflow-hidden shadow-none",
         className,
       )}
     >
-      <CardHeader className={cn("border-b border-border/40 bg-muted/20 pb-4", headerClassName)}>
+      <CardHeader className={cn("border-b border-border/50 bg-muted/15 px-5 py-4", headerClassName)}>
         <div className="flex items-start gap-3">
           {icon && (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -48,7 +48,7 @@ export function FormSection({
           </div>
         </div>
       </CardHeader>
-      <CardContent className={cn("p-6", contentClassName)}>{children}</CardContent>
+      <CardContent className={cn("p-5", contentClassName)}>{children}</CardContent>
     </Card>
   );
 }
@@ -67,7 +67,7 @@ export function FormFieldGroup({ children, className, columns = 2 }: FormFieldGr
     4: "grid-cols-4",
   };
 
-  return <div className={cn("grid gap-6", gridCols[columns], className)}>{children}</div>;
+  return <div className={cn("grid items-start gap-x-6 gap-y-5", gridCols[columns], className)}>{children}</div>;
 }
 
 interface FormFieldProps {
@@ -90,7 +90,7 @@ export function FormField({
   className,
 }: FormFieldProps) {
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("min-w-0 space-y-2", className)}>
       <label
         htmlFor={htmlFor}
         className={cn(
@@ -102,8 +102,8 @@ export function FormField({
         {required && <span className="ml-1 text-destructive">*</span>}
       </label>
       {children}
-      {hint && !error && <p className={adminTypography.caption}>{hint}</p>}
-      {error && <p className={cn(adminTypography.caption, "text-destructive")}>{error}</p>}
+      {hint && !error && <p className={cn(adminTypography.caption, "max-w-prose")}>{hint}</p>}
+      {error && <p role="alert" className={cn(adminTypography.caption, "font-medium text-destructive")}>{error}</p>}
     </div>
   );
 }
