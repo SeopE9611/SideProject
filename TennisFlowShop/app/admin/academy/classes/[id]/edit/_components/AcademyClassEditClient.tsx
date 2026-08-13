@@ -34,7 +34,7 @@ export default function AcademyClassEditClient({ id }: { id: string }) {
 
   if (error || !data?.item) {
     return (
-      <div className="space-y-4 px-4 py-6 sm:px-8">
+      <div className="space-y-4 py-6 px-8">
         <Button asChild variant="outline" size="sm">
           <Link href="/admin/academy/classes">
             <ArrowLeft className="mr-2 h-4 w-4" />
