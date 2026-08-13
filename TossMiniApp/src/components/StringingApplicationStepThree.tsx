@@ -75,7 +75,9 @@ function StringingApplicationStepThree({
   });
 
   const isVisit = collectionMethod === "visit";
-  const isRacketPurchase = mode === "racket-purchase" || mode === "racket-rental";
+  const isRacketPurchase = mode === "racket-purchase";
+  const isRacketRental = mode === "racket-rental";
+  const hidesRacketName = isRacketPurchase || isRacketRental;
 
   useEffect(() => {
     if (!isVisit || !work.preferredDate) {
@@ -156,7 +158,7 @@ function StringingApplicationStepThree({
 
   const handleConfirm = () => {
     setTouched({
-      racketType: !isRacketPurchase,
+      racketType: !hidesRacketName,
       tensionMain: true,
       tensionCross: true,
       note: true,
@@ -193,8 +195,8 @@ function StringingApplicationStepThree({
     <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
       <section className="pt-[calc(16px+env(safe-area-inset-top))]">
         <Top
-          title={<Top.TitleParagraph size={22}>{isRacketPurchase ? "라켓 구매" : "교체서비스 포함 주문"}</Top.TitleParagraph>}
-          subtitleBottom={<Top.SubtitleParagraph size={17}>{isRacketPurchase ? "4 / 6 · 장력·작업·방문예약" : "3 / 5 · 라켓·텐션 정보"}</Top.SubtitleParagraph>}
+          title={<Top.TitleParagraph size={22}>{isRacketRental ? "라켓 대여" : isRacketPurchase ? "라켓 구매" : "교체서비스 포함 주문"}</Top.TitleParagraph>}
+          subtitleBottom={<Top.SubtitleParagraph size={17}>{isRacketRental ? "5 / 7 · 장력·작업·방문예약" : isRacketPurchase ? "4 / 6 · 장력·작업·방문예약" : "3 / 5 · 라켓·텐션 정보"}</Top.SubtitleParagraph>}
         />
       </section>
 
@@ -203,7 +205,7 @@ function StringingApplicationStepThree({
           <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">STEP 03</p>
 
           <h1 id="work-info-title" className="m-0 text-[22px] leading-[1.35] font-extrabold tracking-[-0.02em]">
-            {isRacketPurchase ? "장력·작업 요청" : "라켓·텐션 정보"}
+            {hidesRacketName ? "장력·작업 요청" : "라켓·텐션 정보"}
           </h1>
 
           <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
@@ -346,11 +348,11 @@ function StringingApplicationStepThree({
             <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
               {isRacketPurchase && quantity > 1
                 ? "선택한 모든 라켓에 동일한 스트링과 장력 설정이 적용됩니다."
-                : "현재 주문은 라켓 1자루 기준으로 작업 정보를 입력합니다."}
+                : isRacketRental ? "선택한 대여 라켓 한 자루에 적용할 스트링과 장력 정보를 입력합니다." : "현재 주문은 라켓 1자루 기준으로 작업 정보를 입력합니다."}
             </p>
           </div>
 
-          {!isRacketPurchase && <label className="block">
+          {!hidesRacketName && <label className="block">
             <span className="mb-2 block text-sm font-bold text-[#333d4b]">라켓명 *</span>
 
             <input

@@ -7,6 +7,7 @@ import type { StringingCollectionMethod, StringingShippingDraft } from "../types
 type StringingApplicationStepTwoProps = {
   mode?: "stringing" | "racket-purchase" | "racket-rental";
   errorMessage?: string;
+  stringingRequested?: boolean;
   collectionMethod: StringingCollectionMethod;
   onCollectionMethodChange: (method: StringingCollectionMethod) => void;
   shipping: StringingShippingDraft;
@@ -45,6 +46,7 @@ const RACKET_PURCHASE_COLLECTION_METHODS = [
 function StringingApplicationStepTwo({
   mode = "stringing",
   errorMessage = "",
+  stringingRequested = true,
   collectionMethod,
   onCollectionMethodChange,
   shipping,
@@ -62,7 +64,8 @@ function StringingApplicationStepTwo({
   const isSelfShip = collectionMethod === "self_ship";
   const isRacketPurchase = mode === "racket-purchase";
   const isRacketRental = mode === "racket-rental";
-  const methods = isRacketPurchase || isRacketRental ? RACKET_PURCHASE_COLLECTION_METHODS : VISIBLE_COLLECTION_METHODS;
+  const rentalMethods = [{ value: "self_ship", title: "택배 수령", description: "입력한 주소로 대여 라켓을 배송받아요." }, { value: "visit", title: "매장 방문 수령", description: "매장에서 대여 라켓을 직접 받아요. 방문수령만으로 작업 예약이 생성되지는 않아요." }] as const;
+  const methods = isRacketRental ? rentalMethods : isRacketPurchase ? RACKET_PURCHASE_COLLECTION_METHODS : VISIBLE_COLLECTION_METHODS;
 
   const errors = useMemo(() => validateShipping(collectionMethod, shipping), [collectionMethod, shipping]);
 
@@ -107,8 +110,8 @@ function StringingApplicationStepTwo({
     <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
       <section className="pt-[calc(16px+env(safe-area-inset-top))]">
         <Top
-          title={<Top.TitleParagraph size={22}>{isRacketPurchase ? "라켓 구매" : "교체서비스 포함 주문"}</Top.TitleParagraph>}
-          subtitleBottom={<Top.SubtitleParagraph size={17}>{isRacketPurchase ? "3 / 6 · 수령 방법·배송지" : "2 / 5 · 전달·수령 정보"}</Top.SubtitleParagraph>}
+          title={<Top.TitleParagraph size={22}>{isRacketRental ? "라켓 대여" : isRacketPurchase ? "라켓 구매" : "교체서비스 포함 주문"}</Top.TitleParagraph>}
+          subtitleBottom={<Top.SubtitleParagraph size={17}>{isRacketRental ? "4 / 7 · 수령 방법·배송지" : isRacketPurchase ? "3 / 6 · 수령 방법·배송지" : "2 / 5 · 전달·수령 정보"}</Top.SubtitleParagraph>}
         />
       </section>
 
@@ -117,11 +120,11 @@ function StringingApplicationStepTwo({
           <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">STEP 02</p>
 
           <h1 id="collection-method-title" className="m-0 text-[22px] leading-[1.35] font-extrabold tracking-[-0.02em]">
-            {isRacketPurchase ? "라켓 수령 방법" : "라켓 전달 방법"}
+            {isRacketRental ? "라켓 수령 방법" : isRacketPurchase ? "라켓 수령 방법" : "라켓 전달 방법"}
           </h1>
 
           <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
-            {isRacketPurchase ? "스트링 장착이 끝난 라켓을 받을 방법을 선택해주세요." : "스트링 교체를 위해 라켓을 전달할 방법을 선택해주세요."}
+            {isRacketRental ? "대여 라켓을 받을 방법을 선택해주세요." : isRacketPurchase ? "스트링 장착이 끝난 라켓을 받을 방법을 선택해주세요." : "스트링 교체를 위해 라켓을 전달할 방법을 선택해주세요."}
           </p>
         </div>
 
@@ -302,7 +305,7 @@ function StringingApplicationStepTwo({
             type="button"
             onClick={handleConfirm}
           >
-            {isRacketPurchase ? "다음: 장력·작업 요청" : "다음: 라켓·텐션 정보"}
+            {isRacketRental ? (stringingRequested ? "다음: 작업정보" : "다음: 최종 확인") : isRacketPurchase ? "다음: 장력·작업 요청" : "다음: 라켓·텐션 정보"}
           </button>
         </div>
       </section>
