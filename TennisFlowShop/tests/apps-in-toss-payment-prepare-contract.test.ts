@@ -10,6 +10,7 @@ import {
   isSemanticCalendarDate,
   isSameAppsPaymentPayload,
   toSafeValidationDiagnostic,
+  type AppsRacketPurchasePrepareRequest,
 } from "../lib/apps-in-toss/server/payment-prepare-contract";
 import { buildAppsTossPayMakePaymentInput, normalizeAppsTossPayProductDescription } from "../lib/apps-in-toss/server/toss-pay-policy-contract";
 
@@ -158,4 +159,30 @@ test("같은 payload와 mismatch를 판정한다", () => {
   const checkout = { items: [{ productId: parsed.productId, selectedColor: parsed.selectedColor, selectedGauge: parsed.selectedGauge }], applicant: parsed.applicant, collectionMethod: parsed.collectionMethod, shipping: parsed.shipping, work: parsed.work };
   assert.equal(isSameAppsPaymentPayload(checkout, parsed), true);
   assert.equal(isSameAppsPaymentPayload({ ...checkout, work: { ...checkout.work, note: "변경" } }, parsed), false);
+});
+
+test("라켓 구매 재시도는 서버 파생 racketType을 제외하고 사용자 입력만 비교한다", () => {
+  const request = AppsPaymentPrepareRequestSchema.parse({
+    attemptId: "b57afdaf-73e6-4f79-b4e3-67f2563b2f50", purpose: "racket_purchase",
+    racketId: "507f1f77bcf86cd799439012", stringProductId: "507f1f77bcf86cd799439013", quantity: 2,
+    selectedColor: "black", selectedGauge: "1.25", applicant: validRequest.applicant,
+    collectionMethod: "visit", shipping: { postalCode: "", address: "", addressDetail: "" },
+    work: { tensionMain: "48", tensionCross: "46", note: "요청", preferredDate: "2026-08-10", preferredTime: "10:00" },
+  }) as AppsRacketPurchasePrepareRequest;
+  assert.equal("racketType" in request.work, false);
+  const checkout = {
+    items: [
+      { productId: request.racketId, kind: "racket", quantity: request.quantity },
+      { productId: request.stringProductId, kind: "product", quantity: request.quantity, selectedColor: request.selectedColor, selectedGauge: request.selectedGauge },
+    ],
+    applicant: request.applicant, collectionMethod: request.collectionMethod,
+    shipping: { postalCode: "12345", address: "저장 당시 주소", addressDetail: "101호" },
+    work: { ...request.work, racketType: "서버 계산 라켓명" },
+  };
+  assert.equal(checkout.work.racketType, "서버 계산 라켓명");
+  assert.equal(isSameAppsPaymentPayload(checkout, request), true);
+  assert.equal(isSameAppsPaymentPayload(checkout, { ...request, work: { ...request.work, tensionMain: "49" } }), false);
+  assert.equal(isSameAppsPaymentPayload(checkout, { ...request, quantity: 1 }), false);
+  assert.equal(isSameAppsPaymentPayload(checkout, { ...request, stringProductId: "507f1f77bcf86cd799439014" }), false);
+  assert.equal(isSameAppsPaymentPayload(checkout, { ...request, shipping: { postalCode: "54321", address: "재시도 주소", addressDetail: "202호" } }), true);
 });
