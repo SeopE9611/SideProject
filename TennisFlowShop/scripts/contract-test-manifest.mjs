@@ -51,6 +51,7 @@ export const advisoryContractFiles = [
   "admin-boards-brand-compat.contract.test.mjs",
   "admin-package-read-model.contract.test.mjs",
   "admin-boards-metrics.snapshot.test.mjs",
+  "apps-in-toss-rackets.contract.test.mjs",
   "board-unsaved-changes-navigation.contract.test.mjs",
   "checkout-success-links.contract.test.mjs",
   "community-rich-text-ui.contract.test.mjs",
