@@ -168,10 +168,10 @@ function StringingApplicationStepTwo({
 
         {collectionMethod === "visit" && (
           <div className="mt-4 rounded-2xl bg-[#f7f8fa] p-4">
-            <strong className="block text-sm font-extrabold text-[#333d4b]">매장 방문 접수 안내</strong>
+            <strong className="block text-sm font-extrabold text-[#333d4b]">{isRacketRental ? "매장 방문 수령 안내" : "매장 방문 접수 안내"}</strong>
 
             <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-              {isRacketPurchase ? "매장 방문 수령은 주소 입력이 필요하지 않습니다." : "방문 접수는 주소 입력이 필요하지 않습니다."} 방문 날짜와 시간은 다음 단계에서 선택합니다.
+              {isRacketRental ? (stringingRequested ? "주소 입력은 필요하지 않습니다. 스트링 작업 방문 날짜와 시간은 다음 단계에서 선택합니다." : "주소 입력이나 스트링 작업 예약 없이 매장에서 대여 라켓을 수령합니다.") : <>{isRacketPurchase ? "매장 방문 수령은 주소 입력이 필요하지 않습니다." : "방문 접수는 주소 입력이 필요하지 않습니다."} 방문 날짜와 시간은 다음 단계에서 선택합니다.</>}
             </p>
           </div>
         )}
@@ -179,10 +179,10 @@ function StringingApplicationStepTwo({
         {isSelfShip && (
           <>
             <div className="mt-4 rounded-2xl bg-[#f7f8fa] p-4">
-              <strong className="block text-sm font-extrabold text-[#333d4b]">{isRacketPurchase ? "택배 배송 안내" : "자가 발송 안내"}</strong>
+              <strong className="block text-sm font-extrabold text-[#333d4b]">{isRacketRental ? "택배 수령 안내" : isRacketPurchase ? "택배 배송 안내" : "자가 발송 안내"}</strong>
 
               <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                {isRacketPurchase ? "입력한 배송지로 스트링 장착을 마친 라켓을 보내드립니다." : "편의점·우체국 등을 이용해 직접 발송할 수 있습니다."}
+                {isRacketRental ? "입력한 주소로 대여 라켓을 배송받습니다." : isRacketPurchase ? "입력한 배송지로 스트링 장착을 마친 라켓을 보내드립니다." : "편의점·우체국 등을 이용해 직접 발송할 수 있습니다."}
               </p>
             </div>
 
@@ -191,7 +191,7 @@ function StringingApplicationStepTwo({
                 <strong className="block text-base font-extrabold text-[#191f28]">주소 정보</strong>
 
                 <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                  {isRacketPurchase ? "라켓을 받을 배송지를 입력해주세요." : "라켓 발송 및 반송에 사용할 주소를 등록해주세요."}
+                  {isRacketRental ? "대여 라켓을 받을 주소를 입력해주세요." : isRacketPurchase ? "라켓을 받을 배송지를 입력해주세요." : "라켓 발송 및 반송에 사용할 주소를 등록해주세요."}
                 </p>
               </div>
 
@@ -305,7 +305,7 @@ function StringingApplicationStepTwo({
             type="button"
             onClick={handleConfirm}
           >
-            {isRacketRental ? (stringingRequested ? "다음: 작업정보" : "다음: 최종 확인") : isRacketPurchase ? "다음: 장력·작업 요청" : "다음: 라켓·텐션 정보"}
+            {isRacketRental ? "다음: 작업정보" : isRacketPurchase ? "다음: 장력·작업 요청" : "다음: 라켓·텐션 정보"}
           </button>
         </div>
       </section>
