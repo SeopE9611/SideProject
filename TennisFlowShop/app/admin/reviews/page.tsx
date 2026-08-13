@@ -15,6 +15,7 @@ export default function ReviewsPage() {
   return (
     <AdminPageShell variant="wide" className="space-y-5">
       <AdminPageHeader
+        variant="compact"
         title="후기 관리"
         description="상품, 교체서비스, 대여 후기를 한 곳에서 확인하고 공개 상태를 관리합니다."
         helperText="일반 후기 관리는 목록 탭에서 처리하고, 데이터 정비성 작업은 유지보수 탭에서 신중히 진행하세요."

@@ -36,6 +36,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
@@ -364,6 +365,7 @@ export default function BoardsClient() {
     <TooltipProvider>
       <div className="space-y-6 p-6">
         <AdminPageHeader
+          variant="compact"
           title="게시판 관리"
           description="커뮤니티 게시글과 신고 내역을 확인하고 공개 상태를 관리합니다."
           icon={MessageSquare}
@@ -457,71 +459,190 @@ export default function BoardsClient() {
             </Tabs>
           </CardHeader>
 
+          <div className="px-6 pb-2">
+            <AdminFilterBar
+              actions={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() =>
+                    tab === "posts"
+                      ? (setPostPage(1), mutatePosts())
+                      : (setReportPage(1), mutateReports())
+                  }
+                  aria-label={tab === "posts" ? "게시글 목록 새로고침" : "신고 목록 새로고침"}
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                </Button>
+              }
+              activeFilters={
+                tab === "posts" ? (
+                  <>
+                    {postType !== "all" ? (
+                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                        게시판 유형: {resolveBoardLabel(postType)}
+                      </span>
+                    ) : null}
+                    {postStatus !== "all" ? (
+                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                        공개 상태: {postStatus === "public" ? "공개" : "숨김"}
+                      </span>
+                    ) : null}
+                    {postQ.trim() ? (
+                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                        검색어: {postQ.trim()}
+                      </span>
+                    ) : null}
+                    <span>
+                      전체 게시글 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {reportType !== "all" ? (
+                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                        게시판 유형: {resolveBoardLabel(reportType)}
+                      </span>
+                    ) : null}
+                    <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                      처리 상태:{" "}
+                      {reportStatus === "pending"
+                        ? "대기"
+                        : reportStatus === "resolved"
+                          ? "완료"
+                          : reportStatus === "rejected"
+                            ? "반려"
+                            : "전체"}
+                    </span>
+                    {reportQ.trim() ? (
+                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                        검색어: {reportQ.trim()}
+                      </span>
+                    ) : null}
+                    <span>
+                      전체 신고 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건
+                    </span>
+                  </>
+                )
+              }
+            >
+              {tab === "posts" ? (
+                <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(140px,1fr)_minmax(140px,1fr)_minmax(260px,2fr)]">
+                  <div className="min-w-0">
+                    <Select
+                      value={postType}
+                      onValueChange={(v) => (setPostPage(1), setPostType(v))}
+                    >
+                      <SelectTrigger className="w-full min-w-0 bg-background/50">
+                        <SelectValue placeholder="게시판" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        {Object.keys(boardLabel).map((k) => (
+                          <SelectItem key={k} value={k}>
+                            {boardLabel[k]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="min-w-0">
+                    <Select
+                      value={postStatus}
+                      onValueChange={(v) => (setPostPage(1), setPostStatus(v))}
+                    >
+                      <SelectTrigger className="w-full min-w-0 bg-background/50">
+                        <SelectValue placeholder="상태" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        <SelectItem value="public">공개</SelectItem>
+                        <SelectItem value="hidden">숨김</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="min-w-0">
+                    <Input
+                      value={postQ}
+                      onChange={(e) => setPostQ(e.target.value)}
+                      placeholder="제목/작성자/내용 검색"
+                      className="w-full min-w-0 bg-background/50"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(140px,1fr)_minmax(140px,1fr)_minmax(260px,2fr)]">
+                  <div className="min-w-0">
+                    <Select
+                      value={reportType}
+                      onValueChange={(v) => (setReportPage(1), setReportType(v))}
+                    >
+                      <SelectTrigger className="w-full min-w-0 bg-background/50">
+                        <SelectValue placeholder="게시판" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        {Object.keys(boardLabel).map((k) => (
+                          <SelectItem key={k} value={k}>
+                            {boardLabel[k]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="min-w-0">
+                    <Select
+                      value={reportStatus}
+                      onValueChange={(v) => (setReportPage(1), setReportStatus(v))}
+                    >
+                      <SelectTrigger className="w-full min-w-0 bg-background/50">
+                        <SelectValue placeholder="상태" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">대기</SelectItem>
+                        <SelectItem value="resolved">완료</SelectItem>
+                        <SelectItem value="rejected">반려</SelectItem>
+                        <SelectItem value="all">전체</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="min-w-0">
+                    <Input
+                      value={reportQ}
+                      onChange={(e) => setReportQ(e.target.value)}
+                      placeholder="사유/신고자 검색"
+                      className="w-full min-w-0 bg-background/50"
+                    />
+                  </div>
+                </div>
+              )}
+            </AdminFilterBar>
+          </div>
+
           <CardContent>
             {tab === "posts" && (
               <div className="space-y-4">
-                <div className={cn(adminSurface.filterCard, "flex flex-wrap items-center gap-3")}>
-                  <Select value={postType} onValueChange={(v) => (setPostPage(1), setPostType(v))}>
-                    <SelectTrigger className="w-[140px] bg-background/50">
-                      <SelectValue placeholder="게시판" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">전체</SelectItem>
-                      {Object.keys(boardLabel).map((k) => (
-                        <SelectItem key={k} value={k}>
-                          {boardLabel[k]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={postStatus}
-                    onValueChange={(v) => (setPostPage(1), setPostStatus(v))}
-                  >
-                    <SelectTrigger className="w-[140px] bg-background/50">
-                      <SelectValue placeholder="상태" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">전체</SelectItem>
-                      <SelectItem value="public">공개</SelectItem>
-                      <SelectItem value="hidden">숨김</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Input
-                    value={postQ}
-                    onChange={(e) => setPostQ(e.target.value)}
-                    placeholder="제목/작성자/내용 검색"
-                    className="w-[260px] bg-background/50"
-                  />
-
-                  <Button
-                    variant="outline"
-                    onClick={() => (setPostPage(1), mutatePosts())}
-                    className="gap-2"
-                  >
-                    <RefreshCcw className="h-4 w-4" />
-                  </Button>
-
-                  <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
-                    <div className="min-w-[150px] space-y-1 text-right">
-                      <p className={adminTypography.bodyStrong}>선택 {selectedPostIds.length}개</p>
-                      <p className={adminTypography.caption}>선택 삭제는 복구할 수 없습니다.</p>
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={selectedPostIds.length === 0}
-                      onClick={deleteSelectedPosts}
-                      className="gap-1 whitespace-nowrap min-h-[40px]"
-                    >
-                      <Trash2 className="h-4 w-4" /> 선택 삭제
-                    </Button>
-                    <div className={adminTypography.bodyStrong}>
-                      총 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건
-                    </div>
+                <div
+                  className={cn(
+                    adminSurface.cardMuted,
+                    "flex flex-wrap items-center justify-between gap-3 px-4 py-3",
+                  )}
+                >
+                  <div className="min-w-[150px] space-y-1">
+                    <p className={adminTypography.bodyStrong}>선택 {selectedPostIds.length}개</p>
+                    <p className={adminTypography.caption}>선택 삭제는 복구할 수 없습니다.</p>
                   </div>
+                  <Button
+                    type="button"
+                    variant={selectedPostIds.length > 0 ? "destructive" : "outline"}
+                    size="sm"
+                    disabled={selectedPostIds.length === 0}
+                    onClick={deleteSelectedPosts}
+                    className="min-h-[40px] gap-1 whitespace-nowrap"
+                  >
+                    <Trash2 className="h-4 w-4" /> 선택 삭제
+                  </Button>
                 </div>
 
                 {postsLoading && (
@@ -552,6 +673,7 @@ export default function BoardsClient() {
                           onCheckedChange={(checked) =>
                             toggleSelectAllCurrentPage(Boolean(checked))
                           }
+                          aria-label="현재 페이지 게시글 전체 선택"
                         />
                         <span className={adminTypography.metaMuted}>현재 페이지 전체 선택</span>
                       </div>
@@ -591,6 +713,7 @@ export default function BoardsClient() {
                                     checked={selectedPostIds.includes(p.id)}
                                     onCheckedChange={() => togglePostSelect(p.id)}
                                     className="mt-1"
+                                    aria-label={`${p.title} 게시글 선택`}
                                   />
                                   <div className="flex-1 space-y-2">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -775,59 +898,6 @@ export default function BoardsClient() {
 
             {tab === "reports" && (
               <div className="space-y-4">
-                <div className={cn(adminSurface.filterCard, "flex flex-wrap items-center gap-3")}>
-                  <Select
-                    value={reportType}
-                    onValueChange={(v) => (setReportPage(1), setReportType(v))}
-                  >
-                    <SelectTrigger className="w-[140px] bg-background/50">
-                      <SelectValue placeholder="게시판" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">전체</SelectItem>
-                      {Object.keys(boardLabel).map((k) => (
-                        <SelectItem key={k} value={k}>
-                          {boardLabel[k]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={reportStatus}
-                    onValueChange={(v) => (setReportPage(1), setReportStatus(v))}
-                  >
-                    <SelectTrigger className="w-[140px] bg-background/50">
-                      <SelectValue placeholder="상태" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">대기</SelectItem>
-                      <SelectItem value="resolved">완료</SelectItem>
-                      <SelectItem value="rejected">반려</SelectItem>
-                      <SelectItem value="all">전체</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Input
-                    value={reportQ}
-                    onChange={(e) => setReportQ(e.target.value)}
-                    placeholder="사유/신고자 검색"
-                    className="w-[260px] bg-background/50"
-                  />
-
-                  <Button
-                    variant="outline"
-                    onClick={() => (setReportPage(1), mutateReports())}
-                    className="gap-2"
-                  >
-                    <RefreshCcw className="h-4 w-4" />
-                  </Button>
-
-                  <div className={cn("ml-auto", adminTypography.bodyStrong)}>
-                    총 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건
-                  </div>
-                </div>
-
                 {reportsLoading && (
                   <div className="space-y-3">
                     <Skeleton className="h-40 w-full" />

@@ -6,6 +6,7 @@ import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
 
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -530,108 +531,159 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 검색/필터 + 전체선택 */}
-      <div
-        className={cn(
-          adminSurface.filterCard,
-          "sticky top-20 z-10 -mt-2 mb-2 flex gap-3 supports-[backdrop-filter]:bg-card/95 flex-row flex-wrap items-center justify-between",
-        )}
-      >
-        <div className="relative w-80">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="후기 검색…"
-            className="h-9 border-border pl-10 focus:border-border focus:ring-ring"
-            value={qRaw}
-            onChange={(e) => setQRaw(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && setSize(1)}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-auto justify-end">
-          <Select
-            value={status}
-            onValueChange={(v) => {
-              setStatus(v as "all" | "visible" | "hidden");
-              setSize(1);
-            }}
-          >
-            <SelectTrigger className="h-9 w-32">
-              <SelectValue placeholder="상태" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              <SelectItem value="visible">관리자 공개</SelectItem>
-              <SelectItem value="hidden">관리자 숨김</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={context}
-            onValueChange={(v) => {
-              setContext(v as "all" | ReviewContext);
-              setSize(1);
-            }}
-          >
-            <SelectTrigger className="h-9 w-52">
-              <SelectValue placeholder="후기 유형" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">전체 유형</SelectItem>
-              <SelectItem value="product">상품 후기</SelectItem>
-              <SelectItem value="product_stringing">상품·교체서비스 후기</SelectItem>
-              <SelectItem value="standalone_stringing">교체서비스 후기</SelectItem>
-              <SelectItem value="rental">대여 후기</SelectItem>
-              <SelectItem value="rental_stringing">대여·교체서비스 후기</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5">
-            <Checkbox
-              checked={rows.length > 0 && selected.length === rows.length}
-              onCheckedChange={(val) => toggleSelectAll(!!val)}
-              aria-label="전체 선택"
-              className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            />
-            <span className={adminTypography.caption}>전체 선택</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5">
-            <Checkbox
-              id="show-deleted"
-              checked={showDeleted}
-              onCheckedChange={(v) => {
-                setShowDeleted(!!v);
-                setSize(1);
-              }}
-              className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            />
-            <label htmlFor="show-deleted" className={adminTypography.caption}>
-              삭제 포함 보기
-            </label>
-          </div>
-          <Button size="sm" variant="outline" onClick={() => setCompact((v) => !v)}>
-            {compact ? "기본 보기" : "컴팩트 보기"}
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline">
-                정렬
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-44 min-w-max"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
+      <AdminFilterBar
+        className="sticky top-20 z-20 -mt-2 mb-2 supports-[backdrop-filter]:bg-card/95"
+        actions={
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setCompact((v) => !v)}
             >
-              <DropdownMenuItem onClick={() => setSortBy("latest")}>최신순</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy("rating")}>평점 높은순</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy("helpful")}>
-                도움돼요 많은순
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy("oldest")}>오래된순</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              {compact ? "기본 보기" : "컴팩트 보기"}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" size="sm" variant="outline">
+                  정렬
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-44 min-w-max"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DropdownMenuItem onClick={() => setSortBy("latest")}>최신순</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("rating")}>평점 높은순</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("helpful")}>
+                  도움돼요 많은순
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("oldest")}>오래된순</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        }
+        activeFilters={
+          <>
+            {qDebounced.trim() ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                검색어: {qDebounced.trim()}
+              </span>
+            ) : null}
+            {status !== "all" ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                관리자 상태: {status === "visible" ? "공개" : "숨김"}
+              </span>
+            ) : null}
+            {context !== "all" ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                후기 유형: {context === "product"
+                  ? "상품"
+                  : context === "product_stringing"
+                    ? "상품·교체서비스"
+                    : context === "standalone_stringing"
+                      ? "교체서비스"
+                      : context === "rental"
+                        ? "대여"
+                        : "대여·교체서비스"}
+              </span>
+            ) : null}
+            {showDeleted ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                삭제 포함
+              </span>
+            ) : null}
+            {selected.length > 0 ? <span>선택 {selected.length}개</span> : null}
+            <span>로드 {rows.length}개</span>
+            <span>전체 {data?.[0]?.total ?? 0}개</span>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(260px,2fr)_minmax(140px,1fr)_minmax(200px,1.4fr)]">
+            <div className="relative min-w-0">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="후기 검색…"
+                className="h-9 w-full min-w-0 border-border pl-10 focus:border-border focus:ring-ring"
+                value={qRaw}
+                onChange={(e) => setQRaw(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setSize(1)}
+              />
+            </div>
+
+            <div className="min-w-0">
+              <Select
+                value={status}
+                onValueChange={(v) => {
+                  setStatus(v as "all" | "visible" | "hidden");
+                  setSize(1);
+                }}
+              >
+                <SelectTrigger className="h-9 w-full min-w-0">
+                  <SelectValue placeholder="상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="visible">관리자 공개</SelectItem>
+                  <SelectItem value="hidden">관리자 숨김</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="min-w-0">
+              <Select
+                value={context}
+                onValueChange={(v) => {
+                  setContext(v as "all" | ReviewContext);
+                  setSize(1);
+                }}
+              >
+                <SelectTrigger className="h-9 w-full min-w-0">
+                  <SelectValue placeholder="후기 유형" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체 유형</SelectItem>
+                  <SelectItem value="product">상품 후기</SelectItem>
+                  <SelectItem value="product_stringing">상품·교체서비스 후기</SelectItem>
+                  <SelectItem value="standalone_stringing">교체서비스 후기</SelectItem>
+                  <SelectItem value="rental">대여 후기</SelectItem>
+                  <SelectItem value="rental_stringing">대여·교체서비스 후기</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2 rounded-md border border-border px-2 py-1.5">
+              <Checkbox
+                checked={rows.length > 0 && selected.length === rows.length}
+                onCheckedChange={(val) => toggleSelectAll(!!val)}
+                aria-label="전체 선택"
+                className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <span className={adminTypography.caption}>전체 선택</span>
+            </div>
+            <div className="flex min-w-0 items-center gap-2 rounded-md border border-border px-2 py-1.5">
+              <Checkbox
+                id="show-deleted"
+                checked={showDeleted}
+                onCheckedChange={(v) => {
+                  setShowDeleted(!!v);
+                  setSize(1);
+                }}
+                className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <label htmlFor="show-deleted" className={adminTypography.caption}>
+                삭제 포함 보기
+              </label>
+            </div>
+          </div>
         </div>
-      </div>
+      </AdminFilterBar>
 
       {/* 리스트 카드 */}
       <div className={adminSurface.tableCard}>
