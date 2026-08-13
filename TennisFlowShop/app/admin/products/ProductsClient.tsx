@@ -23,6 +23,7 @@ import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
 import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
 import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
@@ -414,11 +415,10 @@ export default function ProductsClient() {
         </Card>
       </section>
 
-      {/* 빠른 보기 */}
-      <Card className={adminSurface.filterCard}>
-        <CardContent className="flex flex-wrap items-center gap-2 p-3">
-          <span className={cn("mr-1 font-semibold", adminTypography.metaMuted)}>빠른 보기</span>
-
+      <AdminFilterBar
+        quickFilters={
+          <>
+            <span className={cn("mr-1 font-semibold", adminTypography.metaMuted)}>빠른 보기</span>
           <Button
             type="button"
             size="sm"
@@ -481,11 +481,69 @@ export default function ProductsClient() {
           >
             할인 상품
           </Button>
-          <span className="ml-auto text-ui-label text-muted-foreground">
+          </>
+        }
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={resetFilters} className="h-9">
+              초기화
+            </Button>
+            <Button asChild size="sm" className="h-9">
+              <Link href="/admin/products/new">
+                <Plus className="mr-2 h-4 w-4" />
+                신규 스트링 등록
+              </Link>
+            </Button>
+          </>
+        }
+        activeFilters={
+          activeFilterLabels.length > 0 ? (
+            <>
+              <span className="font-medium text-foreground/80">적용 중</span>
+              {activeFilterLabels.map((label) => (
+                <span key={label} className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                  {label}
+                </span>
+              ))}
+            </>
+          ) : null
+        }
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-[minmax(240px,2fr)_repeat(4,minmax(120px,1fr))] items-center gap-2">
+            <div className="relative min-w-0">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="스트링명, 브랜드, SKU로 검색"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className={cn("h-9 pl-8", adminTypography.body)}
+              />
+              {searchTerm && (
+                <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 px-3" onClick={() => handleSearchChange("")}>
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <BrandFilter value={brandFilter} onChange={handleBrandFilterChange} options={BRAND_OPTIONS.map((o) => o.id)} />
+            <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
+            <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+            <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
+              <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}><SelectValue placeholder="노출 유형 전체" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">노출 유형 전체</SelectItem>
+                <SelectItem value="featured">추천 상품</SelectItem>
+                <SelectItem value="new">신상품</SelectItem>
+                <SelectItem value="sale">할인 상품</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className={adminTypography.metaMuted}>
             현재 {currentViewLabel} · {hasResolvedData ? total.toLocaleString("ko-KR") : "-"}개
-          </span>
-        </CardContent>
-      </Card>
+          </p>
+        </div>
+      </AdminFilterBar>
 
       <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
         <CardHeader className="shrink-0 border-b border-border bg-muted/30 px-4 py-3">
@@ -514,97 +572,11 @@ export default function ProductsClient() {
                   정렬 해제
                 </Button>
               ) : null}
-              <Button
-                asChild
-                className={[
-                  // 사이즈/레이아웃
-                  "h-auto min-h-9 px-4 rounded-lg font-medium inline-flex items-center justify-center gap-2 whitespace-normal text-center leading-snug w-auto",
-                  // 색상(라이트/다크 모두 자연스러운 플랫)
-                  "bg-primary text-primary-foreground hover:bg-primary/90",
-                  // 경계/그림자: 지나치지 않게만
-                  "border border-border/10 dark:border-border/10 shadow-sm hover:shadow",
-                  // 포커스 접근성
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  "ring-offset-2 ring-offset-background dark:ring-offset-background",
-                  // 전환
-                  "transition-colors",
-                ].join(" ")}
-              >
-                <Link href="/admin/products/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  신규 스트링 등록
-                </Link>
-              </Button>
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="flex min-h-0 flex-1 flex-col space-y-3 p-4">
-          {/* 검색/필터 */}
-          <div
-            className={cn(
-              adminSurface.filterCard,
-              "grid grid-cols-[minmax(220px,2fr)_repeat(4,minmax(110px,1fr))_auto] items-center gap-2 p-3",
-            )}
-          >
-            <div className="relative min-w-0">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="스트링명, 브랜드, SKU로 검색"
-                    value={searchTerm}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className={cn(
-                      "h-9 border-border bg-card pl-8 focus:border-border dark:border-border dark:focus:border-border",
-                      adminTypography.body,
-                    )}
-                  />
-                  {searchTerm && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-muted dark:hover:bg-muted"
-                      onClick={() => handleSearchChange("")}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-            </div>
-            <BrandFilter
-              value={brandFilter}
-              onChange={handleBrandFilterChange}
-              options={BRAND_OPTIONS.map((o) => o.id)}
-            />
-            <MaterialFilter
-              value={materialFilter}
-              onChange={handleMaterialFilterChange}
-              options={MATERIAL_OPTIONS.map((o) => o.id)}
-            />
-            <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
-            <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
-              <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}>
-                <SelectValue placeholder="노출 유형 전체" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">노출 유형 전체</SelectItem>
-                <SelectItem value="featured">추천 상품</SelectItem>
-                <SelectItem value="new">신상품</SelectItem>
-                <SelectItem value="sale">할인 상품</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={resetFilters}
-              className={cn(
-                "h-9 border-border bg-transparent px-3 hover:bg-muted dark:border-border dark:hover:bg-card",
-                adminTypography.body,
-              )}
-            >
-              초기화
-            </Button>
-          </div>
-
           {/* 테이블 */}
           <div className="flex-1">
             <div className="overflow-auto rounded-lg border border-border">
