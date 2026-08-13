@@ -35,7 +35,7 @@ export function UserSettingsTab({
           </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-5">
             <div className={`${adminSurface.fieldPanel} flex items-center justify-between gap-4`}>
               <div>
                 <p className={adminTypography.bodyStrong}>회원가입 허용</p>

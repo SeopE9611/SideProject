@@ -56,8 +56,8 @@ export function EmailSettingsTab({
             <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body}`}>
               현재 상태: {sourceLabel}
             </div>
-            <div className="grid gap-5 sm:grid-cols-3">
-              <AdminFormField htmlFor="smtpHost" label="SMTP 서버 주소" className="sm:col-span-2">
+            <div className="grid grid-cols-3 gap-5">
+              <AdminFormField htmlFor="smtpHost" label="SMTP 서버 주소" className="col-span-2">
                 <Input id="smtpHost" {...form.register("smtpHost")} />
               </AdminFormField>
               <AdminFormField htmlFor="smtpPort" label="SMTP 포트">
@@ -96,7 +96,7 @@ export function EmailSettingsTab({
               <AdminFormField htmlFor="senderName" label="발신자 이름">
                 <Input id="senderName" {...form.register("senderName")} />
               </AdminFormField>
-              <AdminFormField htmlFor="senderEmail" label="발신 이메일" className="sm:col-span-2">
+              <AdminFormField htmlFor="senderEmail" label="발신 이메일" className="col-span-2">
                 <Input id="senderEmail" type="email" {...form.register("senderEmail")} />
               </AdminFormField>
               <AdminFormField

@@ -188,8 +188,8 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
       />
 
       <div className="flex flex-col space-y-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          <Card className={cn("min-w-0 lg:col-span-2", adminSurface.detailCard)}>
+        <div className="grid gap-6 grid-cols-3">
+          <Card className={cn("min-w-0 col-span-2", adminSurface.detailCard)}>
             <CardHeader className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
