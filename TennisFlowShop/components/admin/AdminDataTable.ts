@@ -2,9 +2,9 @@ import { adminSurface, adminTypography } from "@/components/admin/admin-typograp
 
 /** 관리자 목록 테이블의 최종 밀도·정렬 규격입니다. ui/Table의 범용 기본값보다 우선합니다. */
 export const adminDataTable = {
-  head: `px-4 py-3 text-left align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
-  headCenter: `px-4 py-3 text-center align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
-  headRight: `px-4 py-3 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
+  head: `h-10 px-4 py-2.5 text-left align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
+  headCenter: `h-10 px-4 py-2.5 text-center align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
+  headRight: `h-10 px-4 py-2.5 text-right align-middle whitespace-nowrap ${adminTypography.tableHeader}`,
   cell: adminSurface.tableCell,
   cellCompact: "px-4 py-2.5 align-middle text-ui-body-sm",
   cellTop: "px-4 py-3 align-top text-ui-body-sm",

@@ -348,6 +348,7 @@ export default function ProductsClient() {
         <div className="text-center text-destructive">{commonErrorMessage}</div>
       )}
       <AdminPageHeader
+        variant="compact"
         title="상품 관리"
         description="판매 상품의 노출 상태, 가격, 재고, 색상 옵션, 배송비를 한 곳에서 관리합니다."
         icon={PackageSearch}

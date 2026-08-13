@@ -35,11 +35,11 @@ export const adminTypography = {
 export const adminSurface = {
   card: "rounded-xl border border-border bg-card",
   cardMuted: "rounded-xl border border-border bg-muted/20",
-  filterCard: "rounded-xl border border-border bg-card p-5",
+  filterCard: "rounded-xl border border-border/70 bg-card/70 p-4",
   tableCard: "overflow-hidden rounded-xl border border-border bg-card",
   tableHeader: "bg-muted/30",
   detailCard: "rounded-xl border border-border bg-card",
-  detailHeader: "border-b border-border bg-muted/20 px-5 py-3",
+  detailHeader: "border-b border-border/70 bg-muted/15 px-5 py-3",
   detailContent: "space-y-4 p-5",
   fieldPanel: "rounded-lg border border-border/60 bg-background p-3",
   fieldPanelMuted: "rounded-lg border border-border/60 bg-muted/20 p-3",

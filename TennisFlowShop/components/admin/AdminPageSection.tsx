@@ -13,7 +13,14 @@ type AdminPageSectionProps = {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
+  variant?: "default" | "subtle" | "plain";
 };
+
+const sectionStyles = {
+  default: adminSurface.detailCard,
+  subtle: "rounded-xl border border-border/70 bg-card/60 shadow-none",
+  plain: "rounded-none border-x-0 border-b-0 border-border bg-transparent shadow-none",
+} as const;
 
 export function AdminSectionHeader({
   title,
@@ -51,9 +58,10 @@ export default function AdminPageSection({
   children,
   className,
   contentClassName,
+  variant = "default",
 }: AdminPageSectionProps) {
   return (
-    <Card className={cn(adminSurface.detailCard, "overflow-hidden", className)}>
+    <Card className={cn(sectionStyles[variant], "overflow-hidden", className)}>
       <CardHeader className={adminSurface.detailHeader}>
         <AdminSectionHeader title={title} description={description} icon={icon} actions={actions} />
       </CardHeader>
