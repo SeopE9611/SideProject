@@ -30,6 +30,7 @@ import { RefundAccountSchema, type RefundAccountInfo } from "@/lib/cancel-reques
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
 import type { MongoClient, Db } from "mongodb";
 import { ObjectId } from "mongodb";
+import { reservePaidRentalRacket } from "./paid-rental-availability";
 
 const POINT_UNIT = 100;
 const PAYMENT_BANKS = new Set(["kakao"] as const);
@@ -434,20 +435,20 @@ export async function createRentalOrderCore(params: {
     };
   }
 
-  const activeCount = await db.collection("rental_orders").countDocuments({
-    racketId: racketObjectId,
-    status: { $in: ["paid", "out"] },
-  });
-
-  const rawQtyField = (racket as any).quantity;
-  const hasStockQty = typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
-  const baseQty = hasStockQty
-    ? Math.max(0, Math.trunc(rawQtyField))
-    : racket.status === "available"
-      ? 1
-      : 0;
-  const available = Math.max(0, baseQty - activeCount);
-  if (available <= 0) throw new Error("대여 불가 상태(재고 없음)");
+  if (initialStatus === "pending") {
+    const activeCount = await db.collection("rental_orders").countDocuments({
+      racketId: racketObjectId,
+      status: { $in: ["paid", "out"] },
+    });
+    const rawQtyField = (racket as any).quantity;
+    const hasStockQty = typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
+    const baseQty = hasStockQty
+      ? Math.max(0, Math.trunc(rawQtyField))
+      : racket.status === "available"
+        ? 1
+        : 0;
+    if (Math.max(0, baseQty - activeCount) <= 0) throw new Error("대여 불가 상태(재고 없음)");
+  }
 
   const feeMap = {
     7: racket.rental?.fee?.d7 ?? 0,
@@ -522,6 +523,14 @@ export async function createRentalOrderCore(params: {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         await session.startTransaction();
+        if (initialStatus === "paid") {
+          await reservePaidRentalRacket({
+            db,
+            session,
+            racketId: racketObjectId,
+            visibilityViewer: { isAdmin: false },
+          });
+        }
         const res = await rentalOrders.insertOne(
           {
             ...doc,
@@ -749,27 +758,6 @@ export async function createRentalOrderCore(params: {
             },
             { session },
           );
-        }
-
-        if (initialStatus === "paid") {
-          const rack = await db.collection("used_rackets").findOne(
-            {
-              _id: racketObjectId,
-              ...racketVisibilityFilterFor(visibilityViewer),
-            },
-            { projection: { quantity: 1 } },
-          );
-          const qty = Number((rack as any)?.quantity ?? 1);
-          if (qty <= 1) {
-            await db.collection("used_rackets").updateOne(
-              {
-                _id: racketObjectId,
-                ...racketVisibilityFilterFor(visibilityViewer),
-              },
-              { $set: { status: "rented", updatedAt: new Date() } },
-              { session },
-            );
-          }
         }
 
         await session.commitTransaction();

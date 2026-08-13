@@ -8,6 +8,7 @@ import { guardVisitReservation } from "@/app/features/stringing-applications/lib
 import { normalizeEmail } from "@/lib/claims";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import { publicProductFilter, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { appsInTossPaymentIntents, findAppsInTossPaymentIntentByAttemptId, getAppsInTossPaymentPurpose, recordAppsInTossPaymentFinalized, type AppsInTossPaymentIntentDocument } from "./payment-intents";
 
 export class AppsPaymentFinalizationError extends Error {
@@ -141,7 +142,8 @@ async function finalizeRacketPurchase(params: { db: Db; attemptId: string; userI
         const date = reservation!.preferredDate!; const time = reservation!.preferredTime!; const slotCount = reservation!.slotCount!;
         try { await guardVisitReservation({ db: params.db, date, time, slotCount, session }); } catch (error) { if (classifyVisitBusinessError(error)) fail("VISIT_SLOT_UNAVAILABLE", "선택한 방문 시간을 예약할 수 없습니다."); throw error; }
       }
-      const racket = await params.db.collection("used_rackets").findOne({ _id: safeRacketItem.productId, isDeleted: { $ne: true } }, { session });
+      const publicRacketFilter = racketVisibilityFilterFor({ isAdmin: false });
+      const racket = await params.db.collection("used_rackets").findOne({ _id: safeRacketItem.productId, ...publicRacketFilter }, { session });
       if (!racket) fail("RACKET_UNAVAILABLE", "결제한 라켓을 제공할 수 없습니다.");
       const safeRacket = racket!;
       const activeRentalCount = await params.db.collection("rental_orders").countDocuments({ racketId: safeRacketItem.productId, status: { $in: ["paid", "out"] } }, { session });
@@ -149,13 +151,13 @@ async function finalizeRacketPurchase(params: { db: Db; attemptId: string; userI
       const baseQty = hasStockQty ? Math.max(0, Math.trunc(safeRacket.quantity)) : safeRacket.status === "available" ? 1 : 0;
       if (Math.max(0, baseQty - activeRentalCount) < quantity) fail(activeRentalCount > 0 ? "RACKET_RENTAL_RESERVED" : "RACKET_INSUFFICIENT_STOCK", "라켓 재고가 부족합니다.");
       if (hasStockQty) {
-        const updated = await params.db.collection("used_rackets").findOneAndUpdate({ _id: safeRacketItem.productId, quantity: { $gte: activeRentalCount + quantity }, status: { $nin: ["inactive", "비노출"] } }, [{ $set: { quantity: { $subtract: ["$quantity", quantity] }, updatedAt: new Date().toISOString() } }, { $set: { status: { $cond: [{ $lte: ["$quantity", 0] }, "sold", "available"] } } }] as any, { returnDocument: "after", session });
+        const updated = await params.db.collection("used_rackets").findOneAndUpdate({ _id: safeRacketItem.productId, ...publicRacketFilter, quantity: { $gte: activeRentalCount + quantity } }, [{ $set: { quantity: { $subtract: ["$quantity", quantity] }, updatedAt: new Date().toISOString() } }, { $set: { status: { $cond: [{ $lte: ["$quantity", 0] }, "sold", "available"] } } }] as any, { returnDocument: "after", session });
         if (!updated) fail("RACKET_INSUFFICIENT_STOCK", "라켓 재고가 부족합니다.");
       } else {
-        const updated = await params.db.collection("used_rackets").updateOne({ _id: safeRacketItem.productId, status: "available" }, { $set: { status: "sold", updatedAt: new Date().toISOString() } }, { session });
+        const updated = await params.db.collection("used_rackets").updateOne({ _id: safeRacketItem.productId, ...publicRacketFilter, status: "available" }, { $set: { status: "sold", updatedAt: new Date().toISOString() } }, { session });
         if (!updated.modifiedCount) fail("RACKET_INSUFFICIENT_STOCK", "라켓 재고가 부족합니다.");
       }
-      const stock = await params.db.collection("products").updateOne({ _id: safeStringItem.productId, isDeleted: { $ne: true }, "inventory.stock": { $gte: quantity }, variantInventories: { $elemMatch: { colorValue: safeStringItem.selectedColor, gaugeValue: safeStringItem.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: quantity } } }, colorInventories: { $elemMatch: { value: safeStringItem.selectedColor, stock: { $gte: quantity } } }, gaugeInventories: { $elemMatch: { value: safeStringItem.selectedGauge, stock: { $gte: quantity } } } }, { $inc: { "variantInventories.$[variant].stock": -quantity, "colorInventories.$[color].stock": -quantity, "gaugeInventories.$[gauge].stock": -quantity, "inventory.stock": -quantity, sold: quantity } }, { arrayFilters: [{ "variant.colorValue": safeStringItem.selectedColor, "variant.gaugeValue": safeStringItem.selectedGauge }, { "color.value": safeStringItem.selectedColor }, { "gauge.value": safeStringItem.selectedGauge }], session });
+      const stock = await params.db.collection("products").updateOne({ _id: safeStringItem.productId, ...publicProductFilter, "inventory.stock": { $gte: quantity }, variantInventories: { $elemMatch: { colorValue: safeStringItem.selectedColor, gaugeValue: safeStringItem.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: quantity } } }, colorInventories: { $elemMatch: { value: safeStringItem.selectedColor, isSoldOut: { $ne: true }, stock: { $gte: quantity } } }, gaugeInventories: { $elemMatch: { value: safeStringItem.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: quantity } } } }, { $inc: { "variantInventories.$[variant].stock": -quantity, "colorInventories.$[color].stock": -quantity, "gaugeInventories.$[gauge].stock": -quantity, "inventory.stock": -quantity, sold: quantity } }, { arrayFilters: [{ "variant.colorValue": safeStringItem.selectedColor, "variant.gaugeValue": safeStringItem.selectedGauge }, { "color.value": safeStringItem.selectedColor }, { "gauge.value": safeStringItem.selectedGauge }], session });
       if (!stock.modifiedCount) fail("VARIANT_INSUFFICIENT_STOCK", "선택한 상품 옵션의 재고가 부족합니다.");
       if (safePkg.applied) { try { await consumePass(params.db, safePkg.passId!, applicationId, safePkg.requiredPassCount, { session }); } catch (error) { if (classifyPassBusinessError(error)) fail("PACKAGE_PASS_UNAVAILABLE", "결제에 적용한 패스를 사용할 수 없습니다."); throw error; } }
       const now = new Date(); const shippingInfo = { name: checkout.applicant.name, phone: checkout.applicant.phone, email: checkout.applicant.email, address: cm === "visit" ? "" : checkout.shipping.address, addressDetail: cm === "visit" ? "" : checkout.shipping.addressDetail, postalCode: cm === "visit" ? "" : checkout.shipping.postalCode, collectionMethod: cm, deliveryMethod: cm === "visit" ? "방문수령" : "택배수령", withStringService: true };

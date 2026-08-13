@@ -25,6 +25,15 @@ test("라켓 구매 finalization은 같은 transaction에서 두 재고와 주�
   assert.match(source, /collection\("stringing_applications"\)\.insertOne/);
 });
 
+test("라켓 구매 finalization은 일반 공개 라켓·스트링 정책을 transaction write에 적용한다", () => {
+  const source = read("lib/apps-in-toss/server/payment-finalization.ts");
+  assert.match(source, /racketVisibilityFilterFor\(\{ isAdmin: false \}\)/);
+  assert.match(source, /\.\.\.publicRacketFilter/);
+  assert.match(source, /\.\.\.publicProductFilter/);
+  assert.match(source, /colorInventories: \{ \$elemMatch: \{[^}]*isSoldOut: \{ \$ne: true \}/s);
+  assert.match(source, /gaugeInventories: \{ \$elemMatch: \{[^}]*isSoldOut: \{ \$ne: true \}/s);
+});
+
 test("기존 discriminator 없는 intent는 stringing service로 해석한다", () => {
   const source = read("lib/apps-in-toss/server/payment-intents.ts");
   assert.match(source, /intent\.paymentPurpose \?\? "stringing_service"/);
