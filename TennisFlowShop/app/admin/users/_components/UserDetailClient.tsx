@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
@@ -222,7 +221,6 @@ function getAuditActorDisplay(log: AuditLog): {
 }
 
 export default function UserDetailClient({ id }: { id: string }) {
-  const router = useRouter();
   const { user: currentAdmin } = useCurrentUser();
   const { data, error, isLoading, mutate } = useSWR<UserDetail>(
     `/api/admin/users/${id}`,
@@ -591,27 +589,74 @@ export default function UserDetailClient({ id }: { id: string }) {
   return (
     <AdminPageShell variant="wide" className="space-y-4">
       <TooltipProvider>
+        <AdminPageHeader
+          variant="detail"
+          title={user.name ?? "(이름없음)"}
+          description={`${user.email} 회원 정보를 관리합니다.`}
+          icon={UserCog}
+          scope={`회원 ID: ${user.id}`}
+          helperText={`가입일 ${fmt(user.createdAt)} · 마지막 로그인 ${fmt(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}`}
+          className="flex-wrap"
+          actions={
+            <>
+              {(() => {
+                const roleSpec = getUserRoleBadgeSpec(user.role);
+                return <Badge variant={roleSpec.variant}>{getUserRoleLabel(user.role)}</Badge>;
+              })()}
+              <StatusBadge status={statusKey(user)} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => copy(user.id)}
+                title={user.id}
+              >
+                ID 복사
+              </Button>
+              <Button type="button" variant="outline" size="sm" asChild>
+                <Link
+                  href="/admin/users"
+                  data-no-unsaved-guard
+                  onClick={(event) => {
+                    if (!confirmLeaveIfDirty()) event.preventDefault();
+                  }}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  회원 목록
+                </Link>
+              </Button>
+              <Button
+                type="button"
+                variant={hasDirty ? "destructive" : "outline"}
+                size="sm"
+                onClick={() => setForm({})}
+                disabled={!hasDirty}
+              >
+                {hasDirty ? "편집 취소" : "편집 중"}
+              </Button>
+            </>
+          }
+        />
+
+        <AdminDetailSectionNav
+          items={[
+            { href: "#admin-user-account", label: "기본정보" },
+            { href: "#admin-user-danger", label: "권한·상태" },
+            { href: "#admin-user-activity", label: "활동" },
+            { href: "#admin-user-security", label: "세션" },
+            { href: "#admin-user-audit", label: "감사 로그" },
+            { href: "#admin-user-notes", label: "내부 메모" },
+          ]}
+        />
+
         {/* 상단 스티키 액션바 */}
         <div className="sticky top-[64px] z-20 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
-          <div className="mx-auto w-full max-w-[1500px] flex items-center justify-between gap-2">
-            {/* 좌측: 뒤로 */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  if (!confirmLeaveIfDirty()) return;
-                  router.back();
-                }}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                목록으로
-              </Button>
-            </div>
-
-            {/* 우측: 모든 주요 액션 */}
+          <div className="mx-auto flex w-full max-w-[1500px] flex-wrap items-center justify-end gap-2">
+            {/* 모든 주요 액션 */}
             <div className="flex flex-wrap items-center gap-2">
               {/* 비활성/해제 토글 */}
               <Button
+                type="button"
                 variant="outline"
                 className="whitespace-nowrap shrink-0"
                 disabled={pending}
@@ -634,6 +679,7 @@ export default function UserDetailClient({ id }: { id: string }) {
               >
                 <AlertDialogTrigger asChild>
                   <Button
+                    type="button"
                     variant="secondary"
                     className="whitespace-nowrap shrink-0"
                     disabled={pending || (isAdminRole(user.role) && !isCurrentSuperAdmin) || isSelf}
@@ -692,6 +738,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
+                      type="button"
                       variant="destructive"
                       className="whitespace-nowrap shrink-0"
                       disabled={pending || !canUseDangerousUserActions}
@@ -746,7 +793,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
               {/* 저장 */}
               {hasDirty && <Badge variant="outline">미저장 변경</Badge>}
-              <Button onClick={save} disabled={pending || !hasDirty}>
+              <Button type="button" onClick={save} disabled={pending || !hasDirty}>
                 {pending ? "저장 중..." : "저장"}
               </Button>
             </div>
@@ -799,65 +846,6 @@ export default function UserDetailClient({ id }: { id: string }) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        <AdminPageHeader
-          variant="detail"
-          title={user.name ?? "(이름없음)"}
-          description={`${user.email} 회원 정보를 관리합니다.`}
-          icon={UserCog}
-          scope={`회원 ID: ${user.id}`}
-          helperText={`가입일 ${fmt(user.createdAt)} · 마지막 로그인 ${fmt(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}`}
-          actions={
-            <>
-              {(() => {
-                const roleSpec = getUserRoleBadgeSpec(user.role);
-                return <Badge variant={roleSpec.variant}>{getUserRoleLabel(user.role)}</Badge>;
-              })()}
-              <StatusBadge status={statusKey(user)} />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => copy(user.id)}
-                title={user.id}
-              >
-                ID 복사
-              </Button>
-              <Button type="button" variant="outline" size="sm" asChild>
-                <Link
-                  href="/admin/users"
-                  data-no-unsaved-guard
-                  onClick={(event) => {
-                    if (!confirmLeaveIfDirty()) event.preventDefault();
-                  }}
-                >
-                  <ChevronLeft className="mr-1 h-4 w-4" />
-                  회원 목록
-                </Link>
-              </Button>
-              <Button
-                type="button"
-                variant={hasDirty ? "destructive" : "outline"}
-                size="sm"
-                onClick={() => setForm({})}
-                disabled={!hasDirty}
-              >
-                {hasDirty ? "편집 취소" : "편집 중"}
-              </Button>
-            </>
-          }
-        />
-
-        <AdminDetailSectionNav
-          items={[
-            { href: "#admin-user-account", label: "기본정보" },
-            { href: "#admin-user-danger", label: "권한·상태" },
-            { href: "#admin-user-activity", label: "활동" },
-            { href: "#admin-user-security", label: "세션" },
-            { href: "#admin-user-audit", label: "감사 로그" },
-            { href: "#admin-user-notes", label: "내부 메모" },
-          ]}
-        />
 
         {/* 좌: 요약/보안/액티비티 KPI/최근 항목 탭  |  우: 프로필 수정 */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
