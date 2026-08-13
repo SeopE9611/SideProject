@@ -26,6 +26,7 @@ export type StringingShippingDraft = {
   postalCode: string;
   address: string;
   addressDetail: string;
+  deliveryRequest?: string;
 };
 
 export type StringingWorkDraft = {

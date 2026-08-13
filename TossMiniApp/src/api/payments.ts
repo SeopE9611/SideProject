@@ -6,6 +6,7 @@ import type {
   StringingWorkDraft,
 } from "../types/stringing";
 import type { RacketPurchaseWorkDraft } from "../types/racket-purchase";
+import type { RentalDays, RefundAccountDraft, RacketRentalWorkDraft } from "../types/racket-rental";
 
 const PAYMENTS_PATH = "/api/apps-in-toss/payments";
 
@@ -23,8 +24,9 @@ export type AppsPaymentSummary = {
   item: { name: string; quantity: number };
   pricing: { subtotal: number; shippingFee: number; serviceFeeBeforePackage: number; serviceFee: number; packageDiscount: number; payableAmount: number };
   packageApplied: boolean;
+  rental?: { days: RentalDays; rentalFee: number; deposit: number; stringingRequested: boolean; stringPrice: number; serviceFee: number };
 };
-export type AppsPaymentCompletionResult = { success: true; attemptId: string; state: AppsPaymentIntentState; orderId?: string; stringingApplicationId?: string };
+export type AppsPaymentCompletionResult = { success: true; attemptId: string; state: AppsPaymentIntentState; orderId?: string; stringingApplicationId?: string; rentalId?: string };
 
 export type AppsPaymentPrepareResult = AppsPaymentIntentStatus & {
   payToken: string;
@@ -54,6 +56,12 @@ type PrepareRacketPurchasePaymentInput = {
   collectionMethod: StringingCollectionMethod;
   shipping: StringingShippingDraft;
   work: RacketPurchaseWorkDraft;
+};
+
+export type PrepareRacketRentalPaymentInput = {
+  sessionToken: string; attemptId: string; racketId: string; days: RentalDays; applicant: StringingApplicantDraft;
+  collectionMethod: StringingCollectionMethod; shipping: StringingShippingDraft; refundAccount: RefundAccountDraft;
+  stringing: { requested: false } | { requested: true; stringProductId: string; selectedColor: string; selectedGauge: string; work: RacketRentalWorkDraft };
 };
 
 export class AppsPaymentApiError extends Error {
@@ -87,7 +95,13 @@ function parsePaymentSummary(value: unknown): AppsPaymentSummary {
     typeof pricing.payableAmount !== "number" || !Number.isInteger(pricing.payableAmount) || pricing.payableAmount <= 0 || typeof value.packageApplied !== "boolean") {
     throw new AppsPaymentApiError("최종 결제 금액 응답을 확인하지 못했습니다.", 0);
   }
-  return { item: { name: item.name, quantity: item.quantity as number }, pricing: pricing as AppsPaymentSummary["pricing"], packageApplied: value.packageApplied };
+  let rental: AppsPaymentSummary["rental"];
+  if (value.rental !== undefined) {
+    if (!isRecord(value.rental) || ![7, 15, 30].includes(Number(value.rental.days)) || typeof value.rental.stringingRequested !== "boolean" ||
+      [value.rental.rentalFee, value.rental.deposit, value.rental.stringPrice, value.rental.serviceFee].some((amount) => typeof amount !== "number" || !Number.isInteger(amount) || amount < 0)) throw new AppsPaymentApiError("대여 결제 금액 응답을 확인하지 못했습니다.", 0);
+    rental = value.rental as AppsPaymentSummary["rental"];
+  }
+  return { item: { name: item.name, quantity: item.quantity as number }, pricing: pricing as AppsPaymentSummary["pricing"], packageApplied: value.packageApplied, ...(rental ? { rental } : {}) };
 }
 
 async function readResponse(response: Response): Promise<unknown> {
@@ -123,12 +137,14 @@ function parsePaymentIntentStatus(data: unknown): AppsPaymentIntentStatus {
 function parsePaymentCompletionResult(data: unknown): AppsPaymentCompletionResult {
   if (!isRecord(data) || data.success !== true || typeof data.attemptId !== "string" || !isPaymentState(data.state) ||
     (data.orderId !== undefined && typeof data.orderId !== "string") ||
-    (data.stringingApplicationId !== undefined && typeof data.stringingApplicationId !== "string")) {
+    (data.stringingApplicationId !== undefined && typeof data.stringingApplicationId !== "string") ||
+    (data.rentalId !== undefined && typeof data.rentalId !== "string")) {
     throw new AppsPaymentApiError("결제 처리 응답을 확인하지 못했습니다.", 0);
   }
   return { success: true, attemptId: data.attemptId, state: data.state,
     ...(typeof data.orderId === "string" ? { orderId: data.orderId } : {}),
-    ...(typeof data.stringingApplicationId === "string" ? { stringingApplicationId: data.stringingApplicationId } : {}) };
+    ...(typeof data.stringingApplicationId === "string" ? { stringingApplicationId: data.stringingApplicationId } : {}),
+    ...(typeof data.rentalId === "string" ? { rentalId: data.rentalId } : {}) };
 }
 
 function parsePaymentPrepareResult(data: unknown): AppsPaymentPrepareResult {
@@ -214,6 +230,13 @@ export function prepareRacketPurchasePayment(
       },
     }),
   }, parsePaymentPrepareResult);
+}
+
+export function prepareRacketRentalPayment(input: PrepareRacketRentalPaymentInput): Promise<AppsPaymentPrepareResult> {
+  const { sessionToken, ...request } = input;
+  const shipping = request.collectionMethod === "visit" ? { postalCode: "", address: "", addressDetail: "" } : request.shipping;
+  const stringing = request.stringing.requested ? { ...request.stringing, work: { ...request.stringing.work, preferredDate: request.collectionMethod === "visit" ? request.stringing.work.preferredDate : "", preferredTime: request.collectionMethod === "visit" ? request.stringing.work.preferredTime : "" } } : { requested: false as const };
+  return requestPayment(PAYMENTS_PATH, sessionToken, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ purpose: "racket_rental", attemptId: request.attemptId, racketId: request.racketId, days: request.days, applicant: request.applicant, collectionMethod: request.collectionMethod, shipping, refundAccount: request.refundAccount, stringing }) }, parsePaymentPrepareResult);
 }
 
 export function getAppsPaymentIntent(sessionToken: string, attemptId: string): Promise<AppsPaymentIntentStatus> {

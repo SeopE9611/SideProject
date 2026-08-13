@@ -20,6 +20,7 @@ import {
 import { formatPrice } from "../lib/product-labels";
 
 type Props = {
+  paymentPurpose?: "stringing_service" | "racket_purchase" | "racket_rental";
   paymentAttemptId: string | null;
   onPaymentAttemptIdChange: (value: string | null) => void;
   preparePayment: (attemptId: string, sessionToken: string) => Promise<AppsPaymentPrepareResult>;
@@ -43,6 +44,11 @@ export function appsPaymentErrorMessage(error: AppsPaymentApiError) {
     INVALID_REQUEST: "입력한 주문 정보를 다시 확인해주세요.",
     INVALID_PAYMENT_AMOUNT: "결제 금액을 확인하지 못했어요. 주문 정보를 다시 확인해주세요.",
     RACKET_NOT_AVAILABLE: "이 라켓은 현재 구매할 수 없어요. 라켓 선택을 다시 확인해주세요.",
+    RACKET_RENTAL_DISABLED: "현재 이 라켓은 대여 운영이 중지됐어요.",
+    RACKET_RENTAL_PRICE_INVALID: "대여 요금을 확인하지 못했어요.",
+    RACKET_RENTAL_UNAVAILABLE: "현재 대여 가능한 라켓이 없어요.",
+    PRODUCT_UNAVAILABLE: "선택한 스트링을 현재 주문할 수 없어요.",
+    STRING_PRICE_INVALID: "스트링 가격을 확인하지 못했어요.",
     RACKET_UNAVAILABLE: "주문 확정 중 라켓 판매 상태가 변경됐어요.",
     RACKET_RENTAL_RESERVED: "현재 대여 중인 수량을 제외하면 라켓 재고가 부족해요.",
     RACKET_INSUFFICIENT_STOCK: "선택한 수량만큼 라켓 재고가 남아 있지 않아요.",
@@ -76,8 +82,8 @@ export function appsPaymentErrorMessage(error: AppsPaymentApiError) {
     : "결제 처리 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.";
 }
 
-function stateMessage(state: AppsPaymentIntentState) {
-  if (state === "finalized") return "결제와 주문 접수가 완료됐어요.";
+function stateMessage(state: AppsPaymentIntentState, rental = false) {
+  if (state === "finalized") return rental ? "결제와 대여 접수가 완료됐어요." : "결제와 주문 접수가 완료됐어요.";
   if (state === "refunded") return "주문을 확정할 수 없어 결제가 환불되었습니다.";
   if (state === "failed" || state === "cancelled") return "결제가 완료되지 않았어요. 원하시면 새 결제를 다시 준비할 수 있습니다.";
   if (state === "reconciliation_required") {
@@ -87,6 +93,7 @@ function stateMessage(state: AppsPaymentIntentState) {
 }
 
 export default function AppsPaymentCheckoutPanel({
+  paymentPurpose,
   paymentAttemptId,
   onPaymentAttemptIdChange,
   preparePayment,
@@ -129,7 +136,7 @@ export default function AppsPaymentCheckoutPanel({
     try {
       const result = await completeAppsPayment(auth.sessionToken, attemptId);
       setState(result.state);
-      setMessage(stateMessage(result.state));
+      setMessage(stateMessage(result.state, paymentPurpose === "racket_rental"));
       if (["finalized", "refunded", "failed", "cancelled"].includes(result.state)) clearPendingAppsPayment();
     } catch (error) {
       if (error instanceof AppsPaymentApiError && error.code === "PAYMENT_APPROVAL_UNAVAILABLE_IN_SANDBOX") {
@@ -250,9 +257,9 @@ export default function AppsPaymentCheckoutPanel({
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between gap-4"><dt>상품명</dt><dd className="m-0 text-right">{summary.item.name}</dd></div>
             <div className="flex justify-between"><dt>수량</dt><dd className="m-0">{summary.item.quantity}개</dd></div>
-            <div className="flex justify-between"><dt>상품 금액</dt><dd className="m-0">{formatPrice(summary.pricing.subtotal)}</dd></div>
+            {summary.rental ? <><div className="flex justify-between"><dt>대여 기간</dt><dd className="m-0">{summary.rental.days}일</dd></div><div className="flex justify-between"><dt>대여료</dt><dd className="m-0">{formatPrice(summary.rental.rentalFee)}</dd></div><div className="flex justify-between"><dt>보증금</dt><dd className="m-0">{formatPrice(summary.rental.deposit)}</dd></div>{summary.rental.stringingRequested ? <><div className="flex justify-between"><dt>스트링 가격</dt><dd className="m-0">{formatPrice(summary.rental.stringPrice)}</dd></div><div className="flex justify-between"><dt>장착서비스 비용</dt><dd className="m-0">{formatPrice(summary.rental.serviceFee)}</dd></div></> : <div className="flex justify-between"><dt>교체서비스</dt><dd className="m-0">미신청</dd></div>}</> : <div className="flex justify-between"><dt>상품 금액</dt><dd className="m-0">{formatPrice(summary.pricing.subtotal)}</dd></div>}
             <div className="flex justify-between"><dt>배송비</dt><dd className="m-0">{formatPrice(summary.pricing.shippingFee)}</dd></div>
-            <div className="flex justify-between"><dt>장착서비스 비용</dt><dd className="m-0">{formatPrice(summary.pricing.serviceFee)}</dd></div>
+            {!summary.rental && <div className="flex justify-between"><dt>장착서비스 비용</dt><dd className="m-0">{formatPrice(summary.pricing.serviceFee)}</dd></div>}
             {summary.pricing.packageDiscount > 0 ? <div className="flex justify-between"><dt>패키지 할인</dt><dd className="m-0">-{formatPrice(summary.pricing.packageDiscount)}</dd></div> : null}
             <div className="flex justify-between border-t pt-3 font-extrabold"><dt>최종 결제 금액</dt><dd className="m-0">{formatPrice(summary.pricing.payableAmount)}</dd></div>
           </dl>

@@ -8,7 +8,7 @@ import type { StringingCollectionMethod, StringingSlotSummary, StringingWorkDraf
 type SlotLoadState = "idle" | "loading" | "success" | "error";
 
 type StringingApplicationStepThreeProps = {
-  mode?: "stringing" | "racket-purchase";
+  mode?: "stringing" | "racket-purchase" | "racket-rental";
   quantity?: number;
   errorMessage?: string;
   collectionMethod: StringingCollectionMethod;
@@ -75,7 +75,7 @@ function StringingApplicationStepThree({
   });
 
   const isVisit = collectionMethod === "visit";
-  const isRacketPurchase = mode === "racket-purchase";
+  const isRacketPurchase = mode === "racket-purchase" || mode === "racket-rental";
 
   useEffect(() => {
     if (!isVisit || !work.preferredDate) {

@@ -5,7 +5,7 @@ import { validateShipping } from "../lib/stringing-application-validation";
 import type { StringingCollectionMethod, StringingShippingDraft } from "../types/stringing";
 
 type StringingApplicationStepTwoProps = {
-  mode?: "stringing" | "racket-purchase";
+  mode?: "stringing" | "racket-purchase" | "racket-rental";
   errorMessage?: string;
   collectionMethod: StringingCollectionMethod;
   onCollectionMethodChange: (method: StringingCollectionMethod) => void;
@@ -61,7 +61,8 @@ function StringingApplicationStepTwo({
 
   const isSelfShip = collectionMethod === "self_ship";
   const isRacketPurchase = mode === "racket-purchase";
-  const methods = isRacketPurchase ? RACKET_PURCHASE_COLLECTION_METHODS : VISIBLE_COLLECTION_METHODS;
+  const isRacketRental = mode === "racket-rental";
+  const methods = isRacketPurchase || isRacketRental ? RACKET_PURCHASE_COLLECTION_METHODS : VISIBLE_COLLECTION_METHODS;
 
   const errors = useMemo(() => validateShipping(collectionMethod, shipping), [collectionMethod, shipping]);
 
@@ -218,6 +219,11 @@ function StringingApplicationStepTwo({
                 {(touched.postalCode || showValidationErrors) && errors.postalCode && (
                   <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.postalCode}</span>
                 )}
+              </label>
+
+              <label className="mt-4 block">
+                <span className="mb-2 block text-sm font-bold text-[#333d4b]">배송 요청사항</span>
+                <input className="min-h-12 w-full rounded-xl border border-[#d1d6db] px-3.5" type="text" maxLength={200} value={shipping.deliveryRequest ?? ""} placeholder="선택 입력" onChange={(event) => updateShipping("deliveryRequest", event.target.value)} />
               </label>
 
               <label className="mt-4 block">
