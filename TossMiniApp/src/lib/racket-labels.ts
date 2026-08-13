@@ -28,13 +28,19 @@ export function stringPatternLabel(value?: string) {
 }
 
 export function gripSizeLabel(value?: string) {
-  const normalized = String(value ?? "").trim().toUpperCase();
+  const normalized = String(value ?? "").trim().toUpperCase().replace(/\s+/g, " ");
   const labels: Record<string, string> = {
     G1: "1그립 4 1/8",
     G2: "2그립 4 1/4",
     G3: "3그립 4 3/8",
   };
-  return labels[normalized] ?? value ?? "";
+  const aliases: Record<string, readonly string[]> = {
+    G1: ["g1", "1grip", "1 grip", "1그립", "1 그립", "1그립 4 1/8", "1 그립 4 1/8", "1그립4 1/8", "4 1/8", "4-1/8", "4.125", "4⅛"],
+    G2: ["g2", "2grip", "2 grip", "2그립", "2 그립", "2그립 4 1/4", "2 그립 4 1/4", "2그립4 1/4", "4 1/4", "4-1/4", "4.25", "4¼"],
+    G3: ["g3", "3grip", "3 grip", "3그립", "3 그립", "3그립 4 3/8", "3 그립 4 3/8", "3그립4 3/8", "4 3/8", "4-3/8", "4.375", "4⅜"],
+  };
+  const matched = Object.entries(aliases).find(([, values]) => values.includes(normalized.toLowerCase()))?.[0];
+  return labels[matched ?? normalized] ?? value ?? "";
 }
 
 export function validRacketSalePrice(price?: number, marketing?: { isSale?: boolean; salePrice?: number }) {

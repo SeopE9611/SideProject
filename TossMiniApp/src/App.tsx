@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getStringingProducts } from "./api/products";
 import { useAppsInTossAuth } from "./auth/AppsInTossAuthContext";
 import ActivityScreen from "./components/ActivityScreen";
-import RacketCatalogScreen from "./components/RacketCatalogScreen";
+import RacketCatalogScreen, { initialRacketCatalogState } from "./components/RacketCatalogScreen";
 import RacketDetail from "./components/RacketDetail";
 import { ProductCard } from "./components/ProductCard";
 import ProductDetail from "./components/ProductDetail";
@@ -115,6 +115,7 @@ function App() {
   const [isActivity, setIsActivity] = useState(() => getActivityModeFromLocation());
   const [isRackets, setIsRackets] = useState(() => getRacketModeFromLocation());
   const [selectedRacketId, setSelectedRacketId] = useState<string | null>(() => getRacketIdFromLocation());
+  const [racketCatalog, setRacketCatalog] = useState(initialRacketCatalogState);
   const [pendingPayment, setPendingPayment] = useState<PendingAppsPayment | null>(() => readPendingAppsPayment());
 
   const [detailSelectedColor, setDetailSelectedColor] = useState(() => getSelectedColorFromLocation());
@@ -213,6 +214,16 @@ function App() {
     setIsRackets(true); setSelectedRacketId(racketId); window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
+  const handleRacketList = useCallback(() => {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.search = "";
+    nextUrl.searchParams.set("view", "rackets");
+    window.history.replaceState({ view: "rackets" }, "", `${nextUrl.pathname}${nextUrl.search}`);
+    setIsRackets(true);
+    setSelectedRacketId(null);
+    requestAnimationFrame(() => window.scrollTo({ top: racketListScrollYRef.current, behavior: "auto" }));
+  }, []);
+
   const handleSelectProduct = useCallback((productId: string) => {
     listScrollYRef.current = window.scrollY;
 
@@ -296,10 +307,10 @@ function App() {
   }
 
   if (isRackets && selectedRacketId) {
-    return <RacketDetail racketId={selectedRacketId} onBack={() => window.history.back()} />;
+    return <RacketDetail racketId={selectedRacketId} onBack={handleRacketList} />;
   }
 
-  if (isRackets) return <RacketCatalogScreen onHome={() => navigate()} onSelect={handleSelectRacket} />;
+  if (isRackets) return <RacketCatalogScreen catalog={racketCatalog} setCatalog={setRacketCatalog} onHome={() => navigate()} onSelect={handleSelectRacket} />;
 
   if (isActivity) return <ActivityScreen onHome={() => navigate()} />;
 
