@@ -65,12 +65,17 @@ export default function RacketCatalogScreen({ catalog, setCatalog, onHome, onSel
     try {
       const result = await getRackets(next, controller.signal);
       if (controller.signal.aborted || requestId !== requestRef.current) return;
-      setCatalog((current) => ({
-        ...current,
-        items: append ? Array.from(new Map([...current.items, ...result.items].map((item) => [item.id, item])).values()) : result.items,
-        total: Math.max(0, result.total),
-        status: "success",
-      }));
+      setCatalog((current) => {
+        const items = append ? Array.from(new Map([...current.items, ...result.items].map((item) => [item.id, item])).values()) : result.items;
+        if (append) queryRef.current = next;
+        return {
+          ...current,
+          items,
+          total: Math.max(0, result.total),
+          status: "success",
+          query: append ? next : current.query,
+        };
+      });
     } catch (error) {
       if (controller.signal.aborted) return;
       console.error("[라켓 목록 조회 실패]", error);
@@ -105,7 +110,7 @@ export default function RacketCatalogScreen({ catalog, setCatalog, onHome, onSel
       {catalog.status === "error" && <div role="alert" className="mt-6 rounded-[20px] bg-[#f2f4f6] p-6 text-center"><b>라켓을 불러오지 못했어요.</b><p className="text-sm text-[#6b7684]">네트워크 상태를 확인해주세요.</p><button type="button" onClick={() => void load(queryRef.current, false)} className="min-h-11 rounded-xl border-0 bg-[#e9f6c9] px-4 font-bold">다시 시도</button></div>}
       {catalog.status === "success" && catalog.items.length === 0 && <p className="mt-6 rounded-[20px] bg-[#f2f4f6] p-6 text-center text-sm text-[#6b7684]">조건에 맞는 라켓이 없어요.</p>}
       {catalog.status === "success" && catalog.items.length > 0 && <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-6">{catalog.items.map((item) => <Card key={item.id} racket={item} onSelect={onSelect} />)}</div>}
-      {catalog.status === "success" && catalog.items.length < catalog.total && <button type="button" disabled={loadingMore} onClick={() => { const next = { ...queryRef.current, page: (queryRef.current.page ?? 1) + 1 }; queryRef.current = next; setCatalog((current) => ({ ...current, query: next })); void load(next, true); }} className="mt-8 min-h-12 w-full rounded-2xl border border-[#d1d6db] bg-white font-bold disabled:text-[#8b95a1]">{loadingMore ? "라켓을 더 불러오는 중..." : "라켓 더 보기"}</button>}
+      {catalog.status === "success" && catalog.items.length < catalog.total && <button type="button" disabled={loadingMore} onClick={() => { const next = { ...queryRef.current, page: (queryRef.current.page ?? 1) + 1 }; void load(next, true); }} className="mt-8 min-h-12 w-full rounded-2xl border border-[#d1d6db] bg-white font-bold disabled:text-[#8b95a1]">{loadingMore ? "라켓을 더 불러오는 중..." : "라켓 더 보기"}</button>}
     </section>
   </main>;
 }
