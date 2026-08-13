@@ -174,7 +174,10 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
           <>
             <Link
               href="/admin/boards"
-              className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm hover:bg-muted"
+              className={cn(
+                "inline-flex h-9 items-center rounded-md border border-border bg-background px-3 shadow-sm hover:bg-muted",
+                adminTypography.actionLabel,
+              )}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               목록으로
@@ -185,8 +188,8 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
       />
 
       <div className="flex flex-col space-y-6">
-        <div className="grid gap-6 grid-cols-3">
-          <Card className={cn("col-span-2", adminSurface.card)}>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className={cn("min-w-0 lg:col-span-2", adminSurface.detailCard)}>
             <CardHeader className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
@@ -208,7 +211,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
             </CardContent>
           </Card>
 
-          <Card className={adminSurface.card}>
+          <Card className={adminSurface.detailCard}>
             <CardHeader className="border-b border-border/60 bg-muted/20">
               <CardTitle className={adminTypography.sectionTitle}>게시물 정보</CardTitle>
             </CardHeader>
@@ -216,10 +219,10 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               <div className={cn("flex items-center", adminSurface.fieldPanel)}>
                 <User className="mr-3 h-4 w-4 text-primary" />
                 <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none text-foreground">
+                  <p className={adminTypography.bodyStrong}>
                     {post.authorDisplayName || post.authorNickname || "작성자 미상"}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={cn("break-all", adminTypography.caption)}>
                     {post.authorNickname || post.authorId || "-"}
                   </p>
                 </div>
@@ -227,22 +230,22 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               <div className={cn("flex items-center", adminSurface.fieldPanel)}>
                 <Calendar className="mr-3 h-4 w-4 text-primary" />
                 <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none text-foreground">작성일</p>
-                  <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
+                  <p className={adminTypography.metaMuted}>작성일</p>
+                  <p className={adminTypography.date}>{formatDate(post.createdAt)}</p>
                 </div>
               </div>
               <div className={cn("flex items-center", adminSurface.fieldPanel)}>
                 <Eye className="mr-3 h-4 w-4 text-primary" />
                 <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none text-foreground">조회수</p>
-                  <p className="text-sm text-primary font-semibold">{Number(post.views ?? 0)}</p>
+                  <p className={adminTypography.metaMuted}>조회수</p>
+                  <p className={adminTypography.numeric}>{Number(post.views ?? 0)}</p>
                 </div>
               </div>
               <div className={cn("flex items-center", adminSurface.fieldPanel)}>
                 <MessageSquare className="mr-3 h-4 w-4 text-primary" />
                 <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none text-foreground">댓글</p>
-                  <p className="text-sm text-primary font-semibold">
+                  <p className={adminTypography.metaMuted}>댓글</p>
+                  <p className={adminTypography.numeric}>
                     {Number(post.commentsCount ?? 0)}개
                   </p>
                 </div>
