@@ -102,12 +102,18 @@ export function isSameAppsPaymentPayload(
   checkout: { items: Array<{ productId?: string; kind?: string; quantity?: number; selectedColor?: string; selectedGauge?: string }>; applicant: unknown; collectionMethod: string; shipping: unknown; work: unknown },
   request: AppsPaymentPrepareRequest,
 ) {
-  if (request.purpose === "racket_purchase") return checkout.items.length === 2 &&
+  if (request.purpose === "racket_purchase") {
+    const checkoutWork = checkout.work as Partial<AppsRacketPurchasePrepareRequest["work"]>;
+    return checkout.items.length === 2 &&
     checkout.items[0]?.kind === "racket" && checkout.items[0].productId === request.racketId && checkout.items[0].quantity === request.quantity &&
     checkout.items[1]?.kind === "product" && checkout.items[1].productId === request.stringProductId && checkout.items[1].quantity === request.quantity &&
     checkout.items[1].selectedColor === request.selectedColor && checkout.items[1].selectedGauge === request.selectedGauge &&
     checkout.collectionMethod === request.collectionMethod && JSON.stringify(checkout.applicant) === JSON.stringify(request.applicant) &&
-    (request.collectionMethod === "visit" || JSON.stringify(checkout.shipping) === JSON.stringify(request.shipping)) && JSON.stringify(checkout.work) === JSON.stringify(request.work);
+    (request.collectionMethod === "visit" || JSON.stringify(checkout.shipping) === JSON.stringify(request.shipping)) &&
+    checkoutWork.tensionMain === request.work.tensionMain && checkoutWork.tensionCross === request.work.tensionCross &&
+    checkoutWork.note === request.work.note && checkoutWork.preferredDate === request.work.preferredDate &&
+    checkoutWork.preferredTime === request.work.preferredTime;
+  }
   const item = checkout.items[0];
   return checkout.items.length === 1 && item?.productId === request.productId &&
     item.selectedColor === request.selectedColor && item.selectedGauge === request.selectedGauge &&

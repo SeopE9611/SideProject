@@ -29,3 +29,12 @@ test("기존 discriminator 없는 intent는 stringing service로 해석한다", 
   const source = read("lib/apps-in-toss/server/payment-intents.ts");
   assert.match(source, /intent\.paymentPurpose \?\? "stringing_service"/);
 });
+
+test("라켓 구매 신청은 방문 span, package 및 Apps 결제 metadata를 기존 의미로 저장한다", () => {
+  const source = read("lib/apps-in-toss/server/payment-finalization.ts");
+  assert.match(source, /visitSlotCount: intent\.reservationSnapshot!\.slotCount/);
+  assert.match(source, /visitDurationMinutes: intent\.reservationSnapshot!\.durationMinutes/);
+  assert.match(source, /packageRedeemedAt: safePkg\.applied \? now : null/);
+  assert.match(source, /paymentMethod: "package", paymentStatus: "패키지 적용 완료"/);
+  assert.match(source, /originalTotal: pricing\.payableAmount, pointsUsed: 0, shippingFee: pricing\.shippingFee, serviceFee: pricing\.serviceFee/);
+});
