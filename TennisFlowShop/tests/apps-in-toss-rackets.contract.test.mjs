@@ -53,3 +53,18 @@ test("MiniApp 라켓 조회와 내비게이션이 읽기 전용 계약을 따른
     assert.ok(labels.includes(`"${alias}"`), `MiniApp도 웹 그립 별칭 ${alias}을 지원해야 합니다.`);
   }
 });
+
+test("MiniApp 라켓 더 보기 cursor는 append 성공 뒤에만 증가한다", async () => {
+  const catalog = await read("../TossMiniApp/src/components/RacketCatalogScreen.tsx");
+  const successGuard = catalog.indexOf("if (controller.signal.aborted || requestId !== requestRef.current) return;");
+  const successCommit = catalog.indexOf("if (append) queryRef.current = next;");
+  const loadMoreStart = catalog.indexOf('onClick={() => { const next = { ...queryRef.current, page: (queryRef.current.page ?? 1) + 1 }');
+  const loadMoreEnd = catalog.indexOf("className=", loadMoreStart);
+  const loadMoreHandler = catalog.slice(loadMoreStart, loadMoreEnd);
+
+  assert.ok(successGuard >= 0 && successCommit > successGuard, "stale/abort 확인 뒤에만 성공 page를 커밋해야 합니다.");
+  assert.match(catalog, /const items = append[\s\S]*if \(append\) queryRef\.current = next;[\s\S]*items,[\s\S]*query: append \? next : current\.query/, "items 병합과 같은 성공 갱신에서만 append page를 커밋해야 합니다.");
+  assert.match(loadMoreHandler, /page: \(queryRef\.current\.page \?\? 1\) \+ 1[\s\S]*void load\(next, true\)/, "다음 요청은 마지막 성공 page + 1이어야 합니다.");
+  assert.doesNotMatch(loadMoreHandler, /queryRef\.current = next|setCatalog/, "더 보기 요청 전에는 성공 page를 선반영하면 안 됩니다.");
+  assert.match(catalog, /catch \(error\) \{[\s\S]*if \(controller\.signal\.aborted\) return;[\s\S]*if \(!append\) setCatalog/, "append 실패/Abort는 기존 목록과 성공 cursor를 유지해야 합니다.");
+});
