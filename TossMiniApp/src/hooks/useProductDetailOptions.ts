@@ -29,8 +29,8 @@ function toStock(value: unknown) {
   return Number.isFinite(stock) && stock > 0 ? stock : 0;
 }
 
-function isSellableVariant(row?: NormalizedVariantRow) {
-  return Boolean(row && row.isSoldOut !== true && row.stock > 0);
+function isSellableVariant(row?: NormalizedVariantRow, requiredStock = 1) {
+  return Boolean(row && row.isSoldOut !== true && row.stock >= requiredStock);
 }
 
 function normalizeColorRows(product: Product): NormalizedColorRow[] {
@@ -83,10 +83,12 @@ const EMPTY_PRODUCT: Product = {
 type ProductDetailInitialSelection = {
   selectedColor?: string;
   selectedGauge?: string;
+  requiredQuantity?: number;
 };
 
 export function useProductDetailOptions(product: Product | null, initialSelection: ProductDetailInitialSelection = {}) {
   const currentProduct = product ?? EMPTY_PRODUCT;
+  const requiredStock = Math.max(1, Math.trunc(initialSelection.requiredQuantity ?? 1));
 
   const variantRows = useMemo<NormalizedVariantRow[]>(() => {
     if (!Array.isArray(currentProduct.variantInventories) || currentProduct.variantInventories.length === 0) {
@@ -163,9 +165,11 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
   const firstAvailableColor = useMemo(
     () =>
       visibleColorRows.find((row) =>
-        hasVariantInventories ? getVariantsByColor(row.value).length > 0 : !(row.isSoldOut || row.stock <= 0),
+        hasVariantInventories
+          ? getVariantsByColor(row.value).some((variant) => isSellableVariant(variant, requiredStock))
+          : !(row.isSoldOut || row.stock < requiredStock),
       ) ?? visibleColorRows[0],
-    [getVariantsByColor, hasVariantInventories, visibleColorRows],
+    [getVariantsByColor, hasVariantInventories, requiredStock, visibleColorRows],
   );
 
   const [selectedColor, setSelectedColor] = useState(() => initialSelection.selectedColor?.trim() ?? "");
@@ -195,7 +199,7 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
         value: row.gaugeValue,
         label: row.gaugeLabel,
         stock: row.stock,
-        isSoldOut: row.isSoldOut,
+        isSoldOut: row.isSoldOut || row.stock < requiredStock,
         showWhenSoldOut: row.showWhenSoldOut,
       }));
     }
@@ -206,7 +210,7 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
           value: String(row.value ?? "").trim(),
           label: typeof row.label === "string" ? row.label.trim() : undefined,
           stock: toStock(row.stock),
-          isSoldOut: row.isSoldOut === true,
+          isSoldOut: row.isSoldOut === true || toStock(row.stock) < requiredStock,
           showWhenSoldOut: row.showWhenSoldOut === false ? false : true,
         }))
         .filter((row) => row.value.length > 0);
@@ -219,7 +223,7 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
         .map((value) => ({
           value,
           stock: toStock(currentProduct.inventory?.stock),
-          isSoldOut: false,
+          isSoldOut: toStock(currentProduct.inventory?.stock) < requiredStock,
           showWhenSoldOut: true,
         }));
     }
@@ -230,6 +234,7 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
     currentProduct.gaugeInventories,
     currentProduct.gaugeOptions,
     currentProduct.inventory?.stock,
+    requiredStock,
     selectedColorVariants,
   ]);
 
@@ -272,14 +277,14 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
 
     const current = selectedGauge ? getVariantBySelection(selectedColor, selectedGauge) : undefined;
 
-    if (isSellableVariant(current)) {
+    if (isSellableVariant(current, requiredStock)) {
       return;
     }
 
-    const firstSellable = selectedColorVariants.find((row) => isSellableVariant(row));
+    const firstSellable = selectedColorVariants.find((row) => isSellableVariant(row, requiredStock));
 
     setSelectedGauge(firstSellable?.gaugeValue ?? "");
-  }, [getVariantBySelection, hasVariantInventories, selectedColor, selectedColorVariants, selectedGauge]);
+  }, [getVariantBySelection, hasVariantInventories, requiredStock, selectedColor, selectedColorVariants, selectedGauge]);
 
   const selectedGaugeRow = selectedGauge ? gaugeRows.find((row) => row.value === selectedGauge) : undefined;
 
@@ -288,13 +293,13 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
       ? getVariantBySelection(selectedColor, selectedGauge)
       : undefined;
 
-  const selectedVariantSoldOut = !isSellableVariant(selectedVariant);
+  const selectedVariantSoldOut = !isSellableVariant(selectedVariant, requiredStock);
 
   const variantHasNoSellableGauge =
-    hasVariantInventories && Boolean(selectedColor) && selectedColorVariants.every((row) => !isSellableVariant(row));
+    hasVariantInventories && Boolean(selectedColor) && selectedColorVariants.every((row) => !isSellableVariant(row, requiredStock));
 
   const effectiveStock = hasVariantInventories
-    ? isSellableVariant(selectedVariant)
+    ? isSellableVariant(selectedVariant, requiredStock)
       ? (selectedVariant?.stock ?? 0)
       : 0
     : selectedGaugeRow
@@ -303,7 +308,7 @@ export function useProductDetailOptions(product: Product | null, initialSelectio
 
   return {
     hasVariantInventories,
-    isSellableVariant,
+    isSellableVariant: (row?: NormalizedVariantRow) => isSellableVariant(row, requiredStock),
     getVariantsByColor,
 
     visibleColorRows,

@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 const route = readFileSync(new URL("../app/api/apps-in-toss/me/activity/route.ts", import.meta.url), "utf8");
 const stepFive = readFileSync(new URL("../../TossMiniApp/src/components/StringingApplicationStepFive.tsx", import.meta.url), "utf8");
+const checkoutPanel = readFileSync(new URL("../../TossMiniApp/src/components/AppsPaymentCheckoutPanel.tsx", import.meta.url), "utf8");
 const flow = readFileSync(new URL("../../TossMiniApp/src/components/StringingApplicationFlow.tsx", import.meta.url), "utf8");
 const app = readFileSync(new URL("../../TossMiniApp/src/App.tsx", import.meta.url), "utf8");
 const activity = readFileSync(new URL("../../TossMiniApp/src/components/ActivityScreen.tsx", import.meta.url), "utf8");
@@ -23,7 +24,8 @@ test("Apps 세션 사용자 소유의 Apps Toss Pay 내역만 읽는다", () => 
 });
 
 test("App 최상위 pending recovery가 모든 일반 route보다 우선한다", () => {
-  assert.match(stepFive, /state === "finalized"[\s\S]*내 이용내역 보기/);
+  assert.match(stepFive, /AppsPaymentCheckoutPanel/);
+  assert.match(checkoutPanel, /state === "finalized"[\s\S]*내 이용내역 보기/);
   assert.match(app, /useState<PendingAppsPayment \| null>\(\(\) => readPendingAppsPayment\(\)\)/);
   assert.match(app, /handlePopState[\s\S]*setPendingPayment\(readPendingAppsPayment\(\)\)/);
   const pendingBranch = app.indexOf("if (pendingPayment)");

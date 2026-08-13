@@ -8,7 +8,11 @@ import { importFileModule } from "./helpers/import-file-module.mjs";
 
 const root = new URL("..", import.meta.url);
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "apps-payment-execution-"));
-fs.symlinkSync(new URL("../node_modules", import.meta.url), path.join(tmp, "node_modules"), "dir");
+fs.symlinkSync(
+  new URL("../node_modules", import.meta.url),
+  path.join(tmp, "node_modules"),
+  process.platform === "win32" ? "junction" : "dir",
+);
 for (const name of ["toss-pay-contract", "payment-execution-policy"]) {
   const source = fs.readFileSync(new URL(`lib/apps-in-toss/server/${name}.ts`, root), "utf8");
   fs.writeFileSync(path.join(tmp, `${name}.cjs`), ts.transpileModule(source, {

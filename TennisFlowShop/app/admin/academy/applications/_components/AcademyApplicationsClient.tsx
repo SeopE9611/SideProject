@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { ArrowLeft, BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -226,6 +227,13 @@ export default function AcademyApplicationsClient() {
     setKeyword(keywordInput.trim());
   }
 
+  function resetFilters() {
+    setStatus("all");
+    setKeywordInput("");
+    setKeyword("");
+    setPage(1);
+  }
+
   function goToDetail(id: string) {
     router.push(`/admin/academy/applications/${id}`);
   }
@@ -233,6 +241,7 @@ export default function AcademyApplicationsClient() {
   return (
     <AdminPageShell variant="wide" className="space-y-6">
       <AdminPageHeader
+        variant="compact"
         title="아카데미 신청 관리"
         description="수강 신청 접수, 상담 상태, 등록 확정 여부를 한 곳에서 확인합니다."
         icon={BookOpen}
@@ -260,12 +269,34 @@ export default function AcademyApplicationsClient() {
         ))}
       </div>
 
-      <Card className={adminSurface.card}>
-        <CardHeader>
-          <CardTitle className="text-base">신청 목록</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-3 flex-row items-center justify-between">
+      <AdminFilterBar
+        actions={
+          <Button type="button" variant="outline" size="sm" className="h-9" onClick={resetFilters}>
+            필터 초기화
+          </Button>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">
+              현재 상태:{" "}
+              {status === "all" ? "전체 상태" : getAcademyApplicationStatusLabel(status)}
+            </span>
+            {keyword ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                검색어: {keyword}
+              </span>
+            ) : null}
+            <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 tabular-nums">
+              전체 신청: {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건
+            </span>
+          </>
+        }
+      >
+        <form
+          className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(160px,1fr)_minmax(240px,2fr)_auto]"
+          onSubmit={submitSearch}
+        >
+          <div className="min-w-0">
             <Select
               value={status}
               onValueChange={(value) => {
@@ -273,7 +304,7 @@ export default function AcademyApplicationsClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full min-w-0" aria-label="아카데미 신청 상태 필터">
                 <SelectValue placeholder="상태 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -285,23 +316,28 @@ export default function AcademyApplicationsClient() {
                 ))}
               </SelectContent>
             </Select>
-
-            <form
-              className="flex w-full max-w-md gap-2 flex-row"
-              onSubmit={submitSearch}
-            >
-              <Input
-                value={keywordInput}
-                onChange={(event) => setKeywordInput(event.target.value)}
-                placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
-              />
-              <Button type="submit" variant="outline" className="w-auto">
-                <Search className="mr-2 h-4 w-4" />
-                검색
-              </Button>
-            </form>
           </div>
+          <div className="min-w-0">
+            <Input
+              value={keywordInput}
+              onChange={(event) => setKeywordInput(event.target.value)}
+              placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
+              className="w-full min-w-0"
+              aria-label="아카데미 신청 검색어"
+            />
+          </div>
+          <Button type="submit" variant="outline">
+            <Search className="mr-2 h-4 w-4" />
+            검색
+          </Button>
+        </form>
+      </AdminFilterBar>
 
+      <Card className={adminSurface.card}>
+        <CardHeader>
+          <CardTitle className="text-base">신청 목록</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {error ? (
             <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
               신청 목록을 불러오지 못했습니다.

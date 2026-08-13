@@ -2,11 +2,12 @@
 
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -405,9 +406,12 @@ export default function AdminRentalsClient() {
     Boolean(to);
 
   const activeFilterLabels = [
-    status ? getRentalStatusDisplayLabel(status) : null,
-    payFilter !== "all" ? paymentFilterLabels[payFilter] : null,
-    shipFilter !== "all" ? shippingFilterLabels[shipFilter] : null,
+    searchTerm.trim() ? `검색어: ${searchTerm.trim()}` : null,
+    status ? `대여 상태: ${getRentalStatusDisplayLabel(status)}` : null,
+    payFilter !== "all" ? `결제 상태: ${paymentFilterLabels[payFilter]}` : null,
+    shipFilter !== "all" ? `배송 상태: ${shippingFilterLabels[shipFilter]}` : null,
+    from ? `시작일: ${from}` : null,
+    to ? `종료일: ${to}` : null,
   ].filter((label): label is string => Boolean(label));
 
   const hasTextOrDateFilters = Boolean(searchTerm.trim() || from || to);
@@ -559,6 +563,7 @@ export default function AdminRentalsClient() {
     <AdminPageShell variant="wide" className="py-6">
       <div>
         <AdminPageHeader
+          variant="compact"
           title="대여 관리"
           description="라켓 대여의 결제 확인, 인도, 반납, 보증금 환불, 연결 신청서를 한곳에서 관리합니다."
           icon={Truck}
@@ -597,18 +602,13 @@ export default function AdminRentalsClient() {
         {/* <CleanupCreatedButton hours={2} /> */}
       </div>
 
-      <Card className={cn("mb-5 px-6 py-5", adminSurface.filterCard)}>
-        <CardHeader className="pb-3">
-          <CardTitle>대여 찾기</CardTitle>
-          <CardDescription className={cn("break-keep", adminTypography.body)}>
-            빠른 보기로 주요 업무를 좁히거나 상태, 결제, 운송장, 날짜 조건과 검색어를 조합하세요.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2" aria-label="빠른 보기">
+      <AdminFilterBar
+        className="mb-4"
+        quickFilters={
+          <>
             <span className={cn("mr-1", adminTypography.panelTitleCompact)}>빠른 보기</span>
             <Button
+              type="button"
               size="sm"
               variant={!hasActiveFilters ? "default" : "outline"}
               onClick={resetAllFiltersAndURL}
@@ -616,6 +616,7 @@ export default function AdminRentalsClient() {
               전체
             </Button>
             <Button
+              type="button"
               size="sm"
               variant={currentViewLabel === "결제대기" ? "default" : "outline"}
               onClick={() => applyQuickView("unpaid")}
@@ -623,6 +624,7 @@ export default function AdminRentalsClient() {
               결제대기
             </Button>
             <Button
+              type="button"
               size="sm"
               variant={currentViewLabel === "인도 필요" ? "default" : "outline"}
               onClick={() => applyQuickView("shipping")}
@@ -630,6 +632,7 @@ export default function AdminRentalsClient() {
               인도 필요
             </Button>
             <Button
+              type="button"
               size="sm"
               variant={currentViewLabel === "반납 필요" ? "default" : "outline"}
               onClick={() => applyQuickView("out")}
@@ -637,16 +640,48 @@ export default function AdminRentalsClient() {
               반납 필요
             </Button>
             <Button
+              type="button"
               size="sm"
               variant={currentViewLabel === "보증금 환불 확인" ? "default" : "outline"}
               onClick={() => applyQuickView("returned")}
             >
               보증금 환불 확인
             </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
+          </>
+        }
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9"
+            onClick={resetAllFiltersAndURL}
+          >
+            필터 초기화
+          </Button>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">현재 보기: {currentViewLabel}</span>
+            {activeFilterLabels.map((label) => (
+              <span
+                key={label}
+                className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1"
+              >
+                {label}
+              </span>
+            ))}
+            {hasResolvedData && !hasDataError && data ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 tabular-nums">
+                전체 결과: {data.total.toLocaleString("ko-KR")}건
+              </span>
+            ) : null}
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-[minmax(240px,2fr)_repeat(3,minmax(130px,1fr))]">
+            <div className="relative min-w-0">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
@@ -656,18 +691,11 @@ export default function AdminRentalsClient() {
                   setSearchTerm(e.target.value);
                 }}
                 placeholder="대여 ID, 고객명, 이메일, 브랜드, 모델 검색..."
-                className="pl-8 w-full"
+                className="h-9 w-full min-w-0 pl-8"
                 aria-label="대여 통합 검색"
               />
             </div>
-
-            <Button variant="outline" className="shrink-0" onClick={resetAllFiltersAndURL}>
-              필터 초기화
-            </Button>
-          </div>
-
-          <div className="grid w-full gap-2 grid-cols-3">
-            <div className="flex min-w-0 items-center">
+            <div className="min-w-0">
               <Select
                 value={status || "all"}
                 onValueChange={(v) => {
@@ -691,8 +719,7 @@ export default function AdminRentalsClient() {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex min-w-0 items-center">
+            <div className="min-w-0">
               <Select
                 value={payFilter}
                 onValueChange={(v) => {
@@ -714,7 +741,7 @@ export default function AdminRentalsClient() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex min-w-0 items-center">
+            <div className="min-w-0">
               <Select
                 value={shipFilter}
                 onValueChange={(v) => {
@@ -750,7 +777,7 @@ export default function AdminRentalsClient() {
               }}
               placeholder="시작일"
               aria-label="시작일(From)"
-              className="h-9 w-[150px]"
+              className="h-9 w-[150px] min-w-0 tabular-nums"
             />
             <span className="text-xs text-muted-foreground">~</span>
             <Input
@@ -762,47 +789,26 @@ export default function AdminRentalsClient() {
               }}
               placeholder="종료일"
               aria-label="종료일(To)"
-              className="h-9 w-[150px]"
+              className="h-9 w-[150px] min-w-0 tabular-nums"
             />
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setPreset("today")}>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" onClick={() => setPreset("today")}>
                 오늘
               </Button>
-              <Button variant="outline" onClick={() => setPreset("7d")}>
+              <Button type="button" variant="outline" onClick={() => setPreset("7d")}>
                 7일
               </Button>
-              <Button variant="outline" onClick={() => setPreset("30d")}>
+              <Button type="button" variant="outline" onClick={() => setPreset("30d")}>
                 30일
               </Button>
-              <Button variant="outline" onClick={() => setPreset("thisMonth")}>
+              <Button type="button" variant="outline" onClick={() => setPreset("thisMonth")}>
                 이번 달
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <div
-        className={cn(
-          "mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border px-4 py-3 text-sm",
-          adminSurface.cardMuted,
-        )}
-      >
-        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
-        {searchTerm.trim() && <p className="text-muted-foreground">검색어: {searchTerm.trim()}</p>}
-        {activeFilterLabels.length > 0 && (
-          <p className="text-muted-foreground">필터: {activeFilterLabels.join(" / ")}</p>
-        )}
-        {(from || to) && (
-          <p className="text-muted-foreground">
-            기간: {from || "시작일 없음"} ~ {to || "종료일 없음"}
-          </p>
-        )}
-        {hasResolvedData && !hasDataError && data && (
-          <p className="text-muted-foreground">총 {data.total}건</p>
-        )}
-      </div>
+        </div>
+      </AdminFilterBar>
 
       <Card className={cn("px-4 py-5", adminSurface.tableCard)}>
         <CardHeader className="pb-2">

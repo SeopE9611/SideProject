@@ -8,7 +8,11 @@ import { importFileModule } from "./helpers/import-file-module.mjs";
 
 const root = new URL("..", import.meta.url);
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "apps-in-toss-pay-contract-"));
-fs.symlinkSync(new URL("../node_modules", import.meta.url), path.join(tmp, "node_modules"), "dir");
+fs.symlinkSync(
+  new URL("../node_modules", import.meta.url),
+  path.join(tmp, "node_modules"),
+  process.platform === "win32" ? "junction" : "dir",
+);
 
 function loadTypeScriptModule(sourcePath, outputName) {
   const source = fs.readFileSync(new URL(sourcePath, root), "utf8");

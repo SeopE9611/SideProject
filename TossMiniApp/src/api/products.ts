@@ -1,10 +1,20 @@
 import type { ProductDetailResponse, ProductListResponse } from "../types/product";
 import { getJson } from "./http";
 
-const STRINGING_PRODUCTS_PATH = "/api/products?purpose=stringing&page=1&limit=12&sort=latest";
+export type StringingProductsQuery = { page?: number; limit?: number; q?: string };
 
-export function getStringingProducts(signal?: AbortSignal): Promise<ProductListResponse> {
-  return getJson<ProductListResponse>(STRINGING_PRODUCTS_PATH, signal);
+export function getStringingProducts(
+  signal?: AbortSignal,
+  query: StringingProductsQuery = {},
+): Promise<ProductListResponse> {
+  const params = new URLSearchParams({
+    purpose: "stringing",
+    page: String(query.page ?? 1),
+    limit: String(query.limit ?? 12),
+    sort: "latest",
+  });
+  if (query.q?.trim()) params.set("q", query.q.trim());
+  return getJson<ProductListResponse>(`/api/products?${params.toString()}`, signal);
 }
 
 export function getProductDetail(productId: string, signal?: AbortSignal): Promise<ProductDetailResponse> {

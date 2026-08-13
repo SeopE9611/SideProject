@@ -5,6 +5,8 @@ import { validateShipping } from "../lib/stringing-application-validation";
 import type { StringingCollectionMethod, StringingShippingDraft } from "../types/stringing";
 
 type StringingApplicationStepTwoProps = {
+  mode?: "stringing" | "racket-purchase";
+  errorMessage?: string;
   collectionMethod: StringingCollectionMethod;
   onCollectionMethodChange: (method: StringingCollectionMethod) => void;
   shipping: StringingShippingDraft;
@@ -27,7 +29,22 @@ const VISIBLE_COLLECTION_METHODS = [
   },
 ] as const;
 
+const RACKET_PURCHASE_COLLECTION_METHODS = [
+  {
+    value: "self_ship",
+    title: "택배 배송",
+    description: "입력한 주소로 완성된 라켓을 안전하게 배송해요.",
+  },
+  {
+    value: "visit",
+    title: "매장 방문 수령",
+    description: "예약 가능한 날짜와 시간을 선택해 매장에서 직접 받아요.",
+  },
+] as const;
+
 function StringingApplicationStepTwo({
+  mode = "stringing",
+  errorMessage = "",
   collectionMethod,
   onCollectionMethodChange,
   shipping,
@@ -43,6 +60,8 @@ function StringingApplicationStepTwo({
   });
 
   const isSelfShip = collectionMethod === "self_ship";
+  const isRacketPurchase = mode === "racket-purchase";
+  const methods = isRacketPurchase ? RACKET_PURCHASE_COLLECTION_METHODS : VISIBLE_COLLECTION_METHODS;
 
   const errors = useMemo(() => validateShipping(collectionMethod, shipping), [collectionMethod, shipping]);
 
@@ -87,8 +106,8 @@ function StringingApplicationStepTwo({
     <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
       <section className="pt-[calc(16px+env(safe-area-inset-top))]">
         <Top
-          title={<Top.TitleParagraph size={22}>교체서비스 포함 주문</Top.TitleParagraph>}
-          subtitleBottom={<Top.SubtitleParagraph size={17}>2 / 5 · 전달·수령 정보</Top.SubtitleParagraph>}
+          title={<Top.TitleParagraph size={22}>{isRacketPurchase ? "라켓 구매" : "교체서비스 포함 주문"}</Top.TitleParagraph>}
+          subtitleBottom={<Top.SubtitleParagraph size={17}>{isRacketPurchase ? "3 / 6 · 수령 방법·배송지" : "2 / 5 · 전달·수령 정보"}</Top.SubtitleParagraph>}
         />
       </section>
 
@@ -97,16 +116,18 @@ function StringingApplicationStepTwo({
           <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">STEP 02</p>
 
           <h1 id="collection-method-title" className="m-0 text-[22px] leading-[1.35] font-extrabold tracking-[-0.02em]">
-            라켓 전달 방법
+            {isRacketPurchase ? "라켓 수령 방법" : "라켓 전달 방법"}
           </h1>
 
           <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
-            스트링 교체를 위해 라켓을 전달할 방법을 선택해주세요.
+            {isRacketPurchase ? "스트링 장착이 끝난 라켓을 받을 방법을 선택해주세요." : "스트링 교체를 위해 라켓을 전달할 방법을 선택해주세요."}
           </p>
         </div>
 
+        {errorMessage ? <p role="alert" className="rounded-2xl bg-[#fff4f2] p-4 text-sm font-semibold text-[#d92d20]">{errorMessage}</p> : null}
+
         <div className="flex flex-col gap-3" role="radiogroup" aria-label="라켓 전달 방법">
-          {VISIBLE_COLLECTION_METHODS.map((method) => {
+          {methods.map((method) => {
             const isSelected = collectionMethod === method.value;
 
             return (
@@ -146,7 +167,7 @@ function StringingApplicationStepTwo({
             <strong className="block text-sm font-extrabold text-[#333d4b]">매장 방문 접수 안내</strong>
 
             <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-              방문 접수는 주소 입력이 필요하지 않습니다. 방문 날짜와 시간은 다음 단계에서 선택합니다.
+              {isRacketPurchase ? "매장 방문 수령은 주소 입력이 필요하지 않습니다." : "방문 접수는 주소 입력이 필요하지 않습니다."} 방문 날짜와 시간은 다음 단계에서 선택합니다.
             </p>
           </div>
         )}
@@ -154,10 +175,10 @@ function StringingApplicationStepTwo({
         {isSelfShip && (
           <>
             <div className="mt-4 rounded-2xl bg-[#f7f8fa] p-4">
-              <strong className="block text-sm font-extrabold text-[#333d4b]">자가 발송 안내</strong>
+              <strong className="block text-sm font-extrabold text-[#333d4b]">{isRacketPurchase ? "택배 배송 안내" : "자가 발송 안내"}</strong>
 
               <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                편의점·우체국 등을 이용해 직접 발송할 수 있습니다.
+                {isRacketPurchase ? "입력한 배송지로 스트링 장착을 마친 라켓을 보내드립니다." : "편의점·우체국 등을 이용해 직접 발송할 수 있습니다."}
               </p>
             </div>
 
@@ -166,7 +187,7 @@ function StringingApplicationStepTwo({
                 <strong className="block text-base font-extrabold text-[#191f28]">주소 정보</strong>
 
                 <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-                  라켓 발송 및 반송에 사용할 주소를 등록해주세요.
+                  {isRacketPurchase ? "라켓을 받을 배송지를 입력해주세요." : "라켓 발송 및 반송에 사용할 주소를 등록해주세요."}
                 </p>
               </div>
 
@@ -275,7 +296,7 @@ function StringingApplicationStepTwo({
             type="button"
             onClick={handleConfirm}
           >
-            다음: 라켓·텐션 정보
+            {isRacketPurchase ? "다음: 장력·작업 요청" : "다음: 라켓·텐션 정보"}
           </button>
         </div>
       </section>

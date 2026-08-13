@@ -1,11 +1,11 @@
 import { Top } from "@toss/tds-mobile";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { getProductDetail } from "../api/products";
 import { formatGaugeLabel, formatPrice, getStringColorLabel, toFiniteNumber } from "../lib/product-labels";
-import { validateApplicant } from "../lib/stringing-application-validation";
 import type { Product } from "../types/product";
 import type { StringingApplicantDraft } from "../types/stringing";
+import ApplicantFields from "./ApplicantFields";
 
 type LoadState = "loading" | "success" | "error";
 
@@ -21,23 +21,6 @@ type StringingApplicationStepOneProps = {
 
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
-}
-
-function onlyDigits(value: string) {
-  return value.replace(/\D/g, "");
-}
-
-function format010Phone(value: string) {
-  const digits = onlyDigits(value).slice(0, 11);
-
-  if (!digits) return "";
-  if (digits.length <= 3) return digits;
-
-  if (digits.length <= 7) {
-    return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-  }
-
-  return `${digits.slice(0, 3)} ${digits.slice(3, 7)} ${digits.slice(7, 11)}`;
 }
 
 function getProductImage(product: Product) {
@@ -57,11 +40,8 @@ function StringingApplicationStepOne({
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
 
-  const [touched, setTouched] = useState<Record<keyof StringingApplicantDraft, boolean>>({
-    name: false,
-    email: false,
-    phone: false,
-  });
+  const [applicantValid, setApplicantValid] = useState(false);
+  const [validationRequest, setValidationRequest] = useState(0);
 
   const loadProduct = useCallback(
     async (signal?: AbortSignal) => {
@@ -99,14 +79,6 @@ function StringingApplicationStepOne({
       controller.abort();
     };
   }, [loadProduct]);
-
-  const errors = useMemo(() => validateApplicant(applicant), [applicant]);
-
-  useEffect(() => {
-    if (!showValidationErrors) return;
-    const field = (["name", "email", "phone"] as const).find((key) => errors[key]);
-    if (field) requestAnimationFrame(() => document.getElementById(`applicant-${field}`)?.focus());
-  }, [errors, showValidationErrors]);
 
   const selectedVariant = product?.variantInventories?.find(
     (row) => row.colorValue === selectedColor && row.gaugeValue === selectedGauge,
@@ -157,35 +129,9 @@ function StringingApplicationStepOne({
 
   const mountingFee = toFiniteNumber(product?.mountingFee);
 
-  const markTouched = (field: keyof StringingApplicantDraft) => {
-    setTouched((current) => ({
-      ...current,
-      [field]: true,
-    }));
-  };
-
-  const updateApplicant = (field: keyof StringingApplicantDraft, value: string) => {
-    onApplicantChange({
-      ...applicant,
-      [field]: value,
-    });
-  };
-
   const handleValidateStep = () => {
-    setTouched({
-      name: true,
-      email: true,
-      phone: true,
-    });
-
-    if (Object.keys(errors).length > 0) {
-      const firstInvalidField = (["name", "email", "phone"] as const).find((field) => errors[field]);
-      if (firstInvalidField) {
-        requestAnimationFrame(() => document.getElementById(`applicant-${firstInvalidField}`)?.focus());
-      }
-      return;
-    }
-
+    setValidationRequest((current) => current + 1);
+    if (!applicantValid) return;
     onContinue();
   };
 
@@ -300,74 +246,13 @@ function StringingApplicationStepOne({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-[20px] border border-[#e5e8eb] p-[18px]">
-          <label className="block">
-            <span className="mb-2 block text-sm font-bold text-[#333d4b]">신청인 이름 *</span>
-
-            <input
-              id="applicant-name"
-              className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                (touched.name || showValidationErrors) && errors.name ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
-              }`}
-              type="text"
-              maxLength={100}
-              value={applicant.name}
-              autoComplete="name"
-              placeholder="이름을 입력해주세요"
-              onChange={(event) => updateApplicant("name", event.target.value)}
-              onBlur={() => markTouched("name")}
-            />
-
-            {(touched.name || showValidationErrors) && errors.name && (
-              <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.name}</span>
-            )}
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-bold text-[#333d4b]">이메일 *</span>
-
-            <input
-              id="applicant-email"
-              className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                (touched.email || showValidationErrors) && errors.email ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
-              }`}
-              type="email"
-              maxLength={254}
-              value={applicant.email}
-              autoComplete="email"
-              placeholder="이메일을 입력해주세요"
-              onChange={(event) => updateApplicant("email", event.target.value)}
-              onBlur={() => markTouched("email")}
-            />
-
-            {(touched.email || showValidationErrors) && errors.email && (
-              <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.email}</span>
-            )}
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-bold text-[#333d4b]">연락처 *</span>
-
-            <input
-              id="applicant-phone"
-              className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-base text-[#191f28] outline-none transition placeholder:text-[#b0b8c1] focus:ring-2 focus:ring-[#dcebba] ${
-                (touched.phone || showValidationErrors) && errors.phone ? "border-[#d92d20]" : "border-[#d1d6db] focus:border-[#688d00]"
-              }`}
-              type="tel"
-              maxLength={20}
-              inputMode="numeric"
-              value={applicant.phone}
-              autoComplete="tel"
-              placeholder="01012345678"
-              onChange={(event) => updateApplicant("phone", format010Phone(event.target.value))}
-              onBlur={() => markTouched("phone")}
-            />
-
-            {(touched.phone || showValidationErrors) && errors.phone && (
-              <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.phone}</span>
-            )}
-          </label>
-        </div>
+        <ApplicantFields
+          applicant={applicant}
+          onChange={onApplicantChange}
+          showValidationErrors={showValidationErrors}
+          validationRequest={validationRequest}
+          onValidityChange={setApplicantValid}
+        />
       </section>
 
       <section className="mt-6 px-6 max-[359px]:px-5">

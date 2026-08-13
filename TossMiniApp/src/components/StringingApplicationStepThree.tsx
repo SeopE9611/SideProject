@@ -8,6 +8,9 @@ import type { StringingCollectionMethod, StringingSlotSummary, StringingWorkDraf
 type SlotLoadState = "idle" | "loading" | "success" | "error";
 
 type StringingApplicationStepThreeProps = {
+  mode?: "stringing" | "racket-purchase";
+  quantity?: number;
+  errorMessage?: string;
   collectionMethod: StringingCollectionMethod;
   work: StringingWorkDraft;
   onWorkChange: (work: StringingWorkDraft) => void;
@@ -46,6 +49,9 @@ function getTodayLocalDate() {
 }
 
 function StringingApplicationStepThree({
+  mode = "stringing",
+  quantity = 1,
+  errorMessage = "",
   collectionMethod,
   work,
   onWorkChange,
@@ -69,6 +75,7 @@ function StringingApplicationStepThree({
   });
 
   const isVisit = collectionMethod === "visit";
+  const isRacketPurchase = mode === "racket-purchase";
 
   useEffect(() => {
     if (!isVisit || !work.preferredDate) {
@@ -84,7 +91,7 @@ function StringingApplicationStepThree({
     setSlotSummary(null);
     setSlotError("");
 
-    void getStringingReservedSlots(work.preferredDate, 1, controller.signal)
+    void getStringingReservedSlots(work.preferredDate, Math.max(1, quantity), controller.signal)
       .then((summary) => {
         if (controller.signal.aborted) {
           return;
@@ -110,7 +117,7 @@ function StringingApplicationStepThree({
     return () => {
       controller.abort();
     };
-  }, [isVisit, work.preferredDate]);
+  }, [isVisit, quantity, work.preferredDate]);
 
   const errors = useMemo(
     () => validateWork(collectionMethod, work, {
@@ -149,7 +156,7 @@ function StringingApplicationStepThree({
 
   const handleConfirm = () => {
     setTouched({
-      racketType: true,
+      racketType: !isRacketPurchase,
       tensionMain: true,
       tensionCross: true,
       note: true,
@@ -186,8 +193,8 @@ function StringingApplicationStepThree({
     <main className="min-h-dvh w-full bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
       <section className="pt-[calc(16px+env(safe-area-inset-top))]">
         <Top
-          title={<Top.TitleParagraph size={22}>교체서비스 포함 주문</Top.TitleParagraph>}
-          subtitleBottom={<Top.SubtitleParagraph size={17}>3 / 5 · 라켓·텐션 정보</Top.SubtitleParagraph>}
+          title={<Top.TitleParagraph size={22}>{isRacketPurchase ? "라켓 구매" : "교체서비스 포함 주문"}</Top.TitleParagraph>}
+          subtitleBottom={<Top.SubtitleParagraph size={17}>{isRacketPurchase ? "4 / 6 · 장력·작업·방문예약" : "3 / 5 · 라켓·텐션 정보"}</Top.SubtitleParagraph>}
         />
       </section>
 
@@ -196,13 +203,15 @@ function StringingApplicationStepThree({
           <p className="mb-1.5 text-xs font-extrabold tracking-[0.08em] text-[#688d00]">STEP 03</p>
 
           <h1 id="work-info-title" className="m-0 text-[22px] leading-[1.35] font-extrabold tracking-[-0.02em]">
-            라켓·텐션 정보
+            {isRacketPurchase ? "장력·작업 요청" : "라켓·텐션 정보"}
           </h1>
 
           <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
-            장착할 라켓명과 메인·크로스 텐션을 입력해주세요.
+            {isRacketPurchase ? "메인·크로스 장력과 작업 요청을 입력해주세요." : "장착할 라켓명과 메인·크로스 텐션을 입력해주세요."}
           </p>
         </div>
+
+        {errorMessage ? <p role="alert" className="rounded-2xl bg-[#fff4f2] p-4 text-sm font-semibold text-[#d92d20]">{errorMessage}</p> : null}
 
         {isVisit && (
           <div className="mb-4 rounded-[20px] border border-[#e5e8eb] p-[18px]">
@@ -335,11 +344,13 @@ function StringingApplicationStepThree({
             <strong className="block text-base font-extrabold text-[#191f28]">라켓 작업 정보</strong>
 
             <p className="mt-1.5 mb-0 break-keep text-[13px] leading-[1.55] text-[#6b7684]">
-              현재 주문은 라켓 1자루 기준으로 작업 정보를 입력합니다.
+              {isRacketPurchase && quantity > 1
+                ? "선택한 모든 라켓에 동일한 스트링과 장력 설정이 적용됩니다."
+                : "현재 주문은 라켓 1자루 기준으로 작업 정보를 입력합니다."}
             </p>
           </div>
 
-          <label className="block">
+          {!isRacketPurchase && <label className="block">
             <span className="mb-2 block text-sm font-bold text-[#333d4b]">라켓명 *</span>
 
             <input
@@ -363,7 +374,7 @@ function StringingApplicationStepThree({
             {(touched.racketType || showValidationErrors) && errors.racketType && (
               <span className="mt-1.5 block text-xs font-semibold text-[#d92d20]">{errors.racketType}</span>
             )}
-          </label>
+          </label>}
 
           <div className="mt-4 grid grid-cols-2 gap-2.5">
             <label className="block min-w-0">
@@ -459,7 +470,7 @@ function StringingApplicationStepThree({
             type="button"
             onClick={handleConfirm}
           >
-            다음: 주문 내용 확인
+            {isRacketPurchase ? "다음: 최종 구성 확인" : "다음: 주문 내용 확인"}
           </button>
         </div>
       </section>

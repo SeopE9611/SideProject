@@ -47,11 +47,18 @@ export async function GET(request: Request) {
     const activities = orders.flatMap((order) => {
       const application = byOrder.get(String(order._id));
       if (!application) return [];
-      const item = Array.isArray(order.items) ? order.items[0] : null;
+      const items = Array.isArray(order.items) ? order.items : [];
+      const racketItem = items.find((item) => item?.kind === "racket");
+      const stringItem = items.find((item) => item?.kind === "product");
+      const isRacketPurchase = Boolean(racketItem && stringItem);
+      const item = isRacketPurchase ? racketItem : items[0];
       const line = Array.isArray(application.stringDetails?.lines) ? application.stringDetails.lines[0] : null;
       return [{
         id: String(application._id), orderId: String(order._id), createdAt: iso(application.createdAt),
+        activityType: isRacketPurchase ? "racket_purchase" : "stringing_service",
         productName: typeof item?.name === "string" ? item.name : "스트링 교체서비스",
+        stringName: isRacketPurchase && typeof stringItem?.name === "string" ? stringItem.name : null,
+        quantity: Number.isInteger(item?.quantity) && item.quantity > 0 ? item.quantity : 1,
         color: typeof application.meta?.selectedColor === "string" ? application.meta.selectedColor : "",
         gauge: typeof application.meta?.selectedGauge === "string" ? application.meta.selectedGauge : "",
         collectionMethod: application.collectionMethod === "visit" ? "visit" : "self_ship",

@@ -64,8 +64,8 @@ export default function StringingPendingPaymentRecovery({ pending, onResolved }:
       <button className="mt-5 min-h-[52px] w-full rounded-2xl bg-[#191f28] text-base font-extrabold text-white disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]" type="button" onClick={() => void login()} disabled={loginBusy}>{loginBusy ? "로그인 중..." : "토스로 로그인하기"}</button>
     </>}
     {auth.status === "authenticated" && !result && <button className="mt-5 min-h-[52px] w-full rounded-2xl bg-[#191f28] text-base font-extrabold text-white" type="button" onClick={() => void check()}>결제 처리 상태 확인</button>}
-    {result === "finalized" && <button className="mt-5 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white text-base font-bold" type="button" onClick={onResolved}>신청 화면으로 돌아가기</button>}
-    {result === "refunded" && <button className="mt-5 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white text-base font-bold" type="button" onClick={onResolved}>신청 내용 다시 확인하기</button>}
-    {(result === "retryable" || result === "sandbox") && <button className="mt-5 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white text-base font-bold" type="button" onClick={onResolved}>{result === "retryable" ? "새 결제 다시 준비하기" : "신청 화면으로 돌아가기"}</button>}
+    {result === "finalized" && <button className="mt-5 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white text-base font-bold" type="button" onClick={onResolved}>주문 화면으로 돌아가기</button>}
+    {result === "refunded" && <button className="mt-5 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white text-base font-bold" type="button" onClick={onResolved}>주문 내용 다시 확인하기</button>}
+    {(result === "retryable" || result === "sandbox") && <button className="mt-5 min-h-[52px] w-full rounded-2xl border border-[#d1d6db] bg-white text-base font-bold" type="button" onClick={onResolved}>{result === "retryable" ? "새 결제 다시 준비하기" : "주문 화면으로 돌아가기"}</button>}
   </main>;
 }

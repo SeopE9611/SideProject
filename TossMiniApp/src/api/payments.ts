@@ -5,6 +5,7 @@ import type {
   StringingShippingDraft,
   StringingWorkDraft,
 } from "../types/stringing";
+import type { RacketPurchaseWorkDraft } from "../types/racket-purchase";
 
 const PAYMENTS_PATH = "/api/apps-in-toss/payments";
 
@@ -39,6 +40,20 @@ type PrepareAppsPaymentInput = {
   collectionMethod: StringingCollectionMethod;
   shipping: StringingShippingDraft;
   work: StringingWorkDraft;
+};
+
+type PrepareRacketPurchasePaymentInput = {
+  sessionToken: string;
+  attemptId: string;
+  racketId: string;
+  stringProductId: string;
+  selectedColor: string;
+  selectedGauge: string;
+  quantity: number;
+  applicant: StringingApplicantDraft;
+  collectionMethod: StringingCollectionMethod;
+  shipping: StringingShippingDraft;
+  work: RacketPurchaseWorkDraft;
 };
 
 export class AppsPaymentApiError extends Error {
@@ -153,6 +168,51 @@ export function prepareAppsPayment(input: PrepareAppsPaymentInput): Promise<Apps
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+  }, parsePaymentPrepareResult);
+}
+
+export function prepareRacketPurchasePayment(
+  input: PrepareRacketPurchasePaymentInput,
+): Promise<AppsPaymentPrepareResult> {
+  const {
+    sessionToken,
+    attemptId,
+    racketId,
+    stringProductId,
+    selectedColor,
+    selectedGauge,
+    quantity,
+    applicant,
+    collectionMethod,
+    shipping,
+    work,
+  } = input;
+  const canonicalShipping = collectionMethod === "visit"
+    ? { postalCode: "", address: "", addressDetail: "" }
+    : shipping;
+
+  return requestPayment(PAYMENTS_PATH, sessionToken, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      purpose: "racket_purchase",
+      attemptId,
+      racketId,
+      stringProductId,
+      selectedColor,
+      selectedGauge,
+      quantity,
+      applicant,
+      collectionMethod,
+      shipping: canonicalShipping,
+      work: {
+        tensionMain: work.tensionMain,
+        tensionCross: work.tensionCross,
+        note: work.note,
+        preferredDate: work.preferredDate,
+        preferredTime: work.preferredTime,
+      },
+    }),
   }, parsePaymentPrepareResult);
 }
 

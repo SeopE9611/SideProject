@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { BookOpen, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -206,6 +207,13 @@ export default function AcademyClassesClient() {
     setKeyword(keywordInput.trim());
   }
 
+  function resetFilters() {
+    setStatus("all");
+    setKeywordInput("");
+    setKeyword("");
+    setPage(1);
+  }
+
   function goToDetail(id: string) {
     router.push(`/admin/academy/classes/${id}`);
   }
@@ -270,19 +278,13 @@ export default function AcademyClassesClient() {
   };
 
   return (
-    <AdminPageShell variant="wide">
+    <AdminPageShell variant="wide" className="space-y-4">
       <AdminPageHeader
+        variant="compact"
         title="아카데미 클래스 관리"
         description="레슨 프로그램을 등록하고 노출 상태를 관리합니다."
         icon={BookOpen}
         scope="도깨비테니스 아카데미"
-        actions={
-          <Button asChild>
-            <Link href="/admin/academy/classes/new">
-              <Plus className="mr-2 h-4 w-4" />새 클래스 등록
-            </Link>
-          </Button>
-        }
       />
 
       <div className="grid gap-3 grid-cols-5">
@@ -297,17 +299,40 @@ export default function AcademyClassesClient() {
         ))}
       </div>
 
-      <Card className={adminSurface.card}>
-        <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
-          <CardTitle className={adminTypography.sectionTitle}>클래스 목록</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-6">
-          <div
-            className={cn(
-              adminSurface.filterCard,
-              "flex gap-3 flex-row items-center justify-between",
-            )}
-          >
+      <AdminFilterBar
+        actions={
+          <>
+            <Button type="button" variant="outline" size="sm" className="h-9" onClick={resetFilters}>
+              필터 초기화
+            </Button>
+            <Button asChild size="sm" className="h-9">
+              <Link href="/admin/academy/classes/new">
+                <Plus className="mr-2 h-4 w-4" />새 클래스 등록
+              </Link>
+            </Button>
+          </>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">
+              현재 상태: {status === "all" ? "전체 상태" : getAcademyClassStatusLabel(status)}
+            </span>
+            {keyword ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                검색어: {keyword}
+              </span>
+            ) : null}
+            <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 tabular-nums">
+              전체 결과: {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건
+            </span>
+          </>
+        }
+      >
+        <form
+          className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(160px,1fr)_minmax(240px,2fr)_auto]"
+          onSubmit={submitSearch}
+        >
+          <div className="min-w-0">
             <Select
               value={status}
               onValueChange={(value) => {
@@ -315,7 +340,7 @@ export default function AcademyClassesClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full min-w-0" aria-label="클래스 상태 필터">
                 <SelectValue placeholder="상태 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -327,20 +352,28 @@ export default function AcademyClassesClient() {
                 ))}
               </SelectContent>
             </Select>
-
-            <form className="flex w-full gap-2 max-w-md" onSubmit={submitSearch}>
-              <Input
-                value={keywordInput}
-                onChange={(event) => setKeywordInput(event.target.value)}
-                placeholder="클래스명, 설명, 강사, 장소, 일정 검색"
-              />
-              <Button type="submit" variant="outline">
-                <Search className="mr-2 h-4 w-4" />
-                검색
-              </Button>
-            </form>
           </div>
+          <div className="min-w-0">
+            <Input
+              value={keywordInput}
+              onChange={(event) => setKeywordInput(event.target.value)}
+              placeholder="클래스명, 설명, 강사, 장소, 일정 검색"
+              className="w-full min-w-0"
+              aria-label="클래스 검색어"
+            />
+          </div>
+          <Button type="submit" variant="outline">
+            <Search className="mr-2 h-4 w-4" />
+            검색
+          </Button>
+        </form>
+      </AdminFilterBar>
 
+      <Card className={adminSurface.card}>
+        <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+          <CardTitle className={adminTypography.sectionTitle}>클래스 목록</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 p-6">
           {error ? (
             <div
               className={cn(

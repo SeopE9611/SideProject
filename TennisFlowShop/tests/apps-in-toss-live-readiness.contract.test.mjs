@@ -16,26 +16,29 @@ test("Live prepare/execute 이중 gate와 sandbox mapping을 유지한다", asyn
 test("immutable summary와 MiniApp 중복 결제 방지 계약을 유지한다", async () => {
   const contract = await read("lib/apps-in-toss/server/payment-prepare-contract.ts");
   const step = await read("../TossMiniApp/src/components/StringingApplicationStepFive.tsx");
+  const panel = await read("../TossMiniApp/src/components/AppsPaymentCheckoutPanel.tsx");
+  const payment = `${step}\n${panel}`;
   const recovery = await read("../TossMiniApp/src/components/StringingPendingPaymentRecovery.tsx");
   const marker = await read("../TossMiniApp/src/lib/pending-payment.ts");
   assert.match(contract, /itemSnapshot/); assert.match(contract, /pricingSnapshot/); assert.match(contract, /packageSnapshot/);
   assert.match(contract, /Math\.max\(0, serviceFeeBeforePackage - intent\.pricingSnapshot\.serviceFee\)/);
   assert.match(marker, /PENDING_PAYMENT_STORAGE_PROBE_KEY/);
   assert.match(marker, /localStorage\.setItem\(PENDING_PAYMENT_STORAGE_PROBE_KEY[\s\S]*localStorage\.removeItem\(PENDING_PAYMENT_STORAGE_PROBE_KEY[\s\S]*return true[\s\S]*catch[\s\S]*return false/);
-  assert.match(step, /if \(!canStorePendingAppsPayment\(\)\)[\s\S]*return;[\s\S]*getAppsPaymentIntent\(auth\.sessionToken, attemptId\)[\s\S]*checkoutPayment\(\{ params: \{ payToken \} \}\)/);
-  assert.match(step, /setAuthorized\(true\); setPayToken\(null\);[\s\S]*try \{[\s\S]*savePendingAppsPayment\(attemptId\)[\s\S]*catch[\s\S]*결제 인증은 완료됐습니다\. 중복 결제를 시도하지 마세요\.[\s\S]*await complete\(attemptId, markerSaveFailed\)/);
-  assert.match(step, /checkoutPayment\(\{ params: \{ payToken \} \}\)/);
-  assert.match(step, /intent\.attemptId !== attemptId \|\| intent\.expired \|\| intent\.state !== "awaiting_authorization" \|\| !intent\.paymentReady/);
-  assert.match(step, /if \(intent\.expired\)[\s\S]*setPayToken\(null\); setSummary\(null\); props\.onPaymentAttemptIdChange\(null\);[\s\S]*return;/);
+  assert.match(step, /AppsPaymentCheckoutPanel/);
+  assert.match(payment, /if \(!canStorePendingAppsPayment\(\)\)[\s\S]*return;[\s\S]*getAppsPaymentIntent\(auth\.sessionToken, attemptId\)[\s\S]*checkoutPayment\(\{ params: \{ payToken \} \}\)/);
+  assert.match(payment, /setAuthorized\(true\);[\s\S]*setPayToken\(null\);[\s\S]*try \{[\s\S]*savePendingAppsPayment\(attemptId\)[\s\S]*catch[\s\S]*결제 인증은 완료됐습니다\. 중복 결제를 시도하지 마세요\.[\s\S]*await complete\(attemptId, markerSaveFailed\)/);
+  assert.match(payment, /checkoutPayment\(\{ params: \{ payToken \} \}\)/);
+  assert.match(payment, /intent\.attemptId !== attemptId \|\| intent\.expired \|\| intent\.state !== "awaiting_authorization" \|\| !intent\.paymentReady/);
+  assert.match(payment, /if \(intent\.expired\)[\s\S]*setPayToken\(null\);[\s\S]*setSummary\(null\);[\s\S]*onPaymentAttemptIdChange\(null\);[\s\S]*return;/);
   assert.doesNotMatch(recovery, /prepareAppsPayment|checkoutPayment/); assert.match(recovery, /completeAppsPayment/);
   assert.match(marker, /dokkaebitennis:apps-payment-pending:v1/);
   assert.doesNotMatch(marker, /payToken|sessionToken|applicant|shipping|work/);
-  assert.match(recovery, /result === "finalized"[\s\S]*신청 화면으로 돌아가기/);
-  assert.match(recovery, /result === "refunded"[\s\S]*신청 내용 다시 확인하기/);
+  assert.match(recovery, /result === "finalized"[\s\S]*주문 화면으로 돌아가기/);
+  assert.match(recovery, /result === "refunded"[\s\S]*주문 내용 다시 확인하기/);
   assert.match(recovery, /result === "retryable"[\s\S]*새 결제 다시 준비하기/);
   assert.match(recovery, /PAYMENT_APPROVAL_UNAVAILABLE_IN_SANDBOX[\s\S]*clearPendingAppsPayment\(\)[\s\S]*setResult\("sandbox"\)/);
   assert.match(recovery, /if \(loginBusy \|\| auth\.status === "authenticated"\) return;[\s\S]*try \{[\s\S]*await auth\.login\(\)[\s\S]*catch[\s\S]*finally/);
-  assert.doesNotMatch(step + recovery, /\/execute|\/finalize|\/refund/);
+  assert.doesNotMatch(payment + recovery, /\/execute|\/finalize|\/refund/);
 });
 
 test("MiniApp pending marker가 탐색과 신청 변경보다 우선한다", async () => {
@@ -61,9 +64,11 @@ test("MiniApp pending recovery 종료 시 Step 1과 새 결제 상태로 초기�
 
 test("prepare 실패 시 기존 attempt 폐기 정책과 세부 안내를 유지한다", async () => {
   const step = await read("../TossMiniApp/src/components/StringingApplicationStepFive.tsx");
-  for (const code of ["PAYMENT_INTENT_EXPIRED", "ATTEMPT_PAYLOAD_MISMATCH", "ATTEMPT_CONFLICT", "PAYMENT_CREATION_FAILED", "TOSS_PAY_UNAVAILABLE", "TOSS_PAY_MAKE_FAILED"]) assert.match(step, new RegExp(code));
-  for (const code of ["PRODUCT_NOT_AVAILABLE", "VARIANT_NOT_FOUND", "VARIANT_INSUFFICIENT_STOCK", "VISIT_SLOT_UNAVAILABLE"]) assert.match(step, new RegExp(code));
-  assert.match(step, /!readPendingAppsPayment\(\)[\s\S]*props\.onPaymentAttemptIdChange\(null\)/);
+  const panel = await read("../TossMiniApp/src/components/AppsPaymentCheckoutPanel.tsx");
+  assert.match(step, /AppsPaymentCheckoutPanel/);
+  for (const code of ["PAYMENT_INTENT_EXPIRED", "ATTEMPT_PAYLOAD_MISMATCH", "ATTEMPT_CONFLICT", "PAYMENT_CREATION_FAILED", "TOSS_PAY_UNAVAILABLE", "TOSS_PAY_MAKE_FAILED"]) assert.match(panel, new RegExp(code));
+  for (const code of ["PRODUCT_NOT_AVAILABLE", "VARIANT_NOT_FOUND", "VARIANT_INSUFFICIENT_STOCK", "VISIT_SLOT_UNAVAILABLE"]) assert.match(panel, new RegExp(code));
+  assert.match(panel, /!readPendingAppsPayment\(\)[\s\S]*onPaymentAttemptIdChange\(null\)/);
 });
 
 test("핵심 route duration과 정책 문구를 명시한다", async () => {

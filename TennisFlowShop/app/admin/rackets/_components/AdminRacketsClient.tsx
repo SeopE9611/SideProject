@@ -1,6 +1,7 @@
 "use client";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -307,6 +308,7 @@ export default function AdminRacketsClient() {
   return (
     <AdminPageShell variant="wide" className="space-y-6">
       <AdminPageHeader
+        variant="compact"
         title="라켓 관리"
         description="판매·대여 라켓의 노출 상태, 가격, 재고, 대여 가능 여부, 배송비를 한 곳에서 관리합니다."
         icon={ClipboardList}
@@ -369,11 +371,10 @@ export default function AdminRacketsClient() {
           </CardContent>
         </Card>
       </section>
-      <section className={cn(adminSurface.filterCard, "mb-4 p-4")}>
-        <div className="flex gap-3 flex-row items-center">
-          <p className={cn("shrink-0", adminTypography.panelTitleCompact)}>빠른 보기</p>
-
-          <div className="flex flex-wrap gap-2">
+      <AdminFilterBar
+        quickFilters={
+          <>
+            <span className={cn("mr-1", adminTypography.panelTitleCompact)}>빠른 보기</span>
             {[
               {
                 label: "전체",
@@ -455,14 +456,24 @@ export default function AdminRacketsClient() {
                 {preset.label}
               </Button>
             ))}
-          </div>
-        </div>
-      </section>
-      <div className={cn(adminSurface.filterCard, "mb-6 p-4")}>
-        <div className="flex gap-3 flex-row items-center justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className={adminTypography.panelTitle}>현재 보기: {currentViewLabel}</p>
-
+          </>
+        }
+        actions={
+          <>
+            <Button type="button" variant="outline" size="sm" className="h-9" onClick={resetFilters}>
+              필터 초기화
+            </Button>
+            <Button asChild size="sm" className="h-9">
+              <Link href="/admin/rackets/new">
+                <Plus className="mr-2 h-4 w-4" />
+                라켓 등록
+              </Link>
+            </Button>
+          </>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">현재 보기: {currentViewLabel}</span>
             {activeFilterLabels.length > 0 ? (
               activeFilterLabels.map((label) => (
                 <SemanticBadge key={label} tone="neutral" size="xs">
@@ -474,111 +485,74 @@ export default function AdminRacketsClient() {
                 전체 조건
               </SemanticBadge>
             )}
-          </div>
-
-          <p className={adminTypography.metaMuted}>
+            <span className={cn("tabular-nums", adminTypography.metaMuted)}>
             {hasResolvedData
-              ? `총 ${filteredItems.length.toLocaleString("ko-KR")}개`
+              ? `검색된 라켓: ${filteredItems.length.toLocaleString("ko-KR")}개`
               : "라켓 목록을 불러오는 중입니다."}
-          </p>
+            </span>
+          </>
+        }
+      >
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-[minmax(240px,2fr)_repeat(3,minmax(130px,1fr))]">
+          <div className="relative min-w-0">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="브랜드, 모델 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-full min-w-0 border-border bg-card pl-8 focus:border-border dark:focus:border-border"
+            />
+          </div>
+          <div className="min-w-0">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-9 w-full min-w-0 border-border">
+                <SelectValue placeholder="상태 필터" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 상태</SelectItem>
+                <SelectItem value="available">판매가능</SelectItem>
+                <SelectItem value="rented">대여중</SelectItem>
+                <SelectItem value="sold">판매완료</SelectItem>
+                <SelectItem value="inactive">비노출</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="min-w-0">
+            <Select value={conditionFilter} onValueChange={setConditionFilter}>
+              <SelectTrigger className="h-9 w-full min-w-0 border-border">
+                <SelectValue placeholder="등급 필터" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 등급</SelectItem>
+                <SelectItem value="A">A급 (최상)</SelectItem>
+                <SelectItem value="B">B급 (양호)</SelectItem>
+                <SelectItem value="C">C급 (보통)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="min-w-0">
+            <Select value={exposureFilter} onValueChange={setExposureFilter}>
+              <SelectTrigger className="h-9 w-full min-w-0 border-border">
+                <SelectValue placeholder="노출 유형" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 노출 유형</SelectItem>
+                <SelectItem value="featured">추천 상품</SelectItem>
+                <SelectItem value="new">신상품</SelectItem>
+                <SelectItem value="sale">할인 상품</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
+      </AdminFilterBar>
       <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
         <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
-          <div className="flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className={adminTypography.sectionTitle}>라켓 찾기</CardTitle>
-              <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
-            </div>
-            <Button
-              asChild
-              className={[
-                "h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2",
-                "bg-primary hover:bg-primary/90 text-primary-foreground",
-                "border border-border/10 shadow-sm hover:shadow",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                "ring-offset-2 ring-offset-background dark:ring-offset-background",
-                "transition-colors",
-              ].join(" ")}
-            >
-              <Link href="/admin/rackets/new">
-                <Plus className="mr-2 h-4 w-4" />
-                라켓 등록
-              </Link>
-            </Button>
-          </div>
+          <CardTitle className={adminTypography.sectionTitle}>라켓 목록</CardTitle>
+          <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6 flex-1 min-h-0 flex flex-col p-6">
-          <div
-            className={cn(
-              adminSurface.filterCard,
-              "mb-4 flex flex-row items-center justify-between space-y-0",
-            )}
-          >
-            <div className="w-full space-y-3">
-              <div className="w-full max-w-md">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="브랜드, 모델 검색..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-9 border-border bg-card pl-8 focus:border-border dark:focus:border-border"
-                  />
-                </div>
-              </div>
-              <div className="grid w-full gap-2 grid-cols-4">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-9 w-full min-w-0 border-border">
-                    <SelectValue placeholder="상태 필터" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체 상태</SelectItem>
-                    <SelectItem value="available">판매가능</SelectItem>
-                    <SelectItem value="rented">대여중</SelectItem>
-                    <SelectItem value="sold">판매완료</SelectItem>
-                    <SelectItem value="inactive">비노출</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                  <SelectTrigger className="h-9 w-full min-w-0 border-border">
-                    <SelectValue placeholder="등급 필터" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체 등급</SelectItem>
-                    <SelectItem value="A">A급 (최상)</SelectItem>
-                    <SelectItem value="B">B급 (양호)</SelectItem>
-                    <SelectItem value="C">C급 (보통)</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={exposureFilter} onValueChange={setExposureFilter}>
-                  <SelectTrigger className="h-9 w-full min-w-0 border-border">
-                    <SelectValue placeholder="노출 유형" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체 노출 유형</SelectItem>
-                    <SelectItem value="featured">추천 상품</SelectItem>
-                    <SelectItem value="new">신상품</SelectItem>
-                    <SelectItem value="sale">할인 상품</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetFilters}
-                  className="h-9 w-full border-border hover:bg-primary/10 dark:border-border dark:hover:bg-primary/20"
-                >
-                  필터 초기화
-                </Button>
-              </div>
-            </div>
-          </div>
-
+        <CardContent className="flex min-h-0 flex-1 flex-col p-6">
           <div className="flex-1">
             {isLoading ? (
               <div className={cn(adminSurface.tableCard, "overflow-auto")}>

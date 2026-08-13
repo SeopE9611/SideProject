@@ -6,7 +6,7 @@ import { formatPrice } from "../lib/product-labels";
 import { gripSizeLabel, racketBrandLabel, racketConditionLabel, stringPatternLabel, validRacketSalePrice } from "../lib/racket-labels";
 import type { RacketAvailability, RacketDetail as RacketDetailType } from "../types/racket";
 
-export default function RacketDetail({ racketId, onBack }: { racketId: string; onBack: () => void }) {
+export default function RacketDetail({ racketId, onBack, onPurchase }: { racketId: string; onBack: () => void; onPurchase: () => void }) {
   const [racket, setRacket] = useState<RacketDetailType | null>(null);
   const [availability, setAvailability] = useState<RacketAvailability | null>(null);
   const [state, setState] = useState<"loading" | "success" | "error">("loading");
@@ -27,9 +27,13 @@ export default function RacketDetail({ racketId, onBack }: { racketId: string; o
   const images = (racket.images ?? []).filter(Boolean);
   const price = Number.isFinite(racket.price) && Number(racket.price) >= 0 ? Number(racket.price) : null;
   const salePrice = validRacketSalePrice(price ?? undefined, racket.marketing);
+  const displayPrice = salePrice ?? price;
+  const saleEnded = racket.status === "sold" || availability.quantity <= 0;
+  const hasValidSalePrice = displayPrice !== null && Number.isFinite(displayPrice) && displayPrice > 0;
+  const canPurchase = availability.available > 0 && hasValidSalePrice && !saleEnded;
   const reviewCount = Math.max(0, racket.reviewSummary?.count ?? racket.reviewCount ?? racket.ratingCount ?? 0);
   const rating = Math.max(0, racket.reviewSummary?.average ?? racket.ratingAvg ?? racket.ratingAverage ?? 0);
-  const availabilityLabel = availability.quantity <= 0 ? "판매 종료" : availability.available <= 0 && availability.count > 0 ? "전량 대여 중" : availability.available > 0 ? `이용 가능한 재고 ${availability.available}개` : "현재 이용 불가";
+  const availabilityLabel = saleEnded ? "판매 종료" : availability.available <= 0 && availability.count > 0 ? "전량 대여 중" : availability.available > 0 ? `구매 가능한 재고 ${availability.available}개` : "현재 구매 불가";
   const specs = [
     ["무게", racket.spec?.weight, "g"], ["밸런스", racket.spec?.balance, "mm"], ["헤드사이즈", racket.spec?.headSize, "in²"],
     ["스트링 패턴", racket.spec?.pattern ? stringPatternLabel(String(racket.spec.pattern)) : null, ""],
@@ -48,7 +52,10 @@ export default function RacketDetail({ racketId, onBack }: { racketId: string; o
       <dl className="mt-6 grid grid-cols-2 gap-2"><div className="rounded-2xl bg-[#f7f8fa] p-4"><dt className="text-xs text-[#8b95a1]">배송비</dt><dd className="mt-1 ml-0 text-sm font-bold">{Number(racket.shippingFee ?? 0) > 0 ? formatPrice(Number(racket.shippingFee)) : "무료배송"}</dd></div><div className="rounded-2xl bg-[#f7f8fa] p-4"><dt className="text-xs text-[#8b95a1]">가용 상태</dt><dd className="mt-1 ml-0 text-sm font-bold">{availabilityLabel}</dd></div></dl>
       {racket.rental?.enabled && <section className="mt-7"><h2 className="text-xl font-extrabold">대여 정보</h2><div className="rounded-[20px] bg-[#f7f8fa] p-4 text-sm leading-7"><p className="m-0">7일 {formatPrice(Number(racket.rental.fee?.d7 ?? 0))}</p><p className="m-0">15일 {formatPrice(Number(racket.rental.fee?.d15 ?? 0))}</p><p className="m-0">30일 {formatPrice(Number(racket.rental.fee?.d30 ?? 0))}</p><p className="mt-2 mb-0 font-bold">보증금 {formatPrice(Number(racket.rental.deposit ?? 0))}</p></div></section>}
       {specs.length > 0 && <section className="mt-7"><h2 className="text-xl font-extrabold">상세 스펙</h2><dl className="divide-y divide-[#e5e8eb]">{specs.map(([label, value, unit]) => <div key={String(label)} className="flex justify-between gap-4 py-3 text-sm"><dt>{label}</dt><dd className="m-0 text-right font-bold text-[#4e5968]">{String(value)}{unit ? ` ${unit}` : ""}</dd></div>)}</dl></section>}
-      <p className="mt-8 rounded-[20px] bg-[#f2f4f6] p-5 text-sm leading-6 text-[#6b7684]">이번 단계에서는 라켓 정보 조회만 제공해요. 구매와 대여 신청은 준비 중이에요.</p>
+      <section className="mt-8" aria-label="라켓 구매">
+        <button type="button" disabled={!canPurchase} onClick={onPurchase} className="min-h-[54px] w-full rounded-2xl border-0 bg-[#191f28] px-5 text-base font-extrabold text-white disabled:cursor-not-allowed disabled:bg-[#e5e8eb] disabled:text-[#8b95a1]">스트링 선택 후 구매</button>
+        <p className="mt-2 mb-0 text-center text-sm leading-6 text-[#6b7684]">{canPurchase ? "라켓·스트링·장착서비스를 하나의 주문으로 진행합니다." : availabilityLabel}</p>
+      </section>
     </section>
   </main>;
 }
