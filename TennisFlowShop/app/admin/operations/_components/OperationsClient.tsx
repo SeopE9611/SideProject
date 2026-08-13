@@ -1258,7 +1258,7 @@ export default function OperationsClient() {
                 className={cn(adminSurface.fieldPanel, "rounded-md px-2 py-1.5")}
               >
                 <p className={adminTypography.panelTitle}>{action.title}</p>
-                <p className="mt-0.5 line-clamp-1 text-xs leading-snug text-foreground/90">
+                <p className={cn("mt-0.5 line-clamp-1", adminTypography.body)}>
                   {action.description}
                 </p>
               </div>
@@ -1356,7 +1356,7 @@ export default function OperationsClient() {
                 title="대표 업무와 확인 항목"
                 description="운영 업무와 별도 확인 항목을 한눈에 확인합니다."
                 aside={
-                  <p className="break-words text-sm leading-relaxed text-muted-foreground max-w-[360px] text-right">
+                  <p className={cn("max-w-[360px] break-words text-right", adminTypography.body)}>
                     상단 합계와 확인 항목 카드는 집계 기준이 다르며, 검색과 필터는 아래 목록에
                     적용됩니다.
                   </p>
@@ -1413,10 +1413,10 @@ export default function OperationsClient() {
                 </Badge>
               </span>
             </summary>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className={cn("mt-1", adminTypography.metaMuted)}>
               처음 접속했다면 핵심 순서만 먼저 확인하세요.
             </p>
-            <ol className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground grid-cols-2">
+            <ol className={cn("mt-2 grid grid-cols-2 gap-1.5", adminTypography.metaMuted)}>
               <li>
                 <span className="font-semibold text-foreground">1.</span> 취소 요청과 결제 확인을
                 먼저 처리합니다.
@@ -1457,8 +1457,8 @@ export default function OperationsClient() {
             <div className="mt-3 grid gap-2 grid-cols-4">
               <Card className="border-border/50 bg-background/50 shadow-none">
                 <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className="text-sm font-semibold">오늘 상태 변경 참고</CardTitle>
-                  <CardDescription className="text-2xl font-bold text-foreground">
+                  <CardTitle className={adminTypography.panelTitle}>오늘 상태 변경 참고</CardTitle>
+                  <CardDescription className={adminTypography.kpiValue}>
                     {dailySummaryValue(dailySummary?.completedToday.total)}
                   </CardDescription>
                 </CardHeader>
@@ -1485,8 +1485,8 @@ export default function OperationsClient() {
 
               <Card className="border-border/50 bg-background/50 shadow-none">
                 <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className="text-sm font-semibold">남은 대표 업무</CardTitle>
-                  <CardDescription className="text-2xl font-bold text-foreground">
+                  <CardTitle className={adminTypography.panelTitle}>남은 대표 업무</CardTitle>
+                  <CardDescription className={adminTypography.kpiValue}>
                     {dailySummaryValue(
                       dailySummary?.operationGroupCounts?.totalRepresentativeTasks ??
                         representativeTotalCount,
@@ -1510,8 +1510,8 @@ export default function OperationsClient() {
 
               <Card className="border-border/50 bg-background/50 shadow-none">
                 <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className="text-sm font-semibold">확인 항목</CardTitle>
-                  <CardDescription className="text-2xl font-bold text-foreground">
+                  <CardTitle className={adminTypography.panelTitle}>확인 항목</CardTitle>
+                  <CardDescription className={adminTypography.kpiValue}>
                     {dailySummaryValue(
                       dailySummary?.remaining.packagePaymentCheck ??
                         taskCounts?.packagePaymentCheck,
@@ -1525,8 +1525,8 @@ export default function OperationsClient() {
 
               <Card className="border-border/50 bg-background/50 shadow-none">
                 <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className="text-sm font-semibold">마감 전 확인</CardTitle>
-                  <CardDescription className="text-base font-bold text-foreground">
+                  <CardTitle className={adminTypography.panelTitle}>마감 전 확인</CardTitle>
+                  <CardDescription className={adminTypography.bodyStrong}>
                     긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인{" "}
                     {dailySummaryValue(dailySummary?.attention.watchRemaining)}
                   </CardDescription>
@@ -1585,7 +1585,7 @@ export default function OperationsClient() {
           >
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-semibold text-foreground">빠른 보기</p>
+                <p className={adminTypography.panelTitle}>빠른 보기</p>
                 <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
               </div>
             </div>
@@ -1921,7 +1921,7 @@ export default function OperationsClient() {
         <CardHeader id="operations-list" className="scroll-mt-6 p-0 pb-2">
           <div className="flex gap-2 flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base font-medium">업무 목록</CardTitle>
+              <CardTitle className={adminTypography.sectionTitle}>업무 목록</CardTitle>
               {activePresetKey && (
                 <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>
                   {PRESET_CONFIG[activePresetKey].label}
@@ -2257,7 +2257,7 @@ export default function OperationsClient() {
                         <TableCell colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
-                            <p className="text-sm text-muted-foreground">
+                            <p className={adminTypography.body}>
                               {activeQuickView !== "all"
                                 ? "선택한 빠른 보기에 해당하는 운영 업무가 없습니다."
                                 : onlyWarn
@@ -2265,7 +2265,7 @@ export default function OperationsClient() {
                                   : "결과가 없습니다."}
                             </p>
                             {activeQuickView !== "all" && (
-                              <p className="text-xs text-muted-foreground/80">
+                              <p className={adminTypography.metaMuted}>
                                 다른 빠른 보기를 선택하거나 전체 보기로 돌아가세요.
                               </p>
                             )}

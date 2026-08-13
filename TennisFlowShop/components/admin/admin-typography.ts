@@ -41,9 +41,9 @@ export const adminSurface = {
   detailCard: "rounded-xl border border-border bg-card",
   detailHeader: "border-b border-border bg-muted/20 px-5 py-3",
   detailContent: "space-y-4 p-5",
-  fieldPanel: "rounded-xl border border-border/60 bg-background p-3",
-  fieldPanelMuted: "rounded-xl border border-border/60 bg-muted/20 p-3",
-  highlightPanel: "rounded-xl border border-primary/20 bg-primary/[0.03] p-3",
+  fieldPanel: "rounded-lg border border-border/60 bg-background p-3",
+  fieldPanelMuted: "rounded-lg border border-border/60 bg-muted/20 p-3",
+  highlightPanel: "rounded-lg border border-primary/20 bg-primary/[0.03] p-3",
   tableRow:
     "group border-b border-border transition-colors hover:bg-muted/25 data-[state=selected]:bg-muted/50",
   tableCell: "px-4 py-3 align-middle text-ui-body-sm",

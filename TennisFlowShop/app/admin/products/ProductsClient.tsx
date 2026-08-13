@@ -664,7 +664,7 @@ export default function ProductsClient() {
                       <TableCell colSpan={4} className="py-16 text-center">
                         <div className="flex flex-col items-center gap-2">
                           <Search className="h-8 w-8 text-muted-foreground/50" />
-                          <p className="text-sm text-muted-foreground">등록된 상품이 없습니다.</p>
+                          <p className={adminTypography.body}>등록된 상품이 없습니다.</p>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -793,7 +793,7 @@ export default function ProductsClient() {
           {/* 페이지네이션 */}
           <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
+              <span className={adminTypography.metaMuted}>
                 {currentPage ?? "-"} / {totalPages ?? "-"}
               </span>
               <Button

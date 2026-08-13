@@ -461,7 +461,7 @@ export default function AdminRacketsClient() {
       <div className={cn(adminSurface.filterCard, "mb-6 p-4")}>
         <div className="flex gap-3 flex-row items-center justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
+            <p className={adminTypography.panelTitle}>현재 보기: {currentViewLabel}</p>
 
             {activeFilterLabels.length > 0 ? (
               activeFilterLabels.map((label) => (
@@ -487,7 +487,7 @@ export default function AdminRacketsClient() {
         <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
           <div className="flex flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-xl font-semibold text-primary">라켓 찾기</CardTitle>
+              <CardTitle className={adminTypography.sectionTitle}>라켓 찾기</CardTitle>
               <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
             </div>
             <Button
@@ -638,7 +638,7 @@ export default function AdminRacketsClient() {
                                 {racketBrandLabel(item.brand)}
                               </div>
                               <div
-                                className="line-clamp-2 break-keep text-sm text-muted-foreground"
+                                className={cn("line-clamp-2 break-keep", adminTypography.tableSecondary)}
                                 title={item.model}
                               >
                                 {item.model}
