@@ -1186,7 +1186,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
             }
           />
           {!isInitialClientLoading && (
-            <div className="grid gap-3 grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {PRODUCT_EDIT_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
                 <div key={title} className={cn(adminSurface.cardMuted, "p-4")}>
                   <div className="flex items-center gap-2">
@@ -1215,7 +1215,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 />
               </div>
               {/* 현재 수정 상태 요약 */}
-              <div className="grid gap-3 grid-cols-[1.2fr_1fr]">
+              <div className="grid gap-3 md:grid-cols-[1.2fr_1fr]">
                 <div className={cn(adminSurface.cardMuted, "p-4")}>
                   <div className="flex gap-2 flex-row items-center justify-between">
                     <div>
@@ -1455,7 +1455,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                           description="메인/크로스 스트링 정보를 입력하세요."
                           icon={<Palette className="h-5 w-5" />}
                         >
-                          <div className="grid gap-6 grid-cols-2">
+                          <div className="grid gap-6 md:grid-cols-2">
                             {/* Main String */}
                             <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
                               <h4 className="font-semibold text-foreground">메인 (Mains)</h4>
@@ -2162,7 +2162,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               <p className={adminTypography.metaMuted}>
                                 실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.
                               </p>
-                              <div className="grid gap-3 grid-cols-3">
+                              <div className="grid gap-3 sm:grid-cols-3">
                                 {gaugeSummaryRows.map((gaugeRow) => (
                                   <div
                                     key={gaugeRow.value}
@@ -2195,7 +2195,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         description="스트링의 성능을 1-100 사이로 설정하세요."
                         icon={<Activity className="h-5 w-5" />}
                       >
-                        <div className="grid gap-6 grid-cols-2">
+                        <div className="grid gap-6 md:grid-cols-2">
                           <div className="space-y-6">
                             <PerformanceSlider
                               id="power-rating"
@@ -2239,7 +2239,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         description="이 스트링을 추천하는 플레이어 타입과 스타일을 선택하세요."
                         icon={<Users className="h-5 w-5" />}
                       >
-                        <div className="grid gap-6 grid-cols-2">
+                        <div className="grid gap-6 md:grid-cols-2">
                           <div className="space-y-4">
                             <h4 className="font-semibold text-foreground">플레이어 레벨</h4>
                             <div className="space-y-3">
@@ -2432,7 +2432,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             </RadioGroup>
                           </div>
 
-                          <div className="grid gap-4 grid-cols-2">
+                          <div className="grid gap-4 sm:grid-cols-2">
                             <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4">
                               <Switch
                                 id="show-gauge-stock"
@@ -2495,7 +2495,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         icon={<Sparkles className="h-5 w-5" />}
                       >
                         <div className="space-y-6">
-                          <div className="grid gap-4 grid-cols-3">
+                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4">
                               <Switch
                                 id="string-featured"
@@ -2597,7 +2597,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         icon={<ImageIcon className="h-5 w-5" />}
                       >
                         <div className="space-y-4">
-                          <div className="grid gap-4 grid-cols-4">
+                          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                             {images.map((image, index) => (
                               <div
                                 key={index}
@@ -2698,7 +2698,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                           </Badge>
                         </div>
 
-                        <div className="mt-4 grid gap-2 grid-cols-2">
+                        <div className="mt-4 grid gap-2 sm:grid-cols-2">
                           {formReadinessChecks.map((item) => (
                             <div
                               key={item.label}
